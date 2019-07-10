@@ -46,6 +46,12 @@ public class ProjectMetadata implements DBPProject {
     public static final String METADATA_FOLDER = ".dbeaver";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
 
+    private enum ProjectFormat {
+        UNKNOWN,    // Project is not open or corrupted
+        LEGACY,     // Old format (before 6.1 version
+        MODERN,     // 6.1+ version
+    }
+
     private static Gson METADATA_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
@@ -53,6 +59,8 @@ public class ProjectMetadata implements DBPProject {
 
     private final DBPWorkspace workspace;
     private final IProject project;
+
+    private ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DataSourceRegistry dataSourceRegistry;
     private Map<String, Map<String, Object>> resourceProperties;
     private final Object metadataSync = new Object();
@@ -92,20 +100,34 @@ public class ProjectMetadata implements DBPProject {
     }
 
     @Override
-    public void ensureOpen() {
+    public void ensureOpen() throws IllegalStateException {
+        if (format != ProjectFormat.UNKNOWN) {
+            return;
+        }
         if (!project.isOpen()) {
             try {
                 NullProgressMonitor monitor = new NullProgressMonitor();
                 project.open(monitor);
                 project.refreshLocal(IFile.DEPTH_ONE, monitor);
             } catch (CoreException e) {
-                log.error(e);
+                throw new IllegalStateException("Error opening project", e);
             }
         }
+
+        File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.CONFIG_FILE_NAME);
+        if (dsConfig.exists()) {
+            format = ProjectFormat.LEGACY;
+        } else {
+            format = ProjectFormat.MODERN;
+        }
+
+        // Check project structure and migrate
+        checkAndUpdateProjectStructure();
     }
 
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
+        ensureOpen();
         if (dataSourceRegistry == null) {
             dataSourceRegistry = new DataSourceRegistry(workspace.getPlatform(), this);
         }
@@ -143,10 +165,12 @@ public class ProjectMetadata implements DBPProject {
     }
 
     private void loadMetadata() {
+        ensureOpen();
         synchronized (metadataSync) {
             if (resourceProperties != null) {
                 return;
             }
+
             File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);
             if (mdFile.exists()) {
                 // Parse metadata
@@ -191,6 +215,21 @@ public class ProjectMetadata implements DBPProject {
             } else {
                 resourceProperties = new TreeMap<>();
             }
+        }
+    }
+
+    /**
+     * Validates project files structure.
+     * If project was created in older DBeaver version then converts it to newer format
+     */
+    private void checkAndUpdateProjectStructure() {
+        if (format == ProjectFormat.UNKNOWN || format == ProjectFormat.MODERN) {
+            return;
+        }
+
+        File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.CONFIG_FILE_NAME);
+        if (dsConfig.exists()) {
+
         }
     }
 

@@ -387,6 +387,13 @@ public class GeneralUtils {
         return replaceVariables(string, System::getenv);
     }
 
+    public static String replaceSystemPropertyVariables(String string) {
+        if (string == null) {
+            return null;
+        }
+        return replaceVariables(string, System::getProperty);
+    }
+
     @NotNull
     public static String variablePattern(String name) {
         return "${" + name + "}";

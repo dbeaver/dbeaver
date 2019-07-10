@@ -42,10 +42,12 @@ import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
@@ -67,14 +69,17 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
     public static final String APPLICATION_PLUGIN_ID = "org.jkiss.dbeaver.core.application";
 
-    public static final String WORKSPACE_DIR_LEGACY = ".dbeaver"; //$NON-NLS-1$
-    public static final String WORKSPACE_DIR_4 = ".dbeaver4"; //$NON-NLS-1$
+    public static final String WORKSPACE_DIR_LEGACY = "${user.home}/.dbeaver"; //$NON-NLS-1$
+    public static final String WORKSPACE_DIR_4 = "${user.home}/.dbeaver4"; //$NON-NLS-1$
     public static final String WORKSPACE_DIR_6; //$NON-NLS-1$
 
     public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
-    public static final String WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_4;
-    public static final String WORKSPACE_DIR_PREVIOUS[] = { WORKSPACE_DIR_LEGACY };
+    public static final String WORKSPACE_DIR_CURRENT;
+
+    public static final String[] WORKSPACE_DIR_PREVIOUS = {
+        WORKSPACE_DIR_4,
+        WORKSPACE_DIR_LEGACY};
 
     static final String VERSION_PROP_PRODUCT_NAME = "product-name";
     static final String VERSION_PROP_PRODUCT_VERSION = "product-version";
@@ -101,6 +106,11 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         // In some places Eclipse reads this property directly.
         //System.setProperty(StandardConstants.ENV_FILE_ENCODING, GeneralUtils.UTF8_ENCODING);
 
+        // Detect default workspace location
+        // Since 6.1.3 it is different for different OSes
+        // Windows: %AppData%/DBeaverData
+        // MacOS: ~/Library/DBeaverData
+        // Linux: $XDG_DATA_HOME/DBeaverData
         String osName = (System.getProperty("os.name")).toUpperCase();
         String workingDirectory;
         if (osName.contains("WIN")) {
@@ -121,7 +131,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         }
 
         // Workspace dir
-        WORKSPACE_DIR_6 = workingDirectory + "/workspace6";
+        WORKSPACE_DIR_6 = new File(workingDirectory, "workspace6").getAbsolutePath();
+
+        WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_6;
     }
 
     /**
@@ -292,13 +304,14 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     }
 
     private boolean setDefaultWorkspacePath(Location instanceLoc) {
-        String defaultHomePath = getDefaultWorkspaceLocation(WORKSPACE_DIR_CURRENT).getAbsolutePath();
+        String defaultHomePath = WORKSPACE_DIR_CURRENT;
         final File homeDir = new File(defaultHomePath);
         try {
-            if (!homeDir.exists()) {
+            if (!homeDir.exists() || ArrayUtils.isEmpty(homeDir.listFiles())) {
                 File previousVersionWorkspaceDir = null;
                 for (String oldDir : WORKSPACE_DIR_PREVIOUS) {
-                    final File oldWorkspaceDir = new File(getDefaultWorkspaceLocation(oldDir).getAbsolutePath());
+                    oldDir = GeneralUtils.replaceSystemPropertyVariables(oldDir);
+                    final File oldWorkspaceDir = new File(oldDir);
                     if (oldWorkspaceDir.exists() && GeneralUtils.getMetadataFolder(oldWorkspaceDir).exists()) {
                         previousVersionWorkspaceDir = oldWorkspaceDir;
                         break;
@@ -368,10 +381,10 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
     public static void writeWorkspaceInfo() {
         final File metadataFolder = GeneralUtils.getMetadataFolder();
-        Properties props = DBeaverCore.readWorkspaceInfo(metadataFolder);
+        Properties props = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
         props.setProperty(VERSION_PROP_PRODUCT_NAME, GeneralUtils.getProductName());
         props.setProperty(VERSION_PROP_PRODUCT_VERSION, GeneralUtils.getProductVersion().toString());
-        DBeaverCore.writeWorkspaceInfo(metadataFolder, props);
+        BaseWorkspaceImpl.writeWorkspaceInfo(metadataFolder, props);
     }
 
     @NotNull

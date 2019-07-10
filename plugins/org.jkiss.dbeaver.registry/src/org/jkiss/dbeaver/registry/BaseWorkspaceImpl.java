@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -89,6 +90,30 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
 
         loadExtensions(Platform.getExtensionRegistry());
         loadExternalFileProperties();
+    }
+
+    public static Properties readWorkspaceInfo(File metadataFolder) {
+        Properties props = new Properties();
+
+        File versionFile = new File(metadataFolder, DBConstants.WORKSPACE_PROPS_FILE);
+        if (versionFile.exists()) {
+            try (InputStream is = new FileInputStream(versionFile)) {
+                props.load(is);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        return props;
+    }
+
+    public static void writeWorkspaceInfo(File metadataFolder, Properties props) {
+        File versionFile = new File(metadataFolder, DBConstants.WORKSPACE_PROPS_FILE);
+
+        try (OutputStream os = new FileOutputStream(versionFile)) {
+            props.store(os, "DBeaver workspace version");
+        } catch (Exception e) {
+            log.error(e);
+        }
     }
 
     private void loadExtensions(IExtensionRegistry registry)

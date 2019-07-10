@@ -25,7 +25,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.BaseProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -55,8 +54,6 @@ class DBeaverSettingsImporter {
         "org.eclipse.ui.views.log",
         "org.eclipse.ui.workbench",
         "org.eclipse.ui.workbench.texteditor",
-        "org.jkiss.dbeaver.core",
-        "org.jkiss.dbeaver.model",
     };
 
     private final DBeaverApplication application;
@@ -76,8 +73,18 @@ class DBeaverSettingsImporter {
     }
 
     boolean migrateFromPreviousVersion(final File oldDir, final File newDir) {
-        final Properties oldProps = DBeaverCore.readWorkspaceInfo(GeneralUtils.getMetadataFolder(oldDir));
-        String oldVersion = oldProps.getProperty(DBeaverApplication.VERSION_PROP_PRODUCT_VERSION);
+
+        Properties workspaceProps = new Properties();
+        File versionFile = new File(GeneralUtils.getMetadataFolder(oldDir), DBConstants.WORKSPACE_PROPS_FILE);
+        if (versionFile.exists()) {
+            try (InputStream is = new FileInputStream(versionFile)) {
+                workspaceProps.load(is);
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
+        }
+
+        String oldVersion = workspaceProps.getProperty(DBeaverApplication.VERSION_PROP_PRODUCT_VERSION);
         if (oldVersion == null) {
             oldVersion = "3.x";
         }
@@ -85,24 +92,6 @@ class DBeaverSettingsImporter {
         driversFolder = new File(
             System.getProperty(StandardConstants.ENV_USER_HOME),
             DBConstants.DEFAULT_DRIVERS_FOLDER);
-/*
-        int msgResult = application.showMessageBox(
-            "DBeaver - Import settings",
-            "Settings of previous version (" + oldVersion + ") of " + GeneralUtils.getProductName() + " was found at\n" +
-                oldDir.getAbsolutePath() + "\n" +
-                "Do you want to import previous version settings? (Recommended).\n\n" +
-                "Make sure previous version of " + GeneralUtils.getProductName() + " isn't running",
-            SWT.ICON_QUESTION | SWT.NO | SWT.YES);
-        if (msgResult != SWT.YES) {
-            return;
-        }
-        if (!newDir.exists()) {
-            if (!newDir.mkdirs()) {
-                application.showMessageBox("Error", "Can't create workspace folder '" + newDir.getAbsolutePath() + "'", SWT.ICON_ERROR | SWT.OK);
-                return;
-            }
-        }
-*/
 
         Image dbeaverIcon = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver32.png").createImage();
         Image dbeaverLogo = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver64.png").createImage();
@@ -203,48 +192,37 @@ class DBeaverSettingsImporter {
             int filesProcessed = 0;
             @Override
             public void subTask(final String name) {
-                display.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressLabel.setText(name);
-                    }
-                });
+                display.syncExec(() -> progressLabel.setText(name));
             }
             @Override
             public void worked(final int work) {
-                display.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        filesProcessed += work;
-                        progressBar.setSelection(filesProcessed);
-                    }
+                display.syncExec(() -> {
+                    filesProcessed += work;
+                    progressBar.setSelection(filesProcessed);
                 });
             }
         };
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    if (!newDir.exists()) {
-                        if (!newDir.mkdirs()) {
-                            System.err.println("Can't create target workspace directory '" + newDir.getAbsolutePath() + "'");
-                            return;
-                        }
+        new Thread(() -> {
+            try {
+                if (!newDir.exists()) {
+                    if (!newDir.mkdirs()) {
+                        System.err.println("Can't create target workspace directory '" + newDir.getAbsolutePath() + "'");
+                        return;
                     }
-                    copyWorkspaceFiles(monitor, DIR_TYPE.WORKSPACE, oldDir, newDir);
-                } finally {
-                    DBeaverApplication.WORKSPACE_MIGRATED = true;
-                    display.syncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            showMessageBox("Import completed", "Configuration was imported to '" + newDir.getAbsolutePath() + "'", SWT.ICON_INFORMATION | SWT.OK);
-                            shellResult = SWT.OK;
-                            windowShell.dispose();
-                        }
-                    });
                 }
+                copyWorkspaceFiles(monitor, DIR_TYPE.WORKSPACE, oldDir, newDir);
+            } finally {
+                DBeaverApplication.WORKSPACE_MIGRATED = true;
+                display.syncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        showMessageBox("Import completed", "Configuration was imported to '" + newDir.getAbsolutePath() + "'", SWT.ICON_INFORMATION | SWT.OK);
+                        shellResult = SWT.OK;
+                        windowShell.dispose();
+                    }
+                });
             }
-        }.start();
+        }).start();
     }
 
     private int countWorkspaceFiles(File dir) {
@@ -281,7 +259,8 @@ class DBeaverSettingsImporter {
         for (File file : files) {
 
             DIR_TYPE dirType = DIR_TYPE.NORMAL;
-            switch (file.getName()) {
+            String fileName = file.getName();
+            switch (fileName) {
                 case ".metadata":
                     if (parentDirType == DIR_TYPE.WORKSPACE) {
                         dirType = DIR_TYPE.METADATA;
@@ -302,24 +281,24 @@ class DBeaverSettingsImporter {
             String relPath = file.getAbsolutePath().substring(oldWorkspacePath.getAbsolutePath().length());
             monitor.subTask(relPath);
             if (file.isDirectory()) {
-                if (parentDirType == DIR_TYPE.METADATA && !file.getName().equals(".plugins")) {
+                if (parentDirType == DIR_TYPE.METADATA && !fileName.equals(".plugins")) {
                     // Skip all dirs but plugins
                     skippedFiles += countWorkspaceFiles(file);
                     continue;
                 }
                 if (parentDirType == DIR_TYPE.PLUGINS) {
-                    if (!ArrayUtils.contains(COPY_PLUGINS, file.getName())) {
+                    if (!fileName.contains("dbeaver") && !ArrayUtils.contains(COPY_PLUGINS, fileName)) {
                         skippedFiles += countWorkspaceFiles(file);
                         continue;
                     }
                 }
                 if (parentDirType == DIR_TYPE.CORE) {
                     // Copy drivers in the separate location
-                    switch (file.getName()) {
+                    switch (fileName) {
                         case "drivers":
                         case "maven":
                         case "remote":
-                            File targetDir = new File(driversFolder, file.getName());
+                            File targetDir = new File(driversFolder, fileName);
                             if (!targetDir.exists()) {
                                 if (!targetDir.mkdirs()) {
                                     System.err.println("Can't create drivers folder " + targetDir.getAbsolutePath());
@@ -331,20 +310,20 @@ class DBeaverSettingsImporter {
                             continue;
                     }
                 }
-                File newDir = new File(toDir, file.getName());
+                File newDir = new File(toDir, fileName);
                 if (newDir.exists() || newDir.mkdir()) {
                     copyWorkspaceFiles(monitor, dirType, file, newDir);
                 } else {
                     System.err.println("Can't create folder " + newDir.getAbsolutePath());
                 }
             } else {
-                if (parentDirType == DIR_TYPE.METADATA && file.getName().startsWith(".")) {
+                if (parentDirType == DIR_TYPE.METADATA && fileName.startsWith(".")) {
                     // Skip ALL hidden files in .metadata
                     skippedFiles++;
                     continue;
                 }
-                File newFile = new File(toDir, file.getName());
-                if (file.getName().equals("org.jkiss.dbeaver.core.prefs")) {
+                File newFile = new File(toDir, fileName);
+                if (fileName.equals("org.jkiss.dbeaver.core.prefs")) {
                     // Patch configuration
                     Properties coreProps = new Properties();
                     try (FileInputStream is = new FileInputStream(file)) {
@@ -365,7 +344,7 @@ class DBeaverSettingsImporter {
                     } catch (IOException e) {
                         e.printStackTrace(System.err);
                     }
-                } else if (parentDirType == DIR_TYPE.CORE && file.getName().equals("drivers.xml")) {
+                } else if (parentDirType == DIR_TYPE.CORE && fileName.equals("drivers.xml")) {
                     // Patch drivers cache path
                     String driversText = null;
                     try (Reader r = new InputStreamReader(new FileInputStream(file), GeneralUtils.UTF8_CHARSET)) {
@@ -407,7 +386,7 @@ class DBeaverSettingsImporter {
         }
     }
 
-    int showMessageBox(String title, String message, int style) {
+    private int showMessageBox(String title, String message, int style) {
         // Can't lock specified path
         MessageBox messageBox = new MessageBox(windowShell, style);
         messageBox.setText(title);
