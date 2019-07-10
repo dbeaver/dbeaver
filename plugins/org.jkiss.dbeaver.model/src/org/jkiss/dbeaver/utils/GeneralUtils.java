@@ -38,6 +38,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -53,7 +54,7 @@ public class GeneralUtils {
 
     private static final Log log = Log.getLog(GeneralUtils.class);
 
-    public static final String UTF8_ENCODING = "UTF-8";
+    public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
 
     public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);

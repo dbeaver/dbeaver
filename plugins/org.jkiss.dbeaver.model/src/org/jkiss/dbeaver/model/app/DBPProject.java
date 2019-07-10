@@ -40,6 +40,9 @@ public interface DBPProject
     File getAbsolutePath();
 
     @NotNull
+    File getMetadataPath();
+
+    @NotNull
     IProject getEclipseProject();
 
     boolean isOpen();
