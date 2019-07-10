@@ -43,7 +43,7 @@ public class DBeaverWorkspace extends BaseWorkspaceImpl {
         super(platform, eclipseWorkspace);
 
         // Check workspace ID
-        Properties workspaceInfo = DBeaverCore.readWorkspaceInfo(GeneralUtils.getMetadataFolder());
+        Properties workspaceInfo = BaseWorkspaceImpl.readWorkspaceInfo(GeneralUtils.getMetadataFolder());
         workspaceId = workspaceInfo.getProperty(WORKSPACE_ID);
         if (CommonUtils.isEmpty(workspaceId)) {
             // Generate new UUID
@@ -51,7 +51,7 @@ public class DBeaverWorkspace extends BaseWorkspaceImpl {
                 Math.abs(SecurityUtils.generateRandomLong()),
                 36).toUpperCase();
             workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
-            DBeaverCore.writeWorkspaceInfo(GeneralUtils.getMetadataFolder(), workspaceInfo);
+            BaseWorkspaceImpl.writeWorkspaceInfo(GeneralUtils.getMetadataFolder(), workspaceInfo);
         }
     }
 

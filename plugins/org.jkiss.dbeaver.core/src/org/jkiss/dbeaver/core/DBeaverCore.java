@@ -525,28 +525,4 @@ public class DBeaverCore implements DBPPlatform {
         return isClosing();
     }
 
-    public static void writeWorkspaceInfo(File metadataFolder, Properties props) {
-        File versionFile = new File(metadataFolder, DBConstants.WORKSPACE_PROPS_FILE);
-
-        try (OutputStream os = new FileOutputStream(versionFile)) {
-            props.store(os, "DBeaver workspace version");
-        } catch (Exception e) {
-            log.error(e);
-        }
-    }
-
-    public static Properties readWorkspaceInfo(File metadataFolder) {
-        Properties props = new Properties();
-
-        File versionFile = new File(metadataFolder, DBConstants.WORKSPACE_PROPS_FILE);
-        if (versionFile.exists()) {
-            try (InputStream is = new FileInputStream(versionFile)) {
-                props.load(is);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-        return props;
-    }
-
 }
