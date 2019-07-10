@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Athena extension
+Bundle-Name: DBeaver Athena extension
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.athena;singleton:=true
 Bundle-Version: 1.0.18.qualifier
 Bundle-Release-Date: 20190708
