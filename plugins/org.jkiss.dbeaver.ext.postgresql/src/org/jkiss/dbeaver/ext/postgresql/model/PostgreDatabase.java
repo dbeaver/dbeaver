@@ -1021,7 +1021,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
             return session.prepareStatement(
-                "SELECT t.oid,t.* FROM pg_catalog.pg_tablespace t " +
+                "SELECT t.oid,t.*,pg_tablespace_location(t.oid) loc FROM pg_catalog.pg_tablespace t " +
                     "\nORDER BY t.oid"
             );
         }
