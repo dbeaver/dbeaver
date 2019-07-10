@@ -17,12 +17,16 @@
 
 package org.jkiss.utils;
 
+import org.jkiss.code.NotNull;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Some IO helper functions
@@ -257,5 +261,23 @@ public final class IOUtils {
             result.append(buffer, 0, count);
         }
         return result.toString();
+    }
+
+    public static void makeFileBackup(File file) throws IOException {
+        if (!file.exists()) {
+            return;
+        }
+        File backupFile = new File(file.getParent(), file.getName() + ".bak");
+        if (backupFile.exists()) {
+            Date backupTime = new Date(backupFile.lastModified());
+            if (CommonUtils.isSameDay(backupTime, new Date())) {
+                return;
+            }
+        }
+        try (FileInputStream fis = new FileInputStream(file)) {
+            try (FileOutputStream fos = new FileOutputStream(backupFile)) {
+                fastCopy(fis, fos);
+            }
+        }
     }
 }
