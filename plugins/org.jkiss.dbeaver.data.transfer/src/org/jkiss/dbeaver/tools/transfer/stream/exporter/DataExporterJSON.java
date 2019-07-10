@@ -39,6 +39,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 
@@ -100,8 +101,8 @@ public class DataExporterJSON extends StreamExporterAbstract {
         if (isJsonDocumentResults(session.getProgressMonitor(), row)) {
             DBDDocument document = (DBDDocument) row[0];
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            document.serializeDocument(session.getProgressMonitor(), buffer, GeneralUtils.DEFAULT_ENCODING);
-            String jsonText = buffer.toString(GeneralUtils.DEFAULT_ENCODING);
+            document.serializeDocument(session.getProgressMonitor(), buffer, StandardCharsets.UTF_8);
+            String jsonText = buffer.toString(StandardCharsets.UTF_8.name());
             out.write(jsonText);
         } else {
             out.write("\t{\n");

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 /**
  * Memory content storage
@@ -38,6 +39,12 @@ public class BytesContentStorage implements DBDContentStorage, DBDContentCached 
     {
         this.data = data;
         this.encoding = encoding;
+    }
+
+    public BytesContentStorage(byte[] data, Charset charset)
+    {
+        this.data = data;
+        this.encoding = charset.name();
     }
 
     @Override

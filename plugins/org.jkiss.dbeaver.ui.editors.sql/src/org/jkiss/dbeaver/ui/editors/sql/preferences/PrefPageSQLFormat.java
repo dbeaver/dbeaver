@@ -48,10 +48,10 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.format.SQLExternalFormatterConfigurationPage;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.format.SQLFormatterConfigurator;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.format.tokenized.SQLTokenizedFormatterConfigurationPage;
-import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -181,7 +182,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             };
             try {
                 try (final InputStream sqlStream = getClass().getResourceAsStream(FORMAT_FILE_NAME)) {
-                    final String sqlText = ContentUtils.readToString(sqlStream, GeneralUtils.DEFAULT_ENCODING);
+                    final String sqlText = ContentUtils.readToString(sqlStream, StandardCharsets.UTF_8);
                     IEditorSite subSite = new SubEditorSite(UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite());
                     StringEditorInput sqlInput = new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultFileEncoding());
                     sqlViewer.init(subSite, sqlInput);
@@ -316,7 +317,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     private void formatSQL() {
         try {
             try (final InputStream sqlStream = getClass().getResourceAsStream(FORMAT_FILE_NAME)) {
-                final String sqlText = ContentUtils.readToString(sqlStream, GeneralUtils.DEFAULT_ENCODING);
+                final String sqlText = ContentUtils.readToString(sqlStream, StandardCharsets.UTF_8);
                 sqlViewer.setInput(new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultFileEncoding()));
             }
         } catch (Exception e) {
