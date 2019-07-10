@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
@@ -36,6 +39,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -52,17 +56,16 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class DataSourceRegistry implements DBPDataSourceRegistry
@@ -82,8 +85,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private static PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
+    private static Gson CONFIG_GSON = new GsonBuilder()
+        .setLenient()
+        .serializeNulls()
+        .setPrettyPrinting()
+        .create();
+
     private final DBPPlatform platform;
-    private final DBPProject project;
+    private final ProjectMetadata project;
 
     private final Map<IFile, DataSourceOrigin> origins = new LinkedHashMap<>();
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
@@ -92,7 +101,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private volatile boolean saveInProgress = false;
 
-    public DataSourceRegistry(DBPPlatform platform, DBPProject project)
+    public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project)
     {
         this.platform = platform;
         this.project = project;
@@ -103,7 +112,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     /**
      * Create copy
      */
-    public DataSourceRegistry(DataSourceRegistry source, DBPProject project, boolean copyDataSources) {
+    public DataSourceRegistry(DataSourceRegistry source, ProjectMetadata project, boolean copyDataSources) {
         this.platform = source.platform;
         this.project = project;
         if (copyDataSources) {
@@ -296,7 +305,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     @Override
     public DBPDataSourceRegistry createCopy(DBPProject project, boolean copyDataSources) {
-        return new DataSourceRegistry(this, project, copyDataSources);
+        return new DataSourceRegistry(this, (ProjectMetadata) project, copyDataSources);
     }
 
     private DataSourceFolder findRootFolder(String name) {
@@ -581,59 +590,27 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void saveDataSources()
     {
         updateProjectNature();
-        final IProgressMonitor progressMonitor = new NullProgressMonitor();
+        final DBRProgressMonitor monitor = new VoidProgressMonitor();
         saveInProgress = true;
         try {
             for (DataSourceOrigin origin : origins.values()) {
                 List<DataSourceDescriptor> localDataSources = getDataSources(origin);
+
                 IFile configFile = origin.getSourceFile();
                 try {
+                    File plainConfigFile = configFile.getLocation().toFile();
+                    IOUtils.makeFileBackup(plainConfigFile);
+
                     if (localDataSources.isEmpty()) {
-                        configFile.delete(true, false, progressMonitor);
+                        configFile.delete(true, false, monitor.getNestedMonitor());
                     } else {
-                        // Save in temp memory to be safe (any error during direct write will corrupt configuration)
-                        ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
-                        try {
-                            XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
-                            xml.setButify(true);
-                            try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
-                                if (origin.isDefault()) {
-                                    // Folders (only for default origin)
-                                    for (DataSourceFolder folder : dataSourceFolders) {
-                                        saveFolder(xml, folder);
-                                    }
-                                }
-
-                                // Datasources
-                                for (DataSourceDescriptor dataSource : localDataSources) {
-                                    // Skip temporary
-                                    if (!dataSource.isTemporary()) {
-                                        saveDataSource(xml, dataSource);
-                                    }
-                                }
-
-                                // Filters
-                                if (origin.isDefault()) {
-                                    try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
-                                        for (DBSObjectFilter cf : savedFilters) {
-                                            if (!cf.isEmpty()) {
-                                                saveObjectFiler(xml, null, null, cf);
-                                            }
-                                        }
-                                    }
-                                }
-
-                            }
-                            xml.flush();
-                        } catch (IOException ex) {
-                            log.warn("IO error while saving datasources", ex);
-                        }
-                        InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
-                        if (!configFile.exists()) {
-                            configFile.create(ifs, true, progressMonitor);
-                            configFile.setHidden(true);
+                        IPath jsonFilePath = configFile.getFullPath().removeFileExtension().addFileExtension("json");
+                        IFile jsonFile = configFile.getProject().getParent().getFile(jsonFilePath);
+                        if (project.getFormat() == ProjectMetadata.ProjectFormat.MODERN) {
+                            saveDataSourcesModernFormat(monitor, origin.isDefault(), localDataSources, jsonFile);
                         } else {
-                            configFile.setContents(ifs, true, false, progressMonitor);
+                            saveDataSourcesModernFormat(monitor, origin.isDefault(), localDataSources, jsonFile);
+                            saveDataSourcesLegacyFormat(monitor, origin.isDefault(), localDataSources, configFile);
                         }
                     }
                     try {
@@ -641,12 +618,104 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     } catch (Throwable e) {
                         log.error("Error saving secured preferences", e);
                     }
-                } catch (CoreException ex) {
+                } catch (Exception ex) {
                     log.error("Error saving datasources configuration", ex);
                 }
             }
         } finally {
             saveInProgress = false;
+        }
+    }
+
+    private void saveDataSourcesModernFormat(DBRProgressMonitor monitor, boolean primaryConfig, List<DataSourceDescriptor> localDataSources, IFile configFile) throws CoreException {
+        ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+        try (OutputStreamWriter osw = new OutputStreamWriter(tempStream, StandardCharsets.UTF_8)) {
+            try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
+                jsonWriter.beginObject();
+
+                // Save folders
+                if (primaryConfig) {
+                    jsonWriter.name("folders");
+                    jsonWriter.beginArray();
+                    // Folders (only for default origin)
+                    for (DataSourceFolder folder : dataSourceFolders) {
+                        saveFolder(jsonWriter, folder);
+                    }
+                    jsonWriter.endArray();
+                }
+
+                {
+                    // Save connections
+                    jsonWriter.name("connections");
+                    jsonWriter.beginArray();
+                    for (DataSourceDescriptor dataSource : localDataSources) {
+                        // Skip temporary
+                        if (!dataSource.isTemporary()) {
+                            //saveDataSource(jsonWriter, dataSource);
+                        }
+                    }
+                    jsonWriter.endArray();
+                }
+
+                jsonWriter.endObject();
+                jsonWriter.flush();
+            }
+        } catch (IOException e) {
+            log.error("IO error while saving datasources json", e);
+        }
+        InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
+        if (!configFile.exists()) {
+            configFile.create(ifs, true, monitor.getNestedMonitor());
+            configFile.setHidden(true);
+        } else {
+            configFile.setContents(ifs, true, false, monitor.getNestedMonitor());
+        }
+    }
+
+    private void saveDataSourcesLegacyFormat(DBRProgressMonitor monitor, boolean primaryConfig, List<DataSourceDescriptor> localDataSources, IFile configFile) throws CoreException {
+        // Save in temp memory to be safe (any error during direct write will corrupt configuration)
+        ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+        try {
+            XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
+            xml.setButify(true);
+            try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
+                if (primaryConfig) {
+                    // Folders (only for default origin)
+                    for (DataSourceFolder folder : dataSourceFolders) {
+                        saveFolder(xml, folder);
+                    }
+                }
+
+                // Datasources
+                for (DataSourceDescriptor dataSource : localDataSources) {
+                    // Skip temporary
+                    if (!dataSource.isTemporary()) {
+                        saveDataSource(xml, dataSource);
+                    }
+                }
+
+                // Filters
+                if (primaryConfig) {
+                    try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
+                        for (DBSObjectFilter cf : savedFilters) {
+                            if (!cf.isEmpty()) {
+                                saveObjectFiler(xml, null, null, cf);
+                            }
+                        }
+                    }
+                }
+
+            }
+            xml.flush();
+        } catch (IOException ex) {
+            log.error("IO error while saving datasources xml", ex);
+        }
+        InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
+        if (!configFile.exists()) {
+            configFile.create(ifs, true, monitor.getNestedMonitor());
+            configFile.setHidden(true);
+        } else {
+            configFile.setContents(ifs, true, false, monitor.getNestedMonitor());
         }
     }
 
@@ -691,6 +760,25 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         } catch (Exception e) {
             log.debug(e);
         }
+    }
+
+    private void saveFolder(JsonWriter json, DataSourceFolder folder)
+        throws IOException
+    {
+        json.beginObject();
+        if (folder.getParent() != null) {
+            json.name(RegistryConstants.ATTR_PARENT);
+            json.value(folder.getParent().getFolderPath());
+        }
+
+        json.name(RegistryConstants.ATTR_NAME);
+        json.value(folder.getName());
+        if (!CommonUtils.isEmpty(folder.getDescription())) {
+            json.name(RegistryConstants.ATTR_DESCRIPTION);
+            json.value(folder.getDescription());
+        }
+
+        json.endObject();
     }
 
     private void saveFolder(XMLBuilder xml, DataSourceFolder folder)
