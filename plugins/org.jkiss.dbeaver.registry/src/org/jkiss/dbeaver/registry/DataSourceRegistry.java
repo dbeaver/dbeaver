@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -631,6 +632,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(tempStream, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
+                jsonWriter.setIndent("\t");
                 jsonWriter.beginObject();
 
                 // Save folders
@@ -651,7 +653,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     for (DataSourceDescriptor dataSource : localDataSources) {
                         // Skip temporary
                         if (!dataSource.isTemporary()) {
-                            //saveDataSource(jsonWriter, dataSource);
+                            saveDataSource(jsonWriter, dataSource);
                         }
                     }
                     jsonWriter.endArray();
@@ -662,53 +664,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         } catch (IOException e) {
             log.error("IO error while saving datasources json", e);
-        }
-        InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
-        if (!configFile.exists()) {
-            configFile.create(ifs, true, monitor.getNestedMonitor());
-            configFile.setHidden(true);
-        } else {
-            configFile.setContents(ifs, true, false, monitor.getNestedMonitor());
-        }
-    }
-
-    private void saveDataSourcesLegacyFormat(DBRProgressMonitor monitor, boolean primaryConfig, List<DataSourceDescriptor> localDataSources, IFile configFile) throws CoreException {
-        // Save in temp memory to be safe (any error during direct write will corrupt configuration)
-        ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
-        try {
-            XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
-            try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
-                if (primaryConfig) {
-                    // Folders (only for default origin)
-                    for (DataSourceFolder folder : dataSourceFolders) {
-                        saveFolder(xml, folder);
-                    }
-                }
-
-                // Datasources
-                for (DataSourceDescriptor dataSource : localDataSources) {
-                    // Skip temporary
-                    if (!dataSource.isTemporary()) {
-                        saveDataSource(xml, dataSource);
-                    }
-                }
-
-                // Filters
-                if (primaryConfig) {
-                    try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
-                        for (DBSObjectFilter cf : savedFilters) {
-                            if (!cf.isEmpty()) {
-                                saveObjectFiler(xml, null, null, cf);
-                            }
-                        }
-                    }
-                }
-
-            }
-            xml.flush();
-        } catch (IOException ex) {
-            log.error("IO error while saving datasources xml", ex);
         }
         InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
         if (!configFile.exists()) {
@@ -781,6 +736,341 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         json.endObject();
     }
 
+    @Deprecated
+    private void saveDataSource(JsonWriter json, DataSourceDescriptor dataSource)
+        throws IOException
+    {
+        json.beginObject();
+        JSONUtils.field(json, RegistryConstants.ATTR_ID, dataSource.getId());
+        JSONUtils.field(json, RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
+        JSONUtils.field(json, RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
+        JSONUtils.field(json, RegistryConstants.ATTR_NAME, dataSource.getName());
+        JSONUtils.fieldNE(json, RegistryConstants.TAG_DESCRIPTION, dataSource.getDescription());
+        JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
+
+        if (dataSource.isShowSystemObjects()) {
+            JSONUtils.field(json, RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
+        }
+        if (dataSource.isShowUtilityObjects()) {
+            JSONUtils.field(json, RegistryConstants.ATTR_SHOW_UTIL_OBJECTS, dataSource.isShowUtilityObjects());
+        }
+        JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
+
+        if (dataSource.getFolder() != null) {
+            JSONUtils.field(json, RegistryConstants.ATTR_FOLDER, dataSource.getFolder().getFolderPath());
+        }
+        final String lockPasswordHash = dataSource.getLockPasswordHash();
+        if (!CommonUtils.isEmpty(lockPasswordHash)) {
+            JSONUtils.field(json, RegistryConstants.ATTR_LOCK_PASSWORD, lockPasswordHash);
+        }
+
+        {
+            // Connection info
+            DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
+            json.name(RegistryConstants.TAG_CONNECTION);
+            json.beginObject();
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_HOST, connectionInfo.getHostName());
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_PORT, connectionInfo.getHostPort());
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_SERVER, connectionInfo.getServerName());
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_DATABASE, connectionInfo.getDatabaseName());
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_URL, connectionInfo.getUrl());
+
+            saveSecuredCredentials(json,
+                dataSource,
+                null,
+                connectionInfo.getUserName(),
+                dataSource.isSavePassword() ? connectionInfo.getUserPassword() : null);
+
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
+            if (connectionInfo.getConnectionType() != null) {
+                JSONUtils.field(json, RegistryConstants.ATTR_TYPE, connectionInfo.getConnectionType().getId());
+            }
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_COLOR, connectionInfo.getConnectionColor());
+            // Save other
+            if (connectionInfo.getKeepAliveInterval() > 0) {
+                JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
+            }
+            serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());
+            serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
+
+            // Save events
+            if (!ArrayUtils.isEmpty(connectionInfo.getDeclaredEvents())) {
+                json.name(RegistryConstants.TAG_EVENTS);
+                json.beginArray();
+                for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
+                    DBRShellCommand command = connectionInfo.getEvent(eventType);
+                    json.beginObject();
+                    JSONUtils.field(json, RegistryConstants.ATTR_TYPE, eventType.name());
+                    JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, command.isEnabled());
+                    JSONUtils.field(json, RegistryConstants.ATTR_SHOW_PANEL, command.isShowProcessPanel());
+                    JSONUtils.field(json, RegistryConstants.ATTR_WAIT_PROCESS, command.isWaitProcessFinish());
+                    if (command.isWaitProcessFinish()) {
+                        JSONUtils.field(json, RegistryConstants.ATTR_WAIT_PROCESS_TIMEOUT, command.getWaitProcessTimeoutMs());
+                    }
+                    JSONUtils.field(json, RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT, command.isTerminateAtDisconnect());
+                    JSONUtils.field(json, RegistryConstants.ATTR_PAUSE_AFTER_EXECUTE, command.getPauseAfterExecute());
+                    JSONUtils.fieldNE(json, RegistryConstants.ATTR_WORKING_DIRECTORY, command.getWorkingDirectory());
+                    JSONUtils.fieldNE(json, RegistryConstants.ATTR_COMMAND, command.getCommand());
+                    json.endObject();
+                }
+                json.endArray();
+            }
+
+            // Save network handlers' configurations
+            if (!CommonUtils.isEmpty(connectionInfo.getDeclaredHandlers())) {
+                json.name(RegistryConstants.TAG_HANDLERS);
+                json.beginArray();
+                for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
+                    json.beginObject();
+                    JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
+                    JSONUtils.field(json, RegistryConstants.ATTR_ID, CommonUtils.notEmpty(configuration.getId()));
+                    JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
+                    JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
+                    if (!CommonUtils.isEmpty(configuration.getUserName())) {
+                        saveSecuredCredentials(
+                            json,
+                            dataSource,
+                            "network/" + configuration.getId(),
+                            configuration.getUserName(),
+                            configuration.isSavePassword() ? configuration.getPassword() : null);
+                    }
+                    serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties());
+                    json.endObject();
+                }
+                json.endArray();
+            }
+/*
+            // Save bootstrap info
+            {
+                DBPConnectionBootstrap bootstrap = connectionInfo.getBootstrap();
+                if (bootstrap.hasData()) {
+                    xml.startElement(RegistryConstants.TAG_BOOTSTRAP);
+                    if (bootstrap.getDefaultAutoCommit() != null) {
+                        xml.addAttribute(RegistryConstants.ATTR_AUTOCOMMIT, bootstrap.getDefaultAutoCommit());
+                    }
+                    if (bootstrap.getDefaultTransactionIsolation() != null) {
+                        xml.addAttribute(RegistryConstants.ATTR_TXN_ISOLATION, bootstrap.getDefaultTransactionIsolation());
+                    }
+                    if (!CommonUtils.isEmpty(bootstrap.getDefaultObjectName())) {
+                        xml.addAttribute(RegistryConstants.ATTR_DEFAULT_OBJECT, bootstrap.getDefaultObjectName());
+                    }
+                    if (bootstrap.isIgnoreErrors()) {
+                        xml.addAttribute(RegistryConstants.ATTR_IGNORE_ERRORS, true);
+                    }
+                    for (String query : bootstrap.getInitQueries()) {
+                        xml.startElement(RegistryConstants.TAG_QUERY);
+                        xml.addText(query);
+                        xml.endElement();
+                    }
+                    xml.endElement();
+                }
+            }
+*/
+
+            json.endObject();
+        }
+
+        {
+            // Filters
+            Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
+            if (!CommonUtils.isEmpty(filterMappings)) {
+                json.name(RegistryConstants.TAG_FILTERS);
+                json.beginArray();
+                for (FilterMapping filter : filterMappings) {
+                    if (filter.defaultFilter != null && !filter.defaultFilter.isEmpty()) {
+                        saveObjectFiler(json, filter.typeName, null, filter.defaultFilter);
+                    }
+                    for (Map.Entry<String,DBSObjectFilter> cf : filter.customFilters.entrySet()) {
+                        if (!cf.getValue().isEmpty()) {
+                            saveObjectFiler(json, filter.typeName, cf.getKey(), cf.getValue());
+                        }
+                    }
+                }
+                json.endArray();
+            }
+        }
+
+/*
+        // Virtual model
+        if (dataSource.getVirtualModel().hasValuableData()) {
+            xml.startElement(RegistryConstants.TAG_VIRTUAL_META_DATA);
+            dataSource.getVirtualModel().serialize(xml);
+            xml.endElement();
+        }
+*/
+        // Preferences
+        {
+            // Save only properties who are differs from default values
+            SimplePreferenceStore prefStore = dataSource.getPreferenceStore();
+            Map<String, String> props = new TreeMap<>();
+            for (String propName : prefStore.preferenceNames()) {
+                String propValue = prefStore.getString(propName);
+                String defValue = prefStore.getDefaultString(propName);
+                if (propValue != null && !CommonUtils.equalObjects(propValue, defValue)) {
+                    props.put(propName, propValue);
+                }
+            }
+            if (!props.isEmpty()) {
+                serializeProperties(json, RegistryConstants.TAG_CUSTOM_PROPERTIES, props);
+            }
+        }
+
+
+        json.endObject();
+    }
+
+    private void serializeProperties(JsonWriter json, String tagName, Map<String, String> properties) throws IOException {
+        if (!CommonUtils.isEmpty(properties)) {
+            json.name(tagName);
+            json.beginObject();
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                JSONUtils.field(json, entry.getKey(), entry.getValue());
+            }
+            json.endObject();
+        }
+    }
+
+    private void saveObjectFiler(JsonWriter json, String typeName, String objectID, DBSObjectFilter filter) throws IOException
+    {
+        json.beginObject();
+        if (typeName != null) {
+            JSONUtils.field(json, RegistryConstants.ATTR_TYPE, typeName);
+        }
+        if (objectID != null) {
+            JSONUtils.field(json, RegistryConstants.ATTR_ID, objectID);
+        }
+        if (!CommonUtils.isEmpty(filter.getName())) {
+            JSONUtils.field(json, RegistryConstants.ATTR_NAME, filter.getName());
+        }
+        if (!CommonUtils.isEmpty(filter.getDescription())) {
+            JSONUtils.field(json, RegistryConstants.ATTR_DESCRIPTION, filter.getDescription());
+        }
+        if (!filter.isEnabled()) {
+            JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, false);
+        }
+        if (!CommonUtils.isEmpty(filter.getInclude())) {
+            json.name(RegistryConstants.TAG_INCLUDE);
+            json.beginArray();
+            for (String include : CommonUtils.safeCollection(filter.getInclude())) {
+                json.value(include);
+            }
+            json.endArray();
+        }
+        if (!CommonUtils.isEmpty(filter.getExclude())) {
+            json.name(RegistryConstants.TAG_EXCLUDE);
+            json.beginArray();
+            for (String exclude : CommonUtils.safeCollection(filter.getExclude())) {
+                json.value(exclude);
+            }
+            json.endArray();
+        }
+        json.endObject();
+    }
+
+    private void saveSecuredCredentials(JsonWriter json, DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
+        boolean saved = saveSecuredCredentials(dataSource, subNode, userName, password);
+        if (!saved) {
+            try {
+                if (!CommonUtils.isEmpty(userName)) {
+                    JSONUtils.field(json, RegistryConstants.ATTR_USER, CommonUtils.notEmpty(userName));
+                }
+                if (!CommonUtils.isEmpty(password)) {
+                    JSONUtils.field(json, RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(password));
+                }
+            } catch (EncryptionException e) {
+                log.error("Error encrypting password", e);
+            }
+        }
+    }
+
+    private boolean saveSecuredCredentials(DataSourceDescriptor dataSource, String subNode, String userName, String password) {
+        final DBASecureStorage secureStorage = getPlatform().getSecureStorage();
+        {
+            try {
+                ISecurePreferences prefNode = dataSource.getSecurePreferences();
+                if (!secureStorage.useSecurePreferences()) {
+                    prefNode.removeNode();
+                } else {
+                    if (subNode != null) {
+                        for (String nodeName : subNode.split("/")) {
+                            prefNode = prefNode.node(nodeName);
+                        }
+                    }
+                    prefNode.put("name", dataSource.getName(), false);
+
+                    if (!CommonUtils.isEmpty(userName)) {
+                        prefNode.put(RegistryConstants.ATTR_USER, userName, true);
+                        return true;
+                    } else {
+                        prefNode.remove(RegistryConstants.ATTR_USER);
+                    }
+                    if (!CommonUtils.isEmpty(password)) {
+                        prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
+                        return true;
+                    } else {
+                        prefNode.remove(RegistryConstants.ATTR_PASSWORD);
+                    }
+                }
+            } catch (Throwable e) {
+                log.error("Can't save password in secure storage", e);
+            }
+        }
+        return false;
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+    // Legacy datasource serialization (xml)
+
+    @Deprecated
+    private void saveDataSourcesLegacyFormat(
+        DBRProgressMonitor monitor, boolean primaryConfig, List<DataSourceDescriptor> localDataSources, IFile configFile) throws CoreException {
+        // Save in temp memory to be safe (any error during direct write will corrupt configuration)
+        ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+        try {
+            XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
+            xml.setButify(true);
+            try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
+                if (primaryConfig) {
+                    // Folders (only for default origin)
+                    for (DataSourceFolder folder : dataSourceFolders) {
+                        saveFolder(xml, folder);
+                    }
+                }
+
+                // Datasources
+                for (DataSourceDescriptor dataSource : localDataSources) {
+                    // Skip temporary
+                    if (!dataSource.isTemporary()) {
+                        saveDataSource(xml, dataSource);
+                    }
+                }
+
+                // Filters
+                if (primaryConfig) {
+                    try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
+                        for (DBSObjectFilter cf : savedFilters) {
+                            if (!cf.isEmpty()) {
+                                saveObjectFiler(xml, null, null, cf);
+                            }
+                        }
+                    }
+                }
+
+            }
+            xml.flush();
+        } catch (IOException ex) {
+            log.error("IO error while saving datasources xml", ex);
+        }
+        InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
+        if (!configFile.exists()) {
+            configFile.create(ifs, true, monitor.getNestedMonitor());
+            configFile.setHidden(true);
+        } else {
+            configFile.setContents(ifs, true, false, monitor.getNestedMonitor());
+        }
+    }
+
+    @Deprecated
     private void saveFolder(XMLBuilder xml, DataSourceFolder folder)
         throws IOException
     {
@@ -795,6 +1085,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.endElement();
     }
 
+    @Deprecated
     private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource)
         throws IOException
     {
@@ -992,39 +1283,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.endElement();
     }
 
+    @Deprecated
     private void saveSecuredCredentials(XMLBuilder xml, DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
-        boolean saved = false;
-        final DBASecureStorage secureStorage = getPlatform().getSecureStorage();
-        {
-            try {
-                ISecurePreferences prefNode = dataSource.getSecurePreferences();
-                if (!secureStorage.useSecurePreferences()) {
-                    prefNode.removeNode();
-                } else {
-                    if (subNode != null) {
-                        for (String nodeName : subNode.split("/")) {
-                            prefNode = prefNode.node(nodeName);
-                        }
-                    }
-                    prefNode.put("name", dataSource.getName(), false);
-
-                    if (!CommonUtils.isEmpty(userName)) {
-                        prefNode.put(RegistryConstants.ATTR_USER, userName, true);
-                        saved = true;
-                    } else {
-                        prefNode.remove(RegistryConstants.ATTR_USER);
-                    }
-                    if (!CommonUtils.isEmpty(password)) {
-                        prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
-                        saved = true;
-                    } else {
-                        prefNode.remove(RegistryConstants.ATTR_PASSWORD);
-                    }
-                }
-            } catch (Throwable e) {
-                log.error("Can't save password in secure storage", e);
-            }
-        }
+        boolean saved = saveSecuredCredentials(dataSource, subNode, userName, password);
         if (!saved) {
             try {
                 if (!CommonUtils.isEmpty(userName)) {
@@ -1062,6 +1323,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return encPassword;
     }
 
+    @Deprecated
     private void saveObjectFiler(XMLBuilder xml, String typeName, String objectID, DBSObjectFilter filter) throws IOException
     {
         xml.startElement(RegistryConstants.TAG_FILTER);

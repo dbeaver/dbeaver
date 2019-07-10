@@ -30,6 +30,7 @@ public class RegistryConstants {
     public static final String TAG_PROVIDER = "provider"; //$NON-NLS-1$
     public static final String TAG_PARAMETER = "parameter"; //$NON-NLS-1$
     public static final String TAG_PROPERTY = "property"; //$NON-NLS-1$
+    public static final String TAG_PROPERTIES = "properties"; //$NON-NLS-1$
     public static final String TAG_FILE = "file"; //$NON-NLS-1$
     public static final String TAG_FILE_SOURCE = "fileSource"; //$NON-NLS-1$
     public static final String TAG_LIBRARY = "library"; // [LEGACY: from DBeaver 1.1.0]  //$NON-NLS-1$
@@ -149,9 +150,13 @@ public class RegistryConstants {
 
     public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
     public static final String TAG_EVENT = "event"; //$NON-NLS-1$
+    public static final String TAG_EVENTS = "events"; //$NON-NLS-1$
+    public static final String TAG_PROVIDER_PROPERTIES = "provider-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTY = "provider-property"; //$NON-NLS-1$
     public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$
+    public static final String TAG_CUSTOM_PROPERTIES = "custom-properties"; //$NON-NLS-1$
     public static final String TAG_NETWORK_HANDLER = "network-handler"; //$NON-NLS-1$
+    public static final String TAG_HANDLERS = "handlers";
     public static final String TAG_DESCRIPTION = "description"; //$NON-NLS-1$
     public static final String TAG_CONNECTION = "connection"; //$NON-NLS-1$
     public static final String TAG_BOOTSTRAP = "bootstrap"; //$NON-NLS-1$
@@ -196,4 +201,5 @@ public class RegistryConstants {
     public static final String ATTR_LOCK_PASSWORD = "lockPassword";
     public static final String ATTR_PAUSE_AFTER_EXECUTE = "pauseAfterExecute";
     public static final String ATTR_WORKING_DIRECTORY = "workingDirectory";
+    public static final String ATTR_COMMAND = "command";
 }
