@@ -18,10 +18,12 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * DBPWorkspace
@@ -45,5 +47,11 @@ public interface DBPProject
     void ensureOpen();
 
     DBPDataSourceRegistry getDataSourceRegistry();
+
+    Object getResourceProperty(IResource resource, String propName);
+
+    Map<String, Object> getResourceProperties(IResource resource);
+
+    void setResourceProperties(IResource resource, Map<String, Object> properties);
 
 }

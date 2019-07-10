@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
@@ -27,13 +28,18 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 
 import java.io.File;
+import java.util.Map;
 
 public class ProjectMetadata implements DBPProject {
     private static final Log log = Log.getLog(ProjectMetadata.class);
 
+    public static final String METADATA_FOLDER = ".dbeaver";
+
     private final DBPWorkspace workspace;
     private final IProject project;
     private volatile DataSourceRegistry dataSourceRegistry;
+    private Map<String, Object> resourceProperties;
+    private final Object metadataSync = new Object();
 
     public ProjectMetadata(DBPWorkspace workspace, IProject project) {
         this.workspace = workspace;
@@ -90,7 +96,44 @@ public class ProjectMetadata implements DBPProject {
         return dataSourceRegistry;
     }
 
+    @Override
+    public Object getResourceProperty(IResource resource, String propName) {
+        loadMetadata();
+        Object resProps = resourceProperties.get(resource.getLocation().toString());
+        if (resProps instanceof Map) {
+            return ((Map) resProps).get(propName);
+        }
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> getResourceProperties(IResource resource) {
+        loadMetadata();
+        return (Map<String, Object>) resourceProperties.get(resource.getLocation().toString());
+    }
+
+    @Override
+    public void setResourceProperties(IResource resource, Map<String, Object> properties) {
+        flushMetadata();
+    }
+
     public void dispose() {
         dataSourceRegistry.dispose();
     }
+
+    private void loadMetadata() {
+        synchronized (metadataSync) {
+            if (resourceProperties != null) {
+                return;
+            }
+
+        }
+    }
+
+    private void flushMetadata() {
+        synchronized (metadataSync) {
+
+        }
+    }
+
 }
