@@ -267,7 +267,11 @@ public final class IOUtils {
         if (!file.exists()) {
             return;
         }
-        File backupFile = new File(file.getParent(), file.getName() + ".bak");
+        String backupFileName = file.getName() + ".bak";
+        if (!backupFileName.startsWith(".")) {
+            backupFileName = "." + backupFileName;
+        }
+        File backupFile = new File(file.getParent(), backupFileName);
         if (backupFile.exists()) {
             Date backupTime = new Date(backupFile.lastModified());
             if (CommonUtils.isSameDay(backupTime, new Date())) {

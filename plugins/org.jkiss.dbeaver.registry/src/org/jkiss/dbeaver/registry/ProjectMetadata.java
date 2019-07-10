@@ -46,7 +46,7 @@ public class ProjectMetadata implements DBPProject {
     public static final String METADATA_FOLDER = ".dbeaver";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
 
-    private enum ProjectFormat {
+    public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
         LEGACY,     // Old format (before 6.1 version
         MODERN,     // 6.1+ version
@@ -164,6 +164,10 @@ public class ProjectMetadata implements DBPProject {
         return new File(getAbsolutePath(), METADATA_FOLDER);
     }
 
+    public ProjectFormat getFormat() {
+        return format;
+    }
+
     private void loadMetadata() {
         ensureOpen();
         synchronized (metadataSync) {
@@ -272,6 +276,7 @@ public class ProjectMetadata implements DBPProject {
                             jsonWriter.endObject();
                         }
                         jsonWriter.endObject();
+                        jsonWriter.flush();
                     }
                 }
 
