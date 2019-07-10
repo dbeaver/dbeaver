@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.model.data.json;
 
+import com.google.gson.stream.JsonWriter;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -96,4 +97,38 @@ public class JSONUtils {
         }
         return result.toString();
     }
+
+    public static JsonWriter field(JsonWriter json, String name, String value) throws IOException {
+        json.name(name);
+        if (value == null) json.nullValue(); else json.value(value);
+        return json;
+    }
+
+    public static JsonWriter fieldNE(JsonWriter json, String name, String value) throws IOException {
+        if (CommonUtils.isEmpty(value)) {
+            return json;
+        }
+        json.name(name);
+        json.value(value);
+        return json;
+    }
+
+    public static JsonWriter field(JsonWriter json, String name, long value) throws IOException {
+        json.name(name);
+        json.value(value);
+        return json;
+    }
+
+    public static JsonWriter field(JsonWriter json, String name, double value) throws IOException {
+        json.name(name);
+        json.value(value);
+        return json;
+    }
+
+    public static JsonWriter field(JsonWriter json, String name, boolean value) throws IOException {
+        json.name(name);
+        json.value(value);
+        return json;
+    }
+
 }

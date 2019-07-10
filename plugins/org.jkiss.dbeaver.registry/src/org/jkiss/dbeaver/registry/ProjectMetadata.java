@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -203,6 +202,7 @@ public class ProjectMetadata implements DBPProject {
                                         propValue = jsonReader.nextString();
                                         break;
                                 }
+                                resProperties.put(propName, propValue);
                             }
                             jsonReader.endObject();
                             mdCache.put(resourceName, resProperties);
