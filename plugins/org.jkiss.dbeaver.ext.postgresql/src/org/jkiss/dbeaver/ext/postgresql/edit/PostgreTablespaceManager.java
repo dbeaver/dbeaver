@@ -18,23 +18,43 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
+import org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+
 public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace, PostgreDatabase>{
     
+    private final static Set<String> systemTablespaces = new HashSet<>(Arrays.asList("pg_default", "pg_global"));
+    
+    @Override
+    public void deleteObject(DBECommandContext commandContext, PostgreTablespace object, Map<String, Object> options)
+            throws DBException {
+         if (systemTablespaces.contains(object.getName().toLowerCase())) {
+             MessageDialog.openInformation(null, "Drop tablespace",
+                     String.format("Unable to drop system tablespace %s", object.getName()));
+  
+         } else { 
+           super.deleteObject(commandContext, object, options);
+         }
+    }
+
     private static final Log log = Log.getLog(PostgreTablespaceManager.class);
     
     @Override
@@ -62,7 +82,7 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
 
         try {
             actions.add(
-                new SQLDatabasePersistAction("Create tablespace",tablespace.getObjectDefinitionText(monitor, options)) //$NON-NLS-2$
+                new SQLDatabasePersistActionAtomic("Create tablespace",tablespace.getObjectDefinitionText(monitor, options)) //$NON-NLS-2$
             );
         } catch (DBException e) {
            log.error(e);
@@ -74,11 +94,12 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
             SQLObjectEditor<PostgreTablespace, PostgreDatabase>.ObjectDeleteCommand command,
             Map<String, Object> options) {
         
+
+                actions.add(
+                        new SQLDatabasePersistActionAtomic("Drop tablespace", "DROP TABLESPACE " + command.getObject().getName()) //$NON-NLS-2$
+                    );
         
-        actions.add(
-                new SQLDatabasePersistAction("Drop tablespace", "DROP TABLESPACE " + command.getObject().getName()) //$NON-NLS-2$
-            );
-    }
+     }
 
     @Override
     public boolean canCreateObject(Object container) {
