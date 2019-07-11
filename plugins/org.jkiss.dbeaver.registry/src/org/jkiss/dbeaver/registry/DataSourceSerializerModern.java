@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
@@ -40,10 +41,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 class DataSourceSerializerModern implements DataSourceSerializer
 {
@@ -75,25 +73,53 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 // Save folders
                 if (primaryConfig) {
                     jsonWriter.name("folders");
-                    jsonWriter.beginArray();
+                    jsonWriter.beginObject();
                     // Folders (only for default origin)
                     for (DataSourceFolder folder : dataSourceFolders) {
                         saveFolder(jsonWriter, folder);
                     }
-                    jsonWriter.endArray();
+                    jsonWriter.endObject();
                 }
 
+                Map<String, DBVModel> virtualModels = new LinkedHashMap<>();
                 {
                     // Save connections
                     jsonWriter.name("connections");
-                    jsonWriter.beginArray();
+                    jsonWriter.beginObject();
                     for (DataSourceDescriptor dataSource : localDataSources) {
                         // Skip temporary
                         if (!dataSource.isTemporary()) {
                             saveDataSource(jsonWriter, dataSource);
+                            if (dataSource.getVirtualModel().hasValuableData()) {
+                                virtualModels.put(dataSource.getVirtualModel().getId(), dataSource.getVirtualModel());
+                            }
                         }
                     }
-                    jsonWriter.endArray();
+                    jsonWriter.endObject();
+                }
+
+                if (primaryConfig) {
+                    if (!virtualModels.isEmpty()) {
+                        // Save virtual models
+                        jsonWriter.name("virtual-models");
+                        jsonWriter.beginObject();
+                        for (DBVModel model : virtualModels.values()) {
+                            model.serialize(jsonWriter);
+                        }
+                        jsonWriter.endObject();
+                    }
+
+                    // Filters
+                    if (!CommonUtils.isEmpty(savedFilters)) {
+                        jsonWriter.name("saved-filters");
+                        jsonWriter.beginArray();
+                        for (DBSObjectFilter cf : savedFilters) {
+                            if (!cf.isEmpty()) {
+                                saveObjectFiler(jsonWriter, null, null, cf);
+                            }
+                        }
+                        jsonWriter.endArray();
+                    }
                 }
 
                 jsonWriter.endObject();
@@ -119,18 +145,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static void saveFolder(JsonWriter json, DataSourceFolder folder)
         throws IOException
     {
+        json.name(folder.getName());
+
         json.beginObject();
         if (folder.getParent() != null) {
-            json.name(RegistryConstants.ATTR_PARENT);
-            json.value(folder.getParent().getFolderPath());
+            JSONUtils.field(json, RegistryConstants.ATTR_PARENT, folder.getParent().getFolderPath());
         }
-
-        json.name(RegistryConstants.ATTR_NAME);
-        json.value(folder.getName());
-        if (!CommonUtils.isEmpty(folder.getDescription())) {
-            json.name(RegistryConstants.ATTR_DESCRIPTION);
-            json.value(folder.getDescription());
-        }
+        JSONUtils.fieldNE(json, RegistryConstants.ATTR_DESCRIPTION, folder.getDescription());
 
         json.endObject();
     }
@@ -138,8 +159,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
     static void saveDataSource(JsonWriter json, DataSourceDescriptor dataSource)
         throws IOException
     {
+        json.name(dataSource.getId());
         json.beginObject();
-        JSONUtils.field(json, RegistryConstants.ATTR_ID, dataSource.getId());
         JSONUtils.field(json, RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
         JSONUtils.field(json, RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
         JSONUtils.field(json, RegistryConstants.ATTR_NAME, dataSource.getName());
@@ -161,11 +182,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!CommonUtils.isEmpty(lockPasswordHash)) {
             JSONUtils.field(json, RegistryConstants.ATTR_LOCK_PASSWORD, lockPasswordHash);
         }
+        if (dataSource.hasSharedVirtualModel()) {
+            JSONUtils.field(json, "virtual-model-id", dataSource.getVirtualModel().getId());
+        }
 
         {
             // Connection info
             DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-            json.name(RegistryConstants.TAG_CONNECTION);
+            json.name("configuration");
             json.beginObject();
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_HOST, connectionInfo.getHostName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_PORT, connectionInfo.getHostPort());
@@ -188,8 +212,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
             if (connectionInfo.getKeepAliveInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
             }
-            serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());
-            serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
+            JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());
+            JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
 
             // Save events
             if (!ArrayUtils.isEmpty(connectionInfo.getDeclaredEvents())) {
@@ -217,11 +241,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
             // Save network handlers' configurations
             if (!CommonUtils.isEmpty(connectionInfo.getDeclaredHandlers())) {
                 json.name(RegistryConstants.TAG_HANDLERS);
-                json.beginArray();
+                json.beginObject();
                 for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
+                    json.name(CommonUtils.notEmpty(configuration.getId()));
                     json.beginObject();
                     JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
-                    JSONUtils.field(json, RegistryConstants.ATTR_ID, CommonUtils.notEmpty(configuration.getId()));
                     JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
                     JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
                     if (!CommonUtils.isEmpty(configuration.getUserName())) {
@@ -232,10 +256,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             configuration.getUserName(),
                             configuration.isSavePassword() ? configuration.getPassword() : null);
                     }
-                    serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties());
+                    JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties());
                     json.endObject();
                 }
-                json.endArray();
+                json.endObject();
             }
 
             // Save bootstrap info
@@ -254,7 +278,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     if (bootstrap.isIgnoreErrors()) {
                         JSONUtils.field(json, RegistryConstants.ATTR_IGNORE_ERRORS, true);
                     }
-                    serializeList(json, RegistryConstants.TAG_QUERY, bootstrap.getInitQueries());
+                    JSONUtils.serializeStringList(json, RegistryConstants.TAG_QUERY, bootstrap.getInitQueries());
                     json.endObject();
                 }
             }
@@ -282,14 +306,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
         }
 
-/*
-        // Virtual model
-        if (dataSource.getVirtualModel().hasValuableData()) {
-            xml.startElement(RegistryConstants.TAG_VIRTUAL_META_DATA);
-            dataSource.getVirtualModel().serialize(xml);
-            xml.endElement();
-        }
-*/
         // Preferences
         {
             // Save only properties who are differs from default values
@@ -303,57 +319,28 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
             }
             if (!props.isEmpty()) {
-                serializeProperties(json, RegistryConstants.TAG_CUSTOM_PROPERTIES, props);
+                JSONUtils.serializeProperties(json, RegistryConstants.TAG_CUSTOM_PROPERTIES, props);
             }
         }
 
 
         json.endObject();
-    }
-
-    private static void serializeProperties(JsonWriter json, String tagName, Map<String, String> properties) throws IOException {
-        if (!CommonUtils.isEmpty(properties)) {
-            json.name(tagName);
-            json.beginObject();
-            for (Map.Entry<String, String> entry : properties.entrySet()) {
-                JSONUtils.field(json, entry.getKey(), entry.getValue());
-            }
-            json.endObject();
-        }
     }
 
     private static void saveObjectFiler(JsonWriter json, String typeName, String objectID, DBSObjectFilter filter) throws IOException
     {
         json.beginObject();
-        if (typeName != null) {
-            JSONUtils.field(json, RegistryConstants.ATTR_TYPE, typeName);
-        }
-        if (objectID != null) {
-            JSONUtils.field(json, RegistryConstants.ATTR_ID, objectID);
-        }
-        if (!CommonUtils.isEmpty(filter.getName())) {
-            JSONUtils.field(json, RegistryConstants.ATTR_NAME, filter.getName());
-        }
-        if (!CommonUtils.isEmpty(filter.getDescription())) {
-            JSONUtils.field(json, RegistryConstants.ATTR_DESCRIPTION, filter.getDescription());
-        }
+        JSONUtils.fieldNE(json, RegistryConstants.ATTR_ID, objectID);
+        JSONUtils.fieldNE(json, RegistryConstants.ATTR_TYPE, typeName);
+        JSONUtils.fieldNE(json, RegistryConstants.ATTR_NAME, filter.getName());
+        JSONUtils.fieldNE(json, RegistryConstants.ATTR_DESCRIPTION, filter.getDescription());
+
         if (!filter.isEnabled()) {
             JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, false);
         }
-        serializeList(json, RegistryConstants.TAG_INCLUDE, filter.getInclude());
-        serializeList(json, RegistryConstants.TAG_EXCLUDE, filter.getExclude());
+        JSONUtils.serializeStringList(json, RegistryConstants.TAG_INCLUDE, filter.getInclude());
+        JSONUtils.serializeStringList(json, RegistryConstants.TAG_EXCLUDE, filter.getExclude());
         json.endObject();
-    }
-
-    private static void serializeList(JsonWriter json, String tagName, List<String> list) throws IOException {
-        if (!CommonUtils.isEmpty(list)) {
-            json.name(tagName);
-            json.beginArray();
-            for (String include : CommonUtils.safeCollection(list)) {
-                json.value(include);
-            }
-            json.endArray();
-        }
     }
 
     private static void saveSecuredCredentials(JsonWriter json, DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
