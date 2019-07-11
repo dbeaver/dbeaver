@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptorSerializerLegacy;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -281,7 +282,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         if (driversConfig.exists()) {
             try {
                 try (InputStream is = new FileInputStream(driversConfig)) {
-                    new SAXReader(is).parse(new DriverDescriptor.DriversParser());
+                    new SAXReader(is).parse(new DriverDescriptorSerializerLegacy.DriversParser());
                 } catch (XMLException ex) {
                     log.warn("Drivers config parse error", ex);
                 }

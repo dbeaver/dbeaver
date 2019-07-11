@@ -23,9 +23,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -33,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
@@ -82,6 +81,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
 
                 Map<String, DBVModel> virtualModels = new LinkedHashMap<>();
+                Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
+                Map<String, Map<String, DBPDriver>> drivers = new LinkedHashMap<>();
                 {
                     // Save connections
                     jsonWriter.name("connections");
@@ -92,6 +93,15 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             saveDataSource(jsonWriter, dataSource);
                             if (dataSource.getVirtualModel().hasValuableData()) {
                                 virtualModels.put(dataSource.getVirtualModel().getId(), dataSource.getVirtualModel());
+                            }
+                            DBPConnectionType connectionType = dataSource.getConnectionConfiguration().getConnectionType();
+                            if (!connectionType.isPredefined()) {
+                                connectionTypes.put(connectionType.getId(), connectionType);
+                            }
+                            DriverDescriptor driver = dataSource.getDriver();
+                            if (driver.isCustom()) {
+                                Map<String, DBPDriver> driverMap = drivers.computeIfAbsent(driver.getProviderId(), s -> new LinkedHashMap<>());
+                                driverMap.put(driver.getId(), driver);
                             }
                         }
                     }
@@ -119,6 +129,38 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             }
                         }
                         jsonWriter.endArray();
+                    }
+                    // Connection types
+                    if (!CommonUtils.isEmpty(connectionTypes)) {
+                        jsonWriter.name("connection-types");
+                        jsonWriter.beginObject();
+                        for (DBPConnectionType ct : connectionTypes.values()) {
+                            jsonWriter.name(ct.getId());
+                            jsonWriter.beginObject();
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, ct.getName());
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_COLOR, ct.getColor());
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, ct.getDescription());
+                            JSONUtils.field(jsonWriter, "auto-commit", ct.isAutocommit());
+                            JSONUtils.field(jsonWriter, "confirm-execute", ct.isConfirmExecute());
+                            JSONUtils.field(jsonWriter, "confirm-data-change", ct.isConfirmDataChange());
+                            jsonWriter.endObject();
+                        }
+                        jsonWriter.endObject();
+                    }
+
+                    // Drivers
+                    if (!CommonUtils.isEmpty(drivers)) {
+                        jsonWriter.name("drivers");
+                        jsonWriter.beginObject();
+                        for (Map.Entry<String, Map<String, DBPDriver>> dmap : drivers.entrySet()) {
+                            jsonWriter.name(dmap.getKey());
+                            jsonWriter.beginObject();
+                            for (DBPDriver driver : dmap.getValue().values()) {
+                                ((DriverDescriptor) driver).serialize(jsonWriter, true);
+                            }
+                            jsonWriter.endObject();
+                        }
+                        jsonWriter.endObject();
                     }
                 }
 
