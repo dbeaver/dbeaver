@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -40,10 +41,10 @@ public interface DBPProject
     File getAbsolutePath();
 
     @NotNull
-    File getMetadataPath();
+    IProject getEclipseProject();
 
     @NotNull
-    IProject getEclipseProject();
+    IFolder getMetadataFolder();
 
     boolean isOpen();
 

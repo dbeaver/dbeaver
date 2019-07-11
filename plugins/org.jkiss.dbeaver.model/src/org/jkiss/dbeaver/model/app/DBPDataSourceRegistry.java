@@ -35,7 +35,10 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     String CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
     String CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
-    String CONFIG_FILE_NAME = CONFIG_FILE_PREFIX + CONFIG_FILE_EXT;
+    String CONFIG_FILE_JSON = ".json"; //$NON-NLS-1$
+
+    String LEGACY_CONFIG_FILE_NAME = CONFIG_FILE_PREFIX + CONFIG_FILE_EXT;
+    String MODERN_CONFIG_FILE_NAME = CONFIG_FILE_PREFIX  + CONFIG_FILE_JSON;
 
     @NotNull
     DBPPlatform getPlatform();
