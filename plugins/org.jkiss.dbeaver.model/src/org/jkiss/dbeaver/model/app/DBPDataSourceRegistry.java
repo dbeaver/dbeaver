@@ -33,12 +33,13 @@ import java.util.List;
  */
 public interface DBPDataSourceRegistry extends DBPObject {
 
-    String CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
-    String CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
-    String CONFIG_FILE_JSON = ".json"; //$NON-NLS-1$
+    String LEGACY_CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
+    String LEGACY_CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
+    String LEGACY_CONFIG_FILE_NAME = LEGACY_CONFIG_FILE_PREFIX + LEGACY_CONFIG_FILE_EXT;
 
-    String LEGACY_CONFIG_FILE_NAME = CONFIG_FILE_PREFIX + CONFIG_FILE_EXT;
-    String MODERN_CONFIG_FILE_NAME = "data-sources.json";
+    String MODERN_CONFIG_FILE_PREFIX = "data-sources"; //$NON-NLS-1$
+    String MODERN_CONFIG_FILE_EXT = ".json"; //$NON-NLS-1$
+    String MODERN_CONFIG_FILE_NAME = MODERN_CONFIG_FILE_PREFIX + MODERN_CONFIG_FILE_EXT;
 
     @NotNull
     DBPPlatform getPlatform();

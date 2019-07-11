@@ -16,12 +16,17 @@
  */
 package org.jkiss.dbeaver.model.data.json;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -97,13 +102,15 @@ public class JSONUtils {
         return result.toString();
     }
 
-    public static JsonWriter field(JsonWriter json, String name, String value) throws IOException {
+    @NotNull
+    public static JsonWriter field(@NotNull JsonWriter json, @NotNull String name, @Nullable String value) throws IOException {
         json.name(name);
         if (value == null) json.nullValue(); else json.value(value);
         return json;
     }
 
-    public static JsonWriter fieldNE(JsonWriter json, String name, String value) throws IOException {
+    @NotNull
+    public static JsonWriter fieldNE(@NotNull JsonWriter json, @NotNull String name, @Nullable String value) throws IOException {
         if (CommonUtils.isEmpty(value)) {
             return json;
         }
@@ -112,25 +119,28 @@ public class JSONUtils {
         return json;
     }
 
-    public static JsonWriter field(JsonWriter json, String name, long value) throws IOException {
+    @NotNull
+    public static JsonWriter field(@NotNull JsonWriter json, @NotNull String name, long value) throws IOException {
         json.name(name);
         json.value(value);
         return json;
     }
 
-    public static JsonWriter field(JsonWriter json, String name, double value) throws IOException {
+    @NotNull
+    public static JsonWriter field(@NotNull JsonWriter json, @NotNull String name, double value) throws IOException {
         json.name(name);
         json.value(value);
         return json;
     }
 
-    public static JsonWriter field(JsonWriter json, String name, boolean value) throws IOException {
+    @NotNull
+    public static JsonWriter field(@NotNull JsonWriter json, @NotNull String name, boolean value) throws IOException {
         json.name(name);
         json.value(value);
         return json;
     }
 
-    public static void serializeStringList(JsonWriter json, String tagName, Collection<String> list) throws IOException {
+    public static void serializeStringList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<String> list) throws IOException {
         if (!CommonUtils.isEmpty(list)) {
             json.name(tagName);
             json.beginArray();
@@ -141,7 +151,7 @@ public class JSONUtils {
         }
     }
 
-    public static void serializeObjectList(JsonWriter json, String tagName, Collection<Object> list) throws IOException {
+    public static void serializeObjectList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<Object> list) throws IOException {
         if (!CommonUtils.isEmpty(list)) {
             json.name(tagName);
             json.beginArray();
@@ -160,7 +170,7 @@ public class JSONUtils {
         }
     }
 
-    public static void serializeProperties(JsonWriter json, String tagName, Map<String, String> properties) throws IOException {
+    public static void serializeProperties(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Map<String, String> properties) throws IOException {
         if (!CommonUtils.isEmpty(properties)) {
             json.name(tagName);
             json.beginObject();
@@ -169,5 +179,38 @@ public class JSONUtils {
             }
             json.endObject();
         }
+    }
+
+    @NotNull
+    public static Map<String, Object> parseMap(@NotNull Gson gson, @NotNull Reader reader) {
+        return gson.fromJson(reader, new TypeToken<Map<String, Object>>(){}.getType());
+    }
+
+    @NotNull
+    public static Map<String, Object> getObject(@NotNull Map<String, Object> map, @NotNull String name) {
+        Map<String, Object> object = (Map<String, Object>) map.get(name);
+        if (object == null) {
+            return Collections.emptyMap();
+        } else {
+            return object;
+        }
+    }
+
+    @NotNull
+    public static Iterable<Map.Entry<String, Object>> getObjectElements(@NotNull Map<String, Object> map, @NotNull String name) {
+        Map<String, Object> object = (Map<String, Object>) map.get(name);
+        if (object == null) {
+            return Collections.emptyList();
+        } else {
+            return object.entrySet();
+        }
+    }
+
+    public static <T> T getObjectProperty(Object object, String name) {
+        if (object instanceof Map) {
+            return (T) ((Map) object).get(name);
+        }
+        log.error("Object " + object + " is not map");
+        return null;
     }
 }

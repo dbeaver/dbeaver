@@ -172,7 +172,7 @@ public class DBNProject extends DBNResource {
     @Override
     protected void handleChildResourceChange(IResourceDelta delta) {
         final String name = delta.getResource().getName();
-        if (name.startsWith(DBPDataSourceRegistry.CONFIG_FILE_PREFIX) && name.endsWith(DBPDataSourceRegistry.CONFIG_FILE_EXT)) {
+        if (name.startsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_PREFIX) && name.endsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_EXT)) {
             // DS registry configuration changed
             getDatabases().getDataSourceRegistry().refreshConfig();
         } else {

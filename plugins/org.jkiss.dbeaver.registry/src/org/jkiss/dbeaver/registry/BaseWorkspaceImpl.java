@@ -276,7 +276,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
             // Skip not accessible hidden and phantom resources
             return null;
         }
-        if (resource.getParent() instanceof IProject && resource.getName().startsWith(DataSourceRegistry.CONFIG_FILE_PREFIX)) {
+        if (resource.getParent() instanceof IProject && resource.getName().startsWith(DataSourceRegistry.LEGACY_CONFIG_FILE_PREFIX)) {
             // Skip connections settings file
             // TODO: remove in some older version
             return null;
