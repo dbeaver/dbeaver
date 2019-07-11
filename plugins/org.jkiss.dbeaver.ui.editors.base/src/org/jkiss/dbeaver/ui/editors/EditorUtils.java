@@ -114,7 +114,8 @@ public class EditorUtils {
         if (element instanceof IEditorInput) {
             IFile file = getFileFromInput((IEditorInput) element);
             if (file != null) {
-                return file.getLocation().toFile();
+                IPath location = file.getLocation();
+                return location == null ? null : location.toFile();
             }
             if (element instanceof IURIEditorInput) {
                 final File localFile = new File(((IURIEditorInput) element).getURI());
