@@ -35,7 +35,6 @@ import java.util.List;
 class DBVModelSerializerModern implements DBVModelSerializer
 {
     private static final Log log = Log.getLog(DBVModelSerializerModern.class);
-    private static final String ENTITY_PREFIX = ":";
 
     static void serializeContainer(JsonWriter json, DBVContainer object) throws IOException {
         if (!object.hasValuableData()) {
@@ -65,7 +64,7 @@ class DBVModelSerializerModern implements DBVModelSerializer
 
     private static void serializeEntity(JsonWriter json, DBVEntity entity) throws IOException {
 
-        json.name(ENTITY_PREFIX + entity.getName());
+        json.name(DBVContainer.ENTITY_PREFIX + entity.getName());
 
         json.beginObject();
         JSONUtils.fieldNE(json, ATTR_DESCRIPTION, entity.getDescriptionColumnNames());

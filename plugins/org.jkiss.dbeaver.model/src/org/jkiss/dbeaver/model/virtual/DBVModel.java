@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.virtual;
 
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -30,6 +31,7 @@ import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Virtual database model
@@ -38,6 +40,11 @@ public class DBVModel extends DBVContainer {
 
     private DBPDataSourceContainer dataSourceContainer;
     private String id;
+
+    public DBVModel(String id, Map<String, Object> map) {
+        super(null, id, map);
+        this.id = id;
+    }
 
     public DBVModel(@NotNull DBPDataSourceContainer dataSourceContainer) {
         super(null, "model");
@@ -70,7 +77,7 @@ public class DBVModel extends DBVContainer {
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPDataSource getDataSource() {
         return dataSourceContainer.getDataSource();

@@ -94,6 +94,12 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
     }
 
+    DBVEntity(DBVContainer container, String name, Map<String, Object> map) {
+        this.container = container;
+        this.name = name;
+        this.descriptionColumnNames = (String) map.get("description");
+    }
+
     @Nullable
     public DBSEntity getRealEntity(DBRProgressMonitor monitor) throws DBException
     {

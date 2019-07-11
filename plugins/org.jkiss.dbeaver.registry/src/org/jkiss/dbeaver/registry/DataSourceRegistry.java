@@ -23,7 +23,6 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.*;
@@ -43,7 +42,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -494,16 +492,30 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
         // Clear filters before reload
         savedFilters.clear();
+
         // Parse datasources
         ParseResults parseResults = new ParseResults();
         try {
-            for (IResource res : project.getEclipseProject().members(IContainer.INCLUDE_HIDDEN)) {
-                if (res instanceof IFile) {
-                    IFile file = (IFile) res;
-                    if (res.getName().startsWith(CONFIG_FILE_PREFIX) && res.getName().endsWith(CONFIG_FILE_EXT)) {
-                        if (file.exists()) {
+            // Modern way - search json configs in metadata folder
+            boolean modernFormat = false;
+            for (IResource res : project.getMetadataFolder().members(IContainer.INCLUDE_HIDDEN)) {
+                if (res instanceof IFile && res.exists() &&
+                    res.getName().startsWith(MODERN_CONFIG_FILE_PREFIX) && res.getName().endsWith(MODERN_CONFIG_FILE_EXT))
+                {
+                    loadDataSources((IFile)res, refresh, true, parseResults);
+                    modernFormat = true;
+                }
+            }
+            if (!modernFormat) {
+                // Logacy way (search config.xml in project folder)
+                for (IResource res : project.getEclipseProject().members(IContainer.INCLUDE_HIDDEN)) {
+                    if (res instanceof IFile) {
+                        IFile file = (IFile) res;
+                        if (res.getName().startsWith(LEGACY_CONFIG_FILE_PREFIX) && res.getName().endsWith(LEGACY_CONFIG_FILE_EXT)) {
                             if (file.exists()) {
-                                loadDataSources(file, refresh, parseResults);
+                                if (file.exists()) {
+                                    loadDataSources(file, refresh, false, parseResults);
+                                }
                             }
                         }
                     }
@@ -536,8 +548,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    private void loadDataSources(IFile fromFile, boolean refresh, ParseResults parseResults) {
-        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(LEGACY_CONFIG_FILE_NAME);
+    private void loadDataSources(IFile fromFile, boolean refresh, boolean modern, ParseResults parseResults) {
+        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(modern ? MODERN_CONFIG_FILE_NAME : LEGACY_CONFIG_FILE_NAME);
         DataSourceOrigin origin;
         synchronized (origins) {
             origin = origins.get(fromFile);
@@ -550,16 +562,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             return;
         }
         try (InputStream is = fromFile.getContents(true)) {
-            loadDataSources(is, origin, refresh, parseResults);
+            DataSourceSerializer serializer = modern ? new DataSourceSerializerModern() : new DataSourceSerializerLegacy();
+            serializer.parseDataSources(this, is, origin, refresh, parseResults);
+            updateProjectNature();
         } catch (Exception ex) {
             log.error("Error loading datasource config from " + fromFile.getFullPath(), ex);
         }
-    }
-
-    private void loadDataSources(InputStream is, DataSourceOrigin origin, boolean refresh, ParseResults parseResults)
-        throws DBException, IOException {
-        new DataSourceSerializerLegacy().parseDataSources(this, is, origin, refresh, parseResults);
-        updateProjectNature();
     }
 
     private void saveDataSources() {

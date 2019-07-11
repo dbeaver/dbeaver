@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.registry;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.userstorage.internal.util.JSONUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.*;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
@@ -181,7 +184,53 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     @Override
     public void parseDataSources(DataSourceRegistry registry, InputStream is, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) throws DBException, IOException {
-        throw new DBException("Not implemented yet");
+        try (Reader configReader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+            Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
+
+            // Folders
+            for (Map.Entry<String, Object> folderMap : JSONUtils.getObjectElements(jsonMap, "folders")) {
+                String name = folderMap.getKey();
+                String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
+                String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
+                DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true);
+                DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true) : parent.getChild(name);
+                if (folder == null) {
+                    folder = new DataSourceFolder(registry, parent, name, description);
+                    registry.addDataSourceFolder(folder);
+                } else {
+                    folder.setDescription(description);
+                }
+            }
+
+            // Connection types
+            for (Map.Entry<String, Object> ctMap : JSONUtils.getObjectElements(jsonMap, "connection-types")) {
+                String id = ctMap.getKey();
+                String name = JSONUtils.getObjectProperty(ctMap.getValue(), RegistryConstants.ATTR_NAME);
+                String description = JSONUtils.getObjectProperty(ctMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
+                String color = JSONUtils.getObjectProperty(ctMap.getValue(), RegistryConstants.ATTR_COLOR);
+                Boolean autoCommit = JSONUtils.getObjectProperty(ctMap.getValue(), "auto-commit");
+                Boolean confirmExecute = JSONUtils.getObjectProperty(ctMap.getValue(), "confirm-execute");
+                Boolean confirmDataChange = JSONUtils.getObjectProperty(ctMap.getValue(), "confirm-data-change");
+                DBPConnectionType ct = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(id, null);
+                if (ct == null) {
+                    ct = new DBPConnectionType(id, name, color, description, CommonUtils.toBoolean(autoCommit), CommonUtils.toBoolean(confirmExecute), CommonUtils.toBoolean(confirmDataChange));
+                    DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
+                }
+            }
+
+            // Drivers
+
+            // Virtual models
+            Map<String, DBVModel> modelMap = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> vmMap : JSONUtils.getObjectElements(jsonMap, "virtual-models")) {
+                String id = vmMap.getKey();
+                DBVModel model = new DBVModel(id, (Map<String, Object>)vmMap.getValue());
+                modelMap.put(id, model);
+            }
+
+            // Connections
+        }
+
     }
 
     private static void saveFolder(JsonWriter json, DataSourceFolder folder)
