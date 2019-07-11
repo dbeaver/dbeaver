@@ -76,6 +76,7 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType"/>
+             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>
         </editor>
         <editor id="postgresql.source.ddl" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor"
                 label="%db.editor.ddl.name" description="%db.editor.ddl.description" icon="#sql_text" position="additions_middle"
@@ -117,6 +118,10 @@
         <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreExtensionConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
         </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTablespaceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>
+        </configurator>
+        
         
     </extension>
 

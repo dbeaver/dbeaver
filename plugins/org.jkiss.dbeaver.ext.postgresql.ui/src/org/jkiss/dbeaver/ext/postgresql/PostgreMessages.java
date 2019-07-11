@@ -178,6 +178,14 @@ public class PostgreMessages extends NLS {
 	public static String postgre_foreign_key_manager_checkbox_deferred;
 	public static String postgre_foreign_key_manager_header_edit_foreign_key;
 
+	/* Tablespaces */
+    public static String dialog_create_tablespace_title;
+    public static String dialog_create_tablespace_database;
+    public static String dialog_create_tablespace_name;
+    public static String dialog_create_tablespace_owner;
+    public static String dialog_create_tablespace_loc;
+    public static String dialog_create_tablespace_options;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, PostgreMessages.class);

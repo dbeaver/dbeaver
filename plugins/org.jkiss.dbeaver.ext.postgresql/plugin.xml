@@ -444,7 +444,8 @@
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
-        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreExtensionManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>        
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreExtensionManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTablespaceManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>           
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
