@@ -74,6 +74,14 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
             }
         }
 
+        projectListener = new ProjectListener();
+        eclipseWorkspace.addResourceChangeListener(projectListener);
+
+        loadExtensions(Platform.getExtensionRegistry());
+        loadExternalFileProperties();
+    }
+
+    public void initializeProjects() {
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
             try {
                 createDefaultProject(new NullProgressMonitor());
@@ -84,12 +92,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
                 log.error("Can't create default project", e);
             }
         }
-
-        projectListener = new ProjectListener();
-        eclipseWorkspace.addResourceChangeListener(projectListener);
-
-        loadExtensions(Platform.getExtensionRegistry());
-        loadExternalFileProperties();
     }
 
     public static Properties readWorkspaceInfo(File metadataFolder) {

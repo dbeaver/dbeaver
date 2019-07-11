@@ -29,10 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -489,7 +486,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public static List<DBPDataSourceContainer> getAllDataSources() {
         List<DBPDataSourceContainer> result = new ArrayList<>();
-        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        for (DBPProject project : workspace.getProjects()) {
             if (project.isOpen()) {
                 DBPDataSourceRegistry registry = project.getDataSourceRegistry();
                 if (registry != null) {
