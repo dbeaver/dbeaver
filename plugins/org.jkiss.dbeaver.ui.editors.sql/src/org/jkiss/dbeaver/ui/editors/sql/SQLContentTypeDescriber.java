@@ -17,25 +17,10 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.internal.content.TextContentDescriber;
-import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.core.runtime.content.IContentDescriber;
-import org.eclipse.core.runtime.content.IContentDescription;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * SQL content type describer
  */
 public class SQLContentTypeDescriber extends TextContentDescriber {
 
-    @Override
-    public QualifiedName[] getSupportedOptions()
-    {
-        return new QualifiedName[] {
-            IContentDescription.BYTE_ORDER_MARK,
-            IContentDescription.CHARSET,
-            EditorUtils.QN_DATA_SOURCE_ID};
-    }
 }

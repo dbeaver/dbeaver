@@ -180,19 +180,21 @@ public class OpenHandler extends AbstractDataSourceHandler {
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         DBPProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : workspace.getActiveProject();
 
-        if (project != null) {
-            final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
-            if (dataSourceRegistry == null) {
-                return null;
-            }
-            if (dataSourceRegistry.getDataSources().size() == 1) {
-                dataSourceContainer = dataSourceRegistry.getDataSources().get(0);
-            } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
-                SelectDataSourceDialog dialog = new SelectDataSourceDialog(HandlerUtil.getActiveShell(event), project, null);
-                if (dialog.open() == IDialogConstants.CANCEL_ID) {
-                    throw new InterruptedException();
+        if (dataSourceContainer == null) {
+            if (project != null) {
+                final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
+                if (dataSourceRegistry == null) {
+                    return null;
                 }
-                dataSourceContainer = dialog.getDataSource();
+                if (dataSourceRegistry.getDataSources().size() == 1) {
+                    dataSourceContainer = dataSourceRegistry.getDataSources().get(0);
+                } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
+                    SelectDataSourceDialog dialog = new SelectDataSourceDialog(HandlerUtil.getActiveShell(event), project, null);
+                    if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                        throw new InterruptedException();
+                    }
+                    dataSourceContainer = dialog.getDataSource();
+                }
             }
         }
         return dataSourceContainer;

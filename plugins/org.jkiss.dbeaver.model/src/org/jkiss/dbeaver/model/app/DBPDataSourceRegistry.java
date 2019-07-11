@@ -38,7 +38,7 @@ public interface DBPDataSourceRegistry extends DBPObject {
     String CONFIG_FILE_JSON = ".json"; //$NON-NLS-1$
 
     String LEGACY_CONFIG_FILE_NAME = CONFIG_FILE_PREFIX + CONFIG_FILE_EXT;
-    String MODERN_CONFIG_FILE_NAME = CONFIG_FILE_PREFIX  + CONFIG_FILE_JSON;
+    String MODERN_CONFIG_FILE_NAME = "data-sources.json";
 
     @NotNull
     DBPPlatform getPlatform();

@@ -549,6 +549,9 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
                                 }
                             }
                         }
+                    } else {
+                        // Some resource has been changed.
+                        // Update project metadata
                     }
                 }
             }

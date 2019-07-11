@@ -58,15 +58,12 @@ public class EditorUtils {
     public static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id";
 
     public static final String PROP_SQL_DATA_SOURCE_CONTAINER = "sql-editor-data-source-container";
-
-    public static final QualifiedName QN_PROJECT_ID = new QualifiedName("org.jkiss.dbeaver", PROP_SQL_PROJECT_ID);
-    public static final QualifiedName QN_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", PROP_SQL_DATA_SOURCE_ID);
+    public static final String PROP_NAMESPACE = "org.jkiss.dbeaver";
 
     private static final Log log = Log.getLog(EditorUtils.class);
 
     @Nullable
-    public static IFile getFileFromInput(IEditorInput editorInput)
-    {
+    public static IFile getFileFromInput(IEditorInput editorInput) {
         if (editorInput == null) {
             return null;
         } else if (editorInput instanceof IFileEditorInput) {
@@ -97,8 +94,7 @@ public class EditorUtils {
         return null;
     }
 
-    public static IStorage getStorageFromInput(Object element)
-    {
+    public static IStorage getStorageFromInput(Object element) {
         if (element instanceof IAdaptable) {
             IStorage storage = ((IAdaptable) element).getAdapter(IStorage.class);
             if (storage != null) {
@@ -114,8 +110,7 @@ public class EditorUtils {
         return null;
     }
 
-    public static File getLocalFileFromInput(Object element)
-    {
+    public static File getLocalFileFromInput(Object element) {
         if (element instanceof IEditorInput) {
             IFile file = getFileFromInput((IEditorInput) element);
             if (file != null) {
@@ -134,8 +129,7 @@ public class EditorUtils {
     //////////////////////////////////////////////////////////
     // Datasource <-> resource manipulations
 
-    public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput)
-    {
+    public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput) {
         if (editorInput instanceof IDatabaseEditorInput) {
             final DBSObject object = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
             if (object != null && object.getDataSource() != null) {
@@ -173,36 +167,24 @@ public class EditorUtils {
     }
 
     @Nullable
-    public static DBPDataSourceContainer getFileDataSource(IFile file)
-    {
-        try {
-            if (!file.exists()) {
-                return null;
-            }
-            String projectId = file.getPersistentProperty(QN_PROJECT_ID);
-            String dataSourceId = file.getPersistentProperty(QN_DATA_SOURCE_ID);
+    public static DBPDataSourceContainer getFileDataSource(IFile file) {
+        if (!file.exists()) {
+            return null;
+        }
+        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(file.getProject());
+        if (projectMeta != null) {
+            Object dataSourceId = projectMeta.getResourceProperty(file, PROP_SQL_DATA_SOURCE_ID);
             if (dataSourceId != null) {
-                IProject project = file.getProject();
-                if (projectId != null) {
-                    final IProject fileProject = DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectId);
-                    if (fileProject != null && fileProject.exists()) {
-                        project = fileProject;
-                    }
-                }
-                DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(project);
-                return projectMeta == null ? null : projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
+                return projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
             } else {
                 // Try to extract from embedded comment
                 return null;
             }
-        } catch (CoreException e) {
-            log.error("Internal error while reading file property", e);
-            return null;
         }
+        return null;
     }
 
-    public static void setInputDataSource(@NotNull IEditorInput editorInput, @Nullable DBPDataSourceContainer dataSourceContainer)
-    {
+    public static void setInputDataSource(@NotNull IEditorInput editorInput, @Nullable DBPDataSourceContainer dataSourceContainer) {
         if (editorInput instanceof INonPersistentEditorInput) {
             ((INonPersistentEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
             return;
@@ -232,14 +214,12 @@ public class EditorUtils {
             dataSourceContainer == null ? null : dataSourceContainer.getId());
     }
 
-    public static void setFileDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer)
-    {
-        try {
-            file.setPersistentProperty(QN_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
-            file.setPersistentProperty(QN_PROJECT_ID, dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getName());
-        } catch (CoreException e) {
-            log.error("Internal error while writing file property", e);
+    public static void setFileDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer) {
+        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(file.getProject());
+        if (projectMeta == null) {
+            return;
         }
+        projectMeta.setResourceProperty(file, PROP_SQL_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
     }
 
     public static void openExternalFileEditor(File file, IWorkbenchWindow window) {
