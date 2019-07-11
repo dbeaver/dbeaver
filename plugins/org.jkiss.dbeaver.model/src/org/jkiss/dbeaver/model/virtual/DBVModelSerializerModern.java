@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -164,7 +165,9 @@ class DBVModelSerializerModern implements DBVModelSerializer
                 JSONUtils.fieldNE(json, ATTR_FOREGROUND2, color.getColorForeground2());
                 JSONUtils.fieldNE(json, ATTR_BACKGROUND, color.getColorBackground());
                 JSONUtils.fieldNE(json, ATTR_BACKGROUND2, color.getColorBackground2());
-                JSONUtils.serializeObjectList(json, "values", Arrays.asList(color.getAttributeValues()));
+                if (!ArrayUtils.isEmpty(color.getAttributeValues())) {
+                    JSONUtils.serializeObjectList(json, "values", Arrays.asList(color.getAttributeValues()));
+                }
                 json.endObject();
             }
             json.endArray();

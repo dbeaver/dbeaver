@@ -124,7 +124,8 @@ public class ProjectMetadata implements DBPProject {
                 project.open(monitor);
                 project.refreshLocal(IFile.DEPTH_ONE, monitor);
             } catch (CoreException e) {
-                throw new IllegalStateException("Error opening project", e);
+                log.error("Error opening project", e);
+                return;
             }
         }
 
