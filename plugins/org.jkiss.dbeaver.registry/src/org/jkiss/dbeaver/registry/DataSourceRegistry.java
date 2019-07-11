@@ -174,11 +174,30 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     return origin;
                 }
             }
-            IFile defFile = project.getEclipseProject().getFile(CONFIG_FILE_NAME);
+            IFile defFile = getModernConfigFile();
+            if (!defFile.exists()) {
+                IFile legacyFile = getLegacyConfigFile();
+                if (legacyFile.exists()) {
+                    defFile = legacyFile;
+                }
+            }
             DataSourceOrigin origin = new DataSourceOrigin(defFile, true);
             origins.put(defFile, origin);
             return origin;
         }
+    }
+
+    private IFile getLegacyConfigFile() {
+        return project
+            .getEclipseProject()
+            .getFile(LEGACY_CONFIG_FILE_NAME);
+    }
+
+    private IFile getModernConfigFile() {
+        return project
+            .getEclipseProject()
+            .getFolder(ProjectMetadata.METADATA_STORAGE_FILE)
+            .getFile(MODERN_CONFIG_FILE_NAME);
     }
 
     @NotNull
@@ -549,7 +568,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private void loadDataSources(IFile fromFile, boolean refresh, ParseResults parseResults)
     {
-        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(CONFIG_FILE_NAME);
+        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(LEGACY_CONFIG_FILE_NAME);
         DataSourceOrigin origin;
         synchronized (origins) {
             origin = origins.get(fromFile);
@@ -596,6 +615,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 List<DataSourceDescriptor> localDataSources = getDataSources(origin);
 
                 IFile configFile = origin.getSourceFile();
+                if (origin.isDefault()) {
+                    if (project.getFormat() == ProjectMetadata.ProjectFormat.MODERN) {
+                        configFile = getModernConfigFile();
+                    } else {
+                        configFile = getLegacyConfigFile();
+                    }
+                }
                 try {
                     File plainConfigFile = configFile.getLocation().toFile();
                     IOUtils.makeFileBackup(plainConfigFile);

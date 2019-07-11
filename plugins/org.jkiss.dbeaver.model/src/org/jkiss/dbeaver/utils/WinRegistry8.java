@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.jkiss.dbeaver.Log;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -31,6 +33,8 @@ import java.util.prefs.Preferences;
  * I've found it here: http://stackoverflow.com/questions/62289/read-write-to-windows-registry-using-java
  */
 class WinRegistry8 extends WindowsRegistry {
+
+    private static final Log log = Log.getLog(WinRegistry8.class);
 
     private static final int KEY_ALL_ACCESS = 0xf003f;
     private static final int KEY_READ = 0x20019;
@@ -86,7 +90,7 @@ class WinRegistry8 extends WindowsRegistry {
                 byte[].class);
             regDeleteKey.setAccessible(true);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error initializing Windows registry", e);
         }
     }
 
