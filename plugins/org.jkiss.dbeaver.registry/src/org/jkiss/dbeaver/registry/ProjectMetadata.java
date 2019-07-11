@@ -113,7 +113,7 @@ public class ProjectMetadata implements DBPProject {
             }
         }
 
-        File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.CONFIG_FILE_NAME);
+        File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
         if (dsConfig.exists()) {
             format = ProjectFormat.LEGACY;
         } else {
@@ -231,7 +231,7 @@ public class ProjectMetadata implements DBPProject {
             return;
         }
 
-        File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.CONFIG_FILE_NAME);
+        File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
         if (dsConfig.exists()) {
 
         }
