@@ -35,6 +35,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     private final DBVContainer parent;
     private String name;
+    private String type = "container";
     private String description;
     private Map<String, DBVContainer> containers = new LinkedHashMap<>();
     private Map<String, DBVEntity> entities = new LinkedHashMap<>();
@@ -91,6 +92,10 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     public String getName()
     {
         return name;
+    }
+
+    public String getType() {
+        return type;
     }
 
     @Nullable

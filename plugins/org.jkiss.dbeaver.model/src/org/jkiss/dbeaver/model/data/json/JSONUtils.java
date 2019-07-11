@@ -24,8 +24,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * JSON utils
@@ -131,4 +130,44 @@ public class JSONUtils {
         return json;
     }
 
+    public static void serializeStringList(JsonWriter json, String tagName, Collection<String> list) throws IOException {
+        if (!CommonUtils.isEmpty(list)) {
+            json.name(tagName);
+            json.beginArray();
+            for (String include : CommonUtils.safeCollection(list)) {
+                json.value(include);
+            }
+            json.endArray();
+        }
+    }
+
+    public static void serializeObjectList(JsonWriter json, String tagName, Collection<Object> list) throws IOException {
+        if (!CommonUtils.isEmpty(list)) {
+            json.name(tagName);
+            json.beginArray();
+            for (Object value : CommonUtils.safeCollection(list)) {
+                if (value == null) {
+                    json.nullValue();
+                } else if (value instanceof Number) {
+                    json.value((Number) value);
+                } else if (value instanceof Boolean) {
+                    json.value((Boolean) value);
+                } else {
+                    json.value(value.toString());
+                }
+            }
+            json.endArray();
+        }
+    }
+
+    public static void serializeProperties(JsonWriter json, String tagName, Map<String, String> properties) throws IOException {
+        if (!CommonUtils.isEmpty(properties)) {
+            json.name(tagName);
+            json.beginObject();
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                field(json, entry.getKey(), entry.getValue());
+            }
+            json.endObject();
+        }
+    }
 }

@@ -162,7 +162,7 @@ public class DataSourceDescriptor
     private DBWNetworkHandler proxyHandler;
     private DBWTunnel tunnelHandler;
     @NotNull
-    private final DBVModel virtualModel;
+    private DBVModel virtualModel;
 
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
@@ -194,7 +194,7 @@ public class DataSourceDescriptor
         this(source, source.registry);
     }
 
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, DBPDataSourceRegistry registry)
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry)
     {
         this.registry = registry;
         this.origin = source.origin;
@@ -542,6 +542,14 @@ public class DataSourceDescriptor
     public DBVModel getVirtualModel()
     {
         return virtualModel;
+    }
+
+    public boolean hasSharedVirtualModel() {
+        return !CommonUtils.equalObjects(virtualModel.getId(), getId());
+    }
+
+    public void setVirtualModel(@NotNull DBVModel virtualModel) {
+        this.virtualModel = virtualModel;
     }
 
     @Override
