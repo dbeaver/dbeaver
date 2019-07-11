@@ -449,12 +449,12 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
     private void updateDriverReferences(DBRProgressMonitor monitor, IProject project, Map<String, String> driverMap) throws DBException, CoreException, IOException
     {
-        IFile configFile = project.getFile(DataSourceRegistry.CONFIG_FILE_NAME);
+        IFile configFile = project.getFile(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
         if (configFile == null || !configFile.exists()) {
             configFile = project.getFile(DataSourceRegistry.OLD_CONFIG_FILE_NAME);
         }
         if (configFile == null || !configFile.exists()) {
-            throw new DBException("Cannot find configuration file '" + DataSourceRegistry.CONFIG_FILE_NAME + "'");
+            throw new DBException("Cannot find configuration file '" + DataSourceRegistry.LEGACY_CONFIG_FILE_NAME + "'");
         }
         // Read and filter datasources config
         final InputStream configContents = configFile.getContents();

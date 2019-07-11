@@ -21,6 +21,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -93,6 +94,17 @@ public class ProjectMetadata implements DBPProject {
         return project;
     }
 
+    @NotNull
+    @Override
+    public IFolder getMetadataFolder() {
+        return project.getFolder(METADATA_FOLDER);
+    }
+
+    @NotNull
+    private File getMetadataPath() {
+        return new File(getAbsolutePath(), METADATA_FOLDER);
+    }
+
     @Override
     public boolean isOpen() {
         return project.isOpen();
@@ -110,6 +122,15 @@ public class ProjectMetadata implements DBPProject {
                 project.refreshLocal(IFile.DEPTH_ONE, monitor);
             } catch (CoreException e) {
                 throw new IllegalStateException("Error opening project", e);
+            }
+        }
+
+        IFolder metadataFolder = project.getFolder(METADATA_FOLDER);
+        if (!metadataFolder.exists()) {
+            try {
+                metadataFolder.create(IResource.FORCE | IResource.HIDDEN, true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                log.error("Error creating project metadata folder", e);
             }
         }
 
@@ -156,11 +177,6 @@ public class ProjectMetadata implements DBPProject {
 
     public void dispose() {
         dataSourceRegistry.dispose();
-    }
-
-    @NotNull
-    public File getMetadataPath() {
-        return new File(getAbsolutePath(), METADATA_FOLDER);
     }
 
     public ProjectFormat getFormat() {
@@ -235,6 +251,9 @@ public class ProjectMetadata implements DBPProject {
         if (dsConfig.exists()) {
 
         }
+
+        // Now project is in modern format
+        format = ProjectFormat.MODERN;
     }
 
     private void flushMetadata() {
