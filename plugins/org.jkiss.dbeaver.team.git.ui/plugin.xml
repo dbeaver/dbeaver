@@ -33,7 +33,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.git.commands.commit" class="org.jkiss.dbeaver.team.git.ui.handlers.GITCommitHandler">
             <activeWhen>
-                <test property="GitRepository.resourcesSingleRepository"/>
+                <test property="GitSelection.resourcesSingleRepository"/>
             </activeWhen>
         </handler>
     </extension>
