@@ -54,8 +54,6 @@ public interface DBPProject
 
     Object getResourceProperty(IResource resource, String propName);
 
-    Map<String, Object> getResourceProperties(IResource resource);
-
-    void setResourceProperties(IResource resource, Map<String, Object> properties);
+    void setResourceProperty(IResource resource, String propName, Object propValue);
 
 }

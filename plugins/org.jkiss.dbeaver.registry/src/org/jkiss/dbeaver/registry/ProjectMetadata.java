@@ -20,11 +20,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.core.internal.localstore.Bucket;
+import org.eclipse.core.internal.localstore.BucketTree;
+import org.eclipse.core.internal.properties.PropertyBucket;
+import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -36,9 +41,7 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class ProjectMetadata implements DBPProject {
     private static final Log log = Log.getLog(ProjectMetadata.class);
@@ -157,21 +160,33 @@ public class ProjectMetadata implements DBPProject {
     @Override
     public Object getResourceProperty(IResource resource, String propName) {
         loadMetadata();
-        Map<String, Object> resProps = resourceProperties.get(resource.getLocation().toString());
-        if (resProps != null) {
-            return resProps.get(propName);
+        synchronized (metadataSync) {
+            Map<String, Object> resProps = resourceProperties.get(resource.getProjectRelativePath().toString());
+            if (resProps != null) {
+                return resProps.get(propName);
+            }
         }
         return null;
     }
 
     @Override
-    public Map<String, Object> getResourceProperties(IResource resource) {
+    public void setResourceProperty(IResource resource, String propName, Object propValue) {
         loadMetadata();
-        return resourceProperties.get(resource.getLocation().toString());
-    }
-
-    @Override
-    public void setResourceProperties(IResource resource, Map<String, Object> properties) {
+        synchronized (metadataSync) {
+            Map<String, Object> resProps = resourceProperties.computeIfAbsent(resource.getProjectRelativePath().toString(), s -> new LinkedHashMap<>());
+            if (propValue == null) {
+                if (resProps.remove(propName) == null) {
+                    // No changes
+                    return;
+                }
+            } else {
+                Object oldValue = resProps.put(propName, propValue);
+                if (Objects.equals(oldValue, propValue)) {
+                    // No changes
+                    return;
+                }
+            }
+        }
         flushMetadata();
     }
 
@@ -198,30 +213,38 @@ public class ProjectMetadata implements DBPProject {
                     try (JsonReader jsonReader = METADATA_GSON.newJsonReader(mdReader)) {
                         jsonReader.beginObject();
                         while (jsonReader.hasNext()) {
-                            String resourceName = jsonReader.nextName();
-                            Map<String, Object> resProperties = new HashMap<>();
-                            jsonReader.beginObject();
-                            while (jsonReader.hasNext()) {
-                                String propName = jsonReader.nextName();
-                                Object propValue;
-                                switch (jsonReader.peek()) {
-                                    case NUMBER:
-                                        propValue = jsonReader.nextDouble();
-                                        break;
-                                    case BOOLEAN:
-                                        propValue = jsonReader.nextBoolean();
-                                        break;
-                                    case NULL:
-                                        propValue = null;
-                                        break;
-                                    default:
-                                        propValue = jsonReader.nextString();
-                                        break;
+                            String topName = jsonReader.nextName();
+                            if ("resources".equals(topName)) {
+                                jsonReader.beginObject();
+
+                                while (jsonReader.hasNext()) {
+                                    String resourceName = jsonReader.nextName();
+                                    Map<String, Object> resProperties = new HashMap<>();
+                                    jsonReader.beginObject();
+                                    while (jsonReader.hasNext()) {
+                                        String propName = jsonReader.nextName();
+                                        Object propValue;
+                                        switch (jsonReader.peek()) {
+                                            case NUMBER:
+                                                propValue = jsonReader.nextDouble();
+                                                break;
+                                            case BOOLEAN:
+                                                propValue = jsonReader.nextBoolean();
+                                                break;
+                                            case NULL:
+                                                propValue = null;
+                                                break;
+                                            default:
+                                                propValue = jsonReader.nextString();
+                                                break;
+                                        }
+                                        resProperties.put(propName, propValue);
+                                    }
+                                    jsonReader.endObject();
+                                    mdCache.put(resourceName, resProperties);
                                 }
-                                resProperties.put(propName, propValue);
+                                jsonReader.endObject();
                             }
-                            jsonReader.endObject();
-                            mdCache.put(resourceName, resProperties);
                         }
 
                         jsonReader.endObject();
@@ -247,13 +270,59 @@ public class ProjectMetadata implements DBPProject {
             return;
         }
 
-        File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
-        if (dsConfig.exists()) {
-
+        File dsConfig = new File(getMetadataPath(), METADATA_STORAGE_FILE);
+        if (!dsConfig.exists()) {
+            // Migrate
+            Map<String, Map<String, Object>> projectResourceProperties = extractProjectResourceProperties();
+            synchronized (metadataSync) {
+                this.resourceProperties = projectResourceProperties;
+            }
+            flushMetadata();
         }
 
         // Now project is in modern format
         format = ProjectFormat.MODERN;
+    }
+
+    private Map<String, Map<String, Object>> extractProjectResourceProperties() {
+        Map<String, Map<String, Object>> result = new LinkedHashMap<>();
+
+        try {
+            BucketTree bucketTree = new BucketTree((Workspace) workspace.getEclipseWorkspace(), new PropertyBucket());
+            try {
+                final IPath projectPath = project.getFullPath();
+                bucketTree.accept(new Bucket.Visitor() {
+                    @Override
+                    public int visit(Bucket.Entry entry) {
+                        Object value = entry.getValue();
+                        if (value instanceof String[][]) {
+                            String[][] bucketProps = (String[][]) value;
+                            for (String[] resProps : bucketProps) {
+                                if (resProps.length == 3) {
+                                    if ("org.jkiss.dbeaver".equals(resProps[0])) {
+                                        if ("sql-editor-project-id".equals(resProps[1])) {
+                                            continue;
+                                        }
+                                        Map<String, Object> propsMap = result.computeIfAbsent(
+                                            entry.getPath().makeRelativeTo(projectPath).toString(), s -> new LinkedHashMap<>());
+                                        propsMap.put(resProps[1], resProps[2]);
+                                    }
+                                }
+                            }
+                        }
+                        return CONTINUE;
+                    }
+                },
+                    projectPath,
+                    BucketTree.DEPTH_INFINITE);
+            } catch (CoreException e) {
+                log.error(e);
+            }
+        } catch (Throwable e) {
+            log.error("Error extracting project metadata", e);
+        }
+
+        return result;
     }
 
     private void flushMetadata() {
@@ -266,14 +335,11 @@ public class ProjectMetadata implements DBPProject {
             try {
                 IOUtils.makeFileBackup(mdFile);
 
-                if (CommonUtils.isEmpty(resourceProperties)) {
-                    if (mdFile.exists() && !mdFile.delete()) {
-                        log.error("Error deleting project metadata file " + mdFile.getAbsolutePath());
-                    }
-                    return;
-                }
                 try (Writer mdWriter = new OutputStreamWriter(new FileOutputStream(mdFile), StandardCharsets.UTF_8)) {
                     try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {
+                        jsonWriter.beginObject();
+
+                        jsonWriter.name("resources");
                         jsonWriter.beginObject();
                         for (Map.Entry<String, Map<String, Object>> resEntry : resourceProperties.entrySet()) {
                             jsonWriter.name(resEntry.getKey());
@@ -294,6 +360,8 @@ public class ProjectMetadata implements DBPProject {
                             }
                             jsonWriter.endObject();
                         }
+                        jsonWriter.endObject();
+
                         jsonWriter.endObject();
                         jsonWriter.flush();
                     }
