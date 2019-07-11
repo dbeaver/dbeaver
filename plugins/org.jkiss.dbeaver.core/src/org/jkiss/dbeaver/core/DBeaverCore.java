@@ -199,6 +199,7 @@ public class DBeaverCore implements DBPPlatform {
 
         // Register properties adapter
         this.workspace = new DBeaverWorkspace(this, ResourcesPlugin.getWorkspace());
+        this.workspace.initializeProjects();
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
         {
