@@ -131,7 +131,7 @@ public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
     }
 
     @Override
-    public WizardPrefPage[] getSubPages() {
+    public WizardPrefPage[] getSubPages(boolean extrasOnly) {
         if (subPages.isEmpty()) {
             return null;
         }

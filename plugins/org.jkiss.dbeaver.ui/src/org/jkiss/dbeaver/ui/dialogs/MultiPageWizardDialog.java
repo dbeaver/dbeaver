@@ -190,7 +190,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         // Ad sub pages
         if (page instanceof ICompositeDialogPage) {
-            IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages();
+            IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(true);
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage subPage : subPages) {
                     addPage(item, subPage, maxSize);
