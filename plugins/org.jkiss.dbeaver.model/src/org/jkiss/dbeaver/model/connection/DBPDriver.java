@@ -91,9 +91,14 @@ public interface DBPDriver extends DBPNamedObject
     boolean isLicenseRequired();
     boolean isCustomDriverLoader();
     boolean isUseURL();
+    // Can be created
     boolean isInstantiable();
+    // Driver shipped along with JDK/DBeaver, doesn't need any additional libraries
     boolean isInternalDriver();
+    // Custom driver: created by user
     boolean isCustom();
+    // Temporary driver: used for automatically created drivers when connection  configuration is broken
+    boolean isTemporary();
 
     int getPromotedScore();
 

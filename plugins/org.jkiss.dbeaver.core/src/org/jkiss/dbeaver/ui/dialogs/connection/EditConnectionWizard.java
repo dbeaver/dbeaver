@@ -45,7 +45,10 @@ import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute;
-import org.jkiss.dbeaver.ui.preferences.*;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConnections;
+import org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle;
+import org.jkiss.dbeaver.ui.preferences.PrefPageMetaData;
+import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,7 +70,7 @@ public class EditConnectionWizard extends ConnectionWizard
     @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
-    private ConnectionPageNetwork pageNetwork;
+    //private ConnectionPageNetwork pageNetwork;
     private ConnectionPageInitialization pageInit;
     private ConnectionPageShellCommands pageEvents;
     private List<WizardPrefPage> prefPages = new ArrayList<>();
@@ -134,17 +137,14 @@ public class EditConnectionWizard extends ConnectionWizard
         boolean embedded = dataSource.getDriver().isEmbedded();
         pageGeneral = new ConnectionPageGeneral(this, dataSource);
 
-        if (!embedded) {
-            pageNetwork = new ConnectionPageNetwork(this);
-        }
+//        if (!embedded) {
+//            pageNetwork = new ConnectionPageNetwork(this);
+//        }
         pageInit = new ConnectionPageInitialization(dataSource);
         pageEvents = new ConnectionPageShellCommands(dataSource);
 
         addPage(pageGeneral);
         if (pageSettings != null) {
-            if (!embedded) {
-                pageSettings.addSubPage(pageNetwork);
-            }
             pageSettings.addSubPage(pageInit);
             pageSettings.addSubPage(pageEvents);
         }
@@ -187,8 +187,8 @@ public class EditConnectionWizard extends ConnectionWizard
             if (pageName.equals(name)) {
                 return page;
             }
-            if (page instanceof ICompositeDialogPage) {
-                final IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages();
+            if (page instanceof ICompositeDialogPage && !(page instanceof ConnectionPageSettings)) {
+                final IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(false);
                 if (subPages != null) {
                     for (IDialogPage subPage : subPages) {
                         if (subPage instanceof IWizardPage && ((IWizardPage) subPage).getName().equals(name)) {
@@ -298,9 +298,6 @@ public class EditConnectionWizard extends ConnectionWizard
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
-        if (isPageActive(pageNetwork)) {
-            pageNetwork.saveSettings(dataSource);
-        }
         pageInit.saveSettings(dataSource);
         pageEvents.saveSettings(dataSource);
         for (WizardPrefPage prefPage : prefPages) {
@@ -317,6 +314,7 @@ public class EditConnectionWizard extends ConnectionWizard
         if (isPageActive(prefPage)) {
             prefPage.performFinish();
         }
+/*
         final WizardPrefPage[] subPages = prefPage.getSubPages();
         if (subPages != null) {
             for (WizardPrefPage subPage : subPages) {
@@ -325,6 +323,7 @@ public class EditConnectionWizard extends ConnectionWizard
                 }
             }
         }
+*/
     }
 
     private static boolean isPageActive(IDialogPage page) {

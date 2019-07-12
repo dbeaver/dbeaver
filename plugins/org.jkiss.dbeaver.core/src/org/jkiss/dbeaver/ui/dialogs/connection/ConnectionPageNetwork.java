@@ -47,6 +47,7 @@ import java.util.Map;
 /**
  * Network handlers edit dialog page
  */
+@Deprecated
 public class ConnectionPageNetwork extends ConnectionWizardPage {
 
     public static final String PAGE_NAME = ConnectionPageNetwork.class.getSimpleName();

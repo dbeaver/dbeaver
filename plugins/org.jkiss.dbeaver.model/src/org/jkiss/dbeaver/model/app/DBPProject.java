@@ -29,6 +29,8 @@ import java.io.File;
  */
 public interface DBPProject
 {
+    String METADATA_FOLDER = ".dbeaver";
+
     @NotNull
     DBPWorkspace getWorkspace();
 

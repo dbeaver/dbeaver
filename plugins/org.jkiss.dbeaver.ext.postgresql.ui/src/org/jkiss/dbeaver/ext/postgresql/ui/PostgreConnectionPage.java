@@ -273,7 +273,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     }
 
     @Override
-    public IDialogPage[] getSubPages()
+    public IDialogPage[] getSubPages(boolean extrasOnly)
     {
         return new IDialogPage[] {
             new DriverPropertiesDialogPage(this)

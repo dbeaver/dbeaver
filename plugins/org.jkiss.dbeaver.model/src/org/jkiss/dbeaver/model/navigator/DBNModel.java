@@ -103,6 +103,7 @@ public class DBNModel implements IResourceChangeListener {
         this.root = new DBNRoot(this);
 
         if (global) {
+            platform.getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
             new EventProcessingJob().schedule();
         }
     }

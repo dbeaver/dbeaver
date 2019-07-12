@@ -84,9 +84,9 @@ class DBVModelSerializerModern implements DBVModelSerializer
                 if (transformSettings != null && transformSettings.hasValuableData()) {
                     json.name("transforms");
                     json.beginObject();
-                    JSONUtils.fieldNE(json, ATTR_CUSTOM, transformSettings.getCustomTransformer());
-                    JSONUtils.serializeStringList(json, TAG_INCLUDE, transformSettings.getIncludedTransformers());
-                    JSONUtils.serializeStringList(json, TAG_EXCLUDE, transformSettings.getExcludedTransformers());
+                    JSONUtils.fieldNE(json, "custom", transformSettings.getCustomTransformer());
+                    JSONUtils.serializeStringList(json, "include", transformSettings.getIncludedTransformers());
+                    JSONUtils.serializeStringList(json, "exclude", transformSettings.getExcludedTransformers());
                     JSONUtils.serializeProperties(json, "properties", transformSettings.getTransformOptions());
                     json.endObject();
                 }
@@ -104,7 +104,7 @@ class DBVModelSerializerModern implements DBVModelSerializer
                 if (c.hasAttributes()) {
                     json.name(c.getName());
                     json.beginObject();
-                    JSONUtils.field(json, ATTR_TYPE, c.getConstraintType().getName());
+                    JSONUtils.field(json, "type", c.getConstraintType().getName());
                     List<DBVEntityConstraintColumn> attrRefs = c.getAttributeReferences(null);
                     if (!CommonUtils.isEmpty(attrRefs)) {
                         json.name("attributes");
@@ -122,15 +122,15 @@ class DBVModelSerializerModern implements DBVModelSerializer
 
         if (!CommonUtils.isEmpty(entity.entityForeignKeys)) {
             // Foreign keys
-            json.name("foreignKeys");
+            json.name("foreign-keys");
             json.beginArray();
             for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.entityForeignKeys)) {
                 json.beginObject();
                 DBSEntity refEntity = fk.getAssociatedEntity();
-                JSONUtils.field(json, ATTR_ENTITY, DBUtils.getObjectFullId(refEntity));
+                JSONUtils.field(json, "entity", DBUtils.getObjectFullId(refEntity));
                 DBSEntityConstraint refConstraint = fk.getReferencedConstraint();
                 if (refConstraint != null) {
-                    JSONUtils.field(json, ATTR_CONSTRAINT, refConstraint.getName());
+                    JSONUtils.field(json, "constraint", refConstraint.getName());
                 }
                 List<DBVEntityForeignKeyColumn> refAttrs = fk.getAttributeReferences(null);
                 if (!CommonUtils.isEmpty(refAttrs)) {
@@ -152,18 +152,18 @@ class DBVModelSerializerModern implements DBVModelSerializer
             json.beginArray();
             for (DBVColorOverride color : entity.colorOverrides) {
                 json.beginObject();
-                JSONUtils.field(json, ATTR_NAME, color.getAttributeName());
-                JSONUtils.field(json, ATTR_OPERATOR, color.getOperator().name());
+                JSONUtils.field(json, "name", color.getAttributeName());
+                JSONUtils.field(json, "operator", color.getOperator().name());
                 if (color.isRange()) {
-                    JSONUtils.field(json, ATTR_RANGE, true);
+                    JSONUtils.field(json, "range", true);
                 }
                 if (color.isSingleColumn()) {
-                    JSONUtils.field(json, ATTR_SINGLE_COLUMN, true);
+                    JSONUtils.field(json, "single-column", true);
                 }
-                JSONUtils.fieldNE(json, ATTR_FOREGROUND, color.getColorForeground());
-                JSONUtils.fieldNE(json, ATTR_FOREGROUND2, color.getColorForeground2());
-                JSONUtils.fieldNE(json, ATTR_BACKGROUND, color.getColorBackground());
-                JSONUtils.fieldNE(json, ATTR_BACKGROUND2, color.getColorBackground2());
+                JSONUtils.fieldNE(json, "foreground", color.getColorForeground());
+                JSONUtils.fieldNE(json, "foreground2", color.getColorForeground2());
+                JSONUtils.fieldNE(json, "background", color.getColorBackground());
+                JSONUtils.fieldNE(json, "background2", color.getColorBackground2());
                 if (!ArrayUtils.isEmpty(color.getAttributeValues())) {
                     JSONUtils.serializeObjectList(json, "values", Arrays.asList(color.getAttributeValues()));
                 }

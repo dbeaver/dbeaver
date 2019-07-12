@@ -46,7 +46,6 @@ import java.util.*;
 public class ProjectMetadata implements DBPProject {
     private static final Log log = Log.getLog(ProjectMetadata.class);
 
-    public static final String METADATA_FOLDER = ".dbeaver";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
 
     public enum ProjectFormat {

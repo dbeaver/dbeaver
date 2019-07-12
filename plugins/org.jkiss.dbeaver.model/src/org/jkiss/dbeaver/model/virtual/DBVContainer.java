@@ -68,7 +68,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
             if (id.startsWith(ENTITY_PREFIX)) {
                 DBVEntity entity = new DBVEntity(this, id.substring(ENTITY_PREFIX.length()), (Map<String, Object>) element.getValue());
                 entities.put(entity.getName(), entity);
-            } else {
+            } else if (element.getValue() instanceof Map) {
                 DBVContainer child = new DBVContainer(this, id, (Map<String, Object>) element.getValue());
                 containers.put(child.getName(), child);
             }

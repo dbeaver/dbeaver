@@ -476,6 +476,7 @@
         <handler
                 type="config"
                 id="postgre_ssl"
+                codeName="SSL"
                 label="%handler.ssl.name"
                 description="%handler.ssl.description"
                 secured="false"

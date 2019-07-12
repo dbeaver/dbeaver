@@ -17,9 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -41,7 +39,6 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -74,14 +71,9 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     {
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
-        ModifyListener textListener = new ModifyListener()
-        {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                if (activated) {
-                    site.updateButtons();
-                }
+        ModifyListener textListener = e -> {
+            if (activated) {
+                site.updateButtons();
             }
         };
         final int fontHeight = UIUtils.getFontHeight(composite);
@@ -197,7 +189,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         }
         if (portText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                portText.setText(String.valueOf(connectionInfo.getHostPort()));
+                portText.setText(connectionInfo.getHostPort());
             } else if (site.getDriver().getDefaultPort() != null) {
                 portText.setText(site.getDriver().getDefaultPort());
             } else {
@@ -265,10 +257,11 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     }
 
     @Override
-    public IDialogPage[] getSubPages()
+    public IDialogPage[] getSubPages(boolean extrasOnly)
     {
         return new IDialogPage[] {
-            new DriverPropertiesDialogPage(this)
+            new DriverPropertiesDialogPage(this),
+
         };
     }
 

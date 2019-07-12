@@ -41,4 +41,6 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
 
     DBXTreeNode getTreeDescriptor();
 
+    boolean isTemporary();
+
 }

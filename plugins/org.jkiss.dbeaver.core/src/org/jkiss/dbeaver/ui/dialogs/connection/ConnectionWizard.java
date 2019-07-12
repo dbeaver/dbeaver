@@ -320,7 +320,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 }
             }
             if (page instanceof ICompositeDialogPage) {
-                for (IDialogPage subPage : ArrayUtils.safeArray(((ICompositeDialogPage) page).getSubPages())) {
+                for (IDialogPage subPage : ArrayUtils.safeArray(((ICompositeDialogPage) page).getSubPages(false))) {
                     testInPage(session, subPage);
                 }
             }
