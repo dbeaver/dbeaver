@@ -27,6 +27,9 @@ public interface DBWHandlerDescriptor {
     @NotNull
     String getId();
 
+    @NotNull
+    String getCodeName();
+
     String getLabel();
 
     String getDescription();

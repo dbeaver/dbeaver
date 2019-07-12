@@ -280,6 +280,7 @@
         <handler
                 type="config"
                 id="mysql_ssl"
+                codeName="SSL"
                 label="SSL"
                 description="Secure socket layer"
                 secured="false"
