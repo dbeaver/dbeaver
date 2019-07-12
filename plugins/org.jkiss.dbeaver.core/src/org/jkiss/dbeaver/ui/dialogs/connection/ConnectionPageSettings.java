@@ -196,20 +196,24 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 this.connectionEditor.setSite(this);
             }
             // init sub pages (if any)
-            getSubPages();
+            IDialogPage[] allSubPages = getSubPages(false);
 
-            if (wizard.isNew() && !ArrayUtils.isEmpty(subPages)) {
+            if (!ArrayUtils.isEmpty(allSubPages)) {
                 // Create tab folder
                 List<IDialogPage> allPages = new ArrayList<>();
                 allPages.add(connectionEditor);
                 // Add sub pages
-                Collections.addAll(allPages, subPages);
+                Collections.addAll(allPages, allSubPages);
 
                 tabFolder = new TabFolder(parent, SWT.TOP);
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
                 setControl(tabFolder);
 
                 for (IDialogPage page : allPages) {
+                    if (ArrayUtils.contains(extraPages, page)) {
+                        // Ignore extra pages
+                        continue;
+                    }
                     TabItem item = new TabItem(tabFolder, SWT.NONE);
                     page.createControl(tabFolder);
                     item.setData(page);
@@ -330,8 +334,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Nullable
     @Override
-    public IDialogPage[] getSubPages()
+    public IDialogPage[] getSubPages(boolean extrasOnly)
     {
+        if (extrasOnly) {
+            return extraPages;
+        }
         if (subPages != null) {
             return subPages;
         }
@@ -341,7 +348,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         if (connectionEditor instanceof ICompositeDialogPage) {
-            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages();
+            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages(extrasOnly);
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage page : subPages) {
                     if (page instanceof IDataSourceConnectionEditor) {
@@ -351,7 +358,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
             // Add network tabs
             for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
-                addSubPage(new ConnectionPageNetworkHandler(this, descriptor));
+                subPages = ArrayUtils.add(IDialogPage.class, subPages, new ConnectionPageNetworkHandler(this, descriptor));
             }
 
             if (extraPages != null) {

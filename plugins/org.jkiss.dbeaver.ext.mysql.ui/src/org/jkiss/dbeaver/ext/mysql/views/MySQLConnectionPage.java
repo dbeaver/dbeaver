@@ -257,7 +257,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     }
 
     @Override
-    public IDialogPage[] getSubPages()
+    public IDialogPage[] getSubPages(boolean extrasOnly)
     {
         return new IDialogPage[] {
             new DriverPropertiesDialogPage(this),

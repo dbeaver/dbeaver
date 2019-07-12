@@ -187,8 +187,8 @@ public class EditConnectionWizard extends ConnectionWizard
             if (pageName.equals(name)) {
                 return page;
             }
-            if (page instanceof ICompositeDialogPage) {
-                final IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages();
+            if (page instanceof ICompositeDialogPage && !(page instanceof ConnectionPageSettings)) {
+                final IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(false);
                 if (subPages != null) {
                     for (IDialogPage subPage : subPages) {
                         if (subPage instanceof IWizardPage && ((IWizardPage) subPage).getName().equals(name)) {
@@ -314,6 +314,7 @@ public class EditConnectionWizard extends ConnectionWizard
         if (isPageActive(prefPage)) {
             prefPage.performFinish();
         }
+/*
         final WizardPrefPage[] subPages = prefPage.getSubPages();
         if (subPages != null) {
             for (WizardPrefPage subPage : subPages) {
@@ -322,6 +323,7 @@ public class EditConnectionWizard extends ConnectionWizard
                 }
             }
         }
+*/
     }
 
     private static boolean isPageActive(IDialogPage page) {
