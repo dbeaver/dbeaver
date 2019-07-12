@@ -172,7 +172,9 @@ public class DBNProject extends DBNResource {
     @Override
     protected void handleChildResourceChange(IResourceDelta delta) {
         final String name = delta.getResource().getName();
-        if (name.equals(DBPProject.METADATA_FOLDER)) {
+        if (name.equals(DBPProject.METADATA_FOLDER) ||
+            (name.startsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_PREFIX) && name.endsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_EXT)))
+        {
             // Metadata configuration changed
             getDatabases().getDataSourceRegistry().refreshConfig();
         } else {

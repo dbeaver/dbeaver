@@ -408,6 +408,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     parseResults.updatedDataSources.add(dataSource);
                 }
             }
+
+            // Saved filters
+            for (Map<String, Object> ctMap : JSONUtils.getObjectList(jsonMap, "saved-filters")) {
+                DBSObjectFilter filter = readObjectFiler(ctMap);
+                registry.addSavedFilter(filter);
+            }
         }
 
     }
