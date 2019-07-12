@@ -30,6 +30,7 @@ public interface DBPDataSourceProviderRegistry {
     List<? extends DBPDataSourceProviderDescriptor> getEnabledDataSourceProviders();
 
     DBPDataSourceProviderDescriptor getDataSourceProvider(String id);
+    DBPDataSourceProviderDescriptor makeFakeProvider(String providerID);
 
     DBPConnectionType getConnectionType(String id, DBPConnectionType defaultType);
     void addConnectionType(DBPConnectionType connectionType);

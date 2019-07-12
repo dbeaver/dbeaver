@@ -58,7 +58,7 @@ public class JSONUtils {
             return dateFormat.parse(str);
         } catch (ParseException e) {
             log.error("Error parsing date");
-            return new Date(0l);
+            return new Date(0L);
         }
     }
 
@@ -197,8 +197,8 @@ public class JSONUtils {
     }
 
     @NotNull
-    public static Iterable<Map.Entry<String, Object>> getObjectElements(@NotNull Map<String, Object> map, @NotNull String name) {
-        Map<String, Object> object = (Map<String, Object>) map.get(name);
+    public static Iterable<Map.Entry<String, Map<String, Object>>> getNestedObjects(@NotNull Map<String, Object> map, @NotNull String name) {
+        Map<String, Map<String, Object>> object = (Map<String, Map<String, Object>>) map.get(name);
         if (object == null) {
             return Collections.emptyList();
         } else {
@@ -212,5 +212,30 @@ public class JSONUtils {
         }
         log.error("Object " + object + " is not map");
         return null;
+    }
+
+    public static String getString(Map<String, Object> map, String name) {
+        Object value = map.get(name);
+        return value == null ? null : value.toString();
+    }
+
+    public static String getString(Map<String, Object> map, String name, String defValue) {
+        Object value = map.get(name);
+        return value == null ? defValue : value.toString();
+    }
+
+    public static boolean getBoolean(Map<String, Object> map, String name) {
+        return CommonUtils.toBoolean(map.get(name));
+    }
+
+    public static Map<String, String> deserializeProperties(Map<String, Object> map, String name) {
+        Map<String, String> result = new LinkedHashMap<>();
+        Object propMap = map.get(name);
+        if (propMap instanceof Map) {
+            for (Map.Entry<?,?> pe : ((Map<?, ?>) propMap).entrySet()) {
+                result.put(CommonUtils.toString(pe.getKey()), CommonUtils.toString(pe.getValue()));
+            }
+        }
+        return result;
     }
 }

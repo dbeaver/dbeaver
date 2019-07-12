@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -35,7 +34,10 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DataSourceProviderDescriptor
@@ -52,6 +54,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final ObjectType implType;
     private final String name;
     private final String description;
+    private final boolean temporary;
     private DBPImage icon;
     private DBPDataSourceProvider instance;
     private DBXTreeItem treeDescriptor;
@@ -65,6 +68,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     {
         super(config);
         this.registry = registry;
+        this.temporary = false;
 
         String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
         if (!CommonUtils.isEmpty(parentId)) {
@@ -139,6 +143,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
+    DataSourceProviderDescriptor(DataSourceProviderRegistry registry, String id) {
+        super("org.jkiss.dbeaver.registry");
+        this.registry = registry;
+        this.id = id;
+        this.name = id;
+        this.description = "Missing datasource provider " + id;
+        this.implType = new ObjectType(DBPDataSourceProvider.class.getName());
+        this.temporary = true;
+    }
+
     void patchConfigurationFrom(IConfigurationElement config) {
         // Load tree injections
         IConfigurationElement[] injections = config.getChildren(RegistryConstants.TAG_TREE_INJECTION);
@@ -211,6 +225,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     public DBXTreeNode getTreeDescriptor()
     {
         return treeDescriptor;
+    }
+
+    @Override
+    public boolean isTemporary() {
+        return temporary;
     }
 
     //////////////////////////////////////

@@ -18,13 +18,14 @@ package org.jkiss.dbeaver.registry;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.userstorage.internal.util.JSONUtil;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -56,6 +57,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         .serializeNulls()
         .setPrettyPrinting()
         .create();
+
+    private boolean passwordReadCanceled = false;
 
     @Override
     public void saveDataSources(
@@ -102,7 +105,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                                 connectionTypes.put(connectionType.getId(), connectionType);
                             }
                             DriverDescriptor driver = dataSource.getDriver();
-                            if (driver.isCustom()) {
+                            if (driver.isCustom() && !driver.getProviderDescriptor().isTemporary()) {
                                 Map<String, DBPDriver> driverMap = drivers.computeIfAbsent(driver.getProviderId(), s -> new LinkedHashMap<>());
                                 driverMap.put(driver.getId(), driver);
                             }
@@ -188,7 +191,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
 
             // Folders
-            for (Map.Entry<String, Object> folderMap : JSONUtils.getObjectElements(jsonMap, "folders")) {
+            for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, "folders")) {
                 String name = folderMap.getKey();
                 String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
                 String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
@@ -203,7 +206,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Connection types
-            for (Map.Entry<String, Object> ctMap : JSONUtils.getObjectElements(jsonMap, "connection-types")) {
+            for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "connection-types")) {
                 String id = ctMap.getKey();
                 String name = JSONUtils.getObjectProperty(ctMap.getValue(), RegistryConstants.ATTR_NAME);
                 String description = JSONUtils.getObjectProperty(ctMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
@@ -222,15 +225,153 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
             // Virtual models
             Map<String, DBVModel> modelMap = new LinkedHashMap<>();
-            for (Map.Entry<String, Object> vmMap : JSONUtils.getObjectElements(jsonMap, "virtual-models")) {
+            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "virtual-models")) {
                 String id = vmMap.getKey();
-                DBVModel model = new DBVModel(id, (Map<String, Object>)vmMap.getValue());
+                DBVModel model = new DBVModel(id, vmMap.getValue());
                 modelMap.put(id, model);
             }
 
             // Connections
+            for (Map.Entry<String, Map<String, Object>> conMap : JSONUtils.getNestedObjects(jsonMap, "connections")) {
+                Map<String, Object> conObject = conMap.getValue();
+
+                // Primary settings
+                String id = conMap.getKey();
+                String dsProviderID = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_PROVIDER));
+                if (CommonUtils.isEmpty(dsProviderID)) {
+                    log.warn("Empty datasource provider for datasource '" + id + "'");
+                    continue;
+                }
+                DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(
+                    dsProviderID);
+                if (provider == null) {
+                    log.warn("Can't find datasource provider " + dsProviderID + " for datasource '" + id + "'");
+                    provider = (DataSourceProviderDescriptor) DataSourceProviderRegistry.getInstance().makeFakeProvider(dsProviderID);
+                    return;
+                }
+                String driverId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_DRIVER));
+                DriverDescriptor driver = provider.getDriver(driverId);
+                if (driver == null) {
+                    log.warn("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + id + "'. Create new driver");
+                    driver = provider.createDriver(driverId);
+                    driver.setName(driverId);
+                    driver.setDescription("Missing driver " + driverId);
+                    driver.setDriverClassName("java.sql.Driver");
+                    driver.setTemporary(true);
+                    provider.addDriver(driver);
+                }
+
+                DataSourceDescriptor dataSource = registry.getDataSource(id);
+                boolean newDataSource = (dataSource == null);
+                if (newDataSource) {
+                    dataSource = new DataSourceDescriptor(
+                        registry,
+                        origin,
+                        id,
+                        driver,
+                        new DBPConnectionConfiguration());
+                } else {
+                    // Clean settings - they have to be loaded later by parser
+                    dataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
+                    dataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
+                    dataSource.clearFilters();
+                }
+                dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
+                dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
+                dataSource.setShowSystemObjects(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS));
+                dataSource.setShowUtilityObjects(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHOW_UTIL_OBJECTS));
+                dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
+                final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
+                if (folderPath != null) {
+                    dataSource.setFolder(registry.findFolderByPath(folderPath, true));
+                }
+                dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
+
+                // Connection settings
+                {
+                    Map<String, Object> cfgObject = JSONUtils.getObject(conObject, "configuration");
+                    DBPConnectionConfiguration config = dataSource.getConnectionConfiguration();
+                    config.setHostName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_HOST));
+                    config.setHostPort(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_PORT));
+                    config.setServerName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_SERVER));
+                    config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
+                    config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
+                    if (!passwordReadCanceled) {
+                        final String[] creds = readSecuredCredentials(cfgObject, dataSource, null);
+                        config.setUserName(creds[0]);
+                        if (dataSource.isSavePassword()) {
+                            config.setUserPassword(creds[1]);
+                        }
+                    }
+                    config.setClientHomeId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_HOME));
+                    config.setConnectionType(
+                        DataSourceProviderRegistry.getInstance().getConnectionType(
+                            JSONUtils.getString(cfgObject, RegistryConstants.ATTR_TYPE), DBPConnectionType.DEFAULT_TYPE));
+                    String colorValue = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_COLOR);
+                    if (!CommonUtils.isEmpty(colorValue)) {
+                        config.setConnectionColor(colorValue);
+                    }
+                    String keepAlive = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_KEEP_ALIVE);
+                    if (!CommonUtils.isEmpty(keepAlive)) {
+                        try {
+                            config.setKeepAliveInterval(Integer.parseInt(keepAlive));
+                        } catch (NumberFormatException e) {
+                            log.warn("Bad keep-alive interval value", e);
+                        }
+                    }
+                    config.setProperties(JSONUtils.deserializeProperties(cfgObject, RegistryConstants.TAG_PROPERTIES));
+                    config.setProviderProperties(JSONUtils.deserializeProperties(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
+                }
+
+                // Virtual model
+                String vmID = CommonUtils.toString(conObject.get("virtual-model-id"), id);
+                DBVModel dbvModel = modelMap.get(vmID);
+                if (dbvModel != null) {
+                    dataSource.setVirtualModel(dbvModel);
+                }
+
+                // Add to the list
+                if (newDataSource) {
+                    registry.addDataSourceToList(dataSource);
+                    parseResults.addedDataSources.add(dataSource);
+                } else {
+                    parseResults.updatedDataSources.add(dataSource);
+                }
+            }
         }
 
+    }
+
+    private String[] readSecuredCredentials(Map<String, Object> map, DataSourceDescriptor dataSource, String subNode) {
+        String[] creds = new String[2];
+        final DBASecureStorage secureStorage = DBWorkbench.getPlatform().getSecureStorage();
+        {
+            try {
+                if (secureStorage.useSecurePreferences()) {
+                    ISecurePreferences prefNode = dataSource.getSecurePreferences();
+                    if (subNode != null) {
+                        for (String nodeName : subNode.split("/")) {
+                            prefNode = prefNode.node(nodeName);
+                        }
+                    }
+                    creds[0] = prefNode.get(RegistryConstants.ATTR_USER, null);
+                    creds[1] = prefNode.get(RegistryConstants.ATTR_PASSWORD, null);
+                }
+            } catch (Throwable e) {
+                // Most likely user canceled master password enter of failed by some other reason.
+                // Anyhow we won't try it again
+                log.error("Can't read password from secure storage", e);
+                passwordReadCanceled = true;
+            }
+        }
+        if (CommonUtils.isEmpty(creds[0])) {
+            creds[0] = JSONUtils.getString(map, RegistryConstants.ATTR_USER);
+        }
+        if (CommonUtils.isEmpty(creds[1])) {
+            final String encPassword = JSONUtils.getString(map, RegistryConstants.ATTR_PASSWORD);
+            creds[1] = CommonUtils.isEmpty(encPassword) ? null : decryptPassword(encPassword);
+        }
+        return creds;
     }
 
     private static void saveFolder(JsonWriter json, DataSourceFolder folder)
@@ -448,6 +589,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 log.error("Error encrypting password", e);
             }
         }
+    }
+
+    @Nullable
+    private static String decryptPassword(String encPassword) {
+        if (!CommonUtils.isEmpty(encPassword)) {
+            try {
+                encPassword = ENCRYPTOR.decrypt(encPassword);
+            } catch (Throwable e) {
+                // could not decrypt - use as is
+                encPassword = null;
+            }
+        }
+        return encPassword;
     }
 
 }
