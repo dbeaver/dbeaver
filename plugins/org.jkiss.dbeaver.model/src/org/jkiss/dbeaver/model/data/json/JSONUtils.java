@@ -228,6 +228,20 @@ public class JSONUtils {
         return CommonUtils.toBoolean(map.get(name));
     }
 
+    public static int getInteger(Map<String, Object> map, String name) {
+        return CommonUtils.toInt(map.get(name));
+    }
+
+    @NotNull
+    public static Collection<Map<String, Object>> getObjectList(@NotNull Map<String, Object> map, @NotNull String name) {
+        List<Map<String, Object>> list = (List<Map<String, Object>> ) map.get(name);
+        if (list == null) {
+            return Collections.emptyList();
+        } else {
+            return list;
+        }
+    }
+
     public static Map<String, String> deserializeProperties(Map<String, Object> map, String name) {
         Map<String, String> result = new LinkedHashMap<>();
         Object propMap = map.get(name);
@@ -238,4 +252,16 @@ public class JSONUtils {
         }
         return result;
     }
+
+    public static List<String> deserializeStringList(Map<String, Object> map, String name) {
+        List<String> result = new ArrayList<>();
+        Object propMap = map.get(name);
+        if (propMap instanceof Collection) {
+            for (Object pe : (Collection) propMap) {
+                result.add(CommonUtils.toString(pe));
+            }
+        }
+        return result;
+    }
+
 }

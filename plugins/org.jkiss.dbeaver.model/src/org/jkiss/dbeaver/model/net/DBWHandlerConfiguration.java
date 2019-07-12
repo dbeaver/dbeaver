@@ -40,15 +40,13 @@ public class DBWHandlerConfiguration {
     private boolean savePassword = true;
     private final Map<String, String> properties;
 
-    public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDriver driver)
-    {
+    public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDriver driver) {
         this.descriptor = descriptor;
         this.driver = driver;
         this.properties = new HashMap<>();
     }
 
-    public DBWHandlerConfiguration(@NotNull DBWHandlerConfiguration configuration)
-    {
+    public DBWHandlerConfiguration(@NotNull DBWHandlerConfiguration configuration) {
         this.descriptor = configuration.descriptor;
         this.driver = configuration.driver;
         this.enabled = configuration.enabled;
@@ -58,8 +56,7 @@ public class DBWHandlerConfiguration {
         this.properties = new HashMap<>(configuration.properties);
     }
 
-    public <T extends DBWNetworkHandler> T createHandler(Class<T> type) throws DBException
-    {
+    public <T extends DBWNetworkHandler> T createHandler(Class<T> type) throws DBException {
         try {
             return descriptor.createHandler(type);
         } catch (Exception e) {
@@ -67,75 +64,67 @@ public class DBWHandlerConfiguration {
         }
     }
 
-    public DBPDriver getDriver()
-    {
+    public DBPDriver getDriver() {
         return driver;
     }
 
-    public DBWHandlerType getType()
-    {
+    public DBWHandlerType getType() {
         return descriptor.getType();
     }
 
-    public boolean isSecured()
-    {
+    public boolean isSecured() {
         return descriptor.isSecured();
     }
 
     @NotNull
-    public String getId()
-    {
+    public String getId() {
         return descriptor.getId();
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
         return descriptor.getLabel();
     }
 
-    public boolean isEnabled()
-    {
+    public boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    public String getUserName()
-    {
+    public String getUserName() {
         return userName;
     }
 
-    public void setUserName(String userName)
-    {
+    public void setUserName(String userName) {
         this.userName = userName;
     }
 
-    public String getPassword()
-    {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(@Nullable String password)
-    {
+    public void setPassword(@Nullable String password) {
         this.password = password;
     }
 
-    public boolean isSavePassword()
-    {
+    public boolean isSavePassword() {
         return savePassword;
     }
 
-    public void setSavePassword(boolean savePassword)
-    {
+    public void setSavePassword(boolean savePassword) {
         this.savePassword = savePassword;
     }
 
-    public Map<String, String> getProperties()
-    {
+    @NotNull
+    public Map<String, String> getProperties() {
         return properties;
+    }
+
+    public void setProperties(@NotNull Map<String, String> properties) {
+        this.properties.clear();
+        this.properties.putAll(properties);
     }
 
     @Override
@@ -143,15 +132,15 @@ public class DBWHandlerConfiguration {
         if (!(obj instanceof DBWHandlerConfiguration)) {
             return false;
         }
-        DBWHandlerConfiguration source = (DBWHandlerConfiguration)obj;
+        DBWHandlerConfiguration source = (DBWHandlerConfiguration) obj;
         return
             CommonUtils.equalObjects(this.descriptor, source.descriptor) &&
-            CommonUtils.equalObjects(this.driver, source.driver) &&
-            this.enabled == source.enabled &&
-            CommonUtils.equalObjects(this.userName, source.userName) &&
-            CommonUtils.equalObjects(this.password, source.password) &&
-            this.savePassword == source.savePassword &&
-            CommonUtils.equalObjects(this.properties, source.properties);
+                CommonUtils.equalObjects(this.driver, source.driver) &&
+                this.enabled == source.enabled &&
+                CommonUtils.equalObjects(this.userName, source.userName) &&
+                CommonUtils.equalObjects(this.password, source.password) &&
+                this.savePassword == source.savePassword &&
+                CommonUtils.equalObjects(this.properties, source.properties);
     }
 
     public void resolveSystemEnvironmentVariables() {
@@ -165,4 +154,5 @@ public class DBWHandlerConfiguration {
         }
 
     }
+
 }
