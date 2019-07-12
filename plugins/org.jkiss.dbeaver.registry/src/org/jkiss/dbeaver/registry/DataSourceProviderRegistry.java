@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -216,6 +217,13 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         return null;
     }
 
+    @Override
+    public DBPDataSourceProviderDescriptor makeFakeProvider(String providerID) {
+        DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, providerID);
+        dataSourceProviders.add(provider);
+        return provider;
+    }
+
     public List<DataSourceProviderDescriptor> getDataSourceProviders()
     {
         return dataSourceProviders;
@@ -301,6 +309,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             xml.setButify(true);
             xml.startElement(RegistryConstants.TAG_DRIVERS);
             for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {
+                if (provider.isTemporary()) {
+                    continue;
+                }
                 xml.startElement(RegistryConstants.TAG_PROVIDER);
                 xml.addAttribute(RegistryConstants.ATTR_ID, provider.getId());
                 for (DriverDescriptor driver : provider.getDrivers()) {
