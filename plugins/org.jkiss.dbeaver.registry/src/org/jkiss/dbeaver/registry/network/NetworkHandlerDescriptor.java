@@ -32,12 +32,12 @@ import java.util.Locale;
 /**
  * NetworkHandlerDescriptor
  */
-public class NetworkHandlerDescriptor extends AbstractContextDescriptor implements DBWHandlerDescriptor
-{
+public class NetworkHandlerDescriptor extends AbstractContextDescriptor implements DBWHandlerDescriptor {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.networkHandler"; //$NON-NLS-1$
 
     private final String id;
     private final String label;
+    private final String codeName;
     private final String description;
     private DBWHandlerType type;
     private final boolean secured;
@@ -45,11 +45,11 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     private final int order;
 
     NetworkHandlerDescriptor(
-        IConfigurationElement config)
-    {
+        IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.codeName = config.getAttribute("codeName") == null ? this.id : config.getAttribute("codeName");
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.type = DBWHandlerType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase(Locale.ENGLISH));
@@ -59,28 +59,28 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     }
 
     @NotNull
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public String getLabel()
-    {
+    @NotNull
+    public String getCodeName() {
+        return codeName;
+    }
+
+    public String getLabel() {
         return label;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public DBWHandlerType getType()
-    {
+    public DBWHandlerType getType() {
         return type;
     }
 
-    public boolean isSecured()
-    {
+    public boolean isSecured() {
         return secured;
     }
 
@@ -88,8 +88,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         return order;
     }
 
-    public boolean matches(DBPDataSourceProvider provider)
-    {
+    public boolean matches(DBPDataSourceProvider provider) {
         return appliesTo(provider);
     }
 
@@ -98,8 +97,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     }
 
     public <T extends DBWNetworkHandler> T createHandler(Class<T> impl)
-        throws DBException
-    {
+        throws DBException {
         return handlerType.createInstance(impl);
     }
 

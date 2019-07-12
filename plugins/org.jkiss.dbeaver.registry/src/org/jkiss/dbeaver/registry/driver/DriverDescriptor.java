@@ -129,6 +129,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean custom;
     private boolean modified;
     private boolean disabled;
+    private boolean temporary;
     private int promoted;
     private final List<DBPNativeClientLocation> nativeClientHomes = new ArrayList<>();
     private final List<DriverFileSource> fileSources = new ArrayList<>();
@@ -515,7 +516,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public boolean isModified() {
-        return modified;
+        return !isTemporary() && modified;
     }
 
     public void setModified(boolean modified) {
@@ -671,6 +672,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public boolean isInstantiable() {
         return !CommonUtils.isEmpty(driverClassName);
+    }
+
+    @Override
+    public boolean isTemporary() {
+        return temporary || providerDescriptor.isTemporary();
+    }
+
+    public void setTemporary(boolean temporary) {
+        this.temporary = temporary;
     }
 
     @Nullable

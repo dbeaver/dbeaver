@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -98,6 +99,63 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         this.container = container;
         this.name = name;
         this.descriptionColumnNames = (String) map.get("description");
+        // Attributes
+        for (Map.Entry<String, Map<String, Object>> attrObject : JSONUtils.getNestedObjects(map, "attributes")) {
+            String attrName = attrObject.getKey();
+            Map<String, Object> attrMap = attrObject.getValue();
+            DBVEntityAttribute attr = new DBVEntityAttribute(this, null, attrName, attrMap);
+            if (entityAttributes == null) entityAttributes = new ArrayList<>();
+            entityAttributes.add(attr);
+        }
+        // Constraints
+        for (Map.Entry<String, Map<String, Object>> consObject : JSONUtils.getNestedObjects(map, "constraints")) {
+            String consName = consObject.getKey();
+            Map<String, Object> consMap = consObject.getValue();
+            String consType = JSONUtils.getString(consMap, "type");
+            DBVEntityConstraint constraint = new DBVEntityConstraint(this, DBSEntityConstraintType.VIRTUAL_KEY, consName);
+            for (String attrName : JSONUtils.deserializeStringList(consMap, "attributes")) {
+                constraint.addAttribute(attrName);
+            }
+            if (entityConstraints == null) entityConstraints = new ArrayList<>();
+            entityConstraints.add(constraint);
+        }
+        // Foreign keys
+        for (Map<String, Object> fkObject : JSONUtils.getObjectList(map, "foreign-keys")) {
+            String entityId = JSONUtils.getString(fkObject, "entity");
+            String refConsId = JSONUtils.getString(fkObject, "constraint");
+
+            if (entityForeignKeys == null) entityForeignKeys = new ArrayList<>();
+            log.warn("Virtual foreign keys load is not implemented yet");
+/*
+            DBVEntityForeignKey fk = new DBVEntityForeignKey();
+            Map<String, Object> consMap = fkObject.getValue();
+            String consType = JSONUtils.getString(consMap, "type");
+            DBVEntityConstraint constraint = new DBVEntityConstraint(this, DBSEntityConstraintType.VIRTUAL_KEY, consName);
+            for (String attrName : JSONUtils.deserializeStringList(consMap, "attributes")) {
+                constraint.addAttribute(attrName);
+            }
+            entityConstraints.add(constraint);
+*/
+        }
+
+        // Color mappings
+        for (Map<String, Object> colorObj : JSONUtils.getObjectList(map, "colors")) {
+            DBVColorOverride curColor = new DBVColorOverride(
+                JSONUtils.getString(colorObj, "name"),
+                DBCLogicalOperator.valueOf(JSONUtils.getString(colorObj, "operator")),
+                null,
+                JSONUtils.getString(colorObj, "foreground"),
+                JSONUtils.getString(colorObj, "background")
+            );
+            curColor.setRange(JSONUtils.getBoolean(colorObj, "range"));
+            curColor.setSingleColumn(JSONUtils.getBoolean(colorObj, "single-column"));
+            curColor.setColorForeground2(JSONUtils.getString(colorObj, "foreground2"));
+            curColor.setColorBackground2(JSONUtils.getString(colorObj, "background2"));
+            for (String strValue : JSONUtils.deserializeStringList(colorObj, "values")) {
+                curColor.addAttributeValue(strValue);
+            }
+            addColorOverride(curColor);
+        }
     }
 
     @Nullable

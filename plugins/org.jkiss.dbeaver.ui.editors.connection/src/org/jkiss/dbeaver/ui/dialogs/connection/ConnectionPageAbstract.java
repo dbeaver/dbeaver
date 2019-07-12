@@ -46,8 +46,7 @@ import org.jkiss.utils.CommonUtils;
 
 public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor
 {
-    // FIXME: make it private
-    public IDataSourceConnectionEditorSite site;
+    protected IDataSourceConnectionEditorSite site;
     // Driver name
     protected Text driverText;
     protected Button savePasswordCheck;
@@ -146,6 +145,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 Label advancedLabel = UIUtils.createControlLabel(linksComposite, UIConnectionMessages.dialog_connection_advanced_settings);
                 advancedLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+/*
                 if (!site.getDriver().isEmbedded()) {
                     Button netConfigLink = new Button(linksComposite, SWT.PUSH);
                     netConfigLink.setText(UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_network_link);
@@ -158,6 +158,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                     netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
                     //((GridLayout)linksComposite.getLayout()).numColumns++;
                 }
+*/
                 {
                     if (!site.getDriver().isEmbedded()) {
                         UIUtils.createEmptyLabel(linksComposite, 1, 1);

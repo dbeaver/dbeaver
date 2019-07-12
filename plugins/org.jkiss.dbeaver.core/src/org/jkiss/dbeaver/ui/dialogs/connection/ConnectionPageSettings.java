@@ -40,6 +40,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -194,19 +196,24 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 this.connectionEditor.setSite(this);
             }
             // init sub pages (if any)
-            getSubPages();
+            IDialogPage[] allSubPages = getSubPages(false);
 
-            if (wizard.isNew() && !ArrayUtils.isEmpty(subPages)) {
+            if (!ArrayUtils.isEmpty(allSubPages)) {
                 // Create tab folder
                 List<IDialogPage> allPages = new ArrayList<>();
                 allPages.add(connectionEditor);
-                Collections.addAll(allPages, subPages);
+                // Add sub pages
+                Collections.addAll(allPages, allSubPages);
 
                 tabFolder = new TabFolder(parent, SWT.TOP);
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
                 setControl(tabFolder);
 
                 for (IDialogPage page : allPages) {
+                    if (ArrayUtils.contains(extraPages, page)) {
+                        // Ignore extra pages
+                        continue;
+                    }
                     TabItem item = new TabItem(tabFolder, SWT.NONE);
                     page.createControl(tabFolder);
                     item.setData(page);
@@ -327,8 +334,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Nullable
     @Override
-    public IDialogPage[] getSubPages()
+    public IDialogPage[] getSubPages(boolean extrasOnly)
     {
+        if (extrasOnly) {
+            return extraPages;
+        }
         if (subPages != null) {
             return subPages;
         }
@@ -338,7 +348,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         if (connectionEditor instanceof ICompositeDialogPage) {
-            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages();
+            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages(extrasOnly);
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage page : subPages) {
                     if (page instanceof IDataSourceConnectionEditor) {
@@ -346,9 +356,15 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     }
                 }
             }
+            // Add network tabs
+            for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
+                subPages = ArrayUtils.add(IDialogPage.class, subPages, new ConnectionPageNetworkHandler(this, descriptor));
+            }
+
             if (extraPages != null) {
                 subPages = ArrayUtils.concatArrays(subPages, extraPages);
             }
+
             return subPages;
         } else {
             return extraPages;

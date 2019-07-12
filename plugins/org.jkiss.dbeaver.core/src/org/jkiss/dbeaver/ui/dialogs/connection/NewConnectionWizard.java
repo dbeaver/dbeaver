@@ -47,7 +47,7 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageDriver pageDrivers;
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
-    private ConnectionPageNetwork pageNetwork;
+    //private ConnectionPageNetwork pageNetwork;
 
     public NewConnectionWizard() {
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
@@ -119,9 +119,9 @@ public class NewConnectionWizard extends ConnectionWizard
         }
 
         pageGeneral = new ConnectionPageGeneral(this);
-        pageNetwork = new ConnectionPageNetwork(this);
+        //pageNetwork = new ConnectionPageNetwork(this);
         addPage(pageGeneral);
-        addPage(pageNetwork);
+        //addPage(pageNetwork);
 
         // Initial settings
         if (selection != null && !selection.isEmpty()) {
@@ -156,14 +156,12 @@ public class NewConnectionWizard extends ConnectionWizard
         if (page == pageDrivers) {
             ConnectionPageSettings pageSettings = getPageSettings((DriverDescriptor) getSelectedDriver());
             if (pageSettings == null) {
-                return pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
+                return pageGeneral;
             } else {
                 return pageSettings;
             }
         } else if (page instanceof ConnectionPageSettings) {
             return null;//pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
-        } else if (page instanceof ConnectionPageNetwork) {
-            return null;//pageGeneral;
         } else {
             return null;
         }
@@ -203,7 +201,7 @@ public class NewConnectionWizard extends ConnectionWizard
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
-        pageNetwork.saveSettings(dataSource);
+        //pageNetwork.saveSettings(dataSource);
     }
 
     @Override

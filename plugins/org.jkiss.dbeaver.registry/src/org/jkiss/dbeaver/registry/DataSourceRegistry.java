@@ -382,13 +382,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
 
-    void addDataSourceToList(DataSourceDescriptor descriptor) {
+    void addDataSourceToList(@NotNull DataSourceDescriptor descriptor) {
         synchronized (dataSources) {
             this.dataSources.add(descriptor);
         }
     }
 
-    public void removeDataSource(DBPDataSourceContainer dataSource) {
+    public void removeDataSource(@NotNull DBPDataSourceContainer dataSource) {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         synchronized (dataSources) {
             this.dataSources.remove(descriptor);
@@ -498,12 +498,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         try {
             // Modern way - search json configs in metadata folder
             boolean modernFormat = false;
-            for (IResource res : project.getMetadataFolder(false).members(IContainer.INCLUDE_HIDDEN)) {
-                if (res instanceof IFile && res.exists() &&
-                    res.getName().startsWith(MODERN_CONFIG_FILE_PREFIX) && res.getName().endsWith(MODERN_CONFIG_FILE_EXT))
-                {
-                    loadDataSources((IFile)res, refresh, true, parseResults);
-                    modernFormat = true;
+            IFolder metadataFolder = project.getMetadataFolder(false);
+            if (metadataFolder.exists()) {
+                for (IResource res : metadataFolder.members(IContainer.INCLUDE_HIDDEN)) {
+                    if (res instanceof IFile && res.exists() &&
+                        res.getName().startsWith(MODERN_CONFIG_FILE_PREFIX) && res.getName().endsWith(MODERN_CONFIG_FILE_EXT)) {
+                        loadDataSources((IFile) res, refresh, true, parseResults);
+                        modernFormat = true;
+                    }
                 }
             }
             if (!modernFormat) {
