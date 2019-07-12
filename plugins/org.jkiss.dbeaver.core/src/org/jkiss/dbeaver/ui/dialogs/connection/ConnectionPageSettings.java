@@ -40,6 +40,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -200,6 +202,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 // Create tab folder
                 List<IDialogPage> allPages = new ArrayList<>();
                 allPages.add(connectionEditor);
+                // Add sub pages
                 Collections.addAll(allPages, subPages);
 
                 tabFolder = new TabFolder(parent, SWT.TOP);
@@ -346,9 +349,15 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     }
                 }
             }
+            // Add network tabs
+            for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
+                addSubPage(new ConnectionPageNetworkHandler(this, descriptor));
+            }
+
             if (extraPages != null) {
                 subPages = ArrayUtils.concatArrays(subPages, extraPages);
             }
+
             return subPages;
         } else {
             return extraPages;

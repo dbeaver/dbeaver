@@ -41,6 +41,7 @@
         <handler
             type="proxy"
             id="socks_proxy"
+            codeName="SOCKS"
             label="%handler.socks_proxy.label"
             description="%handler.socks_proxy.description"
             secured="true"
