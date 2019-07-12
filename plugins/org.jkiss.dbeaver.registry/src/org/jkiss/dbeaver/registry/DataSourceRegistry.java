@@ -163,7 +163,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     private IFile getModernConfigFile() {
         return project
-            .getMetadataFolder()
+            .getMetadataFolder(false)
             .getFile(MODERN_CONFIG_FILE_NAME);
     }
 
@@ -498,7 +498,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         try {
             // Modern way - search json configs in metadata folder
             boolean modernFormat = false;
-            for (IResource res : project.getMetadataFolder().members(IContainer.INCLUDE_HIDDEN)) {
+            for (IResource res : project.getMetadataFolder(false).members(IContainer.INCLUDE_HIDDEN)) {
                 if (res instanceof IFile && res.exists() &&
                     res.getName().startsWith(MODERN_CONFIG_FILE_PREFIX) && res.getName().endsWith(MODERN_CONFIG_FILE_EXT))
                 {
@@ -588,7 +588,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 } else {
                     if ("xml".equals(configFile.getFileExtension())) {
                         // Legacy configuration - move to metadata folder as json
-                        configFile = project.getMetadataFolder().getFile(configFile.getName() + ".json");
+                        configFile = project.getMetadataFolder(false).getFile(configFile.getName() + ".json");
                     }
                 }
                 try {

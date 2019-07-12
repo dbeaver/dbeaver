@@ -20,11 +20,9 @@ package org.jkiss.dbeaver.model.app;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 
 import java.io.File;
-import java.util.Map;
 
 /**
  * DBPWorkspace
@@ -44,7 +42,7 @@ public interface DBPProject
     IProject getEclipseProject();
 
     @NotNull
-    IFolder getMetadataFolder();
+    IFolder getMetadataFolder(boolean create);
 
     boolean isOpen();
 

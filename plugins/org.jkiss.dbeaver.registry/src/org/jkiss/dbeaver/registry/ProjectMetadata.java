@@ -99,8 +99,17 @@ public class ProjectMetadata implements DBPProject {
 
     @NotNull
     @Override
-    public IFolder getMetadataFolder() {
-        return project.getFolder(METADATA_FOLDER);
+    public IFolder getMetadataFolder(boolean create) {
+        IFolder metadataFolder = project.getFolder(METADATA_FOLDER);
+        if (create && !metadataFolder.exists()) {
+            try {
+                metadataFolder.create(IResource.FORCE | IResource.HIDDEN, true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                log.error("Error creating project metadata folder", e);
+            }
+        }
+
+        return metadataFolder;
     }
 
     @NotNull
@@ -129,21 +138,16 @@ public class ProjectMetadata implements DBPProject {
             }
         }
 
-        IFolder metadataFolder = project.getFolder(METADATA_FOLDER);
-        if (!metadataFolder.exists()) {
-            try {
-                metadataFolder.create(IResource.FORCE | IResource.HIDDEN, true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                log.error("Error creating project metadata folder", e);
-            }
-        }
+        IFolder mdFolder = getMetadataFolder(false);
 
         File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
-        if (dsConfig.exists()) {
+        if (!mdFolder.exists() && dsConfig.exists()) {
             format = ProjectFormat.LEGACY;
         } else {
             format = ProjectFormat.MODERN;
         }
+
+        getMetadataFolder(true);
 
         // Check project structure and migrate
         checkAndUpdateProjectStructure();
@@ -271,9 +275,10 @@ public class ProjectMetadata implements DBPProject {
             return;
         }
 
-        File dsConfig = new File(getMetadataPath(), METADATA_STORAGE_FILE);
-        if (!dsConfig.exists()) {
+        File mdConfig = new File(getMetadataPath(), METADATA_STORAGE_FILE);
+        if (!mdConfig.exists()) {
             // Migrate
+            log.debug("Migrate Eclipse resource properties to the project metadata (" + mdConfig.getAbsolutePath() + ")");
             Map<String, Map<String, Object>> projectResourceProperties = extractProjectResourceProperties();
             synchronized (metadataSync) {
                 this.resourceProperties = projectResourceProperties;
@@ -375,4 +380,8 @@ public class ProjectMetadata implements DBPProject {
         }
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
