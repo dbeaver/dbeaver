@@ -176,7 +176,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public DBSObject getDatabaseObject()
     {
-        return node.getObject();
+        return node == null ? null : node.getObject();
     }
 
     @Override

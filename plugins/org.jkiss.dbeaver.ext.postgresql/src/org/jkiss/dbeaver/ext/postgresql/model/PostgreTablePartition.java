@@ -27,33 +27,32 @@ import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import java.sql.ResultSet;
 import java.util.Map;
 
-public class PostgreTablePartition extends PostgreTable
-{
-	
-	public static final String CAT_PARTITIONING = "Partitioning";
-	
-	private String partitionExpression;
-	private PostgreTable partitionOf;
+public class PostgreTablePartition extends PostgreTable {
 
-	public PostgreTablePartition(PostgreTable container) {
-		super(container);
-		this.partitionExpression = "FOR VALUES ";
-		this.isPartition = true;
-		this.setName("newpartition");
-		this.partitionOf = container;
-	}
+    public static final String CAT_PARTITIONING = "Partitioning";
 
-	public PostgreTablePartition(PostgreTableContainer container, ResultSet dbResult) {
-		super(container, dbResult);
-		this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expr");
-	}
-	
-	@Property(viewable = true, editable = true, updatable = true, order = 60)
-	@Nullable
+    private String partitionExpression;
+    private PostgreTable partitionOf;
+
+    public PostgreTablePartition(PostgreTable container) {
+        super(container);
+        this.partitionExpression = "FOR VALUES ";
+        this.isPartition = true;
+        this.setName("newpartition");
+        this.partitionOf = container;
+    }
+
+    public PostgreTablePartition(PostgreTableContainer container, ResultSet dbResult) {
+        super(container, dbResult);
+        this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expr");
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 60)
+    @Nullable
     public String getPartitionExpression() {
         return partitionExpression;
     }
-    
+
     public void setPartitionExpression(String expr) {
         this.partitionExpression = expr;
     }
@@ -67,5 +66,5 @@ public class PostgreTablePartition extends PostgreTable
     public PostgreTable getPartitionOf() {
         return partitionOf;
     }
-    
+
 }
