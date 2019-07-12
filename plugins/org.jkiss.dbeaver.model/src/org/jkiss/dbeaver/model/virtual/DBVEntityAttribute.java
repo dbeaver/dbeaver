@@ -21,7 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -55,6 +58,32 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         }
         if (!CommonUtils.isEmpty(copy.properties)) {
             this.properties = new LinkedHashMap<>(copy.properties);
+        }
+    }
+
+    DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name, Map<String, Object> map) {
+        this(entity, parent, name);
+        Map<String, String> attrProps = JSONUtils.deserializeProperties(map, "properties");
+        if (!attrProps.isEmpty()) {
+            this.properties = attrProps;
+        }
+        Map<String, Object> transformsCfg = JSONUtils.getObject(map, "transforms");
+        if (!transformsCfg.isEmpty()) {
+            transformSettings = new DBVTransformSettings();
+            transformSettings.setCustomTransformer(JSONUtils.getString(transformsCfg, "custom"));
+            for (String incTrans : JSONUtils.deserializeStringList(transformsCfg, "include")) {
+                final DBDAttributeTransformerDescriptor transformer = DBWorkbench.getPlatform().getValueHandlerRegistry().getTransformer(incTrans);
+                if (transformer != null) {
+                    transformSettings.enableTransformer(transformer, true);
+                }
+            }
+            for (String excTrans : JSONUtils.deserializeStringList(transformsCfg, "exclude")) {
+                final DBDAttributeTransformerDescriptor transformer = DBWorkbench.getPlatform().getValueHandlerRegistry().getTransformer(excTrans);
+                if (transformer != null) {
+                    transformSettings.enableTransformer(transformer, false);
+                }
+            }
+            transformSettings.setTransformOptions(JSONUtils.deserializeProperties(transformsCfg, "properties"));
         }
     }
 

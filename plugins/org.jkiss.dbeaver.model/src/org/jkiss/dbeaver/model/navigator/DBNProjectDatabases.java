@@ -215,7 +215,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return null;
     }
 
-    private DBNDataSource addDataSource(DBPDataSourceContainer descriptor, boolean reflect, boolean reveal)
+    private DBNDataSource addDataSource(@NotNull DBPDataSourceContainer descriptor, boolean reflect, boolean reveal)
     {
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         dataSources.add(newNode);
