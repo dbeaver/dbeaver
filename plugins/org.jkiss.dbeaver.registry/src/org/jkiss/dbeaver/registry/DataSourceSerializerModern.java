@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
@@ -311,17 +313,85 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     if (!CommonUtils.isEmpty(colorValue)) {
                         config.setConnectionColor(colorValue);
                     }
-                    String keepAlive = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_KEEP_ALIVE);
-                    if (!CommonUtils.isEmpty(keepAlive)) {
-                        try {
-                            config.setKeepAliveInterval(Integer.parseInt(keepAlive));
-                        } catch (NumberFormatException e) {
-                            log.warn("Bad keep-alive interval value", e);
-                        }
+                    int keepAlive = JSONUtils.getInteger(cfgObject, RegistryConstants.ATTR_KEEP_ALIVE);
+                    if (keepAlive > 0) {
+                        config.setKeepAliveInterval(keepAlive);
                     }
                     config.setProperties(JSONUtils.deserializeProperties(cfgObject, RegistryConstants.TAG_PROPERTIES));
                     config.setProviderProperties(JSONUtils.deserializeProperties(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
+
+                    // Events
+                    for (Map.Entry<String, Map<String, Object>> eventObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_EVENTS)) {
+                        DBPConnectionEventType eventType = CommonUtils.valueOf(DBPConnectionEventType.class, eventObject.getKey(), DBPConnectionEventType.BEFORE_CONNECT);
+                        Map<String, Object> eventCfg = eventObject.getValue();
+                        DBRShellCommand command = new DBRShellCommand("");
+                        command.setEnabled(JSONUtils.getBoolean(eventCfg, RegistryConstants.ATTR_ENABLED));
+                        command.setShowProcessPanel(JSONUtils.getBoolean(eventCfg, RegistryConstants.ATTR_SHOW_PANEL));
+                        command.setWaitProcessFinish(JSONUtils.getBoolean(eventCfg, RegistryConstants.ATTR_WAIT_PROCESS));
+                        if (command.isWaitProcessFinish()) {
+                            command.setWaitProcessTimeoutMs(JSONUtils.getInteger(eventCfg, RegistryConstants.ATTR_WAIT_PROCESS_TIMEOUT));
+                        }
+                        command.setTerminateAtDisconnect(JSONUtils.getBoolean(eventCfg, RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT));
+                        command.setPauseAfterExecute(JSONUtils.getInteger(eventCfg, RegistryConstants.ATTR_PAUSE_AFTER_EXECUTE));
+                        command.setWorkingDirectory(JSONUtils.getString(eventCfg, RegistryConstants.ATTR_WORKING_DIRECTORY));
+                        command.setCommand(JSONUtils.getString(eventCfg, RegistryConstants.ATTR_COMMAND));
+
+                        config.setEvent(eventType, command);
+                    }
+
+                    // Handlers
+                    for (Map.Entry<String, Map<String, Object>> handlerObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_HANDLERS)) {
+                        String handlerId = handlerObject.getKey();
+                        Map<String, Object> handlerCfg = handlerObject.getValue();
+
+                        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
+                        if (handlerDescriptor == null) {
+                            log.warn("Can't find network handler '" + handlerId + "'");
+                        } else {
+                            DBWHandlerConfiguration curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, dataSource.getDriver());
+                            curNetworkHandler.setEnabled(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_ENABLED));
+                            curNetworkHandler.setSavePassword(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_SAVE_PASSWORD));
+                            if (!passwordReadCanceled) {
+                                final String[] creds = readSecuredCredentials(handlerCfg, dataSource, "network/" + handlerId);
+                                curNetworkHandler.setUserName(creds[0]);
+                                if (curNetworkHandler.isSavePassword()) {
+                                    curNetworkHandler.setPassword(creds[1]);
+                                }
+                            }
+                            curNetworkHandler.setProperties(JSONUtils.deserializeProperties(handlerCfg, RegistryConstants.TAG_PROPERTIES));
+                            dataSource.getConnectionConfiguration().addHandler(curNetworkHandler);
+                        }
+                    }
+
+                    // Bootstrap
+                    Map<String, Object> bootstrapCfg = JSONUtils.getObject(conObject, RegistryConstants.TAG_BOOTSTRAP);
+                    if (bootstrapCfg.containsKey(RegistryConstants.ATTR_AUTOCOMMIT)) {
+                        config.getBootstrap().setDefaultAutoCommit(JSONUtils.getBoolean(bootstrapCfg, RegistryConstants.ATTR_AUTOCOMMIT));
+                    }
+                    if (bootstrapCfg.containsKey(RegistryConstants.ATTR_TXN_ISOLATION)) {
+                        config.getBootstrap().setDefaultTransactionIsolation(JSONUtils.getInteger(bootstrapCfg, RegistryConstants.ATTR_TXN_ISOLATION));
+                    }
+                    config.getBootstrap().setDefaultObjectName(JSONUtils.getString(bootstrapCfg, RegistryConstants.ATTR_DEFAULT_OBJECT));
+                    if (bootstrapCfg.containsKey(RegistryConstants.ATTR_IGNORE_ERRORS)) {
+                        config.getBootstrap().setIgnoreErrors(JSONUtils.getBoolean(bootstrapCfg, RegistryConstants.ATTR_IGNORE_ERRORS));
+                    }
+                    config.getBootstrap().setInitQueries(JSONUtils.deserializeStringList(bootstrapCfg, RegistryConstants.TAG_QUERY));
                 }
+
+                // Filters
+                for (Map<String, Object> filterCfg : JSONUtils.getObjectList(conObject, RegistryConstants.TAG_FILTERS)) {
+                    String typeName = JSONUtils.getString(filterCfg, RegistryConstants.ATTR_TYPE);
+                    String objectID = JSONUtils.getString(filterCfg, RegistryConstants.ATTR_ID);
+                    if (!CommonUtils.isEmpty(typeName)) {
+                        DBSObjectFilter filter = readObjectFiler(filterCfg);
+                        dataSource.updateObjectFilter(typeName, objectID, filter);
+                    }
+                }
+
+                // Preferences
+                dataSource.getPreferenceStore().getProperties().putAll(
+                    JSONUtils.deserializeProperties(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
+                );
 
                 // Virtual model
                 String vmID = CommonUtils.toString(conObject.get("virtual-model-id"), id);
@@ -340,6 +410,16 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
         }
 
+    }
+
+    private static DBSObjectFilter readObjectFiler(Map<String, Object> map) throws IOException {
+        DBSObjectFilter filter = new DBSObjectFilter();
+        filter.setName(JSONUtils.getString(map, RegistryConstants.ATTR_NAME));
+        filter.setDescription(JSONUtils.getString(map, RegistryConstants.ATTR_DESCRIPTION));
+        filter.setEnabled(JSONUtils.getBoolean(map, RegistryConstants.ATTR_ENABLED));
+        filter.setInclude(JSONUtils.deserializeStringList(map, RegistryConstants.TAG_INCLUDE));
+        filter.setExclude(JSONUtils.deserializeStringList(map, RegistryConstants.TAG_EXCLUDE));
+        return filter;
     }
 
     private String[] readSecuredCredentials(Map<String, Object> map, DataSourceDescriptor dataSource, String subNode) {
@@ -450,11 +530,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
             // Save events
             if (!ArrayUtils.isEmpty(connectionInfo.getDeclaredEvents())) {
                 json.name(RegistryConstants.TAG_EVENTS);
-                json.beginArray();
+                json.beginObject();
                 for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
                     DBRShellCommand command = connectionInfo.getEvent(eventType);
+                    json.name(eventType.name());
                     json.beginObject();
-                    JSONUtils.field(json, RegistryConstants.ATTR_TYPE, eventType.name());
                     JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, command.isEnabled());
                     JSONUtils.field(json, RegistryConstants.ATTR_SHOW_PANEL, command.isShowProcessPanel());
                     JSONUtils.field(json, RegistryConstants.ATTR_WAIT_PROCESS, command.isWaitProcessFinish());
@@ -467,7 +547,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     JSONUtils.fieldNE(json, RegistryConstants.ATTR_COMMAND, command.getCommand());
                     json.endObject();
                 }
-                json.endArray();
+                json.endObject();
             }
 
             // Save network handlers' configurations
