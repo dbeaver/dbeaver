@@ -664,7 +664,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
-            StringBuilder catalogQuery = new StringBuilder("show databases");
+            StringBuilder catalogQuery = new StringBuilder("SELECT `SCHEMA_NAME` FROM `information_schema`.`SCHEMATA`");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
             if (catalogFilters != null) {
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_DATABASE_NAME, true);
