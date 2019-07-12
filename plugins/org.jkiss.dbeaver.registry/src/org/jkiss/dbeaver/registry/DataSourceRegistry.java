@@ -73,6 +73,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project) {
         this.platform = platform;
         this.project = project;
+
         loadDataSources(false);
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
     }
