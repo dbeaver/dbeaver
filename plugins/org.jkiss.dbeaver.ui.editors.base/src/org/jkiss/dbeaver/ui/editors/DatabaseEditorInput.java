@@ -98,6 +98,9 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public String getName()
     {
+        if (node == null) {
+            return "?";
+        }
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_TITLE_SHOW_FULL_NAME)) {
             return node.getNodeFullName();
         } else {
