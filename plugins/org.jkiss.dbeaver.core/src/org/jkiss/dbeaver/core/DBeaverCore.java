@@ -276,6 +276,8 @@ public class DBeaverCore implements DBPPlatform {
             //this.navigatorModel = null;
         }
 
+        workspace.dispose();
+
         if (this.qmLogWriter != null) {
             this.queryManager.unregisterMetaListener(qmLogWriter);
             this.qmLogWriter.dispose();

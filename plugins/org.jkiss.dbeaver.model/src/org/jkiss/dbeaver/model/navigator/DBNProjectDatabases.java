@@ -68,10 +68,6 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         children = null;
         if (dataSourceRegistry != null) {
             dataSourceRegistry.removeDataSourceListener(this);
-            if (!getModel().isGlobal()) {
-                // For local models registry si
-                dataSourceRegistry.dispose();
-            }
             dataSourceRegistry = null;
         }
         super.dispose(reflect);
