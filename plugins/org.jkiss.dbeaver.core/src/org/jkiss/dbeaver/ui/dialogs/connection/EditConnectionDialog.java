@@ -66,6 +66,11 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     }
 
     @Override
+    protected boolean isAutoLayoutAvailable() {
+        return true;
+    }
+
+    @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
         super.createButtonsForButtonBar(parent);

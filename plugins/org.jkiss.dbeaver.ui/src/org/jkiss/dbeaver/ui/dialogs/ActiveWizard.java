@@ -18,13 +18,17 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.IPreferencePage;
+import org.eclipse.jface.preference.IPreferencePageContainer;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -81,5 +85,47 @@ public abstract class ActiveWizard extends Wizard
     private static boolean isPageActive(IDialogPage page) {
         return page != null && page.getControl() != null;
     }
+
+    protected void createPreferencePages(IPreferenceNode[] preferenceNodes) {
+        createPreferencePages(null, preferenceNodes);
+    }
+
+    protected void createPreferencePages(WizardPrefPage parent, IPreferenceNode[] preferenceNodes) {
+        Arrays.sort(preferenceNodes, Comparator.comparing(IPreferenceNode::getLabelText));
+        for (IPreferenceNode node : preferenceNodes) {
+            if (isNodeHasParent(node, preferenceNodes)) {
+                continue;
+            }
+            node.createPage();
+            IPreferencePage preferencePage = node.getPage();
+            if (preferencePage == null) {
+                continue;
+            }
+            preferencePage.setContainer((IPreferencePageContainer) getContainer());
+            WizardPrefPage wizardPrefPage;
+            if (parent == null) {
+                wizardPrefPage = addPreferencePage(preferencePage, preferencePage.getTitle(), preferencePage.getDescription());
+            } else {
+                wizardPrefPage = parent.addSubPage(preferencePage, preferencePage.getTitle(), preferencePage.getDescription());
+            }
+
+            IPreferenceNode[] subNodes = node.getSubNodes();
+            if (subNodes != null) {
+                createPreferencePages(wizardPrefPage, subNodes);
+            }
+        }
+    }
+
+    private boolean isNodeHasParent(IPreferenceNode node, IPreferenceNode[] allNodes) {
+        for (IPreferenceNode n : allNodes) {
+            for (IPreferenceNode subNode : n.getSubNodes()) {
+                if (node.getId().equals(subNode.getId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
 }
