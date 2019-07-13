@@ -47,12 +47,12 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
+import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * PrefPageProjectResourceSettings
@@ -124,10 +124,43 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             ToolItem createItem = new ToolItem(toolbar, SWT.NONE);
             createItem.setToolTipText("Create new profile");
             createItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_ADD));
+            createItem.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    String profileName = EnterNameDialog.chooseName(getShell(), "Profile name", "");
+                    if (CommonUtils.isEmpty(profileName)) {
+                        return;
+                    }
+                    DBWNetworkProfile newProfile = new DBWNetworkProfile();
+                    newProfile.setProfileId(UUID.randomUUID().toString());
+                    newProfile.setProfileName(profileName);
+                    projectMeta.getDataSourceRegistry().updateNetworkProfile(newProfile);
+                    projectMeta.getDataSourceRegistry().flushConfig();
+
+                    TableItem item = new TableItem(profilesTable, SWT.NONE);
+                    item.setText(newProfile.getProfileName());
+                    item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
+                    item.setData(newProfile);
+                }
+            });
 
             ToolItem deleteItem = new ToolItem(toolbar, SWT.NONE);
             deleteItem.setToolTipText("Delete profile");
             deleteItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_DELETE));
+            deleteItem.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (selectedProfile != null) {
+                        projectMeta.getDataSourceRegistry().removeNetworkProfile(selectedProfile);
+                        projectMeta.getDataSourceRegistry().flushConfig();
+                        profilesTable.remove(profilesTable.getSelectionIndex());
+                        selectedProfile = null;
+                        updateControlsState();
+                    } else {
+                        UIUtils.showMessageBox(getShell(), "No profile", "Select profile first", SWT.ICON_ERROR);
+                    }
+                }
+            });
 
         }
 
@@ -139,6 +172,12 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                     createHandlerTab(nhd);
                 }
             }
+            handlersFolder.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    updateControlsState();
+                }
+            });
         }
 
         divider.setWeights(new int[] { 300, 700 } );
@@ -206,9 +245,9 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        enableHandlerContent(descriptor);
-
         configurator.createControl(handlerComposite);
+
+        enableHandlerContent(descriptor);
     }
 
     private void enableHandlerContent(NetworkHandlerDescriptor descriptor)
@@ -221,7 +260,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                 handlerBlock.blockEnableState.restore();
                 handlerBlock.blockEnableState = null;
             }
-        } else if (handlerConfiguration == null || handlerBlock.blockEnableState == null) {
+        } else if (handlerBlock.blockEnableState == null) {
             handlerBlock.blockEnableState = ControlEnableState.disable(handlerBlock.blockControl);
         }
     }
