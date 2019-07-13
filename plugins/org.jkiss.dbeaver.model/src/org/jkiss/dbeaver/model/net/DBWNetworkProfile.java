@@ -18,16 +18,11 @@ package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 /**
  * Network configuration profile
@@ -35,11 +30,21 @@ import java.util.Map;
 public class DBWNetworkProfile extends DBPConfigurationProfile {
 
     @NotNull
-    private final List<DBWHandlerConfiguration> handlers = new ArrayList<>();
+    private final List<DBWHandlerConfiguration> configurations = new ArrayList<>();
 
     @NotNull
-    public List<DBWHandlerConfiguration> getHandlers() {
-        return handlers;
+    public List<DBWHandlerConfiguration> getConfigurations() {
+        return configurations;
+    }
+
+    @Nullable
+    public DBWHandlerConfiguration getConfiguration(DBWHandlerDescriptor handler) {
+        for (DBWHandlerConfiguration  cfg : configurations) {
+            if (Objects.equals(cfg.getHandlerDescriptor().getId(), handler.getId())) {
+                return cfg;
+            }
+        }
+        return null;
     }
 
 }

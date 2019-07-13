@@ -25,7 +25,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.ExtensionFactory;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -37,7 +36,7 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.project.PrefPageProjectNetworkProfiles;
+import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 
 /**
  * Network handlers edit dialog page
