@@ -22,11 +22,14 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
+import org.eclipse.jface.preference.IPreferencePageContainer;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -37,8 +40,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -46,7 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * MultiPageWizardDialog
  */
-public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer {
+public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer, IPreferencePageContainer {
 
     private IWizard wizard;
     private Composite pageArea;
@@ -57,57 +63,54 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private SashForm wizardSash;
     private volatile int runningOperations = 0;
 
-    public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard)
-    {
+    public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard) {
         this(window, wizard, null);
     }
 
-    public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard, IStructuredSelection selection)
-    {
+    public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard, IStructuredSelection selection) {
         super(window.getShell());
 
         this.wizard = wizard;
         this.wizard.setContainer(this);
+
         // Initialize wizard
         if (wizard instanceof IWorkbenchWizard) {
             if (selection == null) {
                 if (window.getSelectionService().getSelection() instanceof IStructuredSelection) {
-                    selection = (IStructuredSelection)window.getSelectionService().getSelection();
+                    selection = (IStructuredSelection) window.getSelectionService().getSelection();
                 }
             }
-            ((IWorkbenchWizard)wizard).init(window.getWorkbench(), selection);
+            ((IWorkbenchWizard) wizard).init(window.getWorkbench(), selection);
         }
     }
 
-    public IWizard getWizard()
-    {
+    public IWizard getWizard() {
         return wizard;
     }
 
     @Override
-    protected boolean isResizable()
-    {
+    protected boolean isResizable() {
         return true;
     }
 
     @Override
-    protected int getShellStyle()
-    {
+    protected int getShellStyle() {
         return SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL;
     }
 
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
         updateButtons();
+
+        updateWindowTitle();
+
         return contents;
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
-    {
-        Composite composite = (Composite)super.createDialogArea(parent);
+    protected Control createDialogArea(Composite parent) {
+        Composite composite = (Composite) super.createDialogArea(parent);
 
         wizard.addPages();
 
@@ -137,8 +140,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         pagesTree.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 changePage();
             }
         });
@@ -180,8 +182,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     }
 
-    private TreeItem addPage(TreeItem parentItem, IDialogPage page, Point maxSize)
-    {
+    private TreeItem addPage(TreeItem parentItem, IDialogPage page, Point maxSize) {
         TreeItem item = parentItem == null ?
             new TreeItem(pagesTree, SWT.NONE) :
             new TreeItem(parentItem, SWT.NONE);
@@ -202,8 +203,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return item;
     }
 
-    private void changePage()
-    {
+    private void changePage() {
         pageArea.setRedraw(false);
         try {
             TreeItem[] selection = pagesTree.getSelection();
@@ -264,8 +264,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    protected void buttonPressed(int buttonId)
-    {
+    protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.CANCEL_ID) {
             getWizard().performCancel();
         } else if (buttonId == IDialogConstants.OK_ID) {
@@ -277,19 +276,17 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    public IWizardPage getCurrentPage()
-    {
+    public IWizardPage getCurrentPage() {
         TreeItem[] selection = pagesTree.getSelection();
         if (ArrayUtils.isEmpty(selection)) {
             return null;
         }
-        IDialogPage page = (IDialogPage)selection[0].getData();
+        IDialogPage page = (IDialogPage) selection[0].getData();
         return page instanceof IWizardPage ? (IWizardPage) page : null;
     }
 
     @Override
-    public void showPage(IWizardPage page)
-    {
+    public void showPage(IWizardPage page) {
         for (TreeItem item : pagesTree.getItems()) {
             if (item.getData() == page) {
                 pagesTree.setSelection(item);
@@ -307,8 +304,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    public void updateButtons()
-    {
+    public IPreferenceStore getPreferenceStore() {
+        return new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore());
+    }
+
+    @Override
+    public void updateButtons() {
         boolean complete = true;
         for (TreeItem item : pagesTree.getItems()) {
             if (item.getData() instanceof IWizardPage) {
@@ -326,21 +327,26 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    public void updateMessage()
-    {
+    public void updateMessage() {
 
     }
 
     @Override
-    public void updateTitleBar()
-    {
+    public void updateTitle() {
+        updateWindowTitle();
+    }
+
+    @Override
+    public void updateTitleBar() {
         setTitleImage(getCurrentPage().getImage());
     }
 
     @Override
-    public void updateWindowTitle()
-    {
+    public void updateWindowTitle() {
+        getShell().setText(getWizard().getWindowTitle());
+        getShell().setImage(getWizard().getDefaultPageImage());//DBeaverIcons.getImage(activeDataSource.getObjectImage()));
 
+        updateMessage();
     }
 
     public boolean close() {
@@ -351,8 +357,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
-    {
+    public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         // Code copied from WizardDialog
         if (monitorPart != null) {
             monitorPart.setVisible(true);

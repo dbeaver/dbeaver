@@ -15,55 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.preferences;
+package org.jkiss.dbeaver.ui.project;
 
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.dialogs.ContainerSelectionDialog;
-import org.eclipse.ui.dialogs.ISelectionValidator;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
-import org.jkiss.utils.CommonUtils;
-
-import java.io.File;
-import java.util.ArrayList;
+import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 /**
- * PrefPageConnectionTypes
+ * PrefPageProjectResourceSettings
  */
-public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.projectSettings"; //$NON-NLS-1$
+public class PrefPageProjectUserProfiles extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
+    public static final String PAGE_ID = "org.jkiss.dbeaver.proejct.settings.userProfiles"; //$NON-NLS-1$
 
-    private static final Log log = Log.getLog(PrefPageProjectSettings.class);
-
-    private IProject project;
-    private Table resourceTable;
-    private TableEditor handlerTableEditor;
+    private static final Log log = Log.getLog(PrefPageProjectUserProfiles.class);
 
     @Override
     public void init(IWorkbench workbench) {
@@ -71,7 +41,8 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
 
     @Override
     protected Control createContents(final Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
+/*
 
         {
             UIUtils.createControlLabel(composite, UINavigatorMessages.pref_page_projects_settings_label_resource_location);
@@ -109,21 +80,18 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
                             final IFolder folder = project.getFolder(resourcePath);
                             ContainerSelectionDialog dialog = new ContainerSelectionDialog(resourceTable.getShell(), folder, true, UINavigatorMessages.pref_page_projects_settings_label_select + item.getText(0) + UINavigatorMessages.pref_page_projects_settings_label_root_folder);
                             dialog.showClosedProjects(false);
-                            dialog.setValidator(new ISelectionValidator() {
-                                @Override
-                                public String isValid(Object selection) {
-                                    if (selection instanceof IPath) {
-                                        final File file = ((IPath) selection).toFile();
-                                        if (file.isHidden() || file.getName().startsWith(".")) {
-                                            return UINavigatorMessages.pref_page_projects_settings_label_not_use_hidden_folders;
-                                        }
-                                        final String[] segments = ((IPath) selection).segments();
-                                        if (!project.getName().equals(segments[0])) {
-                                            return UINavigatorMessages.pref_page_projects_settings_label_not_store_resources_in_another_project;
-                                        }
+                            dialog.setValidator(selection -> {
+                                if (selection instanceof IPath) {
+                                    final File file = ((IPath) selection).toFile();
+                                    if (file.isHidden() || file.getName().startsWith(".")) {
+                                        return UINavigatorMessages.pref_page_projects_settings_label_not_use_hidden_folders;
                                     }
-                                    return null;
+                                    final String[] segments = ((IPath) selection).segments();
+                                    if (!project.getName().equals(segments[0])) {
+                                        return UINavigatorMessages.pref_page_projects_settings_label_not_store_resources_in_another_project;
+                                    }
                                 }
+                                return null;
                             });
                             if (dialog.open() == IDialogConstants.OK_ID) {
                                 final Object[] result = dialog.getResult();
@@ -151,19 +119,16 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
 
             UIUtils.createInfoLabel(composite, UINavigatorMessages.pref_page_projects_settings_label_restart_require_refresh_global_settings);
         }
+*/
 
         performDefaults();
 
         return composite;
     }
 
-    private void disposeOldEditor() {
-        Control oldEditor = handlerTableEditor.getEditor();
-        if (oldEditor != null) oldEditor.dispose();
-    }
-
     @Override
     protected void performDefaults() {
+/*
         resourceTable.removeAll();
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         for (DBPResourceHandlerDescriptor descriptor : workspace.getResourceHandlerDescriptors()) {
@@ -185,16 +150,14 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
             }
         }
         UIUtils.packColumns(resourceTable, true);
+*/
 
         super.performDefaults();
     }
 
-    private DBPProject getProjectMeta() {
-        return DBWorkbench.getPlatform().getWorkspace().getProject(this.project);
-    }
-
     @Override
     public boolean performOk() {
+/*
         java.util.List<IResource> refreshedResources = new ArrayList<>();
 
         // Save roots
@@ -221,21 +184,17 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
             }
         }
 
+*/
         return super.performOk();
     }
 
     @Override
     public IAdaptable getElement() {
-        return project;
+        return null;
     }
 
     @Override
     public void setElement(IAdaptable element) {
-        if (element instanceof IProject) {
-            this.project = (IProject) element;
-        } else {
-            this.project = DBUtils.getAdapter(IProject.class, element);
-        }
     }
 
 }

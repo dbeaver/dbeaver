@@ -134,9 +134,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         this.eclipseWorkspace.removeResourceChangeListener(projectListener);
 
         synchronized (projects) {
-            if (!this.projects.isEmpty()) {
-                log.warn("Some projects are still open: " + this.projects.keySet());
-            }
             // Dispose all DS registries
             for (ProjectMetadata project : this.projects.values()) {
                 project.dispose();

@@ -24,14 +24,15 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -47,8 +48,10 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -67,7 +70,7 @@ import java.util.Map;
  * Abstract connection wizard
  */
 
-public abstract class ConnectionWizard extends Wizard implements INewWizard {
+public abstract class ConnectionWizard extends ActiveWizard implements INewWizard {
 
     static final String PROP_CONNECTION_TYPE = "connection-type";
 
@@ -77,9 +80,24 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
 
-    protected ConnectionWizard()
-    {
+    protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
+    }
+
+    @Override
+    public String getWindowTitle() {
+        if (isNew()) {
+            return CoreMessages.dialog_new_connection_wizard_title;
+        } else {
+            DataSourceDescriptor activeDataSource = getActiveDataSource();
+            return NLS.bind( CoreMessages.dialog_connection_edit_title, activeDataSource.getName());
+        }
+    }
+
+    @Override
+    public Image getDefaultPageImage() {
+        DBPDriver selectedDriver = getSelectedDriver();
+        return DBeaverIcons.getImage(selectedDriver == null ? DBIcon.DATABASE_DEFAULT : selectedDriver.getIcon());
     }
 
     @Override
@@ -100,8 +118,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     protected abstract void saveSettings(DataSourceDescriptor dataSource);
 
     @NotNull
-    public DataSourceDescriptor getActiveDataSource()
-    {
+    public DataSourceDescriptor getActiveDataSource() {
         DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
         DataSourceDescriptor info = infoMap.get(driver);
         if (info == null) {
@@ -126,8 +143,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     }
 
 
-    public void testConnection()
-    {
+    public void testConnection() {
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
         DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource);
 
@@ -187,9 +203,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 }
             } catch (InvocationTargetException ex) {
                 DBWorkbench.getPlatformUI().showError(
-                        CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                        null,
-                        GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    null,
+                    GeneralUtils.makeExceptionStatus(ex.getTargetException()));
             } catch (Throwable ex) {
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,
@@ -201,8 +217,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         }
     }
 
-    public boolean isNew()
-    {
+    public boolean isNew() {
         return false;
     }
 
@@ -214,8 +229,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         long connectTime = -1;
         DBRProgressMonitor ownerMonitor;
 
-        ConnectionTester(DataSourceDescriptor testDataSource)
-        {
+        ConnectionTester(DataSourceDescriptor testDataSource) {
             super(testDataSource);
             setSystem(true);
             super.initialize = true;//CommonUtils.toBoolean(testDataSource.getDriver().getDriverParameter(DBConstants.PARAM_INIT_ON_TEST));
@@ -224,8 +238,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         }
 
         @Override
-        public IStatus run(DBRProgressMonitor monitor)
-        {
+        public IStatus run(DBRProgressMonitor monitor) {
             if (ownerMonitor != null) {
                 monitor = ownerMonitor;
             }
