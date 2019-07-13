@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.connection;
+package org.jkiss.dbeaver.model.access;
+
+import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
 
 /**
  * Auth profile.
  * May be anything cloud-specific.
  */
-public class DBPConnectionProfile extends DBPConfigurationProfile {
+public class DBAAuthProfile extends DBPConfigurationProfile {
 
 }
