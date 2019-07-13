@@ -405,14 +405,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     @Override
-    public void removeNetworkProfile(String name) {
-        for (int i = 0; i < networkProfiles.size(); ) {
-            if (CommonUtils.equalObjects(networkProfiles.get(i).getProfileName(), name)) {
-                networkProfiles.remove(i);
-            } else {
-                i++;
-            }
-        }
+    public void removeNetworkProfile(DBWNetworkProfile profile) {
+        networkProfiles.remove(profile);
     }
 
     void addNetworkProfile(DBWNetworkProfile profile) {

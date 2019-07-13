@@ -98,7 +98,7 @@ public interface DBPDataSourceRegistry extends DBPObject {
     @NotNull
     List<DBWNetworkProfile> getNetworkProfiles();
     void updateNetworkProfile(DBWNetworkProfile profile);
-    void removeNetworkProfile(String name);
+    void removeNetworkProfile(DBWNetworkProfile profile);
 
     void flushConfig();
     void refreshConfig();
