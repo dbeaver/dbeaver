@@ -17,14 +17,11 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.utils.CommonUtils;
@@ -60,9 +57,6 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     protected Control createContents(Composite parent)
     {
         Control contents = super.createContents(parent);
-        DataSourceDescriptor activeDataSource = getWizard().getActiveDataSource();
-        getShell().setText(NLS.bind( CoreMessages.dialog_connection_edit_title, activeDataSource.getName()));
-        getShell().setImage(DBeaverIcons.getImage(activeDataSource.getObjectImage()));
 
         if (!CommonUtils.isEmpty(lastActivePage)) {
             getWizard().openSettingsPage(lastActivePage);

@@ -16,15 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -53,8 +52,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -73,7 +70,6 @@ public class EditConnectionWizard extends ConnectionWizard
     //private ConnectionPageNetwork pageNetwork;
     private ConnectionPageInitialization pageInit;
     private ConnectionPageShellCommands pageEvents;
-    private List<WizardPrefPage> prefPages = new ArrayList<>();
     private PrefPageConnections pageClientSettings;
 
     /**
@@ -165,20 +161,9 @@ public class EditConnectionWizard extends ConnectionWizard
         sqlPage.addSubPage(new PrefPageSQLExecute(), CoreMessages.dialog_connection_edit_wizard_sql_processing, CoreMessages.dialog_connection_edit_wizard_sql_processing_description);
     }
 
-    private WizardPrefPage addPreferencePage(PreferencePage prefPage, String title, String description)
-    {
-        WizardPrefPage wizardPage = createPreferencePage(prefPage, title, description);
-        addPage(wizardPage);
-        return wizardPage;
-    }
-
-    private WizardPrefPage createPreferencePage(PreferencePage prefPage, String title, String description) {
-        WizardPrefPage wizardPage = new WizardPrefPage(prefPage, title, description);
-        prefPages.add(wizardPage);
-        if (prefPage instanceof IWorkbenchPropertyPage) {
-            ((IWorkbenchPropertyPage) prefPage).setElement(originalDataSource);
-        }
-        return wizardPage;
+    @Override
+    protected IAdaptable getActiveElement() {
+        return originalDataSource;
     }
 
     public IWizardPage getPage(String name) {
@@ -275,11 +260,7 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public boolean performCancel()
     {
-        // Just in case - cancel changes in pref pages (there shouldn't be any)
-        for (WizardPrefPage prefPage : prefPages) {
-            prefPage.performCancel();
-        }
-        return true;
+        return super.performCancel();
     }
 
     /**
@@ -300,9 +281,7 @@ public class EditConnectionWizard extends ConnectionWizard
         pageGeneral.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
         pageEvents.saveSettings(dataSource);
-        for (WizardPrefPage prefPage : prefPages) {
-            savePageSettings(prefPage);
-        }
+        super.savePrefPageSettings();
 
         // Reset password if "Save password" was disabled
         if (!dataSource.isSavePassword()) {
