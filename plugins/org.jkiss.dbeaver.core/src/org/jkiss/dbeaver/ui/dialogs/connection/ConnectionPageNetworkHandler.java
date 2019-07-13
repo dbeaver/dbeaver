@@ -106,6 +106,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
 
         configurator.createControl(handlerComposite);
         configurator.loadSettings(handlerConfiguration);
+        useHandlerCheck.setSelection(handlerConfiguration.isEnabled());
         enableHandlerContent();
 
         setControl(composite);
