@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 /**
@@ -29,6 +29,6 @@ public abstract class ConnectionWizardPage extends ActiveWizardPage<ConnectionWi
         super(pageName);
     }
 
-    public abstract void saveSettings(DataSourceDescriptor dataSourceDescriptor);
+    public abstract void saveSettings(DBPDataSourceContainer dataSourceDescriptor);
 
 }

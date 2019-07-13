@@ -92,6 +92,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isConnectionReadOnly();
 
+    void setConnectionReadOnly(boolean connectionReadOnly);
+
     boolean isSavePassword();
 
     void setSavePassword(boolean savePassword);

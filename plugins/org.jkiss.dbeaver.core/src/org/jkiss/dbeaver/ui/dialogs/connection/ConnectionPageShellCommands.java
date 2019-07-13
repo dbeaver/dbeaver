@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -273,7 +274,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSourceDescriptor) {
+    public void saveSettings(DBPDataSourceContainer dataSourceDescriptor) {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
             dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), entry.getValue());
         }

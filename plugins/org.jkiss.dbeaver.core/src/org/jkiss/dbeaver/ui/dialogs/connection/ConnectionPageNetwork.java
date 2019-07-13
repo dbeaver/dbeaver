@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.TabItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -203,7 +204,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSource) {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         boolean foundHandlers = false;
         java.util.List<DBWHandlerConfiguration> handlers = new ArrayList<>();
         for (HandlerBlock handlerBlock : configurations.values()) {

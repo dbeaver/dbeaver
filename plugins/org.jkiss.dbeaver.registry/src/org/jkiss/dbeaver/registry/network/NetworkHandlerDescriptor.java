@@ -101,4 +101,8 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         return handlerType.createInstance(impl);
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
 }

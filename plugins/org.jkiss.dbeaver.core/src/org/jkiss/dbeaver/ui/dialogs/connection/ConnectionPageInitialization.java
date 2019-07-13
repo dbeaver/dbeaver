@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -293,7 +294,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSource) {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         if (dataSourceDescriptor != null && !activated) {
             // No changes anyway
             return;
@@ -311,7 +312,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         } catch (DBException e) {
             log.error(e);
         }
-        dataSource.setDefaultActiveObject(defaultSchema.getText());
+        dataSource.getConnectionConfiguration().getBootstrap().setDefaultObjectName(defaultSchema.getText());
 
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
 
