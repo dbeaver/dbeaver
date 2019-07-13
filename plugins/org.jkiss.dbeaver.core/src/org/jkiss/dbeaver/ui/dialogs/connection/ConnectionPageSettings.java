@@ -54,8 +54,7 @@ import java.util.*;
 /**
  * Settings connection page. Hosts particular drivers' connection pages
  */
-class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage, IDataSourceConnectionTester
-{
+class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage, IDataSourceConnectionTester {
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
     public static final String PAGE_NAME = ConnectionPageSettings.class.getSimpleName();
@@ -77,8 +76,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
      */
     ConnectionPageSettings(
         @NotNull ConnectionWizard wizard,
-        @NotNull DataSourceViewDescriptor viewDescriptor)
-    {
+        @NotNull DataSourceViewDescriptor viewDescriptor) {
         super(PAGE_NAME + "." + viewDescriptor.getId());
         this.wizard = wizard;
         this.viewDescriptor = viewDescriptor;
@@ -93,8 +91,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     ConnectionPageSettings(
         @NotNull ConnectionWizard wizard,
         @NotNull DataSourceViewDescriptor viewDescriptor,
-        @Nullable DataSourceDescriptor dataSource)
-    {
+        @Nullable DataSourceDescriptor dataSource) {
         this(wizard, viewDescriptor);
         this.dataSource = dataSource;
     }
@@ -104,8 +101,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public void activatePage()
-    {
+    public void activatePage() {
         if (connectionEditor == null) {
             createProviderPage(getControl().getParent());
             //UIUtils.resizeShell(getWizard().getContainer().getShell());
@@ -156,12 +152,18 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return super.getImage();
     }
 
-    void saveSettings(DataSourceDescriptor dataSource)
-    {
+    void saveSettings(DataSourceDescriptor dataSource) {
         if (subPages != null) {
             for (IDialogPage page : subPages) {
+                if (ArrayUtils.contains(extraPages, page)) {
+                    // Ignore extra pages
+                    continue;
+                }
+
                 if (page.getControl() != null && page instanceof IDataSourceConnectionEditor) {
                     ((IDataSourceConnectionEditor) page).saveSettings(dataSource);
+                } else if (page instanceof ConnectionWizardPage) {
+                    ((ConnectionWizardPage) page).saveSettings(dataSource);
                 }
             }
         }
@@ -173,8 +175,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         if (wizard.isNew()) {
             setControl(new Composite(parent, SWT.BORDER));
         } else {
@@ -236,8 +237,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
 
             UIUtils.setHelp(getControl(), IHelpContextIds.CTX_CON_WIZARD_SETTINGS);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             log.warn(ex);
             setErrorMessage("Can't create settings dialog: " + ex.getMessage());
         }
@@ -255,21 +255,18 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public boolean canFlipToNextPage()
-    {
+    public boolean canFlipToNextPage() {
         return false;
     }
 
     @Override
-    public boolean isPageComplete()
-    {
+    public boolean isPageComplete() {
         return wizard.getPageSettings() != this ||
             this.connectionEditor != null && this.connectionEditor.isComplete();
     }
 
     @Override
-    public DBRRunnableContext getRunnableContext()
-    {
+    public DBRRunnableContext getRunnableContext() {
         return new RunnableContextDelegate(wizard.getContainer());
     }
 
@@ -284,15 +281,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public DBPDriver getDriver()
-    {
+    public DBPDriver getDriver() {
         return wizard.getSelectedDriver();
     }
 
     @NotNull
     @Override
-    public DataSourceDescriptor getActiveDataSource()
-    {
+    public DataSourceDescriptor getActiveDataSource() {
         if (dataSource != null) {
             return dataSource;
         }
@@ -300,14 +295,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public void updateButtons()
-    {
+    public void updateButtons() {
         getWizard().getContainer().updateButtons();
     }
 
     @Override
-    public boolean openDriverEditor()
-    {
+    public boolean openDriverEditor() {
         DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), (DriverDescriptor) this.getDriver());
         return dialog.open() == IDialogConstants.OK_ID;
     }
@@ -323,8 +316,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         if (connectionEditor != null) {
             connectionEditor.dispose();
             connectionEditor = null;
@@ -334,8 +326,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Nullable
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly)
-    {
+    public IDialogPage[] getSubPages(boolean extrasOnly) {
         if (extrasOnly) {
             return extraPages;
         }
@@ -373,9 +364,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     public void addSubPage(IDialogPage page) {
         if (extraPages == null) {
-            extraPages = new IDialogPage[] { page };
+            extraPages = new IDialogPage[]{page};
         } else {
-            extraPages = ArrayUtils.concatArrays(extraPages, new IDialogPage[] { page });
+            extraPages = ArrayUtils.concatArrays(extraPages, new IDialogPage[]{page});
         }
         if (page instanceof IWizardPage) {
             ((IWizardPage) page).setWizard(getWizard());

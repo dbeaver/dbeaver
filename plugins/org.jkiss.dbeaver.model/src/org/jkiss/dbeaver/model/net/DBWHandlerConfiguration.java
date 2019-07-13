@@ -155,4 +155,8 @@ public class DBWHandlerConfiguration {
 
     }
 
+    @Override
+    public String toString() {
+        return descriptor.toString();
+    }
 }

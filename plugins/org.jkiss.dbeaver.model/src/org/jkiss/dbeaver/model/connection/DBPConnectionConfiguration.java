@@ -281,6 +281,7 @@ public class DBPConnectionConfiguration implements DBPObject
     {
         for (int i = 0; i < handlers.size(); i++) {
             if (handlers.get(i).getId().equals(handler.getId())) {
+                handlers.set(i, handler);
                 return;
             }
         }

@@ -346,6 +346,7 @@ public class DataSourceDescriptor
         return connectionReadOnly;
     }
 
+    @Override
     public void setConnectionReadOnly(boolean connectionReadOnly)
     {
         this.connectionReadOnly = connectionReadOnly;
@@ -436,10 +437,6 @@ public class DataSourceDescriptor
                 });
             }
         }
-    }
-
-    public void setDefaultActiveObject(String defaultActiveObject) {
-        connectionInfo.getBootstrap().setDefaultObjectName(defaultActiveObject);
     }
 
     public Collection<FilterMapping> getObjectFilters()
