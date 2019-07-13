@@ -152,7 +152,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         IDialogPage firstPage = (IDialogPage) pagesTree.getItem(0).getData();
         setTitle(firstPage.getTitle());
         setTitleImage(firstPage.getImage());
-        setMessage(firstPage.getMessage());
+        setMessage(firstPage.getDescription());
 
         // Horizontal separator
         new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR)
@@ -255,12 +255,16 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
             prevPage = page;
             pageArea.layout();
-            if (pageCreated) {
-                UIUtils.resizeShell(getWizard().getContainer().getShell());
+            if (pageCreated && isAutoLayoutAvailable()) {
+                UIUtils.asyncExec(() -> UIUtils.resizeShell(getWizard().getContainer().getShell()));
             }
         } finally {
             pageArea.setRedraw(true);
         }
+    }
+
+    protected boolean isAutoLayoutAvailable() {
+        return true;
     }
 
     @Override

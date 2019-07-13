@@ -65,25 +65,32 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
     private Table resourceTable;
     private TableEditor handlerTableEditor;
 
+    public PrefPageProjectResourceSettings() {
+        setDescription("DBeaver project resources/folders settings");
+    }
+
     @Override
     public void init(IWorkbench workbench) {
     }
 
     @Override
     protected Control createContents(final Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             UIUtils.createControlLabel(composite, UINavigatorMessages.pref_page_projects_settings_label_resource_location);
 
             resourceTable = new Table(composite, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
-            resourceTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.widthHint = 400;
+            gd.heightHint = 300;
+            resourceTable.setLayoutData(gd);
             resourceTable.setHeaderVisible(true);
             resourceTable.setLinesVisible(true);
             UIUtils.createTableColumn(resourceTable, SWT.LEFT, UINavigatorMessages.pref_page_projects_settings_label_resource);
             UIUtils.createTableColumn(resourceTable, SWT.LEFT, UINavigatorMessages.pref_page_projects_settings_label_folder);
             resourceTable.setHeaderVisible(true);
-            resourceTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             handlerTableEditor = new TableEditor(resourceTable);
             handlerTableEditor.verticalAlignment = SWT.TOP;

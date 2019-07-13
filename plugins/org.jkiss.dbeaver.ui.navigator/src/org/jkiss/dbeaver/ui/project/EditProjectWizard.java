@@ -19,14 +19,11 @@ package org.jkiss.dbeaver.ui.project;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceNode;
-import org.eclipse.jface.preference.IPreferencePage;
-import org.eclipse.jface.preference.IPreferencePageContainer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 
@@ -56,19 +53,7 @@ public class EditProjectWizard extends ActiveWizard {
     @Override
     public void addPages() {
         IPreferenceNode[] preferenceNodes = PreferencesUtil.propertiesContributorsFor(project.getEclipseProject());
-        for (IPreferenceNode node : preferenceNodes) {
-            node.createPage();
-            try {
-                IPreferencePage preferencePage = node.getPage();
-                if (preferencePage == null) {
-                    continue;
-                }
-                preferencePage.setContainer((IPreferencePageContainer) getContainer());
-                addPreferencePage(preferencePage, preferencePage.getTitle(), preferencePage.getDescription());
-            } catch (Exception e) {
-                log.error("Error adding wizard pages", e);
-            }
-        }
+        createPreferencePages(preferenceNodes);
         //addPreferencePage(new PrefPageProjectNetworkProfiles(), "Network profiles", "Connections' network profiles");
         //addPreferencePage(new PrefPageProjectResourceSettings(), "Resource settings", "Project resource folders/locations");
     }
