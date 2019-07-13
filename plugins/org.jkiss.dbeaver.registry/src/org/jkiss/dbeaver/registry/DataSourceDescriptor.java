@@ -917,7 +917,7 @@ public class DataSourceDescriptor
         return disconnect(monitor, true);
     }
 
-    public boolean disconnect(final DBRProgressMonitor monitor, boolean reflect)
+    private boolean disconnect(final DBRProgressMonitor monitor, boolean reflect)
         throws DBException
     {
         if (dataSource == null) {
