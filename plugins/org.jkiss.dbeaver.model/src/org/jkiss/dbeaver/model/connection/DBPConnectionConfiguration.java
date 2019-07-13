@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -30,8 +29,7 @@ import java.util.*;
 /**
  * Connection configuration.
  */
-public class DBPConnectionConfiguration implements DBPObject
-{
+public class DBPConnectionConfiguration implements DBPObject {
     // Variables
     public static final String VARIABLE_HOST = "host";
     public static final String VARIABLE_PORT = "port";
@@ -50,6 +48,9 @@ public class DBPConnectionConfiguration implements DBPObject
     private String url;
     private String clientHomeId;
 
+    private String configProfileId;
+    private String userProfileId;
+
     @NotNull
     private final Map<String, String> properties;
     @NotNull
@@ -63,8 +64,7 @@ public class DBPConnectionConfiguration implements DBPObject
     private String connectionColor;
     private int keepAliveInterval;
 
-    public DBPConnectionConfiguration()
-    {
+    public DBPConnectionConfiguration() {
         this.connectionType = DBPConnectionType.DEFAULT_TYPE;
         this.properties = new HashMap<>();
         this.providerProperties = new HashMap<>();
@@ -74,8 +74,7 @@ public class DBPConnectionConfiguration implements DBPObject
         this.keepAliveInterval = 0;
     }
 
-    public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info)
-    {
+    public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info) {
         this.hostName = info.hostName;
         this.hostPort = info.hostPort;
         this.serverName = info.serverName;
@@ -99,107 +98,87 @@ public class DBPConnectionConfiguration implements DBPObject
         this.keepAliveInterval = info.keepAliveInterval;
     }
 
-    public String getClientHomeId()
-    {
+    public String getClientHomeId() {
         return clientHomeId;
     }
 
-    public void setClientHomeId(String clientHomeId)
-    {
+    public void setClientHomeId(String clientHomeId) {
         this.clientHomeId = clientHomeId;
     }
 
-    public String getHostName()
-    {
+    public String getHostName() {
         return hostName;
     }
 
-    public void setHostName(String hostName)
-    {
+    public void setHostName(String hostName) {
         this.hostName = hostName;
     }
 
-    public String getHostPort()
-    {
+    public String getHostPort() {
         return hostPort;
     }
 
-    public void setHostPort(String hostPort)
-    {
+    public void setHostPort(String hostPort) {
         this.hostPort = hostPort;
     }
 
-    public String getServerName()
-    {
+    public String getServerName() {
         return serverName;
     }
 
-    public void setServerName(String serverName)
-    {
+    public void setServerName(String serverName) {
         this.serverName = serverName;
     }
 
-    public String getDatabaseName()
-    {
+    public String getDatabaseName() {
         return databaseName;
     }
 
-    public void setDatabaseName(String databaseName)
-    {
+    public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
-    public String getUrl()
-    {
+    public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url)
-    {
+    public void setUrl(String url) {
         this.url = url;
     }
 
-    public String getUserName()
-    {
+    public String getUserName() {
         return userName;
     }
 
-    public void setUserName(String userName)
-    {
+    public void setUserName(String userName) {
         this.userName = userName;
     }
 
-    public String getUserPassword()
-    {
+    public String getUserPassword() {
         return userPassword;
     }
 
-    public void setUserPassword(@Nullable String userPassword)
-    {
+    public void setUserPassword(@Nullable String userPassword) {
         this.userPassword = userPassword;
     }
 
     ////////////////////////////////////////////////////
     // Properties (connection properties, usually used by driver)
 
-    public String getProperty(String name)
-    {
+    public String getProperty(String name) {
         return properties.get(name);
     }
 
-    public void setProperty(String name, String value)
-    {
+    public void setProperty(String name, String value) {
         properties.put(name, value);
     }
 
     @NotNull
-    public Map<String, String> getProperties()
-    {
+    public Map<String, String> getProperties() {
         return properties;
     }
 
-    public void setProperties(@NotNull Map<String, String> properties)
-    {
+    public void setProperties(@NotNull Map<String, String> properties) {
         this.properties.clear();
         this.properties.putAll(properties);
     }
@@ -207,8 +186,7 @@ public class DBPConnectionConfiguration implements DBPObject
     ////////////////////////////////////////////////////
     // Provider properties (extra configuration parameters)
 
-    public String getProviderProperty(String name)
-    {
+    public String getProviderProperty(String name) {
         return providerProperties.get(name);
     }
 
@@ -225,8 +203,7 @@ public class DBPConnectionConfiguration implements DBPObject
         return providerProperties;
     }
 
-    public void setProviderProperties(@NotNull Map<String, String> properties)
-    {
+    public void setProviderProperties(@NotNull Map<String, String> properties) {
         this.providerProperties.clear();
         this.providerProperties.putAll(properties);
     }
@@ -234,13 +211,11 @@ public class DBPConnectionConfiguration implements DBPObject
     ////////////////////////////////////////////////////
     // Events
 
-    public DBRShellCommand getEvent(DBPConnectionEventType eventType)
-    {
+    public DBRShellCommand getEvent(DBPConnectionEventType eventType) {
         return events.get(eventType);
     }
 
-    public void setEvent(DBPConnectionEventType eventType, DBRShellCommand command)
-    {
+    public void setEvent(DBPConnectionEventType eventType, DBRShellCommand command) {
         if (command == null) {
             events.remove(eventType);
         } else {
@@ -248,17 +223,15 @@ public class DBPConnectionConfiguration implements DBPObject
         }
     }
 
-    public DBPConnectionEventType[] getDeclaredEvents()
-    {
+    public DBPConnectionEventType[] getDeclaredEvents() {
         Set<DBPConnectionEventType> eventTypes = events.keySet();
-        return eventTypes.toArray(new DBPConnectionEventType[eventTypes.size()]);
+        return eventTypes.toArray(new DBPConnectionEventType[0]);
     }
 
     ////////////////////////////////////////////////////
     // Network handlers
 
-    public List<DBWHandlerConfiguration> getDeclaredHandlers()
-    {
+    public List<DBWHandlerConfiguration> getDeclaredHandlers() {
         return handlers;
     }
 
@@ -271,14 +244,12 @@ public class DBPConnectionConfiguration implements DBPObject
         return null;
     }
 
-    public void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers)
-    {
+    public void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers) {
         this.handlers.clear();
         this.handlers.addAll(handlers);
     }
 
-    public void addHandler(DBWHandlerConfiguration handler)
-    {
+    public void addHandler(DBWHandlerConfiguration handler) {
         for (int i = 0; i < handlers.size(); i++) {
             if (handlers.get(i).getId().equals(handler.getId())) {
                 handlers.set(i, handler);
@@ -289,8 +260,7 @@ public class DBPConnectionConfiguration implements DBPObject
     }
 
     @Nullable
-    public DBWHandlerConfiguration getHandler(String id)
-    {
+    public DBWHandlerConfiguration getHandler(String id) {
         for (DBWHandlerConfiguration handler : handlers) {
             if (handler.getId().equals(id)) {
                 return handler;
@@ -302,27 +272,24 @@ public class DBPConnectionConfiguration implements DBPObject
     ////////////////////////////////////////////////////
     // Misc
 
-    public DBPConnectionType getConnectionType()
-    {
+    public DBPConnectionType getConnectionType() {
         return connectionType;
     }
 
-    public void setConnectionType(DBPConnectionType connectionType)
-    {
+    public void setConnectionType(DBPConnectionType connectionType) {
         this.connectionType = connectionType;
     }
 
     /**
      * Color in RGB format
+     *
      * @return RGB color or null
      */
-    public String getConnectionColor()
-    {
+    public String getConnectionColor() {
         return connectionColor;
     }
 
-    public void setConnectionColor(String color)
-    {
+    public void setConnectionColor(String color) {
         this.connectionColor = color;
     }
 
@@ -343,6 +310,22 @@ public class DBPConnectionConfiguration implements DBPObject
         this.keepAliveInterval = keepAliveInterval;
     }
 
+    public String getConfigProfileId() {
+        return configProfileId;
+    }
+
+    public void setConfigProfileId(String configProfileId) {
+        this.configProfileId = configProfileId;
+    }
+
+    public String getUserProfileId() {
+        return userProfileId;
+    }
+
+    public void setUserProfileId(String userProfileId) {
+        this.userProfileId = userProfileId;
+    }
+
     @Override
     public String toString() {
         return "Connection: " + (url == null ? databaseName : url);
@@ -353,23 +336,23 @@ public class DBPConnectionConfiguration implements DBPObject
         if (!(obj instanceof DBPConnectionConfiguration)) {
             return false;
         }
-        DBPConnectionConfiguration source = (DBPConnectionConfiguration)obj;
+        DBPConnectionConfiguration source = (DBPConnectionConfiguration) obj;
         return
             CommonUtils.equalOrEmptyStrings(this.hostName, source.hostName) &&
-            CommonUtils.equalOrEmptyStrings(this.hostPort, source.hostPort) &&
-            CommonUtils.equalOrEmptyStrings(this.serverName, source.serverName) &&
-            CommonUtils.equalOrEmptyStrings(this.databaseName, source.databaseName) &&
-            CommonUtils.equalOrEmptyStrings(this.userName, source.userName) &&
-            CommonUtils.equalOrEmptyStrings(this.userPassword, source.userPassword) &&
-            CommonUtils.equalOrEmptyStrings(this.url, source.url) &&
-            CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
-            CommonUtils.equalObjects(this.connectionType, source.connectionType) &&
-            CommonUtils.equalObjects(this.properties, source.properties) &&
-            CommonUtils.equalObjects(this.providerProperties, source.providerProperties) &&
-            CommonUtils.equalObjects(this.events, source.events) &&
-            CommonUtils.equalObjects(this.handlers, source.handlers) &&
-            CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
-            this.keepAliveInterval == source.keepAliveInterval;
+                CommonUtils.equalOrEmptyStrings(this.hostPort, source.hostPort) &&
+                CommonUtils.equalOrEmptyStrings(this.serverName, source.serverName) &&
+                CommonUtils.equalOrEmptyStrings(this.databaseName, source.databaseName) &&
+                CommonUtils.equalOrEmptyStrings(this.userName, source.userName) &&
+                CommonUtils.equalOrEmptyStrings(this.userPassword, source.userPassword) &&
+                CommonUtils.equalOrEmptyStrings(this.url, source.url) &&
+                CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
+                CommonUtils.equalObjects(this.connectionType, source.connectionType) &&
+                CommonUtils.equalObjects(this.properties, source.properties) &&
+                CommonUtils.equalObjects(this.providerProperties, source.providerProperties) &&
+                CommonUtils.equalObjects(this.events, source.events) &&
+                CommonUtils.equalObjects(this.handlers, source.handlers) &&
+                CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
+                this.keepAliveInterval == source.keepAliveInterval;
     }
 
     public void resolveDynamicVariables() {
@@ -380,7 +363,7 @@ public class DBPConnectionConfiguration implements DBPObject
         userName = replaceSystemEnvironmentVariables(userName);
         userPassword = replaceSystemEnvironmentVariables(userPassword);
         url = replaceSystemEnvironmentVariables(url);
-        for (Map.Entry<String,String> prop : this.properties.entrySet()) {
+        for (Map.Entry<String, String> prop : this.properties.entrySet()) {
             prop.setValue(replaceSystemEnvironmentVariables(prop.getValue()));
         }
     }
@@ -392,14 +375,22 @@ public class DBPConnectionConfiguration implements DBPObject
         value = GeneralUtils.replaceSystemEnvironmentVariables(value);
         value = GeneralUtils.replaceVariables(value, name -> {
             switch (name) {
-                case VARIABLE_HOST: return hostName;
-                case VARIABLE_PORT: return hostPort;
-                case VARIABLE_SERVER: return serverName;
-                case VARIABLE_DATABASE: return databaseName;
-                case VARIABLE_USER: return userName;
-                case VARIABLE_PASSWORD: return userPassword;
-                case VARIABLE_URL: return url;
-                default: return null;
+                case VARIABLE_HOST:
+                    return hostName;
+                case VARIABLE_PORT:
+                    return hostPort;
+                case VARIABLE_SERVER:
+                    return serverName;
+                case VARIABLE_DATABASE:
+                    return databaseName;
+                case VARIABLE_USER:
+                    return userName;
+                case VARIABLE_PASSWORD:
+                    return userPassword;
+                case VARIABLE_URL:
+                    return url;
+                default:
+                    return null;
             }
         });
         return value;

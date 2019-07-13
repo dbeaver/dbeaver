@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -27,9 +28,10 @@ public class DBPConfigurationProfile {
     // Profile unique ID (UUID)
     private String profileId;
     private String profileName;
-    private boolean isEnabled;
+    private String profileDescription;
+
     // Properties. Basically JSON
-    private Map<String, Object> properties;
+    private Map<String, Object> properties = new LinkedHashMap<>();
 
     public String getProfileId() {
         return profileId;
@@ -47,12 +49,12 @@ public class DBPConfigurationProfile {
         this.profileName = profileName;
     }
 
-    public boolean isEnabled() {
-        return isEnabled;
+    public String getProfileDescription() {
+        return profileDescription;
     }
 
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
+    public void setProfileDescription(String profileDescription) {
+        this.profileDescription = profileDescription;
     }
 
     public Map<String, Object> getProperties() {

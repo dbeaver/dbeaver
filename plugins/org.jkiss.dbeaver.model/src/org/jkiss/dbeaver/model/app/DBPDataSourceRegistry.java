@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.util.List;
@@ -87,16 +88,19 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     @Nullable
     DBSObjectFilter getSavedFilter(String name);
-
     @NotNull
     List<DBSObjectFilter> getSavedFilters();
-
     void updateSavedFilter(DBSObjectFilter filter);
-
     void removeSavedFilter(String filterName);
 
-    void flushConfig();
+    @Nullable
+    DBWNetworkProfile getNetworkProfile(String name);
+    @NotNull
+    List<DBWNetworkProfile> getNetworkProfile();
+    void updateNetworkProfile(DBWNetworkProfile profile);
+    void removeNetworkProfile(String name);
 
+    void flushConfig();
     void refreshConfig();
 
     void notifyDataSourceListeners(final DBPEvent event);

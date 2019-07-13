@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -68,6 +69,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
+    private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
     private volatile boolean saveInProgress = false;
 
     public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project) {
@@ -369,6 +371,52 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     void addSavedFilter(DBSObjectFilter filter) {
         savedFilters.add(filter);
+    }
+
+    ////////////////////////////////////////////////////
+    // Config profiles
+
+    @Nullable
+    @Override
+    public DBWNetworkProfile getNetworkProfile(String name) {
+        for (DBWNetworkProfile profile : networkProfiles) {
+            if (CommonUtils.equalObjects(profile.getProfileName(), name)) {
+                return profile;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public List<DBWNetworkProfile> getNetworkProfile() {
+        return networkProfiles;
+    }
+
+    @Override
+    public void updateNetworkProfile(DBWNetworkProfile profile) {
+        for (int i = 0; i < networkProfiles.size(); i++) {
+            if (CommonUtils.equalObjects(networkProfiles.get(i).getProfileName(), profile.getProfileName())) {
+                networkProfiles.set(i, profile);
+                return;
+            }
+        }
+        networkProfiles.add(profile);
+    }
+
+    @Override
+    public void removeNetworkProfile(String name) {
+        for (int i = 0; i < networkProfiles.size(); ) {
+            if (CommonUtils.equalObjects(networkProfiles.get(i).getProfileName(), name)) {
+                networkProfiles.remove(i);
+            } else {
+                i++;
+            }
+        }
+    }
+
+    void addNetworkProfile(DBWNetworkProfile profile) {
+        networkProfiles.add(profile);
     }
 
     ////////////////////////////////////////////////////

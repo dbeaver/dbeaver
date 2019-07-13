@@ -23,9 +23,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -35,9 +33,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
-import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 
 /**
  * Network handlers edit dialog page
@@ -50,9 +46,6 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
     private final NetworkHandlerDescriptor handlerDescriptor;
 
     private IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
-    private Composite blockControl;
-    private Button useHandlerCheck;
-    private TabItem tabItem;
     private ControlEnableState blockEnableState;
     private DBWHandlerConfiguration handlerConfiguration;
     private Composite handlerComposite;
@@ -92,7 +85,11 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
         composite.setLayout(new GridLayout(1, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final Button useHandlerCheck = UIUtils.createCheckbox(composite, NLS.bind(CoreMessages.dialog_tunnel_checkbox_use_handler, handlerDescriptor.getLabel()), false);
+        Composite buttonsGroup = UIUtils.createComposite(composite, 5);
+        buttonsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        final Button useHandlerCheck = UIUtils.createCheckbox(buttonsGroup,
+            NLS.bind(CoreMessages.dialog_tunnel_checkbox_use_handler, handlerDescriptor.getLabel()), false);
         useHandlerCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -100,6 +97,17 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
                 enableHandlerContent();
             }
         });
+        UIUtils.createEmptyLabel(buttonsGroup, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        final Combo profileCombo = UIUtils.createLabelCombo(buttonsGroup, "Profile", SWT.READ_ONLY | SWT.DROP_DOWN);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.widthHint = 200;
+        profileCombo.setLayoutData(gd);
+        profileCombo.add("");
+        ToolBar editToolbar = new ToolBar(buttonsGroup, SWT.HORIZONTAL);
+        ToolItem editItem = new ToolItem(editToolbar, SWT.PUSH);
+        editItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
+        editItem.setToolTipText("Edit profiles");
+
         handlerComposite = UIUtils.createPlaceholder(composite, 1);
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -119,6 +127,14 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
             }
         } else if (blockEnableState == null) {
             blockEnableState = ControlEnableState.disable(handlerComposite);
+        }
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+
         }
     }
 
