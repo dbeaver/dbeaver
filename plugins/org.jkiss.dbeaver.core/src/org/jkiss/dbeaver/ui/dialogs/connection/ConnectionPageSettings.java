@@ -34,6 +34,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -313,6 +314,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public void testConnection() {
         getWizard().testConnection();
+    }
+
+    @Override
+    public DBPProject getProject() {
+        return wizard.getDataSourceRegistry().getProject();
     }
 
     @Override

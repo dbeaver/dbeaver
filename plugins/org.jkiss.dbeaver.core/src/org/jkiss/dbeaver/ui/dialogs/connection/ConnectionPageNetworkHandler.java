@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -24,6 +25,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.ExtensionFactory;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -34,6 +37,7 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.project.PrefPageProjectNetworkProfiles;
 
 /**
  * Network handlers edit dialog page
@@ -107,6 +111,20 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
         ToolItem editItem = new ToolItem(editToolbar, SWT.PUSH);
         editItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
         editItem.setToolTipText("Edit profiles");
+        editItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferenceDialog preferenceDialog = PreferencesUtil.createPropertyDialogOn(
+                    getShell(),
+                    site.getProject().getEclipseProject(),
+                    PrefPageProjectNetworkProfiles.PAGE_ID,
+                    null,
+                    null);
+                if (preferenceDialog != null) {
+                    preferenceDialog.open();
+                }
+            }
+        });
 
         handlerComposite = UIUtils.createPlaceholder(composite, 1);
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));

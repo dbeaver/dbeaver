@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
@@ -47,4 +48,5 @@ public interface IDataSourceConnectionEditorSite
 
     void testConnection();
 
+    DBPProject getProject();
 }
