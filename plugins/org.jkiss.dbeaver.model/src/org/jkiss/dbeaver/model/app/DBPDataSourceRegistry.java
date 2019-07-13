@@ -94,9 +94,9 @@ public interface DBPDataSourceRegistry extends DBPObject {
     void removeSavedFilter(String filterName);
 
     @Nullable
-    DBWNetworkProfile getNetworkProfile(String name);
+    DBWNetworkProfile getNetworkProfiles(String name);
     @NotNull
-    List<DBWNetworkProfile> getNetworkProfile();
+    List<DBWNetworkProfile> getNetworkProfiles();
     void updateNetworkProfile(DBWNetworkProfile profile);
     void removeNetworkProfile(String name);
 

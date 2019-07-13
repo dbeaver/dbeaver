@@ -89,16 +89,6 @@
                 </adapt>
             </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.project.PrefPageProjectNetworkProfiles"
-              id="org.jkiss.dbeaver.proejct.settings.networkProfiles"
-              category="org.jkiss.dbeaver.preferences.projectSettings"
-              name="%page.org.jkiss.dbeaver.proejct.settings.networkProfiles.name" >
-            <enabledWhen>
-                <adapt type="org.eclipse.core.resources.IProject">
-                    <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>
-                </adapt>
-            </enabledWhen>
-        </page>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">

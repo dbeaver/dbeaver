@@ -56,6 +56,11 @@ public class DBWHandlerConfiguration {
         this.properties = new HashMap<>(configuration.properties);
     }
 
+    @NotNull
+    public DBWHandlerDescriptor getHandlerDescriptor() {
+        return descriptor;
+    }
+
     public <T extends DBWNetworkHandler> T createHandler(Class<T> type) throws DBException {
         try {
             return descriptor.createHandler(type);
