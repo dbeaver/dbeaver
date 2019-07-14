@@ -22,14 +22,15 @@ import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -66,9 +67,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
     public void saveDataSources(
         DBRProgressMonitor monitor,
         boolean primaryConfig,
-        List<DataSourceFolder> dataSourceFolders,
         List<DataSourceDescriptor> localDataSources,
-        List<DBSObjectFilter> savedFilters,
+        DataSourceRegistry registry,
         IFile configFile) throws CoreException
     {
         ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
@@ -82,7 +82,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     jsonWriter.name("folders");
                     jsonWriter.beginObject();
                     // Folders (only for default origin)
-                    for (DataSourceFolder folder : dataSourceFolders) {
+                    for (DataSourceFolder folder : registry.getAllFolders()) {
                         saveFolder(jsonWriter, folder);
                     }
                     jsonWriter.endObject();
@@ -126,8 +126,30 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         }
                         jsonWriter.endObject();
                     }
-
                     // Filters
+                    List<DBWNetworkProfile> profiles = registry.getNetworkProfiles();
+                    if (!CommonUtils.isEmpty(profiles)) {
+                        jsonWriter.name("network-profiles");
+                        jsonWriter.beginObject();
+                        for (DBWNetworkProfile np : profiles) {
+                            jsonWriter.name(np.getProfileId());
+                            jsonWriter.beginObject();
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, np.getProfileName());
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, np.getProfileDescription());
+                            jsonWriter.name("handlers");
+                            jsonWriter.beginObject();
+                            for (DBWHandlerConfiguration configuration : np.getConfigurations()) {
+                                if (configuration.hasValuableInfo()) {
+                                    saveNetworkHandlerConfiguration(jsonWriter, null, configuration);
+                                }
+                            }
+                            jsonWriter.endObject();
+                            jsonWriter.endObject();
+                        }
+                        jsonWriter.endObject();
+                    }
+                    // Filters
+                    List<DBSObjectFilter> savedFilters = registry.getSavedFilters();
                     if (!CommonUtils.isEmpty(savedFilters)) {
                         jsonWriter.name("saved-filters");
                         jsonWriter.beginArray();
@@ -188,7 +210,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(DataSourceRegistry registry, InputStream is, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) throws DBException, IOException {
+    public void parseDataSources(DataSourceRegistry registry, InputStream is, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) throws IOException {
         try (Reader configReader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
             Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
 
@@ -224,6 +246,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Drivers
+            // TODO: add drivers deserialization
 
             // Virtual models
             Map<String, DBVModel> modelMap = new LinkedHashMap<>();
@@ -249,7 +272,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (provider == null) {
                     log.warn("Can't find datasource provider " + dsProviderID + " for datasource '" + id + "'");
                     provider = (DataSourceProviderDescriptor) DataSourceProviderRegistry.getInstance().makeFakeProvider(dsProviderID);
-                    return;
                 }
                 String driverId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_DRIVER));
                 DriverDescriptor driver = provider.getDriver(driverId);
@@ -561,21 +583,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 json.name(RegistryConstants.TAG_HANDLERS);
                 json.beginObject();
                 for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
-                    json.name(CommonUtils.notEmpty(configuration.getId()));
-                    json.beginObject();
-                    JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
-                    JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
-                    JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
-                    if (!CommonUtils.isEmpty(configuration.getUserName())) {
-                        saveSecuredCredentials(
-                            json,
-                            dataSource,
-                            "network/" + configuration.getId(),
-                            configuration.getUserName(),
-                            configuration.isSavePassword() ? configuration.getPassword() : null);
-                    }
-                    JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties());
-                    json.endObject();
+                    saveNetworkHandlerConfiguration(json, dataSource, configuration);
                 }
                 json.endObject();
             }
@@ -642,6 +650,24 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
 
 
+        json.endObject();
+    }
+
+    private static void saveNetworkHandlerConfiguration(@NotNull JsonWriter json, @Nullable DataSourceDescriptor dataSource, @NotNull DBWHandlerConfiguration configuration) throws IOException {
+        json.name(CommonUtils.notEmpty(configuration.getId()));
+        json.beginObject();
+        JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
+        JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
+        JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
+        if (dataSource != null && !CommonUtils.isEmpty(configuration.getUserName())) {
+            saveSecuredCredentials(
+                json,
+                dataSource,
+                "network/" + configuration.getId(),
+                configuration.getUserName(),
+                configuration.isSavePassword() ? configuration.getPassword() : null);
+        }
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties());
         json.endObject();
     }
 

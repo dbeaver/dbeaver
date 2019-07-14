@@ -73,10 +73,8 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     public void saveDataSources(
         DBRProgressMonitor monitor,
         boolean primaryConfig,
-        List<DataSourceFolder> dataSourceFolders,
         List<DataSourceDescriptor> localDataSources,
-        List<DBSObjectFilter> savedFilters,
-        IFile configFile) throws CoreException
+        DataSourceRegistry registry, IFile configFile) throws CoreException
     {
         // Save in temp memory to be safe (any error during direct write will corrupt configuration)
         ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
@@ -86,7 +84,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
                 if (primaryConfig) {
                     // Folders (only for default origin)
-                    for (DataSourceFolder folder : dataSourceFolders) {
+                    for (DataSourceFolder folder : registry.getAllFolders()) {
                         saveFolder(xml, folder);
                     }
                 }
@@ -102,7 +100,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 // Filters
                 if (primaryConfig) {
                     try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
-                        for (DBSObjectFilter cf : savedFilters) {
+                        for (DBSObjectFilter cf : registry.getSavedFilters()) {
                             if (!cf.isEmpty()) {
                                 saveObjectFiler(xml, null, null, cf);
                             }

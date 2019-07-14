@@ -160,8 +160,15 @@ public class DBWHandlerConfiguration {
 
     }
 
+    public boolean hasValuableInfo() {
+        return !CommonUtils.isEmpty(userName) ||
+            !CommonUtils.isEmpty(password) ||
+            !CommonUtils.isEmpty(properties);
+    }
+
     @Override
     public String toString() {
         return descriptor.toString();
     }
+
 }

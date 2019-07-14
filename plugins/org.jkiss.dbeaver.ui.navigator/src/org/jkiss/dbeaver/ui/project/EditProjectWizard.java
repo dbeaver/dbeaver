@@ -24,6 +24,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 
@@ -65,6 +66,8 @@ public class EditProjectWizard extends ActiveWizard {
 
     @Override
     public boolean performFinish() {
+        super.savePrefPageSettings();
+        project.getDataSourceRegistry().flushConfig();
         return true;
     }
 }
