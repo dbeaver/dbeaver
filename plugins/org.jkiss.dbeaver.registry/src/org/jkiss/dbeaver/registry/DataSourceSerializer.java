@@ -34,7 +34,8 @@ interface DataSourceSerializer
         DBRProgressMonitor monitor,
         boolean primaryConfig,
         List<DataSourceDescriptor> localDataSources,
-        DataSourceRegistry registry, IFile configFile)
+        DataSourceRegistry registry,
+        IFile configFile)
         throws CoreException;
 
     void parseDataSources(

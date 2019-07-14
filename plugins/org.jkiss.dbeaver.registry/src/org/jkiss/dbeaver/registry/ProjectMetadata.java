@@ -31,6 +31,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -163,6 +165,12 @@ public class ProjectMetadata implements DBPProject {
             }
         }
         return dataSourceRegistry;
+    }
+
+    @NotNull
+    @Override
+    public ISecurePreferences getSecurePreferences() {
+        return SecurePreferencesFactory.getDefault().node("dbeaver").node("projects").node(getName());
     }
 
     @Override

@@ -31,7 +31,7 @@ public class DBPConfigurationProfile {
     private String profileDescription;
 
     // Properties. Basically JSON
-    private Map<String, Object> properties = new LinkedHashMap<>();
+    private Map<String, String> properties = new LinkedHashMap<>();
 
     public String getProfileId() {
         return profileId;
@@ -57,11 +57,11 @@ public class DBPConfigurationProfile {
         this.profileDescription = profileDescription;
     }
 
-    public Map<String, Object> getProperties() {
+    public Map<String, String> getProperties() {
         return properties;
     }
 
-    public void setProperties(Map<String, Object> properties) {
+    public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 

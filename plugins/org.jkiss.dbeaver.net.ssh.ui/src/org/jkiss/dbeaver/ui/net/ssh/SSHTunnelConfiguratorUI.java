@@ -187,6 +187,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         String portString = configuration.getProperties().get(SSHConstants.PROP_PORT);
         if (!CommonUtils.isEmpty(portString)) {
             portText.setSelection(CommonUtils.toInt(portString));
+        } else {
+            portText.setSelection(SSHConstants.DEFAULT_SSH_PORT);
         }
         userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
         SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;

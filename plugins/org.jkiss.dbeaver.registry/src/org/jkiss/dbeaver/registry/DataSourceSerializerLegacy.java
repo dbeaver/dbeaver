@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
@@ -188,6 +190,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             xml.addAttribute(RegistryConstants.ATTR_URL, CommonUtils.notEmpty(connectionInfo.getUrl()));
 
             saveSecuredCredentials(xml,
+                dataSource.getRegistry().getProject(),
                 dataSource,
                 null,
                 connectionInfo.getUserName(),
@@ -249,6 +252,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 if (!CommonUtils.isEmpty(configuration.getUserName())) {
                     saveSecuredCredentials(
                         xml,
+                        dataSource.getRegistry().getProject(),
                         dataSource,
                         "network/" + configuration.getId(),
                         configuration.getUserName(),
@@ -346,8 +350,8 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         xml.endElement();
     }
 
-    private static void saveSecuredCredentials(XMLBuilder xml, DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
-        boolean saved = DataSourceRegistry.saveSecuredCredentials(dataSource, subNode, userName, password);
+    private static void saveSecuredCredentials(@NotNull XMLBuilder xml, @NotNull DBPProject project, @Nullable DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
+        boolean saved = DataSourceRegistry.saveSecuredCredentials(project, dataSource, subNode, userName, password);
         if (!saved) {
             try {
                 if (!CommonUtils.isEmpty(userName)) {
