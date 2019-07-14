@@ -713,12 +713,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    static boolean saveSecuredCredentials(
+    /**
+     * Save secure config in protected storage.
+     * @return true on success (if protected storage is available and configured)
+     */
+    static boolean saveCredentialsInSecuredStorage(
         @NotNull DBPProject project,
         @Nullable DataSourceDescriptor dataSource,
         @Nullable String subNode,
         @Nullable String userName,
-        @Nullable String password) {
+        @Nullable String password)
+    {
         final DBASecureStorage secureStorage = DBWorkbench.getPlatform().getSecureStorage();
         {
             try {
@@ -733,7 +738,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                             prefNode = prefNode.node(nodeName);
                         }
                     }
-                    prefNode.put("name", dataSource.getName(), false);
+                    prefNode.put("name", dataSource != null ? dataSource.getName() : project.getName(), false);
 
                     if (!CommonUtils.isEmpty(userName)) {
                         prefNode.put(RegistryConstants.ATTR_USER, userName, true);
