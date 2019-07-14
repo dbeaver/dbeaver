@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -108,6 +109,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             profilesTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+                    saveHandlerSettings();
                     TableItem[] selection = profilesTable.getSelection();
                     if (ArrayUtils.isEmpty(selection)) {
                         selectedProfile = null;
@@ -140,6 +142,11 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                     item.setText(newProfile.getProfileName());
                     item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
                     item.setData(newProfile);
+                    if (profilesTable.getItemCount() == 1) {
+                        selectedProfile = newProfile;
+                        profilesTable.select(0);
+                        updateControlsState();
+                    }
                 }
             });
 
@@ -186,10 +193,41 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         return divider;
     }
 
+    /**
+     * Saves state of UI controls to handler configuration
+     */
+    private void saveHandlerSettings() {
+        if (selectedProfile == null) {
+            return;
+        }
+        for (TabItem handlerTab : handlersFolder.getItems()) {
+            NetworkHandlerDescriptor handler = (NetworkHandlerDescriptor) handlerTab.getData();
+            HandlerBlock handlerBlock = configurations.get(handler);
+            DBWHandlerConfiguration handlerConfiguration = handlerBlock.loadedConfigs.get(selectedProfile);
+            if (handlerConfiguration != null) {
+                handlerBlock.configurator.saveSettings(handlerConfiguration);
+            }
+        }
+    }
+
     private void updateControlsState() {
-        TabItem[] selection = handlersFolder.getSelection();
-        NetworkHandlerDescriptor descriptor = ArrayUtils.isEmpty(selection) ? null : (NetworkHandlerDescriptor) selection[0].getData();
+        NetworkHandlerDescriptor descriptor = getSelectedHandler();
         enableHandlerContent(descriptor);
+
+        if (descriptor != null) {
+            HandlerBlock handlerBlock = configurations.get(descriptor);
+            DBWHandlerConfiguration handlerConfiguration = handlerBlock.loadedConfigs.get(selectedProfile);
+            if (handlerConfiguration == null) {
+                handlerConfiguration = new DBWHandlerConfiguration(descriptor, null);
+            }
+            handlerBlock.configurator.loadSettings(handlerConfiguration);
+        }
+    }
+
+    @Nullable
+    private NetworkHandlerDescriptor getSelectedHandler() {
+        TabItem[] selection = handlersFolder.getSelection();
+        return ArrayUtils.isEmpty(selection) ? null : (NetworkHandlerDescriptor) selection[0].getData();
     }
 
     private void createHandlerTab(final NetworkHandlerDescriptor descriptor)
@@ -304,6 +342,8 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
     @Override
     public boolean performOk() {
+        saveHandlerSettings();
+
         for (TableItem item : profilesTable.getItems()) {
             DBWNetworkProfile profile = (DBWNetworkProfile) item.getData();
             saveSettings(profile);
