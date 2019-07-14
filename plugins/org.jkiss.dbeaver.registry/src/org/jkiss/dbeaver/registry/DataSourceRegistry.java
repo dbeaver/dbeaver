@@ -240,7 +240,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     @Override
-    public List<? extends DBPDataSourceFolder> getAllFolders() {
+    public List<DataSourceFolder> getAllFolders() {
         return dataSourceFolders;
     }
 
@@ -652,9 +652,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                         serializer.saveDataSources(
                             monitor,
                             origin.isDefault(),
-                            dataSourceFolders,
                             localDataSources,
-                            savedFilters,
+                            this,
                             configFile);
                     }
                     try {

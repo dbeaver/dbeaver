@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,10 +33,8 @@ interface DataSourceSerializer
     void saveDataSources(
         DBRProgressMonitor monitor,
         boolean primaryConfig,
-        List<DataSourceFolder> dataSourceFolders,
         List<DataSourceDescriptor> localDataSources,
-        List<DBSObjectFilter> savedFilters,
-        IFile configFile)
+        DataSourceRegistry registry, IFile configFile)
         throws CoreException;
 
     void parseDataSources(

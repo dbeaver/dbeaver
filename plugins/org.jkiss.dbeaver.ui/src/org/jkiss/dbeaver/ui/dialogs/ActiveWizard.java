@@ -71,8 +71,18 @@ public abstract class ActiveWizard extends Wizard
 
     protected void savePrefPageSettings()
     {
-        for (WizardPrefPage prefPage : prefPages) {
+        savePrefPageSettings(prefPages.toArray(new WizardPrefPage[0]));
+    }
+
+    private void savePrefPageSettings(WizardPrefPage[] pages)
+    {
+        for (WizardPrefPage prefPage : pages) {
             savePageSettings(prefPage);
+
+            WizardPrefPage[] subPages = prefPage.getSubPages(false);
+            if (subPages != null) {
+                savePrefPageSettings(subPages);
+            }
         }
     }
 

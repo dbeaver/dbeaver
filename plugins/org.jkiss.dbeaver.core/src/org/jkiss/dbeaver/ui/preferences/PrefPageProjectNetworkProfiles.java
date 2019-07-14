@@ -101,8 +101,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             GridData gd = new GridData(GridData.FILL_BOTH);
             profilesGroup.setLayoutData(gd);
 
-            profilesTable = new Table(profilesGroup, SWT.BORDER | SWT.SINGLE);
-            profilesTable.setHeaderVisible(true);
+            profilesTable = new Table(profilesGroup, SWT.SINGLE);
             gd = new GridData(GridData.FILL_BOTH);
             gd.minimumWidth = 150;
             profilesTable.setLayoutData(gd);
@@ -183,7 +182,6 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         divider.setWeights(new int[] { 300, 700 } );
 
         performDefaults();
-        updateControlsState();
 
         return divider;
     }
@@ -287,6 +285,10 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                 item.setText(profile.getProfileName());
                 item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
                 item.setData(profile);
+                if (selectedProfile == null) {
+                    selectedProfile = profile;
+                    profilesTable.select(0);
+                }
 
                 for (NetworkHandlerDescriptor nhd : allHandlers) {
                     HandlerBlock handlerBlock = configurations.get(nhd);
@@ -297,7 +299,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                 }
             }
         }
-
+        updateControlsState();
     }
 
     @Override
