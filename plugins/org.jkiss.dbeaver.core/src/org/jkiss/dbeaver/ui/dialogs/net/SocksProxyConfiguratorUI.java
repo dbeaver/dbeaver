@@ -69,6 +69,8 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
         String portString = configuration.getProperties().get(SocksConstants.PROP_PORT);
         if (!CommonUtils.isEmpty(portString)) {
             portText.setSelection(CommonUtils.toInt(portString));
+        } else {
+            portText.setSelection(SocksConstants.DEFAULT_SOCKS_PORT);
         }
         userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
         passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));

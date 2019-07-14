@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -98,7 +99,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     for (DataSourceDescriptor dataSource : localDataSources) {
                         // Skip temporary
                         if (!dataSource.isTemporary()) {
-                            saveDataSource(jsonWriter, dataSource);
+                            saveDataSource(jsonWriter, registry.getProject(), dataSource);
                             if (dataSource.getVirtualModel().hasValuableData()) {
                                 virtualModels.put(dataSource.getVirtualModel().getId(), dataSource.getVirtualModel());
                             }
@@ -140,7 +141,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             jsonWriter.beginObject();
                             for (DBWHandlerConfiguration configuration : np.getConfigurations()) {
                                 if (configuration.hasValuableInfo()) {
-                                    saveNetworkHandlerConfiguration(jsonWriter, null, configuration);
+                                    saveNetworkHandlerConfiguration(jsonWriter, registry.getProject(), null, configuration);
                                 }
                             }
                             jsonWriter.endObject();
@@ -256,6 +257,25 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 modelMap.put(id, model);
             }
 
+            // Network profiles
+            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "network-profiles")) {
+                String profileId = vmMap.getKey();
+                Map<String, Object> profileMap = vmMap.getValue();
+                DBWNetworkProfile profile = new DBWNetworkProfile();
+                profile.setProfileId(profileId);
+                profile.setProfileName(JSONUtils.getString(profileMap, "name"));
+                profile.setProperties(JSONUtils.deserializeProperties(profileMap, "properties"));
+
+                for (Map.Entry<String, Map<String, Object>> handlerMap : JSONUtils.getNestedObjects(profileMap, "handlers")) {
+                    DBWHandlerConfiguration configuration = parseNetworkHandlerConfig(null, handlerMap);
+                    if (configuration != null) {
+                        profile.updateConfiguration(configuration);
+                    }
+                }
+
+                registry.updateNetworkProfile(profile);
+            }
+
             // Connections
             for (Map.Entry<String, Map<String, Object>> conMap : JSONUtils.getNestedObjects(jsonMap, "connections")) {
                 Map<String, Object> conObject = conMap.getValue();
@@ -363,26 +383,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                     // Handlers
                     for (Map.Entry<String, Map<String, Object>> handlerObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_HANDLERS)) {
-                        String handlerId = handlerObject.getKey();
-                        Map<String, Object> handlerCfg = handlerObject.getValue();
-
-                        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
-                        if (handlerDescriptor == null) {
-                            log.warn("Can't find network handler '" + handlerId + "'");
-                        } else {
-                            DBWHandlerConfiguration curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, dataSource.getDriver());
-                            curNetworkHandler.setEnabled(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_ENABLED));
-                            curNetworkHandler.setSavePassword(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_SAVE_PASSWORD));
-                            if (!passwordReadCanceled) {
-                                final String[] creds = readSecuredCredentials(handlerCfg, dataSource, "network/" + handlerId);
-                                curNetworkHandler.setUserName(creds[0]);
-                                if (curNetworkHandler.isSavePassword()) {
-                                    curNetworkHandler.setPassword(creds[1]);
-                                }
-                            }
-                            curNetworkHandler.setProperties(JSONUtils.deserializeProperties(handlerCfg, RegistryConstants.TAG_PROPERTIES));
-                            dataSource.getConnectionConfiguration().addHandler(curNetworkHandler);
-                        }
+                        DBWHandlerConfiguration configuration = parseNetworkHandlerConfig(dataSource, handlerObject);
+                        dataSource.getConnectionConfiguration().addHandler(configuration);
                     }
 
                     // Bootstrap
@@ -438,6 +440,30 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
         }
 
+    }
+
+    private DBWHandlerConfiguration parseNetworkHandlerConfig(@Nullable DataSourceDescriptor dataSource, @NotNull Map.Entry<String, Map<String, Object>> handlerObject) {
+        String handlerId = handlerObject.getKey();
+        Map<String, Object> handlerCfg = handlerObject.getValue();
+
+        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
+        if (handlerDescriptor == null) {
+            log.warn("Can't find network handler '" + handlerId + "'");
+            return null;
+        } else {
+            DBWHandlerConfiguration curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, dataSource == null ? null : dataSource.getDriver());
+            curNetworkHandler.setEnabled(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_ENABLED));
+            curNetworkHandler.setSavePassword(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_SAVE_PASSWORD));
+            if (!passwordReadCanceled) {
+                final String[] creds = readSecuredCredentials(handlerCfg, dataSource, "network/" + handlerId);
+                curNetworkHandler.setUserName(creds[0]);
+                if (curNetworkHandler.isSavePassword()) {
+                    curNetworkHandler.setPassword(creds[1]);
+                }
+            }
+            curNetworkHandler.setProperties(JSONUtils.deserializeProperties(handlerCfg, RegistryConstants.TAG_PROPERTIES));
+            return curNetworkHandler;
+        }
     }
 
     private static DBSObjectFilter readObjectFiler(Map<String, Object> map) throws IOException {
@@ -496,7 +522,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         json.endObject();
     }
 
-    static void saveDataSource(JsonWriter json, DataSourceDescriptor dataSource)
+    static void saveDataSource(JsonWriter json, @NotNull DBPProject project, DataSourceDescriptor dataSource)
         throws IOException
     {
         json.name(dataSource.getId());
@@ -538,6 +564,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_URL, connectionInfo.getUrl());
 
             saveSecuredCredentials(json,
+                project,
                 dataSource,
                 null,
                 connectionInfo.getUserName(),
@@ -583,7 +610,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 json.name(RegistryConstants.TAG_HANDLERS);
                 json.beginObject();
                 for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
-                    saveNetworkHandlerConfiguration(json, dataSource, configuration);
+                    saveNetworkHandlerConfiguration(json, project, dataSource, configuration);
                 }
                 json.endObject();
             }
@@ -653,15 +680,20 @@ class DataSourceSerializerModern implements DataSourceSerializer
         json.endObject();
     }
 
-    private static void saveNetworkHandlerConfiguration(@NotNull JsonWriter json, @Nullable DataSourceDescriptor dataSource, @NotNull DBWHandlerConfiguration configuration) throws IOException {
+    private static void saveNetworkHandlerConfiguration(
+        @NotNull JsonWriter json,
+        @NotNull DBPProject project,
+        @Nullable DataSourceDescriptor dataSource,
+        @NotNull DBWHandlerConfiguration configuration) throws IOException {
         json.name(CommonUtils.notEmpty(configuration.getId()));
         json.beginObject();
         JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
         JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
         JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
-        if (dataSource != null && !CommonUtils.isEmpty(configuration.getUserName())) {
+        if (!CommonUtils.isEmpty(configuration.getUserName()) || !CommonUtils.isEmpty(configuration.getPassword())) {
             saveSecuredCredentials(
                 json,
+                project,
                 dataSource,
                 "network/" + configuration.getId(),
                 configuration.getUserName(),
@@ -687,8 +719,15 @@ class DataSourceSerializerModern implements DataSourceSerializer
         json.endObject();
     }
 
-    private static void saveSecuredCredentials(JsonWriter json, DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
-        boolean saved = DataSourceRegistry.saveSecuredCredentials(dataSource, subNode, userName, password);
+    private static void saveSecuredCredentials(
+        @NotNull JsonWriter json,
+        @NotNull DBPProject project,
+        @Nullable DataSourceDescriptor dataSource,
+        @Nullable String subNode,
+        @Nullable String userName,
+        @Nullable String password) throws IOException
+    {
+        boolean saved = DataSourceRegistry.saveSecuredCredentials(project, dataSource, subNode, userName, password);
         if (!saved) {
             try {
                 if (!CommonUtils.isEmpty(userName)) {

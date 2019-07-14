@@ -713,11 +713,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    static boolean saveSecuredCredentials(DataSourceDescriptor dataSource, String subNode, String userName, String password) {
+    static boolean saveSecuredCredentials(
+        @NotNull DBPProject project,
+        @Nullable DataSourceDescriptor dataSource,
+        @Nullable String subNode,
+        @Nullable String userName,
+        @Nullable String password) {
         final DBASecureStorage secureStorage = DBWorkbench.getPlatform().getSecureStorage();
         {
             try {
-                ISecurePreferences prefNode = dataSource.getSecurePreferences();
+                ISecurePreferences prefNode = dataSource == null ?
+                    project.getSecurePreferences() :
+                    dataSource.getSecurePreferences();
                 if (!secureStorage.useSecurePreferences()) {
                     prefNode.removeNode();
                 } else {

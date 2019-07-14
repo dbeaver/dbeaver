@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.app;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 
 import java.io.File;
@@ -51,6 +52,9 @@ public interface DBPProject
     void ensureOpen();
 
     DBPDataSourceRegistry getDataSourceRegistry();
+
+    @NotNull
+    ISecurePreferences getSecurePreferences();
 
     Object getResourceProperty(IResource resource, String propName);
 

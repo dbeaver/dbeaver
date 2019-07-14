@@ -204,7 +204,10 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             NetworkHandlerDescriptor handler = (NetworkHandlerDescriptor) handlerTab.getData();
             HandlerBlock handlerBlock = configurations.get(handler);
             DBWHandlerConfiguration handlerConfiguration = handlerBlock.loadedConfigs.get(selectedProfile);
-            if (handlerConfiguration != null) {
+            if (handlerBlock.useHandlerCheck.getSelection()) {
+                if (handlerConfiguration == null) {
+                    handlerConfiguration = new DBWHandlerConfiguration(handler, null);
+                }
                 handlerBlock.configurator.saveSettings(handlerConfiguration);
             }
         }
@@ -218,9 +221,10 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             HandlerBlock handlerBlock = configurations.get(descriptor);
             DBWHandlerConfiguration handlerConfiguration = handlerBlock.loadedConfigs.get(selectedProfile);
             if (handlerConfiguration == null) {
-                handlerConfiguration = new DBWHandlerConfiguration(descriptor, null);
+                handlerBlock.configurator.loadSettings(new DBWHandlerConfiguration(descriptor, null));
+            } else {
+                handlerBlock.configurator.loadSettings(handlerConfiguration);
             }
-            handlerBlock.configurator.loadSettings(handlerConfiguration);
         }
     }
 
@@ -305,7 +309,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         for (HandlerBlock handlerBlock : configurations.values()) {
             DBWHandlerConfiguration configuration = handlerBlock.loadedConfigs.get(profile);
             if (configuration != null) {
-                profile.getConfigurations().add(configuration);
+                profile.updateConfiguration(configuration);
             }
         }
     }
