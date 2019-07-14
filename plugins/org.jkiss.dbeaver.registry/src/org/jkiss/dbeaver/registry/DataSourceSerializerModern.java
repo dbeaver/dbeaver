@@ -727,7 +727,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable String userName,
         @Nullable String password) throws IOException
     {
-        boolean saved = DataSourceRegistry.saveSecuredCredentials(project, dataSource, subNode, userName, password);
+        boolean saved = DataSourceRegistry.saveCredentialsInSecuredStorage(project, dataSource, subNode, userName, password);
         if (!saved) {
             try {
                 if (!CommonUtils.isEmpty(userName)) {
