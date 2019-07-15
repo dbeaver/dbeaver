@@ -118,8 +118,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         }
     }
 
-    private void loadExtensions(IExtensionRegistry registry)
-    {
+    private void loadExtensions(IExtensionRegistry registry) {
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ResourceHandlerDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
@@ -186,16 +185,14 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @Override
-    public void addProjectListener(DBPProjectListener listener)
-    {
+    public void addProjectListener(DBPProjectListener listener) {
         synchronized (projectListeners) {
             projectListeners.add(listener);
         }
     }
 
     @Override
-    public void removeProjectListener(DBPProjectListener listener)
-    {
+    public void removeProjectListener(DBPProjectListener listener) {
         synchronized (projectListeners) {
             projectListeners.remove(listener);
         }
@@ -226,8 +223,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         }
     }
 
-    private IProject createDefaultProject(IProgressMonitor monitor) throws CoreException
-    {
+    private IProject createDefaultProject(IProgressMonitor monitor) throws CoreException {
         final String baseProjectName = DBWorkbench.getPlatform().getApplication().getDefaultProjectName();
         String projectName = baseProjectName;
         for (int i = 1; ; i++) {
@@ -240,7 +236,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
             project.open(monitor);
             final IProjectDescription description = eclipseWorkspace.newProjectDescription(project.getName());
             description.setComment("General DBeaver project");
-            description.setNatureIds(new String[] {DBeaverNature.NATURE_ID});
+            description.setNatureIds(new String[]{DBeaverNature.NATURE_ID});
             project.setDescription(description, monitor);
 
             return project;
@@ -267,8 +263,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @Override
-    public DBPResourceHandler getResourceHandler(IResource resource)
-    {
+    public DBPResourceHandler getResourceHandler(IResource resource) {
         if (resource == null || resource.isHidden() || resource.isPhantom()) {
             // Skip not accessible hidden and phantom resources
             return null;
@@ -311,14 +306,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @Override
-    public DBPResourceHandlerDescriptor[] getAllResourceHandlers()
-    {
+    public DBPResourceHandlerDescriptor[] getAllResourceHandlers() {
         return handlerDescriptors.toArray(new DBPResourceHandlerDescriptor[0]);
     }
 
     @Override
-    public IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor rhd, boolean forceCreate)
-    {
+    public IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
         if (project == null) {
             return null;
         }
@@ -341,8 +334,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @Override
-    public IFolder getResourceDefaultRoot(DBPProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate)
-    {
+    public IFolder getResourceDefaultRoot(DBPProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate) {
         if (project == null) {
             return null;
         }
@@ -411,8 +403,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @Override
-    public DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors()
-    {
+    public DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors() {
         DBPResourceHandlerDescriptor[] result = new DBPResourceHandlerDescriptor[handlerDescriptors.size()];
         for (int i = 0; i < handlerDescriptors.size(); i++) {
             result[i] = handlerDescriptors.get(i);
@@ -558,11 +549,10 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         }
     }
 
-    private void handleResourceChange(ProjectMetadata projectMetadata, IResourceDelta delta)
-    {
+    private void handleResourceChange(ProjectMetadata projectMetadata, IResourceDelta delta) {
         if (delta.getKind() == IResourceDelta.REMOVED) {
             projectMetadata.removeResourceFromCache(delta.getProjectRelativePath());
-        } else if (delta.getKind() == IResourceDelta.MOVED_TO) {
+        } else if (delta.getKind() == IResourceDelta.CHANGED && (delta.getFlags() & IResourceDelta.MOVED_TO) != 0) {
             IPath oldPath = delta.getMovedFromPath().makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
             IPath newPath = delta.getMovedFromPath().makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
             projectMetadata.updateResourceCache(oldPath, newPath);
