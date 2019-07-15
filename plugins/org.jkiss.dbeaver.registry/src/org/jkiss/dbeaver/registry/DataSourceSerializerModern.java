@@ -22,6 +22,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
@@ -258,8 +259,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 InputStream ifs = new ByteArrayInputStream(credData);
 
                 if (!credFile.exists()) {
-                    credFile.create(ifs, true, monitor);
-                    credFile.setHidden(true);
+                    credFile.create(ifs, IResource.FORCE | IResource.HIDDEN | IResource.TEAM_PRIVATE, monitor);
                 } else {
                     credFile.setContents(ifs, true, false, monitor);
                 }
