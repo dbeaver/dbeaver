@@ -71,12 +71,18 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
 
     private static PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
+    private final DataSourceRegistry registry;
+
+    public DataSourceSerializerLegacy(DataSourceRegistry registry) {
+        this.registry = registry;
+    }
+
     @Override
     public void saveDataSources(
         DBRProgressMonitor monitor,
         boolean primaryConfig,
         List<DataSourceDescriptor> localDataSources,
-        DataSourceRegistry registry, IFile configFile) throws CoreException
+        IFile configFile) throws CoreException
     {
         // Save in temp memory to be safe (any error during direct write will corrupt configuration)
         ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
@@ -125,7 +131,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(DataSourceRegistry registry, InputStream is, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults)
+    public void parseDataSources(InputStream is, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults)
         throws DBException, IOException
     {
         SAXReader parser = new SAXReader(is);

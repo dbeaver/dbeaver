@@ -19,13 +19,16 @@ package org.jkiss.dbeaver.model.app;
 
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 
+import javax.crypto.SecretKey;
+
 /**
  * Client security manager
  */
-public interface DBASecureStorage
-{
+public interface DBASecureStorage {
 
     boolean useSecurePreferences();
 
     ISecurePreferences getSecurePreferences();
+
+    SecretKey getLocalSecretKey();
 }

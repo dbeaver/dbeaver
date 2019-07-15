@@ -607,8 +607,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             return;
         }
         try (InputStream is = fromFile.getContents(true)) {
-            DataSourceSerializer serializer = modern ? new DataSourceSerializerModern() : new DataSourceSerializerLegacy();
-            serializer.parseDataSources(this, is, origin, refresh, parseResults);
+            DataSourceSerializer serializer = modern ? new DataSourceSerializerModern(this) : new DataSourceSerializerLegacy(this);
+            serializer.parseDataSources(is, origin, refresh, parseResults);
             updateProjectNature();
         } catch (Exception ex) {
             log.error("Error loading datasource config from " + fromFile.getFullPath(), ex);
@@ -645,15 +645,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                     } else {
                         DataSourceSerializer serializer;
                         if (project.getFormat() == ProjectMetadata.ProjectFormat.LEGACY) {
-                            serializer = new DataSourceSerializerLegacy();
+                            serializer = new DataSourceSerializerLegacy(this);
                         } else {
-                            serializer = new DataSourceSerializerModern();
+                            serializer = new DataSourceSerializerModern(this);
                         }
                         serializer.saveDataSources(
                             monitor,
                             origin.isDefault(),
                             localDataSources,
-                            this,
                             configFile);
                     }
                     try {
@@ -711,6 +710,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         } catch (Exception e) {
             log.debug(e);
         }
+    }
+
+    static boolean isUseSecuredPrefStorage() {
+        return DBWorkbench.getPlatform().getSecureStorage().useSecurePreferences();
     }
 
     /**
