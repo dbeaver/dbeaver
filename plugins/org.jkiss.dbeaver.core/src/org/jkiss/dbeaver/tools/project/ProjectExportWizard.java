@@ -16,10 +16,11 @@
  */
 package org.jkiss.dbeaver.tools.project;
 
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
@@ -33,9 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -58,9 +57,15 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     private static final Log log = Log.getLog(ProjectExportWizard.class);
 
-    public static final int COPY_BUFFER_SIZE = 5000;
-    public static final String PROJECT_DESC_FILE = ".project";
+    private static final int COPY_BUFFER_SIZE = 5000;
+    private static final String PROJECT_DESC_FILE = ".project";
+    private static final Set<String> IGNORED_RESOURCES = new HashSet<>();
     private ProjectExportWizardPage mainPage;
+
+    static {
+        IGNORED_RESOURCES.add(PROJECT_DESC_FILE);
+        IGNORED_RESOURCES.add(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_NAME);
+    }
 
     public ProjectExportWizard() {
 	}
@@ -82,14 +87,11 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 	public boolean performFinish() {
         final ProjectExportData exportData = mainPage.getExportData();
         try {
-            UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        exportProjects(monitor, exportData);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+            UIUtils.run(getContainer(), true, true, monitor -> {
+                try {
+                    exportProjects(monitor, exportData);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         }
@@ -106,7 +108,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         return true;
 	}
 
-    public void exportProjects(DBRProgressMonitor monitor, final ProjectExportData exportData)
+    private void exportProjects(DBRProgressMonitor monitor, final ProjectExportData exportData)
         throws IOException, CoreException, InterruptedException
     {
         if (!exportData.getOutputFolder().exists()) {
@@ -133,7 +135,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             {
                 // Export source info
                 meta.startElement(ExportConstants.TAG_SOURCE);
-                meta.addAttribute(ExportConstants.ATTR_TIME, Long.valueOf(System.currentTimeMillis()));
+                meta.addAttribute(ExportConstants.ATTR_TIME, System.currentTimeMillis());
                 meta.addAttribute(ExportConstants.ATTR_ADDRESS, InetAddress.getLocalHost().getHostAddress());
                 meta.addAttribute(ExportConstants.ATTR_HOST, InetAddress.getLocalHost().getHostName());
                 meta.endElement();
@@ -154,17 +156,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 monitor.worked(1);
             }
             monitor.done();
-
-            {
-                // Export drivers meta
-                monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_export_driver_info, 1);
-                exportData.meta.startElement(RegistryConstants.TAG_DRIVERS);
-                for (DBPDriver driver : exportData.usedDrivers) {
-                    ((DriverDescriptor)driver).serialize(exportData.meta, true);
-                }
-                exportData.meta.endElement();
-                monitor.done();
-            }
 
             {
                 // Export projects
@@ -252,7 +243,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         } finally {
             ContentUtils.close(exportStream);
         }
-}
+    }
 
     private int getChildCount(ProjectExportData exportData, IResource resource) throws CoreException
     {
@@ -268,7 +259,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         return childCount;
     }
 
-    private void exportProject(DBRProgressMonitor monitor, ProjectExportData exportData, IProject project) throws InterruptedException, CoreException, IOException
+    private void exportProject(DBRProgressMonitor monitor, ProjectExportData exportData, IProject project) throws CoreException, IOException
     {
         monitor.subTask(project.getName());
         // Refresh project
@@ -278,7 +269,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         exportData.meta.startElement(ExportConstants.TAG_PROJECT);
         exportData.meta.addAttribute(ExportConstants.ATTR_NAME, project.getName());
         exportData.meta.addAttribute(ExportConstants.ATTR_DESCRIPTION, project.getDescription().getComment());
-        saveResourceProperties(project, exportData.meta);
 
         // Add project folder
         final String projectPath = ExportConstants.DIR_PROJECTS + "/" + project.getName() + "/"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -297,7 +287,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     private void exportResourceTree(DBRProgressMonitor monitor, ProjectExportData exportData, String parentPath, IResource resource) throws CoreException, IOException
     {
-        if (resource.getName().equals(PROJECT_DESC_FILE)) {
+        if (IGNORED_RESOURCES.contains(resource.getName())) {
             // Skip it
             return;
         }
@@ -305,7 +295,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
         exportData.meta.startElement(ExportConstants.TAG_RESOURCE);
         exportData.meta.addAttribute(ExportConstants.ATTR_NAME, resource.getName());
-        saveResourceProperties(resource, exportData.meta);
 
         if (resource instanceof IContainer) {
             // Add folder entry
@@ -336,28 +325,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         exportData.meta.endElement();
 
         monitor.worked(1);
-    }
-
-    private void saveResourceProperties(IResource resource, XMLBuilder xml) throws CoreException, IOException
-    {
-        if (resource instanceof IFile) {
-            final IContentDescription contentDescription = ((IFile) resource).getContentDescription();
-            if (contentDescription != null && contentDescription.getCharset() != null) {
-                xml.addAttribute(ExportConstants.ATTR_CHARSET, contentDescription.getCharset());
-                //xml.addAttribute(ExportConstants.ATTR_CHARSET, contentDescription.getContentType());
-            }
-        } else if (resource instanceof IFolder) {
-            xml.addAttribute(ExportConstants.ATTR_DIRECTORY, true);
-        }
-        for (Object entry : resource.getPersistentProperties().entrySet()) {
-            Map.Entry<?, ?> propEntry = (Map.Entry<?,?>) entry;
-            xml.startElement(ExportConstants.TAG_ATTRIBUTE);
-            final QualifiedName attrName = (QualifiedName) propEntry.getKey();
-            xml.addAttribute(ExportConstants.ATTR_QUALIFIER, attrName.getQualifier());
-            xml.addAttribute(ExportConstants.ATTR_NAME, attrName.getLocalName());
-            xml.addAttribute(ExportConstants.ATTR_VALUE, (String) propEntry.getValue());
-            xml.endElement();
-        }
     }
 
 }
