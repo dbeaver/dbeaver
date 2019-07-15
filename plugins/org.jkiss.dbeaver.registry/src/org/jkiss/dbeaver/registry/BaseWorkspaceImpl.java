@@ -551,11 +551,14 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
 
     private void handleResourceChange(ProjectMetadata projectMetadata, IResourceDelta delta) {
         if (delta.getKind() == IResourceDelta.REMOVED) {
-            projectMetadata.removeResourceFromCache(delta.getProjectRelativePath());
-        } else if (delta.getKind() == IResourceDelta.CHANGED && (delta.getFlags() & IResourceDelta.MOVED_TO) != 0) {
-            IPath oldPath = delta.getMovedFromPath().makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
-            IPath newPath = delta.getMovedFromPath().makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
-            projectMetadata.updateResourceCache(oldPath, newPath);
+            IPath movedToPath = delta.getMovedToPath();
+            if (movedToPath != null) {
+                IPath oldPath = delta.getProjectRelativePath();
+                IPath newPath = movedToPath.makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
+                projectMetadata.updateResourceCache(oldPath, newPath);
+            } else {
+                projectMetadata.removeResourceFromCache(delta.getProjectRelativePath());
+            }
         } else {
             for (IResourceDelta childDelta : delta.getAffectedChildren(IResourceDelta.ALL_WITH_PHANTOMS, IContainer.INCLUDE_HIDDEN)) {
                 handleResourceChange(projectMetadata, childDelta);
