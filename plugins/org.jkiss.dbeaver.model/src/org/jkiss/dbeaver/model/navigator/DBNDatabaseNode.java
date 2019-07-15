@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -233,7 +232,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     }
 
     void addChildItem(DBSObject object) {
-        DBXTreeItem metaChildren = getItemsMeta();
+        DBXTreeNode metaChildren = getItemsMeta();
+        if (metaChildren == null) {
+            // There is no item meta. Maybe we are udner some folder structure
+            // Let's find a folder with right type
+            metaChildren = getFolderMeta(object.getClass());
+        }
         if (metaChildren != null) {
             final DBNDatabaseItem newChild = new DBNDatabaseItem(this, metaChildren, object, false);
             synchronized (this) {
@@ -725,6 +729,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             for (DBXTreeNode cn : metaChildren) {
                 if (cn instanceof DBXTreeItem) {
                     return (DBXTreeItem) cn;
+                }
+            }
+        }
+        return null;
+    }
+
+    public DBXTreeFolder getFolderMeta(Class<?> childType) {
+        List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
+        if (metaChildren != null) {
+            for (DBXTreeNode cn : metaChildren) {
+                if (cn instanceof DBXTreeFolder && childType.getName().equals(((DBXTreeFolder) cn).getType())) {
+                    return (DBXTreeFolder) cn;
                 }
             }
         }

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
@@ -24,10 +25,10 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
  * DBNDatabaseItem
  */
 public class DBNDatabaseItem extends DBNDatabaseNode {
-    private DBXTreeItem meta;
+    private DBXTreeNode meta;
     private DBSObject object;
 
-    DBNDatabaseItem(DBNNode parent, DBXTreeItem meta, DBSObject object, boolean reflect) {
+    DBNDatabaseItem(DBNNode parent, DBXTreeNode meta, DBSObject object, boolean reflect) {
         super(parent);
         this.meta = meta;
         this.object = object;
@@ -47,7 +48,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
     }
 
     @Override
-    public DBXTreeItem getMeta() {
+    public DBXTreeNode getMeta() {
         return meta;
     }
 
