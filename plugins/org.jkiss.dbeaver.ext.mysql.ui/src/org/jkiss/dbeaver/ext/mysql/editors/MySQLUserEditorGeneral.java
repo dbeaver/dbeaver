@@ -107,41 +107,37 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
 
         {
-            privTable = new PrivilegeTableControl(container, MySQLMessages.editors_user_editor_general_control_dba_privileges);
+            privTable = new PrivilegeTableControl(container, MySQLMessages.editors_user_editor_general_control_dba_privileges, true);
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             privTable.setLayoutData(gd);
 
-            privTable.addListener(SWT.Modify, new Listener() {
-                @Override
-                public void handleEvent(Event event)
-                {
-                    final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
-                    final boolean grant = event.detail == 1;
-                    addChangeCommand(
-                        new MySQLCommandGrantPrivilege(
-                            getDatabaseObject(),
-                            grant,
-                            null,
-                            null,
-                            privilege),
-                        new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
-                            @Override
-                            public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
-                            {
-                                if (!privTable.isDisposed()) {
-                                    privTable.checkPrivilege(privilege, grant);
-                                }
+            privTable.addListener(SWT.Modify, event -> {
+                final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
+                final boolean grant = event.detail == 1;
+                addChangeCommand(
+                    new MySQLCommandGrantPrivilege(
+                        getDatabaseObject(),
+                        grant,
+                        null,
+                        null,
+                        privilege),
+                    new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
+                        @Override
+                        public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        {
+                            if (!privTable.isDisposed()) {
+                                privTable.checkPrivilege(privilege, grant);
                             }
-                            @Override
-                            public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
-                            {
-                                if (!privTable.isDisposed()) {
-                                    privTable.checkPrivilege(privilege, !grant);
-                                }
+                        }
+                        @Override
+                        public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        {
+                            if (!privTable.isDisposed()) {
+                                privTable.checkPrivilege(privilege, !grant);
                             }
-                        });
-                }
+                        }
+                    });
             });
 
         }

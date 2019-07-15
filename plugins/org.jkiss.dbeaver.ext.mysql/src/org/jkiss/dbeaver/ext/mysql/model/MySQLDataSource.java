@@ -514,7 +514,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     public MySQLPrivilege getPrivilege(DBRProgressMonitor monitor, String name)
         throws DBException {
-        return DBUtils.findObject(getPrivileges(monitor), name);
+        return DBUtils.findObject(getPrivileges(monitor), name, true);
     }
 
     private List<MySQLPrivilege> loadPrivileges(DBRProgressMonitor monitor)
