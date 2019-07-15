@@ -876,10 +876,27 @@
                     class="com.facebook.presto.jdbc.PrestoDriver"
                     sampleURL="jdbc:presto://{host}:{port}/{database}"
                     defaultPort="8080"
-                    description="PrestoDB JDBC driver"
+                    description="Facebook Presto (prestodb) JDBC driver"
                     webURL="https://prestodb.io/"
                     categories="sql,analytic,bigdata">
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="true"/>
+                </driver>
+
+                <!-- PrestoSQL -->
+                <driver
+                        id="prestosql_jdbc"
+                        label="PrestoSQL"
+                        icon="icons/presto_icon.png"
+                        iconBig="icons/presto_icon_big.png"
+                        class="io.prestosql.jdbc.PrestoDriver"
+                        sampleURL="jdbc:presto://{host}:{port}/{database}"
+                        defaultPort="8080"
+                        description="Presto (prestosql) JDBC driver"
+                        webURL="https://prestosql.io/"
+                        categories="sql,analytic,bigdata">
+                    <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
                 </driver>
