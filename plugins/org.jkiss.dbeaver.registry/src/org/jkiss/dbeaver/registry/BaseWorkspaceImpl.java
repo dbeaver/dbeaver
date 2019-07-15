@@ -544,13 +544,31 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
                                     activeProject = null;
                                     fireActiveProjectChange(projectMetadata, null);
                                 }
+                            } else {
+                                // Some changes within project - reflect them in metadata cache
+                                ProjectMetadata projectMetadata = projects.get(project);
+                                if (projectMetadata != null) {
+                                    handleResourceChange(projectMetadata, childDelta);
+                                }
                             }
                         }
-                    } else {
-                        // Some resource has been changed.
-                        // Update project metadata
                     }
                 }
+            }
+        }
+    }
+
+    private void handleResourceChange(ProjectMetadata projectMetadata, IResourceDelta delta)
+    {
+        if (delta.getKind() == IResourceDelta.REMOVED) {
+            projectMetadata.removeResourceFromCache(delta.getProjectRelativePath());
+        } else if (delta.getKind() == IResourceDelta.MOVED_TO) {
+            IPath oldPath = delta.getMovedFromPath().makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
+            IPath newPath = delta.getMovedFromPath().makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
+            projectMetadata.updateResourceCache(oldPath, newPath);
+        } else {
+            for (IResourceDelta childDelta : delta.getAffectedChildren(IResourceDelta.ALL_WITH_PHANTOMS, IContainer.INCLUDE_HIDDEN)) {
+                handleResourceChange(projectMetadata, childDelta);
             }
         }
     }
