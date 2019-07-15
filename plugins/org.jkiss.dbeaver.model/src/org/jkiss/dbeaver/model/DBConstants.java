@@ -109,7 +109,8 @@ public class DBConstants {
 
     public static final String DEFAULT_ISO_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
-    public static final String DEFAULT_DRIVERS_FOLDER = ".dbeaver-drivers";
+    public static final String LEGACY_DRIVERS_FOLDER = ".dbeaver-drivers";
+    public static final String DEFAULT_DRIVERS_FOLDER = "drivers";
 
     public static final String MODEL_BUNDLE_ID = "org.jkiss.dbeaver.model";
 

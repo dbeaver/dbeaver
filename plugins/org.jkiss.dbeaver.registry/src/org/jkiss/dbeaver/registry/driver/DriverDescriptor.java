@@ -1187,8 +1187,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             homeFolder = new File(driversHome);
         } else {
             homeFolder = new File(
-                    System.getProperty(StandardConstants.ENV_USER_HOME),
-                    DBConstants.DEFAULT_DRIVERS_FOLDER);
+                DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().getParent(),
+                DBConstants.DEFAULT_DRIVERS_FOLDER);
         }
         if (!homeFolder.exists()) {
             if (!homeFolder.mkdirs()) {

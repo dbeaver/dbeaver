@@ -62,6 +62,7 @@ class DBeaverSettingsImporter {
     private Shell windowShell;
     private Label progressLabel;
     private ProgressBar progressBar;
+    private File oldDriversFolder;
     private File driversFolder;
     private File oldWorkspacePath;
 
@@ -89,8 +90,12 @@ class DBeaverSettingsImporter {
             oldVersion = "3.x";
         }
         oldWorkspacePath = oldDir;
-        driversFolder = new File(
+        oldDriversFolder = new File(
             System.getProperty(StandardConstants.ENV_USER_HOME),
+            DBConstants.LEGACY_DRIVERS_FOLDER);
+        driversFolder = new File(
+            newDir.getParent(),
+            //System.getProperty(StandardConstants.ENV_USER_HOME),
             DBConstants.DEFAULT_DRIVERS_FOLDER);
 
         Image dbeaverIcon = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver32.png").createImage();
@@ -184,12 +189,13 @@ class DBeaverSettingsImporter {
 
     private void migrateWorkspace(final File oldDir, final File newDir) {
         progressLabel.setText("Counting workspace files...");
-        final int totalFiles = countWorkspaceFiles(oldDir);
+        long totalFiles = countWorkspaceFiles(oldDir);
+        totalFiles += countWorkspaceFiles(oldDriversFolder);
         progressBar.setMinimum(0);
-        progressBar.setMaximum(totalFiles);
+        progressBar.setMaximum((int) (totalFiles / 1000));
 
         final DBRProgressMonitor monitor = new BaseProgressMonitor() {
-            int filesProcessed = 0;
+            long bytesProcessed = 0;
             @Override
             public void subTask(final String name) {
                 display.syncExec(() -> progressLabel.setText(name));
@@ -197,8 +203,8 @@ class DBeaverSettingsImporter {
             @Override
             public void worked(final int work) {
                 display.syncExec(() -> {
-                    filesProcessed += work;
-                    progressBar.setSelection(filesProcessed);
+                    bytesProcessed += work;
+                    progressBar.setSelection((int) (bytesProcessed / 1000));
                 });
             }
         };
@@ -211,6 +217,7 @@ class DBeaverSettingsImporter {
                     }
                 }
                 copyWorkspaceFiles(monitor, DIR_TYPE.WORKSPACE, oldDir, newDir);
+                copyFolderFiles(monitor, oldDriversFolder, driversFolder);
             } finally {
                 DBeaverApplication.WORKSPACE_MIGRATED = true;
                 display.syncExec(new Runnable() {
@@ -235,7 +242,7 @@ class DBeaverSettingsImporter {
             if (file.isDirectory()) {
                 count += countWorkspaceFiles(file);
             } else {
-                count++;
+                count += file.length();
             }
         }
         return count;
@@ -255,7 +262,7 @@ class DBeaverSettingsImporter {
             return;
         }
 
-        int skippedFiles = 0;
+        long skippedFiles = 0;
         for (File file : files) {
 
             DIR_TYPE dirType = DIR_TYPE.NORMAL;
@@ -281,7 +288,7 @@ class DBeaverSettingsImporter {
             String relPath = file.getAbsolutePath().substring(oldWorkspacePath.getAbsolutePath().length());
             monitor.subTask(relPath);
             if (file.isDirectory()) {
-                if (parentDirType == DIR_TYPE.METADATA && !fileName.equals(".plugins")) {
+                if (parentDirType == DIR_TYPE.METADATA && !(fileName.equals(".plugins") || fileName.equals("qmdb") || fileName.startsWith("dbeaver"))) {
                     // Skip all dirs but plugins
                     skippedFiles += countWorkspaceFiles(file);
                     continue;
@@ -366,7 +373,28 @@ class DBeaverSettingsImporter {
 
                 }
             }
-            monitor.worked(1 + skippedFiles);
+            monitor.worked((int) (file.length() + skippedFiles));
+        }
+    }
+
+    private void copyFolderFiles(DBRProgressMonitor monitor, File fromDir, File toDir) {
+        final File[] files = fromDir.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            monitor.subTask(file.getName());
+            if (file.isDirectory()) {
+                File newDir = new File(toDir, file.getName());
+                if (newDir.exists() || newDir.mkdirs()) {
+                    copyFolderFiles(monitor, file, newDir);
+                } else {
+                    System.err.println("Can't create folder " + newDir.getAbsolutePath());
+                }
+            } else {
+                copyFileContents(file, new File(toDir, file.getName()));
+                monitor.worked((int) file.length());
+            }
         }
     }
 
@@ -377,7 +405,7 @@ class DBeaverSettingsImporter {
         } else {
             try (FileInputStream is = new FileInputStream(file)) {
                 try (FileOutputStream os = new FileOutputStream(newFile)) {
-                    IOUtils.fastCopy(is, os);
+                    IOUtils.fastCopy(is, os, 100000);
                 }
             } catch (IOException e) {
                 // Error
