@@ -139,11 +139,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         Composite ph = UIUtils.createPlaceholder(container, 1);
         ph.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        tablePrivilegesTable = new PrivilegeTableControl(ph, MySQLMessages.editors_user_editor_privileges_control_table_privileges);
+        tablePrivilegesTable = new PrivilegeTableControl(ph, MySQLMessages.editors_user_editor_privileges_control_table_privileges, false);
         gd = new GridData(GridData.FILL_BOTH);
         tablePrivilegesTable.setLayoutData(gd);
 
-        otherPrivilegesTable = new PrivilegeTableControl(ph, MySQLMessages.editors_user_editor_privileges_control_other_privileges);
+        otherPrivilegesTable = new PrivilegeTableControl(ph, MySQLMessages.editors_user_editor_privileges_control_other_privileges, false);
         gd = new GridData(GridData.FILL_BOTH);
         otherPrivilegesTable.setLayoutData(gd);
 
@@ -387,13 +387,15 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         item.setText("% (All)"); //$NON-NLS-1$
                         item.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
                     }
-                    for (MySQLTableBase table : tables) {
-                        TableItem item = new TableItem(tablesTable, SWT.NONE);
-                        item.setText(table.getName());
-                        item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
-                        item.setData(table);
+                    if (tables != null) {
+                        for (MySQLTableBase table : tables) {
+                            TableItem item = new TableItem(tablesTable, SWT.NONE);
+                            item.setText(table.getName());
+                            item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
+                            item.setData(table);
+                        }
+                        highlightTables();
                     }
-                    highlightTables();
                     UIUtils.packColumns(tablesTable);
                 }
             };
