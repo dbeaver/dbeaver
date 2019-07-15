@@ -390,7 +390,11 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
         if (newHandler != handler) {
             handler = newHandler;
         }
-        handler.updateNavigatorNode(this, resource);
+        if (handler != null) {
+            handler.updateNavigatorNode(this, resource);
+        } else {
+            log.error("Can't find handler for resource " + resource.getFullPath());
+        }
         getModel().fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
     }
 

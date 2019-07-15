@@ -391,6 +391,21 @@ public class ProjectMetadata implements DBPProject {
         }
     }
 
+    void removeResourceFromCache(IPath path) {
+        synchronized (metadataSync) {
+            resourceProperties.remove(path.toString());
+        }
+    }
+
+    void updateResourceCache(IPath oldPath, IPath newPath) {
+        synchronized (metadataSync) {
+            Map<String, Object> props = resourceProperties.remove(oldPath.toString());
+            if (props != null) {
+                resourceProperties.put(newPath.toString(), props);
+            }
+        }
+    }
+
     @Override
     public String toString() {
         return getName();
