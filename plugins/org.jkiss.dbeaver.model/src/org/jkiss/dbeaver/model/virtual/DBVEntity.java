@@ -93,6 +93,12 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (!CommonUtils.isEmpty(copy.properties)) {
             this.properties = new LinkedHashMap<>(copy.properties);
         }
+        if (!CommonUtils.isEmpty(copy.colorOverrides)) {
+            this.colorOverrides = new ArrayList<>(copy.colorOverrides.size());
+            for (DBVColorOverride co : copy.colorOverrides) {
+                this.colorOverrides.add(new DBVColorOverride(co));
+            }
+        }
     }
 
     DBVEntity(DBVContainer container, String name, Map<String, Object> map) {
