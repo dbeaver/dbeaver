@@ -75,7 +75,7 @@ public enum SQLScriptBindingType {
             if (!CommonUtils.isEmpty(cfg.getUserName())) {
                 params.put(DataSourceUtils.PARAM_USER, cfg.getUserName());
             }
-            for (DBWHandlerConfiguration handler : cfg.getDeclaredHandlers()) {
+            for (DBWHandlerConfiguration handler : cfg.getHandlers()) {
                 if (!handler.isEnabled()) {
                     continue;
                 }

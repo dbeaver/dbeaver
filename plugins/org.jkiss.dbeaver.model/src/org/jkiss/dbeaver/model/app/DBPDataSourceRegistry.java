@@ -59,6 +59,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
     @Nullable
     DBPDataSourceContainer findDataSourceByName(String name);
 
+    List<? extends DBPDataSourceContainer> getDataSourcesByProfile(@NotNull DBWNetworkProfile profile);
+
     List<? extends DBPDataSourceContainer> getDataSources();
 
     DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig);
@@ -110,4 +112,5 @@ public interface DBPDataSourceRegistry extends DBPObject {
     ISecurePreferences getSecurePreferences();
 
     void dispose();
+
 }

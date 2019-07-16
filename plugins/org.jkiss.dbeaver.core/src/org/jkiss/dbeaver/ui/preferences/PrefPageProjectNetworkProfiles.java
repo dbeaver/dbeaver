@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
@@ -67,16 +68,14 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         private final IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
         private final Composite blockControl;
         private final Button useHandlerCheck;
-        private final TabItem tabItem;
         private ControlEnableState blockEnableState;
         private final Map<DBWNetworkProfile, DBWHandlerConfiguration> loadedConfigs = new HashMap<>();
 
-        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, TabItem tabItem)
+        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck)
         {
             this.configurator = configurator;
             this.blockControl = blockControl;
             this.useHandlerCheck = useHandlerCheck;
-            this.tabItem = tabItem;
         }
     }
 
@@ -133,7 +132,6 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                         return;
                     }
                     DBWNetworkProfile newProfile = new DBWNetworkProfile();
-                    newProfile.setProfileId(UUID.randomUUID().toString());
                     newProfile.setProfileName(profileName);
                     projectMeta.getDataSourceRegistry().updateNetworkProfile(newProfile);
                     projectMeta.getDataSourceRegistry().flushConfig();
@@ -157,6 +155,15 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (selectedProfile != null) {
+                        List<? extends DBPDataSourceContainer> usedBy = projectMeta.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile);
+                        if (!usedBy.isEmpty()) {
+                            UIUtils.showMessageBox(getShell(), "Can't delete profile", "Configuration profile '" + selectedProfile.getProfileName() + "' used by " + usedBy.size() + " connections:\n" + usedBy, SWT.ICON_ERROR);
+                            return;
+                        }
+                        if (!UIUtils.confirmAction(getShell(), "Delete profile", "Are you sure you want to delete configuration profile '" + selectedProfile.getProfileName() + "'?")) {
+                            return;
+                        }
+
                         projectMeta.getDataSourceRegistry().removeNetworkProfile(selectedProfile);
                         projectMeta.getDataSourceRegistry().flushConfig();
                         profilesTable.remove(profilesTable.getSelectionIndex());
@@ -281,7 +288,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             }
         });
         Composite handlerComposite = UIUtils.createPlaceholder(composite, 1);
-        configurations.put(descriptor, new HandlerBlock(configurator, handlerComposite, useHandlerCheck, tabItem));
+        configurations.put(descriptor, new HandlerBlock(configurator, handlerComposite, useHandlerCheck));
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 

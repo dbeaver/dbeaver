@@ -60,6 +60,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     private Composite handlerComposite;
     private Combo profileCombo;
     private Button useHandlerCheck;
+    private DBWNetworkProfile activeProfile;
 
     public ConnectionPageNetworkHandler(IDataSourceConnectionEditorSite site, NetworkHandlerDescriptor descriptor) {
         super(ConnectionPageNetworkHandler.class.getSimpleName() + "." + descriptor.getId());
@@ -152,18 +153,18 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     }
 
     private void setConnectionConfigProfile(String profileName) {
-        DBWNetworkProfile profile = CommonUtils.isEmpty(profileName) ?
+        activeProfile = CommonUtils.isEmpty(profileName) ?
             null : site.getProject().getDataSourceRegistry().getNetworkProfile(profileName);
         DBPDataSourceContainer dataSource = site.getActiveDataSource();
         DBPConnectionConfiguration cfg = dataSource.getConnectionConfiguration();
-        String oldProfileId = cfg.getConfigProfileId();
+        String oldProfileId = cfg.getConfigProfileName();
         saveSettings(site.getActiveDataSource());
 
-        if (profile != null) {
-            if (CommonUtils.equalObjects(oldProfileId, profile.getProfileId())) {
+        if (activeProfile != null) {
+            if (CommonUtils.equalObjects(oldProfileId, activeProfile.getProfileName())) {
                 return;
             }
-            cfg.setConfigProfile(profile);
+            cfg.setConfigProfile(activeProfile);
             handlerConfiguration = cfg.getHandler(handlerDescriptor.getId());
             if (handlerConfiguration == null) {
                 handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource.getDriver());
@@ -174,12 +175,13 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
             }
             cfg.setConfigProfile(null);
         }
-        site.firePropertyChange(this, PROP_CONFIG_PROFILE, oldProfileId, profile == null ? null : profile.getProfileId());
+        site.firePropertyChange(this, PROP_CONFIG_PROFILE, oldProfileId, activeProfile == null ? null : activeProfile.getProfileName());
     }
 
     private void updateProfileList() {
         DBPConnectionConfiguration cfg = site.getActiveDataSource().getConnectionConfiguration();
-        String profileId = cfg.getConfigProfileId();
+        String profileId = cfg.getConfigProfileName();
+        activeProfile = CommonUtils.isEmpty(profileId) ? null : site.getProject().getDataSourceRegistry().getNetworkProfile(profileId);
 
         // Refresh profile list
         profileCombo.removeAll();
@@ -187,12 +189,12 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
         for (DBWNetworkProfile profile : site.getProject().getDataSourceRegistry().getNetworkProfiles()) {
             profileCombo.add(profile.getProfileName());
-            if (CommonUtils.equalObjects(profileId, profile.getProfileId())) {
+            if (CommonUtils.equalObjects(profileId, profile.getProfileName())) {
                 profileCombo.select(profileCombo.getItemCount() - 1);
             }
         }
 
-        // Upate page controls
+        // Update page controls
         handlerConfiguration = cfg.getHandler(handlerDescriptor.getId());
         if (handlerConfiguration == null) {
             handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, site.getDriver());
@@ -224,6 +226,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
         configurator.saveSettings(handlerConfiguration);
+        dataSource.getConnectionConfiguration().setConfigProfile(activeProfile);
         dataSource.getConnectionConfiguration().updateHandler(handlerConfiguration);
     }
 

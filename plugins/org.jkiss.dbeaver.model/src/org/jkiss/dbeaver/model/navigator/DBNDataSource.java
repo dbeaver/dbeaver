@@ -180,7 +180,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     }
 
     public boolean hasNetworkHandlers() {
-        for (DBWHandlerConfiguration handler : dataSource.getConnectionConfiguration().getDeclaredHandlers()) {
+        for (DBWHandlerConfiguration handler : dataSource.getConnectionConfiguration().getHandlers()) {
             if (handler.isEnabled()) {
                 return true;
             }

@@ -249,7 +249,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 xml.endElement();
             }
             // Save network handlers' configurations
-            for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
+            for (DBWHandlerConfiguration configuration : connectionInfo.getHandlers()) {
                 xml.startElement(RegistryConstants.TAG_NETWORK_HANDLER);
                 xml.addAttribute(RegistryConstants.ATTR_TYPE, configuration.getType().name());
                 xml.addAttribute(RegistryConstants.ATTR_ID, CommonUtils.notEmpty(configuration.getId()));

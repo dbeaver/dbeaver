@@ -712,7 +712,7 @@ public class DataSourceDescriptor
             this.proxyHandler = null;
             this.tunnelHandler = null;
             DBWHandlerConfiguration tunnelConfiguration = null, proxyConfiguration = null;
-            for (DBWHandlerConfiguration handler : connectionInfo.getDeclaredHandlers()) {
+            for (DBWHandlerConfiguration handler : connectionInfo.getHandlers()) {
                 if (handler.isEnabled()) {
                     if (handler.getType() == DBWHandlerType.TUNNEL) {
                         tunnelConfiguration = handler;

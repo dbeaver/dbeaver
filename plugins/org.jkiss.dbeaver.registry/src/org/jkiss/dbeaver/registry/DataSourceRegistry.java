@@ -218,6 +218,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     @Override
+    public List<? extends DBPDataSourceContainer> getDataSourcesByProfile(@NotNull DBWNetworkProfile profile) {
+        List<DataSourceDescriptor> dsCopy;
+        synchronized (dataSources) {
+            dsCopy = CommonUtils.copyList(dataSources);
+        }
+        dsCopy.removeIf(ds -> CommonUtils.equalObjects(ds.getConnectionConfiguration().getUserProfileName(), profile.getProfileName()));
+        return dsCopy;
+    }
+
+    @Override
     public List<DataSourceDescriptor> getDataSources() {
         List<DataSourceDescriptor> dsCopy;
         synchronized (dataSources) {
