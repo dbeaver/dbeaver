@@ -35,8 +35,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureParameter;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -431,7 +429,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         log.debug("Global breakpoint added");
 
         String sessionParam = String.valueOf(getSessionId());
-        String taskName = "PostgreSQL Debug - Global session " + sessionInfo.getID();
+        String taskName = "PostgreSQL Debug - Global session " + sessionParam;
         String sql = SQL_ATTACH.replaceAll("\\?sessionid", sessionParam);
         DBGEvent begin = new DBGEvent(this, DBGEvent.RESUME, DBGEvent.MODEL_SPECIFIC);
         DBGEvent end = new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.BREAKPOINT);
@@ -535,19 +533,17 @@ public class PostgreDebugSession extends DBGJDBCSession {
         PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) descriptor;
         String sqlPattern = attachKind == PostgreDebugAttachKind.GLOBAL ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
 
-        String sqlCommand = sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
+        return sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
             .replaceAll("\\?obj", String.valueOf(functionOid))
             .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()))
             .replaceAll("\\?target", bp.isAll() ? "null" : String.valueOf(bp.getTargetId()));
-        return sqlCommand;
     }
 
     protected String composeRemoveBreakpointCommand(DBGBreakpointDescriptor breakpointDescriptor) {
         PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) breakpointDescriptor;
-        String sqlCommand = SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
+        return SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
             .replaceAll("\\?obj", String.valueOf(functionOid))
             .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()));
-        return sqlCommand;
     }
 
     @Override
