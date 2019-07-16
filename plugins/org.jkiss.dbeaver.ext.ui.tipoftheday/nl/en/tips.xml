@@ -38,7 +38,7 @@
 	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F2</b> to rename the selected element.</tip>
 	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F4</b> to edit properties of the selected element.</tip>
 	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F5</b> to refresh the selected element.</tip>
-	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>Ctrl+D</b> to add the selected elements into your <a href="https://github.com/dbeaver/dbeaver/wiki/Bookmarks">bookmarks</a>.</tip>
+	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>Ctrl+Alt+Shift+D</b> to add the selected elements into your <a href="https://github.com/dbeaver/dbeaver/wiki/Bookmarks">bookmarks</a>.</tip>
 	<tip>Use <a href="https://github.com/dbeaver/dbeaver/wiki/Bookmarks">bookmarks</a> as quick access links to objects of a database.</tip>
 	<tip><a href="https://github.com/dbeaver/dbeaver/wiki/Managing-Charts">Charts</a> let you quickly and easily turn your SELECT queries' output into a colorized bar chart.</tip>
 	<tip>To see available <a href="https://github.com/dbeaver/dbeaver/wiki/SQL-Templates">templates</a> of SQL statements, use <b>Ctrl+Alt+Space</b> shortcut.</tip>
