@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -135,7 +136,9 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
                     null,
                     null);
                 if (preferenceDialog != null) {
-                    preferenceDialog.open();
+                    if (preferenceDialog.open() == IDialogConstants.OK_ID) {
+                        setConnectionConfigProfile(profileCombo.getText());
+                    }
                 }
             }
         });
@@ -161,9 +164,6 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         saveSettings(site.getActiveDataSource());
 
         if (activeProfile != null) {
-            if (CommonUtils.equalObjects(oldProfileId, activeProfile.getProfileName())) {
-                return;
-            }
             cfg.setConfigProfile(activeProfile);
             handlerConfiguration = cfg.getHandler(handlerDescriptor.getId());
             if (handlerConfiguration == null) {
@@ -192,6 +192,11 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
             if (CommonUtils.equalObjects(profileId, profile.getProfileName())) {
                 profileCombo.select(profileCombo.getItemCount() - 1);
             }
+        }
+
+        // Update settings from profile
+        if (activeProfile != null) {
+
         }
 
         // Update page controls
