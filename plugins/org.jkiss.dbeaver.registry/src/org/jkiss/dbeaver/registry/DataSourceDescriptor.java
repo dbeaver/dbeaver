@@ -44,10 +44,7 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerType;
-import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
-import org.jkiss.dbeaver.model.net.DBWTunnel;
+import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -714,6 +711,10 @@ public class DataSourceDescriptor
             DBWHandlerConfiguration tunnelConfiguration = null, proxyConfiguration = null;
             for (DBWHandlerConfiguration handler : connectionInfo.getHandlers()) {
                 if (handler.isEnabled()) {
+                    // Set driver explicitly.
+                    // Handler config may have null driver if it was copied from profile config.
+                    handler.setDriver(getDriver());
+
                     if (handler.getType() == DBWHandlerType.TUNNEL) {
                         tunnelConfiguration = handler;
                     } else if (handler.getType() == DBWHandlerType.PROXY) {
@@ -784,7 +785,15 @@ public class DataSourceDescriptor
                     this.resolvedConnectionInfo.resolveDynamicVariables();
                 }
                 if (!CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
-
+                    // Update config from profile
+                    DBWNetworkProfile profile = registry.getNetworkProfile(connectionInfo.getConfigProfileName());
+                    if (profile != null) {
+                        for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
+                            if (handlerCfg.isEnabled()) {
+                                resolvedConnectionInfo.updateHandler(handlerCfg);
+                            }
+                        }
+                    }
                 }
                 if (!CommonUtils.isEmpty(connectionInfo.getUserProfileName())) {
 

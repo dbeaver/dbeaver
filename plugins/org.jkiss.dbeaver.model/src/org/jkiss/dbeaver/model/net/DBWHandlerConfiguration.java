@@ -33,7 +33,7 @@ public class DBWHandlerConfiguration {
 
     @NotNull
     private final DBWHandlerDescriptor descriptor;
-    private final DBPDriver driver;
+    private DBPDriver driver;
     private boolean enabled;
     private String userName;
     private String password;
@@ -71,6 +71,10 @@ public class DBWHandlerConfiguration {
 
     public DBPDriver getDriver() {
         return driver;
+    }
+
+    public void setDriver(DBPDriver driver) {
+        this.driver = driver;
     }
 
     public DBWHandlerType getType() {
