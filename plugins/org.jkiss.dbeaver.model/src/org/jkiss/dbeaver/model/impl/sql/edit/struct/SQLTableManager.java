@@ -157,12 +157,14 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         OBJECT_TYPE object = command.getObject();
+        final String tableName = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
+            object.getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(object);
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
                 "DROP " + (object.isView() ? "VIEW" : "TABLE") +  //$NON-NLS-2$
-                " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                (!object.isView() && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "")
+                " " + tableName + //$NON-NLS-2$
+                (!object.isView() && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "") //$NON-NLS-2$
             )
         );
     }
