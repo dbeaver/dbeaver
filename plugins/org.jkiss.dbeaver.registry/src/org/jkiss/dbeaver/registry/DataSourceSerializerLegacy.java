@@ -668,7 +668,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                             }
                         }
 
-                        curDataSource.getConnectionConfiguration().addHandler(curNetworkHandler);
+                        curDataSource.getConnectionConfiguration().updateHandler(curNetworkHandler);
                     }
                     break;
                 case RegistryConstants.TAG_FILTER:

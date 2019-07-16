@@ -49,4 +49,9 @@ public interface IDataSourceConnectionEditorSite
     void testConnection();
 
     DBPProject getProject();
+
+    /**
+     * Fires property change event in all connection pages
+     */
+    void firePropertyChange(Object source, String property, Object oldValue, Object newValue);
 }
