@@ -255,9 +255,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     DBNDatabaseNode parentNode = null;
                     if (event.getOptions() != null) {
                         Object containerNode = event.getOptions().get(DBEObjectMaker.OPTION_CONTAINER);
-                        if (containerNode instanceof DBNDatabaseNode) {
-                            // Do not use container node as it can be invalid (it can be grand-parent node or something)
-                            //parentNode = (DBNDatabaseNode) containerNode;
+                        if (containerNode instanceof DBNDatabaseFolder && event.getObject().getClass().getName().equals(((DBNDatabaseFolder) containerNode).getMeta().getType())) {
+                            // Use container node only if it a folder with exact object type
+                            // Otherwise it may be a wrong node (e.g. grand-parent node)
+                            parentNode = (DBNDatabaseNode) containerNode;
                         }
                     }
                     if (parentNode == null) {

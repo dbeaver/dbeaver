@@ -52,7 +52,7 @@ public class DB2IMetaModel extends GenericMetaModel
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DB2 for i procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT ROUTINE_DEFINITION FROM SYSROUTINES " +
+                "SELECT ROUTINE_DEFINITION FROM QSYS2.SYSROUTINES " +
                     "WHERE ROUTINE_SCHEMA=? AND ROUTINE_NAME=?"))
             {
                 dbStat.setString(1, sourceObject.getContainer().getName());

@@ -65,4 +65,9 @@ public class DBPConfigurationProfile {
         this.properties = properties;
     }
 
+    @Override
+    public String toString() {
+        return profileName + " (" + profileId + ")";
+    }
+
 }

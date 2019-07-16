@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,10 +37,12 @@ import java.util.List;
 public class PrivilegeTableControl extends Composite {
 
     private Table privTable;
+    private boolean isStatic;
 
-    public PrivilegeTableControl(Composite parent, String title)
+    public PrivilegeTableControl(Composite parent, String title, boolean isStatic)
     {
         super(parent, SWT.NONE);
+        this.isStatic = isStatic;
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -148,9 +151,10 @@ public class PrivilegeTableControl extends Composite {
             //Button grantCheck = (Button)item.getData("grant");
             boolean checked = false;//, grantOption = false;
             for (MySQLGrant grant : grants) {
-                if (grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege) ||
-                    (grant.isGrantOption() && privilege.isGrantOption()))
-                {
+                if (isStatic != grant.isStatic()) {
+                    continue;
+                }
+                if (grant.isAllPrivileges() || (ArrayUtils.contains(grant.getPrivileges(), privilege))) {
                     checked = true;
                     //grantOption = grant.isGrantOption();
                     break;

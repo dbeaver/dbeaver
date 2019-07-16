@@ -37,6 +37,9 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         return configurations;
     }
 
+    public DBWNetworkProfile() {
+    }
+
     public void updateConfiguration(@NotNull DBWHandlerConfiguration cfg) {
         for (int i = 0; i < configurations.size(); i++) {
             DBWHandlerConfiguration c = configurations.get(i);

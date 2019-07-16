@@ -59,7 +59,7 @@ public class SQLIdentifierDetector extends SQLWordDetector {
     }
 
     public String[] splitIdentifier(String identifier) {
-        return SQLUtils.splitFullIdentifier(identifier, structSeparator, quoteStrings);
+        return SQLUtils.splitFullIdentifier(identifier, String.valueOf(structSeparator), quoteStrings, true);
     }
 
     @Override

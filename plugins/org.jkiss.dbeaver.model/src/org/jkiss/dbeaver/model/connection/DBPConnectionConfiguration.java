@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -249,7 +250,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.handlers.addAll(handlers);
     }
 
-    public void addHandler(DBWHandlerConfiguration handler) {
+    public void updateHandler(DBWHandlerConfiguration handler) {
         for (int i = 0; i < handlers.size(); i++) {
             if (handlers.get(i).getId().equals(handler.getId())) {
                 handlers.set(i, handler);
@@ -396,4 +397,16 @@ public class DBPConnectionConfiguration implements DBPObject {
         return value;
     }
 
+    public void setConfigProfile(DBWNetworkProfile profile) {
+        if (profile == null) {
+            configProfileId = null;
+        } else {
+            configProfileId = profile.getProfileId();
+            for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
+                if (handlerConfig.isEnabled()) {
+                    updateHandler(new DBWHandlerConfiguration(handlerConfig));
+                }
+            }
+        }
+    }
 }

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.runtime;
 /**
  * Condition for lambdas
  */
+@FunctionalInterface
 public interface DBRCondition {
 
     boolean isConditionMet();
