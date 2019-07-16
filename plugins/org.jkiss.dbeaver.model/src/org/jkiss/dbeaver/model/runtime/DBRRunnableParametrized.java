@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Runnable with parameter
  */
+@FunctionalInterface
 public interface DBRRunnableParametrized<T> {
 
     void run(T param)

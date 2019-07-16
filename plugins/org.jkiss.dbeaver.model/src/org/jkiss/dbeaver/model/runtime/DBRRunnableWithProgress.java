@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
  * Database progress monitor.
  * Similar to IProgressMonitor but with DBP specific features
  */
+@FunctionalInterface
 public interface DBRRunnableWithProgress {
 
     void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException;
