@@ -49,8 +49,8 @@ public class DBPConnectionConfiguration implements DBPObject {
     private String url;
     private String clientHomeId;
 
-    private String configProfileId;
-    private String userProfileId;
+    private String configProfileName;
+    private String userProfileName;
 
     @NotNull
     private final Map<String, String> properties;
@@ -84,6 +84,8 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.userPassword = info.userPassword;
         this.url = info.url;
         this.clientHomeId = info.clientHomeId;
+        this.configProfileName = info.configProfileName;
+        this.userProfileName = info.userProfileName;
         this.connectionType = info.connectionType;
         this.properties = new HashMap<>(info.properties);
         this.providerProperties = new HashMap<>(info.providerProperties);
@@ -232,17 +234,9 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Network handlers
 
-    public List<DBWHandlerConfiguration> getDeclaredHandlers() {
+    @NotNull
+    public List<DBWHandlerConfiguration> getHandlers() {
         return handlers;
-    }
-
-    public DBWHandlerConfiguration getDeclaredHandler(String id) {
-        for (DBWHandlerConfiguration cfg : handlers) {
-            if (cfg.getId().equals(id)) {
-                return cfg;
-            }
-        }
-        return null;
     }
 
     public void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers) {
@@ -262,9 +256,9 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     @Nullable
     public DBWHandlerConfiguration getHandler(String id) {
-        for (DBWHandlerConfiguration handler : handlers) {
-            if (handler.getId().equals(id)) {
-                return handler;
+        for (DBWHandlerConfiguration cfg : handlers) {
+            if (cfg.getId().equals(id)) {
+                return cfg;
             }
         }
         return null;
@@ -311,20 +305,20 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.keepAliveInterval = keepAliveInterval;
     }
 
-    public String getConfigProfileId() {
-        return configProfileId;
+    public String getConfigProfileName() {
+        return configProfileName;
     }
 
-    public void setConfigProfileId(String configProfileId) {
-        this.configProfileId = configProfileId;
+    public void setConfigProfileName(String configProfileName) {
+        this.configProfileName = configProfileName;
     }
 
-    public String getUserProfileId() {
-        return userProfileId;
+    public String getUserProfileName() {
+        return userProfileName;
     }
 
-    public void setUserProfileId(String userProfileId) {
-        this.userProfileId = userProfileId;
+    public void setUserProfileName(String userProfileName) {
+        this.userProfileName = userProfileName;
     }
 
     @Override
@@ -347,6 +341,8 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalOrEmptyStrings(this.userPassword, source.userPassword) &&
                 CommonUtils.equalOrEmptyStrings(this.url, source.url) &&
                 CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
+                CommonUtils.equalObjects(this.configProfileName, source.configProfileName) &&
+                CommonUtils.equalObjects(this.userProfileName, source.userProfileName) &&
                 CommonUtils.equalObjects(this.connectionType, source.connectionType) &&
                 CommonUtils.equalObjects(this.properties, source.properties) &&
                 CommonUtils.equalObjects(this.providerProperties, source.providerProperties) &&
@@ -399,9 +395,9 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public void setConfigProfile(DBWNetworkProfile profile) {
         if (profile == null) {
-            configProfileId = null;
+            configProfileName = null;
         } else {
-            configProfileId = profile.getProfileId();
+            configProfileName = profile.getProfileName();
             for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
                 if (handlerConfig.isEnabled()) {
                     updateHandler(new DBWHandlerConfiguration(handlerConfig));

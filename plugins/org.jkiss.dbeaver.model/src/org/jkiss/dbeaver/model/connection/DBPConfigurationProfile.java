@@ -25,21 +25,11 @@ import java.util.Map;
  */
 public class DBPConfigurationProfile {
 
-    // Profile unique ID (UUID)
-    private String profileId;
     private String profileName;
     private String profileDescription;
 
     // Properties. Basically JSON
     private Map<String, String> properties = new LinkedHashMap<>();
-
-    public String getProfileId() {
-        return profileId;
-    }
-
-    public void setProfileId(String profileId) {
-        this.profileId = profileId;
-    }
 
     public String getProfileName() {
         return profileName;
@@ -67,7 +57,7 @@ public class DBPConfigurationProfile {
 
     @Override
     public String toString() {
-        return profileName + " (" + profileId + ")";
+        return profileName;
     }
 
 }

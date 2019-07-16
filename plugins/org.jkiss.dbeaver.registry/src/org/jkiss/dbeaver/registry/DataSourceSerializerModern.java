@@ -153,9 +153,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         jsonWriter.name("network-profiles");
                         jsonWriter.beginObject();
                         for (DBWNetworkProfile np : profiles) {
-                            jsonWriter.name(np.getProfileId());
+                            jsonWriter.name(np.getProfileName());
                             jsonWriter.beginObject();
-                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, np.getProfileName());
                             JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, np.getProfileDescription());
                             jsonWriter.name("handlers");
                             jsonWriter.beginObject();
@@ -342,10 +341,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
             // Network profiles
             for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "network-profiles")) {
-                String profileId = vmMap.getKey();
+                String profileName = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
                 DBWNetworkProfile profile = new DBWNetworkProfile();
-                profile.setProfileId(profileId);
+                profile.setProfileName(profileName);
                 profile.setProfileName(JSONUtils.getString(profileMap, "name"));
                 profile.setProperties(JSONUtils.deserializeProperties(profileMap, "properties"));
 
@@ -431,6 +430,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         }
                     }
                     config.setClientHomeId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_HOME));
+                    config.setConfigProfileName(JSONUtils.getString(cfgObject, "config-profile"));
+                    config.setUserProfileName(JSONUtils.getString(cfgObject, "user-profile"));
                     config.setConnectionType(
                         DataSourceProviderRegistry.getInstance().getConnectionType(
                             JSONUtils.getString(cfgObject, RegistryConstants.ATTR_TYPE), DBPConnectionType.DEFAULT_TYPE));
@@ -634,6 +635,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
             if (connectionInfo.getKeepAliveInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
             }
+            JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
+            JSONUtils.fieldNE(json, "user-profile", connectionInfo.getUserProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
 
@@ -661,10 +664,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Save network handlers' configurations
-            if (!CommonUtils.isEmpty(connectionInfo.getDeclaredHandlers())) {
+            if (!CommonUtils.isEmpty(connectionInfo.getHandlers())) {
                 json.name(RegistryConstants.TAG_HANDLERS);
                 json.beginObject();
-                for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
+                for (DBWHandlerConfiguration configuration : connectionInfo.getHandlers()) {
                     saveNetworkHandlerConfiguration(json, dataSource, null, configuration);
                 }
                 json.endObject();
@@ -783,7 +786,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         boolean saved = DataSourceRegistry.saveCredentialsInSecuredStorage(
             registry.getProject(), dataSource, subNode, userName, password);
         if (!saved) {
-            String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
+            String topNodeId = profile != null ? "profile:" + profile.getProfileName() : dataSource.getId();
             if (subNode == null) subNode = NODE_CONNECTION;
 
             Map<String, Map<String, String>> nodeMap = secureProperties.computeIfAbsent(topNodeId, s -> new LinkedHashMap<>());
@@ -824,7 +827,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 passwordReadCanceled = true;
             }
         }
-        String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
+        String topNodeId = profile != null ? "profile:" + profile.getProfileName() : dataSource.getId();
         if (subNode == null) subNode = NODE_CONNECTION;
 
         Map<String, Map<String, String>> subMap = secureProperties.get(topNodeId);

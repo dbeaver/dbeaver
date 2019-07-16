@@ -211,7 +211,7 @@ public class DataSourceUtils {
                     }
                     if (!handlerProps.isEmpty()) {
                         for (Map.Entry<String, Map<String, String>> handlerProp : handlerProps.entrySet()) {
-                            DBWHandlerConfiguration handler = cfg.getDeclaredHandler(handlerProp.getKey());
+                            DBWHandlerConfiguration handler = cfg.getHandler(handlerProp.getKey());
                             if (handler == null) {
                                 matched = false;
                                 break;

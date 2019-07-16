@@ -132,10 +132,13 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         // Replace database host/port and URL - let's use localhost
         connectionInfo.setHostName(SSHConstants.LOCALHOST_NAME);
         connectionInfo.setHostPort(newPortValue);
-        String newURL = configuration.getDriver().getDataSourceProvider().getConnectionURL(
-            configuration.getDriver(),
-            connectionInfo);
-        connectionInfo.setUrl(newURL);
+        if (configuration.getDriver() != null) {
+            // Driver can be null in case of orphan tunnel config (e.g. in network profile)
+            String newURL = configuration.getDriver().getDataSourceProvider().getConnectionURL(
+                configuration.getDriver(),
+                connectionInfo);
+            connectionInfo.setUrl(newURL);
+        }
         return connectionInfo;
     }
 
