@@ -775,9 +775,21 @@ public class DataSourceDescriptor
 
             monitor.subTask("Connect to data source");
 
-            if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+            if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
+                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()) ||
+                !CommonUtils.isEmpty(connectionInfo.getUserProfileName()))
+            {
                 this.resolvedConnectionInfo = new DBPConnectionConfiguration(this.tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo);
-                this.resolvedConnectionInfo.resolveDynamicVariables();
+                if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+                    this.resolvedConnectionInfo.resolveDynamicVariables();
+                }
+                if (!CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+
+                }
+                if (!CommonUtils.isEmpty(connectionInfo.getUserProfileName())) {
+
+                }
+
             }
 
             this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
