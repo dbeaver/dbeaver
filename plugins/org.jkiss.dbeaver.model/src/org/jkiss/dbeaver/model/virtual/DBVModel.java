@@ -39,9 +39,10 @@ import java.util.Map;
 public class DBVModel extends DBVContainer {
 
     private DBPDataSourceContainer dataSourceContainer;
+    @NotNull
     private String id;
 
-    public DBVModel(String id, Map<String, Object> map) {
+    public DBVModel(@NotNull String id, @NotNull Map<String, Object> map) {
         super(null, id, map);
         this.id = id;
     }
@@ -53,18 +54,27 @@ public class DBVModel extends DBVContainer {
     }
 
     // Copy constructor
-    public DBVModel(DBPDataSourceContainer dataSourceContainer, DBVModel source) {
+    public DBVModel(@NotNull DBPDataSourceContainer dataSourceContainer, @NotNull DBVModel source) {
         super(null, source);
         this.dataSourceContainer = dataSourceContainer;
         this.id = dataSourceContainer.getId();
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NotNull String id) {
         this.id = id;
+    }
+
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
+    }
+
+    public void setDataSourceContainer(DBPDataSourceContainer dataSourceContainer) {
+        this.dataSourceContainer = dataSourceContainer;
     }
 
     @Override
@@ -80,7 +90,7 @@ public class DBVModel extends DBVContainer {
     @Nullable
     @Override
     public DBPDataSource getDataSource() {
-        return dataSourceContainer.getDataSource();
+        return dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
     }
 
     /**

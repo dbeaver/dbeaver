@@ -543,7 +543,15 @@ public class DataSourceDescriptor
     }
 
     public void setVirtualModel(@NotNull DBVModel virtualModel) {
-        this.virtualModel = virtualModel;
+        if (virtualModel.getId().equals(getId())) {
+            // DS-specific model
+            this.virtualModel = virtualModel;
+            this.virtualModel.setDataSourceContainer(this);
+        } else {
+            // Shared model
+            this.virtualModel = new DBVModel(this, virtualModel);
+            this.virtualModel.setId(virtualModel.getId());
+        }
     }
 
     @Override
