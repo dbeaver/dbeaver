@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.runtime;
 /**
  * Abstract object creator
  */
+@FunctionalInterface
 public interface DBRCreator<RESULT, PARAMETER> {
 
     RESULT createObject(PARAMETER parameter);

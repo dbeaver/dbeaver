@@ -53,8 +53,6 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.util.*;
 
 class DataSourceSerializerModern implements DataSourceSerializer
@@ -469,7 +467,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     // Handlers
                     for (Map.Entry<String, Map<String, Object>> handlerObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_HANDLERS)) {
                         DBWHandlerConfiguration configuration = parseNetworkHandlerConfig(dataSource, null, handlerObject);
-                        dataSource.getConnectionConfiguration().addHandler(configuration);
+                        dataSource.getConnectionConfiguration().updateHandler(configuration);
                     }
 
                     // Bootstrap

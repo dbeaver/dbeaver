@@ -129,4 +129,9 @@ public class MySQLPrivilege implements DBAPrivilege
     {
         return name.equalsIgnoreCase(GRANT_PRIVILEGE);
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

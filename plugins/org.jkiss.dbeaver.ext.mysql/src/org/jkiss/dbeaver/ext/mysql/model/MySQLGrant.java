@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeGrant;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -156,4 +157,7 @@ public class MySQLGrant implements DBAPrivilegeGrant {
         return false;
     }
 
+    public boolean isStatic() {
+        return CommonUtils.isEmpty(catalogName) || "*".equals(catalogName);
+    }
 }
