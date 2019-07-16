@@ -135,6 +135,9 @@ public class ExtendedDateFormat extends SimpleDateFormat {
     public Date parse(String text, ParsePosition pos)
     {
         Date date = super.parse(text, pos);
+        if (date == null) {
+            return null;
+        }
         int index = pos.getIndex();
         if (index < text.length() && nanoStart > 0) {
             long nanos = 0;
