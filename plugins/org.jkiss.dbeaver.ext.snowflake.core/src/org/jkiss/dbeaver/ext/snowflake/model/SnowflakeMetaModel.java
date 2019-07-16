@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.snowflake.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -72,6 +74,29 @@ public class SnowflakeMetaModel extends GenericMetaModel
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
+    }
+
+    @Override
+    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+        GenericDataSource dataSource = sourceObject.getDataSource();
+        boolean isFunction = sourceObject.getProcedureType() == DBSProcedureType.FUNCTION;
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Snowflake object DDL")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "DESCRIBE " + sourceObject.getProcedureType() + " " + sourceObject.getProcedureSignature(monitor, false)))
+            {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (dbResult.nextRow()) {
+                        if ("body".equals(dbResult.getString("property"))) {
+                            sql.append(dbResult.getString("value"));
+                        }
+                    }
+                    return sql.toString();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
     }
 
     @Override
