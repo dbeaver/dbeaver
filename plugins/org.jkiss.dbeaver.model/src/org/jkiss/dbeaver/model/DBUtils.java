@@ -1731,7 +1731,7 @@ public final class DBUtils {
         } else if (cell1 instanceof Number && cell2 instanceof Number) {
             // Actual data type for the same column may differ (e.g. partially read from server, partially added on client side)
             return CommonUtils.compareNumbers((Number) cell1, (Number) cell2);
-        } else if (cell1 instanceof Comparable) {
+        } else if (cell1 instanceof Comparable && cell1.getClass() == cell2.getClass()) {
             return ((Comparable) cell1).compareTo(cell2);
         } else {
             String str1 = String.valueOf(cell1);
