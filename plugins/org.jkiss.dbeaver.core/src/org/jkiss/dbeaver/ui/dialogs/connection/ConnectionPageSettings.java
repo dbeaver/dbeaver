@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -319,6 +321,22 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public DBPProject getProject() {
         return wizard.getDataSourceRegistry().getProject();
+    }
+
+    @Override
+    public void firePropertyChange(Object source, String property, Object oldValue, Object newValue) {
+        PropertyChangeEvent pcEvent = new PropertyChangeEvent(source, property, oldValue, newValue);
+        for (TabItem item : tabFolder.getItems()) {
+            IDialogPage page = (IDialogPage) item.getData();
+            if (page instanceof IPropertyChangeListener) {
+                ((IPropertyChangeListener) page).propertyChange(pcEvent);
+            }
+        }
+        for (IWizardPage page : getWizard().getPages()) {
+            if (page instanceof IPropertyChangeListener) {
+                ((IPropertyChangeListener) page).propertyChange(pcEvent);
+            }
+        }
     }
 
     @Override

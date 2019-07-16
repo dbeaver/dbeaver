@@ -378,7 +378,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Nullable
     @Override
-    public DBWNetworkProfile getNetworkProfiles(String name) {
+    public DBWNetworkProfile getNetworkProfile(String name) {
         for (DBWNetworkProfile profile : networkProfiles) {
             if (CommonUtils.equalObjects(profile.getProfileName(), name)) {
                 return profile;
