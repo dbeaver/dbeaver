@@ -85,17 +85,17 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     private long tablespaceId;
     private String description;
 
-    private final RoleCache roleCache = new RoleCache();
-    private final AccessMethodCache accessMethodCache = new AccessMethodCache();
-    private final ForeignDataWrapperCache foreignDataWrapperCache = new ForeignDataWrapperCache();
-    private final ForeignServerCache foreignServerCache = new ForeignServerCache();
-    private final LanguageCache languageCache = new LanguageCache();
-    private final EncodingCache encodingCache = new EncodingCache();
+    public final RoleCache roleCache = new RoleCache();
+    public final AccessMethodCache accessMethodCache = new AccessMethodCache();
+    public final ForeignDataWrapperCache foreignDataWrapperCache = new ForeignDataWrapperCache();
+    public final ForeignServerCache foreignServerCache = new ForeignServerCache();
+    public final LanguageCache languageCache = new LanguageCache();
+    public final EncodingCache encodingCache = new EncodingCache();
     public final ExtensionCache extensionCache = new ExtensionCache();
-    private final AvailableExtensionCache availableExtensionCache = new AvailableExtensionCache();
-    private final CollationCache collationCache = new CollationCache();
+    public final AvailableExtensionCache availableExtensionCache = new AvailableExtensionCache();
+    public final CollationCache collationCache = new CollationCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
-    private final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
+    public final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
 
     public JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> schemaCache;
 
