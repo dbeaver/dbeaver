@@ -33,6 +33,9 @@
                         categories="sql,analytic">
                     <replace provider="generic" driver="snowflake_generic"/>
                     <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
+
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE DATABASE ?"/>
                 </driver>
 
             </drivers>
