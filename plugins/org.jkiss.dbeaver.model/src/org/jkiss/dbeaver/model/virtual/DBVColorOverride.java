@@ -45,7 +45,7 @@ public class DBVColorOverride {
     public DBVColorOverride(DBVColorOverride source) {
         this.attributeName = source.attributeName;
         this.operator = source.operator;
-        this.attributeValues = Arrays.copyOf(source.attributeValues, source.attributeValues.length);
+        this.attributeValues = source.attributeValues == null ? null : Arrays.copyOf(source.attributeValues, source.attributeValues.length);
         this.colorForeground = source.colorForeground;
         this.colorBackground = source.colorBackground;
         this.colorForeground2 = source.colorForeground2;
