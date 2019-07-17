@@ -305,6 +305,16 @@ public class GeneralUtils {
     }
 
     @NotNull
+    public static String getPlainVersion(String versionStr) {
+        try {
+            Version version = new Version(versionStr);
+            return version.getMajor() + "." + version.getMinor() + "." + version.getMicro();
+        } catch (Exception e) {
+            return versionStr;
+        }
+    }
+
+    @NotNull
     public static String getPlainVersion() {
         Version version = getProductVersion();
         return version.getMajor() + "." + version.getMinor() + "." + version.getMicro();
