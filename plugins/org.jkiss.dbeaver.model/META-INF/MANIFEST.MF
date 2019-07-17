@@ -74,6 +74,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.runtime.resource.links,
  org.jkiss.dbeaver.runtime.ui,
  org.jkiss.dbeaver.runtime.ui.console,
+ org.jkiss.dbeaver.runtime.utils,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
