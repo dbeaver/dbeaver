@@ -170,9 +170,6 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
                 handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource.getDriver());
             }
         } else {
-            if (oldProfileId == null) {
-                return;
-            }
             cfg.setConfigProfile(null);
         }
         site.firePropertyChange(this, PROP_CONFIG_PROFILE, oldProfileId, activeProfile == null ? null : activeProfile.getProfileName());
