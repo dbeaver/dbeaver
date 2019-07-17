@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.oracle.editors;
+package org.jkiss.dbeaver.ext.oracle.ui.editors;
 
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionManager;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.editors;
+package org.jkiss.dbeaver.ext.oracle.ui.editors;
 
 import java.util.HashMap;
 
@@ -33,9 +33,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 public class OracleLockEditor extends AbstractLockEditor {
 
-    public static final String sidHold = "hsid";
-    public static final String sidWait = "wsid";
-
     @Override
     protected LockManagerViewer createLockViewer(DBCExecutionContext executionContext, Composite parent) {
 
@@ -53,8 +50,8 @@ public class OracleLockEditor extends AbstractLockEditor {
                 if (lock != null) {
                     final OracleLock pLock = (OracleLock) lock;
                     super.refreshDetail(new HashMap<String, Object>() {{
-                        put(sidHold, pLock.getHold_sid());
-                        put(sidWait, pLock.getWait_sid());
+                        put(OracleLockManager.sidHold, pLock.getHold_sid());
+                        put(OracleLockManager.sidWait, pLock.getWait_sid());
                     }});
                 }
             }

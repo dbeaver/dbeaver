@@ -21,10 +21,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -52,8 +52,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
     public OracleConnectionExtraPage()
     {
-        setTitle(OracleMessages.dialog_connection_oracle_properties);
-        setDescription(OracleMessages.dialog_connection_oracle_properties_discription);
+        setTitle(OracleUIMessages.dialog_connection_oracle_properties);
+        setDescription(OracleUIMessages.dialog_connection_oracle_properties_discription);
     }
 
     @Override
@@ -74,49 +74,49 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         cfgGroup.setLayoutData(gd);
 
         {
-            final Group sessionGroup = UIUtils.createControlGroup(cfgGroup, OracleMessages.dialog_controlgroup_session_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            final Group sessionGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_session_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            languageCombo = UIUtils.createLabelCombo(sessionGroup, OracleMessages.edit_label_combo_language, SWT.DROP_DOWN);
-            languageCombo.setToolTipText(OracleMessages.edit_label_combo_language_tool_tip_text);
+            languageCombo = UIUtils.createLabelCombo(sessionGroup, OracleUIMessages.edit_label_combo_language, SWT.DROP_DOWN);
+            languageCombo.setToolTipText(OracleUIMessages.edit_label_combo_language_tool_tip_text);
             languageCombo.add(OracleConstants.NLS_DEFAULT_VALUE);
             for (OracleLanguage language : OracleLanguage.values()) {
                 languageCombo.add(language.getLanguage());
             }
             languageCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
 
-            territoryCombo = UIUtils.createLabelCombo(sessionGroup, OracleMessages.edit_label_combo_territory, SWT.DROP_DOWN);
-            territoryCombo.setToolTipText(OracleMessages.edit_label_combo_territory_tool_tip_text);
+            territoryCombo = UIUtils.createLabelCombo(sessionGroup, OracleUIMessages.edit_label_combo_territory, SWT.DROP_DOWN);
+            territoryCombo.setToolTipText(OracleUIMessages.edit_label_combo_territory_tool_tip_text);
             territoryCombo.add(OracleConstants.NLS_DEFAULT_VALUE);
             for (OracleTerritory territory : OracleTerritory.values()) {
                 territoryCombo.add(territory.getTerritory());
             }
             territoryCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
 
-            nlsDateFormat = UIUtils.createLabelText(sessionGroup, OracleMessages.edit_label_text_date_format, "");
+            nlsDateFormat = UIUtils.createLabelText(sessionGroup, OracleUIMessages.edit_label_text_date_format, "");
         }
 
         {
-            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleMessages.dialog_controlgroup_content, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_content, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_hide_empty_schemas, false);
+            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_hide_empty_schemas, false);
             hideEmptySchemasCheckbox.setToolTipText(
-            		OracleMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text);
+            		OracleUIMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text);
 
-            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_show, OracleMessages.edit_create_checkbox_content_group_show_discription, false, 1);
-            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use,  OracleMessages.edit_create_checkbox_content_group_use_discription, false, 1);
-            useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
+            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_show, OracleUIMessages.edit_create_checkbox_content_group_show_discription, false, 1);
+            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use,  OracleUIMessages.edit_create_checkbox_content_group_use_discription, false, 1);
+            useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
         }
 
         {
-            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            useRuleHint = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_group_use_rule, true);
-            useRuleHint.setToolTipText(OracleMessages.edit_create_checkbox_adds_rule_tool_tip_text);
+            useRuleHint = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
+            useRuleHint.setToolTipText(OracleUIMessages.edit_create_checkbox_adds_rule_tool_tip_text);
 
-            useOptimizerHint = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
-            useOptimizerHint.setToolTipText(OracleMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
+            useOptimizerHint = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
+            useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
 
-            useSimpleConstraints = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use_simple_constraints,  OracleMessages.edit_create_checkbox_content_group_use_simple_constraints_description, false, 1);
+            useSimpleConstraints = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints,  OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints_description, false, 1);
         }
 
         setControl(cfgGroup);

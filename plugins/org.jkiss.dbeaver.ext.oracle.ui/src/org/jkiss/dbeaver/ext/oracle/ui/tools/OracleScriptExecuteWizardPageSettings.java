@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.tools;
+package org.jkiss.dbeaver.ext.oracle.ui.tools;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
@@ -40,9 +40,9 @@ public class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPag
 
     public OracleScriptExecuteWizardPageSettings(OracleScriptExecuteWizard wizard)
     {
-        super(wizard, OracleMessages.tools_script_execute_wizard_page_settings_page_name);
-        setTitle(OracleMessages.tools_script_execute_wizard_page_settings_page_name);
-        setDescription(OracleMessages.tools_script_execute_wizard_page_settings_page_description);
+        super(wizard, OracleUIMessages.tools_script_execute_wizard_page_settings_page_name);
+        setTitle(OracleUIMessages.tools_script_execute_wizard_page_settings_page_name);
+        setDescription(OracleUIMessages.tools_script_execute_wizard_page_settings_page_description);
     }
 
     @Override
@@ -56,10 +56,10 @@ public class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPag
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group outputGroup = UIUtils.createControlGroup(composite, OracleMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
-        inputFileText = UIUtils.createLabelText(outputGroup, OracleMessages.tools_script_execute_wizard_page_settings_label_input_file, null); //$NON-NLS-2$
+        Group outputGroup = UIUtils.createControlGroup(composite, OracleUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
+        inputFileText = UIUtils.createLabelText(outputGroup, OracleUIMessages.tools_script_execute_wizard_page_settings_label_input_file, null); //$NON-NLS-2$
         Button browseButton = new Button(outputGroup, SWT.PUSH);
-        browseButton.setText(OracleMessages.tools_script_execute_wizard_page_settings_button_browse);
+        browseButton.setText(OracleUIMessages.tools_script_execute_wizard_page_settings_button_browse);
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)

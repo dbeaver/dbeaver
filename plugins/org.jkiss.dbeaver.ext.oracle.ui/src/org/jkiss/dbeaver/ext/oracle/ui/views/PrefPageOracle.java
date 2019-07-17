@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ext.oracle.ui.views;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -74,23 +74,23 @@ public class PrefPageOracle extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         {
-            Group planGroup = UIUtils.createControlGroup(composite, OracleMessages.pref_page_oracle_legend_executin_plan, 2, GridData.FILL_HORIZONTAL, 0);
+            Group planGroup = UIUtils.createControlGroup(composite, OracleUIMessages.pref_page_oracle_legend_executin_plan, 2, GridData.FILL_HORIZONTAL, 0);
 
             Label descLabel = new Label(planGroup, SWT.WRAP);
-            descLabel.setText(OracleMessages.pref_page_oracle_label_by_default_plan_table);
+            descLabel.setText(OracleUIMessages.pref_page_oracle_label_by_default_plan_table);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             descLabel.setLayoutData(gd);
 
-            explainTableText = UIUtils.createLabelText(planGroup, OracleMessages.pref_page_oracle_label_plan_table, "", SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL)); //$NON-NLS-2$
+            explainTableText = UIUtils.createLabelText(planGroup, OracleUIMessages.pref_page_oracle_label_plan_table, "", SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL)); //$NON-NLS-2$
         }
 
         {
-            Group miscGroup = UIUtils.createControlGroup(composite, OracleMessages.pref_page_oracle_legend_misc, 1, GridData.FILL_HORIZONTAL, 0);
-            rowidSupportCheck = UIUtils.createCheckbox(miscGroup, OracleMessages.pref_page_oracle_checkbox_use_rowid_to_identify_rows, true);
-            enableDbmsOuputCheck = UIUtils.createCheckbox(miscGroup, OracleMessages.pref_page_oracle_checkbox_enable_dbms_output, true);
-            readAllSynonymsCheck = UIUtils.createCheckbox(miscGroup, OracleMessages.pref_page_oracle_checkbox_read_all_synonyms, OracleMessages.pref_page_oracle_label_if_unchecked_java_classes, true, 1);
-            disableScriptEscapeProcessingCheck = UIUtils.createCheckbox(miscGroup, OracleMessages.pref_page_oracle_checkbox_disable_escape_processing, OracleMessages.pref_page_oracle_label_disable_client_side_parser, true, 1);
+            Group miscGroup = UIUtils.createControlGroup(composite, OracleUIMessages.pref_page_oracle_legend_misc, 1, GridData.FILL_HORIZONTAL, 0);
+            rowidSupportCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_use_rowid_to_identify_rows, true);
+            enableDbmsOuputCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_enable_dbms_output, true);
+            readAllSynonymsCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_read_all_synonyms, OracleUIMessages.pref_page_oracle_label_if_unchecked_java_classes, true, 1);
+            disableScriptEscapeProcessingCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_disable_escape_processing, OracleUIMessages.pref_page_oracle_label_disable_client_side_parser, true, 1);
         }
 
         return composite;

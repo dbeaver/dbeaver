@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.tools.maintenance;
+package org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance;
 
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;

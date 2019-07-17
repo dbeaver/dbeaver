@@ -21,6 +21,10 @@ Require-Bundle: org.eclipse.ui,
 Export-Package: org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.oracle.model,
  org.jkiss.dbeaver.ext.oracle.model.dict,
+ org.jkiss.dbeaver.ext.oracle.model.lock,
+ org.jkiss.dbeaver.ext.oracle.model.plan,
+ org.jkiss.dbeaver.ext.oracle.model.session,
+ org.jkiss.dbeaver.ext.oracle.model.source,
  org.jkiss.dbeaver.ext.oracle.oci,
  org.jkiss.dbeaver.ext.oracle.data
 Bundle-ActivationPolicy: lazy
