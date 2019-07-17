@@ -421,8 +421,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
         boolean omitCatalog = isOmitCatalog();
         Object omitTypeCache = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE);
@@ -519,12 +518,16 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    public boolean isOmitSingleSchema() {
-        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_SINGLE_SCHEMA), false);
-    }
-
     public boolean isOmitCatalog() {
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG), false);
+    }
+
+    public boolean isOmitSchema() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_SCHEMA), false);
+    }
+
+    public boolean isOmitSingleSchema() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_SINGLE_SCHEMA), false);
     }
 
     public boolean isSchemaFiltersEnabled() {

@@ -39,6 +39,7 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_TRUNCATE = "supports-truncate";
     public static final String PARAM_OMIT_TYPE_CACHE = "omit-type-cache";
     public static final String PARAM_OMIT_CATALOG = "omit-catalog";
+    public static final String PARAM_OMIT_SCHEMA = "omit-schema";
     public static final String PARAM_OMIT_SINGLE_CATALOG = "omit-single-catalog";
     public static final String PARAM_OMIT_SINGLE_SCHEMA = "omit-single-schema";
     public static final String PARAM_SCHEMA_FILTER_ENABLED = "schema-filters-enabled";

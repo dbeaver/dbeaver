@@ -227,6 +227,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
         } else {
             this.categories = new ArrayList<>();
+            this.name = "";
         }
     }
 

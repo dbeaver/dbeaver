@@ -106,6 +106,9 @@ public class GenericMetaModel {
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog)
         throws DBException
     {
+        if (dataSource.isOmitSchema()) {
+            return null;
+        }
         try {
             final GenericMetaObject schemaObject = getMetaObject(GenericConstants.OBJECT_SCHEMA);
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);

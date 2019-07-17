@@ -278,14 +278,13 @@ public final class DBUtils {
         if (name == null || name.isEmpty()) {
             return false;
         }
-        boolean validName = false;
+        // We need at least one digit or letter
         for (int i = 0; i < name.length(); i++) {
             if (Character.isLetterOrDigit(name.charAt(i))) {
-                validName = true;
-                break;
+                return true;
             }
         }
-        return validName;
+        return false;
     }
 
     /**

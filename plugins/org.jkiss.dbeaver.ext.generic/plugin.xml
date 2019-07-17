@@ -131,6 +131,7 @@
                     <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="%" validValues="null,%"/>
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-single-catalog" label="Omit single catalog" description="Hide catalog (database) is there is only one catalog on server" type="boolean" required="false" defaultValue="false"/>
+                    <property id="omit-schema" label="Omit schema(s)" description="Do not read and use schemas information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-single-schema" label="Omit single schema" description="Hide schema is there is only one schema on server" type="boolean" required="false" defaultValue="false"/>
                     <property id="schema-filters-enabled" label="Use schema filters" description="Use JDBC schema filters when database doesn't support catalogs. Otherwise just read all database schemas and filter on client-side." type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
@@ -774,7 +775,7 @@
                     label="Athena"
                     category="AWS"
                     class="com.simba.athena.jdbc.Driver"
-                    sampleURL=" jdbc:awsathena://AwsRegion=us-east-1;"
+                    sampleURL="jdbc:awsathena://AwsRegion=us-east-1;"
                     defaultPort="5439"
                     description="AWS Athena JDBC driver"
                     webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
@@ -1054,7 +1055,6 @@
                 </driver>
 
                 <!-- KDB -->
-
                 <driver
                         id="kdb_jdbc"
                         label="KDB+"
@@ -1067,6 +1067,21 @@
                         webURL="https://code.kx.com/q/interfaces/jdbc-client-for-kdb/"
                         categories="timeseries">
                     <file type="jar" path="https://github.com/KxSystems/kdb/raw/master/c/jdbc.jar"/>
+                </driver>
+
+                <driver
+                        id="google_spanner"
+                        label="Spanner"
+                        category="Google"
+                        class="com.simba.cloudspanner.core.jdbc42.CloudSpanner42Driver"
+                        sampleURL="jdbc:cloudspanner://{host};Project={database}"
+                        defaultPort=""
+                        description="Google Spanner JDBC driver by Simba"
+                        webURL="https://cloud.google.com/spanner/docs/partners/drivers"
+                        categories="bigdata,cloud">
+                    <file type="jar" path="https://storage.cloud.google.com/simba-cs-release/jdbc/CloudSpannerJDBC42-1.0.11.1023.zip"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="omit-schema" value="true"/>
                 </driver>
 
                 <!-- Legacy deprecated drivers -->
