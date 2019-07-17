@@ -37,6 +37,8 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -47,10 +49,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -416,11 +415,29 @@ public class PostgreUtils {
         }
     }
 
-    public static PostgreDataType findDataType(PostgreDataSource dataSource, DBSTypedObject type) {
-        if (type instanceof PostgreAttribute) {
-            return ((PostgreAttribute) type).getDataType();
+    public static PostgreDataType findDataType(DBCSession session, PostgreDataSource dataSource, DBSTypedObject column) throws DBCException {
+        if (column instanceof PostgreAttribute) {
+            return ((PostgreAttribute) column).getDataType();
         } else {
-            String typeName = type.getTypeName();
+            if (column instanceof DBCAttributeMetaData) {
+                try {
+                    DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) column).getEntityMetaData();
+                    DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getDataSource(), entityMetaData);
+                    if (docEntity != null) {
+                        DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
+                        if (attribute instanceof DBSTypedObjectEx) {
+                            DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
+                            if (dataType instanceof PostgreDataType) {
+                                return (PostgreDataType) dataType;
+                            }
+                        }
+                    }
+                } catch (DBException e) {
+                    throw new DBCException("Error extracting column " + column + " data type", e);
+                }
+            }
+
+            String typeName = column.getTypeName();
             return dataSource.getLocalDataType(typeName);
         }
     }
