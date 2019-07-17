@@ -22,7 +22,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,7 +42,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     private static final Log log = Log.getLog(ConnectionPropertiesControl.class);
 
-    public static final String USER_PROPERTIES_CATEGORY = CoreMessages.controls_connection_properties_category_user_properties;
+    public static final String USER_PROPERTIES_CATEGORY = UIConnectionMessages.controls_connection_properties_category_user_properties;
 
     private List<DBPPropertyDescriptor> driverProvidedProperties;
     private List<DBPPropertyDescriptor> customProperties;
@@ -92,14 +92,14 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     {
         boolean isCustom = USER_PROPERTIES_CATEGORY.equals(category);
         if (isCustom) {
-            manager.add(new Action(CoreMessages.controls_connection_properties_action_add_property) {
+            manager.add(new Action(UIConnectionMessages.controls_connection_properties_action_add_property) {
                 @Override
                 public void run() {
                     createNewProperty(node, category);
                 }
             });
             if (property != null) {
-                manager.add(new Action(CoreMessages.controls_connection_properties_action_remove_property) {
+                manager.add(new Action(UIConnectionMessages.controls_connection_properties_action_remove_property) {
                     @Override
                     public void run() {
                         removeProperty(node);
@@ -116,7 +116,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     private void createNewProperty(Object node, String category) {
         // Ask user for new property name
-        String propName = EnterNameDialog.chooseName(getControl().getShell(), CoreMessages.controls_connection_properties_dialog_new_property_title);
+        String propName = EnterNameDialog.chooseName(getControl().getShell(), UIConnectionMessages.controls_connection_properties_dialog_new_property_title);
         if (propName != null) {
             // Check property name (must be unique
             addProperty(node, new PropertyDescriptor(category, propName, propName, null, null, false, null, null, true));

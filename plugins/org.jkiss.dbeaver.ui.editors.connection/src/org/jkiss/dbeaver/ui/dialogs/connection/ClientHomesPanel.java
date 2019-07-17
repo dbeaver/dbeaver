@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -115,7 +115,7 @@ public class ClientHomesPanel extends Composite {
         Composite buttonsGroup = UIUtils.createPlaceholder(listGroup, 2, 5);
         buttonsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
         Button addButton = new Button(buttonsGroup, SWT.PUSH);
-        addButton.setText(CoreMessages.controls_client_homes_panel_button_add_home);
+        addButton.setText(UIConnectionMessages.controls_client_homes_panel_button_add_home);
         addButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -123,7 +123,7 @@ public class ClientHomesPanel extends Composite {
             }
         });
         removeButton = new Button(buttonsGroup, SWT.PUSH);
-        removeButton.setText(CoreMessages.controls_client_homes_panel_button_remove_home);
+        removeButton.setText(UIConnectionMessages.controls_client_homes_panel_button_remove_home);
         removeButton.setEnabled(false);
         removeButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -135,13 +135,13 @@ public class ClientHomesPanel extends Composite {
             }
         });
 
-        Group infoGroup = UIUtils.createControlGroup(this, CoreMessages.controls_client_homes_panel_group_information, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Group infoGroup = UIUtils.createControlGroup(this, UIConnectionMessages.controls_client_homes_panel_group_information, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         ((GridData) (infoGroup.getLayoutData())).minimumWidth = 300;
-        idText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_id, null, SWT.BORDER | SWT.READ_ONLY);
-        pathText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_path, null, SWT.BORDER | SWT.READ_ONLY);
-        nameText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_name, null, SWT.BORDER | SWT.READ_ONLY);
-        productNameText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_product_name, null, SWT.BORDER | SWT.READ_ONLY);
-        productVersionText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_product_version, null, SWT.BORDER | SWT.READ_ONLY);
+        idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_id, null, SWT.BORDER | SWT.READ_ONLY);
+        pathText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_path, null, SWT.BORDER | SWT.READ_ONLY);
+        nameText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_name, null, SWT.BORDER | SWT.READ_ONLY);
+        productNameText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_product_name, null, SWT.BORDER | SWT.READ_ONLY);
+        productVersionText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_product_version, null, SWT.BORDER | SWT.READ_ONLY);
     }
 
     private void removeClientHome() {
@@ -150,8 +150,8 @@ public class ClientHomesPanel extends Composite {
         if (!info.isProvided) {
             if (UIUtils.confirmAction(
                 getShell(),
-                CoreMessages.controls_client_homes_panel_confirm_remove_home_title,
-                NLS.bind(CoreMessages.controls_client_homes_panel_confirm_remove_home_text, info.location.getName()))) {
+                UIConnectionMessages.controls_client_homes_panel_confirm_remove_home_title,
+                NLS.bind(UIConnectionMessages.controls_client_homes_panel_confirm_remove_home_text, info.location.getName()))) {
                 homesTable.remove(selIndex);
                 selectHome(null);
             }
@@ -294,7 +294,7 @@ public class ClientHomesPanel extends Composite {
 
         @Override
         protected Control createDialogArea(Composite parent) {
-            getShell().setText(CoreMessages.controls_client_homes_panel_dialog_title);
+            getShell().setText(UIConnectionMessages.controls_client_homes_panel_dialog_title);
 
             panel = new ClientHomesPanel(parent, SWT.NONE);
             GridData gd = new GridData(GridData.FILL_BOTH);

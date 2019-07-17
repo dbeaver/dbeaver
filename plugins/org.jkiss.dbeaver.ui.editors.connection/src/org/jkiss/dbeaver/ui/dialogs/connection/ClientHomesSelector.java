@@ -26,11 +26,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -132,7 +132,7 @@ public class ClientHomesSelector
             // Select first
             homesCombo.select(1);
         }
-        this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
+        this.homesCombo.add(UIConnectionMessages.controls_client_home_selector_browse);
 
         displayClientVersion();
     }

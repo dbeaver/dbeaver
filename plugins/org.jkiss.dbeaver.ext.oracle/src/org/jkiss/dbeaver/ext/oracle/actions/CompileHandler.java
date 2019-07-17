@@ -29,7 +29,6 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
-import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerDialog;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
