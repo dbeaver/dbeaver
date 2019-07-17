@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.app;
+package org.jkiss.dbeaver.runtime.encode;
 
 import org.jkiss.utils.IOUtils;
 
