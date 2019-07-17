@@ -1069,21 +1069,6 @@
                     <file type="jar" path="https://github.com/KxSystems/kdb/raw/master/c/jdbc.jar"/>
                 </driver>
 
-                <driver
-                        id="google_spanner"
-                        label="Spanner"
-                        category="Google"
-                        class="com.simba.cloudspanner.core.jdbc42.CloudSpanner42Driver"
-                        sampleURL="jdbc:cloudspanner://{host};Project={database}"
-                        defaultPort=""
-                        description="Google Spanner JDBC driver by Simba"
-                        webURL="https://cloud.google.com/spanner/docs/partners/drivers"
-                        categories="bigdata,cloud">
-                    <file type="jar" path="https://storage.cloud.google.com/simba-cs-release/jdbc/CloudSpannerJDBC42-1.0.11.1023.zip"/>
-                    <parameter name="omit-catalog" value="true"/>
-                    <parameter name="omit-schema" value="true"/>
-                </driver>
-
                 <!-- Legacy deprecated drivers -->
 
                 <driver
