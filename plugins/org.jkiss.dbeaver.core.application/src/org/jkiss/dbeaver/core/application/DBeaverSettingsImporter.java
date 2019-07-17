@@ -88,6 +88,8 @@ class DBeaverSettingsImporter {
         String oldVersion = workspaceProps.getProperty(DBeaverApplication.VERSION_PROP_PRODUCT_VERSION);
         if (oldVersion == null) {
             oldVersion = "3.x";
+        } else {
+            oldVersion = GeneralUtils.getPlainVersion(oldVersion);
         }
         oldWorkspacePath = oldDir;
         oldDriversFolder = new File(
@@ -118,10 +120,14 @@ class DBeaverSettingsImporter {
             iconLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             Label confirmLabel = new Label(infoGroup, SWT.NONE);
             //confirmLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
-            confirmLabel.setText("Previous version (" + GeneralUtils.getProductName() + " " + oldVersion + ") settings were found:\n" +
-                oldDir.getAbsolutePath() + "\n" +
-                "Do you want to import these settings? (Recommended).\n\n" +
-                "Make sure previous version of " + GeneralUtils.getProductName() + " isn't running");
+            confirmLabel.setText(
+                "\n" +
+                GeneralUtils.getProductTitle() + " uses new configuration format.\n\n" +
+//                "Previous version (" + GeneralUtils.getProductName() + " " + oldVersion + ") settings were found.\n" +
+//                oldDir.getAbsolutePath() + "\n" +
+                "Do you want to migrate existing settings (version " + oldVersion + ")?\n\n"
+//                "Make sure previous version of " + GeneralUtils.getProductName() + " isn't running"
+            );
             confirmLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
@@ -130,10 +136,10 @@ class DBeaverSettingsImporter {
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             buttonsPanel.setLayout(new GridLayout(2, true));
             final Button migrateButton = new Button(buttonsPanel, SWT.PUSH);
-            migrateButton.setText("Import workspace");
+            migrateButton.setText("Migrate (Recommended)");
 
             final Button skipButton = new Button(buttonsPanel, SWT.PUSH);
-            skipButton.setText("Skip");
+            skipButton.setText("Do not migrate");
 
             migrateButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             migrateButton.addSelectionListener(new SelectionAdapter() {
@@ -147,6 +153,7 @@ class DBeaverSettingsImporter {
                     migrateWorkspace(oldDir, newDir);
                 }
             });
+            windowShell.setDefaultButton(migrateButton);
 
             skipButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             skipButton.addSelectionListener(new SelectionAdapter() {
@@ -154,7 +161,7 @@ class DBeaverSettingsImporter {
                 public void widgetSelected(SelectionEvent e) {
                     MessageBox messageBox = new MessageBox(windowShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
                     messageBox.setText("Skip workspace migration");
-                    messageBox.setMessage("Skipping workspace migration you will lose all previous workspace data.\n\nAre you sure?");
+                    messageBox.setMessage("You will lose all previous configurations and scripts.\n\nAre you sure?");
                     int response = messageBox.open();
                     if (response == SWT.YES) {
                         shellResult = SWT.IGNORE;
