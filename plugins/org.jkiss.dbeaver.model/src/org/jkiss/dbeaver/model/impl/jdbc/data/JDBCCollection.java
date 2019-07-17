@@ -25,9 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCArrayImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
@@ -38,9 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
@@ -191,12 +187,24 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
     public static JDBCCollection makeCollectionFromArray(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Array array) throws DBCException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        DBSDataType arrayType, elementType = null;
+        DBSDataType arrayType = null, elementType = null;
         try {
             if (column instanceof DBSTypedObjectEx) {
                 arrayType = ((DBSTypedObjectEx) column).getDataType();
             } else {
-                arrayType = session.getDataSource().resolveDataType(session.getProgressMonitor(), column.getFullTypeName());
+                if (column instanceof DBCAttributeMetaData) {
+                    DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) column).getEntityMetaData();
+                    DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getDataSource(), entityMetaData);
+                    if (docEntity != null) {
+                        DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
+                        if (attribute instanceof DBSTypedObjectEx) {
+                            arrayType = ((DBSTypedObjectEx) attribute).getDataType();
+                        }
+                    }
+                }
+                if (arrayType == null) {
+                    arrayType = session.getDataSource().resolveDataType(session.getProgressMonitor(), column.getFullTypeName());
+                }
             }
             if (arrayType != null) {
                 elementType = arrayType.getComponentType(monitor);

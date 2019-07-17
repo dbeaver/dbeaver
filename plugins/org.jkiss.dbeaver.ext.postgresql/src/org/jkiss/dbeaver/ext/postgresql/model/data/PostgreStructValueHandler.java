@@ -75,7 +75,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        PostgreDataType structType = PostgreUtils.findDataType((PostgreDataSource)session.getDataSource(), type);
+        PostgreDataType structType = PostgreUtils.findDataType(session, (PostgreDataSource)session.getDataSource(), type);
         if (structType == null) {
             throw new DBCException("Can't resolve struct type '" + type.getTypeName() + "'");
         }

@@ -471,7 +471,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     @Override
     public PostgreDataType getLocalDataType(String typeName) {
-        return getDataType(new VoidProgressMonitor(), typeName);
+        return getDataType(null, typeName);
     }
 
     @Override
@@ -859,7 +859,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
             dataType.getParentObject().dataTypeCache.cacheObject(dataType);
             return dataType;
         } catch (Exception e) {
-            log.debug("Can't resolve data type " + typeName, e);
+            log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");
             return null;
         }
     }
