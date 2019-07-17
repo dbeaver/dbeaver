@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- Spanner -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.spanner.SpannerDataSourceProvider"
+                description="%datasource.spanner.description"
+                id="google_spanner"
+                parent="generic"
+                label="Google Spanner"
+                icon="icons/spanner_icon.png">
+            <drivers managable="true">
+
+                <driver
+                        id="spanner_jdbc"
+                        label="Google Spanner"
+                        icon="icons/spanner_icon.png"
+                        iconBig="icons/spanner_icon_big.png"
+                        class="nl.topicus.jdbc.CloudSpannerDriver"
+                        sampleURL="jdbc:cloudspanner://localhost"
+                        defaultPort=""
+                        description="Google Spanner JDBC driver by Simba"
+                        webURL="https://github.com/olavloite/spanner-jdbc"
+                        categories="bigdata,cloud">
+                    <!--<file type="jar" path="https://storage.cloud.google.com/simba-cs-release/jdbc/CloudSpannerJDBC42-1.0.11.1023.zip"/>-->
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="omit-schema" value="true"/>
+                    <file type="jar" path="maven:/nl.topicus:spanner-jdbc:RELEASE"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.spanner.dataSourceWizardView"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                dataSource="google_spanner"
+                label="%spanner.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.spanner.views.SpannerConnectionPage"
+                icon="icons/spanner_icon.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.spanner.views.SpannerConnectionPage"
+                icon="icons/spanner_icon.png"
+                id="org.jkiss.dbeaver.ext.spanner.dataSourceEditorView"
+                dataSource="google_spanner"
+                label="%spanner.dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+
+</plugin>

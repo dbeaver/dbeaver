@@ -12,21 +12,20 @@
                 description="%datasource.bq.description"
                 id="bigquery"
                 parent="generic"
-                label="BigQuery"
+                label="Google BigQuery"
                 icon="icons/bigquery_icon.png">
             <drivers managable="true">
 
                 <!-- Simba JDBC driver -->
                 <driver
                         id="google_bigquery_jdbc_simba"
-                        label="BigQuery"
+                        label="Google BigQuery"
                         icon="icons/bigquery_icon.png"
                         iconBig="icons/bigquery_icon_big.png"
                         class="com.simba.googlebigquery.jdbc42.Driver"
                         sampleURL="jdbc:bigquery://{host}:{port};ProjectId={database};OAuthType=0;OAuthServiceAcctEmail={user};OAuthPvtKeyPath={server};"
                         defaultPort="443"
                         description="Google BigQuery driver"
-                        category="Google"
                         webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
                         propertiesURL="http://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/"
                         categories="bigdata">
@@ -41,7 +40,7 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
-                id="org.jkiss.dbeaver.ext.snowflake.dataSourceWizardView"
+                id="org.jkiss.dbeaver.ext.bigquery.dataSourceWizardView"
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                 dataSource="bigquery"
                 label="%bigquery.dialog.connection.header"
@@ -51,7 +50,7 @@
         <view
                 class="org.jkiss.dbeaver.ext.bigquery.views.BigQueryConnectionPage"
                 icon="icons/google_bigquery_icon.png"
-                id="org.jkiss.dbeaver.ext.snowflake.dataSourceEditorView"
+                id="org.jkiss.dbeaver.ext.bigquery.dataSourceEditorView"
                 dataSource="bigquery"
                 label="%bigquery.dialog.connection.header"
                 targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">

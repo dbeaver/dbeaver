@@ -94,8 +94,15 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
         String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
 
+        String tableSchema = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
+        if (!CommonUtils.isEmpty(tableSchema) && owner.getDataSource().isOmitSchema()) {
+            // Ignore tables with schema [Google Spanner]
+            log.debug("Ignore table " + tableSchema + "." + tableName + " (schemas are omitted)");
+            return null;
+        }
+
         if (CommonUtils.isEmpty(tableName)) {
-            log.debug("Empty table name" + (owner == null ? "" : " in container " + owner.getName()));
+            log.debug("Empty table name " + (owner == null ? "" : " in container " + owner.getName()));
             return null;
         }
 
