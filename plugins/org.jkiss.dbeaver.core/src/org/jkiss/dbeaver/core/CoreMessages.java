@@ -76,23 +76,6 @@ public class CoreMessages extends NLS {
     public static String confirm_version_check_message;
     public static String confirm_version_check_toggleMessage;
 
-	public static String controls_connection_properties_action_add_property;
-	public static String controls_connection_properties_action_remove_property;
-	public static String controls_connection_properties_category_user_properties;
-	public static String controls_connection_properties_dialog_new_property_title;
-
-    public static String controls_client_home_selector_browse;
-	public static String controls_client_homes_panel_button_add_home;
-	public static String controls_client_homes_panel_button_remove_home;
-	public static String controls_client_homes_panel_confirm_remove_home_text;
-	public static String controls_client_homes_panel_confirm_remove_home_title;
-	public static String controls_client_homes_panel_dialog_title;
-	public static String controls_client_homes_panel_group_information;
-	public static String controls_client_homes_panel_label_id;
-	public static String controls_client_homes_panel_label_name;
-	public static String controls_client_homes_panel_label_path;
-	public static String controls_client_homes_panel_label_product_name;
-	public static String controls_client_homes_panel_label_product_version;
 	public static String controls_driver_tree_column_connections;
 	public static String controls_driver_tree_column_name;
 	public static String controls_itemlist_action_copy;
@@ -432,11 +415,6 @@ public class CoreMessages extends NLS {
 	// New Connection Wizard
 	public static String dialog_setting_connection_wizard_title;
 	public static String dialog_setting_connection_general;
-	public static String dialog_setting_connection_driver_properties_title;
-	public static String dialog_setting_connection_driver_properties_description;
-	public static String dialog_setting_connection_driver_properties_advanced;
-	public static String dialog_setting_connection_driver_properties_advanced_tip;
-	public static String dialog_setting_connection_driver_properties_docs_web_reference;
 
 	public static String dialog_connection_network_title;
 	public static String dialog_connection_wizard_final_label_connection_type;

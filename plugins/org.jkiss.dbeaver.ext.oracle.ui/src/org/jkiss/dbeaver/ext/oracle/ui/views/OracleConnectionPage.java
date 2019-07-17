@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.views;
+package org.jkiss.dbeaver.ext.oracle.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -24,13 +24,13 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.oracle.Activator;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
@@ -69,7 +69,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private ControlsListener controlModifyListener;
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
 
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
+    private static ImageDescriptor logoImage = OracleUIActivator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
     private TextWithOpenFolder tnsPathText;
 
     private boolean activated = false;
@@ -91,7 +91,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         addrGroup.setLayout(new GridLayout(1, false));
         addrGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final Group protocolGroup = UIUtils.createControlGroup(addrGroup, OracleMessages.dialog_connection_connection_type_group, 1, GridData.FILL_HORIZONTAL, 0);
+        final Group protocolGroup = UIUtils.createControlGroup(addrGroup, OracleUIMessages.dialog_connection_connection_type_group, 1, GridData.FILL_HORIZONTAL, 0);
 
         connectionTypeFolder = new TabFolder(protocolGroup, SWT.TOP | SWT.MULTI);
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -111,7 +111,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             }
         });
 
-        final Group securityGroup = UIUtils.createControlGroup(addrGroup, OracleMessages.dialog_connection_security_group, 4, GridData.FILL_HORIZONTAL, 0);
+        final Group securityGroup = UIUtils.createControlGroup(addrGroup, OracleUIMessages.dialog_connection_security_group, 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
 
         Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
@@ -127,7 +127,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private void createBasicConnectionControls(TabFolder protocolFolder)
     {
         TabItem protocolTabBasic = new TabItem(protocolFolder, SWT.NONE);
-        protocolTabBasic.setText(OracleMessages.dialog_connection_basic_tab);
+        protocolTabBasic.setText(OracleUIMessages.dialog_connection_basic_tab);
         protocolTabBasic.setData(OracleConstants.ConnectionType.BASIC);
 
         Composite targetContainer = new Composite(protocolFolder, SWT.NONE);
@@ -135,7 +135,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         targetContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         protocolTabBasic.setControl(targetContainer);
 
-        Label hostLabel = UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_host);
+        Label hostLabel = UIUtils.createControlLabel(targetContainer, OracleUIMessages.dialog_connection_host);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         hostLabel.setLayoutData(gd);
 
@@ -145,7 +145,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         hostText.setLayoutData(gd);
         hostText.addModifyListener(controlModifyListener);
 
-        UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_port);
+        UIUtils.createControlLabel(targetContainer, OracleUIMessages.dialog_connection_port);
 
         portText = new Text(targetContainer, SWT.BORDER);
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
@@ -154,7 +154,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(controlModifyListener);
 
-        UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_database);
+        UIUtils.createControlLabel(targetContainer, OracleUIMessages.dialog_connection_database);
 
         serviceNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -173,7 +173,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private void createTNSConnectionControls(TabFolder protocolFolder)
     {
         TabItem protocolTabTNS = new TabItem(protocolFolder, SWT.NONE);
-        protocolTabTNS.setText(OracleMessages.dialog_connection_tns_tab);
+        protocolTabTNS.setText(OracleUIMessages.dialog_connection_tns_tab);
         protocolTabTNS.setData(OracleConstants.ConnectionType.TNS);
 
         Composite targetContainer = new Composite(protocolFolder, SWT.NONE);
@@ -190,12 +190,9 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         tnsPathText = new TextWithOpenFolder(targetContainer, "Oracle TNS names path");
         tnsPathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         tnsPathText.setToolTipText("Path to TNSNAMES.ora file");
-        tnsPathText.getTextControl().addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                populateTnsNameCombo();
-                updateUI();
-            }
+        tnsPathText.getTextControl().addModifyListener(e -> {
+            populateTnsNameCombo();
+            updateUI();
         });
     }
 
@@ -245,7 +242,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private void createCustomConnectionControls(TabFolder protocolFolder)
     {
         TabItem protocolTabCustom = new TabItem(protocolFolder, SWT.NONE);
-        protocolTabCustom.setText(OracleMessages.dialog_connection_custom_tab);
+        protocolTabCustom.setText(OracleUIMessages.dialog_connection_custom_tab);
         protocolTabCustom.setData(OracleConstants.ConnectionType.CUSTOM);
 
         Composite targetContainer = new Composite(protocolFolder, SWT.NONE);
@@ -263,7 +260,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
     private void createSecurityGroup(Composite parent)
     {
-        Label userNameLabel = UIUtils.createControlLabel(parent, OracleMessages.dialog_connection_user_name);
+        Label userNameLabel = UIUtils.createControlLabel(parent, OracleUIMessages.dialog_connection_user_name);
         userNameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         userNameText = new Text(parent, SWT.BORDER);
@@ -272,7 +269,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         userNameText.setLayoutData(gd);
         userNameText.addModifyListener(controlModifyListener);
 
-        Label userRoleLabel = UIUtils.createControlLabel(parent, OracleMessages.dialog_connection_role);
+        Label userRoleLabel = UIUtils.createControlLabel(parent, OracleUIMessages.dialog_connection_role);
         userRoleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         userRoleCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -284,7 +281,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         userRoleCombo.add(OracleConnectionRole.SYSOPER.getTitle());
         userRoleCombo.select(0);
 
-        Label passwordLabel = UIUtils.createControlLabel(parent, OracleMessages.dialog_connection_password);
+        Label passwordLabel = UIUtils.createControlLabel(parent, OracleUIMessages.dialog_connection_password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         passwordText = new Text(parent, SWT.BORDER | SWT.PASSWORD);
@@ -292,7 +289,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(controlModifyListener);
 
-        osAuthCheck = UIUtils.createCheckbox(parent, OracleMessages.dialog_connection_os_authentication, false);
+        osAuthCheck = UIUtils.createCheckbox(parent, OracleUIMessages.dialog_connection_os_authentication, false);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 2;
         osAuthCheck.setLayoutData(gd);
@@ -314,7 +311,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
     private void createClientHomeGroup(Composite bottomControls)
     {
-        oraHomeSelector = new ClientHomesSelector(bottomControls, SWT.NONE, OracleMessages.dialog_connection_ora_home) {
+        oraHomeSelector = new ClientHomesSelector(bottomControls, SWT.NONE, OracleUIMessages.dialog_connection_ora_home) {
             @Override
             protected void handleHomeChange()
             {
