@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -48,6 +49,7 @@ class StatusLabel extends Composite {
     private final Text statusText;
     //private final Color colorDefault, colorError, colorWarning;
     private DBPMessageType messageType;
+    private final ToolItem detailsIcon;
 
     public StatusLabel(@NotNull Composite parent, int style, @Nullable final IResultSetController viewer) {
         super(parent, SWT.NONE);
@@ -66,7 +68,7 @@ class StatusLabel extends Composite {
 */
         final ToolBar tb = new ToolBar(this, SWT.FLAT | SWT.HORIZONTAL);
         CSSUtils.setCSSClass(tb, DBStyles.COLORED_BY_CONNECTION_TYPE);
-        final ToolItem detailsIcon = new ToolItem(tb, SWT.NONE);
+        detailsIcon = new ToolItem(tb, SWT.NONE);
         detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
         tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
@@ -120,7 +122,7 @@ class StatusLabel extends Composite {
         this.messageType = messageType;
 
         //Color fg;
-        String statusIconId;
+        String statusIconId = null;
         switch (messageType) {
             case ERROR:
                 //fg = colorError;
@@ -130,15 +132,16 @@ class StatusLabel extends Composite {
                 //fg = colorWarning;
                 statusIconId = Dialog.DLG_IMG_MESSAGE_WARNING;
                 break;
-            default:
-                //fg = null;
-                statusIconId = Dialog.DLG_IMG_MESSAGE_INFO;
-                break;
         }
         //statusText.setForeground(fg);
 
         if (message == null) {
             message = "???"; //$NON-NLS-1$
+        }
+        if (statusIconId != null) {
+            detailsIcon.setImage(JFaceResources.getImage(statusIconId));
+        } else {
+            detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
         }
         statusText.setText(CommonUtils.getSingleLineString(message));
         if (messageType != DBPMessageType.INFORMATION) {
