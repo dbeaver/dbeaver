@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.oracle.tools.sqldeveloper;
+package org.jkiss.dbeaver.ext.oracle.ui.tools.sqldeveloper;
 
 import com.google.gson.*;
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,10 +26,9 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.ext.oracle.Activator;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -76,7 +74,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
             if (!sqlDevHome.exists()) {
                 sqlDevHome = new File(homeFolder, ".sqldeveloper"); // On Linux
                 if (!sqlDevHome.exists()) {
-                    throw new DBException(OracleMessages.config_import_wizard_page_sql_developer_label_installation_not_found);
+                    throw new DBException(OracleUIMessages.config_import_wizard_page_sql_developer_label_installation_not_found);
                 }
             }
         }

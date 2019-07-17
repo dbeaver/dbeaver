@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.editors;
+package org.jkiss.dbeaver.ext.oracle.ui.editors;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;

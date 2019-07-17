@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.tools.sqldeveloper;
+package org.jkiss.dbeaver.ext.oracle.ui.tools.sqldeveloper;
 
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizard;
 

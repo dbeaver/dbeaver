@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.actions;
+package org.jkiss.dbeaver.ext.oracle.ui.actions;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.CellLabelProvider;
@@ -30,8 +30,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -68,7 +68,7 @@ public class OracleCompilerDialog extends BaseDialog
 
     public OracleCompilerDialog(Shell shell, java.util.List<OracleSourceObject> compileUnits)
     {
-        super(shell, OracleMessages.views_oracle_compiler_dialog_title, null);
+        super(shell, OracleUIMessages.views_oracle_compiler_dialog_title, null);
         this.compileUnits = compileUnits;
     }
 
@@ -106,7 +106,7 @@ public class OracleCompilerDialog extends BaseDialog
             }
 
             ViewerColumnController columnController = new ViewerColumnController("OracleCompilerDialog", unitTable);
-            columnController.addColumn(OracleMessages.views_oracle_compiler_dialog_column_name, null, SWT.NONE, true, true, new CellLabelProvider() {
+            columnController.addColumn(OracleUIMessages.views_oracle_compiler_dialog_column_name, null, SWT.NONE, true, true, new CellLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
                 {
@@ -120,7 +120,7 @@ public class OracleCompilerDialog extends BaseDialog
                     }
                 }
             });
-            columnController.addColumn(OracleMessages.views_oracle_compiler_dialog_column_type, null, SWT.NONE, true, true, new CellLabelProvider() {
+            columnController.addColumn(OracleUIMessages.views_oracle_compiler_dialog_column_type, null, SWT.NONE, true, true, new CellLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
                 {
@@ -170,8 +170,8 @@ public class OracleCompilerDialog extends BaseDialog
     protected void createButtonsForButtonBar(Composite parent)
     {
 		// create OK and Cancel buttons by default
-        createButton(parent, COMPILE_ID, OracleMessages.views_oracle_compiler_dialog_button_compile, false).setEnabled(false);
-		createButton(parent, COMPILE_ALL_ID, OracleMessages.views_oracle_compiler_dialog_button_compile_all, true);
+        createButton(parent, COMPILE_ID, OracleUIMessages.views_oracle_compiler_dialog_button_compile, false).setEnabled(false);
+		createButton(parent, COMPILE_ALL_ID, OracleUIMessages.views_oracle_compiler_dialog_button_compile_all, true);
 		createButton(parent, IDialogConstants.CANCEL_ID,
             IDialogConstants.CLOSE_LABEL, false);
     }
@@ -214,7 +214,7 @@ public class OracleCompilerDialog extends BaseDialog
             if (monitor.isCanceled()) {
                 break;
             }
-            final String message = NLS.bind(OracleMessages.views_oracle_compiler_dialog_message_compile_unit, unit.getSourceType().name(), unit.getName());
+            final String message = NLS.bind(OracleUIMessages.views_oracle_compiler_dialog_message_compile_unit, unit.getSourceType().name(), unit.getName());
             compileLog.info(message);
             boolean success = false;
             try {
@@ -223,7 +223,7 @@ public class OracleCompilerDialog extends BaseDialog
                 log.error("Compile error", e);
             }
 
-            compileLog.info(!success ? OracleMessages.views_oracle_compiler_dialog_message_compilation_error : OracleMessages.views_oracle_compiler_dialog_message_compilation_success);
+            compileLog.info(!success ? OracleUIMessages.views_oracle_compiler_dialog_message_compilation_error : OracleUIMessages.views_oracle_compiler_dialog_message_compilation_success);
             compileLog.info(""); //$NON-NLS-1$
         }
 
