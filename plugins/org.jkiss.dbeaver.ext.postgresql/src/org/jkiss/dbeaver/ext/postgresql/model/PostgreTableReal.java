@@ -69,13 +69,8 @@ public abstract class PostgreTableReal extends PostgreTableBase
     }
 
     // Copy constructor
-    public PostgreTableReal(PostgreSchema container, DBSEntity source, boolean persisted) {
-        super(container, source, persisted);
-
-        // Copy triggers
-        if (source instanceof PostgreTableReal) {
-
-        }
+    public PostgreTableReal(DBRProgressMonitor monitor, PostgreTableContainer container, PostgreTableReal source, boolean persisted) throws DBException {
+        super(monitor, container, source, persisted);
     }
 
     public TriggerCache getTriggerCache() {

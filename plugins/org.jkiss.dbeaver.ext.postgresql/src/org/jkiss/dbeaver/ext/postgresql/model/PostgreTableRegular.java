@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 import java.sql.ResultSet;
 
 /**
@@ -26,6 +29,10 @@ public class PostgreTableRegular extends PostgreTable
     public PostgreTableRegular(PostgreSchema catalog)
     {
         super(catalog);
+    }
+
+    public PostgreTableRegular(DBRProgressMonitor monitor, PostgreSchema catalog, PostgreTableRegular source) throws DBException {
+        super(monitor, catalog, source, false);
     }
 
     public PostgreTableRegular(

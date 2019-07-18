@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -76,18 +75,15 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
     }
 
     // Copy constructor
-    public RedshiftExternalTable(RedshiftExternalSchema container, DBSEntity source, boolean persisted) {
-        super(container, source, persisted);
-        if (source instanceof RedshiftExternalTable) {
-            RedshiftExternalTable rsSource = (RedshiftExternalTable)source;
-            this.location = rsSource.location;
-            this.inputFormat = rsSource.inputFormat;
-            this.outputFormat = rsSource.outputFormat;
-            this.serializationLib = rsSource.serializationLib;
-            this.serdeParameters = rsSource.serdeParameters;
-            this.compressed = rsSource.compressed;
-            this.parameters = rsSource.parameters;
-        }
+    public RedshiftExternalTable(DBRProgressMonitor monitor, RedshiftExternalSchema container, RedshiftExternalTable source, boolean persisted) throws DBException {
+        super(monitor, container, source, persisted);
+        this.location = source.location;
+        this.inputFormat = source.inputFormat;
+        this.outputFormat = source.outputFormat;
+        this.serializationLib = source.serializationLib;
+        this.serdeParameters = source.serdeParameters;
+        this.compressed = source.compressed;
+        this.parameters = source.parameters;
     }
 
     @Override

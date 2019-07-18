@@ -83,7 +83,7 @@ public interface PostgreServerExtension
 
     PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult);
 
-    PostgreTableBase createNewRelation(PostgreSchema schema, PostgreClass.RelKind kind);
+    PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException;
 
     void configureDialect(PostgreDialect dialect);
 

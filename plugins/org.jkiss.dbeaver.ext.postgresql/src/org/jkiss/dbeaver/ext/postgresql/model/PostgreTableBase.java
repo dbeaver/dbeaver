@@ -33,9 +33,10 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -54,7 +55,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private String description;
 	protected boolean isPartition;
 	private boolean hasPartitions;
-	private String part_key;
+	private String partitionKey;
     private Object acl;
     private String[] relOptions;
 
@@ -74,8 +75,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.isPartition =
             getDataSource().isServerVersionAtLeast(10, 0) &&
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
-        this.part_key = getDataSource().isServerVersionAtLeast(10, 0) ? JDBCUtils.safeGetString(dbResult, "partition_key")  : null;
-        this.hasPartitions = this.part_key != null;
+        this.partitionKey = getDataSource().isServerVersionAtLeast(10, 0) ? JDBCUtils.safeGetString(dbResult, "partition_key")  : null;
+        this.hasPartitions = this.partitionKey != null;
         this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
         if (getDataSource().isServerVersionAtLeast(8, 2)) {
             this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
@@ -84,11 +85,23 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     // Copy constructor
-    public PostgreTableBase(PostgreSchema container, DBSEntity source, boolean persisted) {
+    public PostgreTableBase(DBRProgressMonitor monitor, PostgreTableContainer container, PostgreTableBase source, boolean persisted) throws DBException {
         super(container, source, persisted);
-        if (source instanceof PostgreTableBase) {
-            this.description = ((PostgreTableBase) source).description;
-            this.isPartition = ((PostgreTableBase) source).isPartition;
+        this.ownerId = source.ownerId;
+        this.description = source.description;
+        this.isPartition = source.isPartition;
+        this.partitionKey = source.partitionKey;
+        this.acl = source.acl;
+        this.relOptions = source.relOptions;
+
+        DBSObjectCache<PostgreTableBase, PostgreTableColumn> colCache = getSchema().getTableCache().getChildrenCache(this);
+        // Copy columns
+        for (PostgreTableColumn srcColumn : CommonUtils.safeCollection(source.getAttributes(monitor))) {
+            if (DBUtils.isHiddenObject(srcColumn)) {
+                continue;
+            }
+            PostgreTableColumn column = new PostgreTableColumn(monitor, this, srcColumn);
+            colCache.cacheObject(column);
         }
     }
 
@@ -277,7 +290,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     public String getPartKey() {
-        return part_key;
+        return partitionKey;
     }
     
     

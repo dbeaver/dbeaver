@@ -31,8 +31,10 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +58,20 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
+    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, PostgreTableBase object, Class<? extends DBSObject> childType) throws DBException {
+        if (childType == PostgreTableColumn.class) {
+            return object.getAttributes(monitor);
+        } else if (childType == PostgreTableConstraint.class) {
+            return object.getConstraints(monitor);
+        } else if (childType == PostgreTableForeign.class) {
+            return object.getAssociations(monitor);
+        } else if (childType == PostgreIndex.class) {
+            return object.getIndexes(monitor);
+        }
+        return null;
+    }
+
+    @Override
     protected String getCreateTableType(PostgreTableBase table) {
         if (table instanceof PostgreTableForeign) {
             return "FOREIGN TABLE";
@@ -65,15 +81,13 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    protected PostgreTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
-    {
+    protected PostgreTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         PostgreSchema schema = (PostgreSchema)container;
-        final PostgreTableBase table = schema.getDataSource().getServerType().createNewRelation(schema, PostgreClass.RelKind.r);
-        try {
+        final PostgreTableBase table = schema.getDataSource().getServerType().createNewRelation(monitor, schema, PostgreClass.RelKind.r, copyFrom);
+        if (CommonUtils.isEmpty(table.getName())) {
             setTableName(monitor, schema, table);
-        } catch (DBException e) {
-            // Never be here
-            log.error(e);
+        } else {
+            table.setName(getNewChildName(monitor, schema, table.getName()));
         }
 
         return table;
