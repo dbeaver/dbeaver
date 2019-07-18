@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -212,6 +214,23 @@ public abstract class DBVUtils {
             values.add(new DBDLabelValuePair(keyLabel, keyValue));
         }
         return values;
+    }
+
+    public static List<DBSEntityConstraint> getAllConstraints(DBRProgressMonitor monitor, DBSEntity entity) throws DBException {
+        List<DBSEntityConstraint> result = new ArrayList<>();
+        final Collection<? extends DBSEntityConstraint> realConstraints = entity.getConstraints(monitor);
+        if (!CommonUtils.isEmpty(realConstraints)) {
+            result.addAll(realConstraints);
+        }
+        DBVEntity vEntity = getVirtualEntity(entity, false);
+        if (vEntity != null) {
+            List<DBVEntityConstraint> vConstraints = vEntity.getConstraints();
+            if (!CommonUtils.isEmpty(vConstraints)) {
+                result.addAll(vConstraints);
+            }
+        }
+
+        return result;
     }
 
 }

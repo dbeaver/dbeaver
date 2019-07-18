@@ -305,6 +305,10 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return entityConstraints;
     }
 
+    public List<DBVEntityConstraint> getConstraints() {
+        return entityConstraints;
+    }
+
     public DBVEntityConstraint getBestIdentifier() {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
@@ -320,11 +324,17 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return entityConstraints.get(0);
     }
 
-    void addConstraint(DBVEntityConstraint constraint) {
+    public void addConstraint(DBVEntityConstraint constraint) {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
         entityConstraints.add(constraint);
+    }
+
+    public void removeConstraint(DBVEntityConstraint constraint) {
+        if (entityConstraints != null) {
+            entityConstraints.remove(constraint);
+        }
     }
 
     @Nullable

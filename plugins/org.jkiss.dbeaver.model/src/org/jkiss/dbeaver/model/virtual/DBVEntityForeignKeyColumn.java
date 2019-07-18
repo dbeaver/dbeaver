@@ -56,4 +56,7 @@ public class DBVEntityForeignKeyColumn implements DBSEntityAttributeRef {
         return attributeName;
     }
 
+    public String getRefAttributeName() {
+        return refAttributeName;
+    }
 }
