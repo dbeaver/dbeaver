@@ -181,10 +181,8 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public PostgreTableBase createNewRelation(PostgreSchema schema, PostgreClass.RelKind kind) {
-        if (kind == PostgreClass.RelKind.r) {
-            return new PostgreTableRegular(schema);
-        } else if (kind == PostgreClass.RelKind.v) {
+    public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException {
+        if (kind == PostgreClass.RelKind.v) {
             return new PostgreView(schema);
         } else if (kind == PostgreClass.RelKind.m) {
             return new PostgreMaterializedView(schema);
@@ -192,11 +190,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             return new PostgreTableForeign(schema);
         } else if (kind == PostgreClass.RelKind.S) {
             return new PostgreSequence(schema);
-        } else if (kind == PostgreClass.RelKind.t) {
-            return new PostgreTableRegular(schema);
-        } else if (kind == PostgreClass.RelKind.p) {
-            return new PostgreTableRegular(schema);
         } else {
+            if (copyFrom instanceof PostgreTableRegular) {
+                return new PostgreTableRegular(monitor, schema, (PostgreTableRegular) copyFrom);
+            }
             return new PostgreTableRegular(schema);
         }
     }

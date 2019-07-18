@@ -68,6 +68,12 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     private PostgreTableBase refTable;
     private final List<PostgreTableForeignKeyColumn> columns = new ArrayList<>();
 
+/*
+    public PostgreTableForeignKey(DBRProgressMonitor monitor, PostgreTable table, PostgreTableForeignKey source) {
+        super(monitor, table, source);
+    }
+*/
+
     public PostgreTableForeignKey(
         @NotNull PostgreTableBase table,
         @NotNull String name,

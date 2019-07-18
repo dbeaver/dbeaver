@@ -39,6 +39,10 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
 {
     private static final Log log = Log.getLog(PostgreTableColumn.class);
 
+    public PostgreTableColumn(DBRProgressMonitor monitor, PostgreTableBase table, PostgreTableColumn source) throws DBException {
+        super(monitor, table, source);
+    }
+
     private static class GeometryInfo {
         private String type;
         private int srid = -1;

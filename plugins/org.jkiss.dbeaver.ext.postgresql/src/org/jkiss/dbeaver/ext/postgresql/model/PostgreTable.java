@@ -36,7 +36,10 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -77,12 +80,25 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     }
 
     // Copy constructor
-    public PostgreTable(PostgreSchema container, DBSEntity source, boolean persisted) {
-        super(container, source, persisted);
-        if (source instanceof PostgreTable) {
-            this.hasOids = ((PostgreTable) source).hasOids;
-            //this.partitions = ((PostgreTable) source).partitions == null ? null : new ArrayList<>(((PostgreTable) source).partitions);
+    public PostgreTable(DBRProgressMonitor monitor, PostgreTableContainer container, PostgreTable source, boolean persisted) throws DBException {
+        super(monitor, container, source, persisted);
+        this.hasOids = source.hasOids;
+        this.tablespaceId = container == source.getContainer() ? source.tablespaceId : 0;
+
+/*
+        // Copy FKs
+        List<PostgreTableForeignKey> fkList = new ArrayList<>();
+        for (PostgreTableForeignKey srcFK : CommonUtils.safeCollection(source.getForeignKeys(monitor))) {
+            PostgreTableForeignKey fk = new PostgreTableForeignKey(monitor, this, srcFK);
+            if (fk.getReferencedConstraint() != null) {
+                fk.setName(fk.getName() + "_copy"); // Fix FK name - they are unique within schema
+                fkList.add(fk);
+            } else {
+                log.debug("Can't copy association '" + srcFK.getName() + "' - can't find referenced constraint");
+            }
         }
+        this.foreignKeys.setCache(fkList);
+*/
     }
 
     public SimpleObjectCache<PostgreTable, PostgreTableForeignKey> getForeignKeyCache() {

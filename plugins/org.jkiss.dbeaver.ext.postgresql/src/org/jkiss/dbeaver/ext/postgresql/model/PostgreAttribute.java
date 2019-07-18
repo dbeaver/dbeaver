@@ -79,6 +79,26 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         loadInfo(monitor, dbResult);
     }
 
+    public PostgreAttribute(
+        DBRProgressMonitor monitor,
+        OWNER table,
+        PostgreAttribute source)
+        throws DBException
+    {
+        super(table, source, true);
+
+        this.dataType = source.dataType;
+        this.comment = source.comment;
+        this.charLength = source.charLength;
+        this.arrayDim = source.arrayDim;
+        this.inheritorsCount = source.inheritorsCount;
+        this.description = source.description;
+        this.identity = source.identity;
+        this.isLocal = source.isLocal;
+        this.collationId = source.collationId;
+        this.acl = source.acl;
+    }
+
     @NotNull
     @Override
     public PostgreDatabase getDatabase() {
