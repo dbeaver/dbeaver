@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -238,7 +239,7 @@ class EditVirtualEntityDialog extends BaseDialog {
         TableItem item = new TableItem(fkTable, SWT.NONE);
         item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
         if (fk.getReferencedConstraint() != null) {
-            item.setText(0, fk.getReferencedConstraint().getParentObject().getName());
+            item.setText(0, DBUtils.getObjectFullName(fk.getReferencedConstraint().getParentObject(), DBPEvaluationContext.UI));
         }
         String ownAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getAttributeName)
             .collect(Collectors.joining(","));
