@@ -373,7 +373,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 break;
             }
             if (childNode instanceof DBNDatabaseFolder) {
-                loadEntities(monitor, entities, (DBNDatabaseFolder)childNode);
+                Class<?> childrenClass = ((DBNDatabaseFolder) childNode).getChildrenClass(((DBNDatabaseFolder) childNode).getItemsMeta());
+                if (DBSEntity.class.isAssignableFrom(childrenClass)) {
+                    loadEntities(monitor, entities, (DBNDatabaseFolder) childNode);
+                }
             } else {
                 if (childNode instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) childNode).getObject();

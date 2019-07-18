@@ -71,6 +71,10 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferr
         return attributes;
     }
 
+    public List<DBVEntityForeignKeyColumn> getAttributes() {
+        return attributes;
+    }
+
     public synchronized void setAttributes(List<DBVEntityForeignKeyColumn> attrs) {
         attributes.clear();
         attributes.addAll(attrs);

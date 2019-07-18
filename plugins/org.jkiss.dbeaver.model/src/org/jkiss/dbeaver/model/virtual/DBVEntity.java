@@ -165,8 +165,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     @Nullable
-    public DBSEntity getRealEntity(DBRProgressMonitor monitor) throws DBException
-    {
+    public DBSEntity getRealEntity(DBRProgressMonitor monitor) throws DBException {
         DBSObjectContainer realContainer = container.getRealContainer(monitor);
         if (realContainer == null) {
             return null;
@@ -187,50 +186,42 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
     @Override
-    public DBVContainer getParentObject()
-    {
+    public DBVContainer getParentObject() {
         return container;
     }
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource()
-    {
+    public DBPDataSource getDataSource() {
         return container == null ? null : container.getDataSource();
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return true;
     }
 
     @NotNull
     @Override
-    public DBSEntityType getEntityType()
-    {
+    public DBSEntityType getEntityType() {
         return DBSEntityType.VIRTUAL_ENTITY;
     }
 
     @Nullable
-    public String getProperty(String name)
-    {
+    public String getProperty(String name) {
         return CommonUtils.isEmpty(properties) ? null : properties.get(name);
     }
 
-    public void setProperty(String name, @Nullable String value)
-    {
+    public void setProperty(String name, @Nullable String value) {
         if (properties == null) {
             properties = new LinkedHashMap<>();
         }
@@ -243,8 +234,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @NotNull
     @Override
-    public Collection<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBSEntity realEntity = getRealEntity(monitor);
         if (realEntity != null) {
             final Collection<? extends DBSEntityAttribute> realAttributes = realEntity.getAttributes(monitor);
@@ -257,8 +247,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Nullable
     @Override
-    public DBSEntityAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
-    {
+    public DBSEntityAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) {
         try {
             return DBUtils.findObject(getAttributes(monitor), attributeName);
         } catch (DBException e) {
@@ -268,8 +257,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     @Nullable
-    public DBVEntityAttribute getVirtualAttribute(DBDAttributeBinding binding, boolean create)
-    {
+    public DBVEntityAttribute getVirtualAttribute(DBDAttributeBinding binding, boolean create) {
         if (entityAttributes != null || create) {
             if (entityAttributes == null) {
                 entityAttributes = new ArrayList<>();
@@ -313,13 +301,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Nullable
     @Override
-    public Collection<? extends DBVEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<? extends DBVEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return entityConstraints;
     }
 
-    public DBVEntityConstraint getBestIdentifier()
-    {
+    public DBVEntityConstraint getBestIdentifier() {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
@@ -334,8 +320,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return entityConstraints.get(0);
     }
 
-    void addConstraint(DBVEntityConstraint constraint)
-    {
+    void addConstraint(DBVEntityConstraint constraint) {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
@@ -344,23 +329,31 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Nullable
     @Override
-    public Collection<DBVEntityForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public synchronized List<DBVEntityForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return entityForeignKeys;
     }
 
-    void addForeignKey(DBVEntityForeignKey foreignKey)
-    {
+    @NotNull
+    public synchronized List<DBVEntityForeignKey> getForeignKeys() {
+        return entityForeignKeys != null ? entityForeignKeys : Collections.emptyList();
+    }
+
+    public synchronized void addForeignKey(@NotNull DBVEntityForeignKey foreignKey) {
         if (entityForeignKeys == null) {
             entityForeignKeys = new ArrayList<>();
         }
         entityForeignKeys.add(foreignKey);
     }
 
+    public synchronized void removeForeignKey(@NotNull DBVEntityForeignKey foreignKey) {
+        if (entityForeignKeys != null) {
+            entityForeignKeys.remove(foreignKey);
+        }
+    }
+
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -368,20 +361,17 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return descriptionColumnNames;
     }
 
-    public void setDescriptionColumnNames(String descriptionColumnNames)
-    {
+    public void setDescriptionColumnNames(String descriptionColumnNames) {
         this.descriptionColumnNames = descriptionColumnNames;
     }
 
     public Collection<DBSEntityAttribute> getDescriptionColumns(DBRProgressMonitor monitor, DBSEntity entity)
-        throws DBException
-    {
+        throws DBException {
         return getDescriptionColumns(monitor, entity, descriptionColumnNames);
     }
 
     public static Collection<DBSEntityAttribute> getDescriptionColumns(DBRProgressMonitor monitor, DBSEntity entity, String descColumns)
-        throws DBException
-    {
+        throws DBException {
         if (CommonUtils.isEmpty(descColumns)) {
             return Collections.emptyList();
         }
@@ -402,8 +392,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     public static String getDefaultDescriptionColumn(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn)
-        throws DBException
-    {
+        throws DBException {
         assert keyColumn.getParentObject() != null;
 
         Collection<? extends DBSEntityAttribute> allColumns = keyColumn.getParentObject().getAttributes(monitor);
@@ -419,8 +408,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             if (column != keyColumn &&
                 column.getDataKind() == DBPDataKind.STRING &&
                 column.getMaxLength() < MAX_DESC_COLUMN_LENGTH &&
-                column.getMaxLength() >= MIN_DESC_COLUMN_LENGTH)
-            {
+                column.getMaxLength() >= MIN_DESC_COLUMN_LENGTH) {
                 stringColumns.put(column.getName(), column);
             }
         }
@@ -466,7 +454,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         final DBVColorOverride co = new DBVColorOverride(
             attrName,
             DBCLogicalOperator.EQUALS,
-            new Object[] { value },
+            new Object[]{value},
             foreground,
             background);
 
@@ -539,8 +527,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             container,
             this);
