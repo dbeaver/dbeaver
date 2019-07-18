@@ -103,8 +103,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -114,8 +112,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -3643,6 +3641,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private DBVEntity getVirtualEntity(DBSEntity entity) {
+        return entity != null ?
+            DBVUtils.getVirtualEntity(entity, true) :
+            DBVUtils.getVirtualEntity(getDataContainer(), true);
+    }
+
     private void checkEntityIdentifiers(ResultSetPersister persister) throws DBException
     {
 
@@ -3707,33 +3711,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    boolean editEntityIdentifier(DBRProgressMonitor monitor) throws DBException
-    {
-        DBDRowIdentifier virtualEntityIdentifier = getVirtualEntityIdentifier();
-        if (virtualEntityIdentifier == null) {
-            log.warn("No virtual identifier");
-            return false;
-        }
-        DBVEntityConstraint constraint = (DBVEntityConstraint) virtualEntityIdentifier.getUniqueKey();
-
-        EditConstraintPage page = new EditConstraintPage(
-            "Define virtual unique identifier",
-            constraint);
-        if (!page.edit()) {
-            return false;
-        }
-
-        Collection<DBSEntityAttribute> uniqueAttrs = page.getSelectedAttributes();
-        constraint.setAttributes(uniqueAttrs);
-        virtualEntityIdentifier = getVirtualEntityIdentifier();
-        if (virtualEntityIdentifier == null) {
-            log.warn("No virtual identifier defined");
-            return false;
-        }
-        virtualEntityIdentifier.reloadAttributes(monitor, model.getAttributes());
-        persistConfig();
-
-        return true;
+    boolean editEntityIdentifier(DBRProgressMonitor monitor) {
+        EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
+            ResultSetViewer.this, model.getSingleSource(), getVirtualEntity(model.getSingleSource()));
+        dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
+        return dialog.open() != IDialogConstants.OK_ID;
     }
 
     private void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
@@ -4431,30 +4413,28 @@ public class ResultSetViewer extends Viewer
                 return;
             }
             DBSEntity entity = model.isSingleSource() ? model.getSingleSource() : null;
-            DBVEntity vEntity = entity != null ?
-                DBVUtils.getVirtualEntity(entity, true) :
-                DBVUtils.getVirtualEntity(dataContainer, true);
+            DBVEntity vEntity = getVirtualEntity(entity);
             EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(ResultSetViewer.this, entity, vEntity);
+            dialog.setInitPage(EditVirtualEntityDialog.InitPage.ATTRIBUTES);
             dialog.open();
         }
     }
 
     private class DictionaryEditAction extends Action {
-        DictionaryEditAction()
-        {
+        DictionaryEditAction() {
             super("Define dictionary");
         }
 
         @Override
-        public void run()
-        {
-            EditDictionaryPage page = new EditDictionaryPage(model.getSingleSource());
-            page.edit();
+        public void run() {
+            EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
+                ResultSetViewer.this, model.getSingleSource(), getVirtualEntity(model.getSingleSource()));
+            dialog.setInitPage(EditVirtualEntityDialog.InitPage.DICTIONARY);
+            dialog.open();
         }
 
         @Override
-        public boolean isEnabled()
-        {
+        public boolean isEnabled() {
             final DBSEntity singleSource = model.getSingleSource();
             return singleSource != null;
         }

@@ -33,12 +33,11 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferr
 
     @NotNull
     private final DBVEntity entity;
-    private final DBSEntityConstraint refEntityConstraint;
+    private DBSEntityConstraint refEntityConstraint;
     private final List<DBVEntityForeignKeyColumn> attributes = new ArrayList<>();
 
-    public DBVEntityForeignKey(DBVEntity entity, DBSEntityConstraint refEntityConstraint) throws DBException {
+    public DBVEntityForeignKey(@NotNull DBVEntity entity) {
         this.entity = entity;
-        this.refEntityConstraint = refEntityConstraint;
 /*
         if (refEntityConstraint instanceof DBSEntityReferrer) {
             for (DBSEntityAttributeRef attrRef : ((DBSEntityReferrer) refEntityConstraint).getAttributeReferences(monitor)) {
@@ -56,6 +55,10 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferr
     @Override
     public DBSEntityConstraint getReferencedConstraint() {
         return refEntityConstraint;
+    }
+
+    public void setReferencedConstraint(DBSEntityConstraint refEntityConstraint) {
+        this.refEntityConstraint = refEntityConstraint;
     }
 
     @Override

@@ -93,12 +93,8 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
     private void editCustomKey()
     {
         // Edit custom key
-        try {
-            if (viewer.editEntityIdentifier(new VoidProgressMonitor())) {
-                super.buttonPressed(IDialogConstants.OK_ID);
-            }
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Virtual key edit", "Error editing virtual key", e);
+        if (viewer.editEntityIdentifier(new VoidProgressMonitor())) {
+            super.buttonPressed(IDialogConstants.OK_ID);
         }
     }
 
