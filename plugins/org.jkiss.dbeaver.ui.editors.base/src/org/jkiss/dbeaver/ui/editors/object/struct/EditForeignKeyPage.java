@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -124,14 +125,16 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         {
             final Composite tableGroup = UIUtils.createPlaceholder(panel, 2, 5);
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createLabelText(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_table, DBUtils.getObjectFullName(foreignKey, DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
+            UIUtils.createLabelText(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_table, DBUtils.getObjectFullName(foreignKey.getParentObject(), DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
 
-            if (ownerTableNode != null) {
-                try {
-                    createSchemaSelector(tableGroup);
-                } catch (Throwable e) {
-                    log.debug("Can't create schema selector", e);
+            try {
+                if (ownerTableNode != null) {
+                        createSchemaSelector(tableGroup);
+                } else if (foreignKey instanceof DBVEntityForeignKey) {
+                    // Virtual key - add container selector
                 }
+            } catch (Throwable e) {
+                log.debug("Can't create schema selector", e);
             }
         }
 
@@ -230,6 +233,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
         }
         //panel.setTabList(new Control[] { tableList, pkGroup, columnsTable, cascadeGroup });
+        tableList.setFocus();
 
         return panel;
     }
@@ -311,6 +315,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
             });
         }
+    }
+
+    private void createContainerSelector(Composite tableGroup) throws DBException {
+
     }
 
     private void loadTableList(DBNDatabaseNode newContainerNode) {
