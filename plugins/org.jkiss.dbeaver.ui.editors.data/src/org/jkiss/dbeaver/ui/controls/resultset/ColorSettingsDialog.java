@@ -203,7 +203,7 @@ class ColorSettingsDialog extends BaseDialog {
                     }
                 }
             });
-            singleColumnCheck = UIUtils.createCheckbox(settingsGroup, "Use colors for this column only", "Apply colors for this column only, otherwise color full rows", false, 3);
+            singleColumnCheck = UIUtils.createCheckbox(settingsGroup, "Apply colors to this column only", "Apply colors to this column only, otherwise color full row", false, 3);
             singleColumnCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
