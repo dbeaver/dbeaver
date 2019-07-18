@@ -104,7 +104,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         {
             // Target container
             // Use first source object as cur selection (it's better than nothing)
-            containerPanel = new ObjectContainerSelectorPanel(composite, DTMessages.data_transfer_db_consumer_target_container) {
+            containerPanel = new ObjectContainerSelectorPanel(composite, DTMessages.data_transfer_db_consumer_target_container, DTMessages.data_transfer_db_consumer_choose_container) {
                 @Nullable
                 @Override
                 protected DBNNode getSelectedNode() {
