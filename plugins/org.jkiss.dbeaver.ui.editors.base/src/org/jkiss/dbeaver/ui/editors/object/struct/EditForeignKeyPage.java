@@ -83,7 +83,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private DBSForeignKeyModifyRule[] supportedModifyRules;
-    private DBSTableForeignKey foreignKey;
+    private DBSEntityAssociation foreignKey;
     private DBSTable curRefTable;
     private List<DBSEntityConstraint> curConstraints;
     private DBNDatabaseNode ownerTableNode;
@@ -102,7 +102,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
     public EditForeignKeyPage(
         String title,
-        DBSTableForeignKey foreignKey,
+        DBSEntityAssociation foreignKey,
         DBSForeignKeyModifyRule[] supportedModifyRules)
     {
         super(title);
@@ -124,7 +124,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         {
             final Composite tableGroup = UIUtils.createPlaceholder(panel, 2, 5);
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createLabelText(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_table, foreignKey.getParentObject().getFullyQualifiedName(DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
+            UIUtils.createLabelText(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_table, DBUtils.getObjectFullName(foreignKey, DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
 
             if (ownerTableNode != null) {
                 try {
@@ -459,7 +459,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         UIUtils.packColumns(columnsTable, true);
     }
 
-    private static List<DBSEntityAttribute> getValidAttributes(DBSTable table) throws DBException {
+    private static List<DBSEntityAttribute> getValidAttributes(DBSEntity table) throws DBException {
         List<DBSEntityAttribute> result = new ArrayList<>();
         for (DBSEntityAttribute attr : table.getAttributes(new VoidProgressMonitor())) {
             if (!DBUtils.isHiddenObject(attr) && !DBUtils.isPseudoAttribute(attr)) {
