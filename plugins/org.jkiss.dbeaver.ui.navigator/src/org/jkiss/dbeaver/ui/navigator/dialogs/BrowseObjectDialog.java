@@ -139,6 +139,9 @@ public class BrowseObjectDialog extends Dialog {
         });
         if (selectedNode != null) {
             treeViewer.setSelection(new StructuredSelection(selectedNode));
+            if (!(selectedNode instanceof DBNDataSource) || ((DBNDataSource) selectedNode).getDataSourceContainer().isConnected()) {
+                treeViewer.expandToLevel(selectedNode, 1);
+            }
             selectedObjects.add(selectedNode);
         }
         treeViewer.addSelectionChangedListener(event -> {

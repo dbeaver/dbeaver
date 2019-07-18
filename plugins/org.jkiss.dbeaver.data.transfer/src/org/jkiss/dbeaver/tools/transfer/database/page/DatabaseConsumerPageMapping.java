@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -35,10 +36,11 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.database.*;
@@ -50,6 +52,7 @@ import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
+import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -64,9 +67,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
     private TreeViewer mappingViewer;
-    private Label containerIcon;
-    private Text containerName;
     private Button autoAssignButton;
+    private ObjectContainerSelectorPanel containerPanel;
 
     private static abstract class MappingLabelProvider extends CellLabelProvider {
         @Override
@@ -101,71 +103,49 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
         {
             // Target container
-            Composite containerPanel = new Composite(composite, SWT.NONE);
-            containerPanel.setLayout(new GridLayout(4, false));
-            containerPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createControlLabel(containerPanel, DTMessages.data_transfer_db_consumer_target_container);
-
-            containerIcon = new Label(containerPanel, SWT.NONE);
-            containerIcon.setImage(DBeaverIcons.getImage(DBIcon.TYPE_UNKNOWN));
-
-            containerName = new Text(containerPanel, SWT.BORDER | SWT.READ_ONLY);
-            containerName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            containerName.setText("");
-
-            Button browseButton = new Button(containerPanel, SWT.PUSH);
-            browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-            browseButton.setText("...");
-            browseButton.addSelectionListener(new SelectionAdapter() {
+            // Use first source object as cur selection (it's better than nothing)
+            containerPanel = new ObjectContainerSelectorPanel(composite, DTMessages.data_transfer_db_consumer_target_container) {
+                @Nullable
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-                    if (activeProject != null) {
-                        final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-                        final DBNProject rootNode = navigatorModel.getRoot().getProjectNode(
-                            activeProject);
-                        DBNNode selectedNode = settings.getContainerNode();
-                        if (selectedNode == null && !settings.getDataMappings().isEmpty()) {
-                            // Use first source object as cur selection (it's better than nothing)
-                            DBSDataContainer firstSource = settings.getDataMappings().keySet().iterator().next();
-                            selectedNode = navigatorModel.getNodeByObject(firstSource);
-                            while (selectedNode != null) {
-                                if (selectedNode instanceof DBSWrapper && ((DBSWrapper) selectedNode).getObject() instanceof DBSObjectContainer) {
-                                    break;
-                                } else {
-                                    selectedNode = selectedNode.getParentNode();
-                                }
+                protected DBNNode getSelectedNode() {
+                    DBNNode selectedNode = settings.getContainerNode();
+                    if (selectedNode == null && !settings.getDataMappings().isEmpty()) {
+                        // Use first source object as cur selection (it's better than nothing)
+                        DBSDataContainer firstSource = settings.getDataMappings().keySet().iterator().next();
+                        selectedNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(firstSource);
+                        while (selectedNode != null) {
+                            if (selectedNode instanceof DBSWrapper && ((DBSWrapper) selectedNode).getObject() instanceof DBSObjectContainer) {
+                                break;
+                            } else {
+                                selectedNode = selectedNode.getParentNode();
                             }
-                        }
-                        DBNNode node = DBWorkbench.getPlatformUI().selectObject(
-                            getShell(),
-                            DTMessages.data_transfer_db_consumer_choose_container,
-                            rootNode.getDatabases(),
-                            selectedNode,
-                            new Class[] {DBSObjectContainer.class},
-                            null, new Class[] { DBSSchema.class });
-                        if (node instanceof DBNDatabaseNode) {
-                            settings.setContainerNode((DBNDatabaseNode) node);
-                            DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(node);
-                            containerIcon.setImage(DBeaverIcons.getImage(dataSourceNode == null ? node.getNodeIconDefault() : dataSourceNode.getNodeIconDefault()));
-                            containerName.setText(settings.getContainerFullName());
-                            // Reset mappings
-                            for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
-                                if (mappingContainer.getMappingType() != DatabaseMappingType.unspecified) {
-                                    try {
-                                        mappingContainer.refreshMappingType(getContainer(), DatabaseMappingType.unspecified);
-                                    } catch (DBException e1) {
-                                        log.error(e1);
-                                    }
-                                }
-                            }
-                            mappingViewer.refresh();
-                            updatePageCompletion();
                         }
                     }
+                    return selectedNode;
                 }
-            });
+
+                @Override
+                protected void setSelectedNode(DBNDatabaseNode node) {
+                    settings.setContainerNode(node);
+                    DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(node);
+                    setContainerInfo(
+                        dataSourceNode == null ? node.getNodeIconDefault() : dataSourceNode.getNodeIconDefault(),
+                        settings.getContainerFullName());
+                    // Reset mappings
+                    for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
+                        if (mappingContainer.getMappingType() != DatabaseMappingType.unspecified) {
+                            try {
+                                mappingContainer.refreshMappingType(getContainer(), DatabaseMappingType.unspecified);
+                            } catch (DBException e1) {
+                                log.error(e1);
+                            }
+                        }
+                    }
+                    mappingViewer.refresh();
+                    updatePageCompletion();
+                }
+
+            };
         }
 
         createMappingsTree(composite);
@@ -454,7 +434,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 return new CustomComboBoxCellEditor(
                     mappingViewer,
                     mappingViewer.getTree(),
-                    mappingTypes.toArray(new String[mappingTypes.size()]),
+                    mappingTypes.toArray(new String[0]),
                     SWT.DROP_DOWN | SWT.READ_ONLY);
             }
             @Override
@@ -543,7 +523,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
             mappingViewer,
             mappingViewer.getTree(),
-            items.toArray(new String[items.size()]),
+            items.toArray(new String[0]),
             SWT.DROP_DOWN | (allowsCreate ? SWT.NONE : SWT.READ_ONLY));
         return editor;
     }
@@ -727,7 +707,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     }
 
-    DatabaseMappingObject getSelectedMapping()
+    private DatabaseMappingObject getSelectedMapping()
     {
         IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();
         return selection.isEmpty() ? null : (DatabaseMappingObject) selection.getFirstElement();
@@ -741,8 +721,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         DBNDatabaseNode containerNode = settings.getContainerNode();
         if (containerNode != null) {
             DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(containerNode);
-            containerIcon.setImage(DBeaverIcons.getImage(dataSourceNode == null ? containerNode.getNodeIconDefault() : dataSourceNode.getNodeIcon()));
-            containerName.setText(settings.getContainerFullName());
+            containerPanel.setContainerInfo(
+                dataSourceNode == null ? containerNode.getNodeIconDefault() : dataSourceNode.getNodeIcon(),
+                settings.getContainerFullName());
         }
 
         if (mappingViewer.getInput() == null) {

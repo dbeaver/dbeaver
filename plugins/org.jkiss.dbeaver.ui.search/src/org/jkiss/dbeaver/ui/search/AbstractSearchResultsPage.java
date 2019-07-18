@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
-import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
+import org.jkiss.dbeaver.ui.navigator.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.search.internal.UISearchMessages;
 import org.jkiss.utils.CommonUtils;

@@ -296,23 +296,23 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
+    public DBNNode selectObject(@NotNull Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
         Shell shell = (parentShell instanceof Shell ? (Shell)parentShell : UIUtils.getActiveWorkbenchShell());
         return BrowseObjectDialog.selectObject(shell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes);
     }
 
     @Override
-    public void openEntityEditor(DBSObject object) {
+    public void openEntityEditor(@NotNull DBSObject object) {
         NavigatorHandlerObjectOpen.openEntityEditor(object);
     }
 
     @Override
-    public void openEntityEditor(DBNNode selectedNode, String defaultPageId) {
+    public void openEntityEditor(@NotNull DBNNode selectedNode, String defaultPageId) {
         NavigatorHandlerObjectOpen.openEntityEditor(selectedNode, defaultPageId, UIUtils.getActiveWorkbenchWindow());
     }
 
     @Override
-    public void openConnectionEditor(DBPDataSourceContainer dataSourceContainer) {
+    public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer) {
         UIUtils.syncExec(() ->
             NavigatorHandlerObjectOpen.openConnectionEditor(
                 UIUtils.getActiveWorkbenchWindow(),
@@ -320,7 +320,7 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public void executeProcess(final DBRProcessDescriptor processDescriptor) {
+    public void executeProcess(@NotNull final DBRProcessDescriptor processDescriptor) {
         processDescriptor.setProcessListener(new DBRProcessListener() {
             @Override
             public void onProcessStarted() {
@@ -356,10 +356,11 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public void executeInUI(Runnable runnable) {
+    public void executeInUI(@NotNull Runnable runnable) {
         UIUtils.syncExec(runnable);
     }
 
+    @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);

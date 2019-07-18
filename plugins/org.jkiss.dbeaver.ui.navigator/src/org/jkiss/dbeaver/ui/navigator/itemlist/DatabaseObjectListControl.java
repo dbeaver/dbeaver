@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.itemlist;
+package org.jkiss.dbeaver.ui.navigator.itemlist;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.IContentProvider;
@@ -57,24 +57,21 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
 
     private void createContextMenu()
     {
-        NavigatorUtils.createContextMenu(site, getItemsViewer(), new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager) {
-                IAction copyAction = new Action(WorkbenchMessages.Workbench_copy) {
-                    @Override
-                    public void run()
-                    {
-                        String text = getRenderer().getSelectedText();
-                        if (!CommonUtils.isEmpty(text)) {
-                            UIUtils.setClipboardContents(getDisplay(), TextTransfer.getInstance(), text);
-                        }
+        NavigatorUtils.createContextMenu(site, getItemsViewer(), manager -> {
+            IAction copyAction = new Action(WorkbenchMessages.Workbench_copy) {
+                @Override
+                public void run()
+                {
+                    String text = getRenderer().getSelectedText();
+                    if (!CommonUtils.isEmpty(text)) {
+                        UIUtils.setClipboardContents(getDisplay(), TextTransfer.getInstance(), text);
                     }
-                };
-                copyAction.setEnabled(!getSelectionProvider().getSelection().isEmpty());
-                manager.add(copyAction);
-                manager.add(new Separator());
-                fillCustomActions(manager);
-            }
+                }
+            };
+            copyAction.setEnabled(!getSelectionProvider().getSelection().isEmpty());
+            manager.add(copyAction);
+            manager.add(new Separator());
+            fillCustomActions(manager);
         });
     }
 
