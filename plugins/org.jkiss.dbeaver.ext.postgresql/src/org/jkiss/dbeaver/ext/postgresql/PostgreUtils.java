@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
@@ -419,16 +420,27 @@ public class PostgreUtils {
         if (column instanceof PostgreAttribute) {
             return ((PostgreAttribute) column).getDataType();
         } else {
-            if (column instanceof DBCAttributeMetaData) {
+            if (column instanceof JDBCColumnMetaData) {
                 try {
                     DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) column).getEntityMetaData();
-                    DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getDataSource(), entityMetaData);
-                    if (docEntity != null) {
-                        DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
-                        if (attribute instanceof DBSTypedObjectEx) {
-                            DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-                            if (dataType instanceof PostgreDataType) {
-                                return (PostgreDataType) dataType;
+                    if (entityMetaData != null) {
+                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getDataSource(), entityMetaData);
+                        if (docEntity != null) {
+                            DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
+                            if (attribute instanceof DBSTypedObjectEx) {
+                                DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
+                                if (dataType instanceof PostgreDataType) {
+                                    return (PostgreDataType) dataType;
+                                }
+                            }
+                        }
+                    } else {
+                        String databaseName = ((JDBCColumnMetaData) column).getCatalogName();
+                        PostgreDatabase database = dataSource.getDatabase(databaseName);
+                        if (database != null) {
+                            PostgreDataType dataType = database.getDataType(session.getProgressMonitor(), column.getTypeName());
+                            if (dataType != null) {
+                                return dataType;
                             }
                         }
                     }
