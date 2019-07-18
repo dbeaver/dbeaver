@@ -44,6 +44,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -1890,5 +1891,30 @@ public class UIUtils {
                 setBackgroundForAll(ch, color);
             }
         }
+    }
+
+    public static <T extends Control> void addEmptyTextHint(T control, DBRValueProvider<String, T> tipProvider) {
+        control.addPaintListener(new PaintListener() {
+            private Font hintFont = UIUtils.modifyFont(control.getFont(), SWT.ITALIC);
+            {
+                control.addDisposeListener(e -> hintFont.dispose());
+            }
+            @Override
+            public void paintControl(PaintEvent e) {
+                String tip = tipProvider.getValue(control);
+                if (tip != null && (control.isEnabled() && isEmptyTextControl(control) && !control.isFocusControl())) {
+                    e.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                    e.gc.setFont(hintFont);
+                    e.gc.drawText(tip, 2, 0, true);
+                    e.gc.setFont(null);
+                }
+            }
+        });
+    }
+
+    private static boolean isEmptyTextControl(Control control) {
+        return control instanceof Text ?
+            ((Text) control).getCharCount() == 0 :
+            control instanceof StyledText && ((StyledText) control).getCharCount() == 0;
     }
 }

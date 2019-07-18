@@ -18,8 +18,7 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -49,7 +48,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
     private final Label containerIcon;
     private final Text containerName;
 
-    protected ObjectContainerSelectorPanel(Composite parent, String containerTitle) {
+    protected ObjectContainerSelectorPanel(Composite parent, String containerTitle, String containerHint) {
         super(parent, SWT.NONE);
 
         GridLayout layout = new GridLayout(4, false);
@@ -65,30 +64,42 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         containerName = new Text(this, SWT.BORDER | SWT.READ_ONLY);
         containerName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         containerName.setText("");
+        if (containerHint != null) {
+            UIUtils.addEmptyTextHint(containerName, text -> containerHint);
+        }
 
         Button browseButton = new Button(this, SWT.PUSH);
         browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
         browseButton.setText("...");
+        Runnable containerSelector = () -> {
+            DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+            if (activeProject != null) {
+                final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+                final DBNProject rootNode = navigatorModel.getRoot().getProjectNode(activeProject);
+                DBNNode selectedNode = getSelectedNode();
+                DBNNode node = DBWorkbench.getPlatformUI().selectObject(
+                    getShell(),
+                    containerHint != null ? containerHint : containerTitle,
+                    rootNode.getDatabases(),
+                    selectedNode,
+                    new Class[]{DBSObjectContainer.class},
+                    null,//new Class[] { DBSObjectContainer.class },
+                    new Class[]{DBSSchema.class});
+                if (node instanceof DBNDatabaseNode) {
+                    setSelectedNode((DBNDatabaseNode) node);
+                }
+            }
+        };
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-                if (activeProject != null) {
-                    final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-                    final DBNProject rootNode = navigatorModel.getRoot().getProjectNode(activeProject);
-                    DBNNode selectedNode = getSelectedNode();
-                    DBNNode node = DBWorkbench.getPlatformUI().selectObject(
-                        getShell(),
-                        containerTitle,
-                        rootNode.getDatabases(),
-                        selectedNode,
-                        new Class[] {DBSObjectContainer.class},
-                        null, new Class[] { DBSSchema.class });
-                    if (node instanceof DBNDatabaseNode) {
-                        setSelectedNode((DBNDatabaseNode) node);
-                    }
-                }
+            public void widgetSelected(SelectionEvent e) {
+                containerSelector.run();
+            }
+        });
+        containerName.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                containerSelector.run();
             }
         });
     }

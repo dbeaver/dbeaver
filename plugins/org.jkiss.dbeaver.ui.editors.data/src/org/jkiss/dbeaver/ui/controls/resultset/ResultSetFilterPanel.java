@@ -104,7 +104,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final Color hoverBgColor;
     private final Color shadowColor;
     private final GC sizingGC;
-    private final Font hintFont;
 
     private String activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
 
@@ -127,7 +126,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         this.hoverBgColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
         this.shadowColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-        this.hintFont = UIUtils.modifyFont(getFont(), SWT.ITALIC);
 
         {
             this.filterComposite = new Composite(this, SWT.BORDER);
@@ -163,20 +161,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             // Register filters text in focus service
             UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.filtersText);
 
-            this.filtersText.addPaintListener(e -> {
-                /*if (viewer.getModel().hasData())*/ {
-                    final boolean supportsDataFilter = viewer.supportsDataFilter();
-                    if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0 && !filtersText.isFocusControl())) {
-                        e.gc.setForeground(shadowColor);
-                        e.gc.setFont(hintFont);
-                        e.gc.drawText(supportsDataFilter ?
-                                ResultSetMessages.sql_editor_resultset_filter_panel_text_enter_sql_to_filter:
-                                ResultSetMessages.sql_editor_resultset_filter_panel_text_enter_filter_not_support,
-                            2, 0, true);
-                        e.gc.setFont(null);
-                    }
-                }
-            });
+            UIUtils.addEmptyTextHint(this.filtersText, styledText ->
+                viewer.supportsDataFilter() ?
+                    ResultSetMessages.sql_editor_resultset_filter_panel_text_enter_sql_to_filter:
+                    ResultSetMessages.sql_editor_resultset_filter_panel_text_enter_filter_not_support
+            );
             this.filtersText.addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
@@ -349,7 +338,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 historyMenu = null;
             }
             UIUtils.dispose(sizingGC);
-            UIUtils.dispose(hintFont);
         });
 
     }
