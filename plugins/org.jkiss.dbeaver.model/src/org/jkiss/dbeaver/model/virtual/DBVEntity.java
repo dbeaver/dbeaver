@@ -129,6 +129,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         for (Map<String, Object> fkObject : JSONUtils.getObjectList(map, "foreign-keys")) {
             String entityId = JSONUtils.getString(fkObject, "entity");
             String refConsId = JSONUtils.getString(fkObject, "constraint");
+            Map<String, Object> attributes = JSONUtils.getObject(fkObject, "attributes");
+
+            //DBUtils.findObjectById()
 
             if (entityForeignKeys == null) entityForeignKeys = new ArrayList<>();
             log.warn("Virtual foreign keys load is not implemented yet");

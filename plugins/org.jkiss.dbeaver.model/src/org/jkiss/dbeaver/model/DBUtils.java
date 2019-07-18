@@ -540,10 +540,59 @@ public final class DBUtils {
             if (obj instanceof DBPDataSourceContainer) {
                 pathStr.append(((DBPDataSourceContainer) obj).getId());
             } else {
-                pathStr.append(getQuotedIdentifier(obj));
+                pathStr.append(obj.getName());
             }
         }
         return pathStr.toString();
+    }
+
+    /**
+     * Find object by unique ID.
+     * Note: this function searches only inside DBSObjectContainer objects.
+     * Usually it works only for entities and entity containers (schemas, catalogs).
+     */
+    public static DBSObject findObjectById(@NotNull DBRProgressMonitor monitor, @NotNull DBPProject project, @NotNull String objectId) throws DBException {
+        String[] names = objectId.split("/");
+        DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(names[0]);
+        if (dataSourceContainer == null) {
+            log.debug("Can't find datasource '" + names[0] + "' for object ID " + objectId);
+            return null;
+        }
+        if (!dataSourceContainer.isConnected()) {
+            dataSourceContainer.connect(monitor, true, true);
+        }
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        if (dataSource == null) {
+            log.debug("Null datasource in container " + dataSourceContainer.getId());
+            return null;
+        }
+        DBSObjectContainer sc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        if (sc != null) {
+            for (int i = 1; i < names.length - 1; i++) {
+                String name = names[i];
+                DBSObject child = sc.getChild(monitor, name);
+                if (child == null) {
+                    log.debug("Can't find child container " + name + " in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
+                    return null;
+                }
+                if (child instanceof DBSObjectContainer) {
+                    sc = (DBSObjectContainer) child;
+                } else {
+                    log.debug("Child object '" + name + "' is not a container");
+                    return null;
+                }
+            }
+        }
+        if (sc != null) {
+            String objectName = names[names.length - 1];
+            DBSObject object = sc.getChild(monitor, objectName);
+            if (object == null) {
+                log.debug("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
+                return null;
+            }
+            return object;
+        }
+        return null;
     }
 
     public static boolean isNullValue(@Nullable Object value)
