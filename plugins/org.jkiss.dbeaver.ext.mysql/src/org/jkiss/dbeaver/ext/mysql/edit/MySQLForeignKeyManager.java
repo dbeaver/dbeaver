@@ -60,7 +60,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
         }
         MySQLTableForeignKey foreignKey = new MySQLTableForeignKey(
             table,
-            null,
+            "",
             null,
             null,
             DBSForeignKeyModifyRule.NO_ACTION,

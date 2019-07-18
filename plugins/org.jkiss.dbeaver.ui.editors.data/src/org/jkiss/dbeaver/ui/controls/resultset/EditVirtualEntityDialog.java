@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
@@ -186,7 +187,10 @@ class EditVirtualEntityDialog extends BaseDialog {
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityForeignKey virtualFK = new DBVEntityForeignKey(vEntity);
                     EditForeignKeyPage editDialog = new EditForeignKeyPage(
-                        "Define virtual foreign keys", virtualFK, new DBSForeignKeyModifyRule[]{DBSForeignKeyModifyRule.NO_ACTION});
+                        "Define virtual foreign keys",
+                        virtualFK,
+                        new DBSForeignKeyModifyRule[]{DBSForeignKeyModifyRule.NO_ACTION});
+                    editDialog.setEnableCustomKeys(true);
                     if (!editDialog.edit()) {
                         return;
                     }
@@ -236,9 +240,11 @@ class EditVirtualEntityDialog extends BaseDialog {
         if (fk.getReferencedConstraint() != null) {
             item.setText(0, fk.getReferencedConstraint().getParentObject().getName());
         }
-        String attrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getAttributeName)
+        String ownAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getAttributeName)
             .collect(Collectors.joining(","));
-        item.setText(1, attrNames);
+        String refAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getRefAttributeName)
+            .collect(Collectors.joining(","));
+        item.setText(1, "(" + ownAttrNames + ") -> (" + refAttrNames + ")");
         item.setData(fk);
     }
 

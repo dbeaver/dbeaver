@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
+import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -63,6 +63,7 @@ import java.util.List;
 public class EditForeignKeyPage extends BaseObjectEditPage {
 
     private static final Log log = Log.getLog(EditForeignKeyPage.class);
+    private Button customUKButton;
 
     public static class FKColumnInfo {
         final DBSEntityAttribute refColumn;
@@ -102,6 +103,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private DBSForeignKeyModifyRule onDeleteRule;
     private DBSForeignKeyModifyRule onUpdateRule;
 
+    private boolean enableCustomKeys = false;
+
     public EditForeignKeyPage(
         String title,
         DBSEntityAssociation foreignKey,
@@ -112,10 +115,31 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         this.ownerTableNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(foreignKey.getParentObject());
         this.supportedModifyRules = supportedModifyRules;
 
+        if (ownerTableNode == null) {
+            try {
+                if (foreignKey.getParentObject() instanceof DBVEntity) {
+                    DBSEntity realEntity = ((DBVEntity) foreignKey.getParentObject()).getRealEntity(new VoidProgressMonitor());
+                    if (realEntity != null) {
+                        ownerTableNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(realEntity);
+                    }
+                }
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+
         if (ownerTableNode != null) {
             setImageDescriptor(DBeaverIcons.getImageDescriptor(ownerTableNode.getNodeIcon()));
             setTitle(title + " | " + NLS.bind(EditorsMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
         }
+    }
+
+    public boolean isEnableCustomKeys() {
+        return enableCustomKeys;
+    }
+
+    public void setEnableCustomKeys(boolean enableCustomKeys) {
+        this.enableCustomKeys = enableCustomKeys;
     }
 
     @Override
@@ -129,11 +153,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             UIUtils.createLabelText(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_table, DBUtils.getObjectFullName(foreignKey.getParentObject(), DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
 
             try {
-                if (ownerTableNode != null) {
-                    createSchemaSelector(tableGroup);
-                } else if (foreignKey instanceof DBVEntityForeignKey) {
+                if (foreignKey instanceof DBVEntityForeignKey) {
                     // Virtual key - add container selector
                     createContainerSelector(tableGroup);
+                } else if (ownerTableNode != null) {
+                    createSchemaSelector(tableGroup);
                 }
             } catch (Throwable e) {
                 log.debug("Can't create schema selector", e);
@@ -161,11 +185,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
         }
 
-        final Composite pkGroup = UIUtils.createComposite(panel, 2);
+        final Composite pkGroup = UIUtils.createComposite(panel, enableCustomKeys ? 3 : 2);
         {
             pkGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, EditorsMessages.dialog_struct_edit_fk_combo_unik, SWT.DROP_DOWN | SWT.READ_ONLY);
-            uniqueKeyCombo.setEnabled(false);
+            //uniqueKeyCombo.setEnabled(false);
             uniqueKeyCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -173,6 +197,15 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     handleUniqueKeySelect();
                 }
             });
+            if (enableCustomKeys) {
+                customUKButton = UIUtils.createDialogButton(pkGroup, "Create", new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        defineRefTableConstraint();
+                    }
+                });
+                customUKButton.setEnabled(false);
+            }
 
             if (supportsCustomName()) {
                 fkNameText = UIUtils.createLabelText(pkGroup, EditorsMessages.dialog_struct_edit_fk_name, "");
@@ -238,6 +271,23 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         tableList.setFocus();
 
         return panel;
+    }
+
+    private void defineRefTableConstraint() {
+        if (curRefTable == null) {
+            log.error("No reference table");
+            return;
+        }
+        DBVEntity vRefEntity = DBVUtils.getVirtualEntity(curRefTable, true);
+        DBVEntityConstraint constraint = vRefEntity.getBestIdentifier();
+
+        EditConstraintPage page = new EditConstraintPage(
+            "Define unique key",
+            constraint);
+        if (page.edit()) {
+            constraint.setAttributes(page.getSelectedAttributes());
+            handleRefTableSelect(DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(curRefTable));
+        }
     }
 
     private void createSchemaSelector(Composite tableGroup) throws DBException {
@@ -324,8 +374,23 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             @Nullable
             @Override
             protected DBNNode getSelectedNode() {
-                return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(
-                    ownerTableNode != null ? ownerTableNode.getObject() : foreignKey.getDataSource());
+                DBSObject containerObject;
+                if (ownerTableNode != null) {
+                    containerObject = ownerTableNode.getObject();
+                } else {
+                    containerObject = foreignKey.getParentObject();
+                }
+                if (containerObject != null && containerObject.getParentObject() instanceof DBSObjectContainer) {
+                    containerObject = containerObject.getParentObject();
+                }
+                if (containerObject instanceof DBVContainer) {
+                    try {
+                        containerObject = ((DBVContainer)containerObject).getRealContainer(new VoidProgressMonitor());
+                    } catch (DBException e) {
+                        log.error("Error getting real object container", e);
+                    }
+                }
+                return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(containerObject);
             }
 
             @Override
@@ -342,6 +407,14 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         containerPanel.setLayoutData(gd);
+
+        if (ownerTableNode != null) {
+            DBNNode containerNode = ownerTableNode.getParentNode();
+            while (containerNode instanceof DBNDatabaseFolder) {
+                containerNode = containerNode.getParentNode();
+            }
+            containerPanel.setContainerInfo(containerNode.getNodeIconDefault(), containerNode.getNodeFullName());
+        }
     }
 
     private void loadTableList(DBNDatabaseNode newContainerNode) {
@@ -393,10 +466,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     {
         if (refTableNode != null) {
             DBSObject object = refTableNode.getObject();
-            if (object == curRefTable) {
-                // The same selection
-                return;
-            } else if (object instanceof DBSEntity) {
+            if (object instanceof DBSEntity) {
                 curRefTable = (DBSEntity) refTableNode.getObject();
             }
             if (fkNameText != null) {
@@ -420,7 +490,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         refTable.getAttributes(monitor);
 
                         // Get constraints
-                        final Collection<? extends DBSEntityConstraint> constraints = refTable.getConstraints(monitor);
+                        final Collection<? extends DBSEntityConstraint> constraints = DBVUtils.getAllConstraints(monitor, refTable);
                         if (!CommonUtils.isEmpty(constraints)) {
                             for (DBSEntityConstraint constraint : constraints) {
                                 if (constraint.getConstraintType().isUnique()) {
@@ -450,19 +520,20 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
             if (uniqueKeyCombo.getItemCount() == 0) {
                 if (refTableNode == null) {
-                    uniqueKeyCombo.add("<No ref table>");
+                    uniqueKeyCombo.add("<No reference table selected>");
                 } else {
-                    uniqueKeyCombo.add("<No unique keys found in '" + DBUtils.getObjectFullName(refTableNode.getObject(), DBPEvaluationContext.UI) + "'>");
+                    uniqueKeyCombo.add("<No unique keys in table '" + DBUtils.getObjectFullName(refTableNode.getObject(), DBPEvaluationContext.UI) + "'>");
                 }
                 uniqueKeyCombo.select(0);
-                uniqueKeyCombo.setEnabled(false);
                 curConstraint = null;
+
             } else {
                 uniqueKeyCombo.select(0);
-                uniqueKeyCombo.setEnabled(curConstraints.size() > 1);
-                if (curConstraints.size() == 1) {
-                    curConstraint = curConstraints.get(0);
-                }
+                //uniqueKeyCombo.setEnabled(curConstraints.size() > 1);
+                curConstraint = curConstraints.get(0);
+            }
+            if (enableCustomKeys) {
+                customUKButton.setEnabled(curConstraint == null);
             }
 
         } catch (InvocationTargetException e) {
@@ -476,27 +547,29 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
     private void handleUniqueKeySelect()
     {
-        curConstraint = null;
         fkColumns.clear();
         ownColumns = null;
         columnsTable.removeAll();
-        if (curConstraints.isEmpty() || uniqueKeyCombo.getSelectionIndex() < 0) {
+        int ukSelectionIndex = uniqueKeyCombo.getSelectionIndex();
+        if ((curConstraints.isEmpty() || ukSelectionIndex < 0) && !enableCustomKeys) {
             return;
         }
-        curConstraint = curConstraints.get(uniqueKeyCombo.getSelectionIndex());
-        if (curConstraint instanceof DBSEntityReferrer) {
-            try {
+        DBSEntity curEntity = foreignKey.getParentObject();
+        DBRProgressMonitor monitor = new VoidProgressMonitor();
+        try {
+            Collection<? extends DBSEntityAttribute> tmpColumns = curEntity.getAttributes(monitor);
+            ownColumns = tmpColumns == null ?
+                Collections.<DBSTableColumn>emptyList() :
+                new ArrayList<>(getValidAttributes(curEntity));
+
+            if (curConstraint instanceof DBSEntityReferrer) {
                 // Read column nodes with void monitor because we already cached them above
-                for (DBSEntityAttributeRef pkColumn : ((DBSEntityReferrer)curConstraint).getAttributeReferences(new VoidProgressMonitor())) {
+                for (DBSEntityAttributeRef pkColumn : ((DBSEntityReferrer)curConstraint).getAttributeReferences(monitor)) {
                     FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getAttribute());
                     // Try to find matched column in own table
-                    Collection<? extends DBSEntityAttribute> tmpColumns = foreignKey.getParentObject().getAttributes(new VoidProgressMonitor());
-                    ownColumns = tmpColumns == null ?
-                        Collections.<DBSTableColumn>emptyList() :
-                        new ArrayList<>(getValidAttributes(foreignKey.getParentObject()));
                     if (!CommonUtils.isEmpty(ownColumns)) {
                         for (DBSEntityAttribute ownColumn : ownColumns) {
-                            if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && foreignKey.getParentObject() != pkColumn.getAttribute().getParentObject()) {
+                            if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && curEntity != pkColumn.getAttribute().getParentObject()) {
                                 fkColumnInfo.ownColumn = ownColumn;
                                 break;
                             }
@@ -515,9 +588,25 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     item.setText(3, pkColumn.getAttribute().getFullTypeName());
                     item.setData(fkColumnInfo);
                 }
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError(EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_title, EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
+            } else if (enableCustomKeys && curRefTable != null) {
+                for (DBSEntityAttribute attr : CommonUtils.safeCollection(curEntity.getAttributes(monitor))) {
+                    FKColumnInfo fkColumnInfo = new FKColumnInfo(null);
+                    fkColumnInfo.ownColumn = attr;
+
+                    TableItem item = new TableItem(columnsTable, SWT.NONE);
+                    item.setText(0, fkColumnInfo.ownColumn.getName());
+                    item.setImage(0, getColumnIcon(fkColumnInfo.ownColumn));
+                    item.setText(1, fkColumnInfo.ownColumn.getFullTypeName());
+                    item.setText(2, "");
+                    item.setImage(2, DBeaverIcons.getImage(DBIcon.TYPE_UNKNOWN));
+                    item.setText(3, "");
+                    item.setData(fkColumnInfo);
+                }
             }
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_title,
+                EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
         }
         UIUtils.packColumns(columnsTable, true);
     }
@@ -600,11 +689,15 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             if (item == null) {
                 return;
             }
+            FKColumnInfo fkInfo = (FKColumnInfo) item.getData();
             int columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
-            if (columnIndex != 0) {
+            if (fkInfo.ownColumn == null && columnIndex != 0) {
                 return;
             }
-            final FKColumnInfo fkInfo = (FKColumnInfo) item.getData();
+            if (fkInfo.refColumn == null && columnIndex != 2) {
+                return;
+            }
+
             // Identify the selected row
             final CCombo columnsCombo = new CCombo(columnsTable, SWT.DROP_DOWN | SWT.READ_ONLY);
             if (!CommonUtils.isEmpty(ownColumns)) {
