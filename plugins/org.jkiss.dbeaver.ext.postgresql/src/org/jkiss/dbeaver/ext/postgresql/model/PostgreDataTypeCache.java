@@ -162,13 +162,14 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
                         if (schema == null) {
                             throw new DBException("Schema " + schemaOid + " not found for data type " + oid);
                         }
-                        return PostgreDataType.readDataType(session, schema, dbResult, false);
-                    } else {
-                        throw new DBException("Data type " + oid + " not found in database " + database.getName());
+                        PostgreDataType dataType = PostgreDataType.readDataType(session, schema, dbResult, false);
+                        if (dataType != null) {
+                            return dataType;
+                        }
                     }
+                    throw new DBException("Data type " + oid + " not found in database " + database.getName());
                 }
             }
-            //dbStat;
         }
     }
 
