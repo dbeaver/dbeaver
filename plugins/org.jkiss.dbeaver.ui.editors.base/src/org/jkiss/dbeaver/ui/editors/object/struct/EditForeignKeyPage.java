@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
+import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -123,15 +125,16 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            final Composite tableGroup = UIUtils.createPlaceholder(panel, 2, 5);
+            final Composite tableGroup = UIUtils.createComposite(panel, 2);
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createLabelText(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_table, DBUtils.getObjectFullName(foreignKey.getParentObject(), DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
 
             try {
                 if (ownerTableNode != null) {
-                        createSchemaSelector(tableGroup);
+                    createSchemaSelector(tableGroup);
                 } else if (foreignKey instanceof DBVEntityForeignKey) {
                     // Virtual key - add container selector
+                    createContainerSelector(tableGroup);
                 }
             } catch (Throwable e) {
                 log.debug("Can't create schema selector", e);
@@ -318,7 +321,23 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private void createContainerSelector(Composite tableGroup) throws DBException {
+        ObjectContainerSelectorPanel containerPanel = new ObjectContainerSelectorPanel(tableGroup, "Reference table container") {
+            @Nullable
+            @Override
+            protected DBNNode getSelectedNode() {
+                return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(
+                    ownerTableNode != null ? ownerTableNode.getObject() : foreignKey.getDataSource());
+            }
 
+            @Override
+            protected void setSelectedNode(DBNDatabaseNode node) {
+                ownerTableNode = node;
+                setContainerInfo(node.getNodeIconDefault(), node.getNodeFullName());
+            }
+        };
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        containerPanel.setLayoutData(gd);
     }
 
     private void loadTableList(DBNDatabaseNode newContainerNode) {

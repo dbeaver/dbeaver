@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
-import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
+import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 

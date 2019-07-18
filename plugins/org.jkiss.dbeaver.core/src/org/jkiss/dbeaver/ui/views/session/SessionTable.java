@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
+import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;

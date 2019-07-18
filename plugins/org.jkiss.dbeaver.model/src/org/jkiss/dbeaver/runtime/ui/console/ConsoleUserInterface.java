@@ -109,27 +109,27 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
+    public DBNNode selectObject(@NotNull Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
         return null;
     }
 
     @Override
-    public void openEntityEditor(DBSObject object) {
+    public void openEntityEditor(@NotNull DBSObject object) {
         throw new IllegalStateException("Editors not supported in console mode");
     }
 
     @Override
-    public void openEntityEditor(DBNNode selectedNode, String defaultPageId) {
+    public void openEntityEditor(@NotNull DBNNode selectedNode, String defaultPageId) {
         throw new IllegalStateException("Editors not supported in console mode");
     }
 
     @Override
-    public void openConnectionEditor(DBPDataSourceContainer dataSourceContainer) {
+    public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer) {
         // do nothing
     }
 
     @Override
-    public void executeProcess(DBRProcessDescriptor processDescriptor) {
+    public void executeProcess(@NotNull DBRProcessDescriptor processDescriptor) {
         try {
             processDescriptor.execute();
         } catch (DBException e) {
@@ -138,10 +138,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void executeInUI(Runnable runnable) {
+    public void executeInUI(@NotNull Runnable runnable) {
         runnable.run();
     }
 
+    @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         throw new IllegalStateException("Loading jobs not supported in console mode");

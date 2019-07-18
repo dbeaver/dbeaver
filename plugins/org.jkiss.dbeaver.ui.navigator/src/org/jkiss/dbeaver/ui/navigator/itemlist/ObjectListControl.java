@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.itemlist;
+package org.jkiss.dbeaver.ui.navigator.itemlist;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

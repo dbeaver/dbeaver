@@ -22,8 +22,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -105,7 +105,6 @@ public interface DBPPlatformUI {
     /**
      * FIXME: this is a hack. We need to call platform (workbench) to refresh part's contexts (enabled commands).
      * There is no such thing as part in abstract UI. Need some better solution.
-     * @part IWorkbenchPart
      */
     void refreshPartState(Object part);
 }
