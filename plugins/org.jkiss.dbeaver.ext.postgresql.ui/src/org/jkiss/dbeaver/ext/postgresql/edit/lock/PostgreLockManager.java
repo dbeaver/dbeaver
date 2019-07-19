@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLock;
 import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLockItem;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockGraphManager;
+import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphManager;
 import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;

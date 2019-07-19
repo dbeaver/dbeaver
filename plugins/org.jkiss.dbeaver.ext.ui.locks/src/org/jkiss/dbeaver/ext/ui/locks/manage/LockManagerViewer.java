@@ -34,6 +34,7 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.locks.LocksUIMessages;
 import org.jkiss.dbeaver.ext.ui.locks.graph.LockGraphicalView;
+import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphManager;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTable;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTableDetail;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;

@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.model.lock;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockGraphManager;
+import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphManager;
 import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;

@@ -14,20 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.ui.locks.manage;
+package org.jkiss.dbeaver.ext.ui.locks.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.jkiss.dbeaver.ext.ui.locks.graph.LockGraph;
-import org.jkiss.dbeaver.ext.ui.locks.graph.LockGraphEdge;
-import org.jkiss.dbeaver.ext.ui.locks.graph.LockGraphNode;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
+
+import java.util.*;
 
 public abstract class LockGraphManager {
 
