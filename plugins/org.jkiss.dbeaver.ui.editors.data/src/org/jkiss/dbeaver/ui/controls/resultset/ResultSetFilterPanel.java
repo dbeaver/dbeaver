@@ -1078,7 +1078,16 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         @Override
         protected boolean isItemEnabled() {
-            return !viewer.isRefreshInProgress() && isEnabled();
+            if (viewer.isRefreshInProgress() && isEnabled()) {
+                return false;
+            }
+            DBCExecutionContext context = viewer.getExecutionContext();
+            if (context == null) {
+                return false;
+            }
+            StringBuilder currentCondition = new StringBuilder();
+            SQLUtils.appendConditionString(viewer.getModel().getDataFilter(), context.getDataSource(), null, currentCondition, true);
+            return !currentCondition.toString().trim().equals(filtersText.getText().trim());
         }
 
         @Override
