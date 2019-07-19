@@ -533,7 +533,15 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 curConstraint = curConstraints.get(0);
             }
             if (enableCustomKeys) {
-                customUKButton.setEnabled(curConstraint == null);
+                if (curConstraint == null) {
+                    customUKButton.setEnabled(true);
+                    customUKButton.setText("Create");
+                } else if (curConstraint instanceof DBVEntityConstraint) {
+                    customUKButton.setEnabled(true);
+                    customUKButton.setText("Edit");
+                } else {
+                    customUKButton.setEnabled(false);
+                }
             }
 
         } catch (InvocationTargetException e) {
@@ -589,6 +597,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     item.setData(fkColumnInfo);
                 }
             } else if (enableCustomKeys && curRefTable != null) {
+                // TODO: direct custom foreign key creation. show columns list
+/*
                 for (DBSEntityAttribute attr : CommonUtils.safeCollection(curEntity.getAttributes(monitor))) {
                     FKColumnInfo fkColumnInfo = new FKColumnInfo(null);
                     fkColumnInfo.ownColumn = attr;
@@ -602,6 +612,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     item.setText(3, "");
                     item.setData(fkColumnInfo);
                 }
+*/
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(

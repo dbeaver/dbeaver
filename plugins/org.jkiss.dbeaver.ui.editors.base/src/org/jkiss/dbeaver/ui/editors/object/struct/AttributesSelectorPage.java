@@ -250,7 +250,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
                     for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
-                        if (!DBUtils.isHiddenObject(attr)) {
+                        if (isShowHiddenAttributes() || !DBUtils.isHiddenObject(attr)) {
                             attrList.add(attr);
                         }
                     }
@@ -287,6 +287,10 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             }
         });
         loadJob.schedule();
+    }
+
+    protected boolean isShowHiddenAttributes() {
+        return false;
     }
 
     private Composite createTableNameInput(Composite panel) {
