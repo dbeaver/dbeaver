@@ -1032,7 +1032,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
             if (viewer.isRefreshInProgress()) {
                 e.gc.drawImage(DBeaverIcons.getImage(UIIcon.CLOSE), x, e.y + 2);
-            } else if (hover && isActionEnabled()) {
+            } else if (hover && isItemEnabled()) {
                 e.gc.drawImage(enabledImage, x, e.y + 2);
             } else {
                 e.gc.drawImage(disabledImage, x, e.y + 2);
@@ -1043,7 +1043,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         }
 
-        protected abstract boolean isActionEnabled();
+        protected abstract boolean isItemEnabled();
 
         protected abstract boolean executeAction(MouseEvent e);
 
@@ -1056,13 +1056,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         @Override
-        protected boolean isActionEnabled() {
+        protected boolean isItemEnabled() {
             return !viewer.isRefreshInProgress();
         }
 
         @Override
         protected boolean executeAction(MouseEvent e) {
-            if (isActionEnabled()) {
+            if (isItemEnabled()) {
                 viewer.refreshData(null);
                 return true;
             }
@@ -1077,13 +1077,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         @Override
-        protected boolean isActionEnabled() {
+        protected boolean isItemEnabled() {
             return !viewer.isRefreshInProgress() && isEnabled();
         }
 
         @Override
         protected boolean executeAction(MouseEvent e) {
-            if (isActionEnabled()) {
+            if (isItemEnabled()) {
                 setCustomDataFilter();
                 return true;
             }

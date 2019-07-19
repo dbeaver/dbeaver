@@ -120,7 +120,7 @@ public class DBDAttributeConstraintBase {
     }
 
     public boolean hasFilter() {
-        return hasCondition() || orderPosition > 0 || !visible;
+        return hasCondition() || orderPosition > 0;
     }
 
     public boolean hasCondition() {
