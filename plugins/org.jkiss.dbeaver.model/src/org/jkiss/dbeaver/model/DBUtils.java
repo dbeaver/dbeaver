@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -804,24 +805,21 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static List<DBSEntityReferrer> getAttributeReferrers(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute entityAttribute)
+    public static List<DBSEntityReferrer> getAttributeReferrers(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute entityAttribute, boolean includeVirtual)
         throws DBException
     {
         DBSEntity entity = entityAttribute.getParentObject();
-        assert entity != null;
-        List<DBSEntityReferrer> refs = null;
-        Collection<? extends DBSEntityAssociation> associations = entity.getAssociations(monitor);
+        Collection<? extends DBSEntityAssociation> associations = includeVirtual ? DBVUtils.getAllAssociations(monitor, entity) : entity.getAssociations(monitor);
         if (associations != null) {
+            List<DBSEntityReferrer> refs = new ArrayList<>();
             for (DBSEntityAssociation fk : associations) {
                 if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintAttribute(monitor, (DBSEntityReferrer) fk, entityAttribute) != null) {
-                    if (refs == null) {
-                        refs = new ArrayList<>();
-                    }
                     refs.add((DBSEntityReferrer)fk);
                 }
             }
+            return refs;
         }
-        return refs != null ? refs : Collections.emptyList();
+        return Collections.emptyList();
     }
 
     @NotNull

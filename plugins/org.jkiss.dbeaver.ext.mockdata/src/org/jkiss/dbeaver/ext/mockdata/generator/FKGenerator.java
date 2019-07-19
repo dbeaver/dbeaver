@@ -60,7 +60,7 @@ public class FKGenerator extends AbstractMockValueGenerator
     public Object generateOneValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (refValues == null) {
             refValues = new ArrayList<>();
-            List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute);
+            List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute, true);
             if (attributeReferrers.isEmpty()) {
                 throw new DBException("Attribute '" + DBUtils.getObjectFullName(attribute, DBPEvaluationContext.UI) + "' is not a part of foreign key");
             }

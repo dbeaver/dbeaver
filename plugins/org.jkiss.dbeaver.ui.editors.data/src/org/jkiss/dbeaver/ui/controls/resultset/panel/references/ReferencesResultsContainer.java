@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -177,15 +178,13 @@ class ReferencesResultsContainer implements IResultSetContainer {
                         List<ReferenceKey> refs = new ArrayList<>();
                         for (DBSEntity entity : allEntities) {
                             // Foreign keys
-                            Collection<? extends DBSEntityAssociation> associations = entity.getAssociations(monitor);
-                            if (associations != null) {
-                                for (DBSEntityAssociation assoc : associations) {
-                                    if (assoc instanceof DBSEntityReferrer) {
-                                        List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
-                                        if (!CommonUtils.isEmpty(attrs)) {
-                                            ReferenceKey referenceKey = new ReferenceKey(false, entity, assoc, attrs);
-                                            refs.add(referenceKey);
-                                        }
+                            Collection<? extends DBSEntityAssociation> associations = DBVUtils.getAllAssociations(monitor, entity);
+                            for (DBSEntityAssociation assoc : associations) {
+                                if (assoc instanceof DBSEntityReferrer) {
+                                    List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
+                                    if (!CommonUtils.isEmpty(attrs)) {
+                                        ReferenceKey referenceKey = new ReferenceKey(false, entity, assoc, attrs);
+                                        refs.add(referenceKey);
                                     }
                                 }
                             }
@@ -243,7 +242,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
      */
     private void refreshKeyValues(boolean force) {
         if (activeReferenceKey == null) {
-            log.error("No active reference key");
+            //log.error("No active reference key");
             return;
         }
         if (!(activeReferenceKey.refEntity instanceof DBSDataContainer)) {
@@ -314,7 +313,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 return "<No references>";
             }
             ReferenceKey key = (ReferenceKey) element;
-            return key.refAssociation.getParentObject().getName() + " (" + key.refAssociation.getName() + ")";
+            if (key.isReference) {
+                return key.refAssociation.getParentObject().getName() + " (" + key.refAssociation.getName() + ")";
+            } else {
+                return key.refAssociation.getReferencedConstraint().getParentObject().getName() + " (" + key.refAssociation.getName() + ")";
+            }
         }
 
     }

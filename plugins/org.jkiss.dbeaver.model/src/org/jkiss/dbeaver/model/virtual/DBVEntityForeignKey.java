@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -162,7 +163,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferr
     @NotNull
     @Override
     public String getName() {
-        return entity.getName() + " " + getConstraintType().getName();
+        return getConstraintType().getId() + "_" + entity.getName() + "_" + DBNUtils.getLastNodePathSegment(refEntityId);
     }
 
     @Override

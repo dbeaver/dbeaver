@@ -238,7 +238,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
         DBSEntityAttribute entityAttribute = getEntityAttribute();
         if (entityAttribute != null) {
-            referrers = DBUtils.getAttributeReferrers(session.getProgressMonitor(), entityAttribute);
+            referrers = DBUtils.getAttributeReferrers(session.getProgressMonitor(), entityAttribute, true);
         }
         super.lateBinding(session, rows);
     }

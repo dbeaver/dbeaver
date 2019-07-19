@@ -142,6 +142,12 @@ public class DBNUtils {
         }
     }
 
+    @NotNull
+    public static String getLastNodePathSegment(@NotNull String path) {
+        int divPos = path.lastIndexOf('/');
+        return divPos == -1 ? path : path.substring(divPos + 1);
+    }
+
     private static class NodeNameComparator implements Comparator<DBNNode> {
         static NodeNameComparator INSTANCE = new NodeNameComparator();
         @Override

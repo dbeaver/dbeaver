@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -32,7 +33,7 @@ import java.util.*;
 /**
  * Virtual entity descriptor
  */
-public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObject {
+public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObject, IAdaptable {
 
     private static final String[] DESC_COLUMN_PATTERNS = {
         "title",
@@ -579,6 +580,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (dataSource != null) {
             dataSource.getContainer().persistConfiguration();
         }
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        return null;
     }
 
 }

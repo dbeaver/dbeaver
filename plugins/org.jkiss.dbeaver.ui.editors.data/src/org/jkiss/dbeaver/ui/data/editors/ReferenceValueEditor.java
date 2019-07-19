@@ -104,7 +104,7 @@ public class ReferenceValueEditor {
         try {
             DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
             if (entityAttribute != null) {
-                List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(new VoidProgressMonitor(), entityAttribute);
+                List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(new VoidProgressMonitor(), entityAttribute, true);
                 DBSEntityReferrer constraint = refs.isEmpty() ? null : refs.get(0);
                 if (constraint instanceof DBSEntityAssociation &&
                     ((DBSEntityAssociation)constraint).getReferencedConstraint() instanceof DBSConstraintEnumerable)
