@@ -217,6 +217,11 @@
                 position="additions_start"
                 icon="icons/job_log.png">
         </editor>
+
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.configurators.OracleConstraintConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint"/>
+        </configurator>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.tools">

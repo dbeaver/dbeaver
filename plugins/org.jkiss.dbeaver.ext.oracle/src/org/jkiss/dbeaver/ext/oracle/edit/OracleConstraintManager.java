@@ -17,13 +17,11 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
-import org.jkiss.dbeaver.ext.oracle.model.*;
+import org.jkiss.dbeaver.ext.oracle.model.OracleObjectStatus;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -32,11 +30,11 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Oracle constraint manager
@@ -57,38 +55,12 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     {
         OracleTableBase table = (OracleTableBase) container;
 
-        return new UITask<OracleTableConstraint>() {
-            @Override
-            protected OracleTableConstraint runTask() {
-                EditConstraintPage editPage = new EditConstraintPage(
-                    OracleMessages.edit_oracle_constraint_manager_dialog_title,
-                    table,
-                    new DBSEntityConstraintType[] {
-                        DBSEntityConstraintType.PRIMARY_KEY,
-                        DBSEntityConstraintType.UNIQUE_KEY },
-                    	true
-                    );
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                final OracleTableConstraint constraint = new OracleTableConstraint(
-                    table,
-                    editPage.getConstraintName(),
-                    editPage.getConstraintType(),
-                    null,
-                    editPage.isEnableConstraint() ? OracleObjectStatus.ENABLED : OracleObjectStatus.DISABLED);
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    constraint.addColumn(
-                        new OracleTableConstraintColumn(
-                            constraint,
-                            (OracleTableColumn) tableColumn,
-                            colIndex++));
-                }
-                return constraint;
-            }
-        }.execute();
+        return new OracleTableConstraint(
+            table,
+            "",
+            DBSEntityConstraintType.UNIQUE_KEY,
+            null,
+            OracleObjectStatus.ENABLED);
     }
 
     @Override
