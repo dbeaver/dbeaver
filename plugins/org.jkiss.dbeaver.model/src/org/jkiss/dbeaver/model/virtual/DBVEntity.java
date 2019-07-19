@@ -49,7 +49,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     private static final int MIN_DESC_COLUMN_LENGTH = 4;
     private static final int MAX_DESC_COLUMN_LENGTH = 1000;
 
+    @NotNull
     private final DBVContainer container;
+    @NotNull
     private String name;
     private String description;
     private String descriptionColumnNames;
@@ -60,14 +62,14 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     Map<String, String> properties;
     List<DBVColorOverride> colorOverrides;
 
-    public DBVEntity(DBVContainer container, String name, String descriptionColumnNames) {
+    public DBVEntity(@NotNull DBVContainer container, @NotNull String name, String descriptionColumnNames) {
         this.container = container;
         this.name = name;
         this.descriptionColumnNames = descriptionColumnNames;
     }
 
     // Copy constructor
-    public DBVEntity(DBVContainer container, DBVEntity copy) {
+    public DBVEntity(@NotNull DBVContainer container, @NotNull DBVEntity copy) {
         this.container = container;
         this.name = copy.name;
         this.descriptionColumnNames = copy.descriptionColumnNames;
@@ -101,7 +103,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
     }
 
-    DBVEntity(DBVContainer container, String name, Map<String, Object> map) {
+    DBVEntity(@NotNull DBVContainer container, @NotNull String name, @NotNull Map<String, Object> map) {
         this.container = container;
         this.name = name;
         this.descriptionColumnNames = (String) map.get("description");
@@ -128,23 +130,25 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         // Foreign keys
         for (Map<String, Object> fkObject : JSONUtils.getObjectList(map, "foreign-keys")) {
             String entityId = JSONUtils.getString(fkObject, "entity");
-            String refConsId = JSONUtils.getString(fkObject, "constraint");
-            Map<String, Object> attributes = JSONUtils.getObject(fkObject, "attributes");
-
-            //DBUtils.findObjectById()
-
-            if (entityForeignKeys == null) entityForeignKeys = new ArrayList<>();
-            log.warn("Virtual foreign keys load is not implemented yet");
-/*
-            DBVEntityForeignKey fk = new DBVEntityForeignKey();
-            Map<String, Object> consMap = fkObject.getValue();
-            String consType = JSONUtils.getString(consMap, "type");
-            DBVEntityConstraint constraint = new DBVEntityConstraint(this, DBSEntityConstraintType.VIRTUAL_KEY, consName);
-            for (String attrName : JSONUtils.deserializeStringList(consMap, "attributes")) {
-                constraint.addAttribute(attrName);
+            if (CommonUtils.isEmpty(entityId)) {
+                continue;
             }
-            entityConstraints.add(constraint);
-*/
+            String refConsId = JSONUtils.getString(fkObject, "constraint");
+
+            DBVEntityForeignKey fk = new DBVEntityForeignKey(this);
+            fk.setReferencedConstraint(entityId, refConsId);
+
+            Map<String, Object> attrMap = JSONUtils.getObject(fkObject, "attributes");
+            List<DBVEntityForeignKeyColumn> attrs = new ArrayList<>();
+            for (Map.Entry<String, Object> attr : attrMap.entrySet()) {
+                attrs.add(new DBVEntityForeignKeyColumn(fk, attr.getKey(), (String) attr.getValue()));
+            }
+            fk.setAttributes(attrs);
+
+            if (entityForeignKeys == null) {
+                entityForeignKeys = new ArrayList<>();
+            }
+            entityForeignKeys.add(fk);
         }
 
         // Color mappings
@@ -165,6 +169,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
             addColorOverride(curColor);
         }
+    }
+
+    @NotNull
+    public DBVContainer getContainer() {
+        return container;
     }
 
     @Nullable
@@ -343,6 +352,12 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     @Nullable
     @Override
     public synchronized List<DBVEntityForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+        // Bind logical foreign keys
+        if (entityForeignKeys != null) {
+            for (DBVEntityForeignKey fk : entityForeignKeys) {
+                fk.getRealReferenceConatraint(monitor);
+            }
+        }
         return entityForeignKeys;
     }
 
@@ -549,6 +564,14 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     @Override
     public String toString() {
         return name;
+    }
+
+    public void bindEntity(DBRProgressMonitor monitor) throws DBException {
+        if (!CommonUtils.isEmpty(entityForeignKeys)) {
+            for (DBVEntityForeignKey fk : entityForeignKeys) {
+                fk.getRealReferenceConatraint(monitor);
+            }
+        }
     }
 
     public void persistConfiguration() {

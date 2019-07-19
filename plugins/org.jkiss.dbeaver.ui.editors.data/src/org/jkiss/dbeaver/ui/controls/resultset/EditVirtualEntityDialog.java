@@ -196,7 +196,12 @@ class EditVirtualEntityDialog extends BaseDialog {
                         return;
                     }
                     // Save
-                    virtualFK.setReferencedConstraint(editDialog.getUniqueConstraint());
+                    try {
+                        virtualFK.setReferencedConstraint(new VoidProgressMonitor(), editDialog.getUniqueConstraint());
+                    } catch (DBException e1) {
+                        log.error(e1);
+                        return;
+                    }
                     List<DBVEntityForeignKeyColumn> columns = new ArrayList<>();
                     for (EditForeignKeyPage.FKColumnInfo tableColumn : editDialog.getColumns()) {
                         columns.add(
