@@ -97,7 +97,12 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         CustomSashForm divider = UIUtils.createPartDivider(null, parent, SWT.HORIZONTAL);
 
         {
-            Composite profilesGroup = UIUtils.createComposite(divider, 1);
+            Composite profilesGroup = new Composite(divider, SWT.BORDER);
+            GridLayout gl = new GridLayout(1, false);
+            gl.marginWidth = 0;
+            gl.marginHeight = 0;
+            profilesGroup.setLayout(gl);
+
             GridData gd = new GridData(GridData.FILL_BOTH);
             profilesGroup.setLayoutData(gd);
 
@@ -127,9 +132,17 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             createItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String profileName = EnterNameDialog.chooseName(getShell(), "Profile name", "");
-                    if (CommonUtils.isEmpty(profileName)) {
-                        return;
+                    String profileName = "";
+                    while (true) {
+                        profileName = EnterNameDialog.chooseName(getShell(), "Profile name", profileName);
+                        if (CommonUtils.isEmptyTrimmed(profileName)) {
+                            return;
+                        }
+                        if (projectMeta.getDataSourceRegistry().getNetworkProfile(profileName) != null) {
+                            UIUtils.showMessageBox(getShell(), "Wrong profile name", "Profile '" + profileName + "' already exist in project '" + projectMeta.getName() + "'", SWT.ICON_ERROR);
+                            continue;
+                        }
+                        break;
                     }
                     DBWNetworkProfile newProfile = new DBWNetworkProfile();
                     newProfile.setProfileName(profileName);
