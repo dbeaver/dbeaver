@@ -74,16 +74,16 @@ public class EditConstraintPage extends AttributesSelectorPage {
     }
 
     public EditConstraintPage(
-            String title,
-            DBSEntity entity,
-            DBSEntityConstraintType[] constraintTypes, Boolean showEnable)
-        {
-            super(title, entity);
-            this.entity = entity;
-            this.constraintTypes = constraintTypes;
-            this.showEnable = showEnable;
-            Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
-        }
+        String title,
+        DBSEntity entity,
+        DBSEntityConstraintType[] constraintTypes, Boolean showEnable)
+    {
+        super(title, entity);
+        this.entity = entity;
+        this.constraintTypes = constraintTypes;
+        this.showEnable = showEnable;
+        Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
+    }
 
     public EditConstraintPage(
         String title,
