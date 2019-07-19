@@ -32,8 +32,10 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -191,6 +193,13 @@ public class DBNModel implements IResourceChangeListener {
     @Nullable
     public DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean addFiltered)
     {
+        if (object instanceof DBSEntity) {
+            try {
+                object = DBVUtils.getRealEntity(monitor, (DBSEntity)object);
+            } catch (DBException e) {
+                log.debug("Error dereferencing virtual entity", e);
+            }
+        }
         DBNDatabaseNode node = getNodeByObject(object);
         if (node != null) {
             return node;
