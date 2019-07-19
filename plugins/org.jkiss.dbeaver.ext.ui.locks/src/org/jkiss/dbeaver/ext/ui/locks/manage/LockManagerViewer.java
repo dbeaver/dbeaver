@@ -34,7 +34,7 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.locks.LocksUIMessages;
 import org.jkiss.dbeaver.ext.ui.locks.graph.LockGraphicalView;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphManager;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTable;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTableDetail;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
@@ -52,10 +52,6 @@ import java.util.Map;
  * LockManagerViewer
  */
 public class LockManagerViewer {
-
-    public static final String keyType = "type";
-    public static final String typeWait = "wait";
-    public static final String typeHold = "hold";
 
     private Font boldFont;
     private LockListControl lockTable;
@@ -190,7 +186,7 @@ public class LockManagerViewer {
         sb.append(curLock.getTitle());
         blockedLabel.setText(sb.toString());
         blockedTable.getOptions().putAll(options);
-        blockedTable.getOptions().put(keyType, typeWait);
+        blockedTable.getOptions().put(LockGraphManager.keyType, LockGraphManager.typeWait);
         blockedTable.loadData(false);
         sb.setLength(0);
         if (curLock.getHoldBy() != null) {
@@ -199,7 +195,7 @@ public class LockManagerViewer {
             blockingLabel.setText(sb.toString());
         }
         blockingTable.getOptions().putAll(options);
-        blockingTable.getOptions().put(keyType, typeHold);
+        blockingTable.getOptions().put(LockGraphManager.keyType, LockGraphManager.typeHold);
         blockingTable.loadData();
 
     }

@@ -17,7 +17,9 @@
 
 package org.jkiss.dbeaver.ext.oracle.ui.tools.sqldeveloper;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -25,9 +27,9 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
-import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +39,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
@@ -57,7 +62,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         super("SQLDeveloper");
         setTitle("SQL Developer");
         setDescription("Import Oracle SQL Developer connections");
-        setImageDescriptor(Activator.getImageDescriptor("icons/sqldeveloper_big.png"));
+        setImageDescriptor(OracleUIActivator.getImageDescriptor("icons/sqldeveloper_big.png"));
 
         oraDriver = new ImportDriverInfo(null, "Oracle", "jdbc:oracle:thin:@{host}[:{port}]/{database}", "oracle.jdbc.OracleDriver");
     }

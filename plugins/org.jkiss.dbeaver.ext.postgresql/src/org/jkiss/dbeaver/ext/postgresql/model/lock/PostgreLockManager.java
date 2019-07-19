@@ -15,14 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.edit.lock;
+package org.jkiss.dbeaver.ext.postgresql.model.lock;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLock;
 import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLockItem;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphManager;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -134,6 +133,8 @@ public class PostgreLockManager extends LockGraphManager implements DBAServerLoc
 			"     on db.oid = lock.database "+
 			" where  "+
 			"  lock.pid = ? ";
+    public static final String pidHold = "hpid";
+    public static final String pidWait = "wpid";
 
 
     private final PostgreDataSource dataSource;
@@ -200,16 +201,16 @@ public class PostgreLockManager extends LockGraphManager implements DBAServerLoc
 
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(LOCK_ITEM_QUERY)) {
 
-                String otype = (String) options.get(LockManagerViewer.keyType);
+                String otype = (String) options.get(LockGraphManager.keyType);
 
                 switch (otype) {
 
-                    case LockManagerViewer.typeWait:
-                        dbStat.setInt(1, (int) options.get(PostgreLockEditor.pidWait));
+                    case LockGraphManager.typeWait:
+                        dbStat.setInt(1, (int) options.get(pidWait));
                         break;
 
-                    case LockManagerViewer.typeHold:
-                        dbStat.setInt(1, (int) options.get(PostgreLockEditor.pidHold));
+                    case LockGraphManager.typeHold:
+                        dbStat.setInt(1, (int) options.get(pidHold));
                         break;
 
                     default:

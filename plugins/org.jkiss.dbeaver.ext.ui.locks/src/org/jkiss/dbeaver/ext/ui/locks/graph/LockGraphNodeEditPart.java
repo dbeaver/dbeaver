@@ -26,10 +26,9 @@ import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef.editpolicies.NonResizableEditPolicy;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraph;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphEdge;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphNode;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphEdge;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphNode;
 
 public class LockGraphNodeEditPart extends AbstractGraphicalEditPart {
 	
@@ -119,11 +118,13 @@ public class LockGraphNodeEditPart extends AbstractGraphicalEditPart {
 		@Override
 		protected void showSelection() {
 
+/*
 			LockManagerViewer viewer = ((LockGraph)getHost().getParent().getModel()).getLockManagerViewer();
 
 			if (viewer != null) {
 				viewer.setTableLockSelect(((LockGraphNode)getHost().getModel()).getLock());
 			}
+*/
 
 		}
 	}

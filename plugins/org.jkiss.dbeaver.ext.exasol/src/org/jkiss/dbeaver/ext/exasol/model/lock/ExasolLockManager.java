@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.model.lock;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphManager;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -284,13 +283,13 @@ public class ExasolLockManager extends LockGraphManager
 			
 			try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(LOCK_ITEM_QUERY)) {
 				
-				String otype = (String) options.get(LockManagerViewer.keyType);
+				String otype = (String) options.get(LockGraphManager.keyType);
 				
 				switch(otype) {
-					case LockManagerViewer.typeWait:
+					case LockGraphManager.typeWait:
 						dbStat.setBigDecimal(1, new BigDecimal((BigInteger) options.get(ExasolLockEditor.sidWait)));
 						break;
-					case LockManagerViewer.typeHold:
+					case LockGraphManager.typeHold:
 						dbStat.setBigDecimal(1,  new BigDecimal((BigInteger) options.get(ExasolLockEditor.sidHold)));
 						break;
 						

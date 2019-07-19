@@ -61,6 +61,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
+    public boolean confirmAction(String title, String message) {
+        return false;
+    }
+
+    @Override
     public UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue) {
         System.out.println(task);
         error.printStackTrace(System.out);

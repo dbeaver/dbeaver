@@ -227,6 +227,11 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
+    public boolean confirmAction(String title, String message) {
+        return UIUtils.confirmAction(title, message);
+    }
+
+    @Override
     public UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue) {
         return ExecutionQueueErrorJob.showError(task, error, queue);
     }

@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,31 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.ui.locks.model;
+package org.jkiss.dbeaver.model.impl.admin.locks;
+
+import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
-import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 
 
 public class LockGraph {
 
 	private List<LockGraphNode> nodes = new ArrayList<>();
-	
 	private int maxWidth = 0;
-	
-	private LockGraphNode selection; 
-	
-	private LockManagerViewer lockManagerViewer;
-	
+	private LockGraphNode selection;
+	//private LockManagerViewer lockManagerViewer;
 	private final DBAServerLock lockRoot;
 	
 	public DBAServerLock getLockRoot() {
 		return lockRoot;
 	}
 
+/*
 	public LockManagerViewer getLockManagerViewer() {
 		return lockManagerViewer;
 	}
@@ -46,6 +43,7 @@ public class LockGraph {
 	public void setLockManagerViewer(LockManagerViewer lockManagerViewer) {
 		this.lockManagerViewer = lockManagerViewer;
 	}
+*/
 
 	public LockGraph(DBAServerLock lockRoot) {
 		this.selection = null;

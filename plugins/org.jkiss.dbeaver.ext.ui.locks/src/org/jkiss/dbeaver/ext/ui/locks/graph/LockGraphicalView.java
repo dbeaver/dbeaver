@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +26,9 @@ import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraph;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphManager;
 import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 
 public class LockGraphicalView extends ViewPart {
@@ -40,8 +41,7 @@ public class LockGraphicalView extends ViewPart {
 
 	
 	private final LockGraphManager graphManager;
-	
-	private final LockManagerViewer viewer;	
+	private final LockManagerViewer viewer;
 	
 	public LockGraphicalView(LockManagerViewer viewer) {
 		super();
@@ -76,9 +76,11 @@ public class LockGraphicalView extends ViewPart {
 		
 		if (g == null) return;
 		
+/*
 		if (g != EMPTY_GRAPH) {
 			g.setLockManagerViewer(viewer);
 		}
+*/
 
 		getGraphicalViewer().setContents(g);
 		getGraphicalViewer().getControl().setBackground(ColorConstants.listBackground);
