@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
@@ -110,6 +111,12 @@ public class EditConstraintPage extends AttributesSelectorPage {
         final Composite pageContents = super.createPageContents(parent);
         toggleEditAreas();
         return pageContents;
+    }
+
+    @Override
+    protected boolean isShowHiddenAttributes() {
+        // Show hidden attributes for logical (virtual) constraints
+        return constraint instanceof DBVEntityConstraint;
     }
 
     private void toggleEditAreas() {
