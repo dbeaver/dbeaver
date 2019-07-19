@@ -107,10 +107,10 @@ public class ReferenceValueEditor {
                 List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(new VoidProgressMonitor(), entityAttribute, true);
                 DBSEntityReferrer constraint = refs.isEmpty() ? null : refs.get(0);
                 if (constraint instanceof DBSEntityAssociation &&
-                    ((DBSEntityAssociation)constraint).getReferencedConstraint() instanceof DBSConstraintEnumerable)
+                    ((DBSEntityAssociation)constraint).getAssociatedEntity() instanceof DBSDictionary)
                 {
-                    final DBSConstraintEnumerable refConstraint = (DBSConstraintEnumerable) ((DBSEntityAssociation) constraint).getReferencedConstraint();
-                    if (refConstraint != null && refConstraint.supportsEnumeration()) {
+                    final DBSDictionary dictionary = (DBSDictionary) ((DBSEntityAssociation) constraint).getAssociatedEntity();
+                    if (dictionary != null && dictionary.supportsDictionaryEnumeration()) {
                         return constraint;
                     }
                 }
@@ -494,13 +494,13 @@ public class ReferenceValueEditor {
                 }
                 final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
                 final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
-                final DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
+                final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
                 if (fkAttribute != null && enumConstraint != null) {
                     try (DBCSession session = valueController.getExecutionContext().openSession(
                         monitor,
                         DBCExecutionPurpose.UTIL,
                         NLS.bind(ResultSetMessages.dialog_value_view_context_name, fkAttribute.getName()))) {
-                        Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
+                        Collection<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
                             session,
                             refColumn,
                             pattern,

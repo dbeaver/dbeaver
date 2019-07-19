@@ -18,11 +18,7 @@ package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDAttributeValue;
-import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -33,7 +29,7 @@ import java.util.List;
 /**
  * Virtual constraint
  */
-public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferrer, DBSConstraintEnumerable
+public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferrer
 {
     @NotNull
     private final DBVEntity entity;
@@ -143,22 +139,4 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         return null;
     }
 
-    @Override
-    public boolean supportsEnumeration() {
-        return getEnumAttr() != null;
-    }
-
-    @Override
-    public List<DBDLabelValuePair> getKeyEnumeration(DBCSession session, DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc, int maxResults) throws DBException {
-        DBSAttributeEnumerable enumAttr = getEnumAttr();
-        if (enumAttr == null) {
-            throw new DBException("Enumeration not supported");
-        }
-        return enumAttr.getValueEnumeration(session, keyPattern, maxResults);
-    }
-
-    @Override
-    public List<DBDLabelValuePair> getKeyEnumeration(DBCSession session, DBSEntityAttribute keyColumn, List<Object> keyValues, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc) throws DBException {
-        throw new DBException("Multi-key enumeration is not supported");
-    }
 }
