@@ -89,3 +89,4 @@ Require-Bundle: org.eclipse.equinox.security,
  com.google.gson,
  org.jkiss.bundle.bouncycastle;resolution:=optional
 Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.model

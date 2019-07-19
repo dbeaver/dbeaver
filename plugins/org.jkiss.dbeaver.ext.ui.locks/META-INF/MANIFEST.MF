@@ -16,3 +16,4 @@ Require-Bundle: org.eclipse.core.runtime,
 Export-Package: org.jkiss.dbeaver.ext.ui.locks.edit,
  org.jkiss.dbeaver.ext.ui.locks.manage
 Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: org.jkiss.dbeaver.ext.ui.locks

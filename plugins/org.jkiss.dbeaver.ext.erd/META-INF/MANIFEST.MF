@@ -26,3 +26,4 @@ Export-Package: org.jkiss.dbeaver.ext.erd,
  org.jkiss.dbeaver.ext.erd.model,
  org.jkiss.dbeaver.ext.erd.part,
  org.jkiss.dbeaver.ext.erd.policy
+Automatic-Module-Name: org.jkiss.dbeaver.ext.erd

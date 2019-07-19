@@ -24,3 +24,4 @@ Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.registry.configurator,
  org.jkiss.dbeaver.ui.dialogs.connection
+Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.connection

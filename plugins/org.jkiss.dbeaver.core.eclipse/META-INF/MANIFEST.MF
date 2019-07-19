@@ -9,3 +9,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui
+Automatic-Module-Name: org.jkiss.dbeaver.core.eclipse

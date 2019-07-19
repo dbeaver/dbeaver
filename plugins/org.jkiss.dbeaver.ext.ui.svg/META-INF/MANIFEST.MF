@@ -15,3 +15,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.bundle.apache.batik
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.ext.ui.svg

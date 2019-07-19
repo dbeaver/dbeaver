@@ -15,3 +15,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.data.transfer
 Bundle-ClassPath: .
+Automatic-Module-Name: org.jkiss.dbeaver.data.office

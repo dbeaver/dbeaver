@@ -22,3 +22,4 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ui.editors.binary,
  org.jkiss.dbeaver.ui.editors.binary.pref
+Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.hex

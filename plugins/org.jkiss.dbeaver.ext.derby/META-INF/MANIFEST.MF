@@ -10,3 +10,4 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ClassPath: .
+Automatic-Module-Name: org.jkiss.dbeaver.ext.derby

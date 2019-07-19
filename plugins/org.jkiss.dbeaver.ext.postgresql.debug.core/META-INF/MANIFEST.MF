@@ -12,3 +12,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.debug.core
 Export-Package: org.jkiss.dbeaver.ext.postgresql.debug,
  org.jkiss.dbeaver.ext.postgresql.debug.core
+Automatic-Module-Name: org.jkiss.dbeaver.ext.postgresql.debug.core

@@ -25,4 +25,5 @@ Require-Bundle: org.eclipse.equinox.preferences,
 Export-Package: org.jkiss.dbeaver.ui.search,
   org.jkiss.dbeaver.ui.search.data,
   org.jkiss.dbeaver.ui.search.metadata
+Automatic-Module-Name: org.jkiss.dbeaver.ui.search
 

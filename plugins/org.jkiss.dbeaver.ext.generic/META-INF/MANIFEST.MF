@@ -14,3 +14,4 @@ Export-Package: org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.generic.edit,
  org.jkiss.dbeaver.ext.generic.model,
  org.jkiss.dbeaver.ext.generic.model.meta
+Automatic-Module-Name: org.jkiss.dbeaver.ext.generic

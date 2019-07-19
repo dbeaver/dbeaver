@@ -26,3 +26,4 @@ Require-Bundle: org.eclipse.equinox.security,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry
 Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.model.sql

@@ -13,3 +13,4 @@ Require-Bundle: org.jkiss.dbeaver.model,
  com.jcraft.jsch,
  org.eclipse.jsch.ui
 Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.net.ssh.jsch

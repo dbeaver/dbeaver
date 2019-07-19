@@ -10,3 +10,4 @@ Export-Package: org.jkiss.code,
  org.jkiss.utils.time,
  org.jkiss.utils.xml
 Bundle-Vendor: %Bundle-Vendor
+Automatic-Module-Name: org.jkiss.utils
