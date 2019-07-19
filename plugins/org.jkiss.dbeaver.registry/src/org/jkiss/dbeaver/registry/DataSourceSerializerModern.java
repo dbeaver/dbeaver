@@ -28,12 +28,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.runtime.encode.ContentEncrypter;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.encode.ContentEncrypter;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
 import org.jkiss.utils.ArrayUtils;
@@ -90,8 +91,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         DBRProgressMonitor monitor,
         boolean primaryConfig,
         List<DataSourceDescriptor> localDataSources,
-        IFile configFile) throws CoreException
-    {
+        IFile configFile) throws DBException, IOException {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
@@ -143,7 +143,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         jsonWriter.name("virtual-models");
                         jsonWriter.beginObject();
                         for (DBVModel model : virtualModels.values()) {
-                            model.serialize(jsonWriter);
+                            model.serialize(monitor, jsonWriter);
                         }
                         jsonWriter.endObject();
                     }
@@ -226,11 +226,15 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
 
         InputStream ifs = new ByteArrayInputStream(dsConfigBuffer.toByteArray());
-        if (!configFile.exists()) {
-            configFile.create(ifs, true, monitor.getNestedMonitor());
-            configFile.setHidden(true);
-        } else {
-            configFile.setContents(ifs, true, false, monitor.getNestedMonitor());
+        try {
+            if (!configFile.exists()) {
+                configFile.create(ifs, true, monitor.getNestedMonitor());
+                configFile.setHidden(true);
+            } else {
+                configFile.setContents(ifs, true, false, monitor.getNestedMonitor());
+            }
+        } catch (CoreException e) {
+            throw new IOException("Error saving configuration to a file " + configFile.getFullPath(), e);
         }
 
         saveSecureCredentialsFile(monitor.getNestedMonitor(), (IFolder) configFile.getParent());

@@ -82,7 +82,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         DBRProgressMonitor monitor,
         boolean primaryConfig,
         List<DataSourceDescriptor> localDataSources,
-        IFile configFile) throws CoreException
+        IFile configFile) throws DBException, IOException
     {
         // Save in temp memory to be safe (any error during direct write will corrupt configuration)
         ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
@@ -122,11 +122,15 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             log.error("IO error while saving datasources xml", ex);
         }
         InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
-        if (!configFile.exists()) {
-            configFile.create(ifs, true, monitor.getNestedMonitor());
-            configFile.setHidden(true);
-        } else {
-            configFile.setContents(ifs, true, false, monitor.getNestedMonitor());
+        try {
+            if (!configFile.exists()) {
+                configFile.create(ifs, true, monitor.getNestedMonitor());
+                configFile.setHidden(true);
+            } else {
+                configFile.setContents(ifs, true, false, monitor.getNestedMonitor());
+            }
+        } catch (CoreException e) {
+            throw new IOException("Error saving configuration to a file " + configFile.getFullPath(), e);
         }
     }
 

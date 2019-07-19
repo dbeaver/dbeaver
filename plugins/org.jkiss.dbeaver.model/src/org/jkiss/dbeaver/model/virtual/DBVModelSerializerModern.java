@@ -17,11 +17,16 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import com.google.gson.stream.JsonWriter;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,7 +41,7 @@ class DBVModelSerializerModern implements DBVModelSerializer
 {
     private static final Log log = Log.getLog(DBVModelSerializerModern.class);
 
-    static void serializeContainer(JsonWriter json, DBVContainer object) throws IOException {
+    static void serializeContainer(DBRProgressMonitor monitor, JsonWriter json, DBVContainer object) throws IOException, DBException {
         if (!object.hasValuableData()) {
             // nothing to save
             return;
@@ -50,19 +55,19 @@ class DBVModelSerializerModern implements DBVModelSerializer
 
         for (DBVEntity entity : object.getEntities()) {
             if (entity.hasValuableData()) {
-                serializeEntity(json, entity);
+                serializeEntity(monitor, json, entity);
             }
         }
 
         // Containers
         for (DBVContainer container : object.getContainers()) {
-            serializeContainer(json, container);
+            serializeContainer(monitor, json, container);
         }
 
         json.endObject();
     }
 
-    private static void serializeEntity(JsonWriter json, DBVEntity entity) throws IOException {
+    private static void serializeEntity(DBRProgressMonitor monitor, JsonWriter json, DBVEntity entity) throws IOException, DBException {
 
         json.name(DBVContainer.ENTITY_PREFIX + entity.getName());
 
@@ -104,7 +109,7 @@ class DBVModelSerializerModern implements DBVModelSerializer
                 if (c.hasAttributes()) {
                     json.name(c.getName());
                     json.beginObject();
-                    JSONUtils.field(json, "type", c.getConstraintType().getName());
+                    JSONUtils.field(json, "type", c.getConstraintType().getId());
                     List<DBVEntityConstraintColumn> attrRefs = c.getAttributeReferences(null);
                     if (!CommonUtils.isEmpty(attrRefs)) {
                         json.name("attributes");
@@ -121,17 +126,14 @@ class DBVModelSerializerModern implements DBVModelSerializer
         }
 
         if (!CommonUtils.isEmpty(entity.entityForeignKeys)) {
+            DBNModel model = DBWorkbench.getPlatform().getNavigatorModel();
             // Foreign keys
             json.name("foreign-keys");
             json.beginArray();
             for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.entityForeignKeys)) {
                 json.beginObject();
-                DBSEntity refEntity = fk.getAssociatedEntity();
-                JSONUtils.field(json, "entity", DBUtils.getObjectFullId(refEntity));
-                DBSEntityConstraint refConstraint = fk.getReferencedConstraint();
-                if (refConstraint != null) {
-                    JSONUtils.field(json, "constraint", refConstraint.getName());
-                }
+                JSONUtils.field(json, "entity", fk.getRefEntityId());
+                JSONUtils.field(json, "constraint", fk.getRefConstraintId());
                 List<DBVEntityForeignKeyColumn> refAttrs = fk.getAttributeReferences(null);
                 if (!CommonUtils.isEmpty(refAttrs)) {
                     json.name("attributes");

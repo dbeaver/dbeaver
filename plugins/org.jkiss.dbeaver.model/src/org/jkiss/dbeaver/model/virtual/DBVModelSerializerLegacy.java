@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
@@ -148,7 +149,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
             if (refConstraint != null) {
                 xml.addAttribute(ATTR_CONSTRAINT, refConstraint.getName());
             }
-            for (DBVEntityForeignKeyColumn cc : CommonUtils.safeCollection(fk.getAttributeReferences(null))) {
+            for (DBVEntityForeignKeyColumn cc : CommonUtils.safeCollection(fk.getAttributes())) {
                 xml.startElement(TAG_ATTRIBUTE);
                 xml.addAttribute(ATTR_NAME, cc.getAttributeName());
                 xml.endElement();

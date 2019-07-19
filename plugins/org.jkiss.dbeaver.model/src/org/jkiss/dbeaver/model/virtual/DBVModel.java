@@ -121,8 +121,8 @@ public class DBVModel extends DBVContainer {
         return container.getEntity(entity.getName(), createNew);
     }
 
-    public void serialize(JsonWriter json) throws IOException {
-        DBVModelSerializerModern.serializeContainer(json, this);
+    public void serialize(DBRProgressMonitor monitor, JsonWriter json) throws IOException, DBException {
+        DBVModelSerializerModern.serializeContainer(monitor, json, this);
     }
 
     @Deprecated

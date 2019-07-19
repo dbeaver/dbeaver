@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -35,7 +34,7 @@ interface DataSourceSerializer
         boolean primaryConfig,
         List<DataSourceDescriptor> localDataSources,
         IFile configFile)
-        throws CoreException;
+        throws DBException, IOException;
 
     void parseDataSources(
         InputStream is,
