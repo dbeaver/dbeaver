@@ -912,7 +912,7 @@ public class ResultSetModel {
                 final DBDAttributeBinding attr = iter.next();
                 if (filter.getConstraint(attr, true) == null) {
                     // No constraint for this attribute: use default visibility
-                    if (!isVisibleByDefault(attr)) {
+                    if (!DBDAttributeConstraint.isVisibleByDefault(attr)) {
                         iter.remove();
                     }
                 }
@@ -977,7 +977,7 @@ public class ResultSetModel {
 
         // Filter pseudo attributes if we query single entity
         for (DBDAttributeBinding binding : this.attributes) {
-            if (!entityDataView || isVisibleByDefault(binding)) {
+            if (!entityDataView || DBDAttributeConstraint.isVisibleByDefault(binding)) {
                 // Make visible "real" attributes
                 if (columnFilter != null && !columnFilter.matches(binding.getName())) {
                     // Filtered out by column filter
@@ -986,10 +986,6 @@ public class ResultSetModel {
                 this.visibleAttributes.add(binding);
             }
         }
-    }
-
-    private static boolean isVisibleByDefault(DBDAttributeBinding binding) {
-        return !binding.isPseudoAttribute();
     }
 
     public DBCStatistics getStatistics() {

@@ -57,6 +57,10 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         this.originalVisualPosition = source.originalVisualPosition;
     }
 
+    public static boolean isVisibleByDefault(DBDAttributeBinding binding) {
+        return !binding.isPseudoAttribute();
+    }
+
     @Nullable
     public DBSAttributeBase getAttribute() {
         return attribute;
@@ -84,7 +88,8 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     @Override
     public boolean hasFilter() {
-        return super.hasFilter() || originalVisualPosition != getVisualPosition();
+        return super.hasFilter() || originalVisualPosition != getVisualPosition() ||
+            (attribute instanceof DBDAttributeBinding && isVisible() != isVisibleByDefault((DBDAttributeBinding) attribute));
     }
 
     public void reset() {
