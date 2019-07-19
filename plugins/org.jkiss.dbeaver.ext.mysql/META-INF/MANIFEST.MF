@@ -16,3 +16,4 @@ Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.mysql,
  org.jkiss.dbeaver.ext.mysql.model,
  org.jkiss.dbeaver.ext.mysql.model.session
+Automatic-Module-Name: org.jkiss.dbeaver.ext.mysql

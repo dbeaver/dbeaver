@@ -15,3 +15,4 @@ Require-Bundle: org.eclipse.ui.forms,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.core.application,
  org.jkiss.dbeaver.model
+Automatic-Module-Name: org.jkiss.dbeaver.ext.ui.tipoftheday

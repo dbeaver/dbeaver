@@ -31,3 +31,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui,
  net.sf.opencsv
 Bundle-ClassPath: .
+Automatic-Module-Name: org.jkiss.dbeaver.data.transfer

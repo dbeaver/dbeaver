@@ -22,3 +22,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.editors.base
 Bundle-Localization: OSGI-INF/l10n/bundle
 Bundle-Activator: org.jkiss.dbeaver.team.git.ui.Activator
+Automatic-Module-Name: org.jkiss.dbeaver.team.git.ui

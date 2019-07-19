@@ -14,3 +14,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.postgresql.ui,
  org.jkiss.dbeaver.ext.postgresql.debug.core,
  org.eclipse.ui
+Automatic-Module-Name: org.jkiss.dbeaver.ext.postgresql.debug.ui

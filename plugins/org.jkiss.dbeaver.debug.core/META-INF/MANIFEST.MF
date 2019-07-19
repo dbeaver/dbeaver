@@ -19,3 +19,4 @@ Export-Package: org.jkiss.dbeaver.debug,
  org.jkiss.dbeaver.debug.core.model,
  org.jkiss.dbeaver.debug.jdbc
 Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: org.jkiss.dbeaver.debug.core

@@ -22,3 +22,4 @@ Require-Bundle: org.eclipse.equinox.preferences,
  org.jkiss.bundle.jfreechart;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ui.charts,
  org.jkiss.dbeaver.ui.charts.internal
+Automatic-Module-Name: org.jkiss.dbeaver.ui.charts

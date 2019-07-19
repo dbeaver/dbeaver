@@ -16,3 +16,4 @@ Export-Package: org.jkiss.dbeaver.ext.format.sqlworkbenchj
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
+Automatic-Module-Name: org.jkiss.dbeaver.ext.format.sqlworkbenchj

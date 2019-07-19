@@ -19,3 +19,4 @@ Require-Bundle: org.eclipse.equinox.security,
  org.jkiss.dbeaver.registry,
  com.jcraft.jsch
 Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.net.ssh

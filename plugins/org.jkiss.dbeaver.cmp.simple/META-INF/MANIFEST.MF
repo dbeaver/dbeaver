@@ -14,3 +14,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.registry;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport
 Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.cmp.simple

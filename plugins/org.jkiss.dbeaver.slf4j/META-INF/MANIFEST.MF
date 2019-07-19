@@ -10,3 +10,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
 Export-Package: org.slf4j.impl
 Fragment-Host: org.slf4j.api
+Automatic-Module-Name: org.jkiss.dbeaver.slf4j

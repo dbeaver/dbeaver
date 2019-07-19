@@ -48,4 +48,5 @@ Export-Package: org.jkiss.dbeaver.runtime.sql,
  org.jkiss.dbeaver.ui.editors.sql.plan,
  org.jkiss.dbeaver.ui.editors.sql.plan.simple
 Bundle-ClassPath: .
+Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.sql
 

@@ -21,3 +21,4 @@ Require-Bundle: org.eclipse.ui,
 Export-Package: org.jkiss.dbeaver.ext.mockdata,
  org.jkiss.dbeaver.ext.mockdata.generator,
  org.jkiss.dbeaver.ext.mockdata.model
+Automatic-Module-Name: org.jkiss.dbeaver.ext.mockdata
