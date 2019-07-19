@@ -26,8 +26,8 @@ import org.eclipse.draw2d.ShortestPathConnectionRouter;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraph;
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphNode;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphNode;
 
 public class LockGraphEditPart extends AbstractGraphicalEditPart {
 

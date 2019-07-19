@@ -25,6 +25,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLock;
+import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLockManager;
 import org.jkiss.dbeaver.ext.ui.locks.edit.AbstractLockEditor;
 import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
@@ -33,9 +34,6 @@ import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 public class PostgreLockEditor extends AbstractLockEditor {
-
-    public static final String pidHold = "hpid";
-    public static final String pidWait = "wpid";
 
 
     @SuppressWarnings("unchecked")
@@ -56,8 +54,8 @@ public class PostgreLockEditor extends AbstractLockEditor {
                 if (lock != null) {
                     final PostgreLock pLock = (PostgreLock) lock;
                     super.refreshDetail(new HashMap<String, Object>() {{
-                        put(pidHold, pLock.getHold_pid());
-                        put(pidWait, pLock.getWait_pid());
+                        put(PostgreLockManager.pidHold, pLock.getHold_pid());
+                        put(PostgreLockManager.pidWait, pLock.getWait_pid());
                     }});
                 }
             }

@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.oracle;
 
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.osgi.framework.BundleContext;
@@ -27,51 +29,60 @@ import org.osgi.framework.BundleContext;
  */
 public class Activator extends Plugin {
 
-	// The plug-in ID
-	public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.oracle";
+    // The plug-in ID
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.oracle";
 
-	// The shared instance
-	private static Activator plugin;
-	
-	/**
-	 * The constructor
-	 */
-	public Activator() {
-	}
+    // The shared instance
+    private static Activator plugin;
+    private BundlePreferenceStore preferenceStore;
 
-	/*
-	 * (non-Javadoc)
-	 */
-	@Override
-    public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-        PrefUtils.setDefaultPreferenceValue(
-			DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_SUPPORT_ROWID, true);
-        PrefUtils.setDefaultPreferenceValue(
-			DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DBMS_OUTPUT, true);
-		PrefUtils.setDefaultPreferenceValue(
-			DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS, true);
-		PrefUtils.setDefaultPreferenceValue(
-			DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING, true);
+    /**
+     * The constructor
+     */
+    public Activator() {
     }
 
-	/*
-	 * (non-Javadoc)
-	 */
-	@Override
-    public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		super.stop(context);
-	}
+    /*
+     * (non-Javadoc)
+     */
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
+        PrefUtils.setDefaultPreferenceValue(
+            DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_SUPPORT_ROWID, true);
+        PrefUtils.setDefaultPreferenceValue(
+            DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DBMS_OUTPUT, true);
+        PrefUtils.setDefaultPreferenceValue(
+            DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS, true);
+        PrefUtils.setDefaultPreferenceValue(
+            DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING, true);
+    }
 
-	/**
-	 * Returns the shared instance
-	 *
-	 * @return the shared instance
-	 */
-	public static Activator getDefault() {
-		return plugin;
-	}
+    /*
+     * (non-Javadoc)
+     */
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        plugin = null;
+        super.stop(context);
+    }
+
+    /**
+     * Returns the shared instance
+     *
+     * @return the shared instance
+     */
+    public static Activator getDefault() {
+        return plugin;
+    }
+
+    public DBPPreferenceStore getPreferenceStore() {
+        // Create the preference store lazily.
+        if (preferenceStore == null) {
+            preferenceStore = new BundlePreferenceStore(getBundle());
+        }
+        return preferenceStore;
+    }
 
 }

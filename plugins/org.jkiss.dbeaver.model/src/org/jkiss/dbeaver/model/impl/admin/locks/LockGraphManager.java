@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.ui.locks.model;
+package org.jkiss.dbeaver.model.impl.admin.locks;
 
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 
@@ -22,10 +23,12 @@ import java.util.*;
 
 public abstract class LockGraphManager {
 
+    public static final String keyType = "type";
+    public static final String typeWait = "wait";
+    public static final String typeHold = "hold";
+
     private Map<Object, LockGraphNode> nodes = new HashMap<>();
-
     private Map<Object, LockGraph> graphIndex = new HashMap<>();
-
 
     public LockGraph getGraph(DBAServerLock curLock) {
 
@@ -38,51 +41,37 @@ public abstract class LockGraphManager {
         }
 
         return graph;
-
     }
 
     @SuppressWarnings("unchecked")
     private LockGraph createGraph(DBAServerLock root) {
-
-
         LockGraph graph = new LockGraph(root);
 
         int maxWidth = 1;
-
         int level = 1;
-
         LockGraphNode nodeRoot = nodes.get(root.getId());
 
         nodeRoot.setLevel(0);
-
         nodeRoot.setSpan(1);
 
         graph.getNodes().add(nodeRoot);
-
         graphIndex.put(root.getId(), graph);
 
         List<DBAServerLock> current = new ArrayList<>();
-
         Set<DBAServerLock> touched = new HashSet<>(); //Prevent Cycle
 
         current.add(root);
-
         touched.add(root);
 
         Map<Object, DBAServerLock> childs = new HashMap<>();
 
         while (current.size() > 0) {
-
             if (maxWidth < current.size()) {
-
                 maxWidth = current.size();
-
             }
 
             for (int index = 0; index < current.size(); index++) {
-
-                DBAServerLock l = (DBAServerLock) current.get(index);
-
+                DBAServerLock l = current.get(index);
                 LockGraphNode node = nodes.get(l.getId());
 
                 if (index == 0) {
@@ -131,11 +120,8 @@ public abstract class LockGraphManager {
         }
 
         graph.setMaxWidth(maxWidth);
-
         return graph;
-
     }
-
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void buildGraphs(Map<Object, ? extends DBAServerLock> locks) {
@@ -155,9 +141,7 @@ public abstract class LockGraphManager {
                 holder.waitThis().add(l);
 
             } else {
-
                 roots.add(l);
-
             }
 
             nodes.put(l.getId(), new LockGraphNode(l));

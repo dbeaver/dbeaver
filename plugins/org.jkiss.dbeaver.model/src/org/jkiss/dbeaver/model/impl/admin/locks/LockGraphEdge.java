@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.ui.locks.model;
-
-import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphNode;
+package org.jkiss.dbeaver.model.impl.admin.locks;
 
 public class LockGraphEdge {
 
