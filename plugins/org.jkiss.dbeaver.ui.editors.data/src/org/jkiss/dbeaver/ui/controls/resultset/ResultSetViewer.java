@@ -3947,7 +3947,7 @@ public class ResultSetViewer extends Viewer
     private class ShowFiltersAction extends Action {
         ShowFiltersAction(boolean context)
         {
-            super(context ? "Customize ..." : "Order/Filter ...", DBeaverIcons.getImageDescriptor(UIIcon.FILTER));
+            super(context ? "Customize ..." : "Order/Filter ...", DBeaverIcons.getImageDescriptor(UIIcon.CONFIG_TABLE));
         }
 
         @Override
