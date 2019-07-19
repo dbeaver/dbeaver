@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -156,7 +157,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         try {
             Set<DBSEntityAttribute> fkAttrs = new HashSet<>();
             // Make associations
-            Collection<? extends DBSEntityAssociation> fks = getObject().getAssociations(monitor);
+            Collection<? extends DBSEntityAssociation> fks = DBVUtils.getAllAssociations(monitor, getObject());
             if (fks != null) {
                 for (DBSEntityAssociation fk : fks) {
                     if (fk instanceof DBSEntityReferrer) {

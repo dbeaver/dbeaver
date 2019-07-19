@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDEditPartFactory;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
@@ -146,12 +147,12 @@ public class ERDDecoratorDefault implements ERDDecorator {
             if (attributeVisibility == ERDAttributeVisibility.KEYS) {
                 keyColumns = new HashSet<>();
                 try {
-                    for (DBSEntityAssociation assoc : CommonUtils.safeCollection(entity.getAssociations(monitor))) {
+                    for (DBSEntityAssociation assoc : DBVUtils.getAllAssociations(monitor, entity)) {
                         if (assoc instanceof DBSEntityReferrer) {
                             keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
                         }
                     }
-                    for (DBSEntityConstraint constraint : CommonUtils.safeCollection(entity.getConstraints(monitor))) {
+                    for (DBSEntityConstraint constraint : DBVUtils.getAllConstraints(monitor, entity)) {
                         if (constraint instanceof DBSEntityReferrer) {
                             keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) constraint));
                         }
