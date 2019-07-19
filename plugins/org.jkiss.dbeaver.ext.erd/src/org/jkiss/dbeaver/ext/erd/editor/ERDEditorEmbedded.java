@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.LoadingJob;
@@ -246,7 +247,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             result.add(rootTable);
             try {
                 monitor.subTask("Read foreign keys");
-                Collection<? extends DBSEntityAssociation> fks = rootTable.getAssociations(monitor);
+                Collection<? extends DBSEntityAssociation> fks = DBVUtils.getAllAssociations(monitor, rootTable);
                 if (fks != null) {
                     for (DBSEntityAssociation fk : fks) {
                         DBSEntity associatedEntity = fk.getAssociatedEntity();
@@ -264,7 +265,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             }
             try {
                 monitor.subTask("Read references");
-                Collection<? extends DBSEntityAssociation> refs = rootTable.getReferences(monitor);
+                Collection<? extends DBSEntityAssociation> refs = DBVUtils.getAllReferences(monitor, rootTable);
                 if (refs != null) {
                     for (DBSEntityAssociation ref : refs) {
                         result.add(ref.getParentObject());

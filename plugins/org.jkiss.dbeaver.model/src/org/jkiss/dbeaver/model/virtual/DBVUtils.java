@@ -250,6 +250,26 @@ public abstract class DBVUtils {
     }
 
     @NotNull
+    public static List<DBSEntityAssociation> getAllReferences(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity onEntity) throws DBException {
+        List<DBSEntityAssociation> result = new ArrayList<>();
+        final Collection<? extends DBSEntityAssociation> realConstraints = onEntity.getReferences(monitor);
+        if (!CommonUtils.isEmpty(realConstraints)) {
+            result.addAll(realConstraints);
+        }
+/*
+        DBVEntity vEntity = getVirtualEntity(entity, false);
+        if (vEntity != null) {
+            List<DBVEntityForeignKey> vFKs = vEntity.getForeignKeys();
+            if (!CommonUtils.isEmpty(vFKs)) {
+                result.addAll(vFKs);
+            }
+        }
+*/
+
+        return result;
+    }
+
+    @NotNull
     public static DBSEntity getRealEntity(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) throws DBException {
         if (entity instanceof DBVEntity) {
             DBSEntity realEntity = ((DBVEntity) entity).getRealEntity(monitor);
