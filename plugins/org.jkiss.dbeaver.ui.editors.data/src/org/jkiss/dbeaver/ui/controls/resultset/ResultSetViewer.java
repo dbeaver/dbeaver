@@ -2660,6 +2660,7 @@ public class ResultSetViewer extends Viewer
         if (targetEntity == null) {
             throw new DBException("Null constraint parent");
         }
+        targetEntity = DBVUtils.getRealEntity(monitor, targetEntity);
         if (!(targetEntity instanceof DBSDataContainer)) {
             throw new DBException("Entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] is not a data container");
         }
@@ -2719,6 +2720,8 @@ public class ResultSetViewer extends Viewer
         if (targetEntity == null) {
             throw new DBException("Null constraint parent");
         }
+        //DBSDataContainer dataContainer = DBUtils.getAdapter(DBSDataContainer.class, targetEntity);
+        targetEntity = DBVUtils.getRealEntity(monitor, targetEntity);
         if (!(targetEntity instanceof DBSDataContainer)) {
             throw new DBException("Referencing entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] is not a data container");
         }

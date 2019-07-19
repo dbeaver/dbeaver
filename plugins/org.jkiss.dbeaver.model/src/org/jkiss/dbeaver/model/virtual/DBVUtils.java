@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -171,10 +168,10 @@ public abstract class DBVUtils {
 
     @NotNull
     public static List<DBDLabelValuePair> readDictionaryRows(
-        DBCSession session,
-        DBSEntityAttribute valueAttribute,
-        DBDValueHandler valueHandler,
-        DBCResultSet dbResult) throws DBCException
+        @NotNull DBCSession session,
+        @NotNull DBSEntityAttribute valueAttribute,
+        @NotNull DBDValueHandler valueHandler,
+        @NotNull DBCResultSet dbResult) throws DBCException
     {
         List<DBDLabelValuePair> values = new ArrayList<>();
         List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
@@ -216,7 +213,8 @@ public abstract class DBVUtils {
         return values;
     }
 
-    public static List<DBSEntityConstraint> getAllConstraints(DBRProgressMonitor monitor, DBSEntity entity) throws DBException {
+    @NotNull
+    public static List<DBSEntityConstraint> getAllConstraints(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) throws DBException {
         List<DBSEntityConstraint> result = new ArrayList<>();
         final Collection<? extends DBSEntityConstraint> realConstraints = entity.getConstraints(monitor);
         if (!CommonUtils.isEmpty(realConstraints)) {
@@ -233,4 +231,33 @@ public abstract class DBVUtils {
         return result;
     }
 
+    @NotNull
+    public static List<DBSEntityAssociation> getAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) throws DBException {
+        List<DBSEntityAssociation> result = new ArrayList<>();
+        final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
+        if (!CommonUtils.isEmpty(realConstraints)) {
+            result.addAll(realConstraints);
+        }
+        DBVEntity vEntity = getVirtualEntity(entity, false);
+        if (vEntity != null) {
+            List<DBVEntityForeignKey> vFKs = vEntity.getForeignKeys();
+            if (!CommonUtils.isEmpty(vFKs)) {
+                result.addAll(vFKs);
+            }
+        }
+
+        return result;
+    }
+
+    @NotNull
+    public static DBSEntity getRealEntity(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) throws DBException {
+        if (entity instanceof DBVEntity) {
+            DBSEntity realEntity = ((DBVEntity) entity).getRealEntity(monitor);
+            if (realEntity == null) {
+                throw new DBException("Can't locate real entity for " + DBUtils.getObjectFullId(entity));
+            }
+            return realEntity;
+        }
+        return entity;
+    }
 }

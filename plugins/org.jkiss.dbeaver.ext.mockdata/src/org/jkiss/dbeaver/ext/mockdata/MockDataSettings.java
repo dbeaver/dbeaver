@@ -81,7 +81,7 @@ public class MockDataSettings {
             attributeGenerators.put(attribute.getName(), generatorProperties);
 
             //((JDBCColumnKeyType) attribute).isInUniqueKey()
-            List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute);
+            List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute, true);
             if (!CommonUtils.isEmpty(attributeReferrers)) {
                 MockGeneratorDescriptor generator = generatorRegistry.getGenerator(MockGeneratorRegistry.FK_GENERATOR_ID);
                 putGenerator(generatorProperties, generator);

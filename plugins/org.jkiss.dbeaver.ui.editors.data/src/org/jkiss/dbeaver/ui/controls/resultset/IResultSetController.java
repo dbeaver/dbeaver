@@ -140,7 +140,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     /**
      * Navigates to association. One of @association OR @attr must be specified.
      */
-    void navigateAssociation(@NotNull DBRProgressMonitor monitor, ResultSetModel model, @Nullable DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
+    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel model, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
         throws DBException;
 
     void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
