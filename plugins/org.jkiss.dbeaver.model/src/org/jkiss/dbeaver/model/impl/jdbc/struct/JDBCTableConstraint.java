@@ -117,9 +117,6 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         int maxResults)
         throws DBException
     {
-        if (keyColumn.getParentObject() != this.getTable()) {
-            throw new IllegalArgumentException("Bad key column argument");
-        }
         // Use default one
         return readKeyEnumeration(
             session,
@@ -205,6 +202,9 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         int maxResults)
         throws DBException
     {
+        if (keyColumn.getParentObject() != this.getTable()) {
+            throw new IllegalArgumentException("Bad key column argument");
+        }
         final TABLE table = getParentObject();
         assert table != null;
 
