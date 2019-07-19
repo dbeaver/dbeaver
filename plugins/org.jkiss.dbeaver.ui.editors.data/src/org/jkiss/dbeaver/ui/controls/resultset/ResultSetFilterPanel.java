@@ -156,9 +156,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             StyledTextUtils.fillDefaultStyledTextContextMenu(filtersText);
             StyledTextUtils.enableDND(this.filtersText);
 
+            this.executePanel = new ExecutePanel(filterComposite);
             this.editFilterPanel = new EditFilterPanel(filterComposite);
             this.historyPanel = new HistoryPanel(filterComposite);
-            this.executePanel = new ExecutePanel(filterComposite);
 
             // Register filters text in focus service
             UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.filtersText);
@@ -634,6 +634,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_VERTICAL);
             setLayoutData(gd);
             addPaintListener(this::paintPanel);
+            addMouseMoveListener(e -> {
+                if (!hover) {
+                    hover = true;
+                    redraw();
+                }
+            });
             addMouseTrackListener(new MouseTrackAdapter() {
                 @Override
                 public void mouseEnter(MouseEvent e) {
@@ -789,7 +795,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_VERTICAL);
             gd.heightHint = MIN_FILTER_TEXT_HEIGHT;
-            gd.widthHint = dropImageE.getBounds().width + 2;
+            gd.widthHint = dropImageE.getBounds().width + 6;
             setLayoutData(gd);
 
             addDisposeListener(e -> UIUtils.dispose(dropImageD));
@@ -1011,7 +1017,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_VERTICAL);
             gd.heightHint = MIN_FILTER_TEXT_HEIGHT;
-            gd.widthHint = 10 + enabledImage.getBounds().width + 6;
+            gd.widthHint = 12 + enabledImage.getBounds().width;
             setLayoutData(gd);
         }
 
@@ -1026,7 +1032,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
             if (viewer.isRefreshInProgress()) {
                 e.gc.drawImage(DBeaverIcons.getImage(UIIcon.CLOSE), x, e.y + 2);
-            } else if (hover) {
+            } else if (hover && isActionEnabled()) {
                 e.gc.drawImage(enabledImage, x, e.y + 2);
             } else {
                 e.gc.drawImage(disabledImage, x, e.y + 2);
@@ -1036,6 +1042,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 e.gc.drawLine(x, e.y + 2, x, e.y + e.height - 4);
             }
         }
+
+        protected abstract boolean isActionEnabled();
 
         protected abstract boolean executeAction(MouseEvent e);
 
@@ -1048,8 +1056,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         @Override
+        protected boolean isActionEnabled() {
+            return !viewer.isRefreshInProgress();
+        }
+
+        @Override
         protected boolean executeAction(MouseEvent e) {
-            if (!viewer.isRefreshInProgress()) {
+            if (isActionEnabled()) {
                 viewer.refreshData(null);
                 return true;
             }
@@ -1060,12 +1073,17 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private class ExecutePanel extends ToolItemPanel {
 
         ExecutePanel(Composite addressBar) {
-            super(addressBar, UIIcon.SQL_EXECUTE, ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply, true);
+            super(addressBar, UIIcon.SQL_EXECUTE, ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply, false);
+        }
+
+        @Override
+        protected boolean isActionEnabled() {
+            return !viewer.isRefreshInProgress() && isEnabled();
         }
 
         @Override
         protected boolean executeAction(MouseEvent e) {
-            if (!viewer.isRefreshInProgress()) {
+            if (isActionEnabled()) {
                 setCustomDataFilter();
                 return true;
             }
