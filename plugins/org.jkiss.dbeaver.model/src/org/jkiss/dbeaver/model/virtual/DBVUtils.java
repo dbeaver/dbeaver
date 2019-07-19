@@ -68,6 +68,9 @@ public abstract class DBVUtils {
     @Nullable
     public static DBVEntity getVirtualEntity(@NotNull DBSEntity source, boolean create)
     {
+        if (source instanceof DBVEntity) {
+            return (DBVEntity) source;
+        }
         return source.getDataSource().getContainer().getVirtualModel().findEntity(source, create);
     }
 
