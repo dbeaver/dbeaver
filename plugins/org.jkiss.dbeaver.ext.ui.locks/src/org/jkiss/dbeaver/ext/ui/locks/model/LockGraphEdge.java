@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.ui.locks.graph;
+package org.jkiss.dbeaver.ext.ui.locks.model;
+
+import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphNode;
 
 public class LockGraphEdge {
 

@@ -25,7 +25,8 @@ import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockGraphManager;
+import org.jkiss.dbeaver.ext.ui.locks.model.LockGraph;
+import org.jkiss.dbeaver.ext.ui.locks.model.LockGraphManager;
 import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 
