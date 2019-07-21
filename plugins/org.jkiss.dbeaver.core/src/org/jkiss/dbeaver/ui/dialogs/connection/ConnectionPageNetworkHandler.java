@@ -207,7 +207,10 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     }
 
     protected void enableHandlerContent() {
-        if (handlerConfiguration.isEnabled()) {
+
+        DBWHandlerConfiguration profileConfig = activeProfile == null ? null : activeProfile.getConfiguration(handlerDescriptor);
+        boolean hasProfileConfig = profileConfig != null && profileConfig.isEnabled();
+        if (handlerConfiguration.isEnabled() && !hasProfileConfig) {
             if (blockEnableState != null) {
                 blockEnableState.restore();
                 blockEnableState = null;
@@ -215,6 +218,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         } else if (blockEnableState == null) {
             blockEnableState = ControlEnableState.disable(handlerComposite);
         }
+        useHandlerCheck.setEnabled(!hasProfileConfig);
     }
 
     @Override
