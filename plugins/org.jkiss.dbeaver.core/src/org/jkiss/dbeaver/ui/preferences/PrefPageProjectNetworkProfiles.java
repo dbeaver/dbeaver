@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -385,7 +386,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
     @Override
     public void setElement(IAdaptable element) {
-        this.project = (IProject) element;
+        this.project = GeneralUtils.adapt(element, IProject.class);
         this.projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(this.project);
     }
 
