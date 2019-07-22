@@ -22,13 +22,15 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.mapping.ResourceMapping;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.egit.core.project.RepositoryMapping;
+import org.eclipse.egit.ui.internal.CommonUtils;
 import org.eclipse.egit.ui.internal.operations.GitScopeUtil;
 import org.eclipse.egit.ui.internal.selection.SelectionUtils;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jgit.annotations.NonNull;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -37,8 +39,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 public abstract class GITAbstractHandler extends AbstractHandler {
 
@@ -116,11 +117,9 @@ public abstract class GITAbstractHandler extends AbstractHandler {
     /////////////////////////////////////////////////////////////
     // copied from EGist source to provide backward compatibility with older versions
 
-    @NonNull
-    private static Repository[] getRepositories(
-        @NonNull IStructuredSelection selection) {
+    private static Repository[] getRepositories(IStructuredSelection selection) {
 
-        IProject[] selectedProjects = SelectionUtils.getSelectedProjects(selection);
+        IProject[] selectedProjects = getSelectedProjects(selection);
 
         if (selectedProjects.length > 0)
             return getRepositoriesFor(selectedProjects);
@@ -142,7 +141,57 @@ public abstract class GITAbstractHandler extends AbstractHandler {
         return repos.toArray(new Repository[0]);
     }
 
-    @NonNull
+    private static IProject[] getSelectedProjects(
+        IStructuredSelection selection) {
+        Set<IProject> ret = new LinkedHashSet<>();
+        for (IResource resource : getSelectedAdaptables(selection, IResource.class)) {
+            RepositoryMapping mapping = RepositoryMapping.getMapping(resource);
+            if (mapping != null && (mapping.getContainer() instanceof IProject))
+                ret.add((IProject) mapping.getContainer());
+            else
+                return new IProject[0];
+        }
+        ret.addAll(extractProjectsFromMappings(selection));
+
+        return ret.toArray(new IProject[0]);
+    }
+
+    private static <T> List<T> getSelectedAdaptables(ISelection selection,
+                                                     Class<T> c) {
+        List<T> result;
+        if (selection != null && !selection.isEmpty()) {
+            result = new ArrayList<>();
+            Iterator elements = ((IStructuredSelection) selection).iterator();
+            while (elements.hasNext()) {
+                T adapter = Adapters.adapt(elements.next(), c);
+                if (adapter != null) {
+                    result.add(adapter);
+                }
+            }
+        } else {
+            result = Collections.emptyList();
+        }
+        return result;
+    }
+
+    private static Set<IProject> extractProjectsFromMappings(
+        IStructuredSelection selection) {
+        Set<IProject> ret = new LinkedHashSet<>();
+        for (ResourceMapping mapping : getSelectedAdaptables(selection,
+            ResourceMapping.class)) {
+            IProject[] mappedProjects = mapping.getProjects();
+            if (mappedProjects != null && mappedProjects.length != 0) {
+                // Some mappings (WorkingSetResourceMapping) return the projects
+                // in unpredictable order. Sort them like the navigator to
+                // correspond to the order the user usually sees.
+                List<IProject> projects = new ArrayList<>(Arrays.asList(mappedProjects));
+                projects.sort(CommonUtils.RESOURCE_NAME_COMPARATOR);
+                ret.addAll(projects);
+            }
+        }
+        return ret;
+    }
+
     private static Repository[] getRepositoriesFor(final IProject[] projects) {
         Set<Repository> ret = new LinkedHashSet<>();
         for (IProject project : projects) {
