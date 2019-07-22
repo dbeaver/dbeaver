@@ -143,7 +143,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
             }
         });
 
-        handlerComposite = UIUtils.createPlaceholder(composite, 1);
+        handlerComposite = UIUtils.createComposite(composite, 1);
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         configurator.createControl(handlerComposite);

@@ -641,10 +641,7 @@ public class CommonUtils {
             return false;
         }
         Object optionValue = options.get(name);
-        if (optionValue == null) {
-            return defValue;
-        }
-        return Boolean.TRUE.equals(optionValue);
+        return getBoolean(optionValue, defValue);
     }
 
     public static String fixedLengthString(String string, int length) {
