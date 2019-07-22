@@ -63,7 +63,6 @@ import java.util.List;
 public class EditForeignKeyPage extends BaseObjectEditPage {
 
     private static final Log log = Log.getLog(EditForeignKeyPage.class);
-    private Button customUKButton;
 
     public static class FKColumnInfo {
         final DBSEntityAttribute refColumn;
@@ -94,6 +93,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private Combo uniqueKeyCombo;
     private Text fkNameText;
     private Table columnsTable;
+    private Button customUKButton;
 
     private String fkName;
 
@@ -104,6 +104,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private DBSForeignKeyModifyRule onUpdateRule;
 
     private boolean enableCustomKeys = false;
+    private boolean supportsCustomName = false;
 
     public EditForeignKeyPage(
         String title,
@@ -764,7 +765,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     protected boolean supportsCustomName() {
-        return false;
+        return supportsCustomName;
     }
 
+    public void setSupportsCustomName(boolean supportsCustomName) {
+        this.supportsCustomName = supportsCustomName;
+    }
 }

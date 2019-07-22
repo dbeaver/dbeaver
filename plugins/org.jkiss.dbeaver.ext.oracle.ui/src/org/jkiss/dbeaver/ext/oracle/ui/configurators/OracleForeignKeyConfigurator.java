@@ -16,61 +16,42 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.configurators;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
-import org.jkiss.dbeaver.ext.oracle.model.*;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKeyColumn;
+import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
-import java.util.Map;
-
 /**
  * Oracle foreign key manager
  */
-public class OracleForeignKeyConfigurator extends SQLForeignKeyManager<OracleTableForeignKey, OracleTableBase> {
-
-
-    @Nullable
-    @Override
-    public DBSObjectCache<? extends DBSObject, OracleTableForeignKey> getObjectsCache(OracleTableForeignKey object)
-    {
-        return object.getParentObject().getSchema().foreignKeyCache;
-    }
+public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<OracleTableForeignKey> {
 
     @Override
-    protected OracleTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options)
-    {
-        OracleTableBase table = (OracleTableBase) container;
-
-        final OracleTableForeignKey foreignKey = new OracleTableForeignKey(
-            table,
-            null,
-            null,
-            null,
-            DBSForeignKeyModifyRule.NO_ACTION);
+    public OracleTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, OracleTableForeignKey foreignKey) {
         return new UITask<OracleTableForeignKey>() {
             @Override
             protected OracleTableForeignKey runTask() {
                 EditForeignKeyPage editPage = new EditForeignKeyPage(
                     OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
                     foreignKey,
-                    new DBSForeignKeyModifyRule[] {
+                    new DBSForeignKeyModifyRule[]{
                         DBSForeignKeyModifyRule.NO_ACTION,
                         DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                         DBSForeignKeyModifyRule.SET_NULL,
-                        DBSForeignKeyModifyRule.SET_DEFAULT });
+                        DBSForeignKeyModifyRule.SET_DEFAULT});
+                editPage.setSupportsCustomName(true);
                 if (!editPage.edit()) {
                     return null;
                 }
 
-                foreignKey.setReferencedConstraint((OracleTableConstraint)editPage.getUniqueConstraint());
-                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+                foreignKey.setReferencedConstraint((OracleTableConstraint) editPage.getUniqueConstraint());
+                foreignKey.setName(editPage.getName());
                 foreignKey.setDeleteRule(editPage.getOnDeleteRule());
                 int colIndex = 1;
                 for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
@@ -84,14 +65,5 @@ public class OracleForeignKeyConfigurator extends SQLForeignKeyManager<OracleTab
             }
         }.execute();
     }
-
-/*
-    // FIX: Oracle uses standard syntax
-    @Override
-    protected String getDropForeignKeyPattern(OracleTableForeignKey foreignKey)
-    {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
-    }
-*/
 
 }

@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -54,24 +51,14 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     protected OracleDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
         OracleSchema schema = (OracleSchema) container;
-
-        return new UITask<OracleDataType>() {
-            @Override
-            protected OracleDataType runTask() {
-                EntityEditPage editPage = new EntityEditPage(schema.getDataSource(), DBSEntityType.TYPE);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                OracleDataType dataType = new OracleDataType(
-                    schema,
-                    editPage.getEntityName(),
-                    false);
-                dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                    "(\n" + //$NON-NLS-1$
-                    ")"); //$NON-NLS-1$
-                return dataType;
-            }
-        }.execute();
+        OracleDataType dataType = new OracleDataType(
+            schema,
+            "DataType",
+            false);
+        dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
+            "(\n" + //$NON-NLS-1$
+            ")"); //$NON-NLS-1$
+        return dataType;
     }
 
     @Override
