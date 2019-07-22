@@ -62,7 +62,7 @@ public class NetworkHandlerRegistry {
 
     public List<NetworkHandlerDescriptor> getDescriptors() {
         List<NetworkHandlerDescriptor> descList = new ArrayList<>(descriptors);
-        descriptors.removeIf(nhd -> nhd.getReplacedBy() != null);
+        descList.removeIf(nhd -> nhd.getReplacedBy() != null);
         return descList;
     }
 
