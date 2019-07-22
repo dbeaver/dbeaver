@@ -71,6 +71,8 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     boolean isAttributeReadOnly(DBDAttributeBinding attr);
 
+    boolean isPanelsVisible();
+
     @NotNull
     DBPPreferenceStore getPreferenceStore();
 
