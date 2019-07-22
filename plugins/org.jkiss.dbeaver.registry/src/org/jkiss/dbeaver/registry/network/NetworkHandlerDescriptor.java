@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -43,6 +45,8 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     private final boolean secured;
     private final ObjectType handlerType;
     private final int order;
+    private final List<String> replacesIDs = new ArrayList<>();
+    private NetworkHandlerDescriptor replacedBy;
 
     NetworkHandlerDescriptor(
         IConfigurationElement config) {
@@ -56,6 +60,10 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.secured = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SECURED), false);
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS));
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
+
+        for (IConfigurationElement re : config.getChildren("replace")) {
+            replacesIDs.add(re.getAttribute("id"));
+        }
     }
 
     @NotNull
@@ -101,8 +109,21 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         return handlerType.createInstance(impl);
     }
 
+    public boolean replaces(NetworkHandlerDescriptor otherDesc) {
+        return replacesIDs.contains(otherDesc.id);
+    }
+
     @Override
     public String toString() {
         return id;
     }
+
+    NetworkHandlerDescriptor getReplacedBy() {
+        return replacedBy;
+    }
+
+    void setReplacedBy(NetworkHandlerDescriptor replacedBy) {
+        this.replacedBy = replacedBy;
+    }
+
 }
