@@ -147,8 +147,8 @@ public abstract class WindowsRegistry {
 
     public static synchronized WindowsRegistry getInstance() {
         if (INSTANCE == null) {
-            String javaVendor = System.getProperty("java.vendor");
-            if (javaVendor == null || javaVendor.toLowerCase().startsWith("oracle")) {
+            boolean isJava8 = System.getProperty("java.version").startsWith("1.8");
+            if (isJava8) {
                 INSTANCE = new WinRegistry8();
             } else {
                 INSTANCE = new WinRegistry11();

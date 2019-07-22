@@ -129,7 +129,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
                 enableHandlerContent(descriptor);
             }
         });
-        Composite handlerComposite = UIUtils.createPlaceholder(composite, 1);
+        Composite handlerComposite = UIUtils.createComposite(composite, 1);
         configurations.put(descriptor, new HandlerBlock(configurator, handlerComposite, useHandlerCheck, tabItem));
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));

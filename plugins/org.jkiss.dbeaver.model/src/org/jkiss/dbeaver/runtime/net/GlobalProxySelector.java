@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.runtime.net;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -44,20 +46,74 @@ public class GlobalProxySelector extends ProxySelector {
         this.parent = parent;
     }
 
+    public ProxySelector getParent() {
+        return parent;
+    }
+
     @Override
     public List<Proxy> select(URI uri) {
+        DBPDataSourceContainer dataSourceContainer = getActiveDataSourceContainer(uri);
+
+        if (dataSourceContainer != null) {
+            List<Proxy> proxies = getProxiesForDataSource(uri, dataSourceContainer);
+            if (proxies != null) {
+                return proxies;
+            }
+        }
+        return parent.select(uri);
+    }
+
+    @Nullable
+    protected List<Proxy> getProxiesForDataSource(@NotNull URI uri, @NotNull DBPDataSourceContainer dataSourceContainer) {
+        if (SocksConstants.SOCKET_SCHEME.equals(uri.getScheme())) {
+            // 2. Check for connections' proxy config
+            List<Proxy> proxies = null;
+            for (DBWHandlerConfiguration networkHandler : dataSourceContainer.getConnectionConfiguration().getHandlers()) {
+                if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
+                    Map<String, String> proxyProps = networkHandler.getProperties();
+                    String proxyHost = proxyProps.get(SocksConstants.PROP_HOST);
+                    String proxyPort = proxyProps.get(SocksConstants.PROP_PORT);
+                    if (!CommonUtils.isEmpty(proxyHost)) {
+                        int portNumber = SocksConstants.DEFAULT_SOCKS_PORT;
+                        if (!CommonUtils.isEmpty(proxyPort)) {
+                            try {
+                                portNumber = Integer.parseInt(proxyPort);
+                            } catch (NumberFormatException e) {
+                                log.warn("Bad proxy port number", e);
+                            }
+                        }
+                        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, portNumber);
+                        Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
+                        if (proxies == null) {
+                            proxies = new ArrayList<>();
+                        }
+                        proxies.add(proxy);
+                        log.debug("Use SOCKS proxy [" + proxyAddr + "]");
+                    }
+                }
+            }
+            if (proxies != null) {
+                return proxies;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+        parent.connectFailed(uri, sa, ioe);
+    }
+
+    @Nullable
+    protected DBPDataSourceContainer getActiveDataSourceContainer(@NotNull URI uri) {
         String scheme = uri.getScheme();
         if (CommonUtils.isEmpty(scheme)) {
-            return parent.select(uri);
-        }
-
-        if (scheme.startsWith("http")) {
-            // 1. Check for drivers download proxy
+            return null;
         }
 
         String host = uri.getHost();
         if (CommonUtils.isEmpty(host)) {
-            return parent.select(uri);
+            return null;
         }
 
         // Skip localhosts. In fact it is a bad idea (see #3592)
@@ -67,45 +123,8 @@ public class GlobalProxySelector extends ProxySelector {
         int port = uri.getPort();
         String path = uri.getPath();
 
-        if (SocksConstants.SOCKET_SCHEME.equals(scheme)) {
-            // 2. Check for connections' proxy config
-            DBPDataSourceContainer activeContext = DBExecUtils.findConnectionContext(host, port, path);
-            if (activeContext != null) {
-                List<Proxy> proxies = null;
-                for (DBWHandlerConfiguration networkHandler : activeContext.getConnectionConfiguration().getHandlers()) {
-                    if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
-                        Map<String,String> proxyProps = networkHandler.getProperties();
-                        String proxyHost = proxyProps.get(SocksConstants.PROP_HOST);
-                        String proxyPort = proxyProps.get(SocksConstants.PROP_PORT);
-                        if (!CommonUtils.isEmpty(proxyHost)) {
-                            int portNumber = SocksConstants.DEFAULT_SOCKS_PORT;
-                            if (!CommonUtils.isEmpty(proxyPort)) {
-                                try {
-                                    portNumber = Integer.parseInt(proxyPort);
-                                } catch (NumberFormatException e) {
-                                    log.warn("Bad proxy port number", e);
-                                }
-                            }
-                            InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, portNumber);
-                            Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
-                            if (proxies == null) {
-                                proxies = new ArrayList<>();
-                            }
-                            proxies.add(proxy);
-                            log.debug("Use SOCKS proxy [" + proxyAddr + "]");
-                        }
-                    }
-                }
-                if (proxies != null) {
-                    return proxies;
-                }
-            }
-        }
-        return parent.select(uri);
+        // 2. Check for connections' proxy config
+        return DBExecUtils.findConnectionContext(host, port, path);
     }
 
-    @Override
-    public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
-        parent.connectFailed(uri, sa, ioe);
-    }
 }
