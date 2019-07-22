@@ -16,108 +16,34 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.configurators;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
-import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * OracleDataTypeConfigurator
  */
-public class OracleDataTypeConfigurator extends SQLObjectEditor<OracleDataType, OracleSchema> {
-
-    @Nullable
-    @Override
-    public DBSObjectCache<? extends DBSObject, OracleDataType> getObjectsCache(OracleDataType object)
-    {
-        return object.getSchema().dataTypeCache;
-    }
+public class OracleDataTypeConfigurator implements DBEObjectConfigurator<OracleDataType> {
 
     @Override
-    protected OracleDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
-    {
-        OracleSchema schema = (OracleSchema) container;
-
+    public OracleDataType configureObject(DBRProgressMonitor monitor, Object parent, OracleDataType dataType) {
         return new UITask<OracleDataType>() {
             @Override
             protected OracleDataType runTask() {
-                EntityEditPage editPage = new EntityEditPage(schema.getDataSource(), DBSEntityType.TYPE);
+                EntityEditPage editPage = new EntityEditPage(dataType.getDataSource(), DBSEntityType.TYPE);
                 if (!editPage.edit()) {
                     return null;
                 }
-                OracleDataType dataType = new OracleDataType(
-                    schema,
-                    editPage.getEntityName(),
-                    false);
+                dataType.setName(editPage.getEntityName());
                 dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
                     "(\n" + //$NON-NLS-1$
                     ")"); //$NON-NLS-1$
                 return dataType;
             }
         }.execute();
-    }
-
-    @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand, Map<String, Object> options)
-    {
-        createOrReplaceProcedureQuery(actions, objectCreateCommand.getObject());
-    }
-
-    @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
-    {
-        final OracleDataType object = objectDeleteCommand.getObject();
-        actions.add(
-            new SQLDatabasePersistAction("Drop type",
-                "DROP TYPE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-1$
-        );
-    }
-
-    @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand, Map<String, Object> options)
-    {
-        createOrReplaceProcedureQuery(actionList, objectChangeCommand.getObject());
-    }
-
-    @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
-        return FEATURE_EDITOR_ON_CREATE;
-    }
-
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actionList, OracleDataType dataType)
-    {
-        String header = OracleUtils.normalizeSourceName(dataType, false);
-        if (!CommonUtils.isEmpty(header)) {
-            actionList.add(
-                new SQLDatabasePersistAction(
-                    "Create type header",
-                    "CREATE OR REPLACE " + header)); //$NON-NLS-1$
-        }
-        String body = OracleUtils.normalizeSourceName(dataType, true);
-        if (!CommonUtils.isEmpty(body)) {
-            actionList.add(
-                new SQLDatabasePersistAction(
-                    "Create type body",
-                    "CREATE OR REPLACE " + body)); //$NON-NLS-1$
-        }
-        OracleUtils.addSchemaChangeActions(actionList, dataType);
     }
 
 }
