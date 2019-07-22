@@ -194,11 +194,13 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             } else {
                 if (column instanceof DBCAttributeMetaData) {
                     DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) column).getEntityMetaData();
-                    DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getDataSource(), entityMetaData);
-                    if (docEntity != null) {
-                        DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
-                        if (attribute instanceof DBSTypedObjectEx) {
-                            arrayType = ((DBSTypedObjectEx) attribute).getDataType();
+                    if (entityMetaData != null) {
+                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getDataSource(), entityMetaData);
+                        if (docEntity != null) {
+                            DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
+                            if (attribute instanceof DBSTypedObjectEx) {
+                                arrayType = ((DBSTypedObjectEx) attribute).getDataType();
+                            }
                         }
                     }
                 }
