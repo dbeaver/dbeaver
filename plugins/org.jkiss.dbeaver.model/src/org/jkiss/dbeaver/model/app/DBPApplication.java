@@ -20,7 +20,8 @@ package org.jkiss.dbeaver.model.app;
 import org.jkiss.code.NotNull;
 
 /**
- * DBPApplication
+ * DB application.
+ * Application implementors may redefine core app behavior and/or settings.
  */
 public interface DBPApplication
 {
@@ -35,7 +36,9 @@ public interface DBPApplication
      */
     String getInfoDetails();
 
+    /**
+     * Default project name, e.g. 'General'.
+     */
     String getDefaultProjectName();
-
 
 }
