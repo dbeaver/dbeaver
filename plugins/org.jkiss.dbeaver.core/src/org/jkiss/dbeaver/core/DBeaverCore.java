@@ -26,7 +26,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
@@ -63,7 +62,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.ProxySelector;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
@@ -71,7 +71,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 
 /**
  * DBeaverCore
@@ -216,8 +215,14 @@ public class DBeaverCore implements DBPPlatform {
         this.qmLogWriter = new QMLogFileWriter();
         this.queryManager.registerMetaListener(qmLogWriter);
 
-        // Init default network settings
-        ProxySelector.setDefault(new GlobalProxySelector(ProxySelector.getDefault()));
+        {
+            // Init default network settings
+            ProxySelector defProxySelector = GeneralUtils.adapt(this, ProxySelector.class);
+            if (defProxySelector == null) {
+                defProxySelector = new GlobalProxySelector(ProxySelector.getDefault());
+            }
+            ProxySelector.setDefault(defProxySelector);
+        }
 
         this.certificateStorage = new DefaultCertificateStorage(
             new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
