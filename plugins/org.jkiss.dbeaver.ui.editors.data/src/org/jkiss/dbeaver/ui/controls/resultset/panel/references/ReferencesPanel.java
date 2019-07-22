@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListenerAdapter;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 
 /**
- * RSV grouping panel
+ * RSV references panel
  */
 public class ReferencesPanel implements IResultSetPanel {
 
@@ -68,7 +68,12 @@ public class ReferencesPanel implements IResultSetPanel {
         presentation.getControl().addDisposeListener(e -> presentation.getController().removeListener(dataListener));
 
         if (presentation instanceof ISelectionProvider) {
-            ISelectionChangedListener selectionListener = event -> resultsContainer.refreshReferences();
+            ISelectionChangedListener selectionListener = event -> {
+                if (presentation.getController().getVisiblePanel() != ReferencesPanel.this) {
+                    return;
+                }
+                resultsContainer.refreshReferences();
+            };
             ((ISelectionProvider) presentation).addSelectionChangedListener(selectionListener);
             presentation.getControl().addDisposeListener(e -> ((ISelectionProvider) presentation).removeSelectionChangedListener(selectionListener));
         }

@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * PrefPageDataFormat
@@ -107,9 +107,9 @@ public class PrefPageDataFormat extends TargetPrefPage
                     changeProfile();
                 }
             });
-            Button editButton = new Button(profileGroup, SWT.PUSH);
-            editButton.setText(ResultSetMessages.pref_page_data_format_button_manage_profiles);
-            editButton.addSelectionListener(new SelectionAdapter() {
+            UIUtils.createDialogButton(
+                profileGroup,
+                ResultSetMessages.pref_page_data_format_button_manage_profiles, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {

@@ -1093,7 +1093,8 @@ public class ResultSetViewer extends Viewer
         return null;
     }
 
-    boolean isPanelsVisible() {
+    @Override
+    public boolean isPanelsVisible() {
         return viewerSash != null && viewerSash.getMaximizedControl() == null;
     }
 

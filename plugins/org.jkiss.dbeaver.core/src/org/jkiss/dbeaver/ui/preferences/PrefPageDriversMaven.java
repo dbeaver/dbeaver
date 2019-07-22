@@ -84,9 +84,9 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             GridData gd = new GridData(GridData.FILL_BOTH);
             mavenRepoTable.setLayoutData(gd);
 
-            Composite buttonsPH = UIUtils.createPlaceholder(mavenGroup, 1);
+            Composite buttonsPH = UIUtils.createComposite(mavenGroup, 1);
             buttonsPH.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createToolButton(buttonsPH, CoreMessages.pref_page_drivers_maven_button_add, new SelectionAdapter() {
+            UIUtils.createDialogButton(buttonsPH, CoreMessages.pref_page_drivers_maven_button_add, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
@@ -104,7 +104,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                     }
                 }
             });
-            removeButton = UIUtils.createToolButton(buttonsPH, CoreMessages.pref_page_drivers_maven_button_remove, new SelectionAdapter() {
+            removeButton = UIUtils.createDialogButton(buttonsPH, CoreMessages.pref_page_drivers_maven_button_remove, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     mavenRepoTable.remove(mavenRepoTable.getSelectionIndices());
@@ -113,7 +113,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             });
             removeButton.setEnabled(false);
 
-            disableButton = UIUtils.createToolButton(buttonsPH, CoreMessages.pref_page_drivers_maven_label_disable, new SelectionAdapter() {
+            disableButton = UIUtils.createDialogButton(buttonsPH, CoreMessages.pref_page_drivers_maven_label_disable, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     for (TableItem item : mavenRepoTable.getSelection()) {
@@ -129,7 +129,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                 }
             });
             removeButton.setEnabled(false);
-            moveUpButton = UIUtils.createToolButton(buttonsPH, CoreMessages.pref_page_drivers_maven_button_up, new SelectionAdapter() {
+            moveUpButton = UIUtils.createDialogButton(buttonsPH, CoreMessages.pref_page_drivers_maven_button_up, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     final TableItem item = mavenRepoTable.getSelection()[0];
@@ -142,7 +142,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                     }
                 }
             });
-            moveDownButton = UIUtils.createToolButton(buttonsPH, CoreMessages.pref_page_drivers_maven_button_down, new SelectionAdapter() {
+            moveDownButton = UIUtils.createDialogButton(buttonsPH, CoreMessages.pref_page_drivers_maven_button_down, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     final TableItem item = mavenRepoTable.getSelection()[0];

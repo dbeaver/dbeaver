@@ -75,6 +75,8 @@ class EditVirtualEntityDialog extends BaseDialog {
     private DBVEntityConstraint uniqueConstraint;
     private InitPage initPage = InitPage.ATTRIBUTES;
 
+    private boolean fkChanged = false;
+
     public enum InitPage {
         ATTRIBUTES,
         UNIQUE_KEY,
@@ -211,6 +213,7 @@ class EditVirtualEntityDialog extends BaseDialog {
                     virtualFK.setAttributes(columns);
                     vEntity.addForeignKey(virtualFK);
                     createForeignKeyItem(fkTable, virtualFK);
+                    fkChanged = true;
                 }
             });
 
@@ -227,6 +230,7 @@ class EditVirtualEntityDialog extends BaseDialog {
                     }
                     vEntity.removeForeignKey(virtualFK);
                     fkTable.remove(fkTable.getSelectionIndices());
+                    fkChanged = true;
                 }
             });
         }
@@ -398,6 +402,9 @@ class EditVirtualEntityDialog extends BaseDialog {
             editDictionaryPage.saveDictionarySettings();
         }
         viewer.persistConfig();
+        if (fkChanged) {
+            viewer.refreshData(null);
+        }
         super.okPressed();
     }
 
