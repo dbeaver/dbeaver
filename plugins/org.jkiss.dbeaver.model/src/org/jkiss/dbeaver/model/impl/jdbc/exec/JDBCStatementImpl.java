@@ -651,7 +651,12 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     @Override
     public int getUpdateCount() throws SQLException
     {
-        return (updateCount = getOriginal().getUpdateCount());
+        int uc = getOriginal().getUpdateCount();
+        if (uc >= 0) {
+            // Cache update cound (for QM logging)
+            this.updateCount = uc;
+        }
+        return uc;
     }
 
     @Override
