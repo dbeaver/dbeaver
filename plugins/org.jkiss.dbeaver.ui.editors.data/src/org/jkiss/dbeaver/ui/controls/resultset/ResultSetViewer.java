@@ -3012,7 +3012,7 @@ public class ResultSetViewer extends Viewer
             };
 
             dataReceiver.setNextSegmentRead(false);
-            runDataPump(dataContainer, dataFilter, 0, segmentSize, -1, true, false, finalizer);
+            runDataPump(dataContainer, dataFilter, 0, segmentSize, 0, true, false, finalizer);
         } else {
             DBWorkbench.getPlatformUI().showError("Error executing query", "Viewer detached from data source");
         }
@@ -3233,7 +3233,6 @@ public class ResultSetViewer extends Viewer
                         log.debug("Internal error: multiple data reads started (" + dataPumpJobQueue + ")");
                         return Status.CANCEL_STATUS;
                     }
-//System.out.println("START DATA READ " + this);
                     dataPumpRunning.set(true);
                 }
                 beforeDataRead();
@@ -3246,7 +3245,6 @@ public class ResultSetViewer extends Viewer
                         if (!dataPumpRunning.get()) {
                             log.debug("Internal error: data read status is empty");
                         }
-//System.out.println("END DATA READ " + this);
                         dataPumpRunning.set(false);
                     }
                 }
@@ -3298,10 +3296,17 @@ public class ResultSetViewer extends Viewer
                                 log.error("Error executing query", error);
                             }
                         } else {
-                            if (!metadataChanged && focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
+                            if (!metadataChanged) {
                                 // Seems to be refresh
                                 // Restore original position
                                 restorePresentationState(presentationState);
+                            } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
+                                if (getCurrentRow() == null) {
+                                    setCurrentRow(getModel().getRow(focusRow));
+                                }
+                                if (getActivePresentation().getCurrentAttribute() == null) {
+                                    getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
+                                }
                             }
                         }
                         if (metadataChanged) {
