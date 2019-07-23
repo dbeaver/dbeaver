@@ -3229,7 +3229,7 @@ public class ResultSetViewer extends Viewer
                         log.debug("Internal error: multiple data reads started (" + dataPumpJobQueue + ")");
                         return Status.CANCEL_STATUS;
                     }
-System.out.println("START DATA READ " + this);
+//System.out.println("START DATA READ " + this);
                     dataPumpRunning.set(true);
                 }
                 beforeDataRead();
@@ -3242,7 +3242,7 @@ System.out.println("START DATA READ " + this);
                         if (!dataPumpRunning.get()) {
                             log.debug("Internal error: data read status is empty");
                         }
-System.out.println("END DATA READ " + this);
+//System.out.println("END DATA READ " + this);
                         dataPumpRunning.set(false);
                     }
                 }
