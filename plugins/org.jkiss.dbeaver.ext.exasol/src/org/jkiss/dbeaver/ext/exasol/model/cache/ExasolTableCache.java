@@ -100,8 +100,8 @@ public final class ExasolTableCache
 
 	@Override
 	protected ExasolTableColumn fetchChild(@NotNull JDBCSession session,
-			@NotNull ExasolSchema owner, @NotNull ExasolTable parent,
-			JDBCResultSet dbResult) throws SQLException, DBException
+                                           @NotNull ExasolSchema owner, @NotNull ExasolTable parent,
+                                           @NotNull JDBCResultSet dbResult) throws SQLException, DBException
 	{
 		return new ExasolTableColumn(session.getProgressMonitor(), parent,
 				dbResult);

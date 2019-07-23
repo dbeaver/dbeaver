@@ -52,7 +52,7 @@ public abstract class JDBCCompositeCache<
     extends AbstractObjectCache<OWNER, OBJECT>
 {
     protected static final Log log = Log.getLog(JDBCCompositeCache.class);
-    public static final String DEFAULT_OBJECT_NAME = "#DBOBJ";
+    private static final String DEFAULT_OBJECT_NAME = "#DBOBJ";
 
     private final JDBCStructCache<OWNER,?,?> parentCache;
     private final Class<PARENT> parentType;

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -37,7 +38,7 @@ public final class ExasolDataTypeCache
         "select * from SYS.EXA_SQL_TYPES";
 
 	@Override
-	protected JDBCStatement prepareObjectsStatement(JDBCSession session, ExasolDataSource owner) throws SQLException {
+	protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolDataSource owner) throws SQLException {
 		JDBCStatement dbstat = session.createStatement();
 		
 		dbstat.setQueryString(SQL_TYPE_CACHE);
@@ -46,7 +47,7 @@ public final class ExasolDataTypeCache
 	}
 
 	@Override
-	protected ExasolDataType fetchObject(JDBCSession session, ExasolDataSource owner, JDBCResultSet resultSet)
+	protected ExasolDataType fetchObject(@NotNull JDBCSession session, @NotNull ExasolDataSource owner, @NotNull JDBCResultSet resultSet)
 			throws SQLException, DBException {
 		return new ExasolDataType(owner, resultSet);
 	}

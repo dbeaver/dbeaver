@@ -630,7 +630,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     static class SequenceCache extends JDBCObjectCache<SQLServerSchema, SQLServerSequence> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema schema) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
                 "SELECT * FROM \n")
@@ -644,7 +644,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected SQLServerSequence fetchObject(JDBCSession session, SQLServerSchema schema, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerSequence fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new SQLServerSequence(schema,
                 JDBCUtils.safeGetLong(resultSet, "object_id"),
                 JDBCUtils.safeGetString(resultSet, "name"),
@@ -668,7 +668,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     static class SynonymCache extends JDBCObjectCache<SQLServerSchema, SQLServerSynonym> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema schema) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append("SELECT * FROM \n")
                 .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "synonyms")).append("\n");
@@ -681,7 +681,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected SQLServerSynonym fetchObject(JDBCSession session, SQLServerSchema schema, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerSynonym fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new SQLServerSynonym(schema,
                 JDBCUtils.safeGetLong(resultSet, "object_id"),
                 JDBCUtils.safeGetString(resultSet, "name"),
@@ -726,12 +726,12 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             return dbStat;
         }
         @Override
-        protected SQLServerProcedure fetchObject(JDBCSession session, SQLServerSchema schema, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerProcedure fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new SQLServerProcedure(schema, resultSet);
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCSession session, SQLServerSchema schema, SQLServerProcedure forObject) throws SQLException {
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, SQLServerProcedure forObject) throws SQLException {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT p.name as proc_name,pp.* FROM \n")
                 .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects")).append(" p, ")
@@ -754,7 +754,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected SQLServerProcedureParameter fetchChild(JDBCSession session, SQLServerSchema schema, SQLServerProcedure parent, JDBCResultSet dbResult) throws SQLException, DBException {
+        protected SQLServerProcedureParameter fetchChild(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @NotNull SQLServerProcedure parent, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new SQLServerProcedureParameter(session.getProgressMonitor(), parent, dbResult);
         }
     }
@@ -792,7 +792,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected SQLServerTableTrigger fetchObject(JDBCSession session, SQLServerSchema schema, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerTableTrigger fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             long tableId = JDBCUtils.safeGetLong(resultSet, "parent_id");
             SQLServerTable table = getTable(session.getProgressMonitor(), tableId);
             if (table == null) {
