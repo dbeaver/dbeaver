@@ -352,7 +352,7 @@
             <type name="TIMESTAMP WITH LOCAL TZ"/>
             <type name="TIMESTAMP WITH TIME ZONE"/>
             <type name="TIMESTAMP WITH LOCAL TIME ZONE"/>
-            <type standard="STRUCT"/>
+            <!--<type standard="STRUCT"/>--> <!-- Struct disabled to allow exact object types mappings, e.g. geometries -->
 
         </provider>
     </extension>
