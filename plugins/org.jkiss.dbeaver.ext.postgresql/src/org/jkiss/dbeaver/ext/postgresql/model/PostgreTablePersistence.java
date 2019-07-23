@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 public enum PostgreTablePersistence {
     PERMANENT('p', "TABLE"),
     UNLOGGED('u', "UNLOGGED TABLE"),
-    TEMPORARY('t', "TEMPORARY TABLE"),
+    TEMPORARY('t', "TEMP TABLE"),
     UNKNOWN('?', "?");
 
     private final char code;
