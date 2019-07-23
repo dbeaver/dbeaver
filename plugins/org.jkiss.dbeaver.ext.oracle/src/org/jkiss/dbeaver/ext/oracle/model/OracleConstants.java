@@ -94,6 +94,8 @@ public class OracleConstants {
 
     public static final String TYPE_NAME_XML = "XMLTYPE";
     public static final String TYPE_FQ_XML = "SYS.XMLTYPE";
+    public static final String TYPE_NAME_GEOMETRY = "PUBLIC.SDO_GEOMETRY";
+    public static final String TYPE_FQ_GEOMETRY = "MDSYS.SDO_GEOMETRY";
     public static final String TYPE_NAME_BFILE = "BFILE";
     public static final String TYPE_NAME_DATE = "DATE";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
