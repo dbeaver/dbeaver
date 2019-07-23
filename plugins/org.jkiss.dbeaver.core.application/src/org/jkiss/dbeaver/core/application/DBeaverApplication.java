@@ -127,7 +127,14 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             if (dataHome == null) {
                 dataHome = System.getProperty("user.home") + "/.local/share";
             }
-            workingDirectory = dataHome + "/." + DBEAVER_DATA_DIR;
+            String badWorkingDir = dataHome + "/." + DBEAVER_DATA_DIR;
+            String goodWorkingDir = dataHome + "/" + DBEAVER_DATA_DIR;
+            if (!new File(goodWorkingDir).exists() && new File(badWorkingDir).exists()) {
+                // Let's use bad working dir if it exists (#6316)
+                workingDirectory = badWorkingDir;
+            } else {
+                workingDirectory = goodWorkingDir;
+            }
         }
 
         // Workspace dir
