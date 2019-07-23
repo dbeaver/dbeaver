@@ -20,8 +20,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -2637,7 +2635,12 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
+    public void navigateAssociation(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ResultSetModel bindingsModel,
+        @NotNull DBSEntityAssociation association,
+        @NotNull List<ResultSetRow> rows,
+        boolean newWindow)
         throws DBException
     {
         if (!confirmProceed()) {
@@ -3217,12 +3220,35 @@ public class ResultSetViewer extends Viewer
             useDataFilter,
             this,
             executionContext,
-            progressControl);
-        dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
+            progressControl)
+        {
             @Override
-            public void aboutToRun(IJobChangeEvent event) {
-                dataPumpRunning.set(true);
+            protected IStatus run(DBRProgressMonitor monitor) {
+                synchronized (dataPumpJobQueue) {
+                    if (dataPumpRunning.get()) {
+                        log.debug("Internal error: multiple data reads started (" + dataPumpJobQueue + ")");
+                        return Status.CANCEL_STATUS;
+                    }
+System.out.println("START DATA READ " + this);
+                    dataPumpRunning.set(true);
+                }
+                beforeDataRead();
+                try {
+                    IStatus status = super.run(monitor);
+                    afterDataRead();
+                    return status;
+                } finally {
+                    synchronized (dataPumpJobQueue) {
+                        if (!dataPumpRunning.get()) {
+                            log.debug("Internal error: data read status is empty");
+                        }
+System.out.println("END DATA READ " + this);
+                        dataPumpRunning.set(false);
+                    }
+                }
+            }
 
+            private void beforeDataRead() {
                 dataReceiver.setFocusRow(focusRow);
                 // Set explicit target container
                 dataReceiver.setTargetDataContainer(dataContainer);
@@ -3234,18 +3260,10 @@ public class ResultSetViewer extends Viewer
                 }
             }
 
-            @Override
-            public void done(IJobChangeEvent event) {
-                dataPumpRunning.set(false);
-
-                final ResultSetJobDataRead job = (ResultSetJobDataRead) event.getJob();
-                final Throwable error = job.getError();
-                if (job.getStatistics() != null) {
-                    model.setStatistics(job.getStatistics());
-                }
-                final Control control = getControl();
-                if (control.isDisposed()) {
-                    return;
+            private void afterDataRead() {
+                final Throwable error = getError();
+                if (getStatistics() != null) {
+                    model.setStatistics(getStatistics());
                 }
                 UIUtils.syncExec(() -> {
                     try {
@@ -3298,7 +3316,7 @@ public class ResultSetViewer extends Viewer
                                 redrawData(true, false);
                             }
                         }
-                        if (job.getStatistics() == null || !job.getStatistics().isEmpty()) {
+                        if (getStatistics() == null || !getStatistics().isEmpty()) {
                             if (error == null) {
                                 // Update status (update execution statistics)
                                 updateStatusMessage();
@@ -3317,12 +3335,10 @@ public class ResultSetViewer extends Viewer
                                 log.error(e);
                             }
                         }
-
-                        finishDataPump(dataPumpJob);
                     }
                 });
             }
-        });
+        };
         dataPumpJob.setOffset(offset);
         dataPumpJob.setMaxRows(maxRows);
 
@@ -3340,11 +3356,8 @@ public class ResultSetViewer extends Viewer
      */
     private void queueDataPump(ResultSetJobDataRead dataPumpJob) {
         synchronized (dataPumpJobQueue) {
-            if (dataPumpJobQueue.size() > 1) {
-                // Dequeue all jobs but last and new one
-                dataPumpJobQueue.removeAll(
-                    dataPumpJobQueue.subList(1, dataPumpJobQueue.size() - 1));
-            }
+            // Clear queue
+            dataPumpJobQueue.clear();
             dataPumpJobQueue.add(dataPumpJob);
         }
         new AbstractJob("Initiate data read") {
@@ -3360,21 +3373,18 @@ public class ResultSetViewer extends Viewer
                     synchronized (dataPumpJobQueue) {
                         if (dataPumpRunning.get()) {
                             schedule(50);
-                        } else if (!dataPumpJobQueue.isEmpty()) {
-                            ResultSetJobDataRead curJob = dataPumpJobQueue.get(0);
-                            curJob.schedule();
+                        } else {
+                            if (!dataPumpJobQueue.isEmpty()) {
+                                ResultSetJobDataRead curJob = dataPumpJobQueue.get(0);
+                                dataPumpJobQueue.remove(curJob);
+                                curJob.schedule();
+                            }
                         }
                     }
                 }
                 return Status.OK_STATUS;
             }
         }.schedule();
-    }
-
-    private void finishDataPump(ResultSetJobDataRead dataPumpJob) {
-        synchronized (dataPumpJobQueue) {
-            dataPumpJobQueue.remove(dataPumpJob);
-        }
     }
 
     public void clearData()
