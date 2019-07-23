@@ -160,13 +160,13 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                                 // Now set empty column list for other tables
                                 for (OBJECT tmpObject : getAllObjects(monitor, owner)) {
                                     if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
-                                        cacheChildren(tmpObject, new ArrayList<CHILD>());
+                                        cacheChildren(tmpObject, new ArrayList<>());
                                     }
                                 }
                                 this.childrenCached = true;
                             }
                         } else if (!objectMap.containsKey(forObject)) {
-                            cacheChildren(forObject, new ArrayList<CHILD>());
+                            cacheChildren(forObject, new ArrayList<>());
                         }
                     } finally {
                         dbResult.close();
@@ -208,7 +208,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                 // This may happen only when invoked for newly created object (e.g. when we create new column
                 // in a new created table)
                 nestedCache = new SimpleObjectCache<>();
-                nestedCache.setCache(new ArrayList<CHILD>());
+                nestedCache.setCache(new ArrayList<>());
                 childrenCache.put(forObject, nestedCache);
             }
             return nestedCache;

@@ -182,13 +182,13 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         private LongKeyMap<SQLServerDataType> dataTypeMap = new LongKeyMap<>();
         
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerDatabase database) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database) throws SQLException {
             return session.prepareStatement(
                 "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "types") + " WHERE is_user_defined = 1 order by name");
         }
 
         @Override
-        protected SQLServerDataType fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) {
+        protected SQLServerDataType fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, @NotNull JDBCResultSet resultSet) {
             return new SQLServerDataType(database, resultSet);
         }
 
@@ -350,7 +350,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         }
 
         @Override
-        protected SQLServerDatabaseTrigger fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) {
+        protected SQLServerDatabaseTrigger fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, @NotNull JDBCResultSet resultSet) {
             return new SQLServerDatabaseTrigger(database, resultSet);
         }
 

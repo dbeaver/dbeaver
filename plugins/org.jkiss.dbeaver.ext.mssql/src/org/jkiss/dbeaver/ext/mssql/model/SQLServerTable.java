@@ -208,14 +208,14 @@ public class SQLServerTable extends SQLServerTableBase
     static class CheckConstraintCache extends JDBCObjectCache<SQLServerTable, SQLServerTableCheckConstraint> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerTable table) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerTable table) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM " + SQLServerUtils.getSystemTableName(table.getDatabase(), "check_constraints") + " WHERE parent_object_id=?");
             dbStat.setLong(1, table.getObjectId());
             return dbStat;
         }
 
         @Override
-        protected SQLServerTableCheckConstraint fetchObject(JDBCSession session, SQLServerTable table, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerTableCheckConstraint fetchObject(@NotNull JDBCSession session, @NotNull SQLServerTable table, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new SQLServerTableCheckConstraint(table, resultSet);
         }
     }

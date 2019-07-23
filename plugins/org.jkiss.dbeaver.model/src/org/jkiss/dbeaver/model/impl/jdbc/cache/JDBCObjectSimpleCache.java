@@ -62,7 +62,7 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
 
     @Override
     protected OBJECT fetchObject(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull JDBCResultSet resultSet)
-        throws SQLException, DBException
+        throws DBException
     {
         try {
             if (objectConstructor == null) {

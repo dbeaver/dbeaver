@@ -379,12 +379,12 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
 
     private class SystemDataTypeCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDataType> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerDataSource sqlServerDataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource sqlServerDataSource) throws SQLException {
             return session.prepareStatement("SELECT * FROM sys.types WHERE is_user_defined = 0 order by name");
         }
 
         @Override
-        protected SQLServerDataType fetchObject(JDBCSession session, SQLServerDataSource dataSource, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerDataType fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new SQLServerDataType(dataSource, resultSet);
         }
     }
