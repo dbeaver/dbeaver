@@ -583,6 +583,9 @@ public class OracleDataSource extends JDBCDataSource
         if ((typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML))) {
             return DBPDataKind.CONTENT;
         }
+        if ((typeName.equals(OracleConstants.TYPE_NAME_GEOMETRY) || typeName.equals(OracleConstants.TYPE_FQ_GEOMETRY))) {
+            return DBPDataKind.STRUCT;
+        }
         DBPDataKind dataKind = OracleDataType.getDataKind(typeName);
         if (dataKind != null) {
             return dataKind;

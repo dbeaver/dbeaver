@@ -37,31 +37,7 @@ public class OracleObjectValueHandler extends JDBCStructValueHandler {
 
     public static final OracleObjectValueHandler INSTANCE = new OracleObjectValueHandler();
 
-    @NotNull
-    @Override
-    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
-    {
-        if (value != null) {
-            return "[OBJECT]";
-        } else {
-            return super.getValueDisplayString(column, value, format);
-        }
-    }
-
-    @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException
-    {
-        //final Object object = resultSet.getObject(columnIndex);
-        Object object = resultSet.getObject(index);
-        return getValueFromObject(session, type, object, false);
-    }
-
-    @Override
-    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException
-    {
-        throw new DBCException("Parameter bind is not implemented");
-    }
-
+/*
     @NotNull
     @Override
     public Class<Object> getValueObjectType(@NotNull DBSTypedObject attribute)
@@ -82,5 +58,6 @@ public class OracleObjectValueHandler extends JDBCStructValueHandler {
             return new OracleObjectValue(object);
         }
     }
+*/
 
 }
