@@ -50,8 +50,6 @@ public class GreenplumTable extends PostgreTable {
 
     private int[] distributionColumns;
 
-    private boolean unloggedTable = false;
-
     private boolean supportsReplicatedDistribution = false;
 
     public GreenplumTable(PostgreSchema catalog) {
@@ -63,14 +61,7 @@ public class GreenplumTable extends PostgreTable {
 
         if (catalog.getDataSource().isServerVersionAtLeast(9, 1)) {
             supportsReplicatedDistribution = true;
-            if ("u".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, "relpersistence"))) {
-                this.unloggedTable = true;
-            }
         }
-    }
-
-    public boolean isUnloggedTable() {
-        return unloggedTable;
     }
 
     private List<PostgreTableColumn> getDistributionPolicy(DBRProgressMonitor monitor) throws DBException {
@@ -178,8 +169,5 @@ public class GreenplumTable extends PostgreTable {
         }
     }
 
-    public String addUnloggedClause(String tableddl) {
-        return tableddl.replaceFirst("CREATE", "CREATE UNLOGGED");
-    }
 }
 

@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -55,6 +54,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private String description;
 	protected boolean isPartition;
 	private boolean hasPartitions;
+    private PostgreTablePersistence persistence;
 	private String partitionKey;
     private Object acl;
     private String[] relOptions;
@@ -82,6 +82,10 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
         }
         //this.reloptions = PostgreUtils.parseObjectString()
+
+        if (container.getDataSource().isServerVersionAtLeast(9, 1)) {
+            persistence = PostgreTablePersistence.getByCode(JDBCUtils.safeGetString(dbResult, "relpersistence"));
+        }
     }
 
     // Copy constructor
@@ -253,6 +257,11 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 	public boolean isPartition() {
 		return isPartition;
 	}
+
+	@NotNull
+    public PostgreTablePersistence getPersistence() {
+        return persistence;
+    }
 
     /**
      * Extra table DDL modifiers

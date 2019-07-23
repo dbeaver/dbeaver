@@ -76,7 +76,6 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
         this.hasSubClasses = JDBCUtils.safeGetBoolean(dbResult, "relhassubclass");
-
     }
 
     // Copy constructor
