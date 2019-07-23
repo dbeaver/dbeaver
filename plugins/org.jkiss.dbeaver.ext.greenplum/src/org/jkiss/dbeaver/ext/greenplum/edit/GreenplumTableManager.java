@@ -59,22 +59,6 @@ public class GreenplumTableManager extends PostgreTableManager {
         return greenplumTable;
     }
 
-    @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor,
-                                                List<DBEPersistAction> actions,
-                                                StructCreateCommand command,
-                                                Map<String, Object> options) throws DBException {
-        GreenplumTable table = (GreenplumTable) command.getObject();
-
-        super.addStructObjectCreateActions(monitor, actions, command, options);
-
-        if (table.isUnloggedTable()) {
-            actions.set(0,
-                    new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table,
-                            table.addUnloggedClause(actions.get(0).getScript())));
-        }
-    }
-
     <T extends PostgreTableBase> SQLDatabasePersistAction createDeleteAction(T table, Map<String, Object> options) {
         StringBuilder dropTableScript = new StringBuilder("DROP ")
                 .append((table instanceof PostgreTableForeign ? "FOREIGN " : ""))

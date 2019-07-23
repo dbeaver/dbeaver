@@ -146,7 +146,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
     }
 
     protected String getCreateTableType(OBJECT_TYPE table) {
-        return "TABLE";
+        return table.isView() ? "VIEW" : "TABLE";
     }
 
     protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
@@ -162,7 +162,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP " + (object.isView() ? "VIEW" : "TABLE") +  //$NON-NLS-2$
+                "DROP " + getCreateTableType(object) +  //$NON-NLS-2$
                 " " + tableName + //$NON-NLS-2$
                 (!object.isView() && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "") //$NON-NLS-2$
             )

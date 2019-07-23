@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -72,11 +73,17 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
+    protected String beginCreateTableStatement(PostgreTableBase table, String tableName) {
+        return "CREATE " +
+            getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator();
+    }
+
+    @Override
     protected String getCreateTableType(PostgreTableBase table) {
         if (table instanceof PostgreTableForeign) {
             return "FOREIGN TABLE";
         } else {
-            return "TABLE";
+            return table.getPersistence().getTableTypeClause();
         }
     }
 
