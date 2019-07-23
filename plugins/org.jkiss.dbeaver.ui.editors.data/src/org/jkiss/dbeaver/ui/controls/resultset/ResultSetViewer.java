@@ -74,6 +74,7 @@ import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
@@ -3175,7 +3176,10 @@ public class ResultSetViewer extends Viewer
             DBSDataContainer dataContainer = getDataContainer();
             if (dataContainer != null) {
                 if (dataContainer instanceof SQLQueryContainer) {
-                    return ((SQLQueryContainer) dataContainer).getQuery().getText();
+                    SQLScriptElement query = ((SQLQueryContainer) dataContainer).getQuery();
+                    if (query != null) {
+                        return query.getText();
+                    }
                 }
                 return dataContainer.getName();
             }
@@ -3281,7 +3285,8 @@ public class ResultSetViewer extends Viewer
                             if (error instanceof DBSQLException) {
                                 sqlText = ((DBSQLException) error).getSqlQuery();
                             } else if (dataContainer instanceof SQLQueryContainer) {
-                                sqlText = ((SQLQueryContainer) dataContainer).getQuery().getText();
+                                SQLScriptElement query = ((SQLQueryContainer) dataContainer).getQuery();
+                                sqlText = query == null ? getActiveQueryText() : query.getText();
                             } else {
                                 sqlText = getActiveQueryText();
                             }
