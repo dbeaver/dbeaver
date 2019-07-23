@@ -74,6 +74,7 @@ public class OracleDataSource extends JDBCDataSource
     private boolean isAdminVisible;
     private String planTableName;
     private boolean useRuleHint;
+    private boolean resolveGeometryAsStruct = true;
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
@@ -81,6 +82,11 @@ public class OracleDataSource extends JDBCDataSource
         throws DBException {
         super(monitor, container, new OracleSQLDialect());
         this.outputReader = new OracleOutputReader();
+
+        OracleConfigurator configurator = GeneralUtils.adapt(this, OracleConfigurator.class);
+        if (configurator != null) {
+            resolveGeometryAsStruct = configurator.resolveGeometryAsStruct();
+        }
     }
 
     @Override
@@ -584,7 +590,7 @@ public class OracleDataSource extends JDBCDataSource
             return DBPDataKind.CONTENT;
         }
         if ((typeName.equals(OracleConstants.TYPE_NAME_GEOMETRY) || typeName.equals(OracleConstants.TYPE_FQ_GEOMETRY))) {
-            return DBPDataKind.STRUCT;
+            return resolveGeometryAsStruct ? DBPDataKind.STRUCT : DBPDataKind.OBJECT;
         }
         DBPDataKind dataKind = OracleDataType.getDataKind(typeName);
         if (dataKind != null) {
