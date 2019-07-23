@@ -46,6 +46,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
     public static final String ATTR_TOTAL_COST = "Total-Cost";
     public static final String ATTR_STARTUP_COST = "Startup-Cost";
     public static final String ATTR_INDEX_NAME = "Index-Name";
+    public static final String ATTR_CTE_NAME = "CTE-Name";
     public static final String ATTR_ACTUAL_TOTAL_TIME = "Actual-Total-Time";
     public static final String ATTR_ACTUAL_ROWS = "Actual-Rows";
     public static final String ATTR_PLAN_ROWS = "Plan-Rows";
@@ -97,6 +98,9 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
         }
         if (entity == null) {
             entity = attributes.get(ATTR_INDEX_NAME);
+        }
+        if (entity == null) {
+            entity = attributes.get(ATTR_CTE_NAME);
         }
         String startCost = attributes.get(ATTR_STARTUP_COST);
         String totalCost = attributes.get(ATTR_TOTAL_COST);
