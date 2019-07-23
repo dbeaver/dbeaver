@@ -181,6 +181,12 @@
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#folder_admin" description="%tree.extensions.node.tip" visibleIf="object.dataSource.serverType.supportsExtensions()">
                         <items label="%tree.extension.node.name" path="extension" property="extensions" icon="#package"/>
                     </folder>
+                    <folder label="%tree.storage.node.name" icon="#folder_info" description="%tree.storage.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces" visibleIf="object.dataSource.serverType.supportsTablespaces()">
+                            <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace"/>
+                        </folder>
+                    </folder>
+
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="%tree.information.node.tip">
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAccessMethod" label="%tree.accessMethods.node.name" icon="#languages" description="%tree.accessMethods.node.tip">
                             <items label="%tree.accessMethod.node.name" path="accessMethod" property="accessMethods" icon="#accessMethod">
@@ -210,9 +216,6 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage" label="%tree.languages.node.name" icon="#languages" description="Languages">
                             <items label="%tree.language.node.name" path="language" property="languages" icon="#language"/>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces" visibleIf="object.dataSource.serverType.supportsTablespaces()">
-                            <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAvailableExtension" label="%tree.avalextensions.node.name" icon="#extensions" description="%tree.extensions.node.tip" visibleIf="object.dataSource.serverType.supportsExtensions()">
                                 <items label="%tree.avalextension.node.name" path="extension" property="availableExtensions" icon="#extension"/>
