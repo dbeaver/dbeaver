@@ -2051,7 +2051,7 @@ public class ResultSetViewer extends Viewer
 
     public boolean isRefreshInProgress() {
         synchronized (dataPumpJobQueue) {
-            return !dataPumpJobQueue.isEmpty();
+            return dataPumpRunning.get();
         }
     }
 
