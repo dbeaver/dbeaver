@@ -820,6 +820,8 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
             String expr = JDBCUtils.safeGetString(dbResult, "expr");
             Collection<? extends PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
+            PostgreAccessMethod accessMethod = object.getAccessMethod(session.getProgressMonitor());
+
             PostgreIndexColumn[] result = new PostgreIndexColumn[keyNumbers.length];
             for (int i = 0; i < keyNumbers.length; i++) {
                 long colNumber = keyNumbers[i];
@@ -836,12 +838,16 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
                 int options = keyOptions == null || keyOptions.length < keyNumbers.length ? 0 : keyOptions[i];
                 long colOpClass = indColClasses == null || indColClasses.length < keyNumbers.length ? 0 : indColClasses[i];
 
+                // https://stackoverflow.com/questions/18121103/how-to-get-the-index-column-orderasc-desc-nulls-first-from-postgresql
+                // We can't rely on pg_am flags anymore because they awere removed in 9.6+
+                boolean isAscending =  (options & 1) == 0;
+
                 PostgreIndexColumn col = new PostgreIndexColumn(
                     object,
                     attr,
                     attrExpression,
                     i,
-                    colOpClass != 0 || (options & 0x01) != 0, // This is a kind of lazy hack. Actually this flag depends on access method.
+                    isAscending,
                     colOpClass,
                     false);
                 result[i] = col;
