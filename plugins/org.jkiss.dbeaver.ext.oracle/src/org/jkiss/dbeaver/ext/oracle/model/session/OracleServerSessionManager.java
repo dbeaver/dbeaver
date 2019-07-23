@@ -104,7 +104,11 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
             } else {
                 sql.append("DISCONNECT SESSION ");
             }
-            sql.append("'").append(sessionType.getSid()).append(',').append(sessionType.getSerial()).append("'");
+            sql.append("'").append(sessionType.getSid()).append(',').append(sessionType.getSerial());
+            if (sessionType.getInstId() != 0) {
+                sql.append(",@").append(sessionType.getInstId());
+            }
+            sql.append("'");
             if (immediate) {
                 sql.append(" IMMEDIATE");
             } else if (!toKill) {
