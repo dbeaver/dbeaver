@@ -3739,7 +3739,7 @@ public class ResultSetViewer extends Viewer
         EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
             ResultSetViewer.this, model.getSingleSource(), getVirtualEntity(model.getSingleSource()));
         dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
-        return dialog.open() != IDialogConstants.OK_ID;
+        return dialog.open() == IDialogConstants.OK_ID;
     }
 
     private void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
