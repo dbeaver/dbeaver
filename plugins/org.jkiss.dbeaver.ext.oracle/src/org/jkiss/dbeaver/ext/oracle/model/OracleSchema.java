@@ -196,19 +196,25 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public OracleDataType getDataType(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        OracleDataType type = dataTypeCache.getObject(monitor, this, name);
+        OracleDataType type = isPublic() ? getTypeBySynonym(monitor, name) : dataTypeCache.getObject(monitor, this, name);
         if (type == null) {
-            final OracleSynonym synonym = synonymCache.getObject(monitor, this, name);
-            if (synonym != null && synonym.getObjectType() == OracleObjectType.TYPE) {
-                Object object = synonym.getObject(monitor);
-                if (object instanceof OracleDataType) {
-                    return (OracleDataType)object;
-                }
+            if (!isPublic()) {
+                return getTypeBySynonym(monitor, name);
             }
-            return null;
-        } else {
-            return type;
         }
+        return type;
+    }
+
+    @Nullable
+    private OracleDataType getTypeBySynonym(DBRProgressMonitor monitor, String name) throws DBException {
+        final OracleSynonym synonym = synonymCache.getObject(monitor, this, name);
+        if (synonym != null && (synonym.getObjectType() == OracleObjectType.TYPE || synonym.getObjectType() == OracleObjectType.TYPE_BODY)) {
+            Object object = synonym.getObject(monitor);
+            if (object instanceof OracleDataType) {
+                return (OracleDataType)object;
+            }
+        }
+        return null;
     }
 
     @Association
