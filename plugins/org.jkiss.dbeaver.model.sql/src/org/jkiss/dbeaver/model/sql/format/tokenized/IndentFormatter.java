@@ -116,11 +116,17 @@ class IndentFormatter {
                 case "TRUNCATE": //$NON-NLS-1$
                 case "TABLE": //$NON-NLS-1$
                     if (!isCompact) {
+                        //String prevKeyword = getPrevKeyword(argList, index);
                         if (bracketsDepth > 0) {
+                            // Some sub-query, increase indent
                             result += insertReturnAndIndent(argList, index, indent);
+
+                            indent++;
+                            result += insertReturnAndIndent(argList, index + 1, indent);
+                        } else {
+                            // just add lf before keyword
+                            result += insertReturnAndIndent(argList, index, indent - 1);
                         }
-                        indent++;
-                        result += insertReturnAndIndent(argList, index + 1, indent);
                     }
                     break;
                 case "CASE":  //$NON-NLS-1$
@@ -142,6 +148,9 @@ class IndentFormatter {
                     if (!isCompact) {
                         result += insertReturnAndIndent(argList, index + 1, indent);
                     }
+                    break;
+                case "DECLARE":  //$NON-NLS-1$
+                    result += insertReturnAndIndent(argList, index, indent - 1);
                     break;
                 case "LEFT":
                 case "RIGHT":
