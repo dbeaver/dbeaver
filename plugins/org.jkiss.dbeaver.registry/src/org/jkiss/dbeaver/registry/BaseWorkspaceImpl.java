@@ -74,7 +74,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
                 ProjectMetadata projectMetadata = new ProjectMetadata(this, project);
                 projects.put(project, projectMetadata);
 
-                if (activeProject == null || project.getName().equals(activeProjectName)) {
+                if ((activeProject == null && project.isOpen()) || project.getName().equals(activeProjectName)) {
                     activeProject = projectMetadata;
                 }
             }
