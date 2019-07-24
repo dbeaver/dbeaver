@@ -69,9 +69,9 @@ class IndentFormatter {
                     {
                         boolean lfBeforeComma = formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
                         result += insertReturnAndIndent(
-                                argList,
-                                lfBeforeComma ? index : index + 1,
-                                indent);
+                            argList,
+                            lfBeforeComma ? index : index + 1,
+                            indent);
                     }
                 }
                 break;
@@ -116,16 +116,16 @@ class IndentFormatter {
                 case "TRUNCATE": //$NON-NLS-1$
                 case "TABLE": //$NON-NLS-1$
                     if (!isCompact) {
-                        //String prevKeyword = getPrevKeyword(argList, index);
-                        if (bracketsDepth > 0) {
-                            // Some sub-query, increase indent
-                            result += insertReturnAndIndent(argList, index, indent);
-
+                        if (!"TABLE".equals(tokenString)) {
+                            if (bracketsDepth > 0) {
+                                result += insertReturnAndIndent(argList, index, indent);
+                            } else if (index > 0) {
+                                // just add lf before keyword
+                                indent = 0;
+                                result += insertReturnAndIndent(argList, index - 1, indent);
+                            }
                             indent++;
-                            result += insertReturnAndIndent(argList, index + 1, indent);
-                        } else {
-                            // just add lf before keyword
-                            result += insertReturnAndIndent(argList, index, indent - 1);
+                            result += insertReturnAndIndent(argList, result + 1, indent);
                         }
                     }
                     break;
@@ -150,7 +150,9 @@ class IndentFormatter {
                     }
                     break;
                 case "DECLARE":  //$NON-NLS-1$
-                    result += insertReturnAndIndent(argList, index, indent - 1);
+                    if (index > 0) {
+                        result += insertReturnAndIndent(argList, index, indent - 1);
+                    }
                     break;
                 case "LEFT":
                 case "RIGHT":
@@ -312,7 +314,7 @@ class IndentFormatter {
             if (argIndex > 0) {
                 final FormatterToken prevToken = argList.get(argIndex - 1);
                 if (prevToken.getType() == TokenType.COMMENT &&
-                        SQLUtils.isCommentLine(formatterCfg.getSyntaxManager().getDialect(), prevToken.getString())) {
+                    SQLUtils.isCommentLine(formatterCfg.getSyntaxManager().getDialect(), prevToken.getString())) {
                     s = ""; //$NON-NLS-1$
                 }
             }
