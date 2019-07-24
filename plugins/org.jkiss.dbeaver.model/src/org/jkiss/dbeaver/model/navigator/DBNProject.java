@@ -119,6 +119,9 @@ public class DBNProject extends DBNResource {
             return children.toArray(new DBNNode[0]);
         }
 
+        if (!project.getEclipseProject().isOpen()) {
+            return new DBNNode[0];
+        }
         return super.getChildren(monitor);
     }
 

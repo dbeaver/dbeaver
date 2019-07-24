@@ -207,7 +207,9 @@ public class ProjectMetadata implements DBPProject {
     }
 
     public void dispose() {
-        dataSourceRegistry.dispose();
+        if (dataSourceRegistry != null) {
+            dataSourceRegistry.dispose();
+        }
     }
 
     public ProjectFormat getFormat() {
@@ -393,15 +395,19 @@ public class ProjectMetadata implements DBPProject {
 
     void removeResourceFromCache(IPath path) {
         synchronized (metadataSync) {
-            resourceProperties.remove(path.toString());
+            if (resourceProperties != null) {
+                resourceProperties.remove(path.toString());
+            }
         }
     }
 
     void updateResourceCache(IPath oldPath, IPath newPath) {
         synchronized (metadataSync) {
-            Map<String, Object> props = resourceProperties.remove(oldPath.toString());
-            if (props != null) {
-                resourceProperties.put(newPath.toString(), props);
+            if (resourceProperties != null) {
+                Map<String, Object> props = resourceProperties.remove(oldPath.toString());
+                if (props != null) {
+                    resourceProperties.put(newPath.toString(), props);
+                }
             }
         }
     }
