@@ -75,24 +75,6 @@ public class GreenplumTableTest {
     }
 
     @Test
-    public void addUnloggedClause_whenTableDDLContainsCreateKeyword_itIsReplacedWithCreateUnlogged() {
-        String tableDdl = "CREATE TABLE";
-
-        table = new GreenplumTable(mockSchema, mockResults);
-
-        Assert.assertEquals(table.addUnloggedClause(tableDdl), "CREATE UNLOGGED TABLE");
-    }
-
-    @Test
-    public void addUnloggedClause_whenTableDDLDoesNotContainCreateKeyword_itIsReplacedWithCreateUnlogged() {
-        String tableDdl = "SOME TABLE";
-
-        table = new GreenplumTable(mockSchema, mockResults);
-
-        Assert.assertEquals(table.addUnloggedClause(tableDdl), tableDdl);
-    }
-
-    @Test
     public void appendTableModifiers_whenServerVersion8_andNoColumnSetForDistribution_resultsInRandom() throws Exception {
         StringBuilder ddl = new StringBuilder();
 
