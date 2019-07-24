@@ -63,15 +63,25 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
 
         String activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
-        for (IProject project : eclipseWorkspace.getRoot().getProjects()) {
+        IWorkspaceRoot root = eclipseWorkspace.getRoot();
+        try {
+            root.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
+        } catch (CoreException e) {
+            log.debug("Error refreshing local projects", e);
+        }
+        for (IProject project : root.getProjects()) {
             if (project.exists() && !project.isHidden()) {
                 ProjectMetadata projectMetadata = new ProjectMetadata(this, project);
                 projects.put(project, projectMetadata);
 
-                if (project.getName().equals(activeProjectName)) {
+                if (activeProject == null || project.getName().equals(activeProjectName)) {
                     activeProject = projectMetadata;
                 }
             }
+        }
+
+        if (activeProject != null && !activeProject.isOpen()) {
+            activeProject.ensureOpen();
         }
 
         projectListener = new ProjectListener();
