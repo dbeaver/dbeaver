@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -46,14 +47,16 @@ class SavePreviewDialog extends DetailsViewDialog {
     private boolean showCascadeSettings;
     private Object sqlPanel;
     private ResultSetSaveSettings saveSettings;
+    private ResultSetSaveReport saveReport;
 
-    public SavePreviewDialog(ResultSetViewer viewer, boolean showCascadeSettings) {
+    SavePreviewDialog(@NotNull ResultSetViewer viewer, boolean showCascadeSettings, @NotNull ResultSetSaveReport saveReport) {
         super(viewer.getControl().getShell(), "Preview changes", UIIcon.SQL_SCRIPT);
 
         this.viewer = viewer;
         this.showCascadeSettings = showCascadeSettings;
 
         this.saveSettings = new ResultSetSaveSettings();
+        this.saveReport = saveReport;
     }
 
     public ResultSetSaveSettings getSaveSettings() {
@@ -75,7 +78,6 @@ class SavePreviewDialog extends DetailsViewDialog {
 
         String changesReport = "";
 
-        ResultSetSaveReport saveReport = viewer.generateChangesReport();
         if (saveReport.getInserts() > 0)
             changesReport = appendReportLine(changesReport, saveReport.getInserts(), "rows(s) added");
         if (saveReport.getUpdates() > 0)

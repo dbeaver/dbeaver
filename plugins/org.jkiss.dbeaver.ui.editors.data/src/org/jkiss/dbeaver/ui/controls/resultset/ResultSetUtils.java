@@ -259,6 +259,7 @@ public class ResultSetUtils
         throws DBException
     {
         List<DBSEntityConstraint> identifiers = new ArrayList<>(2);
+        List<DBSEntityConstraint> nonIdentifyingConstraints = null;
 
         if (readMetaData) {
             if (table instanceof DBSTable && ((DBSTable) table).isView()) {
@@ -298,6 +299,9 @@ public class ResultSetUtils
                         for (DBSEntityConstraint constraint : constraints) {
                             if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
                                 identifiers.add(constraint);
+                            } else {
+                                if (nonIdentifyingConstraints == null) nonIdentifyingConstraints = new ArrayList<>();
+                                nonIdentifyingConstraints.add(constraint);
                             }
                         }
                     }
@@ -316,6 +320,13 @@ public class ResultSetUtils
                 }
             }
         }
+
+        if (CommonUtils.isEmpty(identifiers)) {
+            if (nonIdentifyingConstraints != null) {
+                identifiers.addAll(nonIdentifyingConstraints);
+            }
+        }
+
         if (CommonUtils.isEmpty(identifiers)) {
             // No physical identifiers or row ids
             // Make new or use existing virtual identifier
@@ -344,6 +355,7 @@ public class ResultSetUtils
             }
             return uniqueId;
         }
+
         return null;
     }
 

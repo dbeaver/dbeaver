@@ -80,7 +80,6 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
                 if (useAllColumns(getShell(), viewer)) {
                     super.buttonPressed(IDialogConstants.OK_ID);
                 }
-
                 break;
             case IDialogConstants.INTERNAL_ID + 1:
                 editCustomKey();

@@ -834,6 +834,7 @@ public final class DBUtils {
         }
 
         List<DBSEntityConstraint> identifiers = new ArrayList<>();
+        List<DBSEntityConstraint> nonIdentifyingConstraints = null;
 
         // Check indexes
         if (entity instanceof DBSTable) {
@@ -858,6 +859,9 @@ public final class DBUtils {
                 for (DBSEntityConstraint constraint : uniqueKeys) {
                     if (isIdentifierConstraint(monitor, constraint)) {
                         identifiers.add(constraint);
+                    } else {
+                        if (nonIdentifyingConstraints == null) nonIdentifyingConstraints = new ArrayList<>();
+                        nonIdentifyingConstraints.add(constraint);
                     }
                 }
             }
@@ -880,6 +884,9 @@ public final class DBUtils {
                 getEntityAttributes(monitor, (DBSEntityReferrer)uniqueId)
                 : Collections.<DBSTableColumn>emptyList();
         } else {
+            if (nonIdentifyingConstraints != null) {
+                return getEntityAttributes(monitor, (DBSEntityReferrer)nonIdentifyingConstraints.get(0));
+            }
             return Collections.emptyList();
         }
     }

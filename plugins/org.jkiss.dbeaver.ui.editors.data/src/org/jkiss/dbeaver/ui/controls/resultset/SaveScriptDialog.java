@@ -49,13 +49,14 @@ class SaveScriptDialog extends BaseDialog {
     private ResultSetViewer viewer;
     private Object sqlPanel;
     private ResultSetSaveSettings saveSettings;
+    private ResultSetSaveReport saveReport;
 
-    public SaveScriptDialog(ResultSetViewer viewer) {
+    SaveScriptDialog(ResultSetViewer viewer, ResultSetSaveReport saveReport) {
         super(viewer.getControl().getShell(), "Preview changes", UIIcon.SQL_SCRIPT);
 
         this.viewer = viewer;
-
         this.saveSettings = new ResultSetSaveSettings();
+        this.saveReport = saveReport;
     }
 
     public ResultSetSaveSettings getSaveSettings() {
@@ -73,8 +74,6 @@ class SaveScriptDialog extends BaseDialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.minimumWidth = 400;
         messageGroup.setLayoutData(gd);
-
-        ResultSetSaveReport saveReport = viewer.generateChangesReport();
 
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
