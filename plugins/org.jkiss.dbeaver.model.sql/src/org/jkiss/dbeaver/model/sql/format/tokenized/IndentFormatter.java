@@ -324,7 +324,10 @@ class IndentFormatter {
 
             FormatterToken token = argList.get(argIndex);
             if (token.getType() == TokenType.SPACE) {
-                token.setString(s);
+                if (!token.getString().contains(s)) {
+                    // Replace space token only if it has less chars
+                    token.setString(s);
+                }
                 return 0;
             }
             boolean isDelimiter = statementDelimiters.contains(token.getString().toUpperCase());
