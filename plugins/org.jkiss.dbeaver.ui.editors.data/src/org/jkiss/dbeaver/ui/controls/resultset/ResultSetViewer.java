@@ -3456,13 +3456,14 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @Nullable
     @Override
     public ResultSetSaveReport generateChangesReport() {
         try {
             return createDataPersister(false).generateReport();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Report error", "Error generating changes report", e);
-            return new ResultSetSaveReport();
+            return null;
         }
     }
 
@@ -3695,13 +3696,7 @@ public class ResultSetViewer extends Viewer
             if (identifier != null) {
                 if (CommonUtils.isEmpty(identifier.getAttributes())) {
                     // Empty identifier. We have to define it
-                    if (!new UIConfirmation() {
-                        @Override
-                        public Boolean runTask() {
-                            return ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this, executionContext);
-                        }
-                    }.confirm())
-                    {
+                    if (!UIConfirmation.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this, executionContext))) {
                         throw new DBCException("No unique key defined");
                     }
                 }

@@ -268,10 +268,14 @@ public class ResultSetHandlerMain extends AbstractHandler {
 
                 if (dataSource.getContainer().getConnectionConfiguration().getConnectionType().isConfirmDataChange()) {
                     ResultSetSaveReport saveReport = rsv.generateChangesReport();
+                    if (saveReport == null) {
+                        return null;
+                    }
                     {
                         SavePreviewDialog spd = new SavePreviewDialog(
                             rsv,
-                            saveReport.isHasReferences() && saveReport.getDeletes() > 0);
+                            saveReport.isHasReferences() && saveReport.getDeletes() > 0,
+                            saveReport);
                         if (spd.open() != IDialogConstants.OK_ID) {
                             return null;
                         }
@@ -286,7 +290,12 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 rsv.rejectChanges();
                 break;
             case CMD_GENERATE_SCRIPT: {
-                ResultSetSaveSettings saveSettings = showPreviewScript(rsv);
+                ResultSetSaveReport saveReport = rsv.generateChangesReport();
+                if (saveReport == null) {
+                    return null;
+                }
+
+                ResultSetSaveSettings saveSettings = showPreviewScript(rsv, saveReport);
                 if (saveSettings != null) {
                     rsv.applyChanges(null, saveSettings);
                 }
@@ -511,8 +520,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
         return null;
     }
 
-    private ResultSetSaveSettings showPreviewScript(ResultSetViewer rsv) {
-        SaveScriptDialog scriptDialog = new SaveScriptDialog(rsv);
+    private ResultSetSaveSettings showPreviewScript(ResultSetViewer rsv, ResultSetSaveReport saveReport) {
+        SaveScriptDialog scriptDialog = new SaveScriptDialog(rsv, saveReport);
         if (scriptDialog.open() == IDialogConstants.OK_ID) {
             return scriptDialog.getSaveSettings();
         }
