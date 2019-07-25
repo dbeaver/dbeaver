@@ -250,20 +250,22 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
-        if (rowsExported > 0) {
-            insertBatch(true);
-        }
-        if (executeBatch != null) {
-            executeBatch.close();
-            executeBatch = null;
-        }
-
-        if (targetObject instanceof DBSDataManipulatorExt) {
-            ((DBSDataManipulatorExt) targetObject).afterDataChange(
-                session,
-                DBSManipulationType.INSERT,
-                targetAttributes.toArray(new DBSAttributeBase[0]),
-                new AbstractExecutionSource(sourceObject, targetContext, this));
+        try {
+            if (rowsExported > 0) {
+                insertBatch(true);
+            }
+            if (executeBatch != null) {
+                executeBatch.close();
+                executeBatch = null;
+            }
+        } finally {
+            if (targetObject instanceof DBSDataManipulatorExt) {
+                ((DBSDataManipulatorExt) targetObject).afterDataChange(
+                    session,
+                    DBSManipulationType.INSERT,
+                    targetAttributes.toArray(new DBSAttributeBase[0]),
+                    new AbstractExecutionSource(sourceObject, targetContext, this));
+            }
         }
     }
 
