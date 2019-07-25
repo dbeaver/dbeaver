@@ -128,6 +128,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
     }
 
     private class ParameterCache extends JDBCObjectCache<OracleDataTypeMethod, OracleDataTypeMethodParameter> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataTypeMethod owner) throws SQLException
         {

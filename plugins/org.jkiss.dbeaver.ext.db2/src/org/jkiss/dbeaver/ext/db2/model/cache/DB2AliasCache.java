@@ -78,6 +78,7 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         SQL_WITHOUT_MODULE_AND_SEQUALIAS = sb1.toString() + sb3.toString();
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
     {

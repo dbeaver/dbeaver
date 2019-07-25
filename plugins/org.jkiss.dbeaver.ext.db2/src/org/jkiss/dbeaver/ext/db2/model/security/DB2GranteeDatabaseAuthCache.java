@@ -36,6 +36,7 @@ public class DB2GranteeDatabaseAuthCache extends JDBCObjectCache<DB2Grantee, DB2
 
     private static final String SQL = "SELECT * FROM SYSCAT.DBAUTH WHERE GRANTEETYPE = ? AND GRANTEE = ? WITH UR";
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee) throws SQLException
     {

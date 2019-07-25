@@ -873,6 +873,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     // Caches
 
     class RoleCache extends JDBCObjectCache<PostgreDatabase, PostgreRole> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
@@ -903,6 +904,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     class AccessMethodCache extends JDBCObjectCache<PostgreDatabase, PostgreAccessMethod> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
@@ -921,6 +923,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     class EncodingCache extends JDBCObjectCache<PostgreDatabase, PostgreCharset> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
@@ -941,6 +944,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     class CollationCache extends JDBCObjectCache<PostgreDatabase, PostgreCollation> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
@@ -960,6 +964,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     class LanguageCache extends JDBCObjectCache<PostgreDatabase, PostgreLanguage> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
@@ -978,6 +983,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     class ForeignDataWrapperCache extends JDBCObjectCache<PostgreDatabase, PostgreForeignDataWrapper> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
@@ -998,6 +1004,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     class ForeignServerCache extends JDBCObjectCache<PostgreDatabase, PostgreForeignServer> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
@@ -1016,6 +1023,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     class TablespaceCache extends JDBCObjectCache<PostgreDatabase, PostgreTablespace> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
@@ -1036,6 +1044,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     
  class AvailableExtensionCache extends JDBCObjectCache<PostgreDatabase, PostgreAvailableExtension> {
         
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
@@ -1053,6 +1062,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     
     class ExtensionCache extends JDBCObjectCache<PostgreDatabase, PostgreExtension> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {

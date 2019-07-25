@@ -45,6 +45,7 @@ public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Gra
         this.authIdTypeName = authIdType.name();
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2DataSource db2DataSource) throws SQLException
     {

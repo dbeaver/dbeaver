@@ -475,6 +475,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             return new PostgreDatabase(session.getProgressMonitor(), owner, resultSet);
         }
 
+        @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(JDBCSession session, PostgreDataSource owner, PostgreDatabase object, String objectName) throws SQLException {
             final boolean showNDD = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));

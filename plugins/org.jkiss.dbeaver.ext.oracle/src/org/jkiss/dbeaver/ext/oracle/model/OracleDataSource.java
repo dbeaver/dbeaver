@@ -829,6 +829,7 @@ public class OracleDataSource extends JDBCDataSource
             setListOrderComparator(DBUtils.<OracleSchema>nameComparator());
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             StringBuilder schemasQuery = new StringBuilder();
@@ -885,6 +886,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             return session.prepareStatement(
@@ -899,6 +901,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     static class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             return session.prepareStatement(
@@ -912,6 +915,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     static class UserCache extends JDBCObjectCache<OracleDataSource, OracleUser> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             return session.prepareStatement(
@@ -925,6 +929,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     static class RoleCache extends JDBCObjectCache<OracleDataSource, OracleRole> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             return session.prepareStatement(
@@ -942,6 +947,7 @@ public class OracleDataSource extends JDBCDataSource
             super("PROFILE");
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             return session.prepareStatement(

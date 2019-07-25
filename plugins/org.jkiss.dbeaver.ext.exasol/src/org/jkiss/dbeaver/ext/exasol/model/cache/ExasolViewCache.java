@@ -132,7 +132,8 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 
     }
 
-	@Override
+	@NotNull
+    @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema) throws SQLException {
         JDBCDatabaseMetaData meta = session.getMetaData();
 

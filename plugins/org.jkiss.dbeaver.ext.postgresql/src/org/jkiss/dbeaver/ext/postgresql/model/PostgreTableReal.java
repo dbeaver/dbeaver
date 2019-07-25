@@ -195,6 +195,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
     }
 
     class TriggerCache extends JDBCObjectCache<PostgreTableReal, PostgreTrigger> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableReal owner)
             throws SQLException
@@ -218,6 +219,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
     }
 
     class RuleCache extends JDBCObjectCache<PostgreTableReal, PostgreRule> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableReal owner)
             throws SQLException

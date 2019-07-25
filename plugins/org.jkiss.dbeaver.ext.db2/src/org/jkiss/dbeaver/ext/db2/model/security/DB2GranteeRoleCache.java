@@ -37,6 +37,7 @@ public class DB2GranteeRoleCache extends JDBCObjectCache<DB2Grantee, DB2RoleAuth
 
     private static final String SQL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE GRANTEETYPE = ? AND GRANTEE = ? ORDER BY ROLENAME WITH UR";
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee) throws SQLException
     {

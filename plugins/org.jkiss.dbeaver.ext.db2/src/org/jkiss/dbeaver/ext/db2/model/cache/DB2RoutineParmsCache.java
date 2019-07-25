@@ -50,6 +50,7 @@ public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2Routine
         SQL = sb.toString();
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Routine db2Routine) throws SQLException
     {

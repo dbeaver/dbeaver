@@ -37,7 +37,8 @@ public final class ExasolDataTypeCache
 	private static final String SQL_TYPE_CACHE =
         "select * from SYS.EXA_SQL_TYPES";
 
-	@Override
+	@NotNull
+    @Override
 	protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolDataSource owner) throws SQLException {
 		JDBCStatement dbstat = session.createStatement();
 		

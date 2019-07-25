@@ -484,6 +484,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
     static class ArgumentsCache extends JDBCObjectCache<OracleSchedulerJob, OracleSchedulerJobArgument> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchedulerJob job) throws SQLException
         {

@@ -211,6 +211,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
             super("PARTITION_NAME");
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTablePhysical table) throws SQLException
         {

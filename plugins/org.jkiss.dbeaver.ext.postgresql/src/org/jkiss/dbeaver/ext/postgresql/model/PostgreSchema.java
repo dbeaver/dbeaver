@@ -440,6 +440,7 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
 
     class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
             throws SQLException {
@@ -483,6 +484,7 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
 
     class AggregateCache extends JDBCObjectCache<PostgreSchema, PostgreAggregate> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
             throws SQLException {

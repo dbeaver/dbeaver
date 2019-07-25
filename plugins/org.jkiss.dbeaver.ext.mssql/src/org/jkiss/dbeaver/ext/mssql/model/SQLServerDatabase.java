@@ -181,6 +181,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
 
         private LongKeyMap<SQLServerDataType> dataTypeMap = new LongKeyMap<>();
         
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database) throws SQLException {
             return session.prepareStatement(
@@ -273,6 +274,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
             setListOrderComparator(DBUtils.nameComparatorIgnoreCase());
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase owner) throws SQLException {
             SQLServerDataSource dataSource = owner.getDataSource();
@@ -330,6 +332,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
 
     class TriggerCache extends JDBCObjectLookupCache<SQLServerDatabase, SQLServerDatabaseTrigger> {
 
+        @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerDatabase database, SQLServerDatabaseTrigger object, String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder(500);

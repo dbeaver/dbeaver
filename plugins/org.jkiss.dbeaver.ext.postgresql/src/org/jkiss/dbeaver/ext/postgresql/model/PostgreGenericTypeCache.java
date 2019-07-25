@@ -58,6 +58,7 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache<GenericStruc
         super(owner);
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException
     {

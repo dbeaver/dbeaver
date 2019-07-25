@@ -81,6 +81,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
     }
 
     static class RolePrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivRole> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleGrantee owner) throws SQLException
         {
@@ -98,6 +99,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
     }
 
     static class SystemPrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivSystem> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleGrantee owner) throws SQLException
         {
@@ -115,6 +117,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
     }
 
     static class ObjectPrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivObject> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleGrantee owner) throws SQLException
         {

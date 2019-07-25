@@ -629,6 +629,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     static class SequenceCache extends JDBCObjectCache<SQLServerSchema, SQLServerSequence> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
@@ -667,6 +668,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     static class SynonymCache extends JDBCObjectCache<SQLServerSchema, SQLServerSynonym> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
@@ -709,6 +711,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             super("proc_name");
         }
 
+        @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerSchema schema, SQLServerProcedure object, String objectName) throws SQLException {
             String sql = "SELECT p.*,ep.value as description" +
@@ -769,6 +772,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     class TriggerCache extends JDBCObjectLookupCache<SQLServerSchema, SQLServerTableTrigger> {
 
+        @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerSchema schema, SQLServerTableTrigger object, String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder(500);

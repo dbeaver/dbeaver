@@ -109,6 +109,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         }
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException
     {

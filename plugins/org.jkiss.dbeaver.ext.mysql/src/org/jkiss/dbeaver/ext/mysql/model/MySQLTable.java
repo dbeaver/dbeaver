@@ -461,6 +461,7 @@ public class MySQLTable extends MySQLTableBase
 
     class PartitionCache extends JDBCObjectCache<MySQLTable, MySQLPartition> {
         Map<String, MySQLPartition> partitionMap = new HashMap<>();
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLTable mySQLTable) throws SQLException
         {

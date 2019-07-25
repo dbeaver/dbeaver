@@ -40,6 +40,7 @@ public class DB2TableIndexCache extends JDBCObjectCache<DB2TableBase, DB2Index> 
 
     private static final String SQL_INDS_TAB = "SELECT * FROM SYSCAT.INDEXES WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY INDNAME WITH UR";
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2TableBase db2Table)
         throws SQLException

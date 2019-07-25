@@ -605,6 +605,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataType owner) throws SQLException
         {
@@ -623,6 +624,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     private class MethodCache extends JDBCObjectCache<OracleDataType, OracleDataTypeMethod> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataType owner) throws SQLException
         {

@@ -51,6 +51,7 @@ public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
         SQL_ALL = String.format(SQL_BASE_ALL, routineType.name());
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
     {
