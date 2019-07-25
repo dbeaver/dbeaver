@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
@@ -90,12 +91,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
         initExporter(session.getProgressMonitor());
 
+        AbstractExecutionSource executionSource = new AbstractExecutionSource(sourceObject, targetContext, this);
+
         if (offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
             if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
                 targetObject.truncateData(
                     targetSession,
-                    new AbstractExecutionSource(sourceObject, targetContext, this));
+                    executionSource);
             } else {
                 log.error("Table '" + targetObject.getName() + "' doesn't support truncate operation");
             }
@@ -153,12 +156,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
             targetAttributes.add(targetAttr);
         }
+        DBSAttributeBase[] attributes = targetAttributes.toArray(new DBSAttributeBase[0]);
+
+        if (targetObject instanceof DBSDataManipulatorExt) {
+            ((DBSDataManipulatorExt) targetObject).beforeDataChange(session, DBSManipulationType.INSERT, attributes, executionSource);
+        }
 
         executeBatch = targetObject.insertData(
             targetSession,
-            targetAttributes.toArray(new DBSAttributeBase[0]),
+            attributes,
             null,
-            new AbstractExecutionSource(sourceObject, targetContext, this));
+            executionSource);
     }
 
     private boolean isSkipColumn(DBDAttributeBinding attr) {
@@ -248,6 +256,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (executeBatch != null) {
             executeBatch.close();
             executeBatch = null;
+        }
+
+        if (targetObject instanceof DBSDataManipulatorExt) {
+            ((DBSDataManipulatorExt) targetObject).afterDataChange(
+                session,
+                DBSManipulationType.INSERT,
+                targetAttributes.toArray(new DBSAttributeBase[0]),
+                new AbstractExecutionSource(sourceObject, targetContext, this));
         }
     }
 
