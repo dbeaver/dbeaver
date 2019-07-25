@@ -258,6 +258,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
+    public OracleSynonym getSynonym(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return synonymCache.getObject(monitor, this, name);
+    }
+
+    @Association
     public Collection<OracleSchemaTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -991,6 +998,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
      * DataType cache implementation
      */
     static class DataTypeCache extends JDBCObjectCache<OracleSchema, OracleDataType> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
@@ -1013,6 +1021,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
      * Sequence cache implementation
      */
     static class SequenceCache extends JDBCObjectCache<OracleSchema, OracleSequence> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
@@ -1035,6 +1044,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
      * Queue cache implementation
      */
     static class QueueCache extends JDBCObjectCache<OracleSchema, OracleQueue> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
@@ -1083,6 +1093,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     static class PackageCache extends JDBCObjectCache<OracleSchema, OraclePackage> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
             throws SQLException
@@ -1108,27 +1119,42 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     /**
      * Sequence cache implementation
      */
-    static class SynonymCache extends JDBCObjectCache<OracleSchema, OracleSynonym> {
+    static class SynonymCache extends JDBCObjectLookupCache<OracleSchema, OracleSynonym> {
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, OracleSynonym object, String objectName) throws SQLException
         {
             String synonymTypeFilter = (session.getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS) ?
                 "" :
                 "AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n");
 
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) as TABLE_OWNER, MAX(TABLE_NAME) as TABLE_NAME, MAX(DB_LINK) as DB_LINK, MAX(OBJECT_TYPE) as OBJECT_TYPE FROM (\n" +
-                    "SELECT S.*, NULL OBJECT_TYPE FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SYNONYMS") + " S WHERE S.OWNER = ?\n" +
-                    "UNION ALL\n" +
-                    "SELECT S.*,O.OBJECT_TYPE FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SYNONYMS") + " S, " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") + " O\n" +
-                    "WHERE S.OWNER = ?\n" +
-                    synonymTypeFilter +
-                    "AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
-                    ")\n" +
-                    "GROUP BY OWNER, SYNONYM_NAME\n" +
-                    "ORDER BY SYNONYM_NAME");
-            dbStat.setString(1, owner.getName());
-            dbStat.setString(2, owner.getName());
+            String synonymName = object != null ? object.getName() : objectName;
+
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) as TABLE_OWNER, MAX(TABLE_NAME) as TABLE_NAME, MAX(DB_LINK) as DB_LINK, MAX(OBJECT_TYPE) as OBJECT_TYPE FROM (\n")
+                .append("SELECT S.*, NULL OBJECT_TYPE FROM ")
+                .append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SYNONYMS"))
+                .append(" S WHERE S.OWNER = ?");
+            if (synonymName != null) sql.append(" AND S.SYNONYM_NAME = ?");
+            sql
+                .append("\nUNION ALL\n")
+                .append("SELECT S.*,O.OBJECT_TYPE FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SYNONYMS")).append(" S, ")
+                .append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS")).append(" O\n")
+                .append("WHERE S.OWNER = ?\n");
+            if (synonymName != null) sql.append(" AND S.SYNONYM_NAME = ? ");
+            sql.append(synonymTypeFilter)
+                .append("AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n)\n");
+            sql.append("GROUP BY OWNER, SYNONYM_NAME");
+            if (synonymName == null) {
+                sql.append("\nORDER BY SYNONYM_NAME");
+            }
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            int paramNum = 1;
+            dbStat.setString(paramNum++, owner.getName());
+            if (synonymName != null) dbStat.setString(paramNum++, synonymName);
+            dbStat.setString(paramNum++, owner.getName());
+            if (synonymName != null) dbStat.setString(paramNum++, synonymName);
             return dbStat;
         }
 
@@ -1137,12 +1163,14 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             return new OracleSynonym(owner, resultSet);
         }
+
     }
 
     static class MViewCache extends JDBCObjectLookupCache<OracleSchema, OracleMaterializedView> {
 
+        @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(JDBCSession session, OracleSchema owner, OracleMaterializedView object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, OracleSchema owner, OracleMaterializedView object, String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "MVIEWS") + " WHERE OWNER=? " +
                     (object == null && objectName == null ? "" : "AND MVIEW_NAME=? ") +
@@ -1163,6 +1191,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     static class DBLinkCache extends JDBCObjectCache<OracleSchema, OracleDBLink> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
             throws SQLException
@@ -1185,6 +1214,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     static class TriggerCache extends JDBCObjectCache<OracleSchema, OracleSchemaTrigger> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema schema) throws SQLException
         {
@@ -1205,6 +1235,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     static class JavaCache extends JDBCObjectCache<OracleSchema, OracleJavaClass> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
             throws SQLException
@@ -1226,6 +1257,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     static class SchedulerJobCache extends JDBCObjectCache<OracleSchema, OracleSchedulerJob> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
                 throws SQLException
@@ -1247,6 +1279,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     static class SchedulerProgramCache extends JDBCObjectCache<OracleSchema, OracleSchedulerProgram> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
                 throws SQLException
@@ -1268,6 +1301,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     static class RecycleBin extends JDBCObjectCache<OracleSchema, OracleRecycledObject> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
             throws SQLException
