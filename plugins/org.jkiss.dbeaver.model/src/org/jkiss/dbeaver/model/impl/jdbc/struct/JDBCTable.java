@@ -817,6 +817,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     ////////////////////////////////////////////////////////////////////
     // Truncate
 
+    @NotNull
     @Override
     public DBCStatistics truncateData(@NotNull DBCSession session, @NotNull DBCExecutionSource source) throws DBCException {
         if (!isTruncateSupported()) {

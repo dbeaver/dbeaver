@@ -45,7 +45,6 @@ public interface DBSDataManipulator extends DBSDataContainer {
         @NotNull
         DBCStatistics execute(@NotNull DBCSession session) throws DBCException;
 
-        @NotNull
         void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions) throws DBCException;
 
         void close();
