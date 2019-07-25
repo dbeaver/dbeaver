@@ -200,6 +200,7 @@ public class MySQLPackage
 
     static class ProceduresCache extends JDBCObjectCache<MySQLPackage, MySQLProcedure> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLPackage owner)
             throws SQLException

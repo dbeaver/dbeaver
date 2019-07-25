@@ -80,6 +80,7 @@ public class OracleRole extends OracleGrantee implements DBARole
     }
 
     static class UserCache extends JDBCObjectCache<OracleRole, OraclePrivUser> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleRole owner) throws SQLException
         {

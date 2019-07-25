@@ -309,6 +309,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
 
 
     static class FileCache extends JDBCObjectCache<OracleTablespace, OracleDataFile> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTablespace owner) throws SQLException
         {
@@ -328,6 +329,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     }
 
     static class SegmentCache extends JDBCObjectCache<OracleTablespace, OracleSegment<OracleTablespace>> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTablespace owner) throws SQLException
         {

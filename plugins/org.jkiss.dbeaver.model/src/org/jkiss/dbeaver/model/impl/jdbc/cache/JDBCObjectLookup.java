@@ -32,7 +32,6 @@ public interface JDBCObjectLookup<OWNER extends DBSObject, OBJECT extends DBSObj
     /**
      * Creates statement to read just one object.
      * Parameter @object OR @objectName may be specified to find an object
-     * @throws SQLException
      */
     @NotNull
     JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable OBJECT object, @Nullable String objectName)

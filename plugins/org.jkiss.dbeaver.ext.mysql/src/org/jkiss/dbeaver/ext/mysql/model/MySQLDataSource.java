@@ -662,6 +662,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder("show databases");

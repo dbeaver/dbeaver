@@ -198,6 +198,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         SQL_WITHOUT_MODULE = sb.toString() + sb3.toString();
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee)
         throws SQLException

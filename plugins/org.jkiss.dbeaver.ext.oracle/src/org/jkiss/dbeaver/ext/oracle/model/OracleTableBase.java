@@ -318,6 +318,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             super("TRIGGER_NAME");
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTableBase owner) throws SQLException
         {
@@ -374,6 +375,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     static class TablePrivCache extends JDBCObjectCache<OracleTableBase, OraclePrivTable> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTableBase tableBase) throws SQLException
         {

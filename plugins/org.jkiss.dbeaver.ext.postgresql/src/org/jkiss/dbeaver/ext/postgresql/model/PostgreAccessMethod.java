@@ -204,6 +204,7 @@ public class PostgreAccessMethod extends PostgreInformation {
 
     static class OperatorClassCache extends JDBCObjectCache<PostgreAccessMethod, PostgreOperatorClass> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreAccessMethod owner)
                 throws SQLException
@@ -224,6 +225,7 @@ public class PostgreAccessMethod extends PostgreInformation {
 
     static class OperatorFamilyCache extends JDBCObjectCache<PostgreAccessMethod, PostgreOperatorFamily> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreAccessMethod owner)
                 throws SQLException

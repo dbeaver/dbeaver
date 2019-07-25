@@ -117,6 +117,7 @@ public class VerticaDataSource extends GenericDataSource {
     }
 
     class NodeCache extends JDBCObjectCache<VerticaDataSource, VerticaNode> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull VerticaDataSource mySQLTable) throws SQLException
         {

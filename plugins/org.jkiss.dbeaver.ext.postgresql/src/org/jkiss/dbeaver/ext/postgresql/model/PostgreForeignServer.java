@@ -106,6 +106,7 @@ public class PostgreForeignServer extends PostgreInformation implements PostgreS
 
     static class UserMappingCache extends JDBCObjectCache<PostgreForeignServer, PostgreUserMapping> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreForeignServer owner)
             throws SQLException

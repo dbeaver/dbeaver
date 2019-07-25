@@ -765,6 +765,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return new MySQLPackage(owner, dbResult);
         }
 
+        @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(JDBCSession session, MySQLCatalog owner, MySQLPackage object, String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -791,6 +792,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return new MySQLTrigger(owner, triggerTable, dbResult);
         }
 
+        @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(JDBCSession session, MySQLCatalog owner, MySQLTrigger object, String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -807,6 +809,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     static class EventCache extends JDBCObjectCache<MySQLCatalog, MySQLEvent> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException

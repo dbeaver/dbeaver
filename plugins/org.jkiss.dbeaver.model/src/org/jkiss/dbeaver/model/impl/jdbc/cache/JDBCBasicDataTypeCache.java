@@ -48,6 +48,7 @@ public class JDBCBasicDataTypeCache<OWNER extends DBSObject, OBJECT extends JDBC
         setCaseSensitive(false);
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner) throws SQLException
     {

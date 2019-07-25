@@ -31,6 +31,7 @@ public final class ExasolJDBCObjectSimpleCacheLiterals<OWNER extends DBSObject, 
         this.queryParameters = args;
     }
 
+    @NotNull
     @SuppressWarnings("rawtypes")
 	@Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)

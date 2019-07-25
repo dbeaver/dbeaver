@@ -117,6 +117,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
         }
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)
         throws SQLException

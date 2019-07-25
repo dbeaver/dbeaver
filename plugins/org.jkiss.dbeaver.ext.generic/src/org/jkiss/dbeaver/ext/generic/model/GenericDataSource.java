@@ -939,6 +939,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericDataSource owner) throws SQLException {
             return session.getMetaData().getTableTypes().getSourceStatement();

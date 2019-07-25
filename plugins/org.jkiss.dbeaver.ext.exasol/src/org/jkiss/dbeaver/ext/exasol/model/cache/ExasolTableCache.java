@@ -61,7 +61,8 @@ public final class ExasolTableCache
 		super("TABLE_NAME");
 	}
 
-	@Override
+	@NotNull
+    @Override
 	protected JDBCStatement prepareObjectsStatement(
 			@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema)
 			throws SQLException

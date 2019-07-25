@@ -192,6 +192,7 @@ public class OraclePackage extends OracleSchemaObject
 
     static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OraclePackage owner)
             throws SQLException

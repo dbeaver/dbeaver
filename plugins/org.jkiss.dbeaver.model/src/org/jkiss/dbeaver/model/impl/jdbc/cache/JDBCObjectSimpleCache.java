@@ -47,6 +47,7 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
         this.queryParameters = args;
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)
         throws SQLException

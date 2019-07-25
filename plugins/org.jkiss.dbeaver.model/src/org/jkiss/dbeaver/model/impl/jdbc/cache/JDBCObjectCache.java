@@ -54,6 +54,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         this.maximumCacheSize = maximumCacheSize;
     }
 
+    @NotNull
     abstract protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)
         throws SQLException;
 

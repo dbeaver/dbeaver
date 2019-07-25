@@ -71,6 +71,7 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
             this.members = members;
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreRole owner)
             throws SQLException

@@ -354,6 +354,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
             setListOrderComparator(DBUtils.nameComparator());
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner) throws SQLException {
             StringBuilder sql = new StringBuilder("SELECT db.* FROM sys.databases db");
@@ -378,6 +379,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     private class SystemDataTypeCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDataType> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource sqlServerDataSource) throws SQLException {
             return session.prepareStatement("SELECT * FROM sys.types WHERE is_user_defined = 0 order by name");

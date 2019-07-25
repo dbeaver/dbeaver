@@ -705,6 +705,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(

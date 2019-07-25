@@ -38,6 +38,7 @@ public class DB2ViewBaseDepCache extends JDBCObjectCache<DB2ViewBase, DB2ViewBas
 
     private static final String SQL = "SELECT * FROM SYSCAT.TABDEP WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2ViewBase db2ViewBase) throws SQLException
     {

@@ -85,6 +85,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
 
     static class ArgumentsCache extends JDBCObjectCache<OracleProcedureBase, OracleProcedureArgument> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleProcedureBase procedure) throws SQLException
         {
