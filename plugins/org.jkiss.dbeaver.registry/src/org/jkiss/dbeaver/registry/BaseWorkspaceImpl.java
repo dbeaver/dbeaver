@@ -25,11 +25,13 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
@@ -64,24 +66,31 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         String activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
         IWorkspaceRoot root = eclipseWorkspace.getRoot();
-        try {
-            root.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
-        } catch (CoreException e) {
-            log.debug("Error refreshing local projects", e);
+        IProject[] allProjects = root.getProjects();
+        if (ArrayUtils.isEmpty(allProjects)) {
+            try {
+                refreshWorkspaceContents(new LoggingProgressMonitor());
+            } catch (Throwable e) {
+                log.error(e);
+            }
         }
-        for (IProject project : root.getProjects()) {
+        for (IProject project : allProjects) {
             if (project.exists() && !project.isHidden()) {
                 ProjectMetadata projectMetadata = new ProjectMetadata(this, project);
-                projects.put(project, projectMetadata);
+                this.projects.put(project, projectMetadata);
 
-                if ((activeProject == null && project.isOpen()) || project.getName().equals(activeProjectName)) {
+                if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
                     activeProject = projectMetadata;
                 }
             }
         }
 
         if (activeProject != null && !activeProject.isOpen()) {
-            activeProject.ensureOpen();
+            try {
+                activeProject.ensureOpen();
+            } catch (IllegalStateException e) {
+                log.error("Error opening active project", e);
+            }
         }
 
         projectListener = new ProjectListener();
@@ -95,12 +104,14 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
             try {
                 createDefaultProject(new NullProgressMonitor());
-                if (!projects.isEmpty()) {
-                    setActiveProject(projects.values().iterator().next());
-                }
             } catch (CoreException e) {
                 log.error("Can't create default project", e);
             }
+        }
+        if (activeProject == null && !projects.isEmpty()) {
+            // Set active project
+            activeProject = projects.values().iterator().next();
+            platform.getPreferenceStore().setValue(PROP_PROJECT_ACTIVE, activeProject.getName());
         }
     }
 
@@ -192,6 +203,59 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     @Override
     public DBPProject getProject(IProject project) {
         return projects.get(project);
+    }
+
+    @Override
+    public void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException {
+        try {
+            IWorkspaceRoot root = eclipseWorkspace.getRoot();
+
+            root.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
+
+            File workspaceLocation = root.getLocation().toFile();
+            if (!workspaceLocation.exists()) {
+                // Nothing to refresh
+                return;
+            }
+
+            // Remove unexistent projects
+            for (IProject project : root.getProjects()) {
+                File projectDir = project.getLocation().toFile();
+                if (!projectDir.exists()) {
+                    monitor.subTask("Removing unexistent project '" + project.getName() + "'");
+                    project.delete(false, true, monitor.getNestedMonitor());
+                }
+            }
+
+            File[] wsFiles = workspaceLocation.listFiles();
+            if (!ArrayUtils.isEmpty(wsFiles)) {
+                // Add missing projects
+                monitor.beginTask("Refreshing workspace contents", wsFiles.length);
+                for (File wsFile : wsFiles) {
+                    if (!wsFile.isDirectory() || wsFile.isHidden() || wsFile.getName().startsWith(".")) {
+                        // skip regular files
+                        continue;
+                    }
+                    File projectConfig = new File(wsFile, ".project");
+                    if (projectConfig.exists()) {
+                        String projectName = wsFile.getName();
+                        IProject project = root.getProject(projectName);
+                        if (project.exists()) {
+                            continue;
+                        }
+                        try {
+                            monitor.subTask("Adding project '" + projectName + "'");
+                            project.create(monitor.getNestedMonitor());
+                        } catch (CoreException e) {
+                            log.error("Error adding project '" + projectName + "' to workspace");
+                        }
+                    }
+                }
+            }
+
+        } catch (Throwable e) {
+            log.error("Error refreshing workspce contents", e);
+        }
     }
 
     @Override

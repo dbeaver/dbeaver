@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseNavigator;
@@ -29,6 +31,7 @@ public class NavigatorHandlerPreferences extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+/*
         final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         if (activePart instanceof NavigatorViewBase) {
             UIUtils.showPreferencesFor(
@@ -37,6 +40,8 @@ public class NavigatorHandlerPreferences extends AbstractHandler {
                 PrefPageDatabaseNavigator.PAGE_ID
             );
         }
+*/
+        ActionUtils.runCommand(IWorkbenchCommandConstants.WINDOW_PREFERENCES, HandlerUtil.getActiveWorkbenchWindow(event));
         return null;
     }
 
