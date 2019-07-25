@@ -26,7 +26,11 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -58,6 +62,22 @@ public final class DBStructUtils {
         }
         log.debug("Object editor not found for " + object.getClass().getName());
         return SQLUtils.generateCommentLine(object.getDataSource(), "Can't generate DDL: object editor not found for " + object.getClass().getName());
+    }
+
+    public static <T extends DBSEntity> void sortTableList(Collection<T> input, List<T> simpleTables, List<T> cyclicTables, List<T> views) {
+        List<T> realTables = new ArrayList<>();
+        for (T entity : input) {
+            if (entity instanceof DBSView || (entity instanceof DBSTable && ((DBSTable) entity).isView())) {
+                views.add(entity);
+            } else {
+                realTables.add(entity);
+            }
+        }
+
+        for (T table : realTables) {
+
+        }
+        cyclicTables.addAll(realTables);
     }
 
 }

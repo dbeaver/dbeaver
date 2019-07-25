@@ -52,6 +52,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
     protected static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
     protected static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
 
+    public static final String OPTION_DDL_SKIP_FOREIGN_KEYS = "ddl.skipForeignKeys"; //$NON-NLS-1$
+    public static final String OPTION_DDL_ONLY_FOREIGN_KEYS = "ddl.onlyForeignKeys"; //$NON-NLS-1$
+
     @Override
     public long getMakerOptions(DBPDataSource dataSource)
     {
@@ -204,6 +207,29 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
         SQLObjectEditor<DBSTableForeignKey, OBJECT_TYPE> fkm = getObjectEditor(editorsRegistry, DBSTableForeignKey.class);
         SQLObjectEditor<DBSTableIndex, OBJECT_TYPE> im = getObjectEditor(editorsRegistry, DBSTableIndex.class);
 
+        if (CommonUtils.getOption(options, OPTION_DDL_ONLY_FOREIGN_KEYS)) {
+            if (fkm != null) {
+                // Create only foreign keys
+                try {
+                    for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
+                        if (!(foreignKey instanceof DBSTableForeignKey) ||
+                            DBUtils.isHiddenObject(foreignKey) ||
+                            DBUtils.isInheritedObject(foreignKey)) {
+                            continue;
+                        }
+                        DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options).getPersistActions(monitor, options);
+                        if (cmdActions != null) {
+                            Collections.addAll(actions, cmdActions);
+                        }
+                    }
+                } catch (DBException e) {
+                    // Ignore primary keys
+                    log.debug(e);
+                }
+            }
+            return actions.toArray(new DBEPersistAction[0]);
+        }
+
         if (isIncludeDropInDDL()) {
             actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Drop table"));
             for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(monitor, options)) {
@@ -243,7 +269,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
                 log.debug(e);
             }
         }
-        if (fkm != null) {
+        if (fkm != null && !CommonUtils.getOption(options, OPTION_DDL_SKIP_FOREIGN_KEYS)) {
             try {
                 for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
                     if (!(foreignKey instanceof DBSTableForeignKey) ||
