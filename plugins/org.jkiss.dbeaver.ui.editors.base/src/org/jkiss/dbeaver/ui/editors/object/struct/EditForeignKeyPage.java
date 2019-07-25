@@ -505,7 +505,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                             final Collection<? extends DBSTableIndex> indexes = ((DBSTable)refTable).getIndexes(monitor);
                             if (!CommonUtils.isEmpty(indexes)) {
                                 for (DBSTableIndex constraint : indexes) {
-                                    if (constraint.getConstraintType().isUnique()) {
+                                    if (constraint.isUnique()) {
                                         curConstraints.add(constraint);
                                     }
                                 }
