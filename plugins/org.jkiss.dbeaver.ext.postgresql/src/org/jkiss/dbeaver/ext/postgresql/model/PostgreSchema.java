@@ -393,7 +393,7 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
 
             if (!monitor.isCanceled()) {
                 Collection<PostgreTableBase> tablesOrViews = tableCache.getAllObjects(monitor, this);
-                monitor.beginTask("Load tabless and views", tablesOrViews.size());
+                monitor.beginTask("Load tables and views", tablesOrViews.size());
                 for (PostgreTableBase tableOrView : tablesOrViews) {
                     monitor.subTask(tableOrView.getName());
                     if (tableOrView instanceof PostgreSequence) {
@@ -411,7 +411,7 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
             }
             if (!monitor.isCanceled()) {
                 Collection<PostgreProcedure> procedures = getProcedures(monitor);
-                monitor.beginTask("Load tabless and views", procedures.size());
+                monitor.beginTask("Load procedures", procedures.size());
                 for (PostgreProcedure procedure : procedures) {
                     monitor.subTask(procedure.getName());
                     addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));

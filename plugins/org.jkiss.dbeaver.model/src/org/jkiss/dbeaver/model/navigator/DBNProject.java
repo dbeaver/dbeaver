@@ -65,6 +65,7 @@ public class DBNProject extends DBNResource {
 
     @Override
     public String getNodeDescription() {
+        project.ensureOpen();
         try {
             return project.getEclipseProject().getDescription().getComment();
         } catch (CoreException e) {
@@ -99,6 +100,8 @@ public class DBNProject extends DBNResource {
 
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
+        project.ensureOpen();
+
         try {
             final IProjectDescription description = project.getEclipseProject().getDescription();
             description.setName(newName);
@@ -110,6 +113,8 @@ public class DBNProject extends DBNResource {
 
     @Override
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
+        project.ensureOpen();
+
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
             // Remove non-existing resources (placeholders)
             List<DBNNode> children = new ArrayList<>();
