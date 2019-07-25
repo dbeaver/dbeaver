@@ -79,6 +79,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         return processBatch(session, null);
     }
 
+    @NotNull
     @Override
     public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions) throws DBCException {
         processBatch(session, actions);
