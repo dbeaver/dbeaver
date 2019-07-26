@@ -455,6 +455,10 @@ public class GenericMetaModel {
         return DBStructUtils.generateTableDDL(monitor, sourceObject, options, false);
     }
 
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return true;
+    }
+
     public boolean isSystemTable(GenericTableBase table) {
         final String tableType = table.getTableType().toUpperCase(Locale.ENGLISH);
         return tableType.contains("SYSTEM");

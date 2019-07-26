@@ -177,6 +177,11 @@ public class SQLServerTable extends SQLServerTableBase
         return ddl;
     }
 
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) || OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option);
+    }
+
     @Association
     public Collection<SQLServerTableTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
         Collection<SQLServerTableTrigger> allTriggers = getSchema().getTriggerCache().getAllObjects(monitor, getSchema());

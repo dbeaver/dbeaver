@@ -104,7 +104,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 makeScriptContributions(menu, scriptObjects);
             }
         }
-        return menu.toArray(new IContributionItem[menu.size()]);
+        return menu.toArray(new IContributionItem[0]);
     }
 
     private void makeTableContributions(List<IContributionItem> menu, final List<DBSEntity> entities)
@@ -136,6 +136,33 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             menu.add(makeAction("CALL", CALL_GENERATOR(procedures)));
         }
         menu.add(makeAction("DDL", new SQLGenerator<DBPScriptObject>(scriptObjects) {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                boolean allTables = true;
+                List<DBSTable> tableList = new ArrayList<>();
+                for (DBPScriptObject object : objects) {
+                    if (!(object instanceof DBSTable)) {
+                        allTables = false;
+                        break;
+                    } else {
+                        tableList.add((DBSTable) object);
+                    }
+                }
+                if (!allTables) {
+                    super.run(monitor);
+                    return;
+                }
+
+                StringBuilder sql = new StringBuilder(100);
+                Map<String, Object> options = new HashMap<>();
+                try {
+                    DBStructUtils.generateTableListDDL(monitor, sql, tableList, options, false);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+                result = sql.toString();
+            }
+
             @Override
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBPScriptObject object) throws DBException {
                 if (sql.length() > 0) {
@@ -182,8 +209,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
                 menu.add(makeAction("SELECT .. WHERE .. =", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
                     @Override
-                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException
-                    {
+                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) {
                         for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
@@ -210,8 +236,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 if (selectedRows.size() > 1) {
                     menu.add(makeAction("SELECT .. WHERE .. IN", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
                         @Override
-                        public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException
-                        {
+                        public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) {
                             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
                             sql.append("SELECT ");
                             boolean hasAttr = false;
@@ -252,7 +277,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 }
                 menu.add(makeAction("INSERT", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
                     @Override
-                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException {
+                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) {
                         for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<? extends DBSAttributeBase> allAttributes = getAllAttributes(monitor, object);
@@ -326,8 +351,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
                 menu.add(makeAction("DELETE by Unique Key", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
                     @Override
-                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) throws DBException
-                    {
+                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) {
                         for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
@@ -425,7 +449,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
     private abstract static class BaseAnalysisRunner<OBJECT> extends SQLGenerator<OBJECT> {
 
-        protected BaseAnalysisRunner(List<OBJECT> objects) {
+        BaseAnalysisRunner(List<OBJECT> objects) {
             super(objects);
         }
 
@@ -439,11 +463,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 return getAllAttributes(monitor, object);
             }
             List<DBSAttributeBase> valueAttributes = new ArrayList<>(getAllAttributes(monitor, object));
-            for (Iterator<DBSAttributeBase> iter = valueAttributes.iterator(); iter.hasNext(); ) {
-                if (keyAttributes.contains(iter.next())) {
-                    iter.remove();
-                }
-            }
+            valueAttributes.removeIf(keyAttributes::contains);
             return valueAttributes;
         }
 
@@ -486,7 +506,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
     private abstract static class TableAnalysisRunner extends BaseAnalysisRunner<DBSEntity> {
 
-        protected TableAnalysisRunner(List<DBSEntity> entities)
+        TableAnalysisRunner(List<DBSEntity> entities)
         {
             super(entities);
         }
@@ -504,18 +524,16 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
     private abstract static class ProcedureAnalysisRunner extends BaseAnalysisRunner<DBSProcedure> {
 
-        protected ProcedureAnalysisRunner(List<DBSProcedure> entities)
+        ProcedureAnalysisRunner(List<DBSProcedure> entities)
         {
             super(entities);
         }
 
-        protected Collection<? extends DBSEntityAttribute> getAllAttributes(DBRProgressMonitor monitor, DBSProcedure object) throws DBException
-        {
+        protected Collection<? extends DBSEntityAttribute> getAllAttributes(DBRProgressMonitor monitor, DBSProcedure object) {
             return Collections.emptyList();
         }
 
-        protected Collection<? extends DBSEntityAttribute> getKeyAttributes(DBRProgressMonitor monitor, DBSProcedure object) throws DBException
-        {
+        protected Collection<? extends DBSEntityAttribute> getKeyAttributes(DBRProgressMonitor monitor, DBSProcedure object) {
             return Collections.emptyList();
         }
     }
@@ -530,8 +548,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         protected abstract void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object)
             throws DBException;
 
-        protected Collection<? extends DBSAttributeBase> getAllAttributes(DBRProgressMonitor monitor, ResultSetModel object) throws DBException
-        {
+        protected Collection<? extends DBSAttributeBase> getAllAttributes(DBRProgressMonitor monitor, ResultSetModel object) {
             return object.getVisibleAttributes();
         }
 
@@ -546,8 +563,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             }
         }
 
-        protected List<DBDAttributeBinding> getKeyAttributes(DBRProgressMonitor monitor, ResultSetModel object) throws DBException
-        {
+        protected List<DBDAttributeBinding> getKeyAttributes(DBRProgressMonitor monitor, ResultSetModel object) {
             final DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier(object);
             if (rowIdentifier == null) {
                 return Collections.emptyList();
@@ -610,7 +626,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         private static final String PROP_USE_COMPACT_SQL = "GenerateSQL.compactSQL";
         private final SQLGenerator<?> sqlGenerator;
 
-        public GenerateSQLDialog(IWorkbenchPartSite parentSite, DBCExecutionContext context, SQLGenerator<?> sqlGenerator) {
+        GenerateSQLDialog(IWorkbenchPartSite parentSite, DBCExecutionContext context, SQLGenerator<?> sqlGenerator) {
             super(parentSite, context,
                 "Generated SQL (" + context.getDataSource().getContainer().getName() + ")",
                 null, "");
@@ -727,7 +743,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             @Override
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
 
-                sql.append("INSERT INTO ").append(getEntityName(object)).append("").append(getLineSeparator()).append("(");
+                sql.append("INSERT INTO ").append(getEntityName(object)).append(getLineSeparator()).append("(");
                 boolean hasAttr = false;
                 for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
                     if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr) || attr.isAutoGenerated()) {
@@ -838,8 +854,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         return new SQLGenerator<DBSEntity>(entities) {
 
             @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
                 StringBuilder sql = new StringBuilder(100);
                 try {
                     sql.append("SELECT ");
@@ -880,7 +895,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             }
 
             @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) {
                 // Do nothing for each individual table
             }
         };

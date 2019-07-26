@@ -67,8 +67,7 @@ public class DB2ZOSMetaModel extends GenericMetaModel
                     if (dbResult.next()) {
                         Clob ddlStmt = dbResult.getClob(1);
                         try {
-                            String ddl = ddlStmt.getSubString(1, (int) ddlStmt.length());
-                            return normalizeDDL(ddl);
+                            return ddlStmt.getSubString(1, (int) ddlStmt.length());
                         } finally {
                             try {
                                 ddlStmt.free();
@@ -86,18 +85,12 @@ public class DB2ZOSMetaModel extends GenericMetaModel
         }
     }
 
-    private String normalizeDDL(String ddl) {
-        int declStart = ddl.indexOf("(");
-        int declEnd = ddl.indexOf(") ENGINE");
-        if (declEnd == -1) {
-            declEnd = ddl.length() - 1;
-        }
-        return
-            ddl.substring(0, declStart) + "(\n" +
-            ddl.substring(declStart + 1, declEnd).replace(",", ",\n") + "\n" +
-            ddl.substring(declEnd);
+    @Override
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return false;
     }
 
+    @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }

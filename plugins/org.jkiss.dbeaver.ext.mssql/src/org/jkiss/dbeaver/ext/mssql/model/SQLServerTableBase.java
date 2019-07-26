@@ -51,7 +51,7 @@ import java.util.List;
  * MySQLTable base
  */
 public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, SQLServerSchema>
-    implements SQLServerObject, DBPNamedObject2,DBPRefreshableObject, DBSObjectWithScript, DBPSystemObject, DBSDataManipulatorExt
+    implements SQLServerObject, DBPNamedObject2, DBPRefreshableObject, DBSObjectWithScript, DBPScriptObjectExt2, DBPSystemObject, DBSDataManipulatorExt
 {
     private static final Log log = Log.getLog(SQLServerTableBase.class);
 

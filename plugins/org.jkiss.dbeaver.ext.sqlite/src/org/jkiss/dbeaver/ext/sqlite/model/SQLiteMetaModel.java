@@ -72,6 +72,11 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return false;
+    }
+
+    @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
         return SQLiteUtils.readMasterDefinition(monitor, trigger, SQLiteObjectType.trigger, trigger.getName(), trigger.getTable());
     }

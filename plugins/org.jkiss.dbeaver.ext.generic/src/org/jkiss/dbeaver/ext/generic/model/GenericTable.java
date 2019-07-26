@@ -19,10 +19,13 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -30,7 +33,7 @@ import java.util.Map;
 /**
  * Generic table
  */
-public class GenericTable extends GenericTableBase
+public class GenericTable extends GenericTableBase implements DBPScriptObjectExt2
 {
     private static final Log log = Log.getLog(GenericTable.class);
 
@@ -60,14 +63,22 @@ public class GenericTable extends GenericTableBase
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
             ddl = null;
         }
+        if (!isPersisted()) {
+            return DBStructUtils.generateTableDDL(monitor, this, options, false);
+        }
+
         if (ddl == null) {
-            if (!isPersisted()) {
-                ddl = "";
-            } else {
-                ddl = getDataSource().getMetaModel().getTableDDL(monitor, this, options);
-            }
+            ddl = getDataSource().getMetaModel().getTableDDL(monitor, this, options);
         }
         return ddl;
     }
 
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        if (OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) || OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option)) {
+            // DDL split supported only by base meta model
+            return !isPersisted() || getDataSource().getMetaModel().supportsTableDDLSplit(this);
+        }
+        return false;
+    }
 }

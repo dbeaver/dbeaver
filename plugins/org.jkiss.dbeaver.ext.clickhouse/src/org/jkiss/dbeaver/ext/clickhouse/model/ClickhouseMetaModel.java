@@ -81,6 +81,11 @@ public class ClickhouseMetaModel extends GenericMetaModel
         }
     }
 
+    @Override
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return false;
+    }
+
     private String normalizeDDL(String ddl) {
         int declStart = ddl.indexOf("(");
         int declEnd = ddl.indexOf(") ENGINE");
@@ -93,6 +98,7 @@ public class ClickhouseMetaModel extends GenericMetaModel
             ddl.substring(declEnd);
     }
 
+    @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }

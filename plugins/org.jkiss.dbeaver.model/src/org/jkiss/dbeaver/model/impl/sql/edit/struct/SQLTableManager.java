@@ -52,9 +52,6 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
     protected static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
     protected static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
 
-    public static final String OPTION_DDL_SKIP_FOREIGN_KEYS = "ddl.skipForeignKeys"; //$NON-NLS-1$
-    public static final String OPTION_DDL_ONLY_FOREIGN_KEYS = "ddl.onlyForeignKeys"; //$NON-NLS-1$
-
     @Override
     public long getMakerOptions(DBPDataSource dataSource)
     {
@@ -207,7 +204,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
         SQLObjectEditor<DBSTableForeignKey, OBJECT_TYPE> fkm = getObjectEditor(editorsRegistry, DBSTableForeignKey.class);
         SQLObjectEditor<DBSTableIndex, OBJECT_TYPE> im = getObjectEditor(editorsRegistry, DBSTableIndex.class);
 
-        if (CommonUtils.getOption(options, OPTION_DDL_ONLY_FOREIGN_KEYS)) {
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)) {
             if (fkm != null) {
                 // Create only foreign keys
                 try {
@@ -269,7 +266,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
                 log.debug(e);
             }
         }
-        if (fkm != null && !CommonUtils.getOption(options, OPTION_DDL_SKIP_FOREIGN_KEYS)) {
+        if (fkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS)) {
             try {
                 for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
                     if (!(foreignKey instanceof DBSTableForeignKey) ||
