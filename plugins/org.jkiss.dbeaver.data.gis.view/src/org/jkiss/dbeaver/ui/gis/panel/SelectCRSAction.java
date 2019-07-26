@@ -34,8 +34,8 @@ class SelectCRSAction extends Action {
 
     private IGeometryValueEditor valueEditor;
 
-    public SelectCRSAction(IGeometryValueEditor valueEditor) {
-        super("EPSG:" + valueEditor.getValueSRID(), Action.AS_DROP_DOWN_MENU);
+    SelectCRSAction(IGeometryValueEditor valueEditor) {
+        super(valueEditor.getValueSRID() == GisConstants.SRID_SIMPLE ? GisConstants.LL_CRS_SIMPLE : "EPSG:" + valueEditor.getValueSRID(), Action.AS_DROP_DOWN_MENU);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CHART_LINE));
         this.valueEditor = valueEditor;
     }
@@ -56,8 +56,10 @@ class SelectCRSAction extends Action {
             MenuManager menuManager = new MenuManager();
             menuManager.setRemoveAllWhenShown(true);
             menuManager.addMenuListener(manager -> {
-                menuManager.add(new SetCRSAction(valueEditor, GisConstants.DEFAULT_SRID));
-                menuManager.add(new SetCRSAction(valueEditor, GisConstants.DEFAULT_OSM_SRID));
+                menuManager.add(new SetCRSAction(valueEditor, GisConstants.SRID_4326));
+                menuManager.add(new SetCRSAction(valueEditor, GisConstants.SRID_3857));
+                menuManager.add(new SetCRSAction(valueEditor, GisConstants.SRID_3395));
+                menuManager.add(new SetCRSAction(valueEditor, GisConstants.SRID_SIMPLE));
                 menuManager.add(new Separator());
                 List<Integer> recentSRIDs = GISEditorUtils.getRecentSRIDs();
                 if (!recentSRIDs.isEmpty()) {

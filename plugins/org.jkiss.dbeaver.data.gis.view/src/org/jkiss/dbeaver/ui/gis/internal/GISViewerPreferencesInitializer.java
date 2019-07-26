@@ -33,7 +33,7 @@ public class GISViewerPreferencesInitializer extends AbstractPreferenceInitializ
 
       // View settings
       PrefUtils.setDefaultPreferenceValue(store, GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER, GeometryViewerConstants.DEFAULT_MAX_OBJECTS_RENDER);
-      PrefUtils.setDefaultPreferenceValue(store, GeometryViewerConstants.PREF_DEFAULT_SRID, GisConstants.DEFAULT_SRID);
+      PrefUtils.setDefaultPreferenceValue(store, GeometryViewerConstants.PREF_DEFAULT_SRID, GisConstants.SRID_4326);
   }
 
 }

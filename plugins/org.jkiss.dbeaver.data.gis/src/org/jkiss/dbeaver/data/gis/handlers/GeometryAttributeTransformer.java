@@ -54,7 +54,7 @@ public class GeometryAttributeTransformer implements DBDAttributeTransformer {
 
         int srid = CommonUtils.toInt(options.get(PROP_SRID));
         if (srid == 0) {
-            srid = GisConstants.DEFAULT_SRID;
+            srid = GisConstants.SRID_4326;
         }
         boolean invertCoordinates = CommonUtils.toBoolean(options.get(PROP_INVERT_COORDINATES ));
         attribute.setTransformHandler(new GISValueHandler(attribute.getValueHandler(), srid, invertCoordinates));

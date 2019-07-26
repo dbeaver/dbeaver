@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -121,7 +120,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             if (!CommonUtils.isEmpty(recentSRIDString)) {
                 for (String sridStr : recentSRIDString.split(",")) {
                     int recentSRID = CommonUtils.toInt(sridStr);
-                    if (recentSRID == 0 || recentSRID == GeometryDataUtils.getDefaultSRID() || recentSRID == GisConstants.DEFAULT_OSM_SRID) {
+                    if (recentSRID == 0 || recentSRID == GeometryDataUtils.getDefaultSRID() || recentSRID == GisConstants.SRID_3857) {
                         continue;
                     }
                     GISEditorUtils.addRecentSRID(recentSRID);
@@ -154,8 +153,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
     @Override
     public int getValueSRID() {
-        return actualSourceSRID != 0 ? actualSourceSRID :
-            defaultSRID != 0 ? defaultSRID : GeometryDataUtils.getDefaultSRID();
+        return actualSourceSRID;
     }
 
     @Override
@@ -173,7 +171,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         }
         {
             // Save SRID to the list of recently used SRIDs
-            if (srid != GeometryDataUtils.getDefaultSRID() && srid != GisConstants.DEFAULT_OSM_SRID) {
+            if (srid != GeometryDataUtils.getDefaultSRID() && srid != GisConstants.SRID_3857) {
                 GISEditorUtils.addRecentSRID(srid);
             }
             GISEditorUtils.curRecentSRIDs();
@@ -228,7 +226,6 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
             scriptFile = File.createTempFile("view", "gis.html", tempDir);
         }
-        int baseSRID = 0;
         List<String> geomValues = new ArrayList<>();
         List<String> geomTipValues = new ArrayList<>();
         boolean showMap = false;
@@ -246,17 +243,17 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             }
             Object targetValue = value.getRawValue();
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
-            if (srid == 0) {
-                srid = GeometryDataUtils.getDefaultSRID();
-            }
-            if (srid == GisConstants.DEFAULT_SRID) {
+            if (srid == GisConstants.SRID_SIMPLE) {
+                showMap = false;
+                actualSourceSRID = srid;
+            } else if (srid == GisConstants.SRID_4326) {
                 showMap = true;
                 actualSourceSRID = srid;
             } else {
                 Geometry geometry = value.getGeometry();
                 if (geometry != null) {
                     try {
-                        GisTransformRequest request = new GisTransformRequest(geometry, srid, GisConstants.DEFAULT_SRID);
+                        GisTransformRequest request = new GisTransformRequest(geometry, srid, GisConstants.SRID_4326);
                         GisTransformUtils.transformGisData(request);
                         targetValue = request.getTargetValue();
                         srid = request.getTargetSRID();
@@ -270,12 +267,6 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 } else {
                     actualSourceSRID = srid;
                 }
-            }
-            if (actualSourceSRID == 0) {
-                actualSourceSRID = GeometryDataUtils.getDefaultSRID();
-            }
-            if (baseSRID == 0) {
-                baseSRID = srid;
             }
 
             if (targetValue == null) {
@@ -297,21 +288,19 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 geomTipValues.add(geomProps.toString());
             }
         }
-        if (baseSRID == 0) {
+        if (actualSourceSRID == GisConstants.SRID_SIMPLE) {
             if (valueController != null && valueController.getValueType() instanceof GisAttribute) {
                 try {
-                    baseSRID = ((GisAttribute) valueController.getValueType()).getAttributeGeometrySRID(new VoidProgressMonitor());
+                    actualSourceSRID = ((GisAttribute) valueController.getValueType()).getAttributeGeometrySRID(new VoidProgressMonitor());
                 } catch (DBCException e) {
                     log.error(e);
                 }
             }
         }
-        if (baseSRID == 0) {
-            baseSRID = GeometryDataUtils.getDefaultSRID();
-        }
-        this.defaultSRID = baseSRID;
+        this.defaultSRID = actualSourceSRID;
         String geomValuesString = String.join(",", geomValues);
         String geomTipValuesString = String.join(",", geomTipValues);
+        String geomCRS = actualSourceSRID == GisConstants.SRID_SIMPLE ? GisConstants.LL_CRS_SIMPLE : GisConstants.LL_CRS_3857;
         boolean isShowMap = showMap;
 
         InputStream fis = GISViewerActivator.getDefault().getResourceStream(GISBrowserViewerConstants.VIEW_TEMPLATE_PATH);
@@ -321,16 +310,19 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         try (InputStreamReader isr = new InputStreamReader(fis)) {
             String viewTemplate = IOUtils.readToString(isr);
             viewTemplate = GeneralUtils.replaceVariables(viewTemplate, name -> {
-                if (name.equals("geomValues")) {
-                    return geomValuesString;
-                } else if (name.equals("geomTipValues")) {
-                    return String.valueOf(geomTipValuesString);
-                } else if (name.equals("geomSRID")) {
-                    return String.valueOf(defaultSRID);
-                } else if (name.equals("showMap")) {
-                    return String.valueOf(isShowMap);
-                } else if (name.equals("showTools")) {
-                    return String.valueOf(toolsVisible);
+                switch (name) {
+                    case "geomValues":
+                        return geomValuesString;
+                    case "geomTipValues":
+                        return String.valueOf(geomTipValuesString);
+                    case "geomSRID":
+                        return String.valueOf(defaultSRID);
+                    case "showMap":
+                        return String.valueOf(isShowMap);
+                    case "showTools":
+                        return String.valueOf(toolsVisible);
+                    case "geomCRS":
+                        return geomCRS;
                 }
                 return null;
             });
