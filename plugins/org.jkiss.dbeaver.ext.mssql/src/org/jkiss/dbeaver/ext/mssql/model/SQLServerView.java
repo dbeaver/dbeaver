@@ -172,4 +172,8 @@ public class SQLServerView extends SQLServerTableBase implements DBSView
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return false;
+    }
 }

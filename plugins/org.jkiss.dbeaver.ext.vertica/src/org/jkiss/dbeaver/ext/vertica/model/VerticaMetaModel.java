@@ -112,6 +112,11 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
         }
     }
 
+    @Override
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return false;
+    }
+
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }

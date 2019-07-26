@@ -127,7 +127,12 @@ public class HANAMetaModel extends GenericMetaModel
 
         return super.getTableDDL(monitor, sourceObject, options);
     }
-    
+
+    @Override
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return false;
+    }
+
     @Override
     public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
         return true;
