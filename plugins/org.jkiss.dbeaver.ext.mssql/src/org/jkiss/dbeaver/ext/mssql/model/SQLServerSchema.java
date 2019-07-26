@@ -36,10 +36,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -49,11 +46,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
 * SQL Server schema
 */
-public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifiedObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject {
+public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifiedObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject, DBSObjectWithScript {
 
     private static final Log log = Log.getLog(SQLServerSchema.class);
 
@@ -255,6 +253,27 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             uniqueConstraintCache.getAllObjects(monitor, this);
             foreignKeyCache.getAllObjects(monitor, this);
         }
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("-- DROP SCHEMA ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n");
+        sql.append("CREATE SCHEMA ").append(DBUtils.getQuotedIdentifier(this));
+        sql.append(";\n");
+
+        if (!monitor.isCanceled()) {
+            Collection<SQLServerTableBase> tablesOrViews = tableCache.getAllObjects(monitor, this);
+            DBStructUtils.generateTableListDDL(monitor, sql, tablesOrViews, options, false);
+            monitor.done();
+        }
+
+        return sql.toString();
+    }
+
+    @Override
+    public void setObjectDefinitionText(String source) {
+        throw new IllegalStateException("Can't change schema definition");
     }
 
     public static class TableCache extends JDBCStructLookupCache<SQLServerSchema, SQLServerTableBase, SQLServerTableColumn> {
