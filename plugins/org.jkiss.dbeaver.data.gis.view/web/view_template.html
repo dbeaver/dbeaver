@@ -27,7 +27,9 @@
         var geomSRID = ${geomSRID};
 
         var wkx = require('wkx');
-        var geoMap = L.map('gisMap');
+        var geoMap = L.map('gisMap', {
+		    crs: L.CRS.${geomCRS}
+	    });
 
         if (${showMap}) {
             let baseLayersObj = {

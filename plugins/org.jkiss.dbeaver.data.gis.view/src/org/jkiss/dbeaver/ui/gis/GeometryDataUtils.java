@@ -99,7 +99,7 @@ public class GeometryDataUtils {
     public static int getDefaultSRID() {
         int srid = GISViewerActivator.getDefault().getPreferences().getInt(GeometryViewerConstants.PREF_DEFAULT_SRID);
         if (srid == 0) {
-            return GisConstants.DEFAULT_SRID;
+            return GisConstants.SRID_4326;
         }
         return srid;
     }

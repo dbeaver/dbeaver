@@ -611,7 +611,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 }
                 @Override
                 public int getDefaultSRID() {
-                    return GisConstants.DEFAULT_SRID;
+                    return GisConstants.SRID_4326;
                 }
             });
         } else if (adapter == DBCQueryPlanner.class) {

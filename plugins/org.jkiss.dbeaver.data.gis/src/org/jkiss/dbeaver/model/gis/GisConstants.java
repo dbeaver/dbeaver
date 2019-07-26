@@ -21,8 +21,21 @@ package org.jkiss.dbeaver.model.gis;
 */
 public interface GisConstants {
 
-    int DEFAULT_SRID = 4326;
-    int DEFAULT_OSM_SRID = 3857;
+    // Equirectangular projection.
+    // A common CRS among GIS enthusiasts.
+    int SRID_4326 = 4326;
+    // Spherical Mercator projection
+    // The most common CRS for online maps, used by almost all free and commercial tile providers.
+    // The default
+    int SRID_3857 = 3857;
+    // Elliptical Mercator projection. Rarely used by some commercial tile providers.
+    int SRID_3395 = 3395;
+
+    // Flat surface
+    int SRID_SIMPLE = 0;
 
     String GIS_REG_EPSG = "EPSG";
+
+    String LL_CRS_SIMPLE = "Simple";
+    String LL_CRS_3857 = "EPSG3857";
 }
