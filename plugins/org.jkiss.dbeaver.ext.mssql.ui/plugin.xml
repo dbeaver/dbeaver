@@ -48,6 +48,7 @@
                 icon="#sql_text"
                 type="folder">
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema"/>
         </editor>
         <editor
                 id="mssql.view.source.view"
