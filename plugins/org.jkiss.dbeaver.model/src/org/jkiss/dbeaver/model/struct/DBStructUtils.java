@@ -119,7 +119,7 @@ public final class DBStructUtils {
         // Views: generate them after all tables.
         // TODO: find view dependencies and generate them in right order
         for (T table : viewList) {
-            addDDLLine(sql, DBStructUtils.generateTableDDL(monitor, table, options, addComments));
+            addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
         }
         monitor.done();
     }
