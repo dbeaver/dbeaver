@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -52,8 +51,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 */
 public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> implements IStreamValueEditor<StyledText>, IAdaptable {
 
-    public static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
-    public static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
+    private static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
+    private static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
 
     private static final Log log = Log.getLog(AbstractTextPanelEditor.class);
 
@@ -83,12 +82,12 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     protected abstract EDITOR createEditorParty(IValueController valueController);
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final StyledText control) throws DBCException {
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final StyledText control) {
 
     }
 
     @Override
-    public void contributeSettings(@NotNull IContributionManager manager, @NotNull final StyledText editorControl) throws DBCException {
+    public void contributeSettings(@NotNull IContributionManager manager, @NotNull final StyledText editorControl) {
         manager.add(new Separator());
         {
             Action wwAction = new Action("Word Wrap", Action.AS_CHECK_BOX) {
@@ -134,24 +133,30 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     private void applyEditorStyle() {
         BaseTextEditor textEditor = getTextEditor();
         if (textEditor != null && getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
-            StyledText textWidget = textEditor.getTextViewer().getTextWidget();
-            textWidget.setRedraw(false);
+            TextViewer textViewer = textEditor.getTextViewer();
+            if (textViewer != null) {
+                StyledText textWidget = textViewer.getTextWidget();
+                if (textWidget == null || textWidget.isDisposed()) {
+                    return;
+                }
+                textWidget.setRedraw(false);
 
-            boolean oldEditable = textEditor.getTextViewer().isEditable();
-            if (!oldEditable) {
-                textEditor.getTextViewer().setEditable(true);
-            }
-            try {
-                if (textEditor.getViewer().canDoOperation(ISourceViewer.FORMAT)) {
-                    textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
-                }
-            } catch (Exception e) {
-                log.debug("Error formatting text", e);
-            } finally {
+                boolean oldEditable = textViewer.isEditable();
                 if (!oldEditable) {
-                    textEditor.getTextViewer().setEditable(false);
+                    textViewer.setEditable(true);
                 }
-                textWidget.setRedraw(true);
+                try {
+                    if (textViewer.canDoOperation(ISourceViewer.FORMAT)) {
+                        textViewer.doOperation(ISourceViewer.FORMAT);
+                    }
+                } catch (Exception e) {
+                    log.debug("Error formatting text", e);
+                } finally {
+                    if (!oldEditable) {
+                        textViewer.setEditable(false);
+                    }
+                    textWidget.setRedraw(true);
+                }
             }
         }
     }
