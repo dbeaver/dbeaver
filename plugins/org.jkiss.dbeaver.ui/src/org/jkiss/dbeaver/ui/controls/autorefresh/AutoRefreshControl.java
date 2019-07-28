@@ -26,10 +26,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,9 @@ public class AutoRefreshControl {
     private volatile boolean autoRefreshEnabled = false;
 
     private ToolItem autoRefreshButton;
+    private DBPImage defRefreshIcon;
     private Menu schedulerMenu;
+    private String defRefreshText;
 
     public AutoRefreshControl(Control parent, String controlId, DBRRunnableWithProgress runnable) {
         this.parent = parent;
@@ -115,13 +118,22 @@ public class AutoRefreshControl {
         }
     }
 
-    public void populateRefreshButton(ToolBar toolbar) {
+    public ToolItem populateRefreshButton(ToolBar toolbar) {
+        return populateRefreshButton(toolbar, UIMessages.sql_editor_resultset_filter_panel_btn_config_refresh, UIIcon.CLOCK_START, createDefaultRefreshAction());
+    }
+
+    public ToolItem populateRefreshButton(ToolBar toolbar, String defRefreshText, DBPImage defImage, Runnable defAction) {
         if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
             autoRefreshButton.dispose();
         }
+        this.defRefreshText = defRefreshText;
+        this.defRefreshIcon = defImage;
         autoRefreshButton = new ToolItem(toolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
-        autoRefreshButton.addSelectionListener(new AutoRefreshMenuListener(autoRefreshButton));
+        autoRefreshButton.setImage(DBeaverIcons.getImage(defRefreshIcon));
+        autoRefreshButton.addSelectionListener(new AutoRefreshMenuListener(autoRefreshButton, defAction));
         updateAutoRefreshToolbar();
+
+        return autoRefreshButton;
     }
 
     public void populateRefreshButton(IContributionManager contributionManager) {
@@ -133,15 +145,27 @@ public class AutoRefreshControl {
         });
     }
 
+    private Runnable createDefaultRefreshAction() {
+        return this::runCustomized;
+    }
+
     private void updateAutoRefreshToolbar() {
         if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
             if (isAutoRefreshEnabled()) {
                 autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_STOP));
                 autoRefreshButton.setToolTipText(UIMessages.sql_editor_resultset_filter_panel_btn_stop_refresh);
             } else {
-                autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_START));
-                autoRefreshButton.setToolTipText(UIMessages.sql_editor_resultset_filter_panel_btn_config_refresh);
+                autoRefreshButton.setImage(DBeaverIcons.getImage(defRefreshIcon));
+                autoRefreshButton.setToolTipText(defRefreshText);
             }
+        }
+    }
+
+    private void runCustomized() {
+        AutoRefreshConfigDialog dialog = new AutoRefreshConfigDialog(parent.getShell(), getRefreshSettings());
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            setRefreshSettings(dialog.getRefreshSettings());
+            enableAutoRefresh(true);
         }
     }
 
@@ -149,9 +173,11 @@ public class AutoRefreshControl {
 
     private class AutoRefreshMenuListener extends SelectionAdapter {
         private final ToolItem dropdown;
+        private final Runnable defaultAction;
 
-        AutoRefreshMenuListener(ToolItem item) {
+        AutoRefreshMenuListener(ToolItem item, Runnable defaultAction) {
             this.dropdown = item;
+            this.defaultAction = defaultAction;
         }
 
         @Override
@@ -219,16 +245,8 @@ public class AutoRefreshControl {
                 if (isAutoRefreshEnabled()) {
                     enableAutoRefresh(false);
                 } else {
-                    runCustomized();
+                    defaultAction.run();
                 }
-            }
-        }
-
-        private void runCustomized() {
-            AutoRefreshConfigDialog dialog = new AutoRefreshConfigDialog(parent.getShell(), getRefreshSettings());
-            if (dialog.open() == IDialogConstants.OK_ID) {
-                setRefreshSettings(dialog.getRefreshSettings());
-                enableAutoRefresh(true);
             }
         }
 
