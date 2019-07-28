@@ -735,4 +735,8 @@ public class PostgreUtils {
         return PostgreConstants.TYPE_GEOMETRY.equals(typeName) ||
                 PostgreConstants.TYPE_GEOGRAPHY.equals(typeName);
     }
+
+    public static String getRealSchemaName(PostgreDatabase database, String name) {
+        return name.replace("$user", database.getActiveUser());
+    }
 }

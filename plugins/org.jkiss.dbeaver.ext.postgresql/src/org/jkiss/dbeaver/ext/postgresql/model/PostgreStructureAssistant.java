@@ -92,14 +92,16 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
     {
         PostgreSchema ownerSchema = parentObject instanceof PostgreSchema ? (PostgreSchema) parentObject : null;
         final PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
-        final PostgreDatabase database = dataSource.getDefaultInstance();
+        PostgreDatabase database = parentObject instanceof PostgreObject ? ((PostgreObject) parentObject).getDatabase() : dataSource.getDefaultInstance();
         List<PostgreSchema> nsList = new ArrayList<>();
         if (ownerSchema != null) {
             nsList.add(0, ownerSchema);
         } else if (!globalSearch) {
             // Limit object search with search path
             for (String sn : database.getSearchPath()) {
-                final PostgreSchema schema = database.getSchema(session.getProgressMonitor(), sn);
+                final PostgreSchema schema = database.getSchema(
+                    session.getProgressMonitor(),
+                    PostgreUtils.getRealSchemaName(database, sn));
                 if (schema != null) {
                     nsList.add(schema);
                 }
