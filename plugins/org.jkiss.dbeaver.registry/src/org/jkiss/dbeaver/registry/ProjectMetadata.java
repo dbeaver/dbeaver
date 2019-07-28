@@ -269,11 +269,11 @@ public class ProjectMetadata implements DBPProject {
 
                         resourceProperties = mdCache;
                     }
-                } catch (IOException e) {
-                    log.error("Error reading project '" + getName() + "' metadata", e);
+                } catch (Throwable e) {
+                    log.error("Error reading project '" + getName() + "' metadata from "  + mdFile.getAbsolutePath(), e);
                 }
-
-            } else {
+            }
+            if (resourceProperties == null) {
                 resourceProperties = new TreeMap<>();
             }
         }
