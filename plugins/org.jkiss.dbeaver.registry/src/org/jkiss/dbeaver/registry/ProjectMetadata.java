@@ -224,7 +224,7 @@ public class ProjectMetadata implements DBPProject {
             }
 
             File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);
-            if (mdFile.exists()) {
+            if (mdFile.exists() && mdFile.length() > 0) {
                 // Parse metadata
                 Map<String, Map<String, Object>> mdCache = new TreeMap<>();
                 try (Reader mdReader = new InputStreamReader(new FileInputStream(mdFile), StandardCharsets.UTF_8)) {
