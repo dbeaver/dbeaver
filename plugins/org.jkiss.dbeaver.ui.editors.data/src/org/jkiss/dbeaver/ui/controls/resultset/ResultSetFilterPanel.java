@@ -260,7 +260,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
             filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-            filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_RESET));
+            filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
             filtersClearButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_remove);
             filtersClearButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -294,20 +294,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
 
-            refreshButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-            refreshButton.setToolTipText(ResultSetMessages.controls_resultset_viewer_action_refresh + " (" +
-                ActionUtils.findCommandDescription(IWorkbenchCommandConstants.FILE_REFRESH, viewer.getSite(), true) + ")");
-            refreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_REFRESH));
-            refreshButton.setEnabled(false);
-            refreshButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            refreshButton = rsv.getAutoRefresh().populateRefreshButton(
+                filterToolbar,
+                ResultSetMessages.controls_resultset_viewer_action_refresh + " (" +
+                    ActionUtils.findCommandDescription(IWorkbenchCommandConstants.FILE_REFRESH, viewer.getSite(), true) + ")",
+                UIIcon.RS_REFRESH,
+                () -> {
                     if (!viewer.isRefreshInProgress()) {
                         viewer.refreshData(null);
                     }
                 }
-            });
-            rsv.getAutoRefresh().populateRefreshButton(filterToolbar);
+            );
+            refreshButton.setEnabled(false);
 
             UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
 
