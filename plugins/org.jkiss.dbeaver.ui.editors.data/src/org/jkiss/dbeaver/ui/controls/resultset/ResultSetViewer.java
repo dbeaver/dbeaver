@@ -1682,10 +1682,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void restorePresentationState(Object state) {
+    private boolean restorePresentationState(Object state) {
         if (activePresentation instanceof IStatefulControl) {
             ((IStatefulControl) activePresentation).restoreState(state);
+            return true;
         }
+        return false;
     }
 
     ///////////////////////////////////////
@@ -3299,7 +3301,10 @@ public class ResultSetViewer extends Viewer
                             if (!metadataChanged) {
                                 // Seems to be refresh
                                 // Restore original position
-                                restorePresentationState(presentationState);
+                                // It also updates panels
+                                if (!restorePresentationState(presentationState)) {
+                                    updatePanelsContent(false);
+                                }
                             } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
                                 if (getCurrentRow() == null) {
                                     setCurrentRow(getModel().getRow(focusRow));
@@ -3307,12 +3312,12 @@ public class ResultSetViewer extends Viewer
                                 if (getActivePresentation().getCurrentAttribute() == null) {
                                     getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
                                 }
+                                updatePanelsContent(false);
                             }
                         }
                         if (metadataChanged) {
                             activePresentation.updateValueView();
                         }
-                        updatePanelsContent(false);
 
                         if (!scroll) {
                             // Add new history item
