@@ -29,10 +29,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
 
@@ -155,7 +155,14 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         try {
             int divPos = pgString.indexOf(';');
             if (divPos == -1) {
-                return new DBGeometry(pgString);
+                // No SRID
+                try {
+                    Geometry geometry = new WKTReader().read(pgString);
+                    return new DBGeometry(geometry);
+                } catch (ParseException e) {
+                    // Can't parse
+                    return new DBGeometry(pgString);
+                }
             }
             String sridString = pgString.substring(0, divPos);
             String wktString = pgString.substring(divPos + 1);
