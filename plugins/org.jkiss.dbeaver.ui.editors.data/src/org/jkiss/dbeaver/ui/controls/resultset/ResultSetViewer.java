@@ -2188,9 +2188,9 @@ public class ResultSetViewer extends Viewer
                     // Add copy commands for different formats
                     extCopyMenu.add(new Separator());
                     fillCopyAsMenu(extCopyMenu);
-                    extCopyMenu.add(new Separator());
-                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT,
-                        ActionUtils.findCommandName(ResultSetHandlerCopyAs.CMD_COPY_AS) + " ...", null));
+//                    extCopyMenu.add(new Separator());
+//                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT,
+//                        ActionUtils.findCommandName(ResultSetHandlerCopyAs.CMD_COPY_AS) + " ...", null));
 
                     manager.add(extCopyMenu);
                 }
