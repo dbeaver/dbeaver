@@ -192,6 +192,11 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     }
 
     @Override
+    public int hashCode() {
+        return data == null ? 0 : data.hashCode();
+    }
+
+    @Override
     public String getDisplayString(DBDDisplayFormat format) {
         return data;
     }

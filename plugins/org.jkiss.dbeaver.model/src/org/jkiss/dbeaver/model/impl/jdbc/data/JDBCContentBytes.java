@@ -234,4 +234,10 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         }
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        return data == null ? 0 : Arrays.hashCode(data);
+    }
+
 }
