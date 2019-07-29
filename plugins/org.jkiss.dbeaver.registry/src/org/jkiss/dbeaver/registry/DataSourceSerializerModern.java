@@ -471,7 +471,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     // Handlers
                     for (Map.Entry<String, Map<String, Object>> handlerObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_HANDLERS)) {
                         DBWHandlerConfiguration configuration = parseNetworkHandlerConfig(dataSource, null, handlerObject);
-                        dataSource.getConnectionConfiguration().updateHandler(configuration);
+                        if (configuration != null) {
+                            dataSource.getConnectionConfiguration().updateHandler(configuration);
+                        }
                     }
 
                     // Bootstrap
@@ -529,6 +531,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     }
 
+    @Nullable
     private DBWHandlerConfiguration parseNetworkHandlerConfig(
         @Nullable DataSourceDescriptor dataSource,
         @Nullable DBWNetworkProfile profile,
