@@ -111,12 +111,25 @@
         }
 
         var bounds = vectorLayer.getBounds();
-        geoMap.fitBounds(bounds);
+
+        if ('${geomCRS}' == 'Simple') {
+            let maxDimension = Math.max(bounds.getNorth() - bounds.getSouth(), bounds.getEast() - bounds.getWest());
+            geoMap.setMinZoom(-5); // Small enough?
+            if (maxDimension > 0) {
+                geoMap.fitBounds(bounds);
+            } else {
+                geoMap.setView(bounds.getCenter(), geoMap.getZoom());
+            }
+        } else {
+            geoMap.fitBounds(bounds);
+        }
 
         function showTools(toolsVisible) {
             var elementsVisibility = toolsVisible ? 'visible' : 'hidden';
             document.getElementsByClassName('leaflet-control-zoom')[0].style.visibility=elementsVisibility;
-            document.getElementsByClassName('leaflet-control-layers')[0].style.visibility=elementsVisibility;
+            if (${showMap}) {
+                document.getElementsByClassName('leaflet-control-layers')[0].style.visibility=elementsVisibility;
+            }
             document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility=elementsVisibility;
         }
 
