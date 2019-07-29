@@ -301,7 +301,14 @@ class GenericFilterValueEdit {
             log.error("Error sorting value collection", e);
         }
         if (hasNulls) {
-            if (!keyPresents(rowData, null)) {
+            boolean nullPresents = false;
+            for (DBDLabelValuePair val : rowData.values()) {
+                if (DBUtils.isNullValue(val.getValue())) {
+                    nullPresents = true;
+                    break;
+                }
+            }
+            if (!nullPresents) {
                 sortedList.add(0, new DBDLabelValuePair(DBValueFormatting.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
             }
         }
