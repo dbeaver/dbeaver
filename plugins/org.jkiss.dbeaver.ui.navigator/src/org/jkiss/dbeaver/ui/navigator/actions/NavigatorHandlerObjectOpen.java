@@ -69,6 +69,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
     private static final Log log = Log.getLog(NavigatorHandlerObjectOpen.class);
 
+    private static final int MAX_OBJECT_SIZE_NO_CONFIRM = 3;
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         if (UIUtils.isInDialog()) {
@@ -79,6 +81,12 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
+            if (structSelection.size() > MAX_OBJECT_SIZE_NO_CONFIRM) {
+                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), "Open " + structSelection.size() + " editors",
+                    "You are about to open " + structSelection.size() + " editors. Are you sure?")) {
+                    return null;
+                }
+            }
             for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 DBNNode node = null;
