@@ -1327,6 +1327,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     protected boolean scrollCursorToError(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error) {
         try {
             DBCExecutionContext context = getExecutionContext();
+            if (context == null) {
+                return false;
+            }
             boolean scrolled = false;
             DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
             if (errorAssistant != null) {
