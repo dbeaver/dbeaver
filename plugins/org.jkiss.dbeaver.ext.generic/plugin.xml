@@ -990,7 +990,7 @@
                         sampleURL="jdbc:ignite:thin://{host}[:{port}][;schema={database}]"
                         defaultPort=""
                         description="%driver.apache.ignite.description"
-                        webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
+                        webURL="https://apacheignite-sql.readme.io/docs/jdbc-driver"
                         categories="hadoop">
                     <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
                 </driver>
