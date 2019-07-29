@@ -282,7 +282,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                     if (!first) geomProps.append(",");
                     first = false;
                     geomProps.append('"').append(prop.getKey().replace("\"", "\\\"")).append("\":\"")
-                        .append(DBValueFormatting.getDefaultValueDisplayString(prop.getValue(), DBDDisplayFormat.UI).replace("\"", "\\\"")).append("\"");
+                        .append(CommonUtils.escapeJavaString(DBValueFormatting.getDefaultValueDisplayString(prop.getValue(), DBDDisplayFormat.UI))).append("\"");
                 }
                 geomProps.append("}");
                 geomTipValues.add(geomProps.toString());
