@@ -174,7 +174,7 @@ class GenericFilterValueEdit {
         } else if (attr.getEntityAttribute() instanceof DBSAttributeEnumerable) {
             loadAttributeEnum((DBSAttributeEnumerable) attr.getEntityAttribute());
         } else {
-            loadMultiValueList(Collections.emptyList());
+            loadMultiValueList(Collections.emptyList(), isCheckedTable);
         }
     }
 
@@ -215,6 +215,7 @@ class GenericFilterValueEdit {
                 }
                 return null;
             }
+
         };
         loadJob.schedule();
     }
@@ -232,7 +233,7 @@ class GenericFilterValueEdit {
         loadJob.schedule();
     }
 
-    private void loadMultiValueList(@NotNull Collection<DBDLabelValuePair> values) {
+    private void loadMultiValueList(@NotNull Collection<DBDLabelValuePair> values, boolean mergeResultsWithData) {
         if (tableViewer == null || tableViewer.getControl() == null || tableViewer.getControl().isDisposed()) {
             return;
         }
@@ -258,16 +259,18 @@ class GenericFilterValueEdit {
                 rowData.put(pair.getValue(), pair);
             }
         }
-        // Add values from fetched rows
-        for (ResultSetRow row : viewer.getModel().getAllRows()) {
-            Object cellValue = viewer.getModel().getCellValue(attr, row);
-            if (DBUtils.isNullValue(cellValue)) {
-                hasNulls = true;
-                continue;
-            }
-            if (!keyPresents(rowData, cellValue)) {
-                String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
-                rowData.put(cellValue, new DBDLabelValuePair(itemString, cellValue));
+        if (mergeResultsWithData) {
+            // Add values from fetched rows
+            for (ResultSetRow row : viewer.getModel().getAllRows()) {
+                Object cellValue = viewer.getModel().getCellValue(attr, row);
+                if (DBUtils.isNullValue(cellValue)) {
+                    hasNulls = true;
+                    continue;
+                }
+                if (!keyPresents(rowData, cellValue)) {
+                    String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
+                    rowData.put(cellValue, new DBDLabelValuePair(itemString, cellValue));
+                }
             }
         }
 
@@ -396,9 +399,13 @@ class GenericFilterValueEdit {
         @Nullable
         abstract List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
 
+        boolean mergeResultsWithData() {
+            return CommonUtils.isEmpty(filterPattern);
+        }
+
         void populateValues(@NotNull final Collection<DBDLabelValuePair> values) {
             UIUtils.asyncExec(() -> {
-                loadMultiValueList(values);
+                loadMultiValueList(values, mergeResultsWithData());
             });
         }
     }
