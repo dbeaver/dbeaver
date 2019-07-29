@@ -298,7 +298,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 filterToolbar,
                 ResultSetMessages.controls_resultset_viewer_action_refresh + " (" +
                     ActionUtils.findCommandDescription(IWorkbenchCommandConstants.FILE_REFRESH, viewer.getSite(), true) + ")",
-                UIIcon.RS_REFRESH,
+                UIIcon.REFRESH,
                 () -> {
                     if (!viewer.isRefreshInProgress()) {
                         viewer.refreshData(null);
@@ -1068,7 +1068,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private class RefreshPanel extends ToolItemPanel {
 
         RefreshPanel(Composite addressBar) {
-            super(addressBar, UIIcon.RS_REFRESH, ResultSetMessages.controls_resultset_viewer_action_refresh, SWT.RIGHT);
+            super(addressBar, UIIcon.REFRESH, ResultSetMessages.controls_resultset_viewer_action_refresh, SWT.RIGHT);
         }
 
         @Override
