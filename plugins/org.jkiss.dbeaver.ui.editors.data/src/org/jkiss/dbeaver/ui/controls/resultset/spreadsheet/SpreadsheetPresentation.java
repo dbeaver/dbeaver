@@ -78,10 +78,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -677,7 +674,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             curLine.add(cellValue.toString());
         }
         if (!curLine.isEmpty()) {
-            lines.add(curLine.toArray(new String[curLine.size()]));
+            lines.add(curLine.toArray(new String[0]));
         }
 
         return lines.toArray(new String[lines.size()][]);
@@ -769,17 +766,38 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         spreadsheet.layout(true, true);
     }
 
-    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable Object colObject, @Nullable Object rowObject) {
+    void fillContextMenu(@NotNull IMenuManager manager, @Nullable Object colObject, @Nullable Object rowObject) {
         final DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowObject : colObject);
         final ResultSetRow row = (ResultSetRow)(controller.isRecordMode() ? colObject : rowObject);
         controller.fillContextMenu(manager, attr, row);
 
-        IMenuManager layoutMenu = (IMenuManager) manager.find(ResultSetViewer.MENU_ID_LAYOUT);
-
-        if (attr != null && row != null) {
+        if (attr != null && row == null) {
             final List<Object> selectedColumns = spreadsheet.getColumnSelection();
             if (!controller.isRecordMode() && !selectedColumns.isEmpty()) {
-                if (layoutMenu != null) {
+                {
+                    manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Separator());
+
+                    List<DBDAttributeBinding> hiddenAttributes = new ArrayList<>();
+                    List<DBDAttributeConstraint> constraints = getController().getModel().getDataFilter().getConstraints();
+                    for (DBDAttributeConstraint ac : constraints) {
+                        DBSAttributeBase attribute = ac.getAttribute();
+                        if (!ac.isVisible() && attribute instanceof DBDAttributeBinding && DBDAttributeConstraint.isVisibleByDefault((DBDAttributeBinding) attribute)) {
+                            hiddenAttributes.add((DBDAttributeBinding)attribute);
+                        }
+                    }
+                    if (!hiddenAttributes.isEmpty()) {
+                        manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(ResultSetMessages.controls_resultset_viewer_show_hidden_columns) {
+                            @Override
+                            public void run() {
+                                ResultSetModel model = controller.getModel();
+                                for (DBDAttributeBinding attr : hiddenAttributes) {
+                                    model.setAttributeVisibility(attr, true);
+                                }
+                                refreshData(true, false, true);
+                            }
+                        });
+                    }
+
                     String hideTitle;
                     if (selectedColumns.size() == 1) {
                         DBDAttributeBinding columnToHide = (DBDAttributeBinding) selectedColumns.get(0);
@@ -787,8 +805,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     } else {
                         hideTitle = NLS.bind(ResultSetMessages.controls_resultset_viewer_hide_columns_x, selectedColumns.size());
                     }
-                    layoutMenu.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Separator());
-                    layoutMenu.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(hideTitle) {
+
+                    manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(hideTitle) {
                         @Override
                         public void run() {
                             ResultSetModel model = controller.getModel();
@@ -798,8 +816,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                                     ResultSetMessages.controls_resultset_viewer_hide_columns_error_title,
                                     ResultSetMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ERROR);
                             } else {
-                                for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
-                                    model.setAttributeVisibility((DBDAttributeBinding) selectedColumns.get(i), false);
+                                for (Object selectedColumn : selectedColumns) {
+                                    model.setAttributeVisibility((DBDAttributeBinding) selectedColumn, false);
                                 }
                                 refreshData(true, false, true);
                             }
@@ -808,14 +826,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
         }
-        if (layoutMenu != null) {
+        if (row == null) {
             if (!controller.getModel().getVisibleAttributes().isEmpty()) {
-                layoutMenu.insertAfter(
+                manager.insertAfter(
                     IResultSetController.MENU_GROUP_ADDITIONS,
                     ActionUtils.makeCommandContribution(
                         controller.getSite(),
                         SpreadsheetCommandHandler.CMD_COLUMNS_FIT_VALUE));
-                layoutMenu.insertAfter(
+                manager.insertAfter(
                     IResultSetController.MENU_GROUP_ADDITIONS,
                     ActionUtils.makeCommandContribution(
                         controller.getSite(),

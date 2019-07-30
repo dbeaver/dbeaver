@@ -2258,13 +2258,14 @@ public class ResultSetViewer extends Viewer
             manager.add(new GroupMarker(MENU_GROUP_EXPORT));
         }
 
+        manager.add(new Separator(MENU_GROUP_ADDITIONS));
+
         if (dataContainer != null && model.hasData()) {
             manager.add(new Separator());
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
         }
 
-        manager.add(new Separator());
-        manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         decorator.fillContributions(manager);
     }
@@ -2364,7 +2365,6 @@ public class ResultSetViewer extends Viewer
                 panelsMenu.add(item);
             }
         }
-        layoutMenu.add(new GroupMarker(MENU_GROUP_ADDITIONS));
         layoutMenu.add(new Separator());
         for (ResultSetPresentationDescriptor pd : getAvailablePresentations()) {
             Action psAction = new Action(pd.getLabel(), Action.AS_CHECK_BOX) {
