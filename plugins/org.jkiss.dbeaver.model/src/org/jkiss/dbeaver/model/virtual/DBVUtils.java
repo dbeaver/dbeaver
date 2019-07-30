@@ -75,6 +75,9 @@ public abstract class DBVUtils {
     }
 
     public static DBVEntity getVirtualEntity(@NotNull DBSDataContainer dataContainer, boolean create) {
+        if (dataContainer instanceof DBSEntity) {
+            return getVirtualEntity((DBSEntity)dataContainer, create);
+        }
         // Not an entity. Most likely a custom query. Use local cache for such attributes.
         // There shouldn't be too many such settings as they are defined by user manually
         // so we shouldn't eay too much memory for that

@@ -36,11 +36,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
-import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
-import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -87,6 +87,7 @@ class ColorSettingsDialog extends BaseDialog {
     private DBVColorOverride curOverride;
     private ToolItem btnDelete;
     private Table attributeTable;
+    private final DBVEntity vEntity;
 
     public ColorSettingsDialog(
         @NotNull ResultSetViewer resultSetViewer,
@@ -96,6 +97,7 @@ class ColorSettingsDialog extends BaseDialog {
         this.resultSetViewer = resultSetViewer;
         this.attribute = attr;
         this.row = row;
+        vEntity = DBVUtils.getVirtualEntity(resultSetViewer.getDataContainer(), true);
 
         DEFAULT_RGB = resultSetViewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND).getRGB();
     }
@@ -143,7 +145,7 @@ class ColorSettingsDialog extends BaseDialog {
             if (this.attribute == attr) {
                 attributeTable.setSelection(attrItem);
             }
-            //updateColumnItem(attrItem);
+            updateColumnItem(attrItem);
         }
 
         attributeTable.addSelectionListener(new SelectionAdapter() {
@@ -153,6 +155,27 @@ class ColorSettingsDialog extends BaseDialog {
             }
         });
     }
+
+    private void updateColumnItem(TableItem attrItem) {
+        DBDAttributeBinding attr = (DBDAttributeBinding) attrItem.getData();
+        String colorSettings = "";
+        {
+            List<DBVColorOverride> coList = vEntity.getColorOverrides(attr.getName());
+            if (!coList.isEmpty()) {
+                List<String> coStrings = new ArrayList<>();
+                for (DBVColorOverride co : coList) {
+                    if (co.getAttributeValues() != null) {
+                        for (Object value : co.getAttributeValues()) {
+                            coStrings.add(CommonUtils.toString(value));
+                        }
+                    }
+                }
+                colorSettings = String.join(",", coStrings);
+            }
+        }
+        attrItem.setText(1, colorSettings);
+    }
+
 
     private void updateAttributeSelection() {
         TableItem[] selection = attributeTable.getSelection();
@@ -165,9 +188,9 @@ class ColorSettingsDialog extends BaseDialog {
         colorsTable.removeAll();
         if (attribute == null) {
             // Nothing to load
+            curOverride = null;
+            colorOverrides = null;
         } else {
-            DBVEntity vEntity = DBVUtils.getVirtualEntity(attribute, true);
-
             colorOverrides = vEntity.getColorOverrides(attribute.getName());
             if (colorOverrides == null) {
                 colorOverrides = new ArrayList<>();
@@ -181,6 +204,8 @@ class ColorSettingsDialog extends BaseDialog {
             if (!colorOverrides.isEmpty()) {
                 curOverride = colorOverrides.get(0);
                 colorsTable.setSelection(0);
+            } else {
+                curOverride = null;
             }
         }
 
@@ -188,8 +213,6 @@ class ColorSettingsDialog extends BaseDialog {
     }
 
     private void createAttributeSettingsArea(Composite composite) {
-        DBVEntity vEntity = DBVUtils.getVirtualEntity(attribute, true);
-
         Composite mainGroup = UIUtils.createComposite(composite, 1);
         mainGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_BOTH));
 
@@ -238,7 +261,6 @@ class ColorSettingsDialog extends BaseDialog {
                     int selectionIndex = colorsTable.getSelectionIndex();
                     curOverride = selectionIndex < 0 ? null : (DBVColorOverride) colorsTable.getItem(selectionIndex).getData();
                     btnDelete.setEnabled(selectionIndex >= 0);
-                    updateSettingsValues();
                     updateControlsState();
                 }
             });
@@ -394,6 +416,8 @@ class ColorSettingsDialog extends BaseDialog {
             settingsEnableState = null;
         }
 
+        updateSettingsValues();
+
         boolean isRange = rangeCheck.getSelection();
         if (valueEditor2 != null) {
             valueEditor2.getControl().setEnabled(isRange);
@@ -403,7 +427,6 @@ class ColorSettingsDialog extends BaseDialog {
 
         colorsTable.setEnabled(attribute != null);
 
-        updateSettingsValues();
     }
 
     private IValueEditor createValueEditor(Composite panel, int index) {
