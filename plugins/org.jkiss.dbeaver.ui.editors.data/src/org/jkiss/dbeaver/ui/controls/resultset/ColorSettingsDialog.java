@@ -25,6 +25,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -148,6 +149,37 @@ class ColorSettingsDialog extends BaseDialog {
             updateColumnItem(attrItem);
         }
 
+        attributeTable.addListener(SWT.PaintItem, event -> {
+            if (event.index == 1) {
+
+                int x = event.x + 4;
+                DBDAttributeBinding attr = (DBDAttributeBinding) event.item.getData();
+                List<DBVColorOverride> coList = vEntity.getColorOverrides(attr.getName());
+                if (!coList.isEmpty()) {
+                    for (DBVColorOverride co : coList) {
+                        List<String> coStrings = new ArrayList<>();
+                        if (co.getAttributeValues() != null) {
+                            for (Object value : co.getAttributeValues()) {
+                                coStrings.add(CommonUtils.toString(value));
+                            }
+                        }
+                        //String colorSettings = "   ";//String.join(", ", coStrings);
+                        //Point textSize = event.gc.stringExtent(colorSettings);
+                        int boxSize = attributeTable.getItemHeight() - 4;
+                        Point textSize = new Point(boxSize, boxSize);
+                        Color fg = attributeTable.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);//getColorTableForeground(co);
+                        Color bg = getColorTableBackground(co);
+                        if (fg != null) event.gc.setForeground(fg);
+                        if (bg != null) event.gc.setBackground(bg);
+
+                        event.gc.fillRectangle(x, event.y + 2, textSize.x, textSize.y);
+                        event.gc.drawRectangle(x, event.y + 2, textSize.x - 1, textSize.y - 1);
+                        //event.gc.drawText(colorSettings, x, event.y);
+                        x += textSize.x + 4;
+                    }
+                }
+            }
+        });
         attributeTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -173,7 +205,7 @@ class ColorSettingsDialog extends BaseDialog {
                 colorSettings = String.join(",", coStrings);
             }
         }
-        attrItem.setText(1, colorSettings);
+        //attrItem.setText(1, colorSettings);
     }
 
 
@@ -232,7 +264,7 @@ class ColorSettingsDialog extends BaseDialog {
             colorsTable.addListener(SWT.EraseItem, event -> {
                 if ((event.detail & SWT.SELECTED) != 0) {
                     //event.detail &= ~SWT.SELECTED;
-                    Color bgColor = getColorTableBackground((TableItem) event.item);
+                    Color bgColor = getColorTableBackground((DBVColorOverride) event.item.getData());
                     if (bgColor != null) {
                         event.gc.setBackground(bgColor);
                     } else {
@@ -480,6 +512,7 @@ class ColorSettingsDialog extends BaseDialog {
                             attributeValues[index] = value;
                             curOverride.setAttributeValues(attributeValues);
                             updateCurrentTreeItem();
+                            updateColumnItem(attributeTable.getSelection()[0]);
                         } catch (Exception e) {
                             log.error(e);
                         }
@@ -517,20 +550,18 @@ class ColorSettingsDialog extends BaseDialog {
             }
         }
         tableItem.setText(0, text);
-        tableItem.setForeground(getColorTableForeground(tableItem));
-        tableItem.setBackground(getColorTableBackground(tableItem));
+        tableItem.setForeground(getColorTableForeground((DBVColorOverride) tableItem.getData()));
+        tableItem.setBackground(getColorTableBackground((DBVColorOverride) tableItem.getData()));
     }
 
-    private Color getColorTableForeground(TableItem tableItem) {
-        DBVColorOverride co = (DBVColorOverride) tableItem.getData();
+    private Color getColorTableForeground(DBVColorOverride co) {
         if (!CommonUtils.isEmpty(co.getColorForeground())) {
             return UIUtils.getSharedColor(co.getColorForeground());
         }
         return null;
     }
 
-    private Color getColorTableBackground(TableItem tableItem) {
-        DBVColorOverride co = (DBVColorOverride) tableItem.getData();
+    private Color getColorTableBackground(DBVColorOverride co) {
         if (!co.isRange()) {
             if (!CommonUtils.isEmpty(co.getColorBackground())) {
                 return UIUtils.getSharedColor(co.getColorBackground());
