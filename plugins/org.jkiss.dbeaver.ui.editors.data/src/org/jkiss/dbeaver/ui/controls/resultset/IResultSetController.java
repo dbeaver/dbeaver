@@ -49,6 +49,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     String MENU_ID_FILTERS = "filters";
     String MENU_ID_LAYOUT = "layout";
     String MENU_GROUP_EDIT = "edit";
+    String MENU_GROUP_EXPORT = "results_export";
     String MENU_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
 
     @NotNull
