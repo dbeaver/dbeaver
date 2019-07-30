@@ -520,7 +520,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    ////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     // Presentation & panels
 
     public List<ResultSetPresentationDescriptor> getAvailablePresentations() {
@@ -1195,7 +1195,7 @@ public class ResultSetViewer extends Viewer
         return items;
     }
 
-    void fillOpenWithMenu(ContributionManager openWithMenu) {
+    void fillOpenWithMenu(IContributionManager openWithMenu) {
 
         ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(getDataContainer(), getModel(), options);
@@ -1290,7 +1290,7 @@ public class ResultSetViewer extends Viewer
         });
     }
 
-    ////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     // Actions
 
     boolean isActionsDisabled() {
@@ -1597,6 +1597,11 @@ public class ResultSetViewer extends Viewer
                 //rowCountLabel.setLayoutData(new RowData(rowCountLabel.getMessage().length() * fontHeight + 20, SWT.DEFAULT));
             });
         }
+    }
+
+    @Nullable
+    public DBPDataSource getDataSource() {
+        return getDataContainer() == null ? null : getDataContainer().getDataSource();
     }
 
     @Nullable
@@ -2084,7 +2089,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         MenuManager menuManager = new MenuManager();
-        fillFiltersMenu(curAttribute, getCurrentRow(), menuManager);
+        fillFiltersMenu(menuManager, curAttribute, getCurrentRow());
         showContextMenuAtCursor(menuManager);
         viewerPanel.addDisposeListener(e -> menuManager.dispose());
     }
@@ -2150,13 +2155,13 @@ public class ResultSetViewer extends Viewer
         return control.getDisplay().map(control, null, cursorLocation);
     }
 
+    ////////////////////////////////////////////////////////////
+    // Context menus
+
     @Override
     public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row) {
-        final DBPDataSource dataSource = getDataSource();
-
         // Custom oldValue items
         final ResultSetValueController valueController;
-        final Object value;
         if (attr != null && row != null) {
             valueController = new ResultSetValueController(
                 this,
@@ -2164,16 +2169,20 @@ public class ResultSetViewer extends Viewer
                 row,
                 IValueController.EditType.NONE,
                 null);
-            value = valueController.getValue();
         } else {
             valueController = null;
-            value = null;
         }
 
         {
             {
                 // Standard items
-                manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
+                if (attr == null && row != null) {
+                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
+                } else if (attr != null && row == null) {
+                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_COLUMN_NAMES));
+                } else {
+                    manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
+                }
 
                 if (row != null) {
                     MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
@@ -2203,50 +2212,7 @@ public class ResultSetViewer extends Viewer
                         IDEWorkbenchMessages.Workbench_edit,
                         DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
                         MENU_ID_EDIT); //$NON-NLS-1$
-
-                    if (valueController != null) {
-                        // Edit items
-                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
-                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT_INLINE));
-                        if (!valueController.isReadOnly()) {
-                            if (!DBUtils.isNullValue(value)) {
-                                editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_CELL_SET_NULL));
-                            }
-                            if (valueController.getValueHandler() instanceof DBDValueDefaultGenerator) {
-                                String commandName = ActionUtils.findCommandName(ResultSetHandlerMain.CMD_CELL_SET_DEFAULT) +
-                                    " (" + ((DBDValueDefaultGenerator) valueController.getValueHandler()).getDefaultValueLabel() + ")";
-                                DBPImage image = DBValueFormatting.getObjectImage(attr);
-                                editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_CELL_SET_DEFAULT, commandName, image));
-                            }
-                        }
-                        if (row.getState() == ResultSetRow.STATE_REMOVED || (row.changes != null && row.changes.containsKey(attr))) {
-                            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_CELL_RESET));
-                        }
-
-                        // Menus from value handler
-                        try {
-                            valueController.getValueManager().contributeActions(editMenu, valueController, null);
-                        } catch (Exception e) {
-                            log.error(e);
-                        }
-
-                        editMenu.add(new Separator());
-                    }
-
-                    if (!isReadOnly()) {
-                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
-                    }
-                    if (valueController != null && !valueController.isReadOnly()) {
-                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
-                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
-                    }
-                    if (!isReadOnly()) {
-                        editMenu.add(new Separator());
-                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES));
-                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES));
-                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT));
-                    }
-
+                    fillEditMenu(editMenu, attr, row, valueController);
                     manager.add(editMenu);
                 }
             }
@@ -2261,179 +2227,37 @@ public class ResultSetViewer extends Viewer
                 MENU_ID_FILTERS); //$NON-NLS-1$
             filtersMenu.setActionDefinitionId(ResultSetHandlerMain.CMD_FILTER_MENU);
             filtersMenu.setRemoveAllWhenShown(true);
-            filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, row, manager1));
+            filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(manager1, attr, row));
             manager.add(filtersMenu);
         }
-        if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
-            {
-                MenuManager viewMenu = new MenuManager(
-                    ResultSetMessages.controls_resultset_viewer_action_view_format,
-                    null,
-                    MENU_ID_VIEW); //$NON-NLS-1$
-
-                List<? extends DBDAttributeTransformerDescriptor> transformers =
-                    dataSource.getContainer().getPlatform().getValueHandlerRegistry().findTransformers(
-                        dataSource, attr, null);
-                if (!CommonUtils.isEmpty(transformers)) {
-                    MenuManager transformersMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_as);
-                    transformersMenu.setRemoveAllWhenShown(true);
-                    transformersMenu.addMenuListener(manager12 -> fillAttributeTransformersMenu(manager12, attr));
-                    viewMenu.add(transformersMenu);
-                } else {
-                    final Action customizeAction = new Action(ResultSetMessages.controls_resultset_viewer_action_view_as) {
-                    };
-                    customizeAction.setEnabled(false);
-                    viewMenu.add(customizeAction);
-                }
-                viewMenu.add(new TransformComplexTypesToggleAction());
-                viewMenu.add(new Separator());
-                viewMenu.add(new ColorizeDataTypesToggleAction());
-                {
-                    if (valueController != null) {
-                        viewMenu.add(new SetRowColorAction(attr, valueController.getValue()));
-                        if (getModel().hasColorMapping(attr)) {
-                            viewMenu.add(new ResetRowColorAction(attr, valueController.getValue()));
-                        }
-                    }
-                    viewMenu.add(new CustomizeColorsAction(attr, row));
-                    if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
-                        viewMenu.add(new ResetAllColorAction());
-                    }
-                }
-                viewMenu.add(new Separator());
-                viewMenu.add(new VirtualEntityEditAction());
-                viewMenu.add(new Action(ResultSetMessages.controls_resultset_viewer_action_data_formats) {
-                    @Override
-                    public void run() {
-                        UIUtils.showPreferencesFor(
-                            getControl().getShell(),
-                            ResultSetViewer.this,
-                            PrefPageDataFormat.PAGE_ID);
-                    }
-                });
-
-                manager.add(viewMenu);
-            }
-
-            if (row != null) {
-                // Navigate
-                MenuManager navigateMenu = new MenuManager(
-                    ResultSetMessages.controls_resultset_viewer_action_navigate,
-                    null,
-                    "navigate"); //$NON-NLS-1$
-                boolean hasNavTables = false;
-                if (ActionUtils.isCommandEnabled(ResultSetHandlerMain.CMD_NAVIGATE_LINK, site)) {
-                    // Foreign key to some external table
-                    navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_NAVIGATE_LINK));
-                    hasNavTables = true;
-                }
-                if (model.isSingleSource()) {
-                    // Add menu for referencing tables
-                    MenuManager refTablesMenu = createRefTablesMenu(false);
-                    if (refTablesMenu != null) {
-                        navigateMenu.add(refTablesMenu);
-                        hasNavTables = true;
-                    }
-                }
-                if (hasNavTables) {
-                    navigateMenu.add(new Separator());
-                }
-
-                navigateMenu.add(new Separator());
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FOCUS_FILTER));
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.LINE_GOTO));
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_FIRST));
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_PREVIOUS));
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_LAST));
-                navigateMenu.add(new Separator());
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
-                if (isHasMoreData() && getDataContainer() != null && (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
-                    navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COUNT));
-                }
-                navigateMenu.add(new Separator());
-                navigateMenu.add(new ToggleRefreshOnScrollingAction());
-                navigateMenu.add(new Separator());
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
-                navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
-
-                manager.add(navigateMenu);
-            }
-        }
-
-        if (row != null) {
-            // Layout
-            MenuManager layoutMenu = new MenuManager(
-                ResultSetMessages.controls_resultset_viewer_action_layout,
+        if (getDataSource() != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
+            MenuManager viewMenu = new MenuManager(
+                ResultSetMessages.controls_resultset_viewer_action_column_view,
                 null,
-                MENU_ID_LAYOUT); //$NON-NLS-1$
-            if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
-                layoutMenu.add(new ToggleModeAction());
-            }
-            layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
-            layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
-            layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_SWITCH_PRESENTATION));
-            {
-                MenuManager panelsMenu = new MenuManager(
-                    ResultSetMessages.controls_resultset_viewer_action_panels,
-                    DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE),
-                    "result_panels"); //$NON-NLS-1$
-                layoutMenu.add(panelsMenu);
-                for (IContributionItem item : fillPanelsMenu()) {
-                    panelsMenu.add(item);
-                }
-            }
-            layoutMenu.add(new GroupMarker(MENU_GROUP_ADDITIONS));
-            layoutMenu.add(new Separator());
-            for (ResultSetPresentationDescriptor pd : getAvailablePresentations()) {
-                Action psAction = new Action(pd.getLabel(), Action.AS_CHECK_BOX) {
-                    ResultSetPresentationDescriptor presentation;
-
-                    {
-                        presentation = pd;
-                        setImageDescriptor(DBeaverIcons.getImageDescriptor(presentation.getIcon()));
-                    }
-
-                    @Override
-                    public boolean isChecked() {
-                        return activePresentationDescriptor == presentation;
-                    }
-
-                    @Override
-                    public void run() {
-                        switchPresentation(presentation);
-                    }
-                };
-                layoutMenu.add(psAction);
-            }
-
-/*
-                {
-                    MenuManager toolBarsMenu = new MenuManager(
-                        "Toolbars",
-                        null,
-                        "result_toolbars"); //$NON-NLS-1$
-                    layoutMenu.add(toolBarsMenu);
-                    toolBarsMenu.add(new ToolbarToggleAction("sample", "Sample"));
-                }
-*/
-            manager.add(layoutMenu);
-            manager.add(new Separator());
+                MENU_ID_VIEW); //$NON-NLS-1$
+            viewMenu.setRemoveAllWhenShown(true);
+            viewMenu.addMenuListener(manager1 -> fillColumnViewMenu(manager1, attr, row, valueController));
+            manager.add(viewMenu);
         }
+
+        manager.add(new Separator());
 
         final DBSDataContainer dataContainer = getDataContainer();
-        if (row != null) {
-            // Fill general menu
-            if (dataContainer != null && model.hasData()) {
-                manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
-                MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
-                fillOpenWithMenu(openWithMenu);
-                manager.add(openWithMenu);
-            }
-            manager.add(new GroupMarker("results_export"));
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
+
+        // Fill general menu
+        if (row != null && dataContainer != null && model.hasData()) {
+            manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
+            MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
+            openWithMenu.setRemoveAllWhenShown(true);
+            openWithMenu.addMenuListener(this::fillOpenWithMenu);
+            manager.add(openWithMenu);
         }
+
+        if (attr != null && row != null) {
+            manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
+            manager.add(new GroupMarker(MENU_GROUP_EXPORT));
+        }
+
         if (dataContainer != null && model.hasData()) {
             manager.add(new Separator());
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
@@ -2443,6 +2267,181 @@ public class ResultSetViewer extends Viewer
         manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
         decorator.fillContributions(manager);
+    }
+
+    private void fillColumnViewMenu(IMenuManager viewMenu, @NotNull DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
+        final DBPDataSource dataSource = getDataSource();
+        if (dataSource == null) {
+            return;
+        }
+        List<? extends DBDAttributeTransformerDescriptor> transformers =
+            dataSource.getContainer().getPlatform().getValueHandlerRegistry().findTransformers(
+                dataSource, attr, null);
+        if (!CommonUtils.isEmpty(transformers)) {
+            MenuManager transformersMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_as);
+            transformersMenu.setRemoveAllWhenShown(true);
+            transformersMenu.addMenuListener(manager12 -> fillAttributeTransformersMenu(manager12, attr));
+            viewMenu.add(transformersMenu);
+        } else {
+            final Action customizeAction = new Action(ResultSetMessages.controls_resultset_viewer_action_view_as) {
+            };
+            customizeAction.setEnabled(false);
+            viewMenu.add(customizeAction);
+        }
+        viewMenu.add(new TransformComplexTypesToggleAction());
+        viewMenu.add(new Separator());
+        viewMenu.add(new ColorizeDataTypesToggleAction());
+        {
+            if (valueController != null) {
+                viewMenu.add(new SetRowColorAction(attr, valueController.getValue()));
+                if (getModel().hasColorMapping(attr)) {
+                    viewMenu.add(new ResetRowColorAction(attr, valueController.getValue()));
+                }
+            }
+            viewMenu.add(new CustomizeColorsAction(attr, row));
+            if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
+                viewMenu.add(new ResetAllColorAction());
+            }
+        }
+        viewMenu.add(new Separator());
+        viewMenu.add(new VirtualEntityEditAction());
+        viewMenu.add(new Action(ResultSetMessages.controls_resultset_viewer_action_data_formats) {
+            @Override
+            public void run() {
+                UIUtils.showPreferencesFor(
+                    getControl().getShell(),
+                    ResultSetViewer.this,
+                    PrefPageDataFormat.PAGE_ID);
+            }
+        });
+    }
+
+    private void fillEditMenu(IMenuManager editMenu, @Nullable DBDAttributeBinding attr, @NotNull ResultSetRow row, ResultSetValueController valueController) {
+        if (valueController != null) {
+            final Object value = valueController.getValue();
+
+            // Edit items
+            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
+            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT_INLINE));
+            if (!valueController.isReadOnly()) {
+                if (!DBUtils.isNullValue(value)) {
+                    editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_CELL_SET_NULL));
+                }
+                if (valueController.getValueHandler() instanceof DBDValueDefaultGenerator) {
+                    String commandName = ActionUtils.findCommandName(ResultSetHandlerMain.CMD_CELL_SET_DEFAULT) +
+                        " (" + ((DBDValueDefaultGenerator) valueController.getValueHandler()).getDefaultValueLabel() + ")";
+                    DBPImage image = DBValueFormatting.getObjectImage(attr);
+                    editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_CELL_SET_DEFAULT, commandName, image));
+                }
+            }
+            if (row.getState() == ResultSetRow.STATE_REMOVED || (row.changes != null && row.changes.containsKey(attr))) {
+                editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_CELL_RESET));
+            }
+
+            // Menus from value handler
+            try {
+                valueController.getValueManager().contributeActions(editMenu, valueController, null);
+            } catch (Exception e) {
+                log.error(e);
+            }
+
+            editMenu.add(new Separator());
+        }
+
+        if (!isReadOnly()) {
+            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
+        }
+        if (valueController != null && !valueController.isReadOnly()) {
+            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
+            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
+        }
+        if (!isReadOnly()) {
+            editMenu.add(new Separator());
+            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES));
+            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES));
+            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT));
+        }
+    }
+
+    private void fillLayoutMenu(IMenuManager layoutMenu) {
+        if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
+            layoutMenu.add(new ToggleModeAction());
+        }
+        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
+        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
+        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_SWITCH_PRESENTATION));
+        {
+            MenuManager panelsMenu = new MenuManager(
+                ResultSetMessages.controls_resultset_viewer_action_panels,
+                DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE),
+                "result_panels"); //$NON-NLS-1$
+            layoutMenu.add(panelsMenu);
+            for (IContributionItem item : fillPanelsMenu()) {
+                panelsMenu.add(item);
+            }
+        }
+        layoutMenu.add(new GroupMarker(MENU_GROUP_ADDITIONS));
+        layoutMenu.add(new Separator());
+        for (ResultSetPresentationDescriptor pd : getAvailablePresentations()) {
+            Action psAction = new Action(pd.getLabel(), Action.AS_CHECK_BOX) {
+                ResultSetPresentationDescriptor presentation;
+
+                {
+                    presentation = pd;
+                    setImageDescriptor(DBeaverIcons.getImageDescriptor(presentation.getIcon()));
+                }
+
+                @Override
+                public boolean isChecked() {
+                    return activePresentationDescriptor == presentation;
+                }
+
+                @Override
+                public void run() {
+                    switchPresentation(presentation);
+                }
+            };
+            layoutMenu.add(psAction);
+        }
+    }
+
+    private void fillNavigateMenu(IMenuManager navigateMenu) {
+        boolean hasNavTables = false;
+        if (ActionUtils.isCommandEnabled(ResultSetHandlerMain.CMD_NAVIGATE_LINK, site)) {
+            // Foreign key to some external table
+            navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_NAVIGATE_LINK));
+            hasNavTables = true;
+        }
+        if (model.isSingleSource()) {
+            // Add menu for referencing tables
+            MenuManager refTablesMenu = createRefTablesMenu(false);
+            if (refTablesMenu != null) {
+                navigateMenu.add(refTablesMenu);
+                hasNavTables = true;
+            }
+        }
+        if (hasNavTables) {
+            navigateMenu.add(new Separator());
+        }
+
+        navigateMenu.add(new Separator());
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FOCUS_FILTER));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.LINE_GOTO));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_FIRST));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_PREVIOUS));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_LAST));
+        navigateMenu.add(new Separator());
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
+        if (isHasMoreData() && getDataContainer() != null && (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+            navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COUNT));
+        }
+        navigateMenu.add(new Separator());
+        navigateMenu.add(new ToggleRefreshOnScrollingAction());
+        navigateMenu.add(new Separator());
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
     }
 
     @Nullable
@@ -2462,11 +2461,6 @@ public class ResultSetViewer extends Viewer
         return refTablesMenu;
     }
 
-
-    @Nullable
-    public DBPDataSource getDataSource() {
-        return getDataContainer() == null ? null : getDataContainer().getDataSource();
-    }
 
     private class TransformerAction extends Action {
         private final DBDAttributeBinding attribute;
@@ -2495,7 +2489,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         final DBPDataSource dataSource = dataContainer.getDataSource();
-        final DBDRegistry registry = dataSource.getContainer().getPlatform().getValueHandlerRegistry();
+        final DBDRegistry registry = DBWorkbench.getPlatform().getValueHandlerRegistry();
         final DBVTransformSettings transformSettings = DBVUtils.getTransformSettings(attr, false);
         DBDAttributeTransformerDescriptor customTransformer = null;
         if (transformSettings != null && transformSettings.getCustomTransformer() != null) {
@@ -2589,7 +2583,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillFiltersMenu(@Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row, @NotNull IMenuManager filtersMenu)
+    private void fillFiltersMenu(@NotNull IMenuManager filtersMenu, @Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row)
     {
         if (attribute != null && supportsDataFilter()) {
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
@@ -3922,34 +3916,23 @@ public class ResultSetViewer extends Viewer
                     configMenuManager.add(new VirtualEntityEditAction());
                 }
                 configMenuManager.add(new Separator());
-                if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
-                    configMenuManager.add(new ToggleModeAction());
+                {
+                    MenuManager navigateMenu = new MenuManager(
+                        ResultSetMessages.controls_resultset_viewer_action_navigate,
+                        null,
+                        "navigate"); //$NON-NLS-1$
+                    fillNavigateMenu(navigateMenu);
+                    configMenuManager.add(navigateMenu);
                 }
-                activePresentation.fillMenu(configMenuManager);
-                if (!CommonUtils.isEmpty(availablePresentations) && availablePresentations.size() > 1) {
-                    configMenuManager.add(new Separator());
-                    for (final ResultSetPresentationDescriptor pd : availablePresentations) {
-                        Action action = new Action(pd.getLabel(), IAction.AS_RADIO_BUTTON) {
-                            @Override
-                            public boolean isEnabled() {
-                                return !isRefreshInProgress();
-                            }
-                            @Override
-                            public boolean isChecked() {
-                                return pd == activePresentationDescriptor;
-                            }
+                {
+                    MenuManager layoutMenu = new MenuManager(
+                        ResultSetMessages.controls_resultset_viewer_action_layout,
+                        null,
+                        MENU_ID_LAYOUT); //$NON-NLS-1$
+                    fillLayoutMenu(layoutMenu);
+                    configMenuManager.add(layoutMenu);
+                }
 
-                            @Override
-                            public void run() {
-                                switchPresentation(pd);
-                            }
-                        };
-                        if (pd.getIcon() != null) {
-                            //action.setImageDescriptor(ImageDescriptor.createFromImage(pd.getIcon()));
-                        }
-                        configMenuManager.add(action);
-                    }
-                }
                 configMenuManager.add(new Separator());
                 configMenuManager.add(new Action("Preferences") {
                     @Override

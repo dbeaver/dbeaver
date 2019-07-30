@@ -60,6 +60,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_edit;
     public static String controls_resultset_viewer_action_order_filter;
     public static String controls_resultset_viewer_action_custom_filter;
+    public static String controls_resultset_viewer_action_column_view;
     public static String controls_resultset_viewer_action_view_format;
     public static String controls_resultset_viewer_action_view_as;
     public static String controls_resultset_viewer_action_data_formats;

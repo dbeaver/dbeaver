@@ -759,8 +759,6 @@
         <!-- Tools context menu -->
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
-            <separator name="data" visible="true"/>
-
             <command commandId="org.jkiss.dbeaver.core.procedure.execute">
                 <visibleWhen checkEnabled="true"/>
             </command>
