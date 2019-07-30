@@ -677,6 +677,35 @@
             <dynamic id="org.jkiss.dbeaver.core.resultset.openWith" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerCopyAs$CopyAsMenuContributor"/>
         </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="menu:edit?after=data">
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.edit">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.add">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.copy">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.delete">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <separator name="data_save" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.resultset.applyChanges">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.rejectChanges">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.generateScript">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
+        </menuContribution>
+
     </extension>
 
     <extension point="org.eclipse.ui.bindings">

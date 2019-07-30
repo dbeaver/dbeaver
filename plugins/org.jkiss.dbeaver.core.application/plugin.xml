@@ -148,6 +148,7 @@
                     <visibleWhen checkEnabled="true"/>
                 </command>
                 <separator name="transforms" visible="true"/>
+                <separator name="data" visible="true"/>
             </menu>
         </menuContribution>
 

@@ -2208,12 +2208,12 @@ public class ResultSetViewer extends Viewer
                 manager.add(new Separator());
 
                 if (row != null) {
-                    MenuManager editMenu = new MenuManager(
-                        IDEWorkbenchMessages.Workbench_edit,
-                        DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
-                        MENU_ID_EDIT); //$NON-NLS-1$
-                    fillEditMenu(editMenu, attr, row, valueController);
-                    manager.add(editMenu);
+//                    MenuManager editMenu = new MenuManager(
+//                        IDEWorkbenchMessages.Workbench_edit,
+//                        DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
+//                        MENU_ID_EDIT); //$NON-NLS-1$
+                    fillEditMenu(manager, attr, row, valueController);
+                    //manager.add(editMenu);
                 }
             }
         }
@@ -2321,8 +2321,6 @@ public class ResultSetViewer extends Viewer
             final Object value = valueController.getValue();
 
             // Edit items
-            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
-            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT_INLINE));
             if (!valueController.isReadOnly()) {
                 if (!DBUtils.isNullValue(value)) {
                     editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_CELL_SET_NULL));
@@ -2346,20 +2344,6 @@ public class ResultSetViewer extends Viewer
             }
 
             editMenu.add(new Separator());
-        }
-
-        if (!isReadOnly()) {
-            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
-        }
-        if (valueController != null && !valueController.isReadOnly()) {
-            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
-            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
-        }
-        if (!isReadOnly()) {
-            editMenu.add(new Separator());
-            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES));
-            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES));
-            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT));
         }
     }
 
@@ -2591,19 +2575,7 @@ public class ResultSetViewer extends Viewer
             if (row != null) {
                 //filtersMenu.add(new FilterByListAction(operator, type, attribute));
                 DBCLogicalOperator[] operators = attribute.getValueHandler().getSupportedOperators(attribute);
-                // Operators with multiple inputs
-                for (DBCLogicalOperator operator : operators) {
-                    if (operator.getArgumentCount() < 0) {
-                        filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.INPUT, attribute));
-                    }
-                }
-                filtersMenu.add(new Separator());
-                // Operators with no inputs
-                for (DBCLogicalOperator operator : operators) {
-                    if (operator.getArgumentCount() == 0) {
-                        filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.NONE, attribute));
-                    }
-                }
+
                 // Operators with single input
                 for (FilterByAttributeType type : FilterByAttributeType.values()) {
                     if (type == FilterByAttributeType.NONE) {
@@ -2619,6 +2591,21 @@ public class ResultSetViewer extends Viewer
                         if (operator.getArgumentCount() > 0) {
                             filtersMenu.add(new FilterByAttributeAction(operator, type, attribute));
                         }
+                    }
+                }
+                filtersMenu.add(new Separator());
+
+                // Operators with multiple inputs
+                for (DBCLogicalOperator operator : operators) {
+                    if (operator.getArgumentCount() < 0) {
+                        filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.INPUT, attribute));
+                    }
+                }
+
+                // Operators with no inputs
+                for (DBCLogicalOperator operator : operators) {
+                    if (operator.getArgumentCount() == 0) {
+                        filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.NONE, attribute));
                     }
                 }
             }
@@ -4137,14 +4124,12 @@ public class ResultSetViewer extends Viewer
 
 
     private class FilterByValueAction extends Action {
-    	private final DBCLogicalOperator operator;
+        private final DBCLogicalOperator operator;
         private final FilterByAttributeType type;
         private final DBDAttributeBinding attribute;
         private final Object value;
 
-
-        FilterByValueAction(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute, Object value)
-        {
+        FilterByValueAction(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute, Object value) {
             super(attribute.getName() + " = " + CommonUtils.truncateString(String.valueOf(value), 64), null);
             this.operator = operator;
             this.type = type;
@@ -4152,11 +4137,8 @@ public class ResultSetViewer extends Viewer
             this.value = value;
         }
 
-
         @Override
-        public void run()
-        {
-
+        public void run() {
             if (operator.getArgumentCount() != 0 && value == null) {
                 return;
             }
@@ -4169,8 +4151,6 @@ public class ResultSetViewer extends Viewer
             }
         }
     }
-
-
 
     private class FilterResetAttributeAction extends Action {
         private final DBDAttributeBinding attribute;
@@ -4196,15 +4176,21 @@ public class ResultSetViewer extends Viewer
         private final DBDAttributeBinding attribute;
         private final boolean ascending;
 
-        public OrderByAttributeAction(DBDAttributeBinding attribute, boolean ascending) {
-            super("Order by " + attribute.getName() + " " + (ascending ? "ASC" : "DESC"));
+        OrderByAttributeAction(DBDAttributeBinding attribute, boolean ascending) {
+            super("Order by " + attribute.getName() + " " + (ascending ? "ASC" : "DESC"), AS_CHECK_BOX);
             this.attribute = attribute;
             this.ascending = ascending;
         }
 
         @Override
-        public void run()
-        {
+        public boolean isChecked() {
+            DBDDataFilter dataFilter = getModel().getDataFilter();
+            DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
+            return constraint != null && constraint.getOrderPosition() > 0 && constraint.isOrderDescending() != ascending;
+        }
+
+        @Override
+        public void run() {
             toggleSortOrder(attribute, ascending, !ascending);
         }
     }
