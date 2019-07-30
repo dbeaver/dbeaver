@@ -306,9 +306,7 @@ public class Spreadsheet extends LightGrid implements Listener {
             case LightGrid.Event_FilterColumn:
             	//showFiltersMenu
             	presentation.showFiltering(event.data);
-            	
-            	
-            	break;                
+            	break;
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
                 // we don't want to mess current grid state
@@ -332,8 +330,9 @@ public class Spreadsheet extends LightGrid implements Listener {
             // Let controller to provide it's own menu items
             GridPos focusPos = getFocusPos();
             presentation.fillContextMenu(
-                manager, focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
-                focusPos.row >= 0 && focusPos.row < rowElements.length ? rowElements[focusPos.row] : null
+                manager,
+                isHoveringOnRowHeader() ? null : focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
+                isHoveringOnHeader() ? null : (focusPos.row >= 0 && focusPos.row < rowElements.length ? rowElements[focusPos.row] : null)
             );
         });
         menuMgr.setRemoveAllWhenShown(true);

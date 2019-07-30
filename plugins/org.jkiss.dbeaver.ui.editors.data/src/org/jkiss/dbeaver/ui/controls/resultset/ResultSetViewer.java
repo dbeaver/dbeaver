@@ -2084,7 +2084,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         MenuManager menuManager = new MenuManager();
-        fillFiltersMenu(curAttribute, menuManager);
+        fillFiltersMenu(curAttribute, getCurrentRow(), menuManager);
         showContextMenuAtCursor(menuManager);
         viewerPanel.addDisposeListener(e -> menuManager.dispose());
     }
@@ -2151,8 +2151,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row)
-    {
+    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row) {
         final DBPDataSource dataSource = getDataSource();
 
         // Custom oldValue items
@@ -2174,17 +2173,13 @@ public class ResultSetViewer extends Viewer
         {
             {
                 // Standard items
-                manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
 
-                {
+                if (row != null) {
                     MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
                     extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
                     extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
-                    if (row != null) {
-                        extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
-                    }
-
+                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
                     // Add copy commands for different formats
                     extCopyMenu.add(new Separator());
                     fillCopyAsMenu(extCopyMenu);
@@ -2194,11 +2189,16 @@ public class ResultSetViewer extends Viewer
 
                     manager.add(extCopyMenu);
                 }
-                manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
-                manager.add(ActionUtils.makeCommandContribution(site, IActionConstants.CMD_PASTE_SPECIAL));
+
+                if (row != null) {
+                    manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
+                    manager.add(ActionUtils.makeCommandContribution(site, IActionConstants.CMD_PASTE_SPECIAL));
+                    manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
+                }
+
                 manager.add(new Separator());
 
-                {
+                if (row != null) {
                     MenuManager editMenu = new MenuManager(
                         IDEWorkbenchMessages.Workbench_edit,
                         DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
@@ -2261,7 +2261,7 @@ public class ResultSetViewer extends Viewer
                 MENU_ID_FILTERS); //$NON-NLS-1$
             filtersMenu.setActionDefinitionId(ResultSetHandlerMain.CMD_FILTER_MENU);
             filtersMenu.setRemoveAllWhenShown(true);
-            filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, manager1));
+            filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, row, manager1));
             manager.add(filtersMenu);
         }
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
@@ -2280,7 +2280,8 @@ public class ResultSetViewer extends Viewer
                     transformersMenu.addMenuListener(manager12 -> fillAttributeTransformersMenu(manager12, attr));
                     viewMenu.add(transformersMenu);
                 } else {
-                    final Action customizeAction = new Action(ResultSetMessages.controls_resultset_viewer_action_view_as) {};
+                    final Action customizeAction = new Action(ResultSetMessages.controls_resultset_viewer_action_view_as) {
+                    };
                     customizeAction.setEnabled(false);
                     viewMenu.add(customizeAction);
                 }
@@ -2314,7 +2315,7 @@ public class ResultSetViewer extends Viewer
                 manager.add(viewMenu);
             }
 
-            {
+            if (row != null) {
                 // Navigate
                 MenuManager navigateMenu = new MenuManager(
                     ResultSetMessages.controls_resultset_viewer_action_navigate,
@@ -2348,7 +2349,7 @@ public class ResultSetViewer extends Viewer
                 navigateMenu.add(new Separator());
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
-                if (isHasMoreData() && getDataContainer() != null &&  (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+                if (isHasMoreData() && getDataContainer() != null && (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                     navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COUNT));
                 }
                 navigateMenu.add(new Separator());
@@ -2361,7 +2362,7 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        {
+        if (row != null) {
             // Layout
             MenuManager layoutMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_layout,
@@ -2388,14 +2389,17 @@ public class ResultSetViewer extends Viewer
             for (ResultSetPresentationDescriptor pd : getAvailablePresentations()) {
                 Action psAction = new Action(pd.getLabel(), Action.AS_CHECK_BOX) {
                     ResultSetPresentationDescriptor presentation;
+
                     {
                         presentation = pd;
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(presentation.getIcon()));
                     }
+
                     @Override
                     public boolean isChecked() {
                         return activePresentationDescriptor == presentation;
                     }
+
                     @Override
                     public void run() {
                         switchPresentation(presentation);
@@ -2418,16 +2422,18 @@ public class ResultSetViewer extends Viewer
             manager.add(new Separator());
         }
 
-        // Fill general menu
         final DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer != null && model.hasData()) {
-            manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
-            MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
-            fillOpenWithMenu(openWithMenu);
-            manager.add(openWithMenu);
+        if (row != null) {
+            // Fill general menu
+            if (dataContainer != null && model.hasData()) {
+                manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
+                MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
+                fillOpenWithMenu(openWithMenu);
+                manager.add(openWithMenu);
+            }
+            manager.add(new GroupMarker("results_export"));
+            manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
         }
-        manager.add(new GroupMarker("results_export"));
-        manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
         if (dataContainer != null && model.hasData()) {
             manager.add(new Separator());
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
@@ -2583,40 +2589,42 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillFiltersMenu(@Nullable DBDAttributeBinding attribute, @NotNull IMenuManager filtersMenu)
+    private void fillFiltersMenu(@Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row, @NotNull IMenuManager filtersMenu)
     {
         if (attribute != null && supportsDataFilter()) {
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
 
-            //filtersMenu.add(new FilterByListAction(operator, type, attribute));
-            DBCLogicalOperator[] operators = attribute.getValueHandler().getSupportedOperators(attribute);
-            // Operators with multiple inputs
-            for (DBCLogicalOperator operator : operators) {
-                if (operator.getArgumentCount() < 0) {
-                    filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.INPUT, attribute));
-                }
-            }
-            filtersMenu.add(new Separator());
-            // Operators with no inputs
-            for (DBCLogicalOperator operator : operators) {
-                if (operator.getArgumentCount() == 0) {
-                    filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.NONE, attribute));
-                }
-            }
-            // Operators with single input
-            for (FilterByAttributeType type : FilterByAttributeType.values()) {
-                if (type == FilterByAttributeType.NONE) {
-                    // Value filters are available only if certain cell is selected
-                    continue;
+            if (row != null) {
+                //filtersMenu.add(new FilterByListAction(operator, type, attribute));
+                DBCLogicalOperator[] operators = attribute.getValueHandler().getSupportedOperators(attribute);
+                // Operators with multiple inputs
+                for (DBCLogicalOperator operator : operators) {
+                    if (operator.getArgumentCount() < 0) {
+                        filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.INPUT, attribute));
+                    }
                 }
                 filtersMenu.add(new Separator());
-                if (type.getValue(this, attribute, DBCLogicalOperator.EQUALS, true) == null) {
-                    // Null cell value - no operators can be applied
-                    continue;
-                }
+                // Operators with no inputs
                 for (DBCLogicalOperator operator : operators) {
-                    if (operator.getArgumentCount() > 0) {
-                        filtersMenu.add(new FilterByAttributeAction(operator, type, attribute));
+                    if (operator.getArgumentCount() == 0) {
+                        filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.NONE, attribute));
+                    }
+                }
+                // Operators with single input
+                for (FilterByAttributeType type : FilterByAttributeType.values()) {
+                    if (type == FilterByAttributeType.NONE) {
+                        // Value filters are available only if certain cell is selected
+                        continue;
+                    }
+                    filtersMenu.add(new Separator());
+                    if (type.getValue(this, attribute, DBCLogicalOperator.EQUALS, true) == null) {
+                        // Null cell value - no operators can be applied
+                        continue;
+                    }
+                    for (DBCLogicalOperator operator : operators) {
+                        if (operator.getArgumentCount() > 0) {
+                            filtersMenu.add(new FilterByAttributeAction(operator, type, attribute));
+                        }
                     }
                 }
             }
@@ -4025,6 +4033,18 @@ public class ResultSetViewer extends Viewer
     }
 
     private enum FilterByAttributeType {
+        CLIPBOARD(UIIcon.FILTER_CLIPBOARD) {
+            @Override
+            Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
+            {
+                try {
+                    return ResultSetUtils.getAttributeValueFromClipboard(attribute);
+                } catch (Exception e) {
+                    log.debug("Error copying from clipboard", e);
+                    return null;
+                }
+            }
+        },
         VALUE(UIIcon.FILTER_VALUE) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
@@ -4066,18 +4086,6 @@ public class ResultSetViewer extends Viewer
                     } else {
                         return null;
                     }
-                }
-            }
-        },
-        CLIPBOARD(UIIcon.FILTER_CLIPBOARD) {
-            @Override
-            Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
-            {
-                try {
-                    return ResultSetUtils.getAttributeValueFromClipboard(attribute);
-                } catch (Exception e) {
-                    log.debug("Error copying from clipboard", e);
-                    return null;
                 }
             }
         },
