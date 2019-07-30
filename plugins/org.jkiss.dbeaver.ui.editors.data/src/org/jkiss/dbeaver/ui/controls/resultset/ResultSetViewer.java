@@ -34,10 +34,7 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
@@ -48,7 +45,6 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.actions.CompoundContributionItem;
-import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
@@ -207,6 +203,7 @@ public class ResultSetViewer extends Viewer
     private boolean actionsDisabled;
 
     private Color defaultBackground, defaultForeground;
+    private GC sizingGC;
     private VerticalButton recordModeButton;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
@@ -226,6 +223,7 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
+        this.sizingGC = new GC(parent);
         this.defaultBackground = UIStyles.getDefaultTextBackground();
         this.defaultForeground = UIStyles.getDefaultTextForeground();
 
@@ -1665,6 +1663,8 @@ public class ResultSetViewer extends Viewer
             }
         }
         toolbarList.clear();
+
+        UIUtils.dispose(this.sizingGC);
     }
 
     public boolean isAttributeReadOnly(DBDAttributeBinding attribute)
@@ -2240,6 +2240,16 @@ public class ResultSetViewer extends Viewer
             manager.add(viewMenu);
         }
 
+        {
+            MenuManager viewMenu = new MenuManager(
+                ResultSetMessages.controls_resultset_viewer_action_logical_structure,
+                null,
+                MENU_ID_VIRTUAL_MODEL); //$NON-NLS-1$
+            viewMenu.setRemoveAllWhenShown(true);
+            viewMenu.addMenuListener(manager1 -> fillVirtualModelMenu(manager1, attr, row, valueController));
+            manager.add(viewMenu);
+        }
+
         manager.add(new Separator());
 
         final DBSDataContainer dataContainer = getDataContainer();
@@ -2279,19 +2289,14 @@ public class ResultSetViewer extends Viewer
             dataSource.getContainer().getPlatform().getValueHandlerRegistry().findTransformers(
                 dataSource, attr, null);
         if (!CommonUtils.isEmpty(transformers)) {
-            MenuManager transformersMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_as);
+            MenuManager transformersMenu = new MenuManager(NLS.bind(ResultSetMessages.controls_resultset_viewer_action_view_column_type, attr.getName()));
             transformersMenu.setRemoveAllWhenShown(true);
             transformersMenu.addMenuListener(manager12 -> fillAttributeTransformersMenu(manager12, attr));
             viewMenu.add(transformersMenu);
-        } else {
-            final Action customizeAction = new Action(ResultSetMessages.controls_resultset_viewer_action_view_as) {
-            };
-            customizeAction.setEnabled(false);
-            viewMenu.add(customizeAction);
         }
+        viewMenu.add(new TransformerSettingsAction());
         viewMenu.add(new TransformComplexTypesToggleAction());
         viewMenu.add(new Separator());
-        viewMenu.add(new ColorizeDataTypesToggleAction());
         {
             if (valueController != null) {
                 viewMenu.add(new SetRowColorAction(attr, valueController.getValue()));
@@ -2300,21 +2305,26 @@ public class ResultSetViewer extends Viewer
                 }
             }
             viewMenu.add(new CustomizeColorsAction(attr, row));
-            if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
-                viewMenu.add(new ResetAllColorAction());
-            }
+//            if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
+//                viewMenu.add(new ResetAllColorAction());
+//            }
         }
-        viewMenu.add(new Separator());
-        viewMenu.add(new VirtualEntityEditAction());
-        viewMenu.add(new Action(ResultSetMessages.controls_resultset_viewer_action_data_formats) {
-            @Override
-            public void run() {
-                UIUtils.showPreferencesFor(
-                    getControl().getShell(),
-                    ResultSetViewer.this,
-                    PrefPageDataFormat.PAGE_ID);
-            }
-        });
+    }
+
+    private void fillVirtualModelMenu(IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
+        final DBPDataSource dataSource = getDataSource();
+        if (dataSource == null) {
+            return;
+        }
+        VirtualUniqueKeyEditAction vkAction = new VirtualUniqueKeyEditAction(true);
+        if (vkAction.isEnabled()) {
+            vmMenu.add(vkAction);
+        }
+        VirtualUniqueKeyEditAction vkRemoveAction = new VirtualUniqueKeyEditAction(false);
+        if (vkRemoveAction.isEnabled()) {
+            vmMenu.add(vkRemoveAction);
+        }
+        vmMenu.add(new VirtualEntityEditAction());
     }
 
     private void fillEditMenu(IMenuManager editMenu, @Nullable DBDAttributeBinding attr, @NotNull ResultSetRow row, ResultSetValueController valueController) {
@@ -2466,6 +2476,18 @@ public class ResultSetViewer extends Viewer
             refreshData(null);
         }
     }
+
+    private class TransformerSettingsAction extends Action {
+        TransformerSettingsAction() {
+            super(ResultSetMessages.controls_resultset_viewer_action_view_column_types);
+        }
+
+        @Override
+        public void run() {
+            UIUtils.showMessageBox(getSite().getShell(), "Not implemented", "Transformations configuration not implemented", SWT.ICON_ERROR);
+        }
+    }
+
 
     private void fillAttributeTransformersMenu(IMenuManager manager, final DBDAttributeBinding attr) {
         final DBSDataContainer dataContainer = getDataContainer();
@@ -3887,21 +3909,7 @@ public class ResultSetViewer extends Viewer
         {
             return new MenuCreator(control -> {
                 MenuManager configMenuManager = new MenuManager();
-                configMenuManager.add(new ShowFiltersAction(false));
-                //menuManager.add(new CustomizeColorsAction());
-                configMenuManager.add(new Separator());
-                VirtualUniqueKeyEditAction vkAction = new VirtualUniqueKeyEditAction(true);
-                if (vkAction.isEnabled()) {
-                    configMenuManager.add(vkAction);
-                }
-                VirtualUniqueKeyEditAction vkRemoveAction = new VirtualUniqueKeyEditAction(false);
-                if (vkRemoveAction.isEnabled()) {
-                    configMenuManager.add(vkRemoveAction);
-                }
-                configMenuManager.add(new DictionaryEditAction());
-                if (getDataContainer() != null) {
-                    configMenuManager.add(new VirtualEntityEditAction());
-                }
+
                 configMenuManager.add(new Separator());
                 {
                     MenuManager navigateMenu = new MenuManager(
@@ -3921,6 +3929,19 @@ public class ResultSetViewer extends Viewer
                 }
 
                 configMenuManager.add(new Separator());
+
+                configMenuManager.add(new ColorizeDataTypesToggleAction());
+                configMenuManager.add(new Action(ResultSetMessages.controls_resultset_viewer_action_data_formats) {
+                    @Override
+                    public void run() {
+                        UIUtils.showPreferencesFor(
+                            getControl().getShell(),
+                            ResultSetViewer.this,
+                            PrefPageDataFormat.PAGE_ID);
+                    }
+                });
+
+                configMenuManager.add(new Separator());
                 configMenuManager.add(new Action("Preferences") {
                     @Override
                     public void run()
@@ -3938,7 +3959,10 @@ public class ResultSetViewer extends Viewer
         @Override
         public void runWithEvent(Event event)
         {
-            new VirtualEntityEditAction().run();
+            UIUtils.showPreferencesFor(
+                getControl().getShell(),
+                ResultSetViewer.this,
+                PrefPageResultSetMain.PAGE_ID);
         }
 
     }
@@ -4276,7 +4300,8 @@ public class ResultSetViewer extends Viewer
         private final DBDAttributeBinding attribute;
         private final Object value;
         SetRowColorAction(DBDAttributeBinding attr, Object value) {
-            super(NLS.bind(ResultSetMessages.actions_name_color_by, attr.getName()));
+            super(NLS.bind(ResultSetMessages.actions_name_color_by,
+                attr.getName() + " = " + UITextUtils.getShortText(sizingGC, CommonUtils.toString(value), 100)));
             this.attribute = attr;
             this.value = value;
         }
@@ -4310,7 +4335,8 @@ public class ResultSetViewer extends Viewer
     private class ResetRowColorAction extends ColorAction {
         private final DBDAttributeBinding attribute;
         ResetRowColorAction(DBDAttributeBinding attr, Object value) {
-            super("Reset color by " + attr.getName());
+            super(NLS.bind(ResultSetMessages.actions_name_color_reset_by,
+                attr.getName() + " = " + UITextUtils.getShortText(sizingGC, CommonUtils.toString(value), 100)));
             this.attribute = attr;
         }
 
@@ -4403,7 +4429,7 @@ public class ResultSetViewer extends Viewer
 
     private class VirtualEntityEditAction extends Action {
         VirtualEntityEditAction() {
-            super("Logical structure / view settings");
+            super("Edit ...");
         }
 
         @Override
