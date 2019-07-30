@@ -280,7 +280,7 @@ public abstract class LightGrid extends Canvas {
      */
     private Listener disposeListener;
 
-    GC sizingGC;
+    final GC sizingGC;
     FontMetrics fontMetrics;
     Font normalFont, boldFont;
 
@@ -2773,6 +2773,7 @@ public abstract class LightGrid extends Canvas {
         event.type = SWT.None;
 
         UIUtils.dispose(boldFont);
+        UIUtils.dispose(sizingGC);
     }
 
     /**
@@ -4251,6 +4252,8 @@ public abstract class LightGrid extends Canvas {
         sizingGC.setFont(font);
         fontMetrics = sizingGC.getFontMetrics();
         normalFont = font;
+        UIUtils.dispose(boldFont);
+        boldFont = UIUtils.makeBoldFont(normalFont);
     }
 
     public String getCellText(Object colElement, Object rowElement)

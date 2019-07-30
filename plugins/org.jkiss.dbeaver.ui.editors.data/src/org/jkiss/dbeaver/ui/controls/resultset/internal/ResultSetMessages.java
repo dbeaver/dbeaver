@@ -61,8 +61,11 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_order_filter;
     public static String controls_resultset_viewer_action_custom_filter;
     public static String controls_resultset_viewer_action_column_view;
+    public static String controls_resultset_viewer_action_logical_structure;
     public static String controls_resultset_viewer_action_view_format;
     public static String controls_resultset_viewer_action_view_as;
+    public static String controls_resultset_viewer_action_view_column_type;
+    public static String controls_resultset_viewer_action_view_column_types;
     public static String controls_resultset_viewer_action_data_formats;
     public static String controls_resultset_viewer_action_refresh;
     public static String controls_resultset_viewer_action_panels;
@@ -115,6 +118,7 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
 
     public static String actions_name_color_by;
+    public static String actions_name_color_reset_by;
 	public static String actions_name_colorize_data_types;
 	public static String actions_name_row_colors;
 	public static String actions_name_structurize_complex_types;

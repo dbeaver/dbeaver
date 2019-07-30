@@ -113,7 +113,7 @@ class EditVirtualEntityDialog extends BaseDialog {
         TabFolder tabFolder = new TabFolder(composite, SWT.TOP);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        createColumnsPage(tabFolder);
+        //createColumnsPage(tabFolder);
         createUniqueKeysPage(tabFolder);
         createForeignKeysPage(tabFolder);
         createDictionaryPage(tabFolder);
