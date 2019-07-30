@@ -210,9 +210,8 @@ public class UIIcon {
     public static final DBIcon ACTION_USER_ADD = new DBIcon("action_user_add", "actions/user_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ACTION_USER_DELETE = new DBIcon("action_user_delete", "actions/user_delete.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon ACTION_OBJECT = new DBIcon("action_object", "actions/object.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon ACTION_OBJECT_ADD = new DBIcon("action_object_add", "actions/object_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon ACTION_OBJECT_DELETE = new DBIcon("action_object_delete", "actions/object_delete.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ACTION_OBJECT_ADD = new DBIcon("action_object_add", "misc/object_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ACTION_OBJECT_DELETE = new DBIcon("action_object_delete", "misc/object_remove.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon DRIVER_MANAGER = new DBIcon("driver_manager.png"); //$NON-NLS-1$
 
