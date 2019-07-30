@@ -79,7 +79,7 @@ class GridColumnRenderer extends AbstractRenderer
 
     protected Font getColumnFont(Object element) {
         Font font = grid.getLabelProvider().getFont(element);
-        return font != null ? font : grid.normalFont;
+        return font != null ? font : (element == grid.getFocusColumnElement() ? grid.boldFont : grid.normalFont);
     }
 
     public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, Object element) {
@@ -92,14 +92,10 @@ class GridColumnRenderer extends AbstractRenderer
         final Rectangle sortBounds = getSortControlBounds();
         final Rectangle filterBounds = getFilterControlBounds();
 
-        // set the font to be used to display the text.
-        gc.setFont(getColumnFont(element));
-
         boolean flat = true;
-
         boolean drawSelected = false;
 
-        if (flat && (selected || hovering)) {
+        if (selected || hovering) {
             gc.setBackground(grid.getContentProvider().getCellHeaderSelectionBackground(element));
         } else {
             gc.setBackground(grid.getContentProvider().getCellHeaderBackground(element));
@@ -109,7 +105,7 @@ class GridColumnRenderer extends AbstractRenderer
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
         int pushedDrawingOffset = 0;
-        if (drawSelected) {
+        if (hovering) {
             pushedDrawingOffset = 1;
         }
 
@@ -141,7 +137,8 @@ class GridColumnRenderer extends AbstractRenderer
             // Column name
             String text = getColumnText(element);
             text = UITextUtils.getShortString(grid.fontMetrics, text, width);
-            gc.setFont(grid.normalFont);
+            // set the font to be used to display the text.
+            gc.setFont(getColumnFont(element));
             gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
         }
 

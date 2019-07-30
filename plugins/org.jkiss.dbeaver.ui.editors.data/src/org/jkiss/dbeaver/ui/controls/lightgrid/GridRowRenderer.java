@@ -110,7 +110,17 @@ class GridRowRenderer extends AbstractRenderer {
         int selectionOffset = 0;
 
         y += (bounds.height - gc.stringExtent(text).y) / 2;
-        gc.drawString(UITextUtils.getShortString(grid.fontMetrics, text, width), bounds.x + x + selectionOffset, y + selectionOffset, true);
+
+        Font font = grid.getLabelProvider().getFont(element);
+        if (font == null) {
+            font = (element == grid.getFocusRowElement() ? grid.boldFont : grid.normalFont);
+        }
+        gc.setFont(font);
+        gc.drawString(
+            UITextUtils.getShortString(grid.fontMetrics, text, width),
+            bounds.x + x + selectionOffset,
+            y + selectionOffset,
+            true);
     }
 
     public int computeHeaderWidth(Object element, int level) {
