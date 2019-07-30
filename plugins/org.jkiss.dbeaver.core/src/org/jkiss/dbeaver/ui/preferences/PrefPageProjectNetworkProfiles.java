@@ -110,10 +110,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             {
                 ToolBar toolbar = new ToolBar(profilesGroup, SWT.HORIZONTAL);
 
-                ToolItem createItem = new ToolItem(toolbar, SWT.NONE);
-                createItem.setToolTipText("Create new profile");
-                createItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_ADD));
-                createItem.addSelectionListener(new SelectionAdapter() {
+                UIUtils.createToolItem(toolbar, "Create new profile", UIIcon.ROW_ADD, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         String profileName = "";
@@ -145,10 +142,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                     }
                 });
 
-                ToolItem deleteItem = new ToolItem(toolbar, SWT.NONE);
-                deleteItem.setToolTipText("Delete profile");
-                deleteItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_DELETE));
-                deleteItem.addSelectionListener(new SelectionAdapter() {
+                UIUtils.createToolItem(toolbar, "Delete profile", UIIcon.ROW_DELETE, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         if (selectedProfile != null) {

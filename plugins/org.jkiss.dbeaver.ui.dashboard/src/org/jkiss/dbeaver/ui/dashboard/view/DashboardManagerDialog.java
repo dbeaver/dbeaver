@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -124,7 +125,7 @@ public class DashboardManagerDialog extends BaseDialog {
                             DashboardDescriptor dashboardDescriptor = (DashboardDescriptor) element;
                             DBPImage icon;
                             if (dashboardDescriptor.isCustom()) {
-                                icon = UIIcon.ACTION_OBJECT;
+                                icon = DBIcon.TYPE_OBJECT;
                             } else {
                                 icon = dashboardDescriptor.getDefaultViewType().getIcon();
                             }
