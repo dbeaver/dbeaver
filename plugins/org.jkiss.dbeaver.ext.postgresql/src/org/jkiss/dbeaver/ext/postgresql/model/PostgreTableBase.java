@@ -63,6 +63,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     protected PostgreTableBase(PostgreTableContainer container)
     {
         super(container, false);
+        this.persistence = PostgreTablePersistence.PERMANENT;
     }
 
     protected PostgreTableBase(
@@ -86,6 +87,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
         if (container.getDataSource().isServerVersionAtLeast(9, 1)) {
             persistence = PostgreTablePersistence.getByCode(JDBCUtils.safeGetString(dbResult, "relpersistence"));
+        } else {
+            this.persistence = PostgreTablePersistence.PERMANENT;
         }
     }
 
@@ -98,6 +101,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.partitionKey = source.partitionKey;
         this.acl = source.acl;
         this.relOptions = source.relOptions;
+        this.persistence = source.persistence;
 
         DBSObjectCache<PostgreTableBase, PostgreTableColumn> colCache = getSchema().getTableCache().getChildrenCache(this);
         // Copy columns

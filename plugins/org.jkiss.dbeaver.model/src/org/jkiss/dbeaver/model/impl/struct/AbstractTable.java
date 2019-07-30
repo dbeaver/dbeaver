@@ -39,6 +39,7 @@ public abstract class AbstractTable<
     protected AbstractTable(CONTAINER container)
     {
         this.container = container;
+        this.tableName = "";
     }
 
     // Copy constructor
