@@ -309,7 +309,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     @NotNull
     @Override
-    public TreeSet<String> getDataTypes(@NotNull DBPDataSource dataSource) {
+    public TreeSet<String> getDataTypes(@Nullable DBPDataSource dataSource) {
         if (!typesLoaded && dataSource instanceof JDBCDataSource) {
             types.clear();
             loadDataTypesFromDatabase((JDBCDataSource) dataSource);
