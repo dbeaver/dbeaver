@@ -47,11 +47,6 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
-        <!-- Results viewer status bar additions -->
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=additions">
-            <command commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata"/>
-        </menuContribution>
-
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=results_export">
             <command
                     commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata"
