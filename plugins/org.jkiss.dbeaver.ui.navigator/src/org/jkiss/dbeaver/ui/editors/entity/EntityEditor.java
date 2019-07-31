@@ -39,6 +39,8 @@ import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -301,9 +303,20 @@ public class EntityEditor extends MultiPageDatabaseEditor
             log.warn("Null command context");
             return true;
         }
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            log.warn("Null execution context");
+            return true;
+        }
         boolean isNewObject = getDatabaseObject() == null || !getDatabaseObject().isPersisted();
         try {
-            commandContext.saveChanges(monitor, options);
+            DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
+                try {
+                    commandContext.saveChanges(monitor, options);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
         } catch (DBException e) {
             error = e;
         }
