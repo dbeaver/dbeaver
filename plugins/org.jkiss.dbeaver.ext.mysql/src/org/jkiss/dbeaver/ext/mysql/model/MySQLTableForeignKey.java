@@ -67,7 +67,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
                         this.columns.add(new MySQLTableForeignKeyColumn(
                             this,
                             table.getAttribute(monitor, fkCol.getName()),
-                            fkCol.getOrdinalPosition(),
+                            this.columns.size(),
                             table.getAttribute(monitor, fkCol.getReferencedColumn().getName())));
                     }
                 }

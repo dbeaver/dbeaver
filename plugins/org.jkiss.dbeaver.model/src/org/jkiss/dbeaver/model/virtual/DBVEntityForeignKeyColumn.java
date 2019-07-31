@@ -17,22 +17,25 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
 /**
- * Constraint column
+ * Virtual FK column
  */
-public class DBVEntityForeignKeyColumn implements DBSEntityAttributeRef {
+public class DBVEntityForeignKeyColumn implements DBSTableForeignKeyColumn {
+
+    private static final Log log = Log.getLog(DBVEntityForeignKeyColumn.class);
 
     private final DBVEntityForeignKey foreignKey;
     private final String attributeName;
     private final String refAttributeName;
 
-    public DBVEntityForeignKeyColumn(DBVEntityForeignKey foreignKey, String attributeName, String refAttributeName)
-    {
+    public DBVEntityForeignKeyColumn(DBVEntityForeignKey foreignKey, String attributeName, String refAttributeName) {
         this.foreignKey = foreignKey;
         this.attributeName = attributeName;
         this.refAttributeName = refAttributeName;
@@ -46,17 +49,32 @@ public class DBVEntityForeignKeyColumn implements DBSEntityAttributeRef {
 
     @NotNull
     @Override
-    public DBSEntityAttribute getAttribute()
-    {
+    public String getName() {
+        return attributeName;
+    }
+
+    @Override
+    public DBSEntityAttribute getAttribute() {
         return foreignKey.getEntity().getAttribute(new VoidProgressMonitor(), attributeName);
     }
 
-    public String getAttributeName()
-    {
+    public String getAttributeName() {
         return attributeName;
     }
 
     public String getRefAttributeName() {
         return refAttributeName;
     }
+
+    @Override
+    public DBSEntityAttribute getReferencedColumn() {
+        DBSEntity associatedEntity = foreignKey.getAssociatedEntity();
+        try {
+            return associatedEntity == null ? null : associatedEntity.getAttribute(new VoidProgressMonitor(), refAttributeName);
+        } catch (DBException e) {
+            log.error("Error getting virtual FK referenced column", e);
+            return null;
+        }
+    }
+
 }

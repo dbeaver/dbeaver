@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ import java.util.List;
 /**
  * Virtual foreign key
  */
-public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferrer, DBSEntityAssociation {
+public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferrer, DBSTableForeignKey {
 
     private static final Log log = Log.getLog(DBVEntityForeignKey.class);
 
@@ -171,4 +173,15 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferr
         return true;
     }
 
+    @NotNull
+    @Override
+    public DBSForeignKeyModifyRule getDeleteRule() {
+        return DBSForeignKeyModifyRule.NO_ACTION;
+    }
+
+    @NotNull
+    @Override
+    public DBSForeignKeyModifyRule getUpdateRule() {
+        return DBSForeignKeyModifyRule.NO_ACTION;
+    }
 }

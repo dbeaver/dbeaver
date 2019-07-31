@@ -70,12 +70,19 @@ public class AssociationCreateCommand extends Command {
     @Override
     public void execute() {
         if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity) {
-            DBSEntity keyOwner = ((ERDEntity)sourceEntity).getObject();
-            DBVEntity vEntity = DBVUtils.getVirtualEntity(keyOwner, true);
-            DBVEntityForeignKey vfk = EditForeignKeyPage.createVirtualForeignKey(vEntity);
+            DBSEntity srcEntityObject = ((ERDEntity)sourceEntity).getObject();
+            DBSEntity targetEntityObject = ((ERDEntity)targetEntity).getObject();
+            DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
+            DBVEntityForeignKey vfk = EditForeignKeyPage.createVirtualForeignKey(
+                vEntity,
+                targetEntityObject,
+                new EditForeignKeyPage.FKType[] {
+                    EditForeignKeyPage.FK_TYPE_LOGICAL
+                });
             if (vfk == null) {
                 return;
             }
+            vEntity.persistConfiguration();
             association = new ERDAssociation(vfk, (ERDEntity)sourceEntity, (ERDEntity)targetEntity, true);
         } else {
             association = createAssociation(sourceEntity, targetEntity, true);

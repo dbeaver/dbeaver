@@ -16,10 +16,14 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+
 /**
  * DBSTableForeignKeyColumn
  */
-public interface DBSTableForeignKeyColumn extends DBSTableConstraintColumn
+public interface DBSTableForeignKeyColumn extends DBSEntityAttributeRef, DBPNamedObject
 {
-    DBSTableColumn getReferencedColumn();
+    DBSEntityAttribute getReferencedColumn();
 }

@@ -68,7 +68,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
                     this.columns.add(new SQLServerTableForeignKeyColumn(
                         this,
                         table.getAttribute(monitor, fkCol.getName()),
-                        fkCol.getOrdinalPosition(),
+                        this.columns.size(),
                         table.getAttribute(monitor, fkCol.getReferencedColumn().getName())));
                 }
             }
