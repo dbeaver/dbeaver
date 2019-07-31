@@ -33,6 +33,7 @@ public class QMMSessionInfo extends QMMObject {
     private final String driverId;
     @Nullable
     private final DBPConnectionConfiguration connectionConfiguration;
+    private final String instanceId;
     private final String contextName;
     @Nullable
     private SQLDialect sqlDialect;
@@ -49,6 +50,7 @@ public class QMMSessionInfo extends QMMObject {
         this.containerName = context.getDataSource().getContainer().getName();
         this.driverId = context.getDataSource().getContainer().getDriver().getId();
         this.connectionConfiguration = context.getDataSource().getContainer().getConnectionConfiguration();
+        this.instanceId = context.getOwnerInstance().getName();
         this.contextName = context.getContextName();
         if (context.getDataSource() instanceof SQLDataSource) {
             this.sqlDialect = ((SQLDataSource) context.getDataSource()).getSQLDialect();
@@ -59,12 +61,13 @@ public class QMMSessionInfo extends QMMObject {
         }
     }
 
-    public QMMSessionInfo(long openTime, long closeTime, String containerId, String containerName, String driverId, DBPConnectionConfiguration connectionConfiguration, String contextName, boolean transactional) {
+    public QMMSessionInfo(long openTime, long closeTime, String containerId, String containerName, String driverId, DBPConnectionConfiguration connectionConfiguration, String instanceID, String contextName, boolean transactional) {
         super(openTime, closeTime);
         this.containerId = containerId;
         this.containerName = containerName;
         this.driverId = driverId;
         this.connectionConfiguration = connectionConfiguration;
+        this.instanceId = instanceID;
         this.contextName = contextName;
         this.transactional = transactional;
     }
@@ -249,6 +252,10 @@ public class QMMSessionInfo extends QMMObject {
 
     public DBPConnectionConfiguration getConnectionConfiguration() {
         return connectionConfiguration;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
     }
 
     public String getContextName() {
