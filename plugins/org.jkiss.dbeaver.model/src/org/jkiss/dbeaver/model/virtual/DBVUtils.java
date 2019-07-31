@@ -96,7 +96,7 @@ public abstract class DBVUtils {
     }
 
     @Nullable
-    private static DBVTransformSettings getTransformSettings(@NotNull DBVEntityAttribute attribute, boolean create) {
+    public static DBVTransformSettings getTransformSettings(@NotNull DBVEntityAttribute attribute, boolean create) {
         if (attribute.getTransformSettings() != null) {
             return attribute.getTransformSettings();
         } else if (create) {

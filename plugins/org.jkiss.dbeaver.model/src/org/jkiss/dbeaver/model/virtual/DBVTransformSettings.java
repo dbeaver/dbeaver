@@ -29,6 +29,16 @@ public class DBVTransformSettings {
     private String customTransformer;
     private Map<String, String> transformOptions;
 
+    DBVTransformSettings() {
+    }
+
+    DBVTransformSettings(DBVTransformSettings source) {
+        this.excludedTransformers = source.excludedTransformers == null ? null : new HashSet<>(source.excludedTransformers);
+        this.includedTransformers = source.includedTransformers == null ? null : new HashSet<>(source.includedTransformers);
+        this.customTransformer = source.customTransformer;
+        this.transformOptions = source.transformOptions == null ? null : new LinkedHashMap<>(source.transformOptions);
+    }
+
     public Set<String> getExcludedTransformers() {
         return excludedTransformers;
     }

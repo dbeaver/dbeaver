@@ -2488,7 +2488,7 @@ public class ResultSetViewer extends Viewer
             if (dataSource == null) {
                 return;
             }
-            TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(ResultSetViewer.this);
+            TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(ResultSetViewer.this, null, null, true);
             if (settingsDialog.open() == IDialogConstants.OK_ID) {
                 dataSource.getContainer().persistConfiguration();
                 refreshData(null);

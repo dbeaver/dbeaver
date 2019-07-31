@@ -196,28 +196,6 @@ class ColorSettingsDialog extends BaseDialog {
         });
     }
 
-/*
-    private void updateColumnItem(TableItem attrItem) {
-        DBDAttributeBinding attr = (DBDAttributeBinding) attrItem.getData();
-        String colorSettings = "";
-        {
-            List<DBVColorOverride> coList = vEntity.getColorOverrides(attr.getName());
-            if (!coList.isEmpty()) {
-                List<String> coStrings = new ArrayList<>();
-                for (DBVColorOverride co : coList) {
-                    if (co.getAttributeValues() != null) {
-                        for (Object value : co.getAttributeValues()) {
-                            coStrings.add(CommonUtils.toString(value));
-                        }
-                    }
-                }
-                colorSettings = String.join(",", coStrings);
-            }
-        }
-        attrItem.setText(1, colorSettings);
-    }
-*/
-
     private void updateAttributeSelection() {
         TableItem[] selection = attributeTable.getSelection();
         if (selection.length == 0) {
@@ -640,6 +618,11 @@ class ColorSettingsDialog extends BaseDialog {
 
         void setInlinePlaceholder(Composite ph) {
             inlinePlaceholder = ph;
+        }
+
+        @Override
+        public void updateValue(@Nullable Object value, boolean updatePresentation) {
+            // Do not update
         }
     }
 
