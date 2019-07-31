@@ -178,10 +178,10 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             }
         }
 
-        if (!identifying || association.isLogical()) {
+        if (!identifying || constraintType.isLogical()) {
             conn.setLineStyle(SWT.LINE_CUSTOM);
             conn.setLineDash(
-                association.isLogical() ? new float[]{ 2, 5 } : new float[]{ 5 });
+                constraintType.isLogical() ? new float[]{ 4  } : new float[]{ 5 });
         }
     }
 

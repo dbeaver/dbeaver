@@ -295,7 +295,7 @@ class EditVirtualEntityDialog extends BaseDialog {
         if (editDictionaryPage != null) {
             editDictionaryPage.saveDictionarySettings();
         }
-        viewer.persistConfig();
+        vEntity.persistConfiguration();
         if (fkChanged) {
             viewer.refreshData(null);
         }

@@ -43,9 +43,8 @@ class EditObjectDialog extends TrayDialog {
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
-        //String dialogId = "DBeaver.EditObjectDialog." + dialogPage.getClass().getSimpleName();
-        //return UIUtils.getDialogSettings(dialogId);
-        return null;
+        String dialogId = "DBeaver.EditObjectDialog." + dialogPage.getClass().getSimpleName();
+        return UIUtils.getDialogSettings(dialogId);
     }
 
     @Override
