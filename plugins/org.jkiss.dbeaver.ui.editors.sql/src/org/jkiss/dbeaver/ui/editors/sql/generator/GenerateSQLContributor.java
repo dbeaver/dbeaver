@@ -155,6 +155,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
                 StringBuilder sql = new StringBuilder(100);
                 Map<String, Object> options = new HashMap<>();
+                addOptions(options);
                 try {
                     DBStructUtils.generateTableListDDL(monitor, sql, tableList, options, false);
                 } catch (DBException e) {
