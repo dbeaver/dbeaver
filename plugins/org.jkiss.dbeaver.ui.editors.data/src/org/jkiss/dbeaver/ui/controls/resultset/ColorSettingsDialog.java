@@ -122,6 +122,7 @@ class ColorSettingsDialog extends BaseDialog {
         Composite composite = super.createDialogArea(parent);
 
         SashForm divider = new SashForm(composite, SWT.HORIZONTAL);
+        divider.setSashWidth(10);
         divider.setLayoutData(new GridData(GridData.FILL_BOTH));
         createAttributeSelectorArea(divider);
         createAttributeSettingsArea(divider);
@@ -257,9 +258,8 @@ class ColorSettingsDialog extends BaseDialog {
         mainGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_BOTH));
 
         {
-            Composite colorsGroup = new Composite(mainGroup, SWT.NONE);
+            Composite colorsGroup = UIUtils.createComposite(mainGroup, 2);
             colorsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_BOTH));
-            colorsGroup.setLayout(new GridLayout(2, false));
 
             //UIUtils.createControlLabel(colorsGroup, "Cell conditions");
 
