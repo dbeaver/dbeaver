@@ -98,6 +98,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -4452,7 +4453,8 @@ public class ResultSetViewer extends Viewer
         public void run()
         {
             UIUtils.runUIJob("Edit virtual foreign key", monitor -> {
-                EditVirtualEntityDialog.createVirtualForeignKey(getVirtualEntity());
+                EditForeignKeyPage.createVirtualForeignKey(getVirtualEntity());
+                persistConfig();
             });
         }
     }

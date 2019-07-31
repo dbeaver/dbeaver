@@ -109,6 +109,7 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                     }
                 });
             }
+            addPhysicalKeyComponent(defGroup);
 
             return panel;
         }

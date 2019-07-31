@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -50,7 +49,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 class EditVirtualEntityDialog extends BaseDialog {
@@ -185,7 +183,7 @@ class EditVirtualEntityDialog extends BaseDialog {
             btnAdd.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    DBVEntityForeignKey virtualFK = createVirtualForeignKey(vEntity);
+                    DBVEntityForeignKey virtualFK = EditForeignKeyPage.createVirtualForeignKey(vEntity);
                     if (virtualFK != null) {
                         createForeignKeyItem(fkTable, virtualFK);
                         fkChanged = true;
@@ -218,35 +216,6 @@ class EditVirtualEntityDialog extends BaseDialog {
                 getButton(ID_REMOVE_FOREIGN_KEY).setEnabled(hasSelection);
             }
         });
-    }
-
-    @Nullable
-    public static DBVEntityForeignKey createVirtualForeignKey(DBVEntity vEntity) {
-        DBVEntityForeignKey virtualFK = new DBVEntityForeignKey(vEntity);
-        EditForeignKeyPage editDialog = new EditForeignKeyPage(
-            "Define virtual foreign keys",
-            virtualFK,
-            new DBSForeignKeyModifyRule[]{DBSForeignKeyModifyRule.NO_ACTION});
-        editDialog.setEnableCustomKeys(true);
-        if (!editDialog.edit()) {
-            return null;
-        }
-        // Save
-        try {
-            virtualFK.setReferencedConstraint(new VoidProgressMonitor(), editDialog.getUniqueConstraint());
-        } catch (DBException e1) {
-            log.error(e1);
-            return null;
-        }
-        List<DBVEntityForeignKeyColumn> columns = new ArrayList<>();
-        for (EditForeignKeyPage.FKColumnInfo tableColumn : editDialog.getColumns()) {
-            columns.add(
-                new DBVEntityForeignKeyColumn(
-                    virtualFK, tableColumn.getOwnColumn().getName(), tableColumn.getRefColumn().getName()));
-        }
-        virtualFK.setAttributes(columns);
-        vEntity.addForeignKey(virtualFK);
-        return virtualFK;
     }
 
     private void createForeignKeyItem(Table fkTable, DBVEntityForeignKey fk) {

@@ -819,6 +819,19 @@ public class UIUtils {
         return ph;
     }
 
+    public static Composite createFormPlaceholder(Composite parent, int columns, int hSpan)
+    {
+        Composite ph = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout(columns, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        ph.setLayout(gl);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = hSpan;
+        ph.setLayoutData(gd);
+        return ph;
+    }
+
     public static void setGridSpan(Control control, int horizontalSpan, int verticalSpan) {
         GridData gd;
         final Object layoutData = control.getLayoutData();

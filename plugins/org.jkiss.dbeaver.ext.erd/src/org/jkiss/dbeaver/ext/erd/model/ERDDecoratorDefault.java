@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditPartFactory;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -46,8 +47,9 @@ import java.util.Set;
  */
 public class ERDDecoratorDefault implements ERDDecorator {
 
-    public static final ImageDescriptor CONNECT_IMAGE = ERDActivator.getImageDescriptor("icons/connect.png");
-    public static final ImageDescriptor NOTE_IMAGE = ERDActivator.getImageDescriptor("icons/note.png");
+    public static final ImageDescriptor CONNECT_IMAGE = DBeaverIcons.getImageDescriptor(DBIcon.TREE_ASSOCIATION);
+    public static final ImageDescriptor FOREIGN_KEY_IMAGE = DBeaverIcons.getImageDescriptor(DBIcon.TREE_FOREIGN_KEY);
+    public static final ImageDescriptor NOTE_IMAGE = DBeaverIcons.getImageDescriptor(DBIcon.TYPE_TEXT);
 
     private static final Log log = Log.getLog(ERDDecoratorDefault.class);
 
@@ -81,42 +83,45 @@ public class ERDDecoratorDefault implements ERDDecorator {
 
     @Override
     public void fillPalette(PaletteRoot paletteRoot, boolean readOnly) {
-        {
-            // a group of default control tools
-            PaletteDrawer controls = createToolsDrawer(paletteRoot);
+        // a group of default control tools
+        PaletteDrawer controls = createToolsDrawer(paletteRoot);
 
-            // the selection tool
-            ToolEntry selectionTool = new SelectionToolEntry();
-            controls.add(selectionTool);
+        // the selection tool
+        ToolEntry selectionTool = new SelectionToolEntry();
+        controls.add(selectionTool);
 
-            // use selection tool as default entry
-            paletteRoot.setDefaultEntry(selectionTool);
+        // use selection tool as default entry
+        paletteRoot.setDefaultEntry(selectionTool);
 
-            if (!readOnly) {
-                // separator
-                PaletteSeparator separator = new PaletteSeparator("tools");
-                separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
-                controls.add(separator);
+        if (!readOnly) {
+            // separator
+            PaletteSeparator separator = new PaletteSeparator("tools");
+            separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
+            controls.add(separator);
 
-                controls.add(new ConnectionCreationToolEntry(ERDMessages.erd_tool_create_connection, ERDMessages.erd_tool_create_connection_tip, null, CONNECT_IMAGE, CONNECT_IMAGE));
-                controls.add(new CreationToolEntry(
-                    ERDMessages.erd_tool_create_note,
-                    ERDMessages.erd_tool_create_note_tip,
-                    new CreationFactory() {
-                        @Override
-                        public Object getNewObject()
-                        {
-                            return new ERDNote(ERDMessages.erd_tool_create_default);
-                        }
-                        @Override
-                        public Object getObjectType()
-                        {
-                            return RequestConstants.REQ_CREATE;
-                        }
-                    },
-                    NOTE_IMAGE,
-                    NOTE_IMAGE));
-            }
+            controls.add(new ConnectionCreationToolEntry(
+                ERDMessages.erd_tool_create_connection,
+                ERDMessages.erd_tool_create_connection_tip,
+                null,
+                CONNECT_IMAGE,
+                CONNECT_IMAGE));
+            controls.add(new CreationToolEntry(
+                ERDMessages.erd_tool_create_note,
+                ERDMessages.erd_tool_create_note_tip,
+                new CreationFactory() {
+                    @Override
+                    public Object getNewObject()
+                    {
+                        return new ERDNote(ERDMessages.erd_tool_create_default);
+                    }
+                    @Override
+                    public Object getObjectType()
+                    {
+                        return RequestConstants.REQ_CREATE;
+                    }
+                },
+                NOTE_IMAGE,
+                NOTE_IMAGE));
         }
     }
 
