@@ -43,19 +43,22 @@ public class DBVEntityAttribute implements DBSEntityAttribute
     private DBVTransformSettings transformSettings;
     Map<String, String> properties;
 
-    public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
+    DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
         this.entity = entity;
         this.parent = parent;
         this.name = name;
     }
 
-    public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, DBVEntityAttribute copy) {
+    DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, DBVEntityAttribute copy) {
         this.entity = entity;
         this.parent = parent;
         this.name = copy.name;
         for (DBVEntityAttribute child : copy.children) {
             this.children.add(new DBVEntityAttribute(entity, this, child));
         }
+        this.defaultValue = copy.defaultValue;
+        this.description = copy.description;
+        this.transformSettings = copy.transformSettings == null ? null : new DBVTransformSettings(copy.transformSettings);
         if (!CommonUtils.isEmpty(copy.properties)) {
             this.properties = new LinkedHashMap<>(copy.properties);
         }
@@ -206,7 +209,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         return transformSettings;
     }
 
-    public void setTransformSettings(DBVTransformSettings transformSettings) {
+    void setTransformSettings(DBVTransformSettings transformSettings) {
         this.transformSettings = transformSettings;
     }
 
