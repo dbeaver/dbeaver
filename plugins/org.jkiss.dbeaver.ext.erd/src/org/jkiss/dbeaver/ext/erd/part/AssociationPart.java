@@ -155,14 +155,15 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         ERDAssociation association = getAssociation();
         boolean identifying = ERDUtils.isIdentifyingAssociation(association);
 
-        if (association.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE) {
+        DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
+        if (constraintType == DBSEntityConstraintType.INHERITANCE) {
             final PolygonDecoration srcDec = new PolygonDecoration();
             srcDec.setTemplate(PolygonDecoration.TRIANGLE_TIP);
             srcDec.setFill(true);
             srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
             srcDec.setScale(10, 6);
             conn.setTargetDecoration(srcDec);
-        } else if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
+        } else if (constraintType.isAssociation()) {
             final CircleDecoration sourceDecor = new CircleDecoration();
             sourceDecor.setRadius(3);
             sourceDecor.setFill(true);
@@ -179,7 +180,8 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
         if (!identifying || association.isLogical()) {
             conn.setLineStyle(SWT.LINE_CUSTOM);
-            conn.setLineDash(new float[]{5});
+            conn.setLineDash(
+                association.isLogical() ? new float[]{ 2, 5 } : new float[]{ 5 });
         }
     }
 

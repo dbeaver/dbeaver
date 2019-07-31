@@ -61,5 +61,5 @@ public class ERDConstants {
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;
     public static final int DEFAULT_ENTITY_BORDER_WIDTH = 2;
 
-    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false, false);
+    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false, false, true);
 }
