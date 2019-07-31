@@ -126,7 +126,6 @@ class DBVModelSerializerModern implements DBVModelSerializer
         }
 
         if (!CommonUtils.isEmpty(entity.entityForeignKeys)) {
-            DBNModel model = DBWorkbench.getPlatform().getNavigatorModel();
             // Foreign keys
             json.name("foreign-keys");
             json.beginArray();

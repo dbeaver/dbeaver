@@ -27,7 +27,7 @@ public class DBSEntityConstraintType
     public static final DBSEntityConstraintType PRIMARY_KEY = new DBSEntityConstraintType("pk", "PRIMARY KEY", ModelMessages.model_struct_Primary_Key, false, true, false, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", "UNIQUE KEY", ModelMessages.model_struct_Unique_Key, false, true, false, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType VIRTUAL_KEY = new DBSEntityConstraintType("vpk", "VIRTUAL PRIMARY KEY", ModelMessages.model_struct_Virtual_Key, false, true, false, true); //$NON-NLS-1$
-    public static final DBSEntityConstraintType VIRTUAL_FOREIGN_KEY = new DBSEntityConstraintType("vfk", "VIRTUAL FOREIGN KEY", ModelMessages.model_struct_Virtual_Foreign_Key, false, true, false, true); //$NON-NLS-1$
+    public static final DBSEntityConstraintType VIRTUAL_FOREIGN_KEY = new DBSEntityConstraintType("vfk", "VIRTUAL FOREIGN KEY", ModelMessages.model_struct_Virtual_Foreign_Key, true, true, false, true); //$NON-NLS-1$
     public static final DBSEntityConstraintType PSEUDO_KEY = new DBSEntityConstraintType("pseudo", "PSEUDO", ModelMessages.model_struct_Pseudo_Key, false, true, false, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType CHECK = new DBSEntityConstraintType("check", "CHECK", ModelMessages.model_struct_Check, false, false, true, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType NOT_NULL = new DBSEntityConstraintType("notnull", "NOT NULL", ModelMessages.model_struct_Not_NULL, false, false, false, false); //$NON-NLS-1$
