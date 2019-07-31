@@ -168,13 +168,7 @@ public class SQLServerTable extends SQLServerTableBase
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
-            ddl = null;
-        }
-        if (ddl == null) {
-            ddl = DBStructUtils.generateTableDDL(monitor, this, options, false);
-        }
-        return ddl;
+        return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 
     @Override
