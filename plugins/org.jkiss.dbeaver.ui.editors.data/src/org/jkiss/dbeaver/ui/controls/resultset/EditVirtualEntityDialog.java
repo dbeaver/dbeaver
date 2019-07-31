@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
@@ -64,8 +63,6 @@ class EditVirtualEntityDialog extends BaseDialog {
     public static final int ID_REMOVE_UNIQUE_KEY = 1001;
     public static final int ID_CREATE_FOREIGN_KEY = 2000;
     public static final int ID_REMOVE_FOREIGN_KEY = 2001;
-    private static final int ID_CONFIGURE_TRANSFORMS = 3001;
-    private static final int ID_CONFIGURE_COLORS = 3002;
 
     private ResultSetViewer viewer;
     private DBSEntity entity;
@@ -256,86 +253,6 @@ class EditVirtualEntityDialog extends BaseDialog {
             .collect(Collectors.joining(","));
         item.setText(1, "(" + ownAttrNames + ") -> (" + refAttrNames + ")");
         item.setData(fk);
-    }
-
-    private void createColumnsPage(TabFolder tabFolder) {
-        TabItem colItem = new TabItem(tabFolder, SWT.NONE);
-        colItem.setText("Columns view");
-        colItem.setData(InitPage.ATTRIBUTES);
-
-        Composite panel = new Composite(tabFolder, 1);
-        panel.setLayout(new GridLayout(1, false));
-        colItem.setControl(panel);
-
-        Table colTable = new Table(panel, SWT.FULL_SELECTION | SWT.BORDER);
-        colTable.setHeaderVisible(true);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 400;
-        colTable.setLayoutData(gd);
-        UIUtils.executeOnResize(colTable, () -> UIUtils.packColumns(colTable, true));
-
-        UIUtils.createTableColumn(colTable, SWT.LEFT, "Name");
-        UIUtils.createTableColumn(colTable, SWT.LEFT, "Transforms");
-        UIUtils.createTableColumn(colTable, SWT.LEFT, "Colors");
-
-        for (DBDAttributeBinding attr : viewer.getModel().getVisibleAttributes()) {
-            TableItem attrItem = new TableItem(colTable, SWT.NONE);;
-            attrItem.setData(attr);
-            attrItem.setText(0, attr.getName());
-            attrItem.setImage(0, DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr, true)));
-
-            updateColumnItem(attrItem);
-        }
-
-        Composite buttonsPanel = UIUtils.createComposite(panel, 2);
-        buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-        Button btnTransforms = createButton(buttonsPanel, ID_CONFIGURE_TRANSFORMS, "Transforms ...", false);
-        btnTransforms.setEnabled(false);
-        btnTransforms.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TableItem item = colTable.getItem(colTable.getSelectionIndex());
-                DBDAttributeBinding attr = (DBDAttributeBinding) item.getData();
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, true);
-                assert vAttr != null;
-                DBVTransformSettings transformSettings = vAttr.getTransformSettings();
-                if (transformSettings == null) {
-                    transformSettings = new DBVTransformSettings();
-                }
-                TransformerSettingsDialog dialog = new TransformerSettingsDialog(viewer, attr, transformSettings, true);
-                if (dialog.open() == IDialogConstants.OK_ID) {
-                    vAttr.setTransformSettings(transformSettings);
-                }
-                updateColumnItem(item);
-            }
-        });
-
-        Button btnColors = createButton(buttonsPanel, ID_CONFIGURE_COLORS, "Colors ...", false);
-        btnColors.setEnabled(false);
-        btnColors.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TableItem item = colTable.getItem(colTable.getSelectionIndex());
-                DBDAttributeBinding attr = (DBDAttributeBinding) item.getData();
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, true);
-                ColorSettingsDialog dialog = new ColorSettingsDialog(viewer, attr, null);
-                if (dialog.open() == IDialogConstants.OK_ID) {
-                    //vEntity.setColorOverride();
-                }
-
-                updateColumnItem(item);
-            }
-        });
-
-        colTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                boolean hasSelection = colTable.getSelectionIndex() >= 0;
-                getButton(ID_CONFIGURE_TRANSFORMS).setEnabled(hasSelection);
-                getButton(ID_CONFIGURE_COLORS).setEnabled(hasSelection);
-            }
-        });
     }
 
     private void updateColumnItem(TableItem attrItem) {

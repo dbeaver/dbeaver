@@ -56,7 +56,11 @@ class TransformerSettingsDialog extends BaseDialog {
     private Text infoText;
     private DBDAttributeTransformerDescriptor transformer;
 
-    public TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding attr, DBVTransformSettings settings, boolean selector) {
+    TransformerSettingsDialog(ResultSetViewer viewer) {
+        this(viewer, null, null, false);
+    }
+
+    TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding attr, DBVTransformSettings settings, boolean selector) {
         super(viewer.getControl().getShell(), "Transformer settings", null);
         this.viewer = viewer;
         this.attr = attr;
