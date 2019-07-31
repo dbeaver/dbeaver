@@ -193,6 +193,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         this.selectedKeyType = preferredKeyType;
     }
 
+    public void setRefTable(DBSEntity curRefTable) {
+        this.curRefTable = curRefTable;
+    }
+
     protected void addPhysicalKeyComponent(Control control) {
         physicalKeyComponents.add(control);
     }
@@ -201,6 +205,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     public void createControl(Composite parent) {
         super.createControl(parent);
         updateControlsVisibility();
+        if (curRefTable != null) {
+            handleRefTableSelect();
+        }
     }
 
     @Override
@@ -233,19 +240,25 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
             }
 
-            try {
-                if (foreignKey instanceof DBVEntityForeignKey) {
-                    // Virtual key - add container selector
-                    createContainerSelector(tableGroup);
-                } else if (ownerTableNode != null) {
-                    createSchemaSelector(tableGroup);
+            if (curRefTable == null) {
+                try {
+                    if (foreignKey instanceof DBVEntityForeignKey) {
+                        // Virtual key - add container selector
+                        createContainerSelector(tableGroup);
+                    } else if (ownerTableNode != null) {
+                        createSchemaSelector(tableGroup);
+                    }
+                } catch (Throwable e) {
+                    log.debug("Can't create schema selector", e);
                 }
-            } catch (Throwable e) {
-                log.debug("Can't create schema selector", e);
+            } else {
+                UIUtils.createLabelText(
+                    tableGroup,
+                    EditorsMessages.dialog_struct_edit_fk_label_ref_table, DBUtils.getObjectFullName(curRefTable, DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
             }
         }
 
-        {
+        if (curRefTable == null) {
             DBNNode containerNode = ownerTableNode == null ? null : ownerTableNode.getParentNode();
             while (containerNode instanceof DBNDatabaseFolder) {
                 containerNode = containerNode.getParentNode();
@@ -354,8 +367,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
             addPhysicalKeyComponent(cascadeGroup);
         }
-        //panel.setTabList(new Control[] { tableList, pkGroup, columnsTable, cascadeGroup });
-        tableList.setFocus();
+
+        if (tableList != null) {
+            tableList.setFocus();
+        }
 
         return panel;
     }
@@ -571,8 +586,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
     }
 
-    private void handleRefTableSelect(DBNDatabaseNode refTableNode)
-    {
+    private void handleRefTableSelect(DBNDatabaseNode refTableNode) {
         if (refTableNode != null) {
             DBSObject object = refTableNode.getObject();
             if (object instanceof DBSEntity) {
@@ -581,15 +595,20 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             if (fkNameText != null) {
                 fkNameText.setText("FK_" + refTableNode.getObject().getName());
             }
+        } else {
+            curRefTable = null;
         }
-        uniqueKeyCombo.removeAll();
+        handleRefTableSelect();
+    }
 
+    private void handleRefTableSelect() {
+        uniqueKeyCombo.removeAll();
 
         try {
             curConstraints = new ArrayList<>();
             curConstraint = null;
-            if (refTableNode != null) {
-                final DBSEntity refTable = (DBSEntity) refTableNode.getObject();
+            if (curRefTable != null) {
+                final DBSEntity refTable = curRefTable;
                 UIUtils.runInProgressService(monitor -> {
                     try {
                         // Cache own table columns
@@ -628,10 +647,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 uniqueKeyCombo.add(constraint.getName());
             }
             if (uniqueKeyCombo.getItemCount() == 0) {
-                if (refTableNode == null) {
+                if (curRefTable == null) {
                     uniqueKeyCombo.add("<No reference table selected>");
                 } else {
-                    uniqueKeyCombo.add("<No unique keys in table '" + DBUtils.getObjectFullName(refTableNode.getObject(), DBPEvaluationContext.UI) + "'>");
+                    uniqueKeyCombo.add("<No unique keys in table '" + DBUtils.getObjectFullName(curRefTable, DBPEvaluationContext.UI) + "'>");
                 }
                 uniqueKeyCombo.select(0);
                 curConstraint = null;
@@ -881,19 +900,24 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     @Nullable
-    public static DBVEntityForeignKey createVirtualForeignKey(DBVEntity vEntity) {
-        return createVirtualForeignKey(vEntity, new FKType[] {FK_TYPE_LOGICAL});
+    public static DBVEntityForeignKey createVirtualForeignKey(@NotNull DBVEntity vEntity) {
+        return createVirtualForeignKey(vEntity, null, new FKType[] {FK_TYPE_LOGICAL});
     }
 
     @Nullable
-    public static DBVEntityForeignKey createVirtualForeignKey(DBVEntity vEntity, FKType[] allowedKeyTypes) {
+    public static DBVEntityForeignKey createVirtualForeignKey(@NotNull DBVEntity vEntity, @Nullable DBSEntity refEntity, @Nullable FKType[] allowedKeyTypes) {
         DBVEntityForeignKey virtualFK = new DBVEntityForeignKey(vEntity);
         EditForeignKeyPage editDialog = new EditForeignKeyPage(
             "Define virtual foreign keys",
             virtualFK,
             new DBSForeignKeyModifyRule[]{DBSForeignKeyModifyRule.NO_ACTION});
         editDialog.setEnableCustomKeys(true);
-        editDialog.setAllowedKeyTypes(allowedKeyTypes);
+        if (allowedKeyTypes != null) {
+            editDialog.setAllowedKeyTypes(allowedKeyTypes);
+        }
+        if (refEntity != null) {
+            editDialog.setRefTable(refEntity);
+        }
         if (!editDialog.edit()) {
             return null;
         }

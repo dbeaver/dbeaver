@@ -18,11 +18,12 @@ package org.jkiss.dbeaver.model.struct.rdb;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
 /**
  * DBSTableForeignKey
  */
-public interface DBSTableForeignKey extends DBSTableConstraint, DBSEntityAssociation
+public interface DBSTableForeignKey extends DBSEntityReferrer, DBSEntityAssociation
 {
     @NotNull
     DBSForeignKeyModifyRule getDeleteRule();

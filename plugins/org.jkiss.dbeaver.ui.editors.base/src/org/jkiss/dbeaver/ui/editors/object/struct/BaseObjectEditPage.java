@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 public abstract class BaseObjectEditPage extends DialogPage {
 
@@ -63,7 +64,7 @@ public abstract class BaseObjectEditPage extends DialogPage {
 
     protected void updatePageState() {
         if (container != null) {
-            container.updateButtons();
+            UIUtils.asyncExec(() -> container.updateButtons());
         }
     }
 
