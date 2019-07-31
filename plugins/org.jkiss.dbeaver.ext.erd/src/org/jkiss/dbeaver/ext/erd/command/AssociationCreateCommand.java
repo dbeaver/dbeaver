@@ -20,6 +20,11 @@ import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDElement;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
 import java.util.List;
 
@@ -64,7 +69,17 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public void execute() {
-        association = createAssociation(sourceEntity, targetEntity, true);
+        if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity) {
+            DBSEntity keyOwner = ((ERDEntity)sourceEntity).getObject();
+            DBVEntity vEntity = DBVUtils.getVirtualEntity(keyOwner, true);
+            DBVEntityForeignKey vfk = EditForeignKeyPage.createVirtualForeignKey(vEntity);
+            if (vfk == null) {
+                return;
+            }
+            association = new ERDAssociation(vfk, (ERDEntity)sourceEntity, (ERDEntity)targetEntity, true);
+        } else {
+            association = createAssociation(sourceEntity, targetEntity, true);
+        }
     }
 
     public ERDElement getSourceEntity() {
@@ -93,14 +108,18 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public void redo() {
-        sourceEntity.addAssociation(association, true);
-        targetEntity.addReferenceAssociation(association, true);
+        if (association != null) {
+            sourceEntity.addAssociation(association, true);
+            targetEntity.addReferenceAssociation(association, true);
+        }
     }
 
     @Override
     public void undo() {
-        sourceEntity.removeAssociation(association, true);
-        targetEntity.removeReferenceAssociation(association, true);
+        if (association != null) {
+            sourceEntity.removeAssociation(association, true);
+            targetEntity.removeReferenceAssociation(association, true);
+        }
     }
 
     protected ERDAssociation createAssociation(ERDElement sourceEntity, ERDElement targetEntity, boolean reflect) {

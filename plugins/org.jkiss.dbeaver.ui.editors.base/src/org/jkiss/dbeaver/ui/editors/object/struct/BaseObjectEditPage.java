@@ -45,7 +45,7 @@ public abstract class BaseObjectEditPage extends DialogPage {
     }
 
     @Override
-    public final void createControl(Composite parent) {
+    public void createControl(Composite parent) {
         Control pageContents = createPageContents(parent);
         setControl(pageContents);
         pageContents.addHelpListener(new HelpListener() {
