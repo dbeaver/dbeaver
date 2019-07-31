@@ -79,7 +79,7 @@ class GridColumnRenderer extends AbstractRenderer
 
     protected Font getColumnFont(Object element) {
         Font font = grid.getLabelProvider().getFont(element);
-        return font != null ? font : (element == grid.getFocusColumnElement() ? grid.boldFont : grid.normalFont);
+        return font != null ? font : grid.normalFont;
     }
 
     public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, Object element) {
@@ -139,6 +139,9 @@ class GridColumnRenderer extends AbstractRenderer
             text = UITextUtils.getShortString(grid.fontMetrics, text, width);
             // set the font to be used to display the text.
             gc.setFont(getColumnFont(element));
+//            if (element == grid.getFocusColumnElement()) {
+//                gc.drawLine(bounds.x + x + pushedDrawingOffset, bounds.y + bounds.height - pushedDrawingOffset, bounds.x + bounds.width - RIGHT_MARGIN, bounds.y + bounds.height - BOTTOM_MARGIN);
+//            }
             gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
         }
 
@@ -173,7 +176,8 @@ class GridColumnRenderer extends AbstractRenderer
         }
 
         // Draw border
-        if (!flat) {
+        if (element == grid.getFocusColumnElement()) {
+            drawSelected = selected;
 
             if (drawSelected) {
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
@@ -181,10 +185,8 @@ class GridColumnRenderer extends AbstractRenderer
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
             }
 
-            gc.drawLine(bounds.x, bounds.y, bounds.x + bounds.width - 1,
-                bounds.y);
-            gc.drawLine(bounds.x, bounds.y, bounds.x, bounds.y + bounds.height
-                - 1);
+            gc.drawLine(bounds.x, bounds.y, bounds.x + bounds.width - 1, bounds.y);
+            gc.drawLine(bounds.x, bounds.y, bounds.x, bounds.y + bounds.height - 1);
 
             if (!drawSelected) {
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
@@ -199,32 +201,20 @@ class GridColumnRenderer extends AbstractRenderer
             } else {
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
             }
-            gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x
-                + bounds.width - 1,
-                bounds.y + bounds.height - 1);
-            gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x
-                + bounds.width - 1,
-                bounds.y + bounds.height - 1);
+            gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
+            gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
 
-            if (!drawSelected) {
+            if (drawSelected) {
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                gc.drawLine(bounds.x + bounds.width - 2, bounds.y + 1,
-                    bounds.x + bounds.width - 2, bounds.y + bounds.height
-                        - 2);
-                gc.drawLine(bounds.x + 1, bounds.y + bounds.height - 2,
-                    bounds.x + bounds.width - 2, bounds.y + bounds.height
-                        - 2);
+                gc.drawLine(bounds.x + bounds.width - 2, bounds.y + 1, bounds.x + bounds.width - 2, bounds.y + bounds.height - 2);
+                gc.drawLine(bounds.x + 1, bounds.y + bounds.height - 2, bounds.x + bounds.width - 2, bounds.y + bounds.height - 2);
             }
 
         } else {
             gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
 
-            gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x
-                + bounds.width - 1,
-                bounds.y + bounds.height - 1);
-            gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x
-                + bounds.width - 1,
-                bounds.y + bounds.height - 1);
+            gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
+            gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
         }
 
         gc.setFont(grid.normalFont);
