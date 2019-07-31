@@ -2324,6 +2324,11 @@ public class ResultSetViewer extends Viewer
         if (vkRemoveAction.isEnabled()) {
             vmMenu.add(vkRemoveAction);
         }
+        VirtualForeignKeyEditAction fkAddAction = new VirtualForeignKeyEditAction();
+        if (fkAddAction.isEnabled()) {
+            vmMenu.add(fkAddAction);
+        }
+
         vmMenu.add(new VirtualEntityEditAction());
     }
 
@@ -3691,6 +3696,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private DBVEntity getVirtualEntity() {
+        DBSEntity entity = model.isSingleSource() ? model.getSingleSource() : null;
+        return getVirtualEntity(entity);
+    }
+
     private DBVEntity getVirtualEntity(DBSEntity entity) {
         return entity != null ?
             DBVUtils.getVirtualEntity(entity, true) :
@@ -3757,7 +3767,7 @@ public class ResultSetViewer extends Viewer
 
     boolean editEntityIdentifier(DBRProgressMonitor monitor) {
         EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
-            ResultSetViewer.this, model.getSingleSource(), getVirtualEntity(model.getSingleSource()));
+            ResultSetViewer.this, model.getSingleSource(), getVirtualEntity());
         dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
         return dialog.open() == IDialogConstants.OK_ID;
     }
@@ -4377,10 +4387,6 @@ public class ResultSetViewer extends Viewer
         private final DBDAttributeBinding curAttribute;
         private final ResultSetRow row;
 
-        CustomizeColorsAction() {
-            this(null, null);
-        }
-
         CustomizeColorsAction(DBDAttributeBinding curAttribute, ResultSetRow row) {
             super(ResultSetMessages.actions_name_row_colors); //$NON-NLS-1$
             this.curAttribute = curAttribute;
@@ -4436,6 +4442,21 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private class VirtualForeignKeyEditAction extends Action {
+
+        VirtualForeignKeyEditAction() {
+            super("Add virtual foreign key");
+        }
+
+        @Override
+        public void run()
+        {
+            UIUtils.runUIJob("Edit virtual foreign key", monitor -> {
+                EditVirtualEntityDialog.createVirtualForeignKey(getVirtualEntity());
+            });
+        }
+    }
+
     private class VirtualEntityEditAction extends Action {
         VirtualEntityEditAction() {
             super("Edit ...");
@@ -4451,7 +4472,7 @@ public class ResultSetViewer extends Viewer
             DBSEntity entity = model.isSingleSource() ? model.getSingleSource() : null;
             DBVEntity vEntity = getVirtualEntity(entity);
             EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(ResultSetViewer.this, entity, vEntity);
-            dialog.setInitPage(EditVirtualEntityDialog.InitPage.ATTRIBUTES);
+            dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
             dialog.open();
         }
     }
@@ -4464,7 +4485,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run() {
             EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
-                ResultSetViewer.this, model.getSingleSource(), getVirtualEntity(model.getSingleSource()));
+                ResultSetViewer.this, model.getSingleSource(), getVirtualEntity());
             dialog.setInitPage(EditVirtualEntityDialog.InitPage.DICTIONARY);
             dialog.open();
         }
