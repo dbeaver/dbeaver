@@ -153,7 +153,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         }
                     }
                 }
-                if (schemaObject != null) {
+                if (schemaObject != null && DBUtils.getPublicObjectContainer(schemaObject) != dataSource) {
                     DBSObject schemaParent = schemaObject.getParentObject();
                     if (schemaParent instanceof DBSObjectContainer && !(schemaParent instanceof DBPDataSource)) {
                         schemaName = schemaObject.getName() + "@" + schemaParent.getName();
