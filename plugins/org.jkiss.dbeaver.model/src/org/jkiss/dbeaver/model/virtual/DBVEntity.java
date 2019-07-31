@@ -75,33 +75,37 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     // Copy constructor
     public DBVEntity(@NotNull DBVContainer container, @NotNull DBVEntity copy) {
         this.container = container;
-        this.name = copy.name;
-        this.descriptionColumnNames = copy.descriptionColumnNames;
+        copyFrom(copy);
+    }
 
-        if (!CommonUtils.isEmpty(copy.entityConstraints)) {
-            this.entityConstraints = new ArrayList<>(copy.entityConstraints.size());
-            for (DBVEntityConstraint c : copy.entityConstraints) {
+    public void copyFrom(@NotNull DBVEntity src) {
+        this.name = src.name;
+        this.descriptionColumnNames = src.descriptionColumnNames;
+
+        if (!CommonUtils.isEmpty(src.entityConstraints)) {
+            this.entityConstraints = new ArrayList<>(src.entityConstraints.size());
+            for (DBVEntityConstraint c : src.entityConstraints) {
                 this.entityConstraints.add(new DBVEntityConstraint(this, c));
             }
         }
-        if (!CommonUtils.isEmpty(copy.entityForeignKeys)) {
-            this.entityForeignKeys = new ArrayList<>(copy.entityForeignKeys.size());
-            for (DBVEntityForeignKey c : copy.entityForeignKeys) {
+        if (!CommonUtils.isEmpty(src.entityForeignKeys)) {
+            this.entityForeignKeys = new ArrayList<>(src.entityForeignKeys.size());
+            for (DBVEntityForeignKey c : src.entityForeignKeys) {
                 this.entityForeignKeys.add(new DBVEntityForeignKey(this, c));
             }
         }
-        if (!CommonUtils.isEmpty(copy.entityAttributes)) {
-            this.entityAttributes = new ArrayList<>(copy.entityAttributes.size());
-            for (DBVEntityAttribute attribute : copy.entityAttributes) {
+        if (!CommonUtils.isEmpty(src.entityAttributes)) {
+            this.entityAttributes = new ArrayList<>(src.entityAttributes.size());
+            for (DBVEntityAttribute attribute : src.entityAttributes) {
                 this.entityAttributes.add(new DBVEntityAttribute(this, null, attribute));
             }
         }
-        if (!CommonUtils.isEmpty(copy.properties)) {
-            this.properties = new LinkedHashMap<>(copy.properties);
+        if (!CommonUtils.isEmpty(src.properties)) {
+            this.properties = new LinkedHashMap<>(src.properties);
         }
-        if (!CommonUtils.isEmpty(copy.colorOverrides)) {
-            this.colorOverrides = new ArrayList<>(copy.colorOverrides.size());
-            for (DBVColorOverride co : copy.colorOverrides) {
+        if (!CommonUtils.isEmpty(src.colorOverrides)) {
+            this.colorOverrides = new ArrayList<>(src.colorOverrides.size());
+            for (DBVColorOverride co : src.colorOverrides) {
                 this.colorOverrides.add(new DBVColorOverride(co));
             }
         }

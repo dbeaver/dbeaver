@@ -2484,9 +2484,18 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void run() {
-            UIUtils.showMessageBox(getSite().getShell(), "Not implemented", "Transformations configuration not implemented", SWT.ICON_ERROR);
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(ResultSetViewer.this);
+            if (settingsDialog.open() == IDialogConstants.OK_ID) {
+                dataSource.getContainer().persistConfiguration();
+                refreshData(null);
+            }
         }
     }
+
 
 
     private void fillAttributeTransformersMenu(IMenuManager manager, final DBDAttributeBinding attr) {

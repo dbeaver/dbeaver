@@ -37,11 +37,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
-import org.jkiss.dbeaver.model.virtual.*;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -71,6 +71,9 @@ class ColorSettingsDialog extends BaseDialog {
     @Nullable
     private ResultSetRow row;
 
+    private final DBVEntity vEntitySrc;
+    private final DBVEntity vEntity;
+
     private Table colorsTable;
     private Button rangeCheck;
     private ColorSelector bgColorSelector1;
@@ -88,17 +91,21 @@ class ColorSettingsDialog extends BaseDialog {
     private DBVColorOverride curOverride;
     private ToolItem btnDelete;
     private Table attributeTable;
-    private final DBVEntity vEntity;
 
-    public ColorSettingsDialog(
+    private Composite editorPlaceholder1;
+    private Composite editorPlaceholder2;
+
+    ColorSettingsDialog(
         @NotNull ResultSetViewer resultSetViewer,
         @Nullable final DBDAttributeBinding attr,
-        @Nullable final ResultSetRow row) {
+        @Nullable final ResultSetRow row)
+    {
         super(resultSetViewer.getControl().getShell(), "Customize colors for [" + attr.getName() + "]", UIIcon.PALETTE);
         this.resultSetViewer = resultSetViewer;
         this.attribute = attr;
         this.row = row;
-        vEntity = DBVUtils.getVirtualEntity(resultSetViewer.getDataContainer(), true);
+        this.vEntitySrc = DBVUtils.getVirtualEntity(resultSetViewer.getDataContainer(), true);
+        this.vEntity = new DBVEntity(vEntitySrc.getContainer(), vEntitySrc);
 
         DEFAULT_RGB = resultSetViewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND).getRGB();
     }
@@ -146,7 +153,7 @@ class ColorSettingsDialog extends BaseDialog {
             if (this.attribute == attr) {
                 attributeTable.setSelection(attrItem);
             }
-            updateColumnItem(attrItem);
+            //updateColumnItem(attrItem);
         }
 
         attributeTable.addListener(SWT.PaintItem, event -> {
@@ -188,6 +195,7 @@ class ColorSettingsDialog extends BaseDialog {
         });
     }
 
+/*
     private void updateColumnItem(TableItem attrItem) {
         DBDAttributeBinding attr = (DBDAttributeBinding) attrItem.getData();
         String colorSettings = "";
@@ -205,9 +213,9 @@ class ColorSettingsDialog extends BaseDialog {
                 colorSettings = String.join(",", coStrings);
             }
         }
-        //attrItem.setText(1, colorSettings);
+        attrItem.setText(1, colorSettings);
     }
-
+*/
 
     private void updateAttributeSelection() {
         TableItem[] selection = attributeTable.getSelection();
@@ -357,8 +365,16 @@ class ColorSettingsDialog extends BaseDialog {
             });
 
             UIUtils.createControlLabel(settingsGroup, "Value(s)");
-            valueEditor1 = createValueEditor(settingsGroup, 0);
-            valueEditor2 = createValueEditor(settingsGroup, 1);
+
+            editorPlaceholder1 = new Composite(settingsGroup, SWT.NONE);
+            editorPlaceholder1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            editorPlaceholder1.setLayout(new FillLayout());
+            editorPlaceholder2 = new Composite(settingsGroup, SWT.NONE);
+            editorPlaceholder2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            editorPlaceholder2.setLayout(new FillLayout());
+
+            valueEditor1 = createValueEditor(editorPlaceholder1, 0);
+            valueEditor2 = createValueEditor(editorPlaceholder2, 1);
 
             UIUtils.createControlLabel(settingsGroup, "Background");
             bgColorSelector1 = new ColorSelector(settingsGroup);
@@ -392,8 +408,12 @@ class ColorSettingsDialog extends BaseDialog {
     private void updateSettingsValues() {
         try {
             if (curOverride == null) {
-                if (valueEditor1 != null) valueEditor1.primeEditorValue(null);
-                if (valueEditor2 != null) valueEditor2.primeEditorValue(null);
+                UIUtils.disposeChildControls(editorPlaceholder1);
+                new Text(editorPlaceholder1, SWT.BORDER);
+                UIUtils.disposeChildControls(editorPlaceholder2);
+                new Text(editorPlaceholder2, SWT.BORDER);
+                valueEditor1 = null;
+                valueEditor2 = null;
                 rangeCheck.setSelection(false);
                 singleColumnCheck.setSelection(false);
                 bgColorSelector1.setColorValue(DEFAULT_RGB);
@@ -403,6 +423,10 @@ class ColorSettingsDialog extends BaseDialog {
             } else {
                 rangeCheck.setSelection(curOverride.isRange());
                 singleColumnCheck.setSelection(curOverride.isSingleColumn());
+
+                valueEditor1 = createValueEditor(editorPlaceholder1, 0);
+                valueEditor2 = createValueEditor(editorPlaceholder2, 1);
+
                 Object[] values = curOverride.getAttributeValues();
                 if (valueEditor1 != null) {
                     valueEditor1.primeEditorValue(ArrayUtils.isEmpty(values) ? null : values[0]);
@@ -433,6 +457,8 @@ class ColorSettingsDialog extends BaseDialog {
                     }
                 }
             }
+            settingsGroup.layout(true, true);
+            updateCurrentTreeItem();
         } catch (DBException e) {
             log.error(e);
         }
@@ -458,13 +484,16 @@ class ColorSettingsDialog extends BaseDialog {
         fgColorSelector2.setEnabled(isRange);
 
         colorsTable.setEnabled(attribute != null);
+        btnDelete.setEnabled(colorsTable.getSelectionIndex() >= 0);
 
     }
 
-    private IValueEditor createValueEditor(Composite panel, int index) {
+    private IValueEditor createValueEditor(Composite editorPlaceholder, int index) {
         try {
+            UIUtils.disposeChildControls(editorPlaceholder);
+
             IValueManager valueManager = ValueManagerRegistry.findValueManager(
-                resultSetViewer.getDataContainer().getDataSource(),
+                resultSetViewer.getDataSource(),
                 attribute,
                 attribute.getValueHandler().getValueObjectType(attribute));
             ColorValueController valueController = new ColorValueController(settingsGroup) {
@@ -481,9 +510,6 @@ class ColorSettingsDialog extends BaseDialog {
                 }
             };
 
-            Composite editorPlaceholder = new Composite(panel, SWT.NONE);
-            editorPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            editorPlaceholder.setLayout(new FillLayout());
             valueController.setInlinePlaceholder(editorPlaceholder);
 
             IValueEditor editor = valueManager.createEditor(valueController);
@@ -512,7 +538,7 @@ class ColorSettingsDialog extends BaseDialog {
                             attributeValues[index] = value;
                             curOverride.setAttributeValues(attributeValues);
                             updateCurrentTreeItem();
-                            updateColumnItem(attributeTable.getSelection()[0]);
+                            //updateColumnItem(attributeTable.getSelection()[0]);
                         } catch (Exception e) {
                             log.error(e);
                         }
@@ -531,6 +557,7 @@ class ColorSettingsDialog extends BaseDialog {
         if (itemIndex >= 0) {
             updateColorItem(colorsTable.getItem(itemIndex));
         }
+        attributeTable.redraw();
         //colorsTable.getColumn(0).setWidth(colorsTable.getSize().x);
     }
 
@@ -597,13 +624,17 @@ class ColorSettingsDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
+
+        vEntitySrc.copyFrom(vEntity);
+        vEntitySrc.persistConfiguration();
         resultSetViewer.getModel().updateColorMapping(true);
+
         super.okPressed();
     }
 
     private class ColorValueController extends ResultSetValueController {
 
-        public ColorValueController(@Nullable Composite inlinePlaceholder) {
+        ColorValueController(@Nullable Composite inlinePlaceholder) {
             super(resultSetViewer, attribute, null, EditType.INLINE, inlinePlaceholder);
         }
 
