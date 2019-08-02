@@ -252,7 +252,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                     for (DBSEntityAssociation fk : fks) {
                         DBSEntity associatedEntity = fk.getAssociatedEntity();
                         if (associatedEntity != null) {
-                            result.add(associatedEntity);
+                            result.add(DBVUtils.getRealEntity(monitor, associatedEntity));
                         }
                     }
                 }
