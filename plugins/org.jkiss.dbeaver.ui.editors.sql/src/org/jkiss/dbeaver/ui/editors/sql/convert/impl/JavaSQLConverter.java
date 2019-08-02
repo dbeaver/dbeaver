@@ -19,20 +19,32 @@ package org.jkiss.dbeaver.ui.editors.sql.convert.impl;
 
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
+
 /**
  * JavaSQLConverter
  */
 public class JavaSQLConverter extends SourceCodeSQLConverter {
 
+    public static final String OPTION_USE_STRING_BUILDER = "use-string-builder";
+
     @Override
-    protected void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter) {
+    protected void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter, Map<String, Object> options) {
+        boolean useStringBuilder = CommonUtils.toBoolean(options.get(OPTION_USE_STRING_BUILDER));
+        if (useStringBuilder)
+            result.append("StringBuilder query = new StringBuilder();\n");
         for (int i = 0; i < sourceLines.length; i++) {
-            String line = sourceLines[i];
-            result.append('"').append(CommonUtils.escapeJavaString(line)).append(lineDelimiter).append('"');
-            if (i < sourceLines.length - 1) {
-                result.append(" + \n");
-            } else {
-                result.append(";");
+            String escapedLine = CommonUtils.escapeJavaString(sourceLines[i]);
+            if (useStringBuilder) {
+              result.append("query.append(\"").append(escapedLine).append(lineDelimiter).append("\");\n");
+            }
+            else {
+                result.append('"').append(escapedLine).append(lineDelimiter).append('"');
+                if (i < sourceLines.length - 1) {
+                    result.append(" + \n");
+                } else {
+                    result.append(";");
+                }
             }
         }
     }
