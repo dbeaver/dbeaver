@@ -56,6 +56,7 @@
         <target id="java" label="Java" description="%sql.convert.java.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.JavaSQLConverter">
             <property id="keep-formatting" label="%sql.convert.label.keep.formatting.name" type="boolean" description="%sql.convert.label.keep.formatting.discription" required="false" defaultValue="false"/>
             <property id="line-delimiter" label="%sql.convert.label.line.delimiter.name" type="string" description="%sql.convert.label.line.delimiter.discription" required="false" defaultValue=" "/>
+            <property id="use-string-builder" label="%sql.convert.label.use.string.builder.name" type="boolean" description="%sql.convert.label.use.string.builder.description" required="false" defaultValue="false"/>
         </target>
         <target id="cpp" label="C/C++" description="%sql.convert.c.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.CPPSQLConverter">
             <property id="keep-formatting" label="%sql.convert.label.keep.formatting.name" type="boolean" description="%sql.convert.label.keep.formatting.discription" required="false" defaultValue="false"/>

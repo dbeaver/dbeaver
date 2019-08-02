@@ -70,7 +70,7 @@ public abstract class SourceCodeSQLConverter implements ISQLTextConverter {
                 lineDelimiter = " "; // Space
             }
             StringBuilder result = new StringBuilder();
-            convertSourceLines(result, sourceLines, lineDelimiter);
+            convertSourceLines(result, sourceLines, lineDelimiter, options);
             return result.toString();
         } catch (BadLocationException e) {
             log.error(e);
@@ -78,6 +78,6 @@ public abstract class SourceCodeSQLConverter implements ISQLTextConverter {
         }
     }
 
-    protected abstract void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter);
+    protected abstract void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter, Map<String, Object> options);
 
 }
