@@ -147,7 +147,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         }
                         jsonWriter.endObject();
                     }
-                    // Filters
+                    // Network profiles
                     List<DBWNetworkProfile> profiles = registry.getNetworkProfiles();
                     if (!CommonUtils.isEmpty(profiles)) {
                         jsonWriter.name("network-profiles");
@@ -774,10 +774,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         JSONUtils.fieldNE(json, RegistryConstants.ATTR_TYPE, typeName);
         JSONUtils.fieldNE(json, RegistryConstants.ATTR_NAME, filter.getName());
         JSONUtils.fieldNE(json, RegistryConstants.ATTR_DESCRIPTION, filter.getDescription());
-
-        if (!filter.isEnabled()) {
-            JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, false);
-        }
+        JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, filter.isEnabled());
         JSONUtils.serializeStringList(json, RegistryConstants.TAG_INCLUDE, filter.getInclude());
         JSONUtils.serializeStringList(json, RegistryConstants.TAG_EXCLUDE, filter.getExclude());
         json.endObject();
