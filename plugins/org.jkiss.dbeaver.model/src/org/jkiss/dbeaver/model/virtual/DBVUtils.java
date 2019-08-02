@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.virtual;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,6 +39,8 @@ import java.util.*;
  * Virtual model utils
  */
 public abstract class DBVUtils {
+
+    static final Log log = Log.getLog(DBVUtils.class);
 
     // Entities for unmapped attributes (custom queries, pseudo attributes, etc)
     private static final Map<String, DBVEntity> orphanVirtualEntities = new HashMap<>();
@@ -286,4 +290,17 @@ public abstract class DBVUtils {
         }
         return entity;
     }
+
+    @NotNull
+    public static DBSEntity tryGetRealEntity(@NotNull DBSEntity entity) {
+        if (entity instanceof DBVEntity) {
+            try {
+                return ((DBVEntity) entity).getRealEntity(new VoidProgressMonitor());
+            } catch (DBException e) {
+                log.error("Can't get real entity fro mvirtual entity", e);
+            }
+        }
+        return entity;
+    }
+
 }

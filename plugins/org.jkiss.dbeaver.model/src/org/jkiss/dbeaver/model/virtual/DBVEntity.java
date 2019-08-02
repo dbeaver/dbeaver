@@ -538,7 +538,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Override
     public boolean hasValuableData() {
-        if (!CommonUtils.isEmpty(descriptionColumnNames) || !CommonUtils.isEmpty(properties)) {
+        if (!CommonUtils.isEmpty(descriptionColumnNames) ||
+            !CommonUtils.isEmpty(properties) ||
+            !CommonUtils.isEmpty(entityForeignKeys) ||
+            !CommonUtils.isEmpty(colorOverrides))
+        {
             return true;
         }
         if (!CommonUtils.isEmpty(entityConstraints)) {
@@ -554,9 +558,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                     return true;
                 }
             }
-        }
-        if (!CommonUtils.isEmpty(colorOverrides)) {
-            return true;
         }
         return false;
     }
