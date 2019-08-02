@@ -93,7 +93,7 @@ public class DBNUtils {
                 }
             }
         }
-        DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[filtered.size()]);
+        DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[0]);
         sortNodes(result);
         return result;
     }

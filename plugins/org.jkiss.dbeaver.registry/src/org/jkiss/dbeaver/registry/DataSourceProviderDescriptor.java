@@ -151,6 +151,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.description = "Missing datasource provider " + id;
         this.implType = new ObjectType(DBPDataSourceProvider.class.getName());
         this.temporary = true;
+        this.treeDescriptor = new DBXTreeItem(this, null, null, id, id, false, true, false, false, true, null, null);
     }
 
     void patchConfigurationFrom(IConfigurationElement config) {
