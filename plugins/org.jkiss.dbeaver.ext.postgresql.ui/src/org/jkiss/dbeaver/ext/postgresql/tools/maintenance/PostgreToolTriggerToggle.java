@@ -16,24 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools.maintenance;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 
@@ -41,47 +34,22 @@ public abstract class PostgreToolTriggerToggle implements IUserInterfaceTool {
 
     private boolean isEnable;
 
-    protected PostgreToolTriggerToggle(boolean enable) {
+    PostgreToolTriggerToggle(boolean enable) {
         this.isEnable = enable;
     }
 
     @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects)
-        throws DBException
-    {
+    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) {
         List<PostgreTrigger> triggeList = CommonUtils.filterCollection(objects, PostgreTrigger.class);
         if (!triggeList.isEmpty()) {
             SQLDialog dialog = new SQLDialog(activePart.getSite(), triggeList);
-            if (dialog.open() == IDialogConstants.OK_ID) {
-                refreshObjectsState(triggeList);
-            }
-        }
-    }
-
-    private void refreshObjectsState(List<PostgreTrigger> triggeList) {
-        try {
-            UIUtils.runInProgressDialog(monitor -> {
-                for (PostgreTrigger trigger : triggeList) {
-                    try {
-                        DBNDatabaseNode triggerNode = DBNUtils.getNodeByObject(trigger);
-                        if (triggerNode != null) {
-                            triggerNode.refreshNode(monitor, PostgreToolTriggerToggle.this);
-                        } else {
-                            trigger.refreshObjectState(monitor);
-                        }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Refresh triggers state", "Error refreshign trigger state", e.getTargetException());
+            dialog.open();
         }
     }
 
     class SQLDialog extends TableToolDialog {
 
-        public SQLDialog(IWorkbenchPartSite partSite, List<PostgreTrigger> selectedTrigger) {
+        SQLDialog(IWorkbenchPartSite partSite, List<PostgreTrigger> selectedTrigger) {
             super(partSite, (isEnable ? "Enable" : "Disable") + " trigger", selectedTrigger);
         }
 
@@ -94,6 +62,11 @@ public abstract class PostgreToolTriggerToggle implements IUserInterfaceTool {
         @Override
         protected void createControls(Composite parent) {
             createObjectsSelector(parent);
+        }
+
+        @Override
+        protected boolean needsRefreshOnFinish() {
+            return true;
         }
     }
 

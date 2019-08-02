@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -32,7 +34,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,8 +50,8 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     private String body;
     private long objectId;
     private boolean insteadOfTrigger;
-    private boolean disabled;
-    private boolean persisted;
+    private volatile int disabled;
+    private volatile boolean persisted;
 
     public SQLServerTriggerBase(
         OWNER container,
@@ -62,7 +63,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.type = JDBCUtils.safeGetString(dbResult, "type");
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.insteadOfTrigger = JDBCUtils.safeGetInt(dbResult, "is_instead_of_trigger") != 0;
-        this.disabled = JDBCUtils.safeGetInt(dbResult, "is_disabled") != 0;
+        this.disabled = JDBCUtils.safeGetInt(dbResult, "is_disabled");
         this.persisted = true;
     }
 
@@ -85,6 +86,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.persisted = source.persisted;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
@@ -112,11 +114,11 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
 
     @Property(viewable = false, order = 20)
     public boolean isDisabled() {
-        return disabled;
+        return disabled != 0;
     }
 
     public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
+        this.disabled = 1;
     }
     
     public String getBody()
@@ -168,18 +170,26 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return body;
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState() {
-        if (disabled) {
+        if (disabled != 0) {
             return DBSObjectState.INVALID;
         }
         return DBSObjectState.NORMAL;
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh triggers state")) {
-            disabled  = CommonUtils.toBoolean(JDBCUtils.queryObject(session, "SELECT is_disabled FROM sys.triggers WHERE object_id=?", getObjectId()));
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT is_disabled FROM sys.triggers WHERE object_id=?")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        disabled = JDBCUtils.safeGetInt(dbResult, 1);
+                    }
+                }
+            }
         } catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
@@ -191,4 +201,8 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.body = sourceText;
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

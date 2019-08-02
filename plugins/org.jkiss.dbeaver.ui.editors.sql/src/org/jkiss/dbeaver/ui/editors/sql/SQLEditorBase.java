@@ -891,7 +891,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     protected SQLScriptElement parseQuery(final IDocument document, final int startPos, final int endPos, final int currentPos, final boolean scriptMode, final boolean keepDelimiters) {
-        if (endPos - startPos <= 0) {
+        int length = endPos - startPos;
+        if (length <= 0 || length > document.getLength()) {
             return null;
         }
         SQLDialect dialect = getSQLDialect();

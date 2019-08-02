@@ -36,12 +36,16 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -234,9 +238,27 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             @Override
             public void done(IJobChangeEvent event) {
                 if (needsRefreshOnFinish()) {
-                    for (T object : selectedObjects) {
-                        DBUtils.fireObjectRefresh(object);
-                    }
+                    List<T> objectToRefresh = new ArrayList<>(selectedObjects);
+                    UIUtils.asyncExec(() -> {
+                        try {
+                            UIUtils.runInProgressDialog(monitor -> {
+                                monitor.beginTask("Refresh objects", objectToRefresh.size());
+                                for (T object : objectToRefresh) {
+                                    try {
+                                        DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(object);
+                                        if (objectNode != null) {
+                                            objectNode.refreshNode(monitor, GenerateMultiSQLDialog.this);
+                                        }
+                                    } catch (Exception e) {
+                                        log.error("Error refreshing object '" + object.getName() + "'", e);
+                                    }
+                                }
+                                monitor.done();
+                            });
+                        } catch (InvocationTargetException e) {
+                            DBWorkbench.getPlatformUI().showError("Objects refresh", "Error refreshing navigator objects", e);
+                        }
+                    });
                 }
             }
         });
