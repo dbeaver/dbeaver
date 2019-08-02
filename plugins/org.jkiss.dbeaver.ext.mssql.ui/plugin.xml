@@ -72,7 +72,6 @@
         </editor>
     </extension>
 
-
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasourcePatch id="sqlserver">
             <treeInjection path="sqlserver/database" after="trigger">
@@ -92,7 +91,14 @@
                 contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
     </extension>
-    
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+            <supports dataSource="sqlserver"/>
+        </editorContribution>
+    </extension>
+
+
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
             <toolGroup
