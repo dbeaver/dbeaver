@@ -208,6 +208,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         if (curRefTable != null) {
             handleRefTableSelect();
         }
+        UIUtils.asyncExec(() -> UIUtils.packColumns(columnsTable, true));
     }
 
     @Override
@@ -325,7 +326,6 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, EditorsMessages.dialog_struct_edit_fk_column_col_type);
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, EditorsMessages.dialog_struct_edit_fk_column_ref_col);
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, EditorsMessages.dialog_struct_edit_fk_column_ref_col_type);
-            UIUtils.asyncExec(() -> UIUtils.packColumns(columnsTable, true));
 
             final TableEditor tableEditor = new TableEditor(columnsTable);
             tableEditor.horizontalAlignment = SWT.CENTER;
