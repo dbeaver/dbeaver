@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
+import java.util.Arrays;
+
 /**
  * Unknown struct.
  */
@@ -44,7 +46,7 @@ public class JDBCCompositeUnknown extends JDBCComposite {
     }
 
     public String getStringRepresentation() {
-        return String.valueOf(values[0]);
+        return Arrays.toString(values);
     }
 
     @Override
