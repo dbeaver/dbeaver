@@ -846,7 +846,8 @@ public final class SQLUtils {
                 }
                 script.append(scriptLine);
                 if (action.getType() != DBEPersistAction.ActionType.COMMENT) {
-                    if (script.lastIndexOf(delimiter) != (script.length() - delimiter.length())) {
+                    String testLine = scriptLine.trim();
+                    if (testLine.lastIndexOf(delimiter) != (testLine.length() - delimiter.length())) {
                         script.append(delimiter);
                     }    
                 } else {
@@ -855,7 +856,7 @@ public final class SQLUtils {
                 script.append(lineSeparator);
 
                 if (action.isComplex() && redefiner != null) {
-                    script.append(redefiner).append(" ").append(sqlDialect.getScriptDelimiter()).append(lineSeparator);
+                    script.append(redefiner).append(" ").append(delimiter).append(lineSeparator);
                 }
             }
         }
