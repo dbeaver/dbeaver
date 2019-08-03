@@ -202,6 +202,7 @@ public class ResultSetViewer extends Viewer
 
     private AutoRefreshControl autoRefreshControl;
     private boolean actionsDisabled;
+    private volatile boolean isUIUpdateRunning;
 
     private Color defaultBackground, defaultForeground;
     private GC sizingGC;
@@ -301,7 +302,7 @@ public class ResultSetViewer extends Viewer
                     }
                 });
                 this.panelFolder.addListener(SWT.Resize, event -> {
-                    if (!viewerSash.isDisposed()) {
+                    if (!viewerSash.isDisposed() && !isUIUpdateRunning) {
                         int[] weights = viewerSash.getWeights();
                         getPresentationSettings().panelRatio = weights[1];
                     }
@@ -554,6 +555,7 @@ public class ResultSetViewer extends Viewer
         }
         boolean changed = false;
         try {
+            isUIUpdateRunning = true;
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
                 availablePresentations = Collections.emptyList();
@@ -600,6 +602,7 @@ public class ResultSetViewer extends Viewer
             if (changed && presentationSwitchFolder != null) {
                 updatePresentationInToolbar();
             }
+            isUIUpdateRunning = false;
         }
 
     }
