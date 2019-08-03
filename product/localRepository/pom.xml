@@ -10,15 +10,15 @@
 
 	<properties>
 		<tycho-version>1.1.0</tycho-version>
-		<reficio-p2-version>1.2.0</reficio-p2-version>
+		<reficio-p2-version>1.4.0</reficio-p2-version>
 		<repo-name>DBeaver CE Update</repo-name>
 	</properties>
 
 	<pluginRepositories>
-		<pluginRepository>
+		<!--<pluginRepository>
 			<id>reficio</id>
 			<url>http://repo.reficio.org/maven/</url>
-		</pluginRepository>
+		</pluginRepository>-->
 	</pluginRepositories>
 
 	<build>
@@ -38,6 +38,7 @@
 								<artifact><id>org.apache.commons:commons-jexl:2.1.1</id></artifact>
 								<artifact><id>net.sf.opencsv:opencsv:2.3</id></artifact>
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
+								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id></artifact>
 
 								<!-- POI and dependencies -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id></artifact>
