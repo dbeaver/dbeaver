@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.team.git.ui.handlers;
 
 
+import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
@@ -38,7 +39,7 @@ public class GITUpdateHandler extends GITAbstractHandler implements IElementUpda
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         Repository[] repos = this.getRepositories(event);
-        if (repos.length == 0) {
+        if (ArrayUtils.isEmpty(repos)) {
             return null;
         } else {
             Set<Repository> repositories = new LinkedHashSet<>(Arrays.asList(repos));
