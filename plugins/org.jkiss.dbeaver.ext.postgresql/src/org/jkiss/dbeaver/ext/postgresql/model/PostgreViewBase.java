@@ -96,6 +96,9 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read view definition")) {
                     // Do not use view id as a parameter. For some reason it doesn't work for Redshift
                     String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(" + getObjectId() + ", true)");
+                    if (definition == null) {
+                        throw new DBException ("View '"  + getName() + "' doesn't exist");
+                    }
                     this.source = PostgreUtils.getViewDDL(monitor, this, definition);
                     String extDefinition = readExtraDefinition(session, options);
                     if (extDefinition != null) {

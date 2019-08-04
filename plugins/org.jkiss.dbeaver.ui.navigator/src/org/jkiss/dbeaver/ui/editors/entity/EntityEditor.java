@@ -479,6 +479,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         } catch (InvocationTargetException e) {
             log.error(e);
             DBWorkbench.getPlatformUI().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
+            return IDialogConstants.CANCEL_ID;
         } finally {
             saveInProgress = false;
         }
