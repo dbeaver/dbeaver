@@ -49,6 +49,11 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
         return FEATURE_EDITOR_ON_CREATE;
     }
 
+    @Override
+    public boolean canCreateObject(Object container) {
+        return false;
+    }
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, SQLServerTableCheckConstraint> getObjectsCache(SQLServerTableCheckConstraint object) {
