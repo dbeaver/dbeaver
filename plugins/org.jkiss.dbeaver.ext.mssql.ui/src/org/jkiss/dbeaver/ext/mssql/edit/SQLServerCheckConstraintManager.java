@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -58,7 +60,7 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
         DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
-        SQLServerTableCheckConstraint constraint = new SQLServerTableCheckConstraint((SQLServerTable) container, null);
+        SQLServerTableCheckConstraint constraint = new SQLServerTableCheckConstraint((SQLServerTable) container);
         return new UITask<SQLServerTableCheckConstraint>() {
             @Override
             protected SQLServerTableCheckConstraint runTask() {
@@ -94,6 +96,14 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
     }
 
     @Override
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+        SQLServerTableCheckConstraint object = command.getObject();
+        if (object.getConstraintType() == DBSEntityConstraintType.CHECK && CommonUtils.isEmpty(object.getDefinition())) {
+            throw new DBException("CHECK constraint definition is empty");
+        }
+    }
+
+    @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final SQLServerTableCheckConstraint constraint = command.getObject();
 
@@ -102,7 +112,8 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
                 ModelMessages.model_jdbc_create_new_constraint,
                 "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " WITH NOCHECK" +
-                    " ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint) + " CHECK " + constraint.getDefinition()
+                    " ADD CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint) +
+                    " CHECK " + constraint.getDefinition()
             ));
     }
 
