@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.team.git.ui.handlers;
 
 
-import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
@@ -27,6 +26,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.team.git.ui.utils.GitUIUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
