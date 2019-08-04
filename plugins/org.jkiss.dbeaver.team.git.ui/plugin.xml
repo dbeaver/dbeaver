@@ -17,6 +17,17 @@
         <image commandId="org.jkiss.dbeaver.git.commands.update" icon="icons/pull.png"/>
         <image commandId="org.jkiss.dbeaver.git.commands.commit" icon="icons/push.png"/>
     </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.team.git.ui.handlers.GitPropertyTester"
+                id="org.jkiss.dbeaver.team.git.ui.handlers.GitPropertyTester"
+                namespace="org.jkiss.dbeaver.team.git"
+                properties="canShare,canCommit,canUpdate"
+                type="org.eclipse.core.resources.IResource">
+        </propertyTester>
+    </extension>
+
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.git.commands.share" class="org.jkiss.dbeaver.team.git.ui.handlers.ProjectShareHandler">
             <activeWhen>
