@@ -49,8 +49,4 @@ public class JDBCCompositeUnknown extends JDBCComposite {
         return Arrays.toString(values);
     }
 
-    @Override
-    public String toString() {
-        return getStringRepresentation();
-    }
 }

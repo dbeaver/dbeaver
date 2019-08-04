@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractStructDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
@@ -82,6 +83,9 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     @Override
     public boolean isNull()
     {
+        if (ArrayUtils.isEmpty(values)) {
+            return true;
+        }
         for (Object value : values) {
             if (!DBUtils.isNullValue(value)) {
                 return false;
@@ -185,6 +189,11 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
             this.values[attribute.getOrdinalPosition()] = value;
             this.modified = true;
         }
+    }
+
+    @Override
+    public String toString() {
+        return getStringRepresentation();
     }
 
     protected class StructType extends AbstractStructDataType<DBPDataSource> implements DBSEntity {
