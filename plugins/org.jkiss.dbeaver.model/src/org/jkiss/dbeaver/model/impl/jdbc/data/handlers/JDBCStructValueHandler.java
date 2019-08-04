@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerComposite;
@@ -59,12 +60,15 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof JDBCComposite) {
+            if (DBUtils.isNullValue(value)) {
+                return DBValueFormatting.getDefaultValueDisplayString(value, format);
+            }
             if (format == DBDDisplayFormat.UI) {
 
             }
             return ((JDBCComposite) value).getStringRepresentation();
         } else {
-            return String.valueOf(value);
+            return DBValueFormatting.getDefaultValueDisplayString(value, format);
         }
     }
 
@@ -103,6 +107,10 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
+        if (object instanceof JDBCComposite) {
+            return copy ? ((JDBCComposite) object).cloneValue(session.getProgressMonitor()) : object;
+        }
+
         String typeName;
         try {
             if (object instanceof Struct) {
@@ -128,8 +136,6 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
         }
         if (object == null) {
             return new JDBCCompositeStatic(session, dataType, new JDBCStructImpl(dataType.getTypeName(), null, ""));
-        } else if (object instanceof JDBCCompositeStatic) {
-            return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Struct) {
             return new JDBCCompositeStatic(session, dataType, (Struct) object);
         } else {
