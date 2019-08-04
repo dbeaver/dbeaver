@@ -11,13 +11,13 @@
     <properties>
         <dbeaver-version>6.1.4</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>1.1.0</tycho-version>
+        <tycho-version>1.4.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
         <!-- SimRel 2019-03 -->
-        <eclipse-p2-repo.url>http://download.eclipse.org/releases/2019-03/</eclipse-p2-repo.url>
+        <eclipse-p2-repo.url>http://download.eclipse.org/releases/2019-06/</eclipse-p2-repo.url>
         <!-- Orbit. From Photon because we need com.ibm.icu.base -->
         <orbit-p2-repo.url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180330011457/repository</orbit-p2-repo.url>
         <!-- DBeaver Maven dependencies (see product/localRepository for details) -->
@@ -47,11 +47,11 @@
             <url>${eclipse-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
-        <repository>
+        <!--<repository>
             <id>eclipse-orbit-repo</id>
             <url>${orbit-p2-repo.url}</url>
             <layout>p2</layout>
-        </repository>
+        </repository>-->
         <repository>
             <id>local-contrib</id>
             <url>${local-p2-repo.url}</url>
