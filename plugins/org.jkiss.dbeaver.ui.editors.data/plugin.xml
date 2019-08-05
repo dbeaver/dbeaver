@@ -703,7 +703,42 @@
             <command commandId="org.jkiss.dbeaver.core.resultset.generateScript">
                 <visibleWhen checkEnabled="true"/>
             </command>
+        </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="menu:navigate?after=additions">
+            <separator name="data_navigate" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.resultset.navigateLink">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.focus.filter">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.eclipse.ui.edit.text.goto.line">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.first">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.previous">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.next">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.last">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <separator name="data_fetch" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.resultset.fetch.page">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.fetch.all">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.count">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <separator name="data_additions" visible="true"/>
         </menuContribution>
 
     </extension>
