@@ -477,7 +477,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
 
                     // Bootstrap
-                    Map<String, Object> bootstrapCfg = JSONUtils.getObject(conObject, RegistryConstants.TAG_BOOTSTRAP);
+                    Map<String, Object> bootstrapCfg = JSONUtils.getObject(cfgObject, RegistryConstants.TAG_BOOTSTRAP);
                     if (bootstrapCfg.containsKey(RegistryConstants.ATTR_AUTOCOMMIT)) {
                         config.getBootstrap().setDefaultAutoCommit(JSONUtils.getBoolean(bootstrapCfg, RegistryConstants.ATTR_AUTOCOMMIT));
                     }
