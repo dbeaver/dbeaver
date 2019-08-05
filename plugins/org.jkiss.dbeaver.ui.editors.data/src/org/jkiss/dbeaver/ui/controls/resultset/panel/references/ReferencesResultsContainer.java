@@ -136,6 +136,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
     }
 
     public void refreshReferences() {
+        dataViewer.resetHistory();
         DBSDataContainer newParentContainer = this.parentController.getDataContainer();
         if (newParentContainer != parentDataContainer) {
             refreshReferenceKeyList();
