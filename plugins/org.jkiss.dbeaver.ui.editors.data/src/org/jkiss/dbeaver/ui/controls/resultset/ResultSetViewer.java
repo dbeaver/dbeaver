@@ -3350,7 +3350,7 @@ public class ResultSetViewer extends Viewer
                         if (!scroll) {
                             // Add new history item
                             if (saveHistory && error == null) {
-                                setNewState(dataContainer, dataFilter);
+                                setNewState(dataContainer, useDataFilter);
                             }
 
                             if (dataFilter != null) {
