@@ -27,6 +27,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DBDAttributeConstraintBase {
 
+    public static int NULL_VISUAL_POSITION = -1;
+
     private int orderPosition;
     private boolean orderDescending;
 
