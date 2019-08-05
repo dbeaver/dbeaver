@@ -3933,14 +3933,14 @@ public class ResultSetViewer extends Viewer
                 MenuManager configMenuManager = new MenuManager();
 
                 configMenuManager.add(new Separator());
-                {
+                /*{
                     MenuManager navigateMenu = new MenuManager(
                         ResultSetMessages.controls_resultset_viewer_action_navigate,
                         null,
                         "navigate"); //$NON-NLS-1$
                     fillNavigateMenu(navigateMenu);
                     configMenuManager.add(navigateMenu);
-                }
+                }*/
                 {
                     MenuManager layoutMenu = new MenuManager(
                         ResultSetMessages.controls_resultset_viewer_action_layout,
