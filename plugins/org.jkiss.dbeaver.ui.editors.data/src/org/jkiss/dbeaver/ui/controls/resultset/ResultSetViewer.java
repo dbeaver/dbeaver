@@ -1232,7 +1232,13 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void fillCopyAsMenu(ContributionManager copyAsMenu) {
+    void fillCopyAsMenu(IContributionManager copyAsMenu) {
+
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
+        // Add copy commands for different formats
+        copyAsMenu.add(new Separator());
 
         ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(getDataContainer(), getModel(), options);
@@ -2190,15 +2196,8 @@ public class ResultSetViewer extends Viewer
 
                 if (row != null) {
                     MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
-                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
-                    // Add copy commands for different formats
-                    extCopyMenu.add(new Separator());
-                    fillCopyAsMenu(extCopyMenu);
-//                    extCopyMenu.add(new Separator());
-//                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT,
-//                        ActionUtils.findCommandName(ResultSetHandlerCopyAs.CMD_COPY_AS) + " ...", null));
+                    extCopyMenu.setRemoveAllWhenShown(true);
+                    extCopyMenu.addMenuListener(this::fillCopyAsMenu);
 
                     manager.add(extCopyMenu);
                 }
