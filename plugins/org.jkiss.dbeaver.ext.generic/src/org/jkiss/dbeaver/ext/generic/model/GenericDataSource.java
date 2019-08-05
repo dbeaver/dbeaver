@@ -163,7 +163,7 @@ public class GenericDataSource extends JDBCDataSource
             try {
                 jdbcConnection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, appName);
             } catch (Throwable e) {
-                log.debug("Error setting client application name", e);
+                log.debug("Error setting client application name: " + e.getMessage());
             }
         }
     }
