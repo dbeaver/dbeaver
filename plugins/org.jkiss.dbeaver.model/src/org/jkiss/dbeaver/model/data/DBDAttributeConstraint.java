@@ -88,8 +88,8 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     @Override
     public boolean hasFilter() {
-        return super.hasFilter() || originalVisualPosition != getVisualPosition() ||
-            (attribute instanceof DBDAttributeBinding && isVisible() != isVisibleByDefault((DBDAttributeBinding) attribute));
+        return super.hasFilter() || // compare visual position only if it explicitly set
+            (getVisualPosition() != NULL_VISUAL_POSITION && originalVisualPosition != getVisualPosition());
     }
 
     public void reset() {
