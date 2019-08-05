@@ -3304,6 +3304,12 @@ public class ResultSetViewer extends Viewer
                             return;
                         }
                         model.setUpdateInProgress(false);
+
+                        // update history. Do it first otherwise we are in the incorrect state (getDatacontainer() may return wrong value)
+                        if (saveHistory && error == null) {
+                            setNewState(dataContainer, useDataFilter);
+                        }
+
                         final boolean metadataChanged = model.isMetadataChanged();
                         if (error != null) {
                             String errorMessage = error.getMessage();
@@ -3348,11 +3354,6 @@ public class ResultSetViewer extends Viewer
                         }
 
                         if (!scroll) {
-                            // Add new history item
-                            if (saveHistory && error == null) {
-                                setNewState(dataContainer, useDataFilter);
-                            }
-
                             if (dataFilter != null) {
                                 model.updateDataFilter(dataFilter, true);
                                 // New data filter may have different columns visibility
