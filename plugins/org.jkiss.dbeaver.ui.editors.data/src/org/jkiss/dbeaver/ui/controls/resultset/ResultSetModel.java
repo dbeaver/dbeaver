@@ -874,11 +874,11 @@ public class ResultSetModel {
         Collections.addAll(this.visibleAttributes, this.attributes);
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
             DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
-            if (filterConstraint == null || (!forceUpdate && constraint.getVisualPosition() != filterConstraint.getVisualPosition())) {
-                // If visual position doesn't match then probably it is a wrong attribute.
+            if (filterConstraint == null || (!forceUpdate && constraint.getOrderPosition() != filterConstraint.getOrderPosition())) {
+                // If ordinal position doesn't match then probably it is a wrong attribute.
                 // There can be multiple attributes with the same name in rs (in some databases)
 
-                // We check visual position only when forceUpdate=true (otherwise all previosu filters will be reset, see #6311)
+                // We check order position only when forceUpdate=true (otherwise all previosu filters will be reset, see #6311)
                 continue;
             }
             if (constraint.getOperator() != null) {
