@@ -874,7 +874,7 @@ public class ResultSetModel {
         Collections.addAll(this.visibleAttributes, this.attributes);
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
             DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
-            if (filterConstraint == null || (!forceUpdate && constraint.getOrderPosition() != filterConstraint.getOrderPosition())) {
+            if (filterConstraint == null || (!forceUpdate && constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION && constraint.getVisualPosition() != filterConstraint.getVisualPosition())) {
                 // If ordinal position doesn't match then probably it is a wrong attribute.
                 // There can be multiple attributes with the same name in rs (in some databases)
 
@@ -891,7 +891,9 @@ public class ResultSetModel {
             filterConstraint.setOrderPosition(constraint.getOrderPosition());
             filterConstraint.setOrderDescending(constraint.isOrderDescending());
             filterConstraint.setVisible(constraint.isVisible());
-            filterConstraint.setVisualPosition(constraint.getVisualPosition());
+            if (constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION) {
+                filterConstraint.setVisualPosition(constraint.getVisualPosition());
+            }
             DBSAttributeBase cAttr = filterConstraint.getAttribute();
             if (cAttr instanceof DBDAttributeBinding) {
                 if (!constraint.isVisible()) {

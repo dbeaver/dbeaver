@@ -2702,7 +2702,7 @@ public class ResultSetViewer extends Viewer
 
         // make constraints
         List<DBDAttributeConstraint> constraints = new ArrayList<>();
-        int visualPosition = 0;
+
         // Set conditions
         List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
         List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
@@ -2721,7 +2721,7 @@ public class ResultSetViewer extends Viewer
                 return;
             }
 
-            DBDAttributeConstraint constraint = new DBDAttributeConstraint(refAttr.getAttribute(), visualPosition++);
+            DBDAttributeConstraint constraint = new DBDAttributeConstraint(refAttr.getAttribute(), DBDAttributeConstraint.NULL_VISUAL_POSITION);
             constraint.setVisible(true);
             constraints.add(constraint);
 
@@ -2763,7 +2763,7 @@ public class ResultSetViewer extends Viewer
 
         // make constraints
         List<DBDAttributeConstraint> constraints = new ArrayList<>();
-        int visualPosition = 0;
+
         // Set conditions
         DBSEntityConstraint refConstraint = association.getReferencedConstraint();
         if (refConstraint == null) {
@@ -2790,7 +2790,7 @@ public class ResultSetViewer extends Viewer
             } else {
                 // Constrain use corresponding own attr
                 DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
-                DBDAttributeConstraint constraint = new DBDAttributeConstraint(ownAttr.getAttribute(), visualPosition++);
+                DBDAttributeConstraint constraint = new DBDAttributeConstraint(ownAttr.getAttribute(), DBDAttributeConstraint.NULL_VISUAL_POSITION);
                 constraint.setVisible(true);
                 constraints.add(constraint);
 
