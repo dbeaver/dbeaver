@@ -469,9 +469,9 @@ public class SQLQueryJob extends DataSourceJob
 
             boolean hasResultSet = dbcStatement.executeStatement();
             curResult.setHasResultSet(hasResultSet);
-            int statementResultSetNumber = 0;
+
             long updateCount = -1;
-            while (hasResultSet || statementResultSetNumber == 0 || updateCount >= 0) {
+            while (true) {
                 // Fetch data only if we have to fetch all results or if it is rs requested
                 if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
                     if (hasResultSet && fetchResultSets) {
@@ -504,7 +504,6 @@ public class SQLQueryJob extends DataSourceJob
                 if (hasResultSet && fetchResultSets) {
                     resultSetNumber++;
                     fetchResultSetNumber = resultSetNumber;
-                    statementResultSetNumber++;
                 }
                 if (!hasResultSet && updateCount < 0) {
                     // Nothing else to fetch
@@ -528,7 +527,7 @@ public class SQLQueryJob extends DataSourceJob
                 } else {
                     break;
                 }
-            }
+            };
         }
         finally {
             try {
