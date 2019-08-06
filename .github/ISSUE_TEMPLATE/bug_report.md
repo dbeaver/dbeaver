@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve DBeaver
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
@@ -25,7 +25,6 @@ Please fill in as much of the template as possible.
 #### System information: 
 - Operating system (distribution) and version
 - DBeaver version
-- Java version 
 - Additional extensions
 
 #### Connection specification:
@@ -38,4 +37,4 @@ Please fill in as much of the template as possible.
 #### Steps to reproduce, if exist:
 
 #### Include any warning/errors/backtraces from the logs
-<!-- Please, find the short guide how to find logs here: https://github.com/dbeaver/dbeaver/wiki/Log-files-->
+<!-- Please, find the short guide how to find logs here: https://github.com/dbeaver/dbeaver/wiki/Log-files -->
