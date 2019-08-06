@@ -101,24 +101,25 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
             }
         };
 
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_EXIT);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_ORDER_RESULTSET);
-        //createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_FETCH_ALL);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_TXN_DISCONNECT);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_VERSION_CHECK);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_EXIT);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_ORDER_RESULTSET);
+        //createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_FETCH_ALL);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_TXN_DISCONNECT);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_VERSION_CHECK);
 
-        //createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_DELETE);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REJECT);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REVERT);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, rsvBundle, ResultSetPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_DANGER_SQL);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE);
+        //createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_DELETE);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REJECT);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REVERT);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, rsvBundle, ResultSetPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_DANGER_SQL);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE);
 
-        //createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_EDITOR_CLOSE);
+        //createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_EDITOR_CLOSE);
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(confirmTable, true));
 
@@ -127,7 +128,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         return composite;
     }
 
-    private void createConfirmCheckbox(String group, ResourceBundle bundle, String id)
+    private void createConfirmItem(String group, ResourceBundle bundle, String id)
     {
         String labelKey = ConfirmationDialog.getResourceKey(id, ConfirmationDialog.RES_KEY_TITLE);
         String title = bundle.getString(labelKey);
