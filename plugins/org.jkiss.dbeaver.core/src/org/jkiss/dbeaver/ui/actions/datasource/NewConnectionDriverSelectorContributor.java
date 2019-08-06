@@ -20,9 +20,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
@@ -44,7 +42,6 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
         if (window == null) {
             return;
         }
-        IEditorPart activePart = window.getActivePage().getActiveEditor();
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 10);
