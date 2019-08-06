@@ -33,6 +33,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -578,5 +580,30 @@ public class NavigatorUtils {
         }
         return (IStructuredSelection)selection;
     }
+
+    public static DBPProject getSelectedProject(ISelection currentSelection, IWorkbenchPart activePart) {
+        DBPProject activeProject = null;
+        if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
+            Object selItem = ((IStructuredSelection) currentSelection).getFirstElement();
+            if (selItem instanceof DBNDatabaseNode) {
+                activeProject = ((DBNDatabaseNode) selItem).getOwnerProject();
+            } else if (selItem instanceof DBNProject) {
+                activeProject = ((DBNProject) selItem).getProject();
+            }
+        }
+        if (activeProject == null) {
+            if (activePart instanceof DBPContextProvider) {
+                DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
+                if (executionContext != null) {
+                    activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
+                }
+            }
+        }
+        if (activeProject == null) {
+            activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        }
+        return activeProject;
+    }
+
 
 }
