@@ -1675,7 +1675,10 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute statement under cursor or selected text (if selection present)
             SQLScriptElement sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
-                DBWorkbench.getPlatformUI().showError(SQLEditorMessages.editors_sql_status_empty_query_string, SQLEditorMessages.editors_sql_status_empty_query_string);
+                ResultSetViewer activeViewer = getActiveResultSetViewer();
+                if (activeViewer != null) {
+                    activeViewer.setStatus(SQLEditorMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
+                }
                 return;
             } else {
                 elements = Collections.singletonList(sqlQuery);
