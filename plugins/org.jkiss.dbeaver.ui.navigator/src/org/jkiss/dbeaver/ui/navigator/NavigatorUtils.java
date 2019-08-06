@@ -585,10 +585,8 @@ public class NavigatorUtils {
         DBPProject activeProject = null;
         if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
             Object selItem = ((IStructuredSelection) currentSelection).getFirstElement();
-            if (selItem instanceof DBNDatabaseNode) {
-                activeProject = ((DBNDatabaseNode) selItem).getOwnerProject();
-            } else if (selItem instanceof DBNProject) {
-                activeProject = ((DBNProject) selItem).getProject();
+            if (selItem instanceof DBNNode) {
+                activeProject = ((DBNNode) selItem).getOwnerProject();
             }
         }
         if (activeProject == null) {

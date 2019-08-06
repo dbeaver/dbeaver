@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -29,6 +31,8 @@ import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,15 +51,20 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageDriver pageDrivers;
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
+    private DBPProject selectedProject;
     //private ConnectionPageNetwork pageNetwork;
 
     public NewConnectionWizard() {
-        setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
+        this(null);
     }
 
     public NewConnectionWizard(DBPDriver initialDriver) {
-        this();
+        setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
+
+        IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
+        ISelection selection = activePart == null ? null : activePart.getSite().getSelectionProvider().getSelection();
+        selectedProject = NavigatorUtils.getSelectedProject(selection, activePart);
     }
 
     @Override
@@ -83,6 +92,11 @@ public class NewConnectionWizard extends ConnectionWizard
     public DBPDriver getSelectedDriver()
     {
         return initialDriver != null ? initialDriver : getPageDrivers().getSelectedDriver();
+    }
+
+    @Override
+    DBPProject getSelectedProject() {
+        return selectedProject;
     }
 
     @Override
