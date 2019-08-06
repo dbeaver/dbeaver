@@ -106,6 +106,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
@@ -113,7 +114,9 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -964,7 +967,7 @@ public class SQLEditor extends SQLEditorBase implements
                         @Override
                         public void run()
                         {
-                            closeExtraResultTabs(null);
+                            closeExtraResultTabs(null, false);
                         }
                     });
                     int pinnedTabsCount = 0;
@@ -1806,6 +1809,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) && isDirty()) {
             doSave(new NullProgressMonitor());
         }
+        boolean extraTabsClosed = false;
         if (!export) {
             if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)) {
                 outputViewer.clearOutput();
@@ -1813,7 +1817,10 @@ public class SQLEditor extends SQLEditorBase implements
 
             if (!newTab || !isSingleQuery) {
                 // We don't need new tab or we are executing a script - so close all extra tabs
-                closeExtraResultTabs(null);
+                if (!closeExtraResultTabs(null, true)) {
+                    return;
+                }
+                extraTabsClosed = true;
             }
         }
 
@@ -1852,7 +1859,11 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     }
                 }
-                closeExtraResultTabs(curQueryProcessor);
+                if (!extraTabsClosed) {
+                    if (!closeExtraResultTabs(curQueryProcessor, true)) {
+                        return;
+                    }
+                }
                 if (firstResults.tabItem != null) {
                     // Do not switch tab if Output tab is active
                     CTabItem selectedTab = resultTabs.getSelection();
@@ -1873,9 +1884,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void closeExtraResultTabs(@Nullable QueryProcessor queryProcessor)
+    private boolean closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose)
     {
         // Close all tabs except first one
+        List<CTabItem> tabsToClose = new ArrayList<>();
         for (int i = resultTabs.getItemCount() - 1; i > 0; i--) {
             CTabItem item = resultTabs.getItem(i);
             if (item.getData() instanceof QueryResultsContainer && item.getShowClose()) {
@@ -1887,11 +1899,32 @@ public class SQLEditor extends SQLEditorBase implements
                     // Do not remove first tab for this processor
                     continue;
                 }
-                item.dispose();
+                tabsToClose.add(item);
             } else if (item.getData() instanceof ExplainPlanViewer) {
-                item.dispose();
+                tabsToClose.add(item);
             }
         }
+
+        if (!tabsToClose.isEmpty()) {
+            int confirmResult = IDialogConstants.YES_ID;
+            if (confirmClose) {
+                confirmResult = ConfirmationDialog.showConfirmDialog(
+                    ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
+                    getSite().getShell(),
+                    SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
+                    ConfirmationDialog.QUESTION_WITH_CANCEL,
+                    tabsToClose.size());
+                if (confirmResult == IDialogConstants.CANCEL_ID) {
+                    return false;
+                }
+            }
+            if (confirmResult == IDialogConstants.YES_ID) {
+                for (CTabItem item : tabsToClose) {
+                    item.dispose();
+                }
+            }
+        }
+        return true;
     }
 
     private boolean checkSession(DBRProgressListener onFinish)

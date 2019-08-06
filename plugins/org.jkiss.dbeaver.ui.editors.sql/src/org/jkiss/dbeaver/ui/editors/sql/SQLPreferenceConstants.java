@@ -134,6 +134,7 @@ public class SQLPreferenceConstants
     public static final String CONFIRM_DANGER_SQL                       = "dangerous_sql"; //$NON-NLS-1$
     public static final String CONFIRM_MASS_PARALLEL_SQL                = "mass_parallel_sql"; //$NON-NLS-1$
     public static final String CONFIRM_RUNNING_QUERY_CLOSE              = "close_running_query"; //$NON-NLS-1$
+    public static final String CONFIRM_RESULT_TABS_CLOSE                = "close_result_tabs"; //$NON-NLS-1$
 
 
 }
