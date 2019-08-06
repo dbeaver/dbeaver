@@ -140,6 +140,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
+    private boolean showAttrOrdering;
+    private boolean supportsAttributeFilter;
+    private boolean autoFetchSegments;
+    private boolean showAttributeIcons;
+    private boolean showAttributeDescription;
+    private boolean calcColumnWidthByValue;
+
     private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
@@ -695,6 +702,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         rightJustifyNumbers = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         rightJustifyDateTime = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
         rowBatchSize = preferenceStore.getInt(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
+
+        showAttrOrdering = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING);
+        showAttributeIcons = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS);
+        showAttributeDescription = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
+        supportsAttributeFilter = (controller.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) != 0 &&
+            controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
+        autoFetchSegments = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
+        calcColumnWidthByValue = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
 
         spreadsheet.setRedraw(false);
         try {
@@ -1470,7 +1485,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public int getSortOrder(@Nullable Object column)
         {
-            if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING)) {
+            if (showAttrOrdering) {
                 if (column instanceof DBDAttributeBinding) {
                     DBDAttributeBinding binding = (DBDAttributeBinding) column;
                     if (!binding.hasNestedBindings()) {
@@ -1531,8 +1546,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public boolean isElementSupportsFilter(Object element) {
             if (element instanceof DBDAttributeBinding) {
-                return (controller.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) != 0 &&
-                    controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
+                return supportsAttributeFilter;
             }
             return false;
         }
@@ -1586,7 +1600,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             if (rowNum > 0 &&
                 rowNum == controller.getModel().getRowCount() - 1 &&
-                controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
+                autoFetchSegments &&
                 (recordMode || spreadsheet.isRowVisible(rowNum)) && controller.isHasMoreData())
             {
                 controller.readNextSegment();
@@ -1811,7 +1825,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
-                if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS)) {
+                if (showAttributeIcons) {
                     return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
                 }
             }
@@ -1821,7 +1835,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public Object getGridOption(String option) {
             if (OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC.equals(option)) {
-                return getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
+                return calcColumnWidthByValue;
             }
             return null;
         }
@@ -1883,7 +1897,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Nullable
         @Override
         public String getDescription(Object element) {
-            if (!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION)) {
+            if (!showAttributeDescription) {
                 return null;
             }
             if (element instanceof DBDAttributeBinding) {
