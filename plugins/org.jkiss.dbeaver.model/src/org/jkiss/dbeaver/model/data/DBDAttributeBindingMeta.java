@@ -51,23 +51,18 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     @Nullable
     private DBDPseudoAttribute pseudoAttribute;
 
-    public DBDAttributeBindingMeta(
-        @NotNull DBSDataContainer dataContainer,
-        @NotNull DBCSession session,
-        @NotNull DBCAttributeMetaData metaAttribute)
-    {
-        super(DBUtils.findValueHandler(session, metaAttribute));
-        this.dataContainer = dataContainer;
-        this.metaAttribute = metaAttribute;
-    }
+    private boolean showLabel;
 
     public DBDAttributeBindingMeta(
         @NotNull DBSDataContainer dataContainer,
-        @NotNull DBCAttributeMetaData metaAttribute)
-    {
-        super(DBUtils.findValueHandler(dataContainer.getDataSource(), metaAttribute));
+        @NotNull DBCSession session,
+        @NotNull DBCAttributeMetaData metaAttribute) {
+        super(DBUtils.findValueHandler(session, metaAttribute));
         this.dataContainer = dataContainer;
         this.metaAttribute = metaAttribute;
+
+        DBPDataSource dataSource = dataContainer.getDataSource();
+        showLabel = dataSource == null || !dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL);
     }
 
     @Nullable
@@ -84,11 +79,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     /**
      * Attribute index in result set
+     *
      * @return attribute index (zero based)
      */
     @Override
-    public int getOrdinalPosition()
-    {
+    public int getOrdinalPosition() {
         return metaAttribute.getOrdinalPosition();
     }
 
@@ -151,10 +146,8 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
      * Attribute label
      */
     @NotNull
-    public String getLabel()
-    {
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)) {
+    public String getLabel() {
+        if (!showLabel) {
             // Return name if label is ignored
             return getName();
         }
@@ -165,8 +158,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
      * Attribute name
      */
     @NotNull
-    public String getName()
-    {
+    public String getName() {
         return metaAttribute.getName();
     }
 
@@ -182,8 +174,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
      * Entity attribute (may be null)
      */
     @Nullable
-    public DBSEntityAttribute getEntityAttribute()
-    {
+    public DBSEntityAttribute getEntityAttribute() {
         return entityAttribute;
     }
 
@@ -209,6 +200,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     /**
      * Sets entity attribute
+     *
      * @return true if attribute type differs from meta attribute type.
      */
     public boolean setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute, boolean updateHandler) {
@@ -222,6 +214,14 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
             return true;
         }
         return false;
+    }
+
+    public boolean isShowLabel() {
+        return showLabel;
+    }
+
+    public void setShowLabel(boolean showLabel) {
+        this.showLabel = showLabel;
     }
 
     public static boolean haveEqualsTypes(DBSTypedObject object1, DBSTypedObject object2) {
@@ -258,11 +258,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
             DBCAttributeMetaData cmpMeta = ((DBDAttributeBindingMeta) obj).metaAttribute;
             return
                 CommonUtils.equalObjects(metaAttribute.getName(), cmpMeta.getName()) &&
-                CommonUtils.equalObjects(metaAttribute.getLabel(), cmpMeta.getLabel()) &&
-                CommonUtils.equalObjects(metaAttribute.getEntityName(), cmpMeta.getEntityName()) &&
-                metaAttribute.getOrdinalPosition() == cmpMeta.getOrdinalPosition() &&
-                metaAttribute.getTypeID() == cmpMeta.getTypeID() &&
-                CommonUtils.equalObjects(metaAttribute.getTypeName(), cmpMeta.getTypeName())
+                    CommonUtils.equalObjects(metaAttribute.getLabel(), cmpMeta.getLabel()) &&
+                    CommonUtils.equalObjects(metaAttribute.getEntityName(), cmpMeta.getEntityName()) &&
+                    metaAttribute.getOrdinalPosition() == cmpMeta.getOrdinalPosition() &&
+                    metaAttribute.getTypeID() == cmpMeta.getTypeID() &&
+                    CommonUtils.equalObjects(metaAttribute.getTypeName(), cmpMeta.getTypeName())
                 ;
         }
         return false;
