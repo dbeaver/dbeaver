@@ -464,13 +464,14 @@ public class SQLQueryJob extends DataSourceJob
         // Execute statement
         try {
             session.getProgressMonitor().subTask("Execute query");
-            boolean hasResultSet = dbcStatement.executeStatement();
-            curResult.setHasResultSet(hasResultSet);
             statistics.addExecuteTime(System.currentTimeMillis() - startTime);
             statistics.addStatementsCount();
 
+            boolean hasResultSet = dbcStatement.executeStatement();
+            curResult.setHasResultSet(hasResultSet);
+            int statementResultSetNumber = 0;
             long updateCount = -1;
-            while (hasResultSet || resultSetNumber == 0 || updateCount >= 0) {
+            while (hasResultSet || statementResultSetNumber == 0 || updateCount >= 0) {
                 // Fetch data only if we have to fetch all results or if it is rs requested
                 if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
                     if (hasResultSet && fetchResultSets) {
@@ -503,6 +504,7 @@ public class SQLQueryJob extends DataSourceJob
                 if (hasResultSet && fetchResultSets) {
                     resultSetNumber++;
                     fetchResultSetNumber = resultSetNumber;
+                    statementResultSetNumber++;
                 }
                 if (!hasResultSet && updateCount < 0) {
                     // Nothing else to fetch
