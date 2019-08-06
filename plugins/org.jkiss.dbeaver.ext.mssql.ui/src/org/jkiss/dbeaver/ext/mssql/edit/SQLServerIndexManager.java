@@ -17,12 +17,17 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -32,6 +37,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -96,7 +102,26 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
             }
         }.execute();
     }
-    
+
+    @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        SQLServerTableIndex index = command.getObject();
+        if (index.isPersisted()) {
+            try {
+                String indexDDL = index.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);
+                if (!CommonUtils.isEmpty(indexDDL)) {
+                    actions.add(
+                        new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, indexDDL)
+                    );
+                    return;
+                }
+            } catch (DBException e) {
+                log.warn("Can't extract index DDL", e);
+            }
+        }
+        super.addObjectCreateActions(monitor, actions, command, options);
+    }
+
     protected String getDropIndexPattern(SQLServerTableIndex index)
     {
         return "DROP INDEX " + index.getName() + " ON " + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
