@@ -132,7 +132,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
 
         UIUtils.createHorizontalLine(addrGroup, 2, 10);
 
-        if (!MySQLUtils.isMariaDB(getSite().getDriver())) {
+        {
             serverTimezoneCombo = UIUtils.createLabelCombo(addrGroup, MySQLMessages.dialog_connection_server_timezone, SWT.DROP_DOWN);
             serverTimezoneCombo.add(MySQLMessages.dialog_connection_auto_detect);
             {
