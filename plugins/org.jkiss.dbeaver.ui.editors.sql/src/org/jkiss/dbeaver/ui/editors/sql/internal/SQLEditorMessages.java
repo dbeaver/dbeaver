@@ -26,6 +26,10 @@ public class SQLEditorMessages extends NLS {
     public static String confirm_close_running_query_message;
     public static String confirm_close_running_query_toggleMessage;
 
+    public static String confirm_close_result_tabs_title;
+    public static String confirm_close_result_tabs_message;
+    public static String confirm_close_result_tabs_toggleMessage;
+
     public static String confirm_dangerous_sql_title;
     public static String confirm_dangerous_sql_message;
     public static String confirm_dangerous_sql_toggleMessage;
