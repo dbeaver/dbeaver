@@ -26,17 +26,34 @@ public class RedshiftConstants {
      * https://github.com/awslabs/amazon-redshift-utils/blob/master/src/AdminViews/v_generate_tbl_ddl.sql
      */
     public static final String DDL_EXTRACT_VIEW =
-        "SELECT * FROM (\n" +
-            " SELECT\n" +
-            "  table_id\n" +
+        "SELECT\n" +
+            " table_id\n" +
             " ,REGEXP_REPLACE (schemaname, '^zzzzzzzz', '') AS schemaname\n" +
             " ,REGEXP_REPLACE (tablename, '^zzzzzzzz', '') AS tablename\n" +
+            " ,seq\n" +
+            " ,ddl\n" +
+            "FROM\n" +
+            " (\n" +
+            " SELECT\n" +
+            "  table_id\n" +
+            "  ,schemaname\n" +
+            "  ,tablename\n" +
             "  ,seq\n" +
             "  ,ddl\n" +
             " FROM\n" +
             "  (\n" +
-            "  --CREATE TABLE\n" +
+            "  --DROP TABLE\n" +
             "  SELECT\n" +
+            "   c.oid::bigint as table_id\n" +
+            "   ,n.nspname AS schemaname\n" +
+            "   ,c.relname AS tablename\n" +
+            "   ,0 AS seq\n" +
+            "   ,'--DROP TABLE ' + QUOTE_IDENT(n.nspname) + '.' + QUOTE_IDENT(c.relname) + ';' AS ddl\n" +
+            "  FROM pg_namespace AS n\n" +
+            "  INNER JOIN pg_class AS c ON n.oid = c.relnamespace\n" +
+            "  WHERE c.relkind = 'r'\n" +
+            "  --CREATE TABLE\n" +
+            "  UNION SELECT\n" +
             "   c.oid::bigint as table_id\n" +
             "   ,n.nspname AS schemaname\n" +
             "   ,c.relname AS tablename\n" +
@@ -148,6 +165,7 @@ public class RedshiftConstants {
             "   ,CASE WHEN c.reldiststyle = 0 THEN 'DISTSTYLE EVEN'\n" +
             "    WHEN c.reldiststyle = 1 THEN 'DISTSTYLE KEY'\n" +
             "    WHEN c.reldiststyle = 8 THEN 'DISTSTYLE ALL'\n" +
+            "    WHEN c.reldiststyle = 9 THEN 'DISTSTYLE AUTO'\n" +
             "    ELSE '<<Error - UNKNOWN DISTSTYLE>>'\n" +
             "    END AS ddl\n" +
             "  FROM pg_namespace AS n\n" +
@@ -213,7 +231,18 @@ public class RedshiftConstants {
             "  UNION SELECT c.oid::bigint as table_id ,n.nspname AS schemaname, c.relname AS tablename, 600000000 AS seq, ';' AS ddl\n" +
             "  FROM  pg_namespace AS n\n" +
             "  INNER JOIN pg_class AS c ON n.oid = c.relnamespace\n" +
-            "  WHERE c.relkind = 'r' )\n" +
+            "  WHERE c.relkind = 'r' \n" +
+            "  \n" +
+            "  UNION\n" +
+            "  --TABLE OWNERSHIP AS AN ALTER TABLE STATMENT\n" +
+            "  SELECT c.oid::bigint as table_id ,n.nspname AS schemaname, c.relname AS tablename, 600500000 AS seq, \n" +
+            "  'ALTER TABLE ' + QUOTE_IDENT(n.nspname) + '.' + QUOTE_IDENT(c.relname) + ' owner to '+  QUOTE_IDENT(u.usename) +';' AS ddl\n" +
+            "  FROM  pg_namespace AS n\n" +
+            "  INNER JOIN pg_class AS c ON n.oid = c.relnamespace\n" +
+            "  INNER JOIN pg_user AS u ON c.relowner = u.usesysid\n" +
+            "  WHERE c.relkind = 'r'\n" +
+            "  \n" +
+            "  )\n" +
             "  UNION (\n" +
             "    SELECT c.oid::bigint as table_id,'zzzzzzzz' || n.nspname AS schemaname,\n" +
             "       'zzzzzzzz' || c.relname AS tablename,\n" +
