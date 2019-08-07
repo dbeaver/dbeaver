@@ -768,6 +768,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     }
 
     public Class<?> getChildrenClass(DBXTreeItem childMeta) {
+        if (childMeta == null) {
+            log.debug("Null child meta specified");
+            return null;
+        }
         Object valueObject = getValueObject();
         if (valueObject == null) {
             return null;

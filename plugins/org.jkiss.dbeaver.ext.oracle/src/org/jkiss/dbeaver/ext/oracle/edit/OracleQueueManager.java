@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -38,14 +35,17 @@ import java.util.Map;
 public class OracleQueueManager extends SQLObjectEditor<OracleQueue, OracleSchema> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException
-    {
+    public boolean canCreateObject(Object container) {
+        return false;
+    }
+
+    @Override
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Queue name cannot be empty");
         }
@@ -53,46 +53,31 @@ public class OracleQueueManager extends SQLObjectEditor<OracleQueue, OracleSchem
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, OracleQueue> getObjectsCache(OracleQueue object)
-    {
+    public DBSObjectCache<? extends DBSObject, OracleQueue> getObjectsCache(OracleQueue object) {
         return object.getSchema().queueCache;
     }
 
     @Override
-    protected OracleQueue createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                               final Object container,
-                                               Object copyFrom, Map<String, Object> options)
-    {
+    protected OracleQueue createDatabaseObject(
+        DBRProgressMonitor monitor, DBECommandContext context,
+        final Object container,
+        Object copyFrom, Map<String, Object> options) {
         OracleSchema schema = (OracleSchema) container;
-        return new UITask<OracleQueue>() {
-            @Override
-            protected OracleQueue runTask() {
-                EntityEditPage page = new EntityEditPage(schema.getDataSource(), DBSEntityType.SEQUENCE);
-                if (!page.edit()) {
-                    return null;
-                }
-
-                final OracleQueue queue = new OracleQueue(schema, page.getEntityName());
-                return queue;
-            }
-        }.execute();
+        return new OracleQueue(schema, "NEW_QUEUE");
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
 
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
 
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
 
     }
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.ui.configurators;
+package org.jkiss.dbeaver.ext.oracle.ui.config;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -30,20 +30,17 @@ public class OracleDataTypeConfigurator implements DBEObjectConfigurator<OracleD
 
     @Override
     public OracleDataType configureObject(DBRProgressMonitor monitor, Object parent, OracleDataType dataType) {
-        return new UITask<OracleDataType>() {
-            @Override
-            protected OracleDataType runTask() {
-                EntityEditPage editPage = new EntityEditPage(dataType.getDataSource(), DBSEntityType.TYPE);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                dataType.setName(editPage.getEntityName());
-                dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                    "(\n" + //$NON-NLS-1$
-                    ")"); //$NON-NLS-1$
-                return dataType;
+        return UITask.run(() -> {
+            EntityEditPage editPage = new EntityEditPage(dataType.getDataSource(), DBSEntityType.TYPE);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+            dataType.setName(editPage.getEntityName());
+            dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                "(\n" + //$NON-NLS-1$
+                ")"); //$NON-NLS-1$
+            return dataType;
+        });
     }
 
 }

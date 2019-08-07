@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.ui.configurators;
+package org.jkiss.dbeaver.ext.oracle.ui.config;
 
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
@@ -34,36 +34,33 @@ public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<Oracl
 
     @Override
     public OracleTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, OracleTableForeignKey foreignKey) {
-        return new UITask<OracleTableForeignKey>() {
-            @Override
-            protected OracleTableForeignKey runTask() {
-                EditForeignKeyPage editPage = new EditForeignKeyPage(
-                    OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
-                    foreignKey,
-                    new DBSForeignKeyModifyRule[]{
-                        DBSForeignKeyModifyRule.NO_ACTION,
-                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                        DBSForeignKeyModifyRule.SET_NULL,
-                        DBSForeignKeyModifyRule.SET_DEFAULT});
-                editPage.setSupportsCustomName(true);
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                foreignKey.setReferencedConstraint((OracleTableConstraint) editPage.getUniqueConstraint());
-                foreignKey.setName(editPage.getName());
-                foreignKey.setDeleteRule(editPage.getOnDeleteRule());
-                int colIndex = 1;
-                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
-                    foreignKey.addColumn(
-                        new OracleTableForeignKeyColumn(
-                            foreignKey,
-                            (OracleTableColumn) tableColumn.getOwnColumn(),
-                            colIndex++));
-                }
-                return foreignKey;
+        return UITask.run(() -> {
+            EditForeignKeyPage editPage = new EditForeignKeyPage(
+                OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
+                foreignKey,
+                new DBSForeignKeyModifyRule[]{
+                    DBSForeignKeyModifyRule.NO_ACTION,
+                    DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                    DBSForeignKeyModifyRule.SET_NULL,
+                    DBSForeignKeyModifyRule.SET_DEFAULT});
+            editPage.setSupportsCustomName(true);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+
+            foreignKey.setReferencedConstraint((OracleTableConstraint) editPage.getUniqueConstraint());
+            foreignKey.setName(editPage.getName());
+            foreignKey.setDeleteRule(editPage.getOnDeleteRule());
+            int colIndex = 1;
+            for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
+                foreignKey.addColumn(
+                    new OracleTableForeignKeyColumn(
+                        foreignKey,
+                        (OracleTableColumn) tableColumn.getOwnColumn(),
+                        colIndex++));
+            }
+            return foreignKey;
+        });
     }
 
 }
