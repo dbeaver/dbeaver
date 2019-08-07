@@ -274,11 +274,6 @@ public class ReferenceValueEditor {
                 }
             });
         }
-        UIUtils.asyncExec(() -> {
-            if (!editorSelector.isDisposed()) {
-                UIUtils.packColumns(editorSelector, true);
-            }
-        });
         final Object curValue = valueController.getValue();
 
         reloadSelectorValues(curValue instanceof Number ? curValue : null);
@@ -323,7 +318,7 @@ public class ReferenceValueEditor {
 
             selectCurrentValue();
 
-            UIUtils.maxTableColumnsWidth(editorSelector);
+            UIUtils.packColumns(editorSelector, false);
         } finally {
             editorSelector.setRedraw(true);
         }
