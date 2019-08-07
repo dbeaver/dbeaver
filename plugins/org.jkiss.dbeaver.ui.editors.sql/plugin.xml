@@ -42,6 +42,7 @@
         <command id="set" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
         <command id="echo" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
         <command id="include" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandInclude" label="Include" description="Include another SQL script file"/>
+        <command id="export" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandExport" label="Export resultset" description="Export results of the next query. Launches data transfer process."/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sql.plan.view">

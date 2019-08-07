@@ -428,6 +428,8 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+
+            scriptContext.clearStatementContext();
         }
 
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
