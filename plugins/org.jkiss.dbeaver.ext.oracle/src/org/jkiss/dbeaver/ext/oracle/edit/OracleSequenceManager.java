@@ -13,27 +13,21 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, OracleSchema> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException
-    {
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Sequence name cannot be empty");
         }
@@ -41,37 +35,22 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, OracleSequence> getObjectsCache(OracleSequence object)
-    {
+    public DBSObjectCache<? extends DBSObject, OracleSequence> getObjectsCache(OracleSequence object) {
         return object.getSchema().sequenceCache;
     }
 
     @Override
-    protected OracleSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                                  final Object container,
-                                                  Object copyFrom, Map<String, Object> options)
+    protected OracleSequence createDatabaseObject(
+        DBRProgressMonitor monitor, DBECommandContext context,
+        final Object container,
+        Object copyFrom, Map<String, Object> options)
     {
         OracleSchema schema = (OracleSchema) container;
-        return new UITask<OracleSequence>() {
-            @Override
-            protected OracleSequence runTask() {
-                EntityEditPage page = new EntityEditPage(schema.getDataSource(), DBSEntityType.SEQUENCE);
-                if (!page.edit()) {
-                    return null;
-                }
-
-                final OracleSequence sequence = new OracleSequence(schema, page.getEntityName());
-                sequence.setIncrementBy(1L);
-                sequence.setMinValue(new BigDecimal(0));
-                sequence.setCycle(false);
-                return sequence;
-            }
-        }.execute();
+        return new OracleSequence(schema, "NEW_SEQUENCE");
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         String sql = buildStatement(command.getObject(), false);
         actions.add(new SQLDatabasePersistAction("Create Sequence", sql));
 
@@ -82,8 +61,7 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         String sql = buildStatement(command.getObject(), true);
         actionList.add(new SQLDatabasePersistAction("Alter Sequence", sql));
 
@@ -94,15 +72,13 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         String sql = "DROP SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL);
         DBEPersistAction action = new SQLDatabasePersistAction("Drop Sequence", sql);
         actions.add(action);
     }
 
-    private String buildStatement(OracleSequence sequence, Boolean forUpdate)
-    {
+    private String buildStatement(OracleSequence sequence, Boolean forUpdate) {
         StringBuilder sb = new StringBuilder();
         if (forUpdate) {
             sb.append("ALTER SEQUENCE ");
@@ -140,8 +116,7 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
         return sb.toString();
     }
 
-    private String buildComment(OracleSequence sequence)
-    {
+    private String buildComment(OracleSequence sequence) {
         if (!CommonUtils.isEmpty(sequence.getDescription())) {
             return "COMMENT ON SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(sequence, sequence.getDescription());
         }

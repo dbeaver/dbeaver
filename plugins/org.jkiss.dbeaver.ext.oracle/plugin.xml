@@ -329,6 +329,7 @@
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleViewManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleMaterializedViewManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleProcedureManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
+        <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleQueueManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleQueue"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OraclePackageManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleTableTriggerManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleSequenceManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleSequence"/>

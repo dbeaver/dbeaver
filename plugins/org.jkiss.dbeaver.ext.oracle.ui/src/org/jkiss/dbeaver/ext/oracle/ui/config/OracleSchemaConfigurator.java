@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.ui.configurators;
+package org.jkiss.dbeaver.ext.oracle.ui.config;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -24,50 +24,22 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUser;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * OracleSchemaConfigurator
  */
-public class OracleSchemaConfigurator extends SQLObjectEditor<OracleSchema, OracleDataSource> implements DBEObjectRenamer<OracleSchema> {
+public class OracleSchemaConfigurator implements DBEObjectConfigurator<OracleSchema> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
-        return FEATURE_SAVE_IMMEDIATELY;
-    }
-
-    @Nullable
-    @Override
-    public DBSObjectCache<? extends DBSObject, OracleSchema> getObjectsCache(OracleSchema object)
-    {
-        return object.getDataSource().schemaCache;
-    }
-
-    @Override
-    protected OracleSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
-    {
+    public OracleSchema configureObject(DBRProgressMonitor monitor, Object container, OracleSchema newSchema) {
         return new UITask<OracleSchema>() {
             @Override
             protected OracleSchema runTask() {
@@ -75,39 +47,12 @@ public class OracleSchemaConfigurator extends SQLObjectEditor<OracleSchema, Orac
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                OracleSchema newSchema = new OracleSchema((OracleDataSource) container, -1, dialog.getUser().getName());
+                newSchema.setName(dialog.getUser().getName());
                 newSchema.setUser(dialog.getUser());
 
                 return newSchema;
             }
         }.execute();
-    }
-
-    @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
-        OracleUser user = command.getObject().getUser();
-        String sql = "CREATE USER " + DBUtils.getQuotedIdentifier(user);
-        if (!CommonUtils.isEmpty(user.getPassword())) {
-            sql += " IDENTIFIED BY \"" + user.getPassword() + "\"";
-        }
-
-        actions.add(new SQLDatabasePersistAction("Create schema", sql));
-    }
-
-    @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
-        actions.add(
-            new SQLDatabasePersistAction("Drop schema",
-                "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
-        );
-    }
-
-    @Override
-    public void renameObject(DBECommandContext commandContext, OracleSchema schema, String newName) throws DBException
-    {
-        throw new DBException("Direct database rename is not yet implemented in Oracle. You should use export/import functions for that.");
     }
 
     static class NewUserDialog extends Dialog {
@@ -122,7 +67,7 @@ public class OracleSchemaConfigurator extends SQLObjectEditor<OracleSchema, Orac
             this.user = new OracleUser(dataSource);
         }
 
-        public OracleUser getUser()
+        OracleUser getUser()
         {
             return user;
         }

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -29,10 +28,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
 import java.util.List;
 import java.util.Map;
@@ -44,41 +40,24 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, OracleTableTrigger> getObjectsCache(OracleTableTrigger object)
-    {
+    public DBSObjectCache<? extends DBSObject, OracleTableTrigger> getObjectsCache(OracleTableTrigger object) {
         return object.getTable().triggerCache;
     }
 
     @Override
-    protected OracleTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
-    {
+    protected OracleTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) {
         OracleTableBase table = (OracleTableBase) container;
-        return new UITask<OracleTableTrigger>() {
-            @Override
-            protected OracleTableTrigger runTask() {
-                EntityEditPage editPage = new EntityEditPage(table.getDataSource(), DBSEntityType.TRIGGER);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                OracleTableTrigger newTrigger = new OracleTableTrigger(table, editPage.getEntityName());
-                newTrigger.setObjectDefinitionText("TRIGGER " + editPage.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                    "BEGIN\n" + //$NON-NLS-1$
-                    "END;"); //$NON-NLS-1$
-                return newTrigger;
-            }
-        }.execute();
+        return new OracleTableTrigger(table, "NEW_TRIGGER");
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
-    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, OracleTableTrigger trigger, boolean create)
-    {
+    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, OracleTableTrigger trigger, boolean create) {
         String source = OracleUtils.normalizeSourceName(trigger, false);
         if (source == null) {
             return;

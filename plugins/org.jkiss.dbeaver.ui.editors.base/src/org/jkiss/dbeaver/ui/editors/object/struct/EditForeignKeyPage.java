@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -570,9 +571,12 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 break;
             }
             if (childNode instanceof DBNDatabaseFolder) {
-                Class<?> childrenClass = ((DBNDatabaseFolder) childNode).getChildrenClass(((DBNDatabaseFolder) childNode).getItemsMeta());
-                if (DBSEntity.class.isAssignableFrom(childrenClass)) {
-                    loadEntities(monitor, entities, (DBNDatabaseFolder) childNode);
+                DBXTreeItem itemsMeta = ((DBNDatabaseFolder) childNode).getItemsMeta();
+                if (itemsMeta != null) {
+                    Class<?> childrenClass = ((DBNDatabaseFolder) childNode).getChildrenClass(itemsMeta);
+                    if (DBSEntity.class.isAssignableFrom(childrenClass)) {
+                        loadEntities(monitor, entities, (DBNDatabaseFolder) childNode);
+                    }
                 }
             } else {
                 if (childNode instanceof DBNDatabaseNode) {
