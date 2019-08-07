@@ -34,8 +34,6 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -70,19 +68,7 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
 
     @Override
     protected SQLServerProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) {
-        SQLServerProcedure newProcedure = new SQLServerProcedure((SQLServerSchema) container);
-        return new UITask<SQLServerProcedure>() {
-            @Override
-            protected SQLServerProcedure runTask() {
-                CreateProcedurePage editPage = new CreateProcedurePage(newProcedure);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                newProcedure.setProcedureType(editPage.getProcedureType());
-                newProcedure.setName(editPage.getProcedureName());
-                return newProcedure;
-            }
-        }.execute();
+        return new SQLServerProcedure((SQLServerSchema) container);
     }
 
     @Override

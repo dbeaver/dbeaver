@@ -14,32 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.mssql.ui.config;
 
-package org.jkiss.dbeaver.ext.postgresql.edit;
-
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateSequencePage;
+import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 
 /**
- * Postgre sequence configurator
+ * SQLServerProcedureConfigurator
  */
-public class PostgreSequenceConfigurator implements DBEObjectConfigurator<PostgreSequence> {
+public class SQLServerProcedureConfigurator implements DBEObjectConfigurator<SQLServerProcedure> {
     @Override
-    public PostgreSequence configureObject(DBRProgressMonitor monitor, Object parent, PostgreSequence sequence) {
-        return new UITask<PostgreSequence>() {
-            @Override
-            protected PostgreSequence runTask() {
-                CreateSequencePage editPage = new CreateSequencePage(sequence);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                sequence.setName(editPage.getSequenceName());
-                return sequence;
+    public SQLServerProcedure configureObject(DBRProgressMonitor monitor, Object container, SQLServerProcedure newProcedure) {
+        return UITask.run(() -> {
+            CreateProcedurePage editPage = new CreateProcedurePage(newProcedure);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+            newProcedure.setProcedureType(editPage.getProcedureType());
+            newProcedure.setName(editPage.getProcedureName());
+            return newProcedure;
+        });
     }
 
 }
+

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -121,7 +122,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
         return !index.isPrimary() && super.isIncludeIndexInDDL(index);
     }
 
-    protected void addExtraDDLCommands(DBRProgressMonitor monitor, SQLServerTable table, Map<String, Object> options, StructCreateCommand createCommand) {
+    protected void addExtraDDLCommands(DBRProgressMonitor monitor, SQLServerTable table, Map<String, Object> options, SQLStructEditor.StructCreateCommand createCommand) {
         SQLObjectEditor<SQLServerTableCheckConstraint, SQLServerTable> ccm = getObjectEditor(
             table.getDataSource().getContainer().getPlatform().getEditorsRegistry(),
             SQLServerTableCheckConstraint.class);

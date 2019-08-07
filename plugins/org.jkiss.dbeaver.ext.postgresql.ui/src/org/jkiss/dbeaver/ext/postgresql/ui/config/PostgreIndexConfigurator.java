@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.edit;
+package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex;

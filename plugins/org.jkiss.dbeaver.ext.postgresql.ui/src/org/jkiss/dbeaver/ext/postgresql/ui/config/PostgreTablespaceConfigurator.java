@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2019 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +16,33 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.edit;
+package org.jkiss.dbeaver.ext.postgresql.ui.config;
+
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSchemaDialog;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
+import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateTablespaceDialog;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-/**
- * Postgre sequence configurator
- */
-public class PostgreSchemaConfigurator implements DBEObjectConfigurator<PostgreSchema> {
+
+public class PostgreTablespaceConfigurator implements DBEObjectConfigurator<PostgreTablespace> {
+
     @Override
-    public PostgreSchema configureObject(DBRProgressMonitor monitor, Object parent, PostgreSchema schema) {
-        return new UITask<PostgreSchema>() {
+    public PostgreTablespace configureObject(DBRProgressMonitor monitor, Object container, PostgreTablespace tablespace) {
+        return new UITask<PostgreTablespace>() {
             @Override
-            protected PostgreSchema runTask() {
-                PostgreCreateSchemaDialog dialog = new PostgreCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), schema);
+            protected PostgreTablespace runTask() {
+                PostgreCreateTablespaceDialog dialog = new PostgreCreateTablespaceDialog(UIUtils.getActiveWorkbenchShell(), tablespace);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                schema.setName(dialog.getName());
-                schema.setOwner(dialog.getOwner());
-                return schema;
+                tablespace.setName(dialog.getName());
+                tablespace.setLoc(dialog.getLoc());
+                tablespace.setOwnerId(dialog.getOwner().getObjectId());
+                return tablespace;
             }
         }.execute();
     }

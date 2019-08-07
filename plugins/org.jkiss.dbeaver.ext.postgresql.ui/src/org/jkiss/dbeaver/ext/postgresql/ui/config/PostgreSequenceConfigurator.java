@@ -15,28 +15,29 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.edit;
+package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.CreateSequencePage;
 
 /**
- * Postgre table column manager
+ * Postgre sequence configurator
  */
-public class PostgreTableColumnConfigurator implements DBEObjectConfigurator<PostgreTableColumn> {
+public class PostgreSequenceConfigurator implements DBEObjectConfigurator<PostgreSequence> {
     @Override
-    public PostgreTableColumn configureObject(DBRProgressMonitor monitor, Object table, PostgreTableColumn column) {
-        return new UITask<PostgreTableColumn>() {
+    public PostgreSequence configureObject(DBRProgressMonitor monitor, Object parent, PostgreSequence sequence) {
+        return new UITask<PostgreSequence>() {
             @Override
-            protected PostgreTableColumn runTask() {
-                AttributeEditPage page = new AttributeEditPage(null, column);
-                if (!page.edit()) {
+            protected PostgreSequence runTask() {
+                CreateSequencePage editPage = new CreateSequencePage(sequence);
+                if (!editPage.edit()) {
                     return null;
                 }
-                return column;
+                sequence.setName(editPage.getSequenceName());
+                return sequence;
             }
         }.execute();
     }

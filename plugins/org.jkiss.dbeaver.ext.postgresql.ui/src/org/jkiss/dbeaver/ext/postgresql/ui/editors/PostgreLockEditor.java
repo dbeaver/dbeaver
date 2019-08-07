@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.edit.lock;
+package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
 import java.util.HashMap;
 

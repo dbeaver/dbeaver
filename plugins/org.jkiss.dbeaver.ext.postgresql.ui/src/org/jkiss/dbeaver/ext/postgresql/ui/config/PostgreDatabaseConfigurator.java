@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2019 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,35 +15,37 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.edit;
-
+package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
-import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateTablespaceDialog;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateDatabaseDialog;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-
-public class PostgreTablespaceConfigurator implements DBEObjectConfigurator<PostgreTablespace> {
+/**
+ * Postgre database configurator
+ */
+public class PostgreDatabaseConfigurator implements DBEObjectConfigurator<PostgreDatabase> {
 
     @Override
-    public PostgreTablespace configureObject(DBRProgressMonitor monitor, Object container, PostgreTablespace tablespace) {
-        return new UITask<PostgreTablespace>() {
+    public PostgreDatabase configureObject(DBRProgressMonitor monitor, Object dataSource, PostgreDatabase database) {
+        return new UITask<PostgreDatabase>() {
             @Override
-            protected PostgreTablespace runTask() {
-                PostgreCreateTablespaceDialog dialog = new PostgreCreateTablespaceDialog(UIUtils.getActiveWorkbenchShell(), tablespace);
+            protected PostgreDatabase runTask() {
+                PostgreCreateDatabaseDialog dialog = new PostgreCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), database.getDataSource());
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                tablespace.setName(dialog.getName());
-                tablespace.setLoc(dialog.getLoc());
-                tablespace.setOwnerId(dialog.getOwner().getObjectId());
-                return tablespace;
+                database.setName(dialog.getName());
+                database.setInitialOwner(dialog.getOwner());
+                database.setTemplateName(dialog.getTemplateName());
+                database.setInitialTablespace(dialog.getTablespace());
+                database.setInitialEncoding(dialog.getEncoding());
+                return database;
             }
         }.execute();
     }
-
 }

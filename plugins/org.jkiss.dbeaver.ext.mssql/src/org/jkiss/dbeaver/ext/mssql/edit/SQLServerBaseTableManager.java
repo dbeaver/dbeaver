@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;

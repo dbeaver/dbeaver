@@ -15,37 +15,34 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.edit;
+package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateDatabaseDialog;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSchemaDialog;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * Postgre database configurator
+ * Postgre sequence configurator
  */
-public class PostgreDatabaseConfigurator implements DBEObjectConfigurator<PostgreDatabase> {
-
+public class PostgreSchemaConfigurator implements DBEObjectConfigurator<PostgreSchema> {
     @Override
-    public PostgreDatabase configureObject(DBRProgressMonitor monitor, Object dataSource, PostgreDatabase database) {
-        return new UITask<PostgreDatabase>() {
+    public PostgreSchema configureObject(DBRProgressMonitor monitor, Object parent, PostgreSchema schema) {
+        return new UITask<PostgreSchema>() {
             @Override
-            protected PostgreDatabase runTask() {
-                PostgreCreateDatabaseDialog dialog = new PostgreCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), database.getDataSource());
+            protected PostgreSchema runTask() {
+                PostgreCreateSchemaDialog dialog = new PostgreCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), schema);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                database.setName(dialog.getName());
-                database.setInitialOwner(dialog.getOwner());
-                database.setTemplateName(dialog.getTemplateName());
-                database.setInitialTablespace(dialog.getTablespace());
-                database.setInitialEncoding(dialog.getEncoding());
-                return database;
+                schema.setName(dialog.getName());
+                schema.setOwner(dialog.getOwner());
+                return schema;
             }
         }.execute();
     }
+
 }

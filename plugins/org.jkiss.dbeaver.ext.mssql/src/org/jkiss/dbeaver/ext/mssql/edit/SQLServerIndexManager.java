@@ -18,25 +18,22 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mssql.model.*;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +56,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
     {
         SQLServerTable table = (SQLServerTable) container;
 
-        final SQLServerTableIndex index = new SQLServerTableIndex(
+        return new SQLServerTableIndex(
             table,
             true,
             false,
@@ -67,40 +64,6 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
             DBSIndexType.UNKNOWN,
             null,
             false);
-
-        return new UITask<SQLServerTableIndex>() {
-            @Override
-            protected SQLServerTableIndex runTask() {
-                EditIndexPage editPage = new EditIndexPage(
-                    "Create index",
-                    index,
-                    Collections.singletonList(DBSIndexType.OTHER));
-                if (!editPage.edit()) {
-                    return null;
-                }
-                index.setUnique(editPage.isUnique());
-                index.setIndexType(editPage.getIndexType());
-                index.setDescription(editPage.getDescription());
-                StringBuilder idxName = new StringBuilder(64);
-                idxName.append(CommonUtils.escapeIdentifier(table.getName()));
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    if (colIndex == 1) {
-                        idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName()));
-                    }
-                    index.addColumn(
-                        new SQLServerTableIndexColumn(
-                            index,
-                            0,
-                            (SQLServerTableColumn) tableColumn,
-                            colIndex++,
-                            !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC))));
-                }
-                idxName.append("_IDX");
-                index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
-                return index;
-            }
-        }.execute();
     }
 
     @Override

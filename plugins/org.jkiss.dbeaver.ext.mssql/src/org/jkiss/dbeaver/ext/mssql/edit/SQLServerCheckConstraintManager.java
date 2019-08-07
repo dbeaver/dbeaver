@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -65,39 +63,7 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
         DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
-        SQLServerTableCheckConstraint constraint = new SQLServerTableCheckConstraint((SQLServerTable) container);
-        return new UITask<SQLServerTableCheckConstraint>() {
-            @Override
-            protected SQLServerTableCheckConstraint runTask() {
-                EditConstraintPage editPage = new EditConstraintPage(
-                    "Create CHECK constraint",
-                    constraint,
-                    new DBSEntityConstraintType[] {DBSEntityConstraintType.CHECK} );
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                return null;
-/*
-                final SQLServerTableUniqueKey primaryKey = new SQLServerTableUniqueKey(
-                    parent,
-                    null,
-                    null,
-                    editPage.getConstraintType(),
-                    false);
-                primaryKey.setName(editPage.getConstraintName());
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    primaryKey.addColumn(
-                        new SQLServerTableConstraintColumn(
-                            primaryKey,
-                            (SQLServerTableColumn) tableColumn,
-                            colIndex++));
-                }
-                return primaryKey;
-*/
-            }
-        }.execute();
+        return new SQLServerTableCheckConstraint((SQLServerTable) container);
     }
 
     @Override
