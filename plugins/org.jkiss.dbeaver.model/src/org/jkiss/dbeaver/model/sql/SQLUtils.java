@@ -1035,11 +1035,11 @@ public final class SQLUtils {
     public static String stripColumnTypeModifiers(String type) {
         int startPos = type.indexOf("(");
         if (startPos != -1) {
-            int endPos = type.indexOf(")", startPos + 1);
+            int endPos = type.lastIndexOf(")");
             if (endPos != -1) {
-                return type.substring(0, startPos).trim() + " " + type.substring(endPos + 1).trim();
+                return type.substring(0, startPos);
             }
         }
-        return null;
+        return type;
     }
 }
