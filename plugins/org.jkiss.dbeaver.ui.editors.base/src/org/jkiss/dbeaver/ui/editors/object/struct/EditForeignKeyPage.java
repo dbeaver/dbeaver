@@ -64,6 +64,7 @@ import java.util.List;
  */
 public class EditForeignKeyPage extends BaseObjectEditPage {
 
+    public static final String CONTAINER_LOGICAL_FK = "container.logical-fk";
     private static final Log log = Log.getLog(EditForeignKeyPage.class);
 
     public static final FKType FK_TYPE_PHYSICAL = new FKType("Physical", true);
@@ -73,7 +74,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private DBSEntityAssociation foreignKey;
     private DBSEntity curRefTable;
     private List<DBSEntityConstraint> curConstraints;
-    private DBNDatabaseNode ownerTableNode;
+    private DBNDatabaseNode ownerTableNode, ownerContainerNode;
     private Table tableList;
     private Combo uniqueKeyCombo;
     private Text fkNameText;
@@ -485,10 +486,18 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private void createContainerSelector(Composite tableGroup) throws DBException {
-        ObjectContainerSelectorPanel containerPanel = new ObjectContainerSelectorPanel(tableGroup, "Reference table container", "Select reference table catalog/schema") {
+        ObjectContainerSelectorPanel containerPanel = new ObjectContainerSelectorPanel(
+            tableGroup,
+            foreignKey.getDataSource().getContainer().getRegistry().getProject(),
+            CONTAINER_LOGICAL_FK,
+            "Reference table container",
+            "Select reference table catalog/schema") {
             @Nullable
             @Override
             protected DBNNode getSelectedNode() {
+                if (ownerContainerNode != null) {
+                    return ownerContainerNode;
+                }
                 DBSObject containerObject;
                 if (ownerTableNode != null) {
                     DBNNode containerNode = ownerTableNode.getParentNode();
@@ -513,17 +522,17 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         log.error("Error getting real object container", e);
                     }
                 }
-                return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(containerObject);
+                return ownerContainerNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(containerObject);
             }
 
             @Override
             protected void setSelectedNode(DBNDatabaseNode node) {
-                ownerTableNode = node;
-                if (node == null) {
-                    setContainerInfo(DBIcon.TYPE_UNKNOWN, "");
+                ownerContainerNode = node;
+                if (ownerContainerNode == null) {
+                    setContainerInfo(null);
                 } else {
-                    setContainerInfo(node.getNodeIconDefault(), node.getNodeFullName());
-                    loadTableList(ownerTableNode);
+                    setContainerInfo(node);
+                    loadTableList(ownerContainerNode);
                 }
             }
         };
@@ -536,7 +545,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             while (containerNode instanceof DBNDatabaseFolder) {
                 containerNode = containerNode.getParentNode();
             }
-            containerPanel.setContainerInfo(containerNode.getNodeIconDefault(), containerNode.getNodeFullName());
+            if (containerNode instanceof DBNDatabaseNode) {
+                containerPanel.setContainerInfo((DBNDatabaseNode) containerNode);
+            }
         }
     }
 
