@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.jgit.annotations.Nullable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -103,7 +104,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
                         if (sourceAttr != null && targetAttr != null) {
                             ERDEntityAttribute erdSourceAttr = ERDUtils.getAttributeByModel(sourceEntity, sourceAttr);
                             ERDEntityAttribute erdTargetAttr = ERDUtils.getAttributeByModel(targetEntity, targetAttr);
-                            if (erdSourceAttr != null && erdTargetAttr != null) {
+                            if (erdSourceAttr != null || erdTargetAttr != null) {
                                 addCondition(erdSourceAttr, erdTargetAttr);
                             }
                         }
@@ -159,16 +160,20 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         return targetAttributes == null ? Collections.emptyList() : targetAttributes;
     }
 
-    public void addCondition(ERDEntityAttribute sourceAttribute, ERDEntityAttribute targetAttribute) {
-	    if (sourceAttributes == null) {
-            sourceAttributes = new ArrayList<>();
+    public void addCondition(@Nullable ERDEntityAttribute sourceAttribute, @Nullable ERDEntityAttribute targetAttribute) {
+	    if (sourceAttribute != null) {
+            if (sourceAttributes == null) {
+                sourceAttributes = new ArrayList<>();
+            }
+            sourceAttributes.add(sourceAttribute);
         }
-        sourceAttributes.add(sourceAttribute);
 
-        if (targetAttributes == null) {
-            targetAttributes = new ArrayList<>();
+        if (targetAttribute != null) {
+            if (targetAttributes == null) {
+                targetAttributes = new ArrayList<>();
+            }
+            targetAttributes.add(targetAttribute);
         }
-        targetAttributes.add(targetAttribute);
     }
 
     public List<Point> getInitBends()
