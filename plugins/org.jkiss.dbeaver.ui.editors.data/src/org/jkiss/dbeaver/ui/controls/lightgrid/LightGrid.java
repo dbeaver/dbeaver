@@ -642,7 +642,7 @@ public abstract class LightGrid extends Canvas {
         List<GridNode> parents = new ArrayList<>(initialElements.length);
         collectRows(realRows, parents, null, initialElements, 0);
         this.rowElements = realRows.toArray();
-        this.parentNodes = parents.toArray(new GridNode[parents.size()]);
+        this.parentNodes = parents.toArray(new GridNode[0]);
     }
 
     /**

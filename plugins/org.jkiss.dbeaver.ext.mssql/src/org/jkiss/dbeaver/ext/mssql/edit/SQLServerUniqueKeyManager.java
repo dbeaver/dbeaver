@@ -16,20 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKeyColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
 import java.util.Map;
 
@@ -51,39 +47,16 @@ public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTab
         Object from, Map<String, Object> options)
     {
         SQLServerTable table = (SQLServerTable) container;
-        final SQLServerTableUniqueKey primaryKey = new SQLServerTableUniqueKey(
+        return new SQLServerTableUniqueKey(
             table,
             "PK",
             null,
             DBSEntityConstraintType.INDEX,
             null,
             false);
-
-        return new UITask<SQLServerTableUniqueKey>() {
-            @Override
-            protected SQLServerTableUniqueKey runTask() {
-                EditConstraintPage editPage = new EditConstraintPage(
-                    "Create constraint",
-                    primaryKey,
-                    new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
-                if (!editPage.edit()) {
-                    return null;
-                }
-                primaryKey.setConstraintType(editPage.getConstraintType());
-                primaryKey.setName(editPage.getConstraintName());
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    primaryKey.addColumn(
-                        new SQLServerTableUniqueKeyColumn(
-                            primaryKey,
-                            (SQLServerTableColumn) tableColumn,
-                            colIndex++));
-                }
-                return primaryKey;
-            }
-        }.execute();
     }
 
+    @NotNull
     protected String getAddConstraintTypeClause(SQLServerTableUniqueKey constraint) {
         if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
             return "UNIQUE";

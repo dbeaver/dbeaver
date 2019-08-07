@@ -90,7 +90,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private boolean enableCustomKeys = false;
     private boolean supportsCustomName = false;
 
-    private FKType[] allowedKeyTypes = new FKType[] {  FK_TYPE_PHYSICAL, FK_TYPE_LOGICAL };
+    private FKType[] allowedKeyTypes = new FKType[] {  FK_TYPE_PHYSICAL };
     private FKType preferredKeyType = FK_TYPE_PHYSICAL;
     private FKType selectedKeyType = FK_TYPE_PHYSICAL;
 

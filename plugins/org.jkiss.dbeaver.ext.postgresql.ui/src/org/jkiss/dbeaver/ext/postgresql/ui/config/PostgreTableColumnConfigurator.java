@@ -15,33 +15,28 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.edit;
+package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateRoleDialog;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 
 /**
- * Postgre role configurator
+ * Postgre table column manager
  */
-public class PostgreRoleConfigurator implements DBEObjectConfigurator<PostgreRole> {
+public class PostgreTableColumnConfigurator implements DBEObjectConfigurator<PostgreTableColumn> {
     @Override
-    public PostgreRole configureObject(DBRProgressMonitor monitor, Object parent, PostgreRole role) {
-        return new UITask<PostgreRole>() {
+    public PostgreTableColumn configureObject(DBRProgressMonitor monitor, Object table, PostgreTableColumn column) {
+        return new UITask<PostgreTableColumn>() {
             @Override
-            protected PostgreRole runTask() {
-                PostgreCreateRoleDialog dialog = new PostgreCreateRoleDialog(UIUtils.getActiveWorkbenchShell(), role);
-                if (dialog.open() != IDialogConstants.OK_ID) {
+            protected PostgreTableColumn runTask() {
+                AttributeEditPage page = new AttributeEditPage(null, column);
+                if (!page.edit()) {
                     return null;
                 }
-                role.setName(dialog.getName());
-                role.setPassword(dialog.getPassword());
-                role.setCanLogin(dialog.isUser());
-                return role;
+                return column;
             }
         }.execute();
     }

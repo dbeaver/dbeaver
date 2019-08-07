@@ -22,21 +22,6 @@
         </view>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.objectManager">
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerUniqueKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerIndexManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerCheckConstraintManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerViewManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerView"/>
-
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
                 id="mssql.table.ddl.view"
@@ -71,6 +56,22 @@
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
         </editor>
+
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerUniqueKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerForeignKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerIndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerCheckConstraintConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
+        </configurator>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
