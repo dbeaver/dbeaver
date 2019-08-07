@@ -73,7 +73,10 @@ import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.model.virtual.DBVTransformSettings;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -2319,6 +2322,11 @@ public class ResultSetViewer extends Viewer
         if (dataSource == null) {
             return;
         }
+        VirtualForeignKeyEditAction fkAddAction = new VirtualForeignKeyEditAction();
+        if (fkAddAction.isEnabled()) {
+            vmMenu.add(fkAddAction);
+        }
+
         VirtualUniqueKeyEditAction vkAction = new VirtualUniqueKeyEditAction(true);
         if (vkAction.isEnabled()) {
             vmMenu.add(vkAction);
@@ -2326,10 +2334,6 @@ public class ResultSetViewer extends Viewer
         VirtualUniqueKeyEditAction vkRemoveAction = new VirtualUniqueKeyEditAction(false);
         if (vkRemoveAction.isEnabled()) {
             vmMenu.add(vkRemoveAction);
-        }
-        VirtualForeignKeyEditAction fkAddAction = new VirtualForeignKeyEditAction();
-        if (fkAddAction.isEnabled()) {
-            vmMenu.add(fkAddAction);
         }
 
         vmMenu.add(new VirtualEntityEditAction());
@@ -3769,22 +3773,28 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    boolean editEntityIdentifier(DBRProgressMonitor monitor) {
+    boolean editEntityIdentifier() {
         EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
             ResultSetViewer.this, model.getSingleSource(), getVirtualEntity());
         dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
         return dialog.open() == IDialogConstants.OK_ID;
     }
 
-    private void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
+    private void clearEntityIdentifier()
     {
-        DBDAttributeBinding firstAttribute = model.getVisibleAttribute(0);
-        DBDRowIdentifier rowIdentifier = firstAttribute.getRowIdentifier();
-        if (rowIdentifier != null) {
-            DBVEntityConstraint virtualKey = (DBVEntityConstraint) rowIdentifier.getUniqueKey();
-            virtualKey.setAttributes(Collections.emptyList());
-            rowIdentifier.reloadAttributes(monitor, model.getAttributes());
-            virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
+        DBVEntity vEntity = getVirtualEntity();
+        if (vEntity != null) {
+            DBVEntityConstraint vConstraint = vEntity.getBestIdentifier();
+            if (vConstraint != null) {
+                vConstraint.setAttributes(Collections.emptyList());
+            }
+
+            DBDAttributeBinding firstAttribute = model.getVisibleAttribute(0);
+            DBDRowIdentifier rowIdentifier = firstAttribute.getRowIdentifier();
+            if (rowIdentifier != null && rowIdentifier.getUniqueKey() == vConstraint) {
+                rowIdentifier.clearAttributes();
+            }
+
         }
 
         persistConfig();
@@ -4425,24 +4435,20 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isEnabled()
         {
-            DBDRowIdentifier identifier = getVirtualEntityIdentifier();
-            return identifier != null && (define || !CommonUtils.isEmpty(identifier.getAttributes()));
+            DBVEntity vEntity = getVirtualEntity();
+            DBVEntityConstraint vConstraint = vEntity.getBestIdentifier();
+
+            return vConstraint != null && (define != vConstraint.hasAttributes());
         }
 
         @Override
         public void run()
         {
-            UIUtils.runUIJob("Edit virtual key", monitor -> {
-                try {
-                    if (define) {
-                        editEntityIdentifier(monitor);
-                    } else {
-                        clearEntityIdentifier(monitor);
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
+            if (define) {
+                editEntityIdentifier();
+            } else {
+                clearEntityIdentifier();
+            }
         }
     }
 
