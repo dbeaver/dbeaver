@@ -4256,6 +4256,10 @@ public abstract class LightGrid extends Canvas {
         boldFont = UIUtils.makeBoldFont(normalFont);
     }
 
+    public Font getBoldFont() {
+        return boldFont;
+    }
+
     public String getCellText(Object colElement, Object rowElement)
     {
         String text = getContentProvider().getCellText(colElement, rowElement);
