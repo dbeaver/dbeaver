@@ -221,7 +221,11 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             try {
                 if (array != null) {
                     String baseTypeName = array.getBaseTypeName();
-                    elementType = dataSource.resolveDataType(monitor, baseTypeName);
+                    if (baseTypeName != null) {
+                        // Strip type name [Presto, #6025]
+                        baseTypeName = SQLUtils.stripColumnTypeModifiers(baseTypeName);
+                        elementType = dataSource.resolveDataType(monitor, baseTypeName);
+                    }
                 }
             } catch (Exception e) {
                 throw new DBCException("Error resolving data type", e);
