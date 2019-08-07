@@ -64,8 +64,6 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
-import org.eclipse.ui.views.properties.IPropertySource;
-import org.eclipse.ui.views.properties.IPropertySourceProvider;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -136,7 +134,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
     private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
-    private Font boldFont, italicFont;
+    private Font italicFont;
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
@@ -199,7 +197,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
 
-        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
         this.italicFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
 
         this.spreadsheet = new Spreadsheet(
@@ -249,7 +246,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         clearMetaData();
 
         UIUtils.dispose(this.italicFont);
-        UIUtils.dispose(this.boldFont);
 
         UIUtils.dispose(this.cellHeaderSelectionBackground);
         super.dispose();
@@ -637,7 +633,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         break;
                     case rowDelimiter:
                         curLine.add(cellValue.toString());
-                        lines.add(curLine.toArray(new String[curLine.size()]));
+                        lines.add(curLine.toArray(new String[0]));
                         curLine.clear();
                         cellValue.setLength(0);
                         break;
@@ -1170,28 +1166,24 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (adapter == IPropertySheetPage.class) {
             // Show cell properties
             PropertyPageStandard page = new PropertyPageStandard();
-            page.setPropertySourceProvider(new IPropertySourceProvider() {
-                @Nullable
-                @Override
-                public IPropertySource getPropertySource(Object object) {
-                    if (object instanceof GridCell) {
-                        GridCell cell = (GridCell) object;
-                        boolean recordMode = controller.isRecordMode();
-                        final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.row : cell.col);
-                        final ResultSetRow row = (ResultSetRow) (recordMode ? cell.col : cell.row);
-                        final SpreadsheetValueController valueController = new SpreadsheetValueController(
-                            controller,
-                            attr,
-                            row,
-                            IValueController.EditType.NONE,
-                            null);
-                        PropertyCollector props = new PropertyCollector(valueController.getBinding().getAttribute(), false);
-                        props.collectProperties();
-                        valueController.getValueManager().contributeProperties(props, valueController);
-                        return new PropertySourceDelegate(props);
-                    }
-                    return null;
+            page.setPropertySourceProvider(object -> {
+                if (object instanceof GridCell) {
+                    GridCell cell = (GridCell) object;
+                    boolean recordMode = controller.isRecordMode();
+                    final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.row : cell.col);
+                    final ResultSetRow row = (ResultSetRow) (recordMode ? cell.col : cell.row);
+                    final SpreadsheetValueController valueController = new SpreadsheetValueController(
+                        controller,
+                        attr,
+                        row,
+                        IValueController.EditType.NONE,
+                        null);
+                    PropertyCollector props = new PropertyCollector(valueController.getBinding().getAttribute(), false);
+                    props.collectProperties();
+                    valueController.getValueManager().contributeProperties(props, valueController);
+                    return new PropertySourceDelegate(props);
                 }
+                return null;
             });
             return adapter.cast(page);
         } else if (adapter == IFindReplaceTarget.class) {
@@ -1254,6 +1246,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
             final DBDAttributeConstraint dragC = dataFilter.getConstraint((DBDAttributeBinding) dragColumn);
             final DBDAttributeConstraint dropC = dataFilter.getConstraint((DBDAttributeBinding) dropColumn);
+            if (dragC == null || dropC == null) {
+                return;
+            }
 
             int sourcePosition = dragC.getVisualPosition();
             int targetPosition = dropC.getVisualPosition();
@@ -1562,7 +1557,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 state |= STATE_LINK;
             } else {
                 String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-                if (strValue != null && strValue.contains("://")) {
+                if (strValue.contains("://")) {
                     try {
                         new URL(strValue);
                         state |= STATE_HYPER_LINK;
@@ -1789,6 +1784,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return cellHeaderSelectionBackground;
         }
 
+        @NotNull
         @Override
         public String getCellLinkText(Object colElement, Object rowElement) {
             boolean recordMode = controller.isRecordMode();
@@ -1809,7 +1805,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
                 return text.toString();
             }
-            return null;
+            return "";
         }
 
         @Override
@@ -1915,7 +1911,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
                 DBDAttributeConstraint constraint = controller.getModel().getDataFilter().getConstraint(attributeBinding);
                 if (constraint != null && constraint.hasCondition()) {
-                    return boldFont;
+                    return spreadsheet.getBoldFont();
                 }
                 if (attributeBinding.isTransformed()) {
                     return italicFont;
@@ -1950,7 +1946,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     public class SpreadsheetValueController extends ResultSetValueController implements IMultiController {
 
-        public SpreadsheetValueController(@NotNull IResultSetController controller, @NotNull DBDAttributeBinding binding, @NotNull ResultSetRow row, @NotNull EditType editType, @Nullable Composite inlinePlaceholder) {
+        SpreadsheetValueController(@NotNull IResultSetController controller, @NotNull DBDAttributeBinding binding, @NotNull ResultSetRow row, @NotNull EditType editType, @Nullable Composite inlinePlaceholder) {
             super(controller, binding, row, editType, inlinePlaceholder);
         }
 
@@ -2031,11 +2027,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         }
 
-        public void registerEditor(IValueEditorStandalone editor) {
+        void registerEditor(IValueEditorStandalone editor) {
             openEditors.put(this, editor);
         }
 
-        public void unregisterEditor(IValueEditorStandalone editor) {
+        void unregisterEditor(IValueEditorStandalone editor) {
             openEditors.remove(this);
         }
 
