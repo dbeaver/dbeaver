@@ -636,7 +636,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                             final Collection<? extends DBSTableIndex> indexes = ((DBSTable)refTable).getIndexes(monitor);
                             if (!CommonUtils.isEmpty(indexes)) {
                                 for (DBSTableIndex constraint : indexes) {
-                                    if (constraint.isUnique()) {
+                                    if (constraint.isUnique() && isConstraintIndex(monitor, curConstraints, constraint)) {
                                         curConstraints.add(constraint);
                                     }
                                 }
@@ -648,7 +648,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 });
             }
             for (DBSEntityConstraint constraint : curConstraints) {
-                uniqueKeyCombo.add(constraint.getName());
+                uniqueKeyCombo.add(constraint.getName() + " (" + constraint.getConstraintType().getLocalizedName() + ")");
             }
             if (uniqueKeyCombo.getItemCount() == 0) {
                 if (curRefTable == null) {
@@ -683,6 +683,20 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
         handleUniqueKeySelect();
         updatePageState();
+    }
+
+    private boolean isConstraintIndex(DBRProgressMonitor monitor, List<DBSEntityConstraint> constraints, DBSTableIndex index) throws DBException {
+        List<? extends DBSTableIndexColumn> iAttrs = index.getAttributeReferences(monitor);
+
+        for (DBSEntityConstraint constraint : constraints) {
+            if (constraint instanceof DBSEntityReferrer) {
+                List<? extends DBSEntityAttributeRef> cAttrs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+                if (CommonUtils.equalObjects(iAttrs, cAttrs)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void handleUniqueKeySelect()
