@@ -21,7 +21,7 @@ public class SQLContextTypeDriver extends SQLContextTypeAbstract {
     {
         super(
             getTypeId(driver),
-            CommonUtils.isEmpty(driver.getCategory()) ? driver.getName() : driver.getCategory());
+            driver.getName());
     }
 
     public static String getTypeId(DBPDriver driver)
