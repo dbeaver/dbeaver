@@ -4,11 +4,12 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.oracle;singleton:=true
 Bundle-Version: 2.1.100.qualifier
 Bundle-Release-Date: 20190819
-Bundle-Activator: org.jkiss.dbeaver.ext.oracle.Activator
+Bundle-Activator: org.jkiss.dbeaver.ext.oracle.internal.OracleActivator
 Require-Bundle: org.eclipse.core.runtime,
- org.jkiss.dbeaver.core,
  com.github.jsqlparser,
- org.jkiss.dbeaver.model
+ org.jkiss.dbeaver.data.gis,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql
 Export-Package: org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.oracle.model,
  org.jkiss.dbeaver.ext.oracle.model.dict,

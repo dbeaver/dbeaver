@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraintColumn;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -37,7 +37,7 @@ public class OracleConstraintConfigurator implements DBEObjectConfigurator<Oracl
     public OracleTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, OracleTableConstraint constraint) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
-                OracleMessages.edit_oracle_constraint_manager_dialog_title,
+                OracleUIMessages.edit_oracle_constraint_manager_dialog_title,
                 constraint,
                 new DBSEntityConstraintType[] {
                     DBSEntityConstraintType.PRIMARY_KEY,
