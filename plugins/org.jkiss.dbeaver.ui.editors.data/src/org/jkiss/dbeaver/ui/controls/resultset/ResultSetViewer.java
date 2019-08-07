@@ -4456,8 +4456,10 @@ public class ResultSetViewer extends Viewer
         public void run()
         {
             UIUtils.runUIJob("Edit virtual foreign key", monitor -> {
-                EditForeignKeyPage.createVirtualForeignKey(getVirtualEntity());
-                persistConfig();
+                if (EditForeignKeyPage.createVirtualForeignKey(getVirtualEntity()) != null) {
+                    persistConfig();
+                    refreshData(null);
+                }
             });
         }
     }
@@ -4478,7 +4480,9 @@ public class ResultSetViewer extends Viewer
             DBVEntity vEntity = getVirtualEntity(entity);
             EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(ResultSetViewer.this, entity, vEntity);
             dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
-            dialog.open();
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                refreshData(null);
+            }
         }
     }
 
