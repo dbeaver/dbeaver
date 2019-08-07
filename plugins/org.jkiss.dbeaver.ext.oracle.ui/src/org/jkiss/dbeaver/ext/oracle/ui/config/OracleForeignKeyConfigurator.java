@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKeyColumn;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
@@ -36,7 +36,7 @@ public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<Oracl
     public OracleTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, OracleTableForeignKey foreignKey) {
         return UITask.run(() -> {
             EditForeignKeyPage editPage = new EditForeignKeyPage(
-                OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
+                OracleUIMessages.edit_oracle_foreign_key_manager_dialog_title,
                 foreignKey,
                 new DBSForeignKeyModifyRule[]{
                     DBSForeignKeyModifyRule.NO_ACTION,

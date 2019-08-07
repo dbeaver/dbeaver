@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndexColumn;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,7 +40,7 @@ public class OracleIndexConfigurator implements DBEObjectConfigurator<OracleTabl
     public OracleTableIndex configureObject(DBRProgressMonitor monitor, Object container, OracleTableIndex index) {
         return UITask.run(() -> {
             EditIndexPage editPage = new EditIndexPage(
-                OracleMessages.edit_oracle_index_manager_dialog_title,
+                OracleUIMessages.edit_oracle_index_manager_dialog_title,
                 index,
                 Collections.singletonList(DBSIndexType.OTHER));
             if (!editPage.edit()) {
