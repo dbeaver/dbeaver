@@ -602,19 +602,27 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @NotNull
     @Override
-    public List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBCSession session, @NotNull DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc, int maxResults) throws DBException {
-        DBSEntity realEntity = getRealEntity(session.getProgressMonitor());
-        return realEntity instanceof DBSDictionary ?
-            ((DBSDictionary) realEntity).getDictionaryEnumeration(session, keyColumn, keyPattern, preceedingKeys, sortByValue, sortAsc, maxResults) :
-            Collections.emptyList();
+    public List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc, int maxResults) throws DBException {
+        DBSEntity realEntity = getRealEntity(monitor);
+        if (realEntity instanceof DBSDictionary) {
+            return ((DBSDictionary) realEntity).getDictionaryEnumeration(
+                monitor,
+                keyColumn,
+                keyPattern,
+                preceedingKeys,
+                sortByValue,
+                sortAsc,
+                maxResults);
+        }
+        return Collections.emptyList();
     }
 
     @NotNull
     @Override
-    public List<DBDLabelValuePair> getDictionaryValues(@NotNull DBCSession session, @NotNull DBSEntityAttribute keyColumn, @NotNull List<Object> keyValues, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc) throws DBException {
-        DBSEntity realEntity = getRealEntity(session.getProgressMonitor());
+    public List<DBDLabelValuePair> getDictionaryValues(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute keyColumn, @NotNull List<Object> keyValues, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc) throws DBException {
+        DBSEntity realEntity = getRealEntity(monitor);
         return realEntity instanceof DBSDictionary ?
-            ((DBSDictionary) realEntity).getDictionaryValues(session, keyColumn, keyValues, preceedingKeys, sortByValue, sortAsc) :
+            ((DBSDictionary) realEntity).getDictionaryValues(monitor, keyColumn, keyValues, preceedingKeys, sortByValue, sortAsc) :
             Collections.emptyList();
     }
 }

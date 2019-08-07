@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public interface DBSDictionary
 
     /**
      * Gets enumeration values
-     * @param session session
+     * @param monitor session
      * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
@@ -51,7 +51,7 @@ public interface DBSDictionary
      */
     @NotNull
     List<DBDLabelValuePair> getDictionaryEnumeration(
-        @NotNull DBCSession session,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
         Object keyPattern,
         @Nullable List<DBDAttributeValue> preceedingKeys,
@@ -62,7 +62,7 @@ public interface DBSDictionary
 
     @NotNull
     List<DBDLabelValuePair> getDictionaryValues(
-        @NotNull DBCSession session,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
         @NotNull List<Object> keyValues,
         @Nullable List<DBDAttributeValue> preceedingKeys,

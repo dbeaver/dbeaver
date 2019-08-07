@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -181,12 +180,12 @@ class GenericFilterValueEdit {
     private void loadConstraintEnum(final DBSEntityReferrer refConstraint) {
         loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values") {
             @Override
-            List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
+            List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
                 final DBSEntityAttribute tableColumn = attr.getEntityAttribute();
                 if (tableColumn == null) {
                     return null;
                 }
-                final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintAttribute(session.getProgressMonitor(), refConstraint, tableColumn);
+                final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintAttribute(monitor, refConstraint, tableColumn);
                 if (fkColumn == null) {
                     return null;
                 }
@@ -196,7 +195,7 @@ class GenericFilterValueEdit {
                 } else {
                     return null;
                 }
-                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(session.getProgressMonitor(), association, tableColumn, false);
+                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn, false);
                 if (refColumn == null) {
                     return null;
                 }
@@ -205,13 +204,13 @@ class GenericFilterValueEdit {
                 final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
                 if (fkAttribute != null && enumConstraint != null) {
                     return enumConstraint.getDictionaryEnumeration(
-                            session,
-                            refColumn,
-                            filterPattern,
-                            null,
-                            true,
-                            true,
-                            MAX_MULTI_VALUES);
+                        monitor,
+                        refColumn,
+                        filterPattern,
+                        null,
+                        true,
+                        true,
+                        MAX_MULTI_VALUES);
                 }
                 return null;
             }
@@ -226,8 +225,10 @@ class GenericFilterValueEdit {
             tableViewer.getTable().getColumn(1).setText("Count");
         loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values") {
             @Override
-            List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
-                return attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
+            List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
+                try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read value enumeration")) {
+                    return attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
+                }
             }
         };
         loadJob.schedule();
@@ -382,8 +383,8 @@ class GenericFilterValueEdit {
             if (executionContext == null) {
                 return Status.OK_STATUS;
             }
-            try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read value enumeration")) {
-                final List<DBDLabelValuePair> valueEnumeration = readEnumeration(session);
+            try {
+                final List<DBDLabelValuePair> valueEnumeration = readEnumeration(monitor);
                 if (valueEnumeration == null) {
                     return Status.OK_STATUS;
                 } else {
@@ -397,7 +398,7 @@ class GenericFilterValueEdit {
         }
 
         @Nullable
-        abstract List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
+        abstract List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException;
 
         boolean mergeResultsWithData() {
             return CommonUtils.isEmpty(filterPattern);

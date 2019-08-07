@@ -491,27 +491,22 @@ public class ReferenceValueEditor {
                 final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
                 final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
                 if (fkAttribute != null && enumConstraint != null) {
-                    try (DBCSession session = valueController.getExecutionContext().openSession(
+                    Collection<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
                         monitor,
-                        DBCExecutionPurpose.UTIL,
-                        NLS.bind(ResultSetMessages.dialog_value_view_context_name, fkAttribute.getName()))) {
-                        Collection<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
-                            session,
-                            refColumn,
-                            pattern,
-                            precedingKeys,
-                            sortByValue,
-                            sortAsc,
-                            200);
+                        refColumn,
+                        pattern,
+                        precedingKeys,
+                        sortByValue,
+                        sortAsc,
+                        200);
 //                        for (DBDLabelValuePair pair : enumValues) {
 //                            keyValues.put(pair.getValue(), pair.getLabel());
 //                        }
-                        if (monitor.isCanceled()) {
-                            return null;
-                        }
-                        final DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkAttribute);
-                        return new EnumValuesData(enumValues, fkColumn, colHandler);
+                    if (monitor.isCanceled()) {
+                        return null;
                     }
+                    final DBDValueHandler colHandler = DBUtils.findValueHandler(fkAttribute.getDataSource(), fkAttribute);
+                    return new EnumValuesData(enumValues, fkColumn, colHandler);
                 }
 
             } catch (DBException e) {
