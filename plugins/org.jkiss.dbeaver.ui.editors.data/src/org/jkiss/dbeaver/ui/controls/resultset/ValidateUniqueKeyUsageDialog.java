@@ -92,7 +92,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
     private void editCustomKey()
     {
         // Edit custom key
-        if (viewer.editEntityIdentifier(new VoidProgressMonitor())) {
+        if (viewer.editEntityIdentifier()) {
             super.buttonPressed(IDialogConstants.OK_ID);
         }
     }
