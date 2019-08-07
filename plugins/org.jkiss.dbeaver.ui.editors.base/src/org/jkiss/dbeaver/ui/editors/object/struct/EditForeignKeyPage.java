@@ -403,6 +403,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         if (page.edit()) {
             constraint.setAttributes(page.getSelectedAttributes());
             handleRefTableSelect(DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(curRefTable));
+            int constraintIndex = curConstraints.indexOf(constraint);
+            uniqueKeyCombo.select(constraintIndex);
+            handleUniqueKeySelect();
         }
     }
 
@@ -676,15 +679,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 curConstraint = curConstraints.get(0);
             }
             if (enableCustomKeys) {
-                if (curConstraint == null) {
-                    customUKButton.setEnabled(true);
-                    customUKButton.setText("Create");
-                } else if (curConstraint instanceof DBVEntityConstraint) {
-                    customUKButton.setEnabled(true);
-                    customUKButton.setText("Edit");
-                } else {
-                    customUKButton.setEnabled(false);
-                }
+                enableCurConstraintEdit();
             }
 
         } catch (InvocationTargetException e) {
@@ -694,6 +689,23 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
         handleUniqueKeySelect();
         updatePageState();
+    }
+
+    private void enableCurConstraintEdit() {
+        if (curConstraint instanceof DBVEntityConstraint) {
+            customUKButton.setEnabled(true);
+            customUKButton.setText("Edit");
+        } else {
+            boolean hasLogicalConstraint = false;
+            for (DBSEntityConstraint constraint : curConstraints) {
+                if (constraint instanceof DBVEntityConstraint) {
+                    hasLogicalConstraint = true;
+                    break;
+                }
+            }
+            customUKButton.setText("Create");
+            customUKButton.setEnabled(!hasLogicalConstraint);
+        }
     }
 
     private boolean isConstraintIndex(DBRProgressMonitor monitor, List<DBSEntityConstraint> constraints, DBSTableIndex index) throws DBException {
@@ -718,6 +730,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         int ukSelectionIndex = uniqueKeyCombo.getSelectionIndex();
         if ((curConstraints.isEmpty() || ukSelectionIndex < 0) && !enableCustomKeys) {
             return;
+        }
+        if (ukSelectionIndex >= 0) {
+            curConstraint = curConstraints.get(ukSelectionIndex);
         }
         DBSEntity curEntity = foreignKey.getParentObject();
         DBRProgressMonitor monitor = new VoidProgressMonitor();
@@ -775,6 +790,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             DBWorkbench.getPlatformUI().showError(
                 EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_title,
                 EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
+        }
+        if (enableCustomKeys) {
+            enableCurConstraintEdit();
         }
         UIUtils.packColumns(columnsTable, true);
     }
