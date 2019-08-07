@@ -122,7 +122,7 @@ public class SQLScriptContext {
     }
 
     public void clearStatementContext() {
-        statementPragmas.clear();
+        statementPragmas = null;
     }
 
     public void copyFrom(SQLScriptContext context) {
