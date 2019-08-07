@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -35,6 +36,7 @@ public class SQLScriptContext {
 
     private final Map<String, Object> variables = new HashMap<>();
     private final Map<String, Object> pragmas = new HashMap<>();
+    private Map<String, Object> statementPragmas;
 
     private final Map<String, Object> data = new HashMap<>();
 
@@ -68,7 +70,6 @@ public class SQLScriptContext {
         return sourceFile;
     }
 
-    @NotNull
     public boolean hasVariable(String name) {
         if (variables.containsKey(name)) {
             return true;
@@ -76,7 +77,6 @@ public class SQLScriptContext {
         return parentContext != null && parentContext.hasVariable(name);
     }
 
-    @NotNull
     public Object getVariable(String name) {
         Object value = variables.get(name);
         if (value == null && parentContext != null) {
@@ -85,7 +85,6 @@ public class SQLScriptContext {
         return value;
     }
 
-    @NotNull
     public void setVariable(String name, Object value) {
         variables.put(name, value);
         if (parentContext != null) {
@@ -98,6 +97,17 @@ public class SQLScriptContext {
         return pragmas;
     }
 
+    public void setStatementPragma(String name, Object value) {
+        if (statementPragmas == null) {
+            statementPragmas = new LinkedHashMap<>();
+        }
+        statementPragmas.put(name, value);
+    }
+
+    public Object getStatementPragma(String name) {
+        return statementPragmas == null ? null : statementPragmas.get(name);
+    }
+
     public Object getData(String key) {
         return data.get(key);
     }
@@ -106,8 +116,13 @@ public class SQLScriptContext {
         this.data.put(key, value);
     }
 
+    @NotNull
     public PrintWriter getOutputWriter() {
         return outputWriter;
+    }
+
+    public void clearStatementContext() {
+        statementPragmas.clear();
     }
 
     public void copyFrom(SQLScriptContext context) {
