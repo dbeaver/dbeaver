@@ -681,20 +681,28 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (keyPattern instanceof Number) {
                     // Subtract gap value to see some values before specified
                     int gapSize = maxResults / 2;
+                    boolean allowNegative = ((Number) keyPattern).longValue() < 0;
                     if (keyPattern instanceof Integer) {
-                        keyPattern = (Integer) keyPattern - gapSize;
+                        int intValue = (Integer) keyPattern;
+                        keyPattern = allowNegative || intValue > gapSize ? intValue - gapSize : 0;
                     } else if (keyPattern instanceof Short) {
-                        keyPattern = (Short) keyPattern - gapSize;
+                        int shortValue = (Short) keyPattern;
+                        keyPattern = allowNegative || shortValue > gapSize ? shortValue - gapSize : (short)0;
                     } else if (keyPattern instanceof Long) {
-                        keyPattern = (Long) keyPattern - gapSize;
+                        long longValue = (Long) keyPattern;
+                        keyPattern = allowNegative || longValue > gapSize ? longValue - gapSize : (long)0;
                     } else if (keyPattern instanceof Float) {
-                        keyPattern = (Float) keyPattern - gapSize;
+                        float floatValue = (Float) keyPattern;
+                        keyPattern = allowNegative || floatValue > gapSize ? floatValue - gapSize : 0.0f;
                     } else if (keyPattern instanceof Double) {
-                        keyPattern = (Double) keyPattern - gapSize;
+                        double doubleValue = (Double) keyPattern;
+                        keyPattern = allowNegative || doubleValue > gapSize ? doubleValue - gapSize : 0.0;
                     } else if (keyPattern instanceof BigInteger) {
-                        keyPattern = ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize));
+                        BigInteger biValue = (BigInteger) keyPattern;
+                        keyPattern = allowNegative || biValue.longValue() > gapSize ? ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize)) : new BigInteger("0");
                     } else if (keyPattern instanceof BigDecimal) {
-                        keyPattern = ((BigDecimal) keyPattern).subtract(new BigDecimal(gapSize));
+                        BigDecimal bdValue = (BigDecimal) keyPattern;
+                        keyPattern = allowNegative || bdValue.longValue() > gapSize ? ((BigDecimal) keyPattern).subtract(new BigDecimal(gapSize)) : new BigDecimal(0);
                     } else {
                         searchInKeys = false;
                     }
