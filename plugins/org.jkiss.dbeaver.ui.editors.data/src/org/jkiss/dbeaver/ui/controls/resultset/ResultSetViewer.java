@@ -145,6 +145,7 @@ public class ResultSetViewer extends Viewer
     public static final String DEFAULT_QUERY_TEXT = "SQL";
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
+    private static final String CUSTOM_FILTER_VALUE_STRING = "..";
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
     private IResultSetFilterManager filterManager;
@@ -4100,7 +4101,7 @@ public class ResultSetViewer extends Viewer
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
                 if (useDefault) {
-                    return "..";
+                    return CUSTOM_FILTER_VALUE_STRING;
                 } else {
                     ResultSetRow[] rows = null;
                     if (operator.getArgumentCount() < 0) {
@@ -4146,15 +4147,18 @@ public class ResultSetViewer extends Viewer
     private String translateFilterPattern(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
     {
         Object value = type.getValue(this, attribute, operator, true);
+
         DBCExecutionContext executionContext = getExecutionContext();
         String strValue = executionContext == null ? String.valueOf(value) : attribute.getValueHandler().getValueDisplayString(attribute, value, DBDDisplayFormat.UI);
-        strValue = strValue.trim();
-        strValue = CommonUtils.cutExtraLines(strValue, 1);
-        strValue = CommonUtils.truncateString(strValue, 30);
+        strValue = strValue.replaceAll("\\s+", " ").replace("@", "^").trim();
+        strValue = UITextUtils.getShortText(sizingGC, strValue, 150);
         if (operator.getArgumentCount() == 0) {
             return operator.getStringValue();
         } else {
-            return operator.getStringValue() + " " + CommonUtils.truncateString(strValue, 64);
+            if (!CUSTOM_FILTER_VALUE_STRING.equals(strValue)) {
+                strValue = "'" + strValue + "'";
+            }
+            return operator.getStringValue() + " " + strValue;
         }
     }
 

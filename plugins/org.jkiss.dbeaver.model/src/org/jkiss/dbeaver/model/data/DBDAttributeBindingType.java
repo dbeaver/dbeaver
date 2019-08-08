@@ -18,20 +18,18 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Type attribute value binding info
  */
 public class DBDAttributeBindingType extends DBDAttributeBindingNested implements DBPImageProvider {
-
-    private static final Log log = Log.getLog(DBDAttributeBindingType.class);
 
     @NotNull
     private final DBSAttributeBase attribute;
@@ -191,4 +189,21 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
     public long getMaxLength() {
         return attribute.getMaxLength();
     }
+
+    @Override
+    public String toString() {
+        return attribute.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj) && obj instanceof DBDAttributeBindingType &&
+            CommonUtils.equalObjects(attribute, ((DBDAttributeBindingType) obj).attribute);
+    }
+
+    @Override
+    public int hashCode() {
+        return attribute.hashCode();
+    }
+
 }
