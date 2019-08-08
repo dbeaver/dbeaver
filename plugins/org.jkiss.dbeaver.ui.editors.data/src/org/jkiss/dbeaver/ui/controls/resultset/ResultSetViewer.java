@@ -2620,6 +2620,8 @@ public class ResultSetViewer extends Viewer
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
 
             if (row != null) {
+                filtersMenu.add(new Separator());
+
                 //filtersMenu.add(new FilterByListAction(operator, type, attribute));
                 DBCLogicalOperator[] operators = attribute.getValueHandler().getSupportedOperators(attribute);
 
@@ -2629,15 +2631,22 @@ public class ResultSetViewer extends Viewer
                         // Value filters are available only if certain cell is selected
                         continue;
                     }
-                    filtersMenu.add(new Separator());
+                    MenuManager subMenu = null;
+                    //filtersMenu.add(new Separator());
                     if (type.getValue(this, attribute, DBCLogicalOperator.EQUALS, true) == null) {
                         // Null cell value - no operators can be applied
                         continue;
                     }
                     for (DBCLogicalOperator operator : operators) {
                         if (operator.getArgumentCount() > 0) {
-                            filtersMenu.add(new FilterByAttributeAction(operator, type, attribute));
+                            if (subMenu == null) {
+                                subMenu = new MenuManager(type.title, type.icon, type.name());
+                            }
+                            subMenu.add(new FilterByAttributeAction(operator, type, attribute));
                         }
+                    }
+                    if (subMenu != null) {
+                        filtersMenu.add(subMenu);
                     }
                 }
                 filtersMenu.add(new Separator());
@@ -4059,7 +4068,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private enum FilterByAttributeType {
-        CLIPBOARD(UIIcon.FILTER_CLIPBOARD) {
+        CLIPBOARD("Clipboard", UIIcon.FILTER_CLIPBOARD) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
@@ -4071,7 +4080,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
-        VALUE(UIIcon.FILTER_VALUE) {
+        VALUE("Cell value", UIIcon.FILTER_VALUE) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
@@ -4086,7 +4095,7 @@ public class ResultSetViewer extends Viewer
                 return cellValue;
             }
         },
-        INPUT(UIIcon.FILTER_INPUT) {
+        INPUT("Input ... ", UIIcon.FILTER_INPUT) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
@@ -4115,7 +4124,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
-        NONE(UIIcon.FILTER_VALUE) {
+        NONE("None", UIIcon.FILTER_VALUE) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
@@ -4123,10 +4132,11 @@ public class ResultSetViewer extends Viewer
             }
         };
 
+        final String title;
         final ImageDescriptor icon;
 
-        FilterByAttributeType(DBPImage icon)
-        {
+        FilterByAttributeType(String title, DBPImage icon) {
+            this.title = title;
             this.icon = DBeaverIcons.getImageDescriptor(icon);
         }
         @Nullable
