@@ -30,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -103,7 +104,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        return parentController.getExecutionContext();
+        return DBUtils.getDefaultContext(dataContainer, false);
     }
 
     @Override
@@ -184,7 +185,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                                 if (assoc instanceof DBSEntityReferrer) {
                                     List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
                                     if (!CommonUtils.isEmpty(attrs)) {
-                                        ReferenceKey referenceKey = new ReferenceKey(false, entity, assoc, attrs);
+                                        ReferenceKey referenceKey = new ReferenceKey(false, assoc.getAssociatedEntity(), assoc, attrs);
                                         refs.add(referenceKey);
                                     }
                                 }

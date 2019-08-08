@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -55,6 +56,7 @@ import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -224,11 +226,19 @@ class GenericFilterValueEdit {
         if (tableViewer.getTable().getColumns().length > 1)
             tableViewer.getTable().getColumn(1).setText("Count");
         loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values") {
+
+            private List<DBDLabelValuePair> result;
+
             @Override
             List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
-                try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read value enumeration")) {
-                    return attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
-                }
+                DBExecUtils.tryExecuteRecover(monitor, attributeEnumerable.getDataSource(), param -> {
+                    try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read value enumeration")) {
+                        result = attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+                return result;
             }
         };
         loadJob.schedule();

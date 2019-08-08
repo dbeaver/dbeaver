@@ -138,11 +138,6 @@ public class FilterValueEditPopup extends Dialog {
             });
         }
 
-        // Resize the column to fit the contents
-        UIUtils.asyncExec(() -> {
-            UIUtils.packColumns(table, false);
-        });
-
         FocusAdapter focusListener = new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -185,6 +180,10 @@ public class FilterValueEditPopup extends Dialog {
         filter.filterPattern = null;
         filter.loadValues();
 
+        // Resize the column to fit the contents
+        UIUtils.asyncExec(() -> {
+            UIUtils.packColumns(table, true);
+        });
 
         return tableComposite;
     }
