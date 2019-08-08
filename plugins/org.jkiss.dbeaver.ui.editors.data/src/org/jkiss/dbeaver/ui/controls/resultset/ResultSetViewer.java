@@ -3777,7 +3777,19 @@ public class ResultSetViewer extends Viewer
         EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
             ResultSetViewer.this, model.getSingleSource(), getVirtualEntity());
         dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
-        return dialog.open() == IDialogConstants.OK_ID;
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            DBDRowIdentifier virtualID = getVirtualEntityIdentifier();
+            if (virtualID != null) {
+                try {
+                    virtualID.reloadAttributes(new VoidProgressMonitor(), getModel().getAttributes());
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+            persistConfig();
+            return true;
+        }
+        return false;
     }
 
     private void clearEntityIdentifier()
@@ -3795,9 +3807,8 @@ public class ResultSetViewer extends Viewer
                 rowIdentifier.clearAttributes();
             }
 
+            persistConfig();
         }
-
-        persistConfig();
     }
 
     @NotNull
@@ -4489,26 +4500,6 @@ public class ResultSetViewer extends Viewer
             if (dialog.open() == IDialogConstants.OK_ID) {
                 refreshData(null);
             }
-        }
-    }
-
-    private class DictionaryEditAction extends Action {
-        DictionaryEditAction() {
-            super("Define dictionary");
-        }
-
-        @Override
-        public void run() {
-            EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
-                ResultSetViewer.this, model.getSingleSource(), getVirtualEntity());
-            dialog.setInitPage(EditVirtualEntityDialog.InitPage.DICTIONARY);
-            dialog.open();
-        }
-
-        @Override
-        public boolean isEnabled() {
-            final DBSEntity singleSource = model.getSingleSource();
-            return singleSource != null;
         }
     }
 
