@@ -1956,13 +1956,13 @@ public class ResultSetViewer extends Viewer
             {
                 boolean newRecordMode;
                 if (autoRecordMode != null) {
-                    if (rows.size() == 1) {
+                    if (rows.size() <= 1) {
                         newRecordMode = autoRecordMode;
                     } else {
                         newRecordMode = false;
                     }
                 } else {
-                    newRecordMode = (rows.size() == 1);
+                    newRecordMode = (rows.size() <= 1);
                 }
                 if (newRecordMode != recordMode) {
                     toggleMode();
