@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -157,13 +159,13 @@ class GenericFilterValueEdit {
             if (filterPattern.isEmpty()) {
                 filterPattern = null;
             }
-            loadValues();
+            loadValues(null);
         });
         return valueFilterText;
     }
 
 
-    void loadValues() {
+    void loadValues(Runnable onFinish) {
         if (loadJob != null) {
             loadJob.schedule(200);
             return;
@@ -171,16 +173,16 @@ class GenericFilterValueEdit {
         // Load values
         final DBSEntityReferrer enumerableConstraint = ReferenceValueEditor.getEnumerableConstraint(attr);
         if (enumerableConstraint != null) {
-            loadConstraintEnum(enumerableConstraint);
+            loadConstraintEnum(enumerableConstraint, onFinish);
         } else if (attr.getEntityAttribute() instanceof DBSAttributeEnumerable) {
-            loadAttributeEnum((DBSAttributeEnumerable) attr.getEntityAttribute());
+            loadAttributeEnum((DBSAttributeEnumerable) attr.getEntityAttribute(), onFinish);
         } else {
             loadMultiValueList(Collections.emptyList(), isCheckedTable);
         }
     }
 
-    private void loadConstraintEnum(final DBSEntityReferrer refConstraint) {
-        loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values") {
+    private void loadConstraintEnum(final DBSEntityReferrer refConstraint, Runnable onFinish) {
+        loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values", onFinish) {
             @Override
             List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
                 final DBSEntityAttribute tableColumn = attr.getEntityAttribute();
@@ -221,11 +223,11 @@ class GenericFilterValueEdit {
         loadJob.schedule();
     }
 
-    private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable) {
+    private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable, Runnable onFinish) {
 
         if (tableViewer.getTable().getColumns().length > 1)
             tableViewer.getTable().getColumn(1).setText("Count");
-        loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values") {
+        loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values", onFinish) {
 
             private List<DBDLabelValuePair> result;
 
@@ -383,8 +385,10 @@ class GenericFilterValueEdit {
     }
 
     private abstract class KeyLoadJob extends AbstractJob {
-        KeyLoadJob(String name) {
+        private final Runnable onFinish;
+        KeyLoadJob(String name, Runnable onFinish) {
             super(name);
+            this.onFinish = onFinish;
         }
 
         @Override
@@ -400,7 +404,10 @@ class GenericFilterValueEdit {
                 } else {
                     populateValues(valueEnumeration);
                 }
-            } catch (DBException e) {
+                if (onFinish != null) {
+                    onFinish.run();
+                }
+            } catch (Throwable e) {
                 populateValues(Collections.emptyList());
                 return GeneralUtils.makeExceptionStatus(e);
             }

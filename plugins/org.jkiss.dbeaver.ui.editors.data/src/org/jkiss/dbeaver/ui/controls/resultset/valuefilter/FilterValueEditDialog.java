@@ -169,7 +169,7 @@ public class FilterValueEditDialog extends BaseDialog{
         handler.addFilterTextbox(composite);
 
         handler.filterPattern = null;
-        handler.loadValues();
+        handler.loadValues(null);
 
         columnController.createColumns(true);
     }
