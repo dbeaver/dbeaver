@@ -4096,7 +4096,7 @@ public class ResultSetViewer extends Viewer
                 return cellValue;
             }
         },
-        INPUT("Input ... ", UIIcon.FILTER_INPUT) {
+        INPUT("Custom ... ", UIIcon.FILTER_INPUT) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
