@@ -624,7 +624,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 rootNode,
                 selectedNode,
                 new Class[] {DBSObjectContainer.class, DBSDataManipulator.class},
-                new Class[] {DBSDataManipulator.class}, null);
+                new Class[] {DBSDataManipulator.class},
+                null);
             if (node != null && node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper) node).getObject();
                 try {
