@@ -65,7 +65,6 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         showLabel = dataSource == null || !dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL);
     }
 
-    @Nullable
     @Override
     public DBPDataSource getDataSource() {
         return dataContainer.getDataSource();
@@ -102,6 +101,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         return pseudoAttribute != null;
     }
 
+    @NotNull
     @Override
     public DBSDataContainer getDataContainer() {
         return dataContainer;
@@ -253,6 +253,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     }
 
     @Override
+    public String toString() {
+        return metaAttribute.toString();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof DBDAttributeBindingMeta) {
             DBCAttributeMetaData cmpMeta = ((DBDAttributeBindingMeta) obj).metaAttribute;
@@ -266,5 +271,16 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
                 ;
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return
+            CommonUtils.notEmpty(metaAttribute.getName()).hashCode() +
+            CommonUtils.notEmpty(metaAttribute.getLabel()).hashCode() +
+            CommonUtils.notEmpty(metaAttribute.getEntityName()).hashCode() +
+            metaAttribute.getOrdinalPosition() +
+            metaAttribute.getTypeID() +
+            CommonUtils.notEmpty(metaAttribute.getTypeName()).hashCode();
     }
 }
