@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.core.application.update;
 
+import org.eclipse.core.runtime.IProduct;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
@@ -26,29 +28,47 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class VersionUpdateDialog extends Dialog {
 
-    private VersionDescriptor newVersion;
     private static final int INFO_ID = 1000;
+    private static final int UPGRADE_ID = 1001;
+    private static final int CHECK_EA_ID = 1002;
+
+    private VersionDescriptor currentVersion;
+    @Nullable
+    private VersionDescriptor newVersion;
+
     private Font boldFont;
     private boolean showConfig;
     private Button dontShowAgainCheck;
+    private final String earlyAccessURL;
 
-    public VersionUpdateDialog(Shell parentShell, VersionDescriptor newVersion, boolean showConfig)
+    public VersionUpdateDialog(Shell parentShell, VersionDescriptor currentVersion, @Nullable VersionDescriptor newVersion, boolean showConfig)
     {
         super(parentShell);
+        this.currentVersion = currentVersion;
         this.newVersion = newVersion;
         this.showConfig = showConfig;
+
+        earlyAccessURL = Platform.getProduct().getProperty("earlyAccessURL");
     }
 
+    public VersionDescriptor getCurrentVersion() {
+        return currentVersion;
+    }
+
+    @Nullable
     public VersionDescriptor getNewVersion() {
         return newVersion;
     }
@@ -178,23 +198,25 @@ public class VersionUpdateDialog extends Dialog {
         }
 
         if (newVersion != null) {
-/*
-            // Disable P2 update. Doesn't work and can't work properly in most cases.
-            boolean hasUpdate = Platform.getBundle(CheckForUpdateAction.P2_PLUGIN_ID) != null;
-            if (hasUpdate) {
-                createButton(
-                    parent,
-                    IDialogConstants.PROCEED_ID,
-                    "Update",
-                    true);
-            }
-*/
             createButton(
                 parent,
-                INFO_ID,
-                CoreMessages.dialog_version_update_button_more_info,
+                UPGRADE_ID,
+                "Upgrade ...",
                 true);
+        } else {
+            if (!CommonUtils.isEmpty(earlyAccessURL)) {
+                createButton(
+                    parent,
+                    CHECK_EA_ID,
+                    "Early Access",
+                    false);
+            }
         }
+        createButton(
+            parent,
+            INFO_ID,
+            CoreMessages.dialog_version_update_button_more_info,
+            false);
 
         createButton(
             parent,
@@ -206,12 +228,22 @@ public class VersionUpdateDialog extends Dialog {
     @Override
     protected void buttonPressed(int buttonId)
     {
-        if (dontShowAgainCheck != null && dontShowAgainCheck.getSelection()) {
+        if (dontShowAgainCheck != null && dontShowAgainCheck.getSelection() && newVersion != null) {
             CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getPlainVersion(), true);
         }
         if (buttonId == INFO_ID) {
             if (newVersion != null) {
                 UIUtils.launchProgram(newVersion.getBaseURL());
+            } else if (currentVersion != null) {
+                UIUtils.launchProgram(currentVersion.getBaseURL());
+            }
+        } else if (buttonId == UPGRADE_ID) {
+            if (newVersion != null) {
+                UIUtils.launchProgram(makeDownloadURL(newVersion.getBaseURL()));
+            }
+        } else if (buttonId == CHECK_EA_ID) {
+            if (!CommonUtils.isEmpty(earlyAccessURL)) {
+                UIUtils.launchProgram(earlyAccessURL);
             }
         } else if (buttonId == IDialogConstants.PROCEED_ID) {
             final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
@@ -223,6 +255,31 @@ public class VersionUpdateDialog extends Dialog {
             }
         }
         close();
+    }
+
+    private String makeDownloadURL(String baseURL) {
+        while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length() - 1);
+        String os = Platform.getOS();
+        switch (os) {
+            case "win32": os = "win"; break;
+            case "macosx": os = "mac"; break;
+            default: os = "linux"; break;
+        }
+        String arch = Platform.getOSArch();
+        String dist = null;
+        if (os.equals("linux")) {
+            // Determine package manager
+            try {
+                RuntimeUtils.executeProcess("/usr/bin/apt-get", "--version");
+                dist = "deb";
+            } catch (DBException e) {
+                dist = "rpm";
+            }
+        }
+        return baseURL + "?start" +
+            "&os=" + os +
+            "&arch=" + arch +
+            (dist == null ? "" : "&dist=" + dist);
     }
 
     public static boolean isSuppressed(VersionDescriptor version) {

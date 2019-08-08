@@ -16,12 +16,11 @@
  */
 package org.jkiss.dbeaver.utils;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -32,17 +31,17 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * RuntimeUtils
@@ -234,6 +233,28 @@ public class RuntimeUtils {
         }
 
         return monitoringTask.finished;
+    }
+
+    public static String executeProcess(String binPath, String ... args) throws DBException {
+        try {
+            String[] cmdBin = {binPath};
+            String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
+            Process p = Runtime.getRuntime().exec(cmd);
+            try {
+                try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                    String line;
+                    if ((line = input.readLine()) != null) {
+                        return line;
+                    }
+                }
+                return null;
+            } finally {
+                p.destroy();
+            }
+        }
+        catch (Exception ex) {
+            throw new DBException("Error executing process " + binPath, ex);
+        }
     }
 
     public static boolean isPlatformMacOS() {
