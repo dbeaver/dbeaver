@@ -34,8 +34,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -44,14 +42,14 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -106,16 +104,28 @@ public class ReferenceValueEditor {
             if (entityAttribute != null) {
                 List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(new VoidProgressMonitor(), entityAttribute, true);
                 DBSEntityReferrer constraint = refs.isEmpty() ? null : refs.get(0);
-                if (constraint instanceof DBSEntityAssociation &&
-                    ((DBSEntityAssociation)constraint).getAssociatedEntity() instanceof DBSDictionary)
-                {
-                    final DBSDictionary dictionary = (DBSDictionary) ((DBSEntityAssociation) constraint).getAssociatedEntity();
-                    if (dictionary != null && dictionary.supportsDictionaryEnumeration()) {
+
+                DBSEntity[] associatedEntity = new DBSEntity[1];
+                if (constraint instanceof DBSEntityAssociationLazy) {
+                    UIUtils.runInProgressService(monitor -> {
+                        try {
+                            associatedEntity[0] = ((DBSEntityAssociationLazy) constraint).getAssociatedEntity(monitor);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    });
+                } else if (constraint instanceof DBSEntityAssociation) {
+                    associatedEntity[0] = ((DBSEntityAssociation) constraint).getAssociatedEntity();
+                }
+
+                if (associatedEntity[0] instanceof DBSDictionary) {
+                    final DBSDictionary dictionary = (DBSDictionary)associatedEntity[0];
+                    if (dictionary.supportsDictionaryEnumeration()) {
                         return constraint;
                     }
                 }
             }
-        } catch (DBException e) {
+        } catch (Throwable e) {
             log.error(e);
         }
         return null;
@@ -240,7 +250,7 @@ public class ReferenceValueEditor {
                     if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
                         editorSelector.select(editorSelector.indexOf(item));
                         editorSelector.showItem(item);
-                        editorSelector.setTopIndex(i);
+                        //editorSelector.setTopIndex(i);
                         valueFound = true;
                         break;
                     }
