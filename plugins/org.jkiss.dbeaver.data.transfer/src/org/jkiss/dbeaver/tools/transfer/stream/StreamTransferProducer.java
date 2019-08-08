@@ -159,13 +159,14 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             this.entityMapping = entityMapping;
         }
 
+        @NotNull
         @Override
         public DBSEntityType getEntityType() {
             return DBSEntityType.TABLE;
         }
 
         @Override
-        public List<StreamSourceAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
+        public List<StreamSourceAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
             List<StreamProducerSettings.AttributeMapping> attrMappings = entityMapping.getValuableAttributeMappings();
             List<StreamSourceAttribute> result = new ArrayList<>(attrMappings.size());
             for (StreamProducerSettings.AttributeMapping sa : attrMappings) {
@@ -175,7 +176,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
 
         @Override
-        public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+        public DBSEntityAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
             for (StreamProducerSettings.AttributeMapping sa : entityMapping.getAttributeMappings()) {
                 if (sa.isValuable() && attributeName.equals(sa.getSourceAttributeName())) {
                     return new StreamSourceAttribute(this, sa);
@@ -185,17 +186,17 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
 
         @Override
-        public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
             return null;
         }
 
         @Override
-        public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
             return null;
         }
 
         @Override
-        public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+        public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
             return null;
         }
 

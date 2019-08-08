@@ -226,22 +226,22 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Override
-    public Collection<? extends SQLServerTableBase> getChildren(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends SQLServerTableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public SQLServerTableBase getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+    public SQLServerTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return tableCache.getObject(monitor, this, childName);
     }
 
     @Override
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLServerTable.class;
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         if ((scope & STRUCT_ENTITIES) == STRUCT_ENTITIES) {
             tableCache.getAllObjects(monitor, this);
         }
