@@ -140,7 +140,7 @@ public class FilterValueEditPopup extends Dialog {
 
         // Resize the column to fit the contents
         UIUtils.asyncExec(() -> {
-            UIUtils.packColumns(table, true);
+            UIUtils.packColumns(table, false);
         });
 
         FocusAdapter focusListener = new FocusAdapter() {

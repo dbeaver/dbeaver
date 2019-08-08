@@ -109,9 +109,6 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
     public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
     public static String sql_editor_resultset_filter_panel_btn_apply;
-    public static String sql_editor_resultset_filter_panel_btn_remove;
-    public static String sql_editor_resultset_filter_panel_btn_save;
-    public static String sql_editor_resultset_filter_panel_btn_custom;
     public static String sql_editor_resultset_filter_panel_label;
     public static String sql_editor_resultset_filter_panel_btn_open_console;
     public static String sql_editor_resultset_filter_panel_control_no_data;

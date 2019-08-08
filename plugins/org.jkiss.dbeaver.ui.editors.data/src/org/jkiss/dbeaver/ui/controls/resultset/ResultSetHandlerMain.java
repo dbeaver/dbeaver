@@ -101,6 +101,9 @@ public class ResultSetHandlerMain extends AbstractHandler {
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
     public static final String CMD_FILTER_MENU = "org.jkiss.dbeaver.core.resultset.filterMenu";
     public static final String CMD_FILTER_MENU_DISTINCT = "org.jkiss.dbeaver.core.resultset.filterMenu.distinct";
+    public static final String CMD_FILTER_EDIT_SETTINGS = "org.jkiss.dbeaver.core.resultset.filterSettings";
+    public static final String CMD_FILTER_SAVE_SETTING = "org.jkiss.dbeaver.core.resultset.filterSave";
+    public static final String CMD_FILTER_CLEAR_SETTING = "org.jkiss.dbeaver.core.resultset.filterClear";
     public static final String CMD_REFERENCES_MENU = "org.jkiss.dbeaver.core.resultset.referencesMenu";
     public static final String CMD_COPY_COLUMN_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyColumnNames";
     public static final String CMD_COPY_ROW_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyRowNames";
@@ -458,6 +461,17 @@ public class ResultSetHandlerMain extends AbstractHandler {
                     rsv.showFiltersDistinctMenu(curAttribute, true);
                 }
                 break;
+            }
+            case CMD_FILTER_EDIT_SETTINGS: {
+                rsv.showFilterSettingsDialog();
+                break;
+            }
+            case CMD_FILTER_SAVE_SETTING: {
+                rsv.saveDataFilter();
+                break;
+            }
+            case CMD_FILTER_CLEAR_SETTING: {
+                rsv.resetDataFilter(true);
             }
             case CMD_REFERENCES_MENU: {
                 boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
