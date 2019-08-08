@@ -261,7 +261,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
-            filtersClearButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_remove);
+            filtersClearButton.setToolTipText(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING, viewer.getSite(), false));
             filtersClearButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -272,7 +272,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             filtersSaveButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersSaveButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_SAVE));
-            filtersSaveButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_save);
+            filtersSaveButton.setToolTipText(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING, viewer.getSite(), false));
             filtersSaveButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -283,11 +283,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.CONFIG_TABLE));
-            filtersCustomButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_custom);
+            filtersCustomButton.setToolTipText(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS, viewer.getSite(), false));
             filtersCustomButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    new FilterSettingsDialog(viewer).open();
+                    viewer.showFilterSettingsDialog();
                 }
             });
             filtersCustomButton.setEnabled(true);

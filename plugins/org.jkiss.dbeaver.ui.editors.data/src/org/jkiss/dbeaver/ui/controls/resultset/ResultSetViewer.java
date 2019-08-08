@@ -404,6 +404,10 @@ public class ResultSetViewer extends Viewer
         setDataFilter(model.createDataFilter(), refresh);
     }
 
+    void showFilterSettingsDialog() {
+        new FilterSettingsDialog(ResultSetViewer.this).open();
+    }
+
     void saveDataFilter() {
         DBCExecutionContext context = getExecutionContext();
         if (context == null) {
@@ -2663,10 +2667,12 @@ public class ResultSetViewer extends Viewer
             filtersMenu.add(new OrderByAttributeAction(attribute, true));
             filtersMenu.add(new OrderByAttributeAction(attribute, false));
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_ORDER));
+            filtersMenu.add(new ToggleServerSideOrderingAction());
         }
         filtersMenu.add(new Separator());
-        filtersMenu.add(new ToggleServerSideOrderingAction());
-        filtersMenu.add(new ShowFiltersAction(true));
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING));
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING));
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
     }
 
     @Override
@@ -4009,24 +4015,6 @@ public class ResultSetViewer extends Viewer
                 PrefPageResultSetMain.PAGE_ID);
         }
 
-    }
-
-    private class ShowFiltersAction extends Action {
-        ShowFiltersAction(boolean context)
-        {
-            super(context ? "Customize ..." : "Order/Filter ...", DBeaverIcons.getImageDescriptor(UIIcon.CONFIG_TABLE));
-        }
-
-        @Override
-        public void run()
-        {
-            new FilterSettingsDialog(ResultSetViewer.this).open();
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return getModel().hasData();
-        }
     }
 
     private abstract class ToggleConnectionPreferenceAction extends Action {
