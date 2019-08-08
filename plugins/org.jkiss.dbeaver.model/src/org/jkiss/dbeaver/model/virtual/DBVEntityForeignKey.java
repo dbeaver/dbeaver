@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * Virtual foreign key
  */
-public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferrer, DBSTableForeignKey {
+public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssociationLazy, DBSEntityReferrer, DBSTableForeignKey {
 
     private static final Log log = Log.getLog(DBVEntityForeignKey.class);
 
@@ -66,6 +66,12 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferr
         } catch (DBException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @NotNull
+    @Override
+    public DBSEntityConstraint getReferencedConstraint(DBRProgressMonitor monitor) throws DBException {
+        return getRealReferenceConatraint(monitor);
     }
 
     public String getRefEntityId() {
@@ -117,6 +123,11 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityReferr
     @Override
     public DBSEntity getAssociatedEntity() {
         return getReferencedConstraint().getParentObject();
+    }
+
+    @Override
+    public DBSEntity getAssociatedEntity(DBRProgressMonitor monitor) throws DBException {
+        return getReferencedConstraint(monitor).getParentObject();
     }
 
     @Override
