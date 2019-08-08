@@ -1844,6 +1844,9 @@ public abstract class LightGrid extends Canvas {
             colHeaderHeight = Math.max(column.getHeaderHeight(true, true), colHeaderHeight);
         }
         headerHeight = colHeaderHeight;
+        if (headerHeight <= 0) {
+            headerHeight = GridColumn.topMargin + fontMetrics.getHeight() + GridColumn.bottomMargin;
+        }
 
         // Row header width
         rowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
