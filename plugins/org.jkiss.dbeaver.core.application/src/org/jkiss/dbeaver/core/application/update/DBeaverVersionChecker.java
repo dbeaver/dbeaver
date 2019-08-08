@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -40,6 +41,8 @@ import java.util.Calendar;
 public class DBeaverVersionChecker extends AbstractJob {
 
     private static final Log log = Log.getLog(DBeaverVersionChecker.class);
+
+    private static boolean SKIP_VERSION_CHECK = CommonUtils.toBoolean(System.getProperty("dbeaver.debug.skip-version-check"));
 
     private final boolean showAlways;
 
@@ -103,7 +106,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
 
         if (versionDescriptor != null &&
-            versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0 &&
+            (SKIP_VERSION_CHECK || versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0) &&
             !VersionUpdateDialog.isSuppressed(versionDescriptor))
         {
             showUpdaterDialog(versionDescriptor, versionDescriptor);
