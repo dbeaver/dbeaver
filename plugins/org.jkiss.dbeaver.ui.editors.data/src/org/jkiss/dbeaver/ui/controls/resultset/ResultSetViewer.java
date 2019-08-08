@@ -1133,7 +1133,6 @@ public class ResultSetViewer extends Viewer
                 activePanelTab.getControl().setFocus();
             }
         }
-
         getPresentationSettings().panelsVisible = show;
         if (saveSettings) {
             savePresentationSettings();
@@ -2912,9 +2911,15 @@ public class ResultSetViewer extends Viewer
     @Override
     public void updatePanelsContent(boolean forceRefresh) {
         updateEditControls();
-        for (IResultSetPanel panel : getActivePanels()) {
-            panel.refresh(forceRefresh);
+        IResultSetPanel visiblePanel = getVisiblePanel();
+        if (visiblePanel != null) {
+            visiblePanel.refresh(forceRefresh);
         }
+//        for (IResultSetPanel panel : getActivePanels()) {
+//            if (visiblePanel == panel) {
+//                panel.refresh(forceRefresh);
+//            }
+//        }
     }
 
     @Override

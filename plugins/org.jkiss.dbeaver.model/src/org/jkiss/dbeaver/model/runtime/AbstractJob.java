@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
@@ -99,7 +100,13 @@ public abstract class AbstractJob extends Job
             finished = false;
             RuntimeUtils.setThreadName(getName());
 
-            return this.run(progressMonitor);
+            IStatus result = this.run(progressMonitor);
+            if (!logErrorStatus(result)) {
+                if (!result.isOK()) {
+                    log.error("Error running job '" + getName() + "' execution: " + result.getMessage());
+                }
+            }
+            return result;
         } catch (Throwable e) {
             log.error(e);
             return GeneralUtils.makeExceptionStatus(e);
@@ -108,6 +115,20 @@ public abstract class AbstractJob extends Job
             finished = true;
             currentThread.setName(oldThreadName);
         }
+    }
+
+    private boolean logErrorStatus(IStatus status) {
+        if (status.getException() != null) {
+            log.error("Error during job '" + getName() + "' execution", status.getException());
+            return true;
+        } else if (status instanceof MultiStatus) {
+            for (IStatus cStatus : status.getChildren()) {
+                if (logErrorStatus(cStatus)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected abstract IStatus run(DBRProgressMonitor monitor);

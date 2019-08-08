@@ -111,7 +111,9 @@ public class ReferencesPanel implements IResultSetPanel {
 
     @Override
     public void refresh(boolean force) {
-        resultsContainer.refreshReferences();
+        if (presentation.getController().getVisiblePanel() == this) {
+            resultsContainer.refreshReferences();
+        }
     }
 
     @Override
