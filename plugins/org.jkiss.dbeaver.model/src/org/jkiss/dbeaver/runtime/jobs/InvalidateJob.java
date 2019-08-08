@@ -22,7 +22,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPMessageType;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -181,6 +182,32 @@ public class InvalidateJob extends DataSourceJob
 
         return invalidateResults;
     }
+
+    public static void invalidateTransaction(DBRProgressMonitor monitor, DBPDataSource dataSource) {
+        // Invalidate transactions
+        monitor.subTask("Invalidate transactions of [" + dataSource.getContainer().getName() + "]");
+        for (DBSInstance instance : dataSource.getAvailableInstances()) {
+            for (DBCExecutionContext context : instance.getAllContexts()) {
+                invalidateTransaction(monitor, context);
+            }
+        }
+    }
+
+    public static void invalidateTransaction(DBRProgressMonitor monitor, DBCExecutionContext context) {
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+        if (txnManager != null) {
+            try {
+                if (!txnManager.isAutoCommit()) {
+                    try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback failed transaction")) {
+                        txnManager.rollback(session, null);
+                    }
+                }
+            } catch (DBCException e) {
+                log.error("Error invalidating aborted transaction", e);
+            }
+        }
+    }
+
 
     @Override
     protected void canceling()

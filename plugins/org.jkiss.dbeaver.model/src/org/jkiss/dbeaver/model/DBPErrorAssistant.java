@@ -32,7 +32,8 @@ public interface DBPErrorAssistant
         CONNECTION_LOST,
         DRIVER_CLASS_MISSING,
         PERMISSION_DENIED,
-        FEATURE_UNSUPPORTED
+        FEATURE_UNSUPPORTED,
+        TRANSACTION_ABORTED
     }
 
     class ErrorPosition

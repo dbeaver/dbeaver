@@ -550,11 +550,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    public ErrorType discoverErrorType(Throwable error) {
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
         String sqlState = SQLState.getStateFromException(error);
         if (sqlState != null) {
             if (PostgreConstants.ERROR_ADMIN_SHUTDOWN.equals(sqlState)) {
                 return ErrorType.CONNECTION_LOST;
+            } else if (PostgreConstants.ERROR_TRANSACTION_ABORTED.equals(sqlState)) {
+                return ErrorType.TRANSACTION_ABORTED;
             }
         }
 
