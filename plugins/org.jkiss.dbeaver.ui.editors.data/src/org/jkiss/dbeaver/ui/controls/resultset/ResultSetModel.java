@@ -874,9 +874,15 @@ public class ResultSetModel {
         Collections.addAll(this.visibleAttributes, this.attributes);
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
             DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
-            if (filterConstraint == null || (!forceUpdate && constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION && constraint.getVisualPosition() != filterConstraint.getVisualPosition())) {
+            if (filterConstraint == null || (!forceUpdate &&
+                constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
+                constraint.getVisualPosition() == constraint.getOriginalVisualPosition()))
+            {
                 // If ordinal position doesn't match then probably it is a wrong attribute.
                 // There can be multiple attributes with the same name in rs (in some databases)
+
+                // Also check that original visual pos is the same as current position.
+                // Otherwise this means that column was reordered visually and we must respect this change
 
                 // We check order position only when forceUpdate=true (otherwise all previosu filters will be reset, see #6311)
                 continue;
