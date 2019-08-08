@@ -254,7 +254,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT e.enumlabel \n" +
                 "FROM pg_catalog.pg_enum e\n" +
-                "WHERE e.enumtypid=?")) {
+                "WHERE e.enumtypid=?\n" +
+                "ORDER BY e.enumsortorder")) {
             dbStat.setLong(1, getObjectId());
             try (JDBCResultSet rs = dbStat.executeQuery()) {
                 List<String> values = new ArrayList<>();
