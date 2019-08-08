@@ -46,6 +46,10 @@ import java.util.TimeZone;
  */
 public class MySQLConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
+    // disable Server time zone manage - it confuses users and makes very little sense
+    // as now we use server timestamp format by default
+    private static final boolean MANAGE_SERVER_TIME_ZONE = false;
+
     private Text hostText;
     private Text portText;
     private Text dbText;
@@ -131,7 +135,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
 
         UIUtils.createHorizontalLine(addrGroup, 2, 10);
 
-        {
+        if (MANAGE_SERVER_TIME_ZONE) {
             serverTimezoneCombo = UIUtils.createLabelCombo(addrGroup, MySQLUIMessages.dialog_connection_server_timezone, SWT.DROP_DOWN);
             serverTimezoneCombo.add(MySQLUIMessages.dialog_connection_auto_detect);
             {
