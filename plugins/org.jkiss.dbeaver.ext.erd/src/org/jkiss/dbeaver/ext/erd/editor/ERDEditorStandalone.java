@@ -51,7 +51,7 @@ import java.io.InputStream;
 /**
  * Standalone ERD editor
  */
-public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProvider, IResourceChangeListener {
+public class ERDEditorStandalone extends ERDEditorPart implements IResourceChangeListener {
 
     private static final Log log = Log.getLog(ERDEditorStandalone.class);
 
@@ -179,7 +179,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         return EditorUtils.getFileFromInput(getEditorInput());
     }
 
-    @Override
+    /*@Override
     public DBCExecutionContext getExecutionContext()
     {
         for (Object part : getViewer().getSelectedEditParts()) {
@@ -194,7 +194,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
             }
         }
         return null;
-    }
+    }*/
 
     @Override
     public void resourceChanged(IResourceChangeEvent event)
