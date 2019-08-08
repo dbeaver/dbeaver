@@ -57,23 +57,45 @@
     <extension point="org.eclipse.ui.menus">
         <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="org.jkiss.dbeaver.team.git.menu" label="Git" mnemonic="M">
-                <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L"/>
-                <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C"/>
+                <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L">
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C">
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </visibleWhen>
+                </command>
                 <separator name="projects" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G"/>
-                <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit" mnemonic="G"/>
+                <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G">
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit" mnemonic="G">
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </visibleWhen>
+                </command>
             </menu>
         </menuContribution>
         <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
             <toolbar id="org.jkiss.dbeaver.team.git.toolbar">
                 <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G">
-                    <visibleWhen checkEnabled="true"/>
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L">
-                    <visibleWhen checkEnabled="true"/>
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C">
-                    <visibleWhen checkEnabled="true"/>
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </visibleWhen>
                 </command>
             </toolbar>
         </menuContribution>
