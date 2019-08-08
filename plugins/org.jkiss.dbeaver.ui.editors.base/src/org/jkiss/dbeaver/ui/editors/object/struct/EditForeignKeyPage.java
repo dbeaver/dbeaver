@@ -732,7 +732,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             return;
         }
         if (ukSelectionIndex >= 0) {
-            curConstraint = curConstraints.get(ukSelectionIndex);
+            curConstraint = curConstraints.isEmpty() ? null : curConstraints.get(ukSelectionIndex);
         }
         DBSEntity curEntity = foreignKey.getParentObject();
         DBRProgressMonitor monitor = new VoidProgressMonitor();
