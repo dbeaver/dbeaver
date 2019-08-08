@@ -33,11 +33,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -129,12 +132,29 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                     rootNode.getDatabases(),
                     selectedNode,
                     new Class[]{DBSObjectContainer.class},
-                    null,//new Class[] { DBSObjectContainer.class },
-                    new Class[]{DBSSchema.class});
+                    new Class[] { DBSObjectContainer.class },
+                    new Class[]{ DBSSchema.class });
                 if (node instanceof DBNDatabaseNode) {
-                    setSelectedNode((DBNDatabaseNode) node);
-                    addNodeToHistory((DBNDatabaseNode) node);
-                    saveHistory();
+                    DBPObject nodeObject = DBUtils.getPublicObject(((DBNDatabaseNode) node).getObject());
+                    if (nodeObject instanceof DBSObjectContainer) {
+                        try {
+                            Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getChildType(new VoidProgressMonitor());
+                            if (childrenClass != null) {
+                                if (!DBSEntity.class.isAssignableFrom(childrenClass)) {
+                                    // Upper level of container
+                                    UIUtils.showMessageBox(getShell(),"Bad container node", "You can select only table container (e.g. schema).", SWT.ICON_ERROR);
+                                } else {
+                                    setSelectedNode((DBNDatabaseNode) node);
+                                    addNodeToHistory((DBNDatabaseNode) node);
+                                    saveHistory();
+                                }
+                            } else {
+                                throw new DBException("Can't determine container child objects");
+                            }
+                        } catch (DBException e) {
+                            DBWorkbench.getPlatformUI().showError("Bad container node", "Error determining container elements type", e);
+                        }
+                    }
                 }
             }
         };
