@@ -30,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.*;
@@ -491,6 +492,30 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     config.getBootstrap().setInitQueries(JSONUtils.deserializeStringList(bootstrapCfg, RegistryConstants.TAG_QUERY));
                 }
 
+                // Permissions
+                {
+                    Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
+                    if (!CommonUtils.isEmpty(securityCfg)) {
+                        List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
+                        if (!CommonUtils.isEmpty(permissionRestrictions)) {
+                            List<DBPDataSourcePermission> permissions = new ArrayList<>();
+                            for (String perm : permissionRestrictions) {
+                                try {
+                                    DBPDataSourcePermission permission = DBPDataSourcePermission.getById(perm);
+                                    if (permission != null) {
+                                        permissions.add(permission);
+                                    }
+                                } catch (IllegalArgumentException e) {
+                                    log.debug(e);
+                                }
+                            }
+                            if (!permissions.isEmpty()) {
+                                dataSource.setModifyPermissions(permissions);
+                            }
+                        }
+                    }
+                }
+
                 // Filters
                 for (Map<String, Object> filterCfg : JSONUtils.getObjectList(conObject, RegistryConstants.TAG_FILTERS)) {
                     String typeName = JSONUtils.getString(filterCfg, RegistryConstants.ATTR_TYPE);
@@ -706,6 +731,18 @@ class DataSourceSerializerModern implements DataSourceSerializer
             json.endObject();
         }
 
+        {
+            // Permissions
+            List<DBPDataSourcePermission> permissions = dataSource.getModifyPermission();
+            if (!CommonUtils.isEmpty(permissions)) {
+                json.name("security");
+                json.beginObject();
+                List<String> permIds = new ArrayList<>(permissions.size());
+                for (DBPDataSourcePermission perm : permissions) permIds.add(perm.getId());
+                JSONUtils.serializeStringList(json, "permission-restrictions", permIds);
+                json.endObject();
+            }
+        }
         {
             // Filters
             Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();

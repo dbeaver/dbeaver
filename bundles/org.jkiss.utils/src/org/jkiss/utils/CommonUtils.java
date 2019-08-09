@@ -275,6 +275,21 @@ public class CommonUtils {
         return equalObjects(s1, s2) || (isEmpty(s1) && isEmpty(s2));
     }
 
+    public static boolean equalsContents(@Nullable Collection<?> c1, @Nullable Collection<?> c2) {
+        if (CommonUtils.isEmpty(c1) && CommonUtils.isEmpty(c2)) {
+            return true;
+        }
+        if (c1 == null || c2 == null || c1.size() != c2.size()) {
+            return false;
+        }
+        for (Object o : c1) {
+            if (!c2.contains(o)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @NotNull
     public static String toString(@Nullable Object object) {
         if (object == null) {
