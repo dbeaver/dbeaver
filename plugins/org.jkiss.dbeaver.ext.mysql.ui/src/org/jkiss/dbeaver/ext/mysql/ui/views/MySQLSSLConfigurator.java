@@ -87,25 +87,25 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
 
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration) {
-        requireSSQL.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_REQUIRE_SSL), false));
-        veryServerCert.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT), true));
-        allowPublicKeyRetrieval.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE), false));
-        clientCertText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT)));
-        clientKeyText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_KEY)));
-        clientCAText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CA_CERT)));
-        cipherSuitesText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CIPHER_SUITES)));
+        requireSSQL.setSelection(configuration.getBooleanProperty(MySQLConstants.PROP_REQUIRE_SSL));
+        veryServerCert.setSelection(configuration.getBooleanProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT));
+        allowPublicKeyRetrieval.setSelection(configuration.getBooleanProperty(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE));
+        clientCertText.setText(CommonUtils.notEmpty(configuration.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT)));
+        clientKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_KEY)));
+        clientCAText.setText(CommonUtils.notEmpty(configuration.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT)));
+        cipherSuitesText.setText(CommonUtils.notEmpty(configuration.getStringProperty(MySQLConstants.PROP_SSL_CIPHER_SUITES)));
 //        debugSSL.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_SSL_DEBUG), false));
     }
 
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration) {
-        configuration.getProperties().put(MySQLConstants.PROP_REQUIRE_SSL, String.valueOf(requireSSQL.getSelection()));
-        configuration.getProperties().put(MySQLConstants.PROP_VERIFY_SERVER_SERT, String.valueOf(veryServerCert.getSelection()));
-        configuration.getProperties().put(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE, String.valueOf(allowPublicKeyRetrieval.getSelection()));
-        configuration.getProperties().put(MySQLConstants.PROP_SSL_CLIENT_CERT, clientCertText.getText());
-        configuration.getProperties().put(MySQLConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText());
-        configuration.getProperties().put(MySQLConstants.PROP_SSL_CA_CERT, clientCAText.getText());
-        configuration.getProperties().put(MySQLConstants.PROP_SSL_CIPHER_SUITES, cipherSuitesText.getText());
-//        configuration.getProperties().put(MySQLConstants.PROP_SSL_DEBUG, String.valueOf(debugSSL.getSelection()));
+        configuration.setProperty(MySQLConstants.PROP_REQUIRE_SSL, String.valueOf(requireSSQL.getSelection()));
+        configuration.setProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT, String.valueOf(veryServerCert.getSelection()));
+        configuration.setProperty(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE, String.valueOf(allowPublicKeyRetrieval.getSelection()));
+        configuration.setProperty(MySQLConstants.PROP_SSL_CLIENT_CERT, clientCertText.getText());
+        configuration.setProperty(MySQLConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText());
+        configuration.setProperty(MySQLConstants.PROP_SSL_CA_CERT, clientCAText.getText());
+        configuration.setProperty(MySQLConstants.PROP_SSL_CIPHER_SUITES, cipherSuitesText.getText());
+//        configuration.setProperty(MySQLConstants.PROP_SSL_DEBUG, String.valueOf(debugSSL.getSelection()));
     }
 }

@@ -71,8 +71,8 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration)
     {
-        hostText.setText(CommonUtils.notEmpty(configuration.getProperties().get(SocksConstants.PROP_HOST)));
-        String portString = configuration.getProperties().get(SocksConstants.PROP_PORT);
+        hostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SocksConstants.PROP_HOST)));
+        String portString = configuration.getStringProperty(SocksConstants.PROP_PORT);
         if (!CommonUtils.isEmpty(portString)) {
             portText.setSelection(CommonUtils.toInt(portString));
         } else {
@@ -86,10 +86,8 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration)
     {
-        Map<String,String> properties = configuration.getProperties();
-        properties.clear();
-        properties.put(SocksConstants.PROP_HOST, hostText.getText());
-        properties.put(SocksConstants.PROP_PORT, portText.getText());
+        configuration.setProperty(SocksConstants.PROP_HOST, hostText.getText());
+        configuration.setProperty(SocksConstants.PROP_PORT, portText.getSelection());
         configuration.setUserName(userNameText.getText());
         configuration.setPassword(passwordText.getText());
         configuration.setSavePassword(savePasswordCheckbox.getSelection());

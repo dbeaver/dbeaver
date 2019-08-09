@@ -48,8 +48,8 @@ public class SocksProxyImpl implements DBWNetworkHandler, DBWForwarder {
 
     @Override
     public boolean matchesParameters(String host, int port) {
-        if (host.equals(configuration.getProperties().get(SocksConstants.PROP_HOST))) {
-            int socksPort = CommonUtils.toInt(configuration.getProperties().get(SocksConstants.PROP_PORT));
+        if (host.equals(configuration.getStringProperty(SocksConstants.PROP_HOST))) {
+            int socksPort = configuration.getIntProperty(SocksConstants.PROP_PORT);
             return socksPort == port;
         }
         return false;
