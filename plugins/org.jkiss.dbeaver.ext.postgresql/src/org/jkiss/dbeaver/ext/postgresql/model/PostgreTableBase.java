@@ -53,7 +53,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private long oid;
     private long ownerId;
     private String description;
-	protected boolean isPartition;
+	private boolean isPartition;
 	private boolean hasPartitions;
     private PostgreTablePersistence persistence;
 	private String partitionKey;
@@ -131,7 +131,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return PostgreDependency.readDependencies(monitor, this, true);
     }
 
-    @Property(viewable = true, editable = false, updatable = false, order = 9)
+    @Property(viewable = true, order = 9)
     @Override
     public long getObjectId() {
         return this.oid;
@@ -159,7 +159,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.description = description;
     }
 
-    @Property(viewable = true, editable = false, updatable = false, order = 10)
+    @Property(viewable = true, order = 10)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
         return getDatabase().getRoleById(monitor, ownerId);
     }
@@ -177,7 +177,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public PostgreSchema getSchema() {
         final DBSObject parentObject = super.getParentObject();
         assert parentObject != null;
-        return (PostgreSchema) parentObject;
+        return parentObject instanceof PostgreSchema ?
+            (PostgreSchema) parentObject :
+            ((PostgreTableBase) parentObject).getSchema();
     }
 
     /**
@@ -191,8 +193,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return getContainer().getSchema().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
-    public PostgreTableColumn getAttributeByPos(DBRProgressMonitor monitor, int position) throws DBException {
-        for (PostgreTableColumn attr : getAttributes(monitor)) {
+    protected PostgreTableColumn getAttributeByPos(DBRProgressMonitor monitor, int position) throws DBException {
+        for (PostgreTableColumn attr : CommonUtils.safeCollection(getAttributes(monitor))) {
             if (attr.getOrdinalPosition() == position) {
                 return attr;
             }
@@ -200,6 +202,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return null;
     }
 
+    @Association
     public List<? extends PostgreTableColumn> getCachedAttributes()
     {
         final DBSObjectCache<PostgreTableBase, PostgreTableColumn> childrenCache = getContainer().getSchema().getTableCache().getChildrenCache(this);
@@ -263,7 +266,11 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 		return isPartition;
 	}
 
-	@NotNull
+    public void setPartition(boolean partition) {
+        isPartition = partition;
+    }
+
+    @NotNull
     public PostgreTablePersistence getPersistence() {
         return persistence;
     }
