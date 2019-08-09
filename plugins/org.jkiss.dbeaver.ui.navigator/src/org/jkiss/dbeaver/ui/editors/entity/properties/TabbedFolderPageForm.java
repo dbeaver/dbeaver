@@ -36,6 +36,7 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -421,7 +422,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
     private void createPropertyEditor(Composite group, DBPPropertyDescriptor prop) {
         DBSObject databaseObject = input.getDatabaseObject();
-        boolean isReadOnlyCon = databaseObject == null || databaseObject.getDataSource().getContainer().isConnectionReadOnly();
+        boolean isReadOnlyCon = databaseObject == null || DBUtils.isReadOnly(databaseObject);
         if (prop == null) {
             UIUtils.createEmptyLabel(group, 2, 1);
         } else {

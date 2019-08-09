@@ -228,6 +228,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return;
         }
 
+        if (DBUtils.isReadOnly(getDatabaseObject())) {
+            DBWorkbench.getPlatformUI().showMessageBox(
+                "Read-only",
+                "Object [" + DBUtils.getObjectFullName(getDatabaseObject(), DBPEvaluationContext.UI) + "] is read-only",
+                true);
+            return;
+        }
+
         // Flush all nested object editors and result containers
         for (IEditorPart editor : editorMap.values()) {
             if (editor instanceof ObjectPropertiesEditor || editor instanceof IEntityDataContainer) {
@@ -239,6 +247,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 return;
             }
         }
+
+        // Check read-only
 
         // Show preview
         int previewResult = IDialogConstants.PROCEED_ID;

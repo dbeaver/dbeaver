@@ -22,8 +22,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
@@ -130,9 +130,14 @@ public class ObjectPropertyTester extends PropertyTester
                 if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
                     return true;
                 }
+
+                if (DBNUtils.isReadOnly(node)) {
+                    return false;
+                }
+
                 if (node instanceof DBSWrapper) {
                     DBSObject object = ((DBSWrapper) node).getObject();
-                    if (object == null || isReadOnly(object) || !(node.getParentNode() instanceof DBNContainer)) {
+                    if (object == null || DBUtils.isReadOnly(object) || !(node.getParentNode() instanceof DBNContainer)) {
                         return false;
                     }
                     DBEObjectMaker objectMaker = getObjectManager(object.getClass(), DBEObjectMaker.class);
@@ -149,10 +154,13 @@ public class ObjectPropertyTester extends PropertyTester
                     return true;
                 }
                 if (node instanceof DBNDatabaseNode) {
+                    if (DBNUtils.isReadOnly(node)) {
+                        return false;
+                    }
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
                     return
                         object != null &&
-                            !isReadOnly(object) &&
+                            !DBUtils.isReadOnly(object) &&
                             object.isPersisted() &&
                             node.getParentNode() instanceof DBNContainer &&
                             getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
@@ -162,6 +170,9 @@ public class ObjectPropertyTester extends PropertyTester
             case PROP_CAN_MOVE_UP:
             case PROP_CAN_MOVE_DOWN: {
                 if (node instanceof DBNDatabaseNode) {
+                    if (DBNUtils.isReadOnly(node)) {
+                        return false;
+                    }
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
                     if (object instanceof DBPOrderedObject) {
                         DBEObjectReorderer objectReorderer = getObjectManager(object.getClass(), DBEObjectReorderer.class);
@@ -239,8 +250,11 @@ public class ObjectPropertyTester extends PropertyTester
             } else {
                 return false;
             }
+            if (DBNUtils.isReadOnly(node)) {
+                return false;
+            }
 
-            if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
+            if (node instanceof DBSWrapper && DBUtils.isReadOnly(((DBSWrapper) node).getObject())) {
                 return false;
             }
             if (objectType == null) {
@@ -255,6 +269,10 @@ public class ObjectPropertyTester extends PropertyTester
             }
             return true;
         }
+        if (DBNUtils.isReadOnly(node)) {
+            return false;
+        }
+
         // Check whether only single object type can be created or multiple ones
         List<IContributionItem> createItems = NavigatorHandlerObjectCreateNew.fillCreateMenuItems(null, node);
 
@@ -263,15 +281,6 @@ public class ObjectPropertyTester extends PropertyTester
         } else {
             return createItems.size() > 1;
         }
-    }
-
-    public static boolean isReadOnly(DBSObject object)
-    {
-        if (object == null) {
-            return true;
-        }
-        DBPDataSource dataSource = object.getDataSource();
-        return dataSource == null || dataSource.getContainer().isConnectionReadOnly();
     }
 
     private static <T extends DBEObjectManager> T getObjectManager(Class<?> objectType, Class<T> managerType)

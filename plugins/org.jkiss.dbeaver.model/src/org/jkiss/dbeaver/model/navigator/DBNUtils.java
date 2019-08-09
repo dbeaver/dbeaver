@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -146,6 +147,13 @@ public class DBNUtils {
     public static String getLastNodePathSegment(@NotNull String path) {
         int divPos = path.lastIndexOf('/');
         return divPos == -1 ? path : path.substring(divPos + 1);
+    }
+
+    public static boolean isReadOnly(DBNNode node)
+    {
+        return node instanceof DBNDatabaseNode &&
+            !(node instanceof DBNDataSource) &&
+            !((DBNDatabaseNode) node).getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {

@@ -357,7 +357,7 @@ public class DataSourceDescriptor
         if (connectionReadOnly) {
             return false;
         }
-        return connectionModifyRestrictions != null && !connectionModifyRestrictions.contains(permission);
+        return connectionModifyRestrictions == null || !connectionModifyRestrictions.contains(permission);
     }
 
     @Override
