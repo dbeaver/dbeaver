@@ -296,6 +296,9 @@ public class ItemListControl extends NodeListControl
         protected boolean canEdit(Object element)
         {
             DBNNode object = (DBNNode) element;
+            if (DBNUtils.isReadOnly(object)) {
+                return false;
+            }
             final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             return property != null && property.isEditable(getObjectValue(object));
         }
