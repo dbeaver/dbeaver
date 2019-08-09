@@ -292,7 +292,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         final DBDAttributeTransformer[] transformers = DBVUtils.findAttributeTransformers(this, null);
         if (transformers != null) {
             session.getProgressMonitor().subTask("Transform attribute '" + attribute.getName() + "'");
-            final Map<String, String> transformerOptions = DBVUtils.getAttributeTransformersOptions(this);
+            final Map<String, Object> transformerOptions = DBVUtils.getAttributeTransformersOptions(this);
             for (DBDAttributeTransformer transformer : transformers) {
                 transformer.transformAttribute(session, this, rows, transformerOptions);
             }

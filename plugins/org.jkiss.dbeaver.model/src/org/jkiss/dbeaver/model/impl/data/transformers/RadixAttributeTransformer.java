@@ -52,7 +52,7 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
     public static final String PREFIX_BIN = "0b";
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         int radix = 16;
         int bits = 32;
         boolean showPrefix = false;

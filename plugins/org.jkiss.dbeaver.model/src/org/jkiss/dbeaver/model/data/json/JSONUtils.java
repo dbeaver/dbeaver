@@ -110,6 +110,13 @@ public class JSONUtils {
     }
 
     @NotNull
+    public static JsonWriter field(@NotNull JsonWriter json, @NotNull String name, @Nullable Number value) throws IOException {
+        json.name(name);
+        if (value == null) json.nullValue(); else json.value(value);
+        return json;
+    }
+
+    @NotNull
     public static JsonWriter fieldNE(@NotNull JsonWriter json, @NotNull String name, @Nullable String value) throws IOException {
         if (CommonUtils.isEmpty(value)) {
             return json;
@@ -151,34 +158,66 @@ public class JSONUtils {
         }
     }
 
-    public static void serializeObjectList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<Object> list) throws IOException {
+    public static void serializeObjectList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<?> list) throws IOException {
         if (!CommonUtils.isEmpty(list)) {
             json.name(tagName);
-            json.beginArray();
-            for (Object value : CommonUtils.safeCollection(list)) {
-                if (value == null) {
-                    json.nullValue();
-                } else if (value instanceof Number) {
-                    json.value((Number) value);
-                } else if (value instanceof Boolean) {
-                    json.value((Boolean) value);
-                } else {
-                    json.value(value.toString());
-                }
-            }
-            json.endArray();
+            serializeCollection(json, list);
         }
     }
 
-    public static void serializeProperties(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Map<String, String> properties) throws IOException {
+    public static void serializeProperties(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Map<String, ?> properties) throws IOException {
         if (!CommonUtils.isEmpty(properties)) {
             json.name(tagName);
-            json.beginObject();
-            for (Map.Entry<String, String> entry : properties.entrySet()) {
-                field(json, entry.getKey(), entry.getValue());
-            }
-            json.endObject();
+            serializeMap(json, properties);
         }
+    }
+
+    public static void serializeCollection(@NotNull JsonWriter json, @NotNull Collection<?> list) throws IOException {
+        json.beginArray();
+        for (Object value : CommonUtils.safeCollection(list)) {
+            if (value == null) {
+                json.nullValue();
+            } else if (value instanceof Number) {
+                json.value((Number) value);
+            } else if (value instanceof Boolean) {
+                json.value((Boolean) value);
+            } else if (value instanceof String) {
+                json.value(value.toString());
+            } else if (value instanceof Map) {
+                serializeMap(json, (Map<String, ?>) value);
+            } else {
+                log.error("Unsupport collection type: " + value.getClass().getName());
+            }
+        }
+        json.endArray();
+    }
+
+    public static void serializeMap(@NotNull JsonWriter json, @NotNull Map<String, ?> map) throws IOException {
+        json.beginObject();
+        for (Map.Entry<String, ?> entry : map.entrySet()) {
+            Object propValue = entry.getValue();
+            String fieldName = entry.getKey();
+            if (propValue == null) {
+                //field(json, fieldName, (String)null);
+                //continue;
+            } else if (propValue instanceof Number) {
+                field(json, fieldName, (Number)propValue);
+            } else if (propValue instanceof String) {
+                String strValue = (String) propValue;
+                if (!strValue.isEmpty()) {
+                    field(json, fieldName, strValue);
+                }
+            } else if (propValue instanceof Boolean) {
+                field(json, fieldName, (Boolean) propValue);
+            } else if (propValue instanceof Collection) {
+                serializeObjectList(json, fieldName, (Collection<?>) propValue);
+            } else if (propValue instanceof Map) {
+                serializeProperties(json, fieldName, (Map<String, ?>) propValue);
+            } else {
+                log.error("Unsupported property type: " + propValue.getClass().getName());
+            }
+        }
+        json.endObject();
     }
 
     @NotNull
@@ -242,7 +281,18 @@ public class JSONUtils {
         }
     }
 
-    public static Map<String, String> deserializeProperties(Map<String, Object> map, String name) {
+    public static Map<String, Object> deserializeProperties(Map<String, Object> map, String name) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        Object propMap = map.get(name);
+        if (propMap instanceof Map) {
+            for (Map.Entry<?,?> pe : ((Map<?, ?>) propMap).entrySet()) {
+                result.put(CommonUtils.toString(pe.getKey()), pe.getValue());
+            }
+        }
+        return result;
+    }
+
+    public static Map<String, String> deserializeStringMap(Map<String, Object> map, String name) {
         Map<String, String> result = new LinkedHashMap<>();
         Object propMap = map.get(name);
         if (propMap instanceof Map) {

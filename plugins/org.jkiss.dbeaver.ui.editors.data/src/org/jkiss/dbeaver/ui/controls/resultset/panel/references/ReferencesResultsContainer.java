@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -53,6 +54,7 @@ import java.util.*;
 class ReferencesResultsContainer implements IResultSetContainer {
 
     private static final Log log = Log.getLog(ReferencesResultsContainer.class);
+    private static final String V_PROP_ACTIVE_ASSOCIATIONS = "ref-panel-associations";
 
     private final IResultSetController parentController;
     private final Composite mainComposite;
@@ -73,9 +75,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
         this.mainComposite = UIUtils.createComposite(parent, 1);
 
         Composite keySelectorPanel = UIUtils.createComposite(this.mainComposite, 2);
-        keySelectorPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 5;
+        keySelectorPanel.setLayoutData(gd);
         UIUtils.createControlLabel(keySelectorPanel, "Reference");
-        fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
+        fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
         fkCombo.addItem(null);
         fkCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fkCombo.addSelectionListener(new SelectionAdapter() {
@@ -164,12 +168,19 @@ class ReferencesResultsContainer implements IResultSetContainer {
         }
 
         parentDataContainer = parentController.getDataContainer();
+        if (parentDataContainer == null) {
+            return;
+        }
         Set<DBSEntity> allEntities = new LinkedHashSet<>();
         for (DBDAttributeBinding attr : visibleAttributes) {
             DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
             if (entityAttribute != null) {
                 allEntities.add(entityAttribute.getParentObject());
             }
+        }
+        DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, false);
+        if (vEntityOwner != null) {
+            vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
         }
 
         if (!allEntities.isEmpty()) {
@@ -289,7 +300,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         final DBSEntityAssociation refAssociation;
         final List<? extends DBSEntityAttributeRef> refAttributes;
 
-        public ReferenceKey(boolean isReference, DBSEntity refEntity, DBSEntityAssociation refAssociation, List<? extends DBSEntityAttributeRef> refAttributes) {
+        ReferenceKey(boolean isReference, DBSEntity refEntity, DBSEntityAssociation refAssociation, List<? extends DBSEntityAttributeRef> refAttributes) {
             this.isReference = isReference;
             this.refEntity = refEntity;
             this.refAssociation = refAssociation;
