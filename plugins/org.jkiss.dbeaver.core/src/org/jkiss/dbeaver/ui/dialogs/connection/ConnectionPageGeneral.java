@@ -354,11 +354,33 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         }
 
         {
+            // Security
+            Group securityGroup = UIUtils.createControlGroup(
+                refsGroup,
+                CoreMessages.dialog_connection_wizard_final_group_security,
+                1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            securityGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            readOnlyConnection = UIUtils.createCheckbox(
+                securityGroup,
+                CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
+                dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
+            readOnlyConnection.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            UIUtils.createDialogButton(securityGroup, "Edit permissions ...", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    editPermissions();
+                }
+            });
+        }
+
+        {
             // Filters
             filtersGroup = UIUtils.createControlGroup(
                 refsGroup,
                 CoreMessages.dialog_connection_wizard_final_group_filters,
-                2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+                2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             for (final FilterInfo filterInfo : filters) {
                 filterInfo.link = UIUtils.createLink(filtersGroup, "<a>" + filterInfo.title + "</a>", new SelectionAdapter() {
                     @Override
@@ -379,29 +401,8 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                         }
                     }
                 });
+                filterInfo.link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             }
-        }
-
-        {
-            // Security
-            Group securityGroup = UIUtils.createControlGroup(
-                refsGroup,
-                CoreMessages.dialog_connection_wizard_final_group_security,
-                1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            securityGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-            readOnlyConnection = UIUtils.createCheckbox(
-                securityGroup,
-                CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
-                dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
-            readOnlyConnection.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-            UIUtils.createDialogButton(securityGroup, "Edit permissions ...", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    editPermissions();
-                }
-            });
         }
 
         {
