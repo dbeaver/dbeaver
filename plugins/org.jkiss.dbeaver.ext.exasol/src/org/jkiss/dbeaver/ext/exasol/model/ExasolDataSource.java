@@ -330,8 +330,8 @@ public class ExasolDataSource extends JDBCDataSource
     }
     
     @Override
-    protected Properties getAllConnectionProperties(DBRProgressMonitor monitor, String purpose,
-    		DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, String purpose,
+                                                    DBPConnectionConfiguration connectionInfo) throws DBCException {
     	
     	Properties props =  super.getAllConnectionProperties(monitor, purpose, connectionInfo);
     	

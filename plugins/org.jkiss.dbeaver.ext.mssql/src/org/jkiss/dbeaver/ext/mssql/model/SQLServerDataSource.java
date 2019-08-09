@@ -74,7 +74,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    protected Properties getAllConnectionProperties(DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, purpose, connectionInfo);
 
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
