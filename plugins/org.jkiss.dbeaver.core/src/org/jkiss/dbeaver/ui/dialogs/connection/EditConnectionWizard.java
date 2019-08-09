@@ -178,7 +178,7 @@ public class EditConnectionWizard extends ConnectionWizard
             if (pageName.equals(name)) {
                 return page;
             }
-            if (page instanceof ICompositeDialogPage && !(page instanceof ConnectionPageSettings)) {
+            if (page instanceof ICompositeDialogPage) {
                 final IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(false);
                 if (subPages != null) {
                     for (IDialogPage subPage : subPages) {
