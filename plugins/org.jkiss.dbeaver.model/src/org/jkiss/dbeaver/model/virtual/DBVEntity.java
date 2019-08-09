@@ -176,6 +176,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
             addColorOverride(curColor);
         }
+        properties = JSONUtils.deserializeProperties(map, "properties");
     }
 
     @NotNull
