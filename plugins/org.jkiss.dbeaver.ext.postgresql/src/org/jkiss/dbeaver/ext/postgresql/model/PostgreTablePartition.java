@@ -37,7 +37,7 @@ public class PostgreTablePartition extends PostgreTable {
     public PostgreTablePartition(PostgreTable container) {
         super(container);
         this.partitionExpression = "FOR VALUES ";
-        this.isPartition = true;
+        this.setPartition(true);
         this.setName("newpartition");
         this.partitionOf = container;
     }

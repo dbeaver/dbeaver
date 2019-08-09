@@ -153,7 +153,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
     public abstract String getViewType();
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.source = null;
         return super.refreshObject(monitor);
     }
