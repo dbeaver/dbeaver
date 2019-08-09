@@ -34,12 +34,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -62,6 +58,9 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     private List<PostgreTableInheritance> subTables;
     private boolean hasSubClasses;
 
+    private boolean hasPartitions;
+    private String partitionKey;
+
     public PostgreTable(PostgreTableContainer container)
     {
         super(container);
@@ -76,6 +75,9 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
         this.hasSubClasses = JDBCUtils.safeGetBoolean(dbResult, "relhassubclass");
+
+        this.partitionKey = getDataSource().isServerVersionAtLeast(10, 0) ? JDBCUtils.safeGetString(dbResult, "partition_key")  : null;
+        this.hasPartitions = this.partitionKey != null;
     }
 
     // Copy constructor
@@ -83,6 +85,8 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         super(monitor, container, source, persisted);
         this.hasOids = source.hasOids;
         this.tablespaceId = container == source.getContainer() ? source.tablespaceId : 0;
+
+        this.partitionKey = source.partitionKey;
 
 /*
         // Copy FKs
@@ -126,13 +130,27 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         return false;
     }
 
-    @Property(viewable = false, editable = true, updatable = true, order = 40)
+    @Property(editable = true, updatable = true, order = 40)
     public boolean isHasOids() {
         return hasOids;
     }
 
     public void setHasOids(boolean hasOids) {
         this.hasOids = hasOids;
+    }
+
+    @Property(viewable = true, order = 42)
+    public boolean hasPartitions() {
+        return hasPartitions;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 43)
+    public String getPartitionKey() {
+        return partitionKey;
+    }
+
+    public void setPartitionKey(String partitionKey) {
+        this.partitionKey = partitionKey;
     }
 
     @Override
@@ -146,7 +164,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     }
 
     @Override
-    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
+    public DBDPseudoAttribute[] getPseudoAttributes() {
         if (this.hasOids && getDataSource().getServerType().supportsOids()) {
             return new DBDPseudoAttribute[]{PostgreConstants.PSEUDO_ATTR_OID};
         } else {
@@ -174,8 +192,8 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Override
     public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<DBSEntityAssociation> refs = new ArrayList<>();
-        refs.addAll(CommonUtils.safeList(getSubInheritance(monitor)));
+        List<DBSEntityAssociation> refs = new ArrayList<>(
+            CommonUtils.safeList(getSubInheritance(monitor)));
         // This is dummy implementation
         // Get references from this schema only
         final Collection<PostgreTableForeignKey> allForeignKeys =
@@ -188,6 +206,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         return refs;
     }
 
+    @Association
     public Collection<PostgreTableForeignKey> getForeignKeys(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
     }
@@ -217,8 +236,8 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
             return null;
         }
         List<PostgreTableBase> result = new ArrayList<>(si.size());
-        for (int i1 = 0; i1 < si.size(); i1++) {
-            PostgreTableBase table = si.get(i1).getParentObject();
+        for (PostgreTableInheritance aSi : si) {
+            PostgreTableBase table = aSi.getParentObject();
             if (!table.isPartition()) {
                 result.add(table);
             }
