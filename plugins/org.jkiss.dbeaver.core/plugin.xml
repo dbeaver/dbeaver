@@ -609,6 +609,7 @@
             </toolbar>
 
             <toolbar id="dbeaver-connection-selector" label="%toolbar.dbeaver-datasource-selector.label">
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 <command
                     commandId="org.jkiss.dbeaver.ui.tools.select.connection"
                     id="org.jkiss.dbeaver.core.menu.select.connection"
