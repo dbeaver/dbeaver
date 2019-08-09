@@ -297,4 +297,10 @@ public class VerticalButton extends Canvas {
         return button;
     }
 
+    public static VerticalButton create(VerticalFolder folder, int style, IAction action, boolean showText) {
+        VerticalButton button = new VerticalButton(folder, style);
+        button.setAction(action, showText);
+        return button;
+    }
+
 }
