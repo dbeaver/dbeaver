@@ -784,6 +784,8 @@ public class SQLEditor extends SQLEditorBase implements
         UIUtils.createEmptyLabel(sideToolBar, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, false);
+
+        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, false);
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_SQL_SHOW_LOG, false);
         //sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, CommandContributionItem.STYLE_CHECK));
         //sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_LOG, CommandContributionItem.STYLE_CHECK));
@@ -844,6 +846,10 @@ public class SQLEditor extends SQLEditorBase implements
         };
         switchPresentationSQLButton.addSelectionListener(switchListener);
         switchPresentationExtraButton.addSelectionListener(switchListener);
+
+        // Stretch
+        UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        VerticalButton.create(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_TOGGLE_LAYOUT, false);
 
     }
 
@@ -2370,7 +2376,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 items.add(new ActionContributionItem(action));
             }
-            return items.toArray(new IContributionItem[items.size()]);
+            return items.toArray(new IContributionItem[0]);
         }
     }
 
