@@ -29,10 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -45,12 +42,14 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -87,11 +86,13 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
 
     private Button showSystemObjects;
     private Button showUtilityObjects;
+
     private Button readOnlyConnection;
 
     private List<FilterInfo> filters = new ArrayList<>();
     private Group filtersGroup;
     private Font boldFont;
+    private List<DBPDataSourcePermission> accessRestritions;
 
     ConnectionPageGeneral(ConnectionWizard wizard)
     {
@@ -261,7 +262,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
-        Composite group = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite group = UIUtils.createComposite(parent, 1);
 
         String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
         connectionNameText = UIUtils.createLabelText(group, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
@@ -273,7 +274,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         {
             UIUtils.createControlLabel(group, CoreMessages.dialog_connection_wizard_final_label_connection_type);
 
-            Composite ctGroup = UIUtils.createPlaceholder(group, 2, 5);
+            Composite ctGroup = UIUtils.createComposite(group, 2);
             connectionTypeCombo = new CSmartCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
             loadConnectionTypes();
             connectionTypeCombo.select(0);
@@ -286,9 +287,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 }
             });
 
-            Button pickerButton = new Button(ctGroup, SWT.PUSH);
-            pickerButton.setText(CoreMessages.dialog_connection_wizard_final_label_edit);
-            pickerButton.addSelectionListener(new SelectionAdapter() {
+            UIUtils.createDialogButton(ctGroup, CoreMessages.dialog_connection_wizard_final_label_edit, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DataSourceDescriptor dataSource = getActiveDataSource();
@@ -329,7 +328,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             descriptionText.setLayoutData(gd);
         }
 
-        Composite refsGroup = UIUtils.createPlaceholder(group, 2, 5);
+        Composite refsGroup = UIUtils.createComposite(group, 3);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         refsGroup.setLayoutData(gd);
@@ -352,13 +351,6 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 CoreMessages.dialog_connection_wizard_final_checkbox_show_util_objects,
                 dataSourceDescriptor != null && dataSourceDescriptor.isShowUtilityObjects());
             showUtilityObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-            readOnlyConnection = UIUtils.createCheckbox(
-                miscGroup,
-                CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
-                dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            readOnlyConnection.setLayoutData(gd);
         }
 
         {
@@ -366,7 +358,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             filtersGroup = UIUtils.createControlGroup(
                 refsGroup,
                 CoreMessages.dialog_connection_wizard_final_group_filters,
-                2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+                2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
             for (final FilterInfo filterInfo : filters) {
                 filterInfo.link = UIUtils.createLink(filtersGroup, "<a>" + filterInfo.title + "</a>", new SelectionAdapter() {
                     @Override
@@ -389,8 +381,31 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 });
             }
         }
+
         {
-            Composite linkGroup = UIUtils.createPlaceholder(refsGroup, 1, 5);
+            // Security
+            Group securityGroup = UIUtils.createControlGroup(
+                refsGroup,
+                CoreMessages.dialog_connection_wizard_final_group_security,
+                1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            securityGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            readOnlyConnection = UIUtils.createCheckbox(
+                securityGroup,
+                CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
+                dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
+            readOnlyConnection.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            UIUtils.createDialogButton(securityGroup, "Edit permissions ...", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    editPermissions();
+                }
+            });
+        }
+
+        {
+            Composite linkGroup = UIUtils.createComposite(refsGroup, 1);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             linkGroup.setLayoutData(gd);
@@ -437,6 +452,44 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         setControl(group);
 
         UIUtils.setHelp(group, IHelpContextIds.CTX_CON_WIZARD_FINAL);
+    }
+
+    private void editPermissions() {
+        new BaseDialog(getShell(), CoreMessages.dialog_connection_wizard_final_group_security, null) {
+            private List<Button> restrictedPermissionButtons = new ArrayList<>();
+
+            @Override
+            protected Composite createDialogArea(Composite parent) {
+                Composite composite = super.createDialogArea(parent);
+                if (accessRestritions == null) {
+                    accessRestritions = dataSourceDescriptor == null ? Collections.emptyList() : dataSourceDescriptor.getModifyPermission();
+                }
+                for (DBPDataSourcePermission permission : DBPDataSourcePermission.values()) {
+                    Button permButton = UIUtils.createCheckbox(
+                        composite,
+                        permission.getLabel(),
+                        permission.getDescription(),
+                        accessRestritions.contains(permission),
+                        1);
+                    permButton.setData(permission);
+                    permButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                    restrictedPermissionButtons.add(permButton);
+                }
+                return composite;
+            }
+
+            @Override
+            protected void okPressed() {
+                List<DBPDataSourcePermission> restrictions = new ArrayList<>();
+                for (Button permbutton : restrictedPermissionButtons) {
+                    if (permbutton.getSelection()) {
+                        restrictions.add((DBPDataSourcePermission) permbutton.getData());
+                    }
+                }
+                accessRestritions = restrictions;
+                super.okPressed();
+            }
+        }.open();
     }
 
     private void loadConnectionTypes()
@@ -503,6 +556,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         dataSource.setShowSystemObjects(showSystemObjects.getSelection());
         dataSource.setShowUtilityObjects(showUtilityObjects.getSelection());
         dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
+        dataSource.setModifyPermissions(accessRestritions);
 
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {

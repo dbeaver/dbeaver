@@ -134,6 +134,7 @@ public class DataSourceDescriptor
     private boolean showSystemObjects;
     private boolean showUtilityObjects;
     private boolean connectionReadOnly;
+    private List<DBPDataSourcePermission> connectionModifyRestrictions;
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
     private DBDDataFormatterProfile formatterProfile;
     @Nullable
@@ -206,6 +207,8 @@ public class DataSourceDescriptor
         this.connectionInfo = source.connectionInfo;
         this.formatterProfile = source.formatterProfile;
         this.clientHome = source.clientHome;
+
+        this.connectionModifyRestrictions = source.connectionModifyRestrictions == null ? null : new ArrayList<>(source.connectionModifyRestrictions);
 
         this.connectionInfo = new DBPConnectionConfiguration(source.connectionInfo);
         for (Map.Entry<String, FilterMapping> fe : source.filterMap.entrySet()) {
@@ -347,6 +350,32 @@ public class DataSourceDescriptor
     public void setConnectionReadOnly(boolean connectionReadOnly)
     {
         this.connectionReadOnly = connectionReadOnly;
+    }
+
+    @Override
+    public boolean hasModifyPermission(DBPDataSourcePermission permission) {
+        if (connectionReadOnly) {
+            return false;
+        }
+        return connectionModifyRestrictions != null && !connectionModifyRestrictions.contains(permission);
+    }
+
+    @Override
+    public List<DBPDataSourcePermission> getModifyPermission() {
+        if (CommonUtils.isEmpty(this.connectionModifyRestrictions)) {
+            return Collections.emptyList();
+        } else {
+            return new ArrayList<>(this.connectionModifyRestrictions);
+        }
+    }
+
+    @Override
+    public void setModifyPermissions(@Nullable Collection<DBPDataSourcePermission> permissions) {
+        if (CommonUtils.isEmpty(permissions)) {
+            this.connectionModifyRestrictions = null;
+        } else {
+            this.connectionModifyRestrictions = new ArrayList<>(permissions);
+        }
     }
 
     @Override
@@ -1356,7 +1385,8 @@ public class DataSourceDescriptor
             CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
             CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
             CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
-            CommonUtils.equalObjects(this.folder, source.folder);
+            CommonUtils.equalObjects(this.folder, source.folder) &&
+            CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
 
     public static class ContextInfo implements DBPObject {

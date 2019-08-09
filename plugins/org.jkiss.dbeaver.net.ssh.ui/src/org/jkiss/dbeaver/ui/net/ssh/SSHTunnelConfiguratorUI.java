@@ -185,9 +185,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     public void loadSettings(DBWHandlerConfiguration configuration)
     {
         hostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_HOST)));
-        String portString = configuration.getStringProperty(SSHConstants.PROP_PORT);
-        if (!CommonUtils.isEmpty(portString)) {
-            portText.setSelection(CommonUtils.toInt(portString));
+        int portString = configuration.getIntProperty(SSHConstants.PROP_PORT);
+        if (portString != 0) {
+            portText.setSelection(portString);
         } else {
             portText.setSelection(SSHConstants.DEFAULT_SSH_PORT);
         }
