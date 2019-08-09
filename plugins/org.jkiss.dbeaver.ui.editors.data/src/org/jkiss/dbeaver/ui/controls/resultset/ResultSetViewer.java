@@ -2057,7 +2057,7 @@ public class ResultSetViewer extends Viewer
         return
             executionContext == null ||
             !executionContext.isConnected() ||
-            executionContext.getDataSource().getContainer().isConnectionReadOnly() ||
+            !executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA) ||
             executionContext.getDataSource().getInfo().isReadOnlyData();
     }
 
