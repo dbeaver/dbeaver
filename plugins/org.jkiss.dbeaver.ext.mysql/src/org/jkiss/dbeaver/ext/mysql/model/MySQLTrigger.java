@@ -164,7 +164,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject, 
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getCatalog().triggerCache.refreshObject(monitor, getCatalog(), this);
     }
 }

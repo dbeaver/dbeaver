@@ -247,7 +247,7 @@ public class ExasolUser extends ExasolGrantee
 	}
 	
 	@Override
-	public DBSObject refreshObject(DBRProgressMonitor monitor)
+	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
 			throws DBException
 	{
 		return this;

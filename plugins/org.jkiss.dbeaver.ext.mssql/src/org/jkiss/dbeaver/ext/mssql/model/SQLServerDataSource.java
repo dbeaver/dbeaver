@@ -301,7 +301,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         databaseCache.clearCache();
         return super.refreshObject(monitor);
     }
