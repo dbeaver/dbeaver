@@ -164,24 +164,24 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     private void initSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
         props.put(PostgreConstants.PROP_SSL, "true");
 
-        final String rootCertProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_ROOT_CERT);
+        final String rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
         if (!CommonUtils.isEmpty(rootCertProp)) {
             props.put("sslrootcert", rootCertProp);
         }
-        final String clientCertProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_CLIENT_CERT);
+        final String clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
         if (!CommonUtils.isEmpty(clientCertProp)) {
             props.put("sslcert", clientCertProp);
         }
-        final String keyCertProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_CLIENT_KEY);
+        final String keyCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY);
         if (!CommonUtils.isEmpty(keyCertProp)) {
             props.put("sslkey", keyCertProp);
         }
 
-        final String modeProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_MODE);
+        final String modeProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_MODE);
         if (!CommonUtils.isEmpty(modeProp)) {
             props.put("sslmode", modeProp);
         }
-        final String factoryProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_FACTORY);
+        final String factoryProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_FACTORY);
         if (!CommonUtils.isEmpty(factoryProp)) {
             props.put("sslfactory", factoryProp);
         }

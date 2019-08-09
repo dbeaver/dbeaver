@@ -187,6 +187,7 @@ public class JSONUtils {
                 serializeMap(json, (Map<String, ?>) value);
             } else {
                 log.error("Unsupport collection type: " + value.getClass().getName());
+                json.value(value.toString());
             }
         }
         json.endArray();
@@ -214,7 +215,8 @@ public class JSONUtils {
             } else if (propValue instanceof Map) {
                 serializeProperties(json, fieldName, (Map<String, ?>) propValue);
             } else {
-                log.error("Unsupported property type: " + propValue.getClass().getName());
+                log.debug("Unsupported property type: " + propValue.getClass().getName());
+                field(json, fieldName, propValue.toString());
             }
         }
         json.endObject();

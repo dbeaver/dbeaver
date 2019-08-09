@@ -43,6 +43,8 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
+
 /**
  * Network handlers edit dialog page
  */
@@ -240,6 +242,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
+        handlerConfiguration.setProperties(Collections.emptyMap());
         configurator.saveSettings(handlerConfiguration);
         dataSource.getConnectionConfiguration().setConfigProfile(activeProfile);
         dataSource.getConnectionConfiguration().updateHandler(handlerConfiguration);

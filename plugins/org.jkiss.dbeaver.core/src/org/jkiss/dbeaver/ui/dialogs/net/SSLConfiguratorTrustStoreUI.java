@@ -81,18 +81,18 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration) {
         if (caCertPath != null) {
-            caCertPath.setText(CommonUtils.notEmpty(configuration.getProperties().get(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT)));
+            caCertPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT)));
         }
-        clientCertPath.setText(CommonUtils.notEmpty(configuration.getProperties().get(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT)));
-        clientKeyPath.setText(CommonUtils.notEmpty(configuration.getProperties().get(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY)));
+        clientCertPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT)));
+        clientKeyPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY)));
     }
 
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration) {
         if (caCertPath != null) {
-            configuration.getProperties().put(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT, caCertPath.getText());
+            configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT, caCertPath.getText());
         }
-        configuration.getProperties().put(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, clientCertPath.getText());
-        configuration.getProperties().put(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, clientKeyPath.getText());
+        configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, clientCertPath.getText());
+        configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, clientKeyPath.getText());
     }
 }

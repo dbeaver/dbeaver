@@ -79,10 +79,10 @@ public enum SQLScriptBindingType {
                 if (!handler.isEnabled()) {
                     continue;
                 }
-                for (Map.Entry<String, String> prop : handler.getProperties().entrySet()) {
+                for (Map.Entry<String, Object> prop : handler.getProperties().entrySet()) {
                     String propName = prop.getKey();
                     if (propName.contains(DataSourceUtils.PARAM_SERVER) || propName.contains(DataSourceUtils.PARAM_HOST) || propName.contains(DataSourceUtils.PARAM_PORT)) {
-                        params.put("handler." + handler.getId() + "." + propName, prop.getValue());
+                        params.put("handler." + handler.getId() + "." + propName, CommonUtils.toString(prop.getValue()));
                     }
                 }
             }

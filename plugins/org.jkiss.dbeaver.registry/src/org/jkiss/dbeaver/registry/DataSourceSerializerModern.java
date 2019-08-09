@@ -555,7 +555,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     curNetworkHandler.setPassword(creds[1]);
                 }
             }
-            curNetworkHandler.setProperties(JSONUtils.deserializeStringMap(handlerCfg, RegistryConstants.TAG_PROPERTIES));
+            Map<String, Object> properties = JSONUtils.deserializeProperties(handlerCfg, RegistryConstants.TAG_PROPERTIES);
+            if (properties != null) {
+                curNetworkHandler.setProperties(properties);
+            }
             return curNetworkHandler;
         }
     }

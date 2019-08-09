@@ -226,6 +226,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                 if (handlerConfiguration == null) {
                     handlerConfiguration = new DBWHandlerConfiguration(handler, null);
                 }
+                handlerConfiguration.setProperties(Collections.emptyMap());
                 handlerBlock.configurator.saveSettings(handlerConfiguration);
             }
         }
