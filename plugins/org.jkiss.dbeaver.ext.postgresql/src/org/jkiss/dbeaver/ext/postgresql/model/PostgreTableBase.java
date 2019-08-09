@@ -54,9 +54,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private long ownerId;
     private String description;
 	private boolean isPartition;
-	private boolean hasPartitions;
     private PostgreTablePersistence persistence;
-	private String partitionKey;
     private Object acl;
     private String[] relOptions;
 
@@ -77,8 +75,6 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.isPartition =
             getDataSource().isServerVersionAtLeast(10, 0) &&
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
-        this.partitionKey = getDataSource().isServerVersionAtLeast(10, 0) ? JDBCUtils.safeGetString(dbResult, "partition_key")  : null;
-        this.hasPartitions = this.partitionKey != null;
         this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
         if (getDataSource().isServerVersionAtLeast(8, 2)) {
             this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
@@ -98,7 +94,6 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.ownerId = source.ownerId;
         this.description = source.description;
         this.isPartition = source.isPartition;
-        this.partitionKey = source.partitionKey;
         this.acl = source.acl;
         this.relOptions = source.relOptions;
         this.persistence = source.persistence;
@@ -169,7 +164,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getContainer(),
+            getSchema(),
             this);
     }
 
@@ -310,15 +305,5 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             }
         }
     }
-
-    public boolean hasPartitions() {
-        return hasPartitions;
-    }
-
-    public String getPartKey() {
-        return partitionKey;
-    }
-    
-    
 
 }
