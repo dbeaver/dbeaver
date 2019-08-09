@@ -206,6 +206,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
                         curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
                         curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), false));
+                        curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), false));
                     }
                     if (atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER) != null) {
                         curDriver.setCustomDriverLoader((

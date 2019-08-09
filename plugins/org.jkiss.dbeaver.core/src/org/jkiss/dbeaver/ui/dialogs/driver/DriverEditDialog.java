@@ -97,6 +97,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private ClientHomesPanel clientHomesPanel;
     private Button embeddedDriverCheck;
     private Button anonymousDriverCheck;
+    private Button allowsEmptyPasswordCheck;
 
     private boolean showAddFiles = false;
 
@@ -247,15 +248,23 @@ public class DriverEditDialog extends HelpEnabledDialog {
             driverPortText.setLayoutData(new GridData(SWT.NONE));
             driverPortText.addModifyListener(e -> onChangeProperty());
 
-            embeddedDriverCheck = UIUtils.createCheckbox(propsGroup, CoreMessages.dialog_edit_driver_embedded_label, driver.isEmbedded());
+            Composite optionsPanel = UIUtils.createComposite(propsGroup, 3);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            optionsPanel.setLayoutData(gd);
+            embeddedDriverCheck = UIUtils.createCheckbox(optionsPanel, CoreMessages.dialog_edit_driver_embedded_label, CoreMessages.dialog_edit_driver_embedded_tip, driver.isEmbedded(), 1);
             embeddedDriverCheck.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            anonymousDriverCheck = UIUtils.createCheckbox(propsGroup, CoreMessages.dialog_edit_driver_anonymous_label, CoreMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
+            anonymousDriverCheck = UIUtils.createCheckbox(optionsPanel, CoreMessages.dialog_edit_driver_anonymous_label, CoreMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
             anonymousDriverCheck.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            allowsEmptyPasswordCheck = UIUtils.createCheckbox(optionsPanel, CoreMessages.dialog_edit_driver_aloows_empty_password_label, CoreMessages.dialog_edit_driver_aloows_empty_password_tip, driver.isAnonymousAccess(), 1);
+            allowsEmptyPasswordCheck.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             if (isReadOnly) {
                 embeddedDriverCheck.setEnabled(false);
                 anonymousDriverCheck.setEnabled(false);
+                allowsEmptyPasswordCheck.setEnabled(false);
             }
         }
 
@@ -744,6 +753,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         embeddedDriverCheck.setSelection(driver.isEmbedded());
         anonymousDriverCheck.setSelection(driver.isAnonymousAccess());
+        allowsEmptyPasswordCheck.setSelection(driver.isAllowsEmptyPassword());
 
         if (original) {
             resetLibraries(true);
@@ -800,6 +810,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driver.setDriverDefaultPort(driverPortText.getText());
         driver.setEmbedded(embeddedDriverCheck.getSelection());
         driver.setAnonymousAccess(anonymousDriverCheck.getSelection());
+        driver.setAllowsEmptyPassword(allowsEmptyPasswordCheck.getSelection());
 
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);

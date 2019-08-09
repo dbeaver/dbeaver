@@ -21,7 +21,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class CoreMessages extends NLS {
 	public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
-	
+
 	public static String actions_menu_about;
 	public static String actions_menu_check_update;
 	public static String actions_menu_database;
@@ -43,7 +43,7 @@ public class CoreMessages extends NLS {
 	public static String action_menu_transaction_manualcommit_description;
 	public static String action_menu_transaction_autocommit_description;
 	public static String action_menu_tools_find_in_navigator;
-	
+
 	public static String action_menu_transactionMonitor_totalStatement;
 	public static String action_menu_transactionMonitor_modifyStatement;
 	public static String action_menu_transactionMonitor_autocommitMode;
@@ -55,7 +55,7 @@ public class CoreMessages extends NLS {
 	public static String actions_navigator_bookmark_title;
 
     public static String common_error_sql;
-	
+
     public static String confirm_exit_title;
 	public static String confirm_exit_message;
 	public static String confirm_exit_toggleMessage;
@@ -97,7 +97,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_events_checkbox_terminate_at_disconnect;
 	public static String dialog_connection_events_checkbox_wait_finish;
 	public static String dialog_connection_events_checkbox_wait_finish_timeout;
-	
+
 	public static String dialog_connection_events_label_command;
 	public static String dialog_connection_events_label_event;
 	public static String dialog_connection_events_title;
@@ -392,7 +392,7 @@ public class CoreMessages extends NLS {
 	public static String toolbar_editors_sql_run_script_name;
     public static String toolbar_editors_sql_run_scriptNew_name;
 	public static String toolbar_editors_sql_run_explain_name;
-	
+
 	public static String tools_script_execute_wizard_task_completed;
 	public static String tools_wizard_dialog_button_start;
 	public static String tools_wizard_error_task_error_message;
@@ -407,7 +407,7 @@ public class CoreMessages extends NLS {
 	public static String tools_wizard_page_log_task_progress;
 	public static String tools_wizard_page_log_task_progress_log;
 	public static String tools_wizard_page_log_task_started_at;
-	
+
 	public static String editor_file_open_in_explorer;
 	public static String editor_file_copy_path;
 	public static String editor_file_rename;
@@ -593,7 +593,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_edit_wizard_sql_editor_description;
 	public static String dialog_connection_edit_wizard_sql_processing;
 	public static String dialog_connection_edit_wizard_sql_processing_description;
-	
+
 	public static String dialog_connection_edit_wizard_conn_change_title;
 	public static String dialog_connection_edit_wizard_conn_change_question;
 	public static String dialog_connection_edit_wizard_lock_pwd_title;
@@ -607,16 +607,19 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_setting;
 	public static String dialog_edit_driver_type_label;
 	public static String dialog_edit_driver_embedded_label;
+	public static String dialog_edit_driver_embedded_tip;
 	public static String dialog_edit_driver_anonymous_label;
 	public static String dialog_edit_driver_anonymous_tip;
+	public static String dialog_edit_driver_aloows_empty_password_label;
+	public static String dialog_edit_driver_aloows_empty_password_tip;
 	public static String dialog_edit_driver_description;
 	public static String dialog_edit_driver_edit_maven_title;
 	public static String dialog_edit_driver_edit_maven_group_id_label;
 	public static String dialog_edit_driver_edit_maven_artifact_id_label;
 	public static String dialog_edit_driver_edit_maven_classfier_label;
 	public static String dialog_edit_driver_edit_maven_version_label;
-	
-	public static String dialog_edit_driver_text_driver_library;	
+
+	public static String dialog_edit_driver_text_driver_library;
 	public static String dialog_edit_driver_info;
 	public static String dialog_edit_driver_driver;
 	public static String dialog_edit_driver_library;
@@ -633,7 +636,7 @@ public class CoreMessages extends NLS {
 	// Driver download
 	public static String dialog_driver_download_button_edit_dirver;
 	public static String dialog_driver_download_button_add_jars;
-	
+
 	public static String dialog_driver_download_wizard_title_setting;
 	public static String dialog_driver_download_wizard_title_upload_files;
 	public static String dialog_driver_download_wizard_title_setup_files;
@@ -653,7 +656,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_download_manual_page_column_description;
 	public static String dialog_driver_download_manual_page_yes;
 	public static String dialog_driver_download_manual_page_no;
-	
+
 	public static String dialog_driver_download_auto_page_auto_download;
 	public static String dialog_driver_download_auto_page_download_driver_files;
 	public static String dialog_driver_download_auto_page_download_specific_driver_files;

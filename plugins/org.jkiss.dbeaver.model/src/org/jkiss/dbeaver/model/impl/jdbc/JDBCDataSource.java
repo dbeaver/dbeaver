@@ -217,8 +217,13 @@ public abstract class JDBCDataSource
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
         }
-        if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
+        boolean allowsEmptyPassword = getContainer().getDriver().isAllowsEmptyPassword();
+        String password = getConnectionUserPassword(connectionInfo);
+        if (password == null && allowsEmptyPassword) {
+            password = "";
+        }
+        if (!CommonUtils.isEmpty(password) || (allowsEmptyPassword && !CommonUtils.isEmpty(getConnectionUserName(connectionInfo)))) {
+            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, password);
         }
         return connectProps;
     }
