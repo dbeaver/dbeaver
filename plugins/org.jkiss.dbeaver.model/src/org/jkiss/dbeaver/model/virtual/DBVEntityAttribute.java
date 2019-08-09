@@ -66,10 +66,8 @@ public class DBVEntityAttribute implements DBSEntityAttribute
 
     DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name, Map<String, Object> map) {
         this(entity, parent, name);
-        Map<String, Object> attrProps = JSONUtils.deserializeProperties(map, "properties");
-        if (!attrProps.isEmpty()) {
-            this.properties = attrProps;
-        }
+        this.properties = JSONUtils.deserializeProperties(map, "properties");
+
         Map<String, Object> transformsCfg = JSONUtils.getObject(map, "transforms");
         if (!transformsCfg.isEmpty()) {
             transformSettings = new DBVTransformSettings();
@@ -88,6 +86,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute
             }
             transformSettings.setTransformOptions(JSONUtils.deserializeProperties(transformsCfg, "properties"));
         }
+        properties = JSONUtils.deserializeProperties(transformsCfg, "properties");
     }
 
     @NotNull

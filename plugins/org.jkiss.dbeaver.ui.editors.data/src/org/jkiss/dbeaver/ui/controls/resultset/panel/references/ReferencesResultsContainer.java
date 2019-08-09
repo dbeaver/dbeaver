@@ -30,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -178,9 +179,20 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 allEntities.add(entityAttribute.getParentObject());
             }
         }
-        DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, false);
-        if (vEntityOwner != null) {
-            vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
+
+        List<ReferenceKeyMemo> refKeyMemos = new ArrayList<>();
+        {
+            DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, false);
+            if (vEntityOwner != null) {
+                Object activeAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
+                if (activeAssociations instanceof Collection) {
+                    for (Object refKeyMemoMap : (Collection)activeAssociations) {
+                        if (refKeyMemoMap instanceof Map) {
+                            refKeyMemos.add(new ReferenceKeyMemo((Map) refKeyMemoMap));
+                        }
+                    }
+                }
+            }
         }
 
         if (!allEntities.isEmpty()) {
@@ -219,8 +231,23 @@ class ReferencesResultsContainer implements IResultSetContainer {
                         synchronized (referenceKeys) {
                             referenceKeys.clear();
                             referenceKeys.addAll(refs);
+
+                            // Detect active ref key from memo
                             if (!referenceKeys.isEmpty()) {
-                                activeReferenceKey = referenceKeys.get(0);
+                                if (!refKeyMemos.isEmpty()) {
+                                    for (ReferenceKey key : referenceKeys) {
+                                        for (ReferenceKeyMemo memo : refKeyMemos) {
+                                            if (key.matches(memo)) {
+                                                activeReferenceKey = key;
+                                                break;
+                                            }
+                                        }
+                                        if (activeReferenceKey != null) break;
+                                    }
+                                }
+                                if (activeReferenceKey == null) {
+                                    activeReferenceKey = referenceKeys.get(0);
+                                }
                             }
                         }
                         UIUtils.syncExec(() -> fillKeysCombo());
@@ -289,6 +316,16 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
                 }
             }
+
+            // Save active keys in virtual entity props
+            {
+                DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, true);
+                List<Map<String, Object>> activeAssociations = new ArrayList<>();
+                activeAssociations.add(activeReferenceKey.createMemo());
+                vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
+                vEntityOwner.persistConfiguration();
+            }
+
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Can't shwo references", "Error opening '" + dataContainer.getName() + "' references", e);
         }
@@ -305,6 +342,32 @@ class ReferencesResultsContainer implements IResultSetContainer {
             this.refEntity = refEntity;
             this.refAssociation = refAssociation;
             this.refAttributes = refAttributes;
+        }
+
+        boolean matches(ReferenceKeyMemo memo) {
+            return isReference == memo.isReference &&
+                CommonUtils.equalObjects(DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI), memo.refEntityName) &&
+                CommonUtils.equalObjects(refAssociation.getName(), memo.refAssociationName);
+        }
+
+        Map<String, Object> createMemo() {
+            Map<String, Object> memo = new LinkedHashMap<>();
+            memo.put("ref", isReference);
+            memo.put("entity", DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI));
+            memo.put("name", refAssociation.getName());
+            return memo;
+        }
+    }
+
+    static class ReferenceKeyMemo {
+        final boolean isReference;
+        final String refEntityName;
+        final String refAssociationName;
+
+        ReferenceKeyMemo(Map<String, Object> map) {
+            this.isReference = CommonUtils.toBoolean(map.get("ref"));
+            this.refEntityName = CommonUtils.toString(map.get("entity"));
+            this.refAssociationName = CommonUtils.toString(map.get("name"));
         }
     }
 

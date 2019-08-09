@@ -281,17 +281,21 @@ public class JSONUtils {
         }
     }
 
+    @Nullable
     public static Map<String, Object> deserializeProperties(Map<String, Object> map, String name) {
-        Map<String, Object> result = new LinkedHashMap<>();
         Object propMap = map.get(name);
         if (propMap instanceof Map) {
+            Map<String, Object> result = new LinkedHashMap<>();
             for (Map.Entry<?,?> pe : ((Map<?, ?>) propMap).entrySet()) {
                 result.put(CommonUtils.toString(pe.getKey()), pe.getValue());
             }
+            return result;
+        } else {
+            return null;
         }
-        return result;
     }
 
+    @NotNull
     public static Map<String, String> deserializeStringMap(Map<String, Object> map, String name) {
         Map<String, String> result = new LinkedHashMap<>();
         Object propMap = map.get(name);
@@ -303,6 +307,7 @@ public class JSONUtils {
         return result;
     }
 
+    @NotNull
     public static List<String> deserializeStringList(Map<String, Object> map, String name) {
         List<String> result = new ArrayList<>();
         Object propMap = map.get(name);
