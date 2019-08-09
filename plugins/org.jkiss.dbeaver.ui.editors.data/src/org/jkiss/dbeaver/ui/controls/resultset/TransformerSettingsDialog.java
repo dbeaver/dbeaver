@@ -292,7 +292,7 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     private void loadTransformerSettings(Collection<? extends DBPPropertyDescriptor> properties) {
-        Map<String, String> transformOptions = settings == null ? null : settings.getTransformOptions();
+        Map<String, Object> transformOptions = settings == null ? null : settings.getTransformOptions();
         if (transformOptions == null) {
             transformOptions = Collections.emptyMap();
         }

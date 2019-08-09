@@ -45,7 +45,7 @@ import java.util.UUID;
 public class UUIDOrderedAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         attribute.setPresentationAttribute(
             new TransformerPresentationAttribute(attribute, "UUID (Ordered)", 16, DBPDataKind.BINARY));
 

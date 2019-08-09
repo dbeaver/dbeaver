@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
@@ -72,16 +71,16 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
         if (!CommonUtils.isEmpty(entity.getDescriptionColumnNames())) {
             xml.addAttribute(ATTR_DESCRIPTION, entity.getDescriptionColumnNames());
         }
-        if (!CommonUtils.isEmpty(entity.properties)) {
-            for (Map.Entry<String, String> prop : entity.properties.entrySet()) {
+        if (!CommonUtils.isEmpty(entity.getProperties())) {
+            for (Map.Entry<String, Object> prop : entity.getProperties().entrySet()) {
                 xml.startElement(TAG_PROPERTY);
                 xml.addAttribute(ATTR_NAME, prop.getKey());
-                xml.addAttribute(ATTR_VALUE, prop.getValue());
+                xml.addAttribute(ATTR_VALUE, CommonUtils.toString(prop.getValue()));
                 xml.endElement();
             }
         }
         // Attributes
-        for (DBVEntityAttribute attr : CommonUtils.safeCollection(entity.entityAttributes)) {
+        for (DBVEntityAttribute attr : CommonUtils.safeCollection(entity.getEntityAttributes())) {
             if (!attr.hasValuableData()) {
                 continue;
             }
@@ -103,31 +102,31 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
                                 xml.addAttribute(ATTR_ID, id);
                             }
                         }
-                        final Map<String, String> transformOptions = transformSettings.getTransformOptions();
+                        final Map<String, Object> transformOptions = transformSettings.getTransformOptions();
                         if (transformOptions != null) {
-                            for (Map.Entry<String, String> prop : transformOptions.entrySet()) {
+                            for (Map.Entry<String, Object> prop : transformOptions.entrySet()) {
                                 try (final XMLBuilder.Element e5 = xml.startElement(TAG_PROPERTY)) {
                                     if (prop.getValue() != null) {
                                         xml.addAttribute(ATTR_NAME, prop.getKey());
-                                        xml.addAttribute(ATTR_VALUE, prop.getValue());
+                                        xml.addAttribute(ATTR_VALUE, CommonUtils.toString(prop.getValue()));
                                     }
                                 }
                             }
                         }
                     }
                 }
-                if (!CommonUtils.isEmpty(attr.properties)) {
-                    for (Map.Entry<String, String> prop : attr.properties.entrySet()) {
+                if (!CommonUtils.isEmpty(attr.getProperties())) {
+                    for (Map.Entry<String, Object> prop : attr.getProperties().entrySet()) {
                         xml.startElement(TAG_PROPERTY);
                         xml.addAttribute(ATTR_NAME, prop.getKey());
-                        xml.addAttribute(ATTR_VALUE, prop.getValue());
+                        xml.addAttribute(ATTR_VALUE, CommonUtils.toString(prop.getValue()));
                         xml.endElement();
                     }
                 }
             }
         }
         // Constraints
-        for (DBVEntityConstraint c : CommonUtils.safeCollection(entity.entityConstraints)) {
+        for (DBVEntityConstraint c : CommonUtils.safeCollection(entity.getConstraints())) {
             if (c.hasAttributes()) {
                 xml.startElement(TAG_CONSTRAINT);
                 xml.addAttribute(ATTR_NAME, c.getName());
@@ -141,7 +140,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
             }
         }
         // Foreign keys
-        for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.entityForeignKeys)) {
+        for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.getForeignKeys())) {
             xml.startElement(TAG_ASSOCIATION);
             DBSEntity refEntity = fk.getAssociatedEntity();
             xml.addAttribute(ATTR_ENTITY, DBUtils.getObjectFullId(refEntity));
@@ -157,9 +156,9 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
             xml.endElement();
         }
         // Colors
-        if (!CommonUtils.isEmpty(entity.colorOverrides)) {
+        if (!CommonUtils.isEmpty(entity.getColorOverrides())) {
             xml.startElement(TAG_COLORS);
-            for (DBVColorOverride color : entity.colorOverrides) {
+            for (DBVColorOverride color : entity.getColorOverrides()) {
                 xml.startElement(TAG_COLOR);
                 xml.addAttribute(ATTR_NAME, color.getAttributeName());
                 xml.addAttribute(ATTR_OPERATOR, color.getOperator().name());

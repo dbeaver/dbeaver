@@ -116,8 +116,8 @@ public abstract class DBVUtils {
     }
 
     @NotNull
-    public static Map<String, String> getAttributeTransformersOptions(@NotNull DBDAttributeBinding binding) {
-        Map<String, String> options = null;
+    public static Map<String, Object> getAttributeTransformersOptions(@NotNull DBDAttributeBinding binding) {
+        Map<String, Object> options = null;
         final DBVTransformSettings transformSettings = getTransformSettings(binding, false);
         if (transformSettings != null) {
             options = transformSettings.getTransformOptions();

@@ -27,7 +27,7 @@ import java.util.*;
 public class DBVTransformSettings {
     private Set<String> excludedTransformers, includedTransformers;
     private String customTransformer;
-    private Map<String, String> transformOptions;
+    private Map<String, Object> transformOptions;
 
     DBVTransformSettings() {
     }
@@ -80,18 +80,18 @@ public class DBVTransformSettings {
         this.customTransformer = customTransformer;
     }
 
-    public Map<String, String> getTransformOptions() {
+    public Map<String, Object> getTransformOptions() {
         return transformOptions;
     }
 
-    public void setTransformOption(String name, String value) {
+    public void setTransformOption(String name, Object value) {
         if (this.transformOptions == null) {
             this.transformOptions = new LinkedHashMap<>();
         }
         this.transformOptions.put(name, value);
     }
 
-    public void setTransformOptions(Map<String, String> transformOptions) {
+    public void setTransformOptions(Map<String, Object> transformOptions) {
         this.transformOptions = transformOptions;
     }
 

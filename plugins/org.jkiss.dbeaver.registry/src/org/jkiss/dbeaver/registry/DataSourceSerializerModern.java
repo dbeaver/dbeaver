@@ -349,7 +349,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 Map<String, Object> profileMap = vmMap.getValue();
                 DBWNetworkProfile profile = new DBWNetworkProfile();
                 profile.setProfileName(profileName);
-                profile.setProperties(JSONUtils.deserializeProperties(profileMap, "properties"));
+                profile.setProperties(JSONUtils.deserializeStringMap(profileMap, "properties"));
 
                 for (Map.Entry<String, Map<String, Object>> handlerMap : JSONUtils.getNestedObjects(profileMap, "handlers")) {
                     DBWHandlerConfiguration configuration = parseNetworkHandlerConfig(null, profile, handlerMap);
@@ -446,8 +446,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     if (keepAlive > 0) {
                         config.setKeepAliveInterval(keepAlive);
                     }
-                    config.setProperties(JSONUtils.deserializeProperties(cfgObject, RegistryConstants.TAG_PROPERTIES));
-                    config.setProviderProperties(JSONUtils.deserializeProperties(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
+                    config.setProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROPERTIES));
+                    config.setProviderProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
 
                     // Events
                     for (Map.Entry<String, Map<String, Object>> eventObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_EVENTS)) {
@@ -503,7 +503,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 // Preferences
                 dataSource.getPreferenceStore().getProperties().putAll(
-                    JSONUtils.deserializeProperties(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
+                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
                 );
 
                 // Virtual model
@@ -555,7 +555,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     curNetworkHandler.setPassword(creds[1]);
                 }
             }
-            curNetworkHandler.setProperties(JSONUtils.deserializeProperties(handlerCfg, RegistryConstants.TAG_PROPERTIES));
+            curNetworkHandler.setProperties(JSONUtils.deserializeStringMap(handlerCfg, RegistryConstants.TAG_PROPERTIES));
             return curNetworkHandler;
         }
     }
