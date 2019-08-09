@@ -49,4 +49,6 @@ public interface SQLEditorCommands
     String CMD_SAVE_FILE = "org.jkiss.dbeaver.ui.editors.sql.save.file"; //$NON-NLS-1$
 
     String CMD_NAVIGATE_OBJECT = "org.jkiss.dbeaver.ui.editors.sql.navigate.object";
+    String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.ui.editors.sql.toggleLayout";
+
 }

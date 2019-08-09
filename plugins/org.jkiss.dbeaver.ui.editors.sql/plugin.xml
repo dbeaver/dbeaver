@@ -255,6 +255,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.close.tab" name="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" name="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="%command.org.jkiss.dbeaver.ui.editors.text.content.format.name" description="%command.org.jkiss.dbeaver.ui.editors.text.content.format.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggleLayout.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggleLayout.description" categoryId="org.jkiss.dbeaver.core.sql"/>
 
     </extension>
 
@@ -278,6 +279,8 @@
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_error.png"/>
+
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/rotate.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -457,6 +460,9 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.close.tab" class="org.jkiss.dbeaver.ui.editors.sql.handlers.CloseTabHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ToggleEditorLayoutHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object" class="org.jkiss.dbeaver.ui.editors.sql.handlers.NavigateObjectHandler">
