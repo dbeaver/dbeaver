@@ -1769,6 +1769,12 @@ public class SQLEditor extends SQLEditorBase implements
         if (dataSourceContainer == null) {
             return;
         }
+        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EXECUTE_SCRIPTS)) {
+            DBWorkbench.getPlatformUI().showError(
+                SQLEditorMessages.editors_sql_error_cant_execute_query_title,
+                "Query execution was restricted by connection configuration");
+            return;
+        }
 
         final boolean isSingleQuery = (queries.size() == 1);
         if (isSingleQuery && queries.get(0) instanceof SQLQuery) {
