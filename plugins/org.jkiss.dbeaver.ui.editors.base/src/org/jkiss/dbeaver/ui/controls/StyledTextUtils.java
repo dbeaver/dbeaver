@@ -85,7 +85,7 @@ public class StyledTextUtils {
         menu.add(new GroupMarker("styled_text_additions"));
     }
 
-    private static class StyledTextAction extends Action {
+    public static class StyledTextAction extends Action {
         private final StyledText styledText;
         private final int action;
         public StyledTextAction(String actionId, boolean enabled, StyledText styledText, int action) {
@@ -102,7 +102,7 @@ public class StyledTextUtils {
         }
     }
 
-    private static class StyledTextActionEx extends Action {
+    public static class StyledTextActionEx extends Action {
         public StyledTextActionEx(String actionId, int style) {
             super(ActionUtils.findCommandName(actionId), style);
             this.setActionDefinitionId(actionId);
