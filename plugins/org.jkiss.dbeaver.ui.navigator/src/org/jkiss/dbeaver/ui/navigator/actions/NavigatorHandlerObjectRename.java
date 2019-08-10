@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
@@ -49,20 +50,23 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
             IStructuredSelection structSelection = (IStructuredSelection) selection;
             Object element = structSelection.getFirstElement();
             if (element instanceof DBNNode) {
-                renameNode(HandlerUtil.getActiveWorkbenchWindow(event), (DBNNode) element, null);
+                renameNode(
+                    HandlerUtil.getActiveWorkbenchWindow(event),
+                    HandlerUtil.getActiveShell(event),
+                    (DBNNode) element, null);
             }
         }
         return null;
     }
 
-    public static boolean renameNode(IWorkbenchWindow workbenchWindow, final DBNNode node, String newName)
+    public static boolean renameNode(IWorkbenchWindow workbenchWindow, Shell shell, final DBNNode node, String newName)
     {
         String oldName = node instanceof DBNDatabaseNode ? ((DBNDatabaseNode) node).getPlainNodeName(true, false) : node.getNodeName();
         if (oldName == null) {
             oldName = "?";
         }
         if (newName == null) {
-            newName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Rename " + node.getNodeType(), oldName);
+            newName = EnterNameDialog.chooseName(shell, "Rename " + node.getNodeType(), oldName);
         }
         if (CommonUtils.isEmpty(newName) || newName.equals(oldName)) {
             return false;
