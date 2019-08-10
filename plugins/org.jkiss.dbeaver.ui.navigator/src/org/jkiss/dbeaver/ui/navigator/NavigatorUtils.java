@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -242,13 +243,17 @@ public class NavigatorUtils {
     }
 
     public static void executeNodeAction(DBXTreeNodeHandler.Action action, Object node, IServiceLocator serviceLocator) {
+        executeNodeAction(action, node, null, serviceLocator);
+    }
+
+    public static void executeNodeAction(DBXTreeNodeHandler.Action action, Object node, Map<String, Object> parameters, IServiceLocator serviceLocator) {
         String defCommandId = null;
         if (action == DBXTreeNodeHandler.Action.open) {
             defCommandId = NavigatorCommands.CMD_OBJECT_OPEN;
         }
         String actionCommand = getNodeActionCommand(action, node, defCommandId);
         if (actionCommand != null) {
-            ActionUtils.runCommand(actionCommand, new StructuredSelection(node), serviceLocator);
+            ActionUtils.runCommand(actionCommand, new StructuredSelection(node), parameters, serviceLocator);
         } else {
             // do nothing
             // TODO: implement some other behavior
@@ -551,15 +556,19 @@ public class NavigatorUtils {
     }
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window) {
+
+    }
+    public static void openNavigatorNode(Object node, IWorkbenchWindow window, Map<?, ?> parameters) {
         if (node instanceof DBNResource) {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
                 serviceSQL.openResource(((DBNResource) node).getResource());
             }
         } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
+            Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
             NavigatorHandlerObjectOpen.openEntityEditor(
                 (DBNNode) node,
-                null,
+                CommonUtils.toString(activePage, null),
                 window);
         }
     }

@@ -213,7 +213,10 @@
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.core.navigator" name="%category.dbnavigator.name" description="%category.dbnavigator.description"/>
 
-        <command id="org.jkiss.dbeaver.core.object.open" name="%command.org.jkiss.dbeaver.core.object.open.name" description="%command.org.jkiss.dbeaver.core.object.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.open" name="%command.org.jkiss.dbeaver.core.object.open.name" description="%command.org.jkiss.dbeaver.core.object.open.description" categoryId="org.jkiss.dbeaver.core.database">
+            <commandParameter id="activePage" name="Active page" optional="true"/>
+            <commandParameter id="activeFolder" name="Active folder" optional="true"/>
+        </command>
         <command id="org.jkiss.dbeaver.core.object.create" name="%command.org.jkiss.dbeaver.core.object.create.name" description="%command.org.jkiss.dbeaver.core.object.create.description" categoryId="org.jkiss.dbeaver.core.database">
             <commandParameter id="org.jkiss.dbeaver.core.object.type" name="Object type" optional="true"/>
             <commandParameter id="org.jkiss.dbeaver.core.object.typeName" name="Object type name" optional="true"/>

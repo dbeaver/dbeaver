@@ -33,11 +33,13 @@ import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -47,16 +49,10 @@ import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
 public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider, DBPPreferenceListener {
-
-    public enum DoubleClickBehavior {
-        EDIT,
-        CONNECT,
-        SQL_EDITOR,
-        EXPAND,
-        SQL_EDITOR_NEW,
-    }
 
     private DBNModel model;
     private DatabaseNavigatorTree tree;
@@ -126,8 +122,11 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 if ((node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder)) {
                     toggleNode(viewer, node);
                 } else if (node instanceof DBNDataSource) {
-                    DoubleClickBehavior dsBehaviorDefault = DoubleClickBehavior.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
-                    if (dsBehaviorDefault == DoubleClickBehavior.EXPAND) {
+                    NavigatorPreferences.DoubleClickBehavior dsBehaviorDefault = CommonUtils.valueOf(
+                        NavigatorPreferences.DoubleClickBehavior.class,
+                        DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK),
+                        NavigatorPreferences.DoubleClickBehavior.EDIT);
+                    if (dsBehaviorDefault == NavigatorPreferences.DoubleClickBehavior.EXPAND) {
                         toggleNode(viewer, node);
                     } else {
                         DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
@@ -137,10 +136,12 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 break;
                             case CONNECT: {
                                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
-                                if (dataSource.isConnected()) {
-                                    serviceConnections.disconnectDataSource(dataSource);
-                                } else {
-                                    serviceConnections.connectDataSource(dataSource, null);
+                                if (serviceConnections != null) {
+                                    if (dataSource.isConnected()) {
+                                        serviceConnections.disconnectDataSource(dataSource);
+                                    } else {
+                                        serviceConnections.connectDataSource(dataSource, null);
+                                    }
                                 }
                                 break;
                             }
@@ -163,12 +164,23 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 } else if (node instanceof TreeNodeSpecial) {
                     ((TreeNodeSpecial) node).handleDefaultAction(navigatorTree);
                 } else {
-                    DoubleClickBehavior dcBehaviorDefault = DoubleClickBehavior.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+                    String defaultEditorPageId = null;
+                    NavigatorPreferences.DoubleClickBehavior dcBehaviorDefault = CommonUtils.valueOf(
+                        NavigatorPreferences.DoubleClickBehavior.class,
+                        DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+
+                    if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSDataContainer) {
+                        defaultEditorPageId = DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE);
+                    }
                     boolean hasChildren = node instanceof DBNNode && ((DBNNode) node).hasChildren(true);
-                    if (hasChildren && dcBehaviorDefault == DoubleClickBehavior.EXPAND) {
+                    if (hasChildren && dcBehaviorDefault == NavigatorPreferences.DoubleClickBehavior.EXPAND) {
                         toggleNode(viewer, node);
                     } else {
-                        NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, getSite());
+                        Map<String, Object> parameters = null;
+                        if (!CommonUtils.isEmpty(defaultEditorPageId)) {
+                            parameters = Collections.singletonMap(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE, defaultEditorPageId);
+                        }
+                        NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, parameters, getSite());
                     }
                 }
             }
@@ -192,7 +204,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         }
     }
 
-    protected void onSelectionChange(IStructuredSelection structSel) {
+    private void onSelectionChange(IStructuredSelection structSel) {
         if (!structSel.isEmpty()) {
             lastSelection = structSel.getFirstElement();
             if (lastSelection instanceof DBNNode) {
