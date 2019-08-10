@@ -79,13 +79,13 @@ public class DataExporterHTML extends StreamExporterAbstract {
               "width: 50%;} " +
               "th{font-family: monospace;" + 
               "border: thin solid #6495ed;" + 
-              "width: 50%;" + 
+//              "width: 50%;" +
               "padding: 5px;" + 
               "background-color: #D0E3FA;"+ 
               "background-image: url(sky.jpg);}"  +
               "td{font-family: sans-serif;" + 
               "border: thin solid #6495ed;" + 
-              "width: 50%;" + 
+//              "width: 50%;" +
               "padding: 5px;" + 
               "text-align: center;" + 
               "background-color: #ffffff;}" +
