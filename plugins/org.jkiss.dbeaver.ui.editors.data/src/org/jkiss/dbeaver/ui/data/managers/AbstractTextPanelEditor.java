@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -29,6 +30,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -76,10 +79,25 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         assert editorControl != null;
         initEditorSettings(editorControl);
         editorControl.addDisposeListener(e -> editor.releaseEditorInput());
-        return editor.getEditorControl();
+
+        editor.addContextMenuContributor(manager -> contributeTextEditorActions(manager, editorControl));
+
+        return editorControl;
     }
 
     protected abstract EDITOR createEditorParty(IValueController valueController);
+
+    protected void contributeTextEditorActions(@NotNull IContributionManager manager, @NotNull final StyledText control) {
+        manager.removeAll();
+        StyledTextUtils.fillDefaultStyledTextContextMenu(manager, control);
+        manager.add(new AutoFormatAction());
+
+        IAction preferencesAction = editor.getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES);
+        if (preferencesAction != null) {
+            manager.add(new Separator());
+            manager.add(preferencesAction);
+        }
+    }
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final StyledText control) {
@@ -105,15 +123,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
 
         BaseTextEditor textEditor = getTextEditor();
         if (textEditor != null) {
-            final Action afAction = new Action("Auto Format", Action.AS_CHECK_BOX) {
-                @Override
-                public void run() {
-                    boolean newAF = !getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT);
-                    setChecked(newAF);
-                    getPanelSettings().put(PREF_TEXT_EDITOR_AUTO_FORMAT, newAF);
-                    applyEditorStyle();
-                }
-            };
+            final Action afAction = new AutoFormatAction();
             afAction.setChecked(getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT));
             manager.add(afAction);
         }
@@ -233,4 +243,22 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         return viewerSettings;
     }
 
+    private class AutoFormatAction extends Action {
+        AutoFormatAction() {
+            super("Auto Format", Action.AS_CHECK_BOX);
+        }
+
+        @Override
+        public boolean isChecked() {
+            return getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT);
+        }
+
+        @Override
+        public void run() {
+            boolean newAF = !getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT);
+            //setChecked(newAF);
+            getPanelSettings().put(PREF_TEXT_EDITOR_AUTO_FORMAT, newAF);
+            applyEditorStyle();
+        }
+    }
 }
