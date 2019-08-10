@@ -51,14 +51,21 @@ public class DataSourceToolbarUtils
             MTrimBar topTrim = ((WorkbenchWindow) window).getTopTrim();
             for (MTrimElement element : topTrim.getChildren()) {
                 if ("dbeaver-connection-selector".equals(element.getElementId())) {
+                    boolean showConnectionSelector = false;
+                    IEditorPart activeEditor = window.getActivePage().getActiveEditor();
+                    if (activeEditor instanceof IDataSourceContainerProvider) {
+                        showConnectionSelector = true;
+                    }
+
                     if (element instanceof MElementContainer) {
                         MElementContainer<? extends MUIElement> container = (MElementContainer<? extends MUIElement>)element;
                         for (MUIElement tbItem : container.getChildren()) {
-                            tbItem.setVisible(false);
+                            tbItem.setVisible(!showConnectionSelector);
+                            tbItem.setVisible(showConnectionSelector);
                         }
-                        for (MUIElement tbItem : container.getChildren()) {
-                            tbItem.setVisible(true);
-                        }
+//                        for (MUIElement tbItem : container.getChildren()) {
+//                            tbItem.setVisible(true);
+//                        }
                     }
                     return;
                 }
