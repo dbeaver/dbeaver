@@ -1828,7 +1828,7 @@ public class ResultSetViewer extends Viewer
         }
         setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING : DBPMessageType.INFORMATION);
 
-        if (rowCountLabel != null) {
+        if (rowCountLabel != null && !rowCountLabel.isDisposed()) {
             // Update row count label
             if (!hasData()) {
                 rowCountLabel.setMessage("No Data");
