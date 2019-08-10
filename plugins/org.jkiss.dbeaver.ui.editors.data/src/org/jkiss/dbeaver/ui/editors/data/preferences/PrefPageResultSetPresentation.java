@@ -174,7 +174,11 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             gridShowAttrFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS));
             gridShowAttrOrder.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING));
             gridDoubleClickBehavior.select(
-                Spreadsheet.DoubleClickBehavior.valueOf(store.getString(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK)).ordinal());
+                CommonUtils.valueOf(
+                    Spreadsheet.DoubleClickBehavior.class,
+                    store.getString(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK),
+                    Spreadsheet.DoubleClickBehavior.NONE)
+                    .ordinal());
             autoSwitchMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
             showDescription.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION));
             columnWidthByValue.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES));
@@ -206,7 +210,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS, gridShowAttrIcons.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS, gridShowAttrFilters.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING, gridShowAttrOrder.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
+            store.setValue(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(
+                Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION, showDescription.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES, columnWidthByValue.getSelection());
