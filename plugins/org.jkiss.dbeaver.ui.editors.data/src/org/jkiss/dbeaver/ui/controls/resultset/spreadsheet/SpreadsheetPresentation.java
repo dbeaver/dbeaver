@@ -900,8 +900,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         Composite placeholder = null;
         if (inline) {
-            if (controller.isReadOnly()) {
-                return null;
+            if (controller.isAttributeReadOnly(attr)) {
+                controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only", DBPMessageType.ERROR);
             }
             spreadsheet.cancelInlineEditor();
             activeInlineEditor = null;
@@ -916,6 +916,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             gd.grabExcessHorizontalSpace = true;
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
+
+            placeholder.addDisposeListener(e -> controller.updateStatusMessage());
 
             controller.lockActionsByControl(placeholder);
         }
