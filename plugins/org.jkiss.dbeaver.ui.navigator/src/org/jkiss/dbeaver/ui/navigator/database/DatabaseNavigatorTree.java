@@ -469,7 +469,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     disposeOldEditor();
                     treeViewer.getTree().setFocus();
                     if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
-                        NavigatorHandlerObjectRename.renameNode(UIUtils.getActiveWorkbenchWindow(), node, newName);
+                        NavigatorHandlerObjectRename.renameNode(
+                            UIUtils.getActiveWorkbenchWindow(),
+                            treeViewer.getControl().getShell(),
+                            node,
+                            newName);
                     }
                 } else if (e.keyCode == SWT.ESC) {
                     disposeOldEditor();
