@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -28,10 +29,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBNProjectDatabases
@@ -164,6 +162,22 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             this.children = childNodes.toArray(new DBNNode[0]);
         }
         return children;
+    }
+
+    @Override
+    public boolean supportsDrop(DBNNode otherNode) {
+        return otherNode == null || otherNode instanceof DBNDataSource;
+    }
+
+    @Override
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+        for (DBNNode node : nodes) {
+            if (node instanceof DBNDataSource) {
+                DBPDataSourceContainer dsContainer = ((DBNDataSource) node).getDataSourceContainer();
+                dsContainer.getRegistry().removeDataSource(dsContainer);
+                dataSourceRegistry.addDataSource(dsContainer);
+            }
+        }
     }
 
     public void refreshChildren()
