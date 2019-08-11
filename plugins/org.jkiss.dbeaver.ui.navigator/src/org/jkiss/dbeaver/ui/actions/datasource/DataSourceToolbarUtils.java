@@ -62,7 +62,9 @@ public class DataSourceToolbarUtils
                         for (MUIElement tbItem : container.getChildren()) {
                             // Handle Eclipse bug. By default it doesn't update contents of main toolbar elements
                             // So we need to hide/shot it to force text update
-                            tbItem.setVisible(!showConnectionSelector);
+                            if (showConnectionSelector) {
+                                tbItem.setVisible(false);
+                            }
                             tbItem.setVisible(showConnectionSelector);
                         }
 //                        for (MUIElement tbItem : container.getChildren()) {
