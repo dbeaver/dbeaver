@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -74,6 +75,8 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             DBPDataSourceFolder folder = null;
             if (container instanceof DataSourceRegistry) {
                 registry = (DBPDataSourceRegistry) container;
+            } else if (container instanceof DBPProject) {
+                registry = ((DBPProject) container).getDataSourceRegistry();
             } else if (container instanceof DBPDataSourceFolder) {
                 folder = (DBPDataSourceFolder) container;
                 registry = folder.getDataSourceRegistry();
