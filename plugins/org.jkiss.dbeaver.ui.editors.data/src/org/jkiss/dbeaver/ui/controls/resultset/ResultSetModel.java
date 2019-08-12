@@ -389,6 +389,9 @@ public class ResultSetModel {
                                 log.warn("Attribute '" + ownerAttr.getName() + "' has collection type but attribute value is not a collection: " + nestedValue);
                             }
                         }
+                        if (ownerValue instanceof DBDComposite) {
+                            ((DBDComposite) ownerValue).setAttributeValue(ownerAttr, nestedValue);
+                        }
                     }
                     ownerValue = nestedValue;
                 } catch (DBCException e) {
