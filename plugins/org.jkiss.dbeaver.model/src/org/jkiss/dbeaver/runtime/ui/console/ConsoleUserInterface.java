@@ -28,11 +28,15 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+
+import java.lang.reflect.InvocationTargetException;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
@@ -143,8 +147,13 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void executeInUI(@NotNull Runnable runnable) {
+    public void executeWithProgress(@NotNull Runnable runnable) {
         runnable.run();
+    }
+
+    @Override
+    public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
+        runnable.run(new LoggingProgressMonitor());
     }
 
     @NotNull

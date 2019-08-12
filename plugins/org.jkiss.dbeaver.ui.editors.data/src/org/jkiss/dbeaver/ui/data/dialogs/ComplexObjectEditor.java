@@ -802,7 +802,11 @@ public class ComplexObjectEditor extends TreeViewer {
             ComplexElement[] arrayItems = childrenMap.get(collection);
             if (collection == null) {
                 try {
-                    collection = createNewObject(DBDCollection.class);
+                    collection = DBUtils.createNewAttributeValue(
+                        parentController.getExecutionContext(),
+                        parentController.getValueHandler(),
+                        parentController.getValueType(),
+                        DBDCollection.class);
                     setInput(collection);
                 } catch (DBCException e) {
                     DBWorkbench.getPlatformUI().showError("New object create", "Error creating new collection", e);
@@ -834,35 +838,6 @@ public class ComplexObjectEditor extends TreeViewer {
             }
 
             autoUpdateComplexValue();
-        }
-
-        private <T> T createNewObject(Class<T> targetType) throws DBCException {
-            DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
-                    try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Create new object")) {
-                        result = parentController.getValueHandler().createNewValueObject(session, parentController.getValueType());
-                    } catch (DBCException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            };
-            try {
-                UIUtils.runInProgressService(runnable);
-            } catch (InvocationTargetException e) {
-                throw new DBCException(e.getTargetException(), executionContext.getDataSource());
-            } catch (InterruptedException e) {
-                throw new DBCException(e, executionContext.getDataSource());
-            }
-
-            Object result = runnable.getResult();
-            if (result == null) {
-                throw new DBCException("Internal error - null object created");
-            }
-            if (!targetType.isInstance(result)) {
-                throw new DBCException("Internal error - wrong object type '" + result.getClass().getName() + "' while '" + targetType.getName() + "' was expected");
-            }
-            return targetType.cast(result);
         }
 
     }
