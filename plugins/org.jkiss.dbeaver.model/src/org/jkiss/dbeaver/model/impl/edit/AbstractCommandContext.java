@@ -75,7 +75,10 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     @Override
     public void saveChanges(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (!executionContext.isConnected()) {
-            throw new DBException("Context [" + executionContext.getContextName() + "] isn't connected to the database");
+            executionContext.invalidateContext(monitor, false);
+            if (!executionContext.isConnected()) {
+                throw new DBException("Context [" + executionContext.getContextName() + "] isn't connected to the database");
+            }
         }
 
         // Execute commands in transaction

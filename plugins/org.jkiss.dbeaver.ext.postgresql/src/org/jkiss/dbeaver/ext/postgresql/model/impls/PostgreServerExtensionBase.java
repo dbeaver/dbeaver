@@ -233,7 +233,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                 } catch (DBException e) {
                     log.error(e);
                 }
-                if (table.hasPartitions()) {
+                if (!CommonUtils.isEmpty(table.getPartitionKey())) {
                     ddl.append("\nPARTITION BY ").append(table.getPartitionKey());
                 }
             }
