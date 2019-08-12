@@ -114,12 +114,14 @@ public class FilterValueEditDialog extends BaseDialog{
         if (handler.editor == null) {
         	handler.textControl = new Text(editorPlaceholder, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         	handler.textControl.setText("");
+/*
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 300;
             gd.heightHint = 300;
             gd.minimumHeight = 100;
             gd.minimumWidth = 100;
             handler.textControl.setLayoutData(gd);
+*/
         }
     }
 
