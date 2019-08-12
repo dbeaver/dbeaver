@@ -113,7 +113,22 @@ public enum DBCLogicalOperator {
         public boolean evaluate(Object srcValue, Object[] arguments) {
             return false;
         }
+    },
+    CONTAINS("CONTAINS", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            final Object cmpValue = arguments == null ? null : arguments[0];
+            return false;//DBUtils.compareDataValues(srcValue, cmpValue) == 0;
+        }
+    },
+    CONTAINS_KEY("CONTAINS KEY", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            final Object cmpValue = arguments == null ? null : arguments[0];
+            return false;//DBUtils.compareDataValues(srcValue, cmpValue) != 0;
+        }
     };
+
 
     private final String stringValue;
     private final int argumentCount;
