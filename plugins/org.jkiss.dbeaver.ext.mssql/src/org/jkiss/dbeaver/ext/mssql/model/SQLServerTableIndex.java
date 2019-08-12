@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -201,22 +202,22 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 "    'SORT_IN_TEMPDB = OFF '  + ','  + \n" +
                 "    CASE WHEN I.ignore_dup_key = 1 THEN ' IGNORE_DUP_KEY = ON ' ELSE ' IGNORE_DUP_KEY = OFF ' END + ','  + \n" +
                 "    CASE WHEN ST.no_recompute = 0 THEN ' STATISTICS_NORECOMPUTE = OFF ' ELSE ' STATISTICS_NORECOMPUTE = ON ' END + ','  + \n" +
-                "    -- default value  \n" +
-                "    ' DROP_EXISTING = ON '  + ','  + \n" +
+//                "    -- default value  \n" +
+//                "    ' DROP_EXISTING = ON '  + ','  + \n" +
                 "    -- default value  \n" +
                 "    ' ONLINE = OFF '  + ','  + \n" +
                 "   CASE WHEN I.allow_row_locks = 1 THEN ' ALLOW_ROW_LOCKS = ON ' ELSE ' ALLOW_ROW_LOCKS = OFF ' END + ','  + \n" +
                 "   CASE WHEN I.allow_page_locks = 1 THEN ' ALLOW_PAGE_LOCKS = ON ' ELSE ' ALLOW_PAGE_LOCKS = OFF ' END  + ' )" +
                 "\n\t ON [' + \n" +
                 "   DS.name + ' ] '  [CreateIndexScript] \n" +
-                "FROM sys.indexes I   \n" +
-                " JOIN sys.tables T ON T.Object_id = I.Object_id    \n" +
-                " JOIN sys.sysindexes SI ON I.Object_id = SI.id AND I.index_id = SI.indid   \n" +
+                "FROM " + SQLServerUtils.getSystemTableName(getDatabase(), "indexes") + " I   \n" +
+                " JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " T ON T.Object_id = I.Object_id    \n" +
+                " JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "sysindexes") + " SI ON I.Object_id = SI.id AND I.index_id = SI.indid   \n" +
                 " JOIN (SELECT * FROM (  \n" +
                 "    SELECT IC2.object_id , IC2.index_id ,  \n" +
                 "        STUFF((SELECT ' , ' + C.name + CASE WHEN MAX(CONVERT(INT,IC1.is_descending_key)) = 1 THEN ' DESC ' ELSE ' ASC ' END \n" +
-                "    FROM sys.index_columns IC1  \n" +
-                "    JOIN Sys.columns C   \n" +
+                "    FROM " + SQLServerUtils.getSystemTableName(getDatabase(), "index_columns") + " IC1  \n" +
+                "    JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "columns") + " C   \n" +
                 "       ON C.object_id = IC1.object_id   \n" +
                 "       AND C.column_id = IC1.column_id   \n" +
                 "       AND IC1.is_included_column = 0  \n" +
@@ -225,18 +226,18 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 "    GROUP BY IC1.object_id,C.name,index_id  \n" +
                 "    ORDER BY MAX(IC1.key_ordinal)  \n" +
                 "       FOR XML PATH('')), 1, 2, '') KeyColumns   \n" +
-                "    FROM sys.index_columns IC2   \n" +
+                "    FROM " + SQLServerUtils.getSystemTableName(getDatabase(), "index_columns") + " IC2   \n" +
                 "    --WHERE IC2.Object_id = object_id('Person.Address') --Comment for all tables  \n" +
                 "    GROUP BY IC2.object_id ,IC2.index_id) tmp3 )tmp4   \n" +
                 "  ON I.object_id = tmp4.object_id AND I.Index_id = tmp4.index_id  \n" +
-                " JOIN sys.stats ST ON ST.object_id = I.object_id AND ST.stats_id = I.index_id   \n" +
-                " JOIN sys.data_spaces DS ON I.data_space_id=DS.data_space_id   \n" +
-                " JOIN sys.filegroups FG ON I.data_space_id=FG.data_space_id   \n" +
+                " JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "stats") + " ST ON ST.object_id = I.object_id AND ST.stats_id = I.index_id   \n" +
+                " JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "data_spaces") + " DS ON I.data_space_id=DS.data_space_id   \n" +
+                " JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "filegroups") + " FG ON I.data_space_id=FG.data_space_id   \n" +
                 " LEFT JOIN (SELECT * FROM (   \n" +
                 "    SELECT IC2.object_id , IC2.index_id ,   \n" +
                 "        STUFF((SELECT ' , ' + C.name  \n" +
-                "    FROM sys.index_columns IC1   \n" +
-                "    JOIN Sys.columns C    \n" +
+                "    FROM " + SQLServerUtils.getSystemTableName(getDatabase(), "index_columns") + " IC1   \n" +
+                "    JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "columns") + " C    \n" +
                 "       ON C.object_id = IC1.object_id    \n" +
                 "       AND C.column_id = IC1.column_id    \n" +
                 "       AND IC1.is_included_column = 1   \n" +
@@ -244,7 +245,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 "       AND IC1.index_id = IC2.index_id    \n" +
                 "    GROUP BY IC1.object_id,C.name,index_id   \n" +
                 "       FOR XML PATH('')), 1, 2, '') IncludedColumns    \n" +
-                "   FROM sys.index_columns IC2    \n" +
+                "   FROM " + SQLServerUtils.getSystemTableName(getDatabase(), "index_columns") + " IC2    \n" +
                 "   --WHERE IC2.Object_id = object_id('Person.Address') --Comment for all tables   \n" +
                 "   GROUP BY IC2.object_id ,IC2.index_id) tmp1   \n" +
                 "   WHERE IncludedColumns IS NOT NULL ) tmp2    \n" +
@@ -257,6 +258,10 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
         } catch (SQLException e) {
             throw new DBCException("Error reading index definition", e);
         }
+    }
+
+    private SQLServerDatabase getDatabase() {
+        return getTable().getDatabase();
     }
 
     @Override
