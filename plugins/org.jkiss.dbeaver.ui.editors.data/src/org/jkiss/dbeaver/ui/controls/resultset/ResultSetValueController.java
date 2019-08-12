@@ -82,6 +82,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return controller.getExecutionContext();
     }
 
+    @NotNull
     @Override
     public IDataController getDataController() {
         return controller;
