@@ -93,9 +93,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     }
 
     private boolean isQuoteString(String str) {
-        for (String[] qs : syntaxManager.getQuoteStrings()) {
-            if (str.equals(SQLConstants.STR_QUOTE_SINGLE) || str.equals(qs[0]) || str.equals(qs[1])) {
-                return true;
+        String[][] quoteStrings = syntaxManager.getQuoteStrings();
+        if (quoteStrings != null) {
+            for (String[] qs : quoteStrings) {
+                if (str.equals(SQLConstants.STR_QUOTE_SINGLE) || str.equals(qs[0]) || str.equals(qs[1])) {
+                    return true;
+                }
             }
         }
         return false;
