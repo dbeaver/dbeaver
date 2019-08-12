@@ -122,7 +122,7 @@ class DBeaverSettingsImporter {
             //confirmLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
             confirmLabel.setText(
                 "\n" +
-                GeneralUtils.getProductTitle() + " uses new configuration format.\n\n" +
+                GeneralUtils.getProductTitle() + " uses a new configuration format.\n\n" +
 //                "Previous version (" + GeneralUtils.getProductName() + " " + oldVersion + ") settings were found.\n" +
 //                oldDir.getAbsolutePath() + "\n" +
                 "Do you want to migrate existing settings (version " + oldVersion + ")?\n\n"
