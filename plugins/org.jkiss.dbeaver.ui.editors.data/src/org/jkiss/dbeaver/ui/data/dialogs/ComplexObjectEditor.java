@@ -120,7 +120,7 @@ public class ComplexObjectEditor extends TreeViewer {
         String name;
         Object value;
 
-        public MapEntry(String name, Object value) {
+        MapEntry(String name, Object value) {
             this.name = name;
             this.value = value;
         }
@@ -135,7 +135,7 @@ public class ComplexObjectEditor extends TreeViewer {
         int index;
         Object value;
 
-        public CollItem(int index, Object value) {
+        CollItem(int index, Object value) {
             this.index = index;
             this.value = value;
         }
@@ -230,24 +230,23 @@ public class ComplexObjectEditor extends TreeViewer {
             }
         });
 
-        treeControl.addTraverseListener(new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e)
-            {
-                if (e.detail == SWT.TRAVERSE_RETURN) {
-                    final TreeItem[] selection = treeControl.getSelection();
-                    if (selection.length == 0) {
-                        return;
-                    }
-                    if (treeEditor.getEditor() != null && !treeEditor.getEditor().isDisposed()) {
-                        // Give a chance to catch it in editor handler
-                        e.doit = true;
-                        return;
-                    }
-                    showEditor(selection[0], (e.stateMask & SWT.SHIFT) == SWT.SHIFT);
-                    e.doit = false;
-                    e.detail = SWT.TRAVERSE_NONE;
+        treeControl.addTraverseListener(e -> {
+            if (e.detail == SWT.TRAVERSE_RETURN) {
+                final TreeItem[] selection = treeControl.getSelection();
+                if (selection.length == 0) {
+                    return;
                 }
+                if (treeEditor.getEditor() != null && !treeEditor.getEditor().isDisposed()) {
+                    // Give a chance to catch it in editor handler
+                    e.doit = true;
+                    return;
+                }
+                showEditor(selection[0], (e.stateMask & SWT.SHIFT) == SWT.SHIFT);
+                e.doit = false;
+                e.detail = SWT.TRAVERSE_NONE;
+            } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                e.doit = false;
+                disposeOldEditor();
             }
         });
 
@@ -261,23 +260,20 @@ public class ComplexObjectEditor extends TreeViewer {
         addElementAction.setEnabled(true);
         removeElementAction.setEnabled(false);
 
-        addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                final IStructuredSelection selection = (IStructuredSelection)event.getSelection();
-                if (selection == null || selection.isEmpty()) {
-                    copyNameAction.setEnabled(false);
-                    copyValueAction.setEnabled(false);
-                    removeElementAction.setEnabled(false);
-                    addElementAction.setEnabled(getInput() instanceof DBDCollection);
-                } else {
-                    copyNameAction.setEnabled(true);
-                    copyValueAction.setEnabled(true);
-                    final Object element = selection.getFirstElement();
-                    if (element instanceof ArrayItem) {
-                        removeElementAction.setEnabled(true);
-                        addElementAction.setEnabled(true);
-                    }
+        addSelectionChangedListener(event -> {
+            final IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+            if (selection == null || selection.isEmpty()) {
+                copyNameAction.setEnabled(false);
+                copyValueAction.setEnabled(false);
+                removeElementAction.setEnabled(false);
+                addElementAction.setEnabled(getInput() instanceof DBDCollection);
+            } else {
+                copyNameAction.setEnabled(true);
+                copyValueAction.setEnabled(true);
+                final Object element = selection.getFirstElement();
+                if (element instanceof ArrayItem) {
+                    removeElementAction.setEnabled(true);
+                    addElementAction.setEnabled(true);
                 }
             }
         });
@@ -332,17 +328,25 @@ public class ComplexObjectEditor extends TreeViewer {
                 (ComplexElement)item.getData(),
                 advanced ? IValueController.EditType.EDITOR : IValueController.EditType.INLINE);
 
-            curCellEditor = valueController.getValueManager().createEditor(valueController);
-            if (curCellEditor != null) {
-                curCellEditor.createControl();
-                if (curCellEditor instanceof IValueEditorStandalone) {
-                    ((IValueEditorStandalone) curCellEditor).showValueEditor();
-                } else if (curCellEditor.getControl() != null) {
-                    treeEditor.setEditor(curCellEditor.getControl(), item, 1);
+            IValueEditor newCellEditor = valueController.getValueManager().createEditor(valueController);
+            if (newCellEditor != null) {
+                newCellEditor.createControl();
+                if (newCellEditor instanceof IValueEditorStandalone) {
+                    ((IValueEditorStandalone) newCellEditor).showValueEditor();
+                } else {
+                    Control editorControl = newCellEditor.getControl();
+                    if (editorControl != null) {
+                        Point editorSize = editorControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                        treeEditor.minimumHeight = editorSize.y;
+                        //treeEditor.minimumWidth = editorSize.y;
+                        treeEditor.setEditor(editorControl, item, 1);
+                        editorControl.setFocus();
+                    }
                 }
                 if (!advanced) {
-                    curCellEditor.primeEditorValue(valueController.getValue());
+                    newCellEditor.primeEditorValue(valueController.getValue());
                 }
+                curCellEditor = newCellEditor;
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Cell editor", "Can't open cell editor", e);
@@ -367,8 +371,8 @@ public class ComplexObjectEditor extends TreeViewer {
             }
         }
         if (complexValue instanceof DBDComposite) {
-            for (int i = 0; i < items.length; i++) {
-                ((DBDComposite) complexValue).setAttributeValue(((CompositeField)items[i]).attribute, items[i].value);
+            for (ComplexElement item : items) {
+                ((DBDComposite) complexValue).setAttributeValue(((CompositeField) item).attribute, item.value);
             }
         } else if (complexValue instanceof DBDCollection) {
             if (items != null) {
@@ -416,6 +420,12 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
+    private void autoUpdateComplexValue() {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE)) {
+            parentController.updateValue(extractValue(), false);
+        }
+    }
+
     private class ComplexValueController implements IValueController, IMultiController {
         private final ComplexElement item;
         private final DBDValueHandler valueHandler;
@@ -424,7 +434,7 @@ public class ComplexObjectEditor extends TreeViewer {
         private final Object value;
         private final EditType editType;
 
-        public ComplexValueController(ComplexElement obj, EditType editType) throws DBCException {
+        ComplexValueController(ComplexElement obj, EditType editType) throws DBCException {
             this.item = obj;
             if (this.item instanceof CompositeField) {
                 CompositeField field = (CompositeField) this.item;
@@ -461,6 +471,7 @@ public class ComplexObjectEditor extends TreeViewer {
             return executionContext;
         }
 
+        @NotNull
         @Override
         public IDataController getDataController() {
             return parentController.getDataController();
@@ -493,9 +504,7 @@ public class ComplexObjectEditor extends TreeViewer {
             }
             this.item.value = value;
             this.item.modified = true;
-            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE)) {
-                parentController.updateValue(extractValue(), false);
-            }
+            autoUpdateComplexValue();
             refresh(this.item);
         }
 
@@ -570,7 +579,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
     class StructContentProvider implements IStructuredContentProvider, ITreeContentProvider
     {
-        public StructContentProvider()
+        StructContentProvider()
         {
         }
 
@@ -635,8 +644,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 final DBDReference reference = (DBDReference)parent;
                 DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
                     @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
                         try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read reference value")) {
                             result = reference.getReferencedObject(session);
                         } catch (DBCException e) {
@@ -724,7 +732,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private class PropsLabelProvider extends CellLabelProvider
     {
         private final boolean isName;
-        public PropsLabelProvider(boolean isName)
+        PropsLabelProvider(boolean isName)
         {
             this.isName = isName;
         }
@@ -761,7 +769,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private class CopyAction extends Action {
         private final boolean isName;
-        public CopyAction(boolean isName) {
+        CopyAction(boolean isName) {
             super(WorkbenchMessages.Workbench_copy + " " + getTree().getColumn(isName ? 0 : 1).getText());
             this.isName = isName;
         }
@@ -783,12 +791,13 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     private class AddElementAction extends Action {
-        public AddElementAction() {
+        AddElementAction() {
             super("Add element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD));
         }
 
         @Override
         public void run() {
+            disposeOldEditor();
             DBDCollection collection = (DBDCollection) getInput();
             ComplexElement[] arrayItems = childrenMap.get(collection);
             if (collection == null) {
@@ -808,7 +817,7 @@ public class ComplexObjectEditor extends TreeViewer {
             final IStructuredSelection selection = getStructuredSelection();
             ArrayItem newItem;
             if (selection.isEmpty()) {
-                newItem = new ArrayItem(makeArrayInfo(collection), 0, null);
+                newItem = new ArrayItem(makeArrayInfo(collection), arrayItems.length, null);
             } else {
                 ArrayItem curItem = (ArrayItem) selection.getFirstElement();
                 newItem = new ArrayItem(curItem.array, curItem.index + 1, null);
@@ -823,41 +832,43 @@ public class ComplexObjectEditor extends TreeViewer {
             if (treeItem != null) {
                 showEditor((TreeItem) treeItem, false);
             }
-        }
-    }
 
-    private <T> T createNewObject(Class<T> targetType) throws DBCException {
-        DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Create new object")) {
-                    result = parentController.getValueHandler().createNewValueObject(session, parentController.getValueType());
-                } catch (DBCException e) {
-                    throw new InvocationTargetException(e);
+            autoUpdateComplexValue();
+        }
+
+        private <T> T createNewObject(Class<T> targetType) throws DBCException {
+            DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+                    try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Create new object")) {
+                        result = parentController.getValueHandler().createNewValueObject(session, parentController.getValueType());
+                    } catch (DBCException e) {
+                        throw new InvocationTargetException(e);
+                    }
                 }
+            };
+            try {
+                UIUtils.runInProgressService(runnable);
+            } catch (InvocationTargetException e) {
+                throw new DBCException(e.getTargetException(), executionContext.getDataSource());
+            } catch (InterruptedException e) {
+                throw new DBCException(e, executionContext.getDataSource());
             }
-        };
-        try {
-            UIUtils.runInProgressService(runnable);
-        } catch (InvocationTargetException e) {
-            throw new DBCException(e.getTargetException(), executionContext.getDataSource());
-        } catch (InterruptedException e) {
-            throw new DBCException(e, executionContext.getDataSource());
+
+            Object result = runnable.getResult();
+            if (result == null) {
+                throw new DBCException("Internal error - null object created");
+            }
+            if (!targetType.isInstance(result)) {
+                throw new DBCException("Internal error - wrong object type '" + result.getClass().getName() + "' while '" + targetType.getName() + "' was expected");
+            }
+            return targetType.cast(result);
         }
 
-        Object result = runnable.getResult();
-        if (result == null) {
-            throw new DBCException("Internal error - null object created");
-        }
-        if (!targetType.isInstance(result)) {
-            throw new DBCException("Internal error - wrong object type '" + result.getClass().getName() + "' while '" + targetType.getName() + "' was expected");
-        }
-        return targetType.cast(result);
     }
 
     private class RemoveElementAction extends Action {
-        public RemoveElementAction() {
+        RemoveElementAction() {
             super("Remove element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE));
         }
 
@@ -868,6 +879,8 @@ public class ComplexObjectEditor extends TreeViewer {
                 return;
             }
 
+            disposeOldEditor();
+
             DBDCollection collection = (DBDCollection) getInput();
             ComplexElement[] arrayItems = childrenMap.get(collection);
             if (arrayItems == null) {
@@ -875,10 +888,19 @@ public class ComplexObjectEditor extends TreeViewer {
                 return;
             }
             ArrayItem item = (ArrayItem)selection.getFirstElement();
-            shiftArrayItems(arrayItems, item.index, -1);
+            int deleteIndex = item.index;
+            shiftArrayItems(arrayItems, deleteIndex, -1);
             arrayItems = ArrayUtils.remove(ComplexElement.class, arrayItems, item);
             childrenMap.put(collection, arrayItems);
+            if (deleteIndex >= arrayItems.length) {
+                deleteIndex--;
+            }
+            if (deleteIndex >= 0) {
+                setSelection(new StructuredSelection(arrayItems[deleteIndex]));
+            }
             refresh();
+
+            autoUpdateComplexValue();
         }
     }
 
