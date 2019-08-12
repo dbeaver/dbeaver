@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -147,6 +144,15 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         // T avoid error log spamming just ignore this and return null
         // TODO: somehow visualize this error in results
         return null;
+    }
+
+    @Nullable
+    @Override
+    public DBSDataType getDataType() {
+        if (attribute instanceof DBSTypedObjectEx) {
+            return ((DBSTypedObjectEx) attribute).getDataType();
+        }
+        return super.getDataType();
     }
 
     @Nullable

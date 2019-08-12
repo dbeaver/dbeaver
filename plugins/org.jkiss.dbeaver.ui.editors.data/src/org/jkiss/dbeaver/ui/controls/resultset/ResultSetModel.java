@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -354,7 +356,7 @@ public class ResultSetModel {
             for (int i = 0; i < depth; i++) {
                 if (ownerValue == null) {
                     // Create new owner object
-                    log.warn("Null owner value");
+                    log.warn("Null owner value for '" + attr.getName() + "', row " + row.getVisualNumber());
                     return false;
                 }
                 if (i == depth - 1) {
@@ -363,7 +365,32 @@ public class ResultSetModel {
                 DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
                 assert ownerAttr != null;
                 try {
-                    ownerValue = ownerAttr.extractNestedValue(ownerValue);
+                    Object nestedValue = ownerAttr.extractNestedValue(ownerValue);
+                    if (nestedValue == null) {
+                        // Try to create nested value
+                        DBCExecutionContext context = DBUtils.getDefaultContext(ownerAttr, false);
+                        nestedValue = DBUtils.createNewAttributeValue(context, ownerAttr.getValueHandler(), ownerAttr.getAttribute(), DBDComplexValue.class);
+                        if (ownerValue instanceof DBDComposite) {
+                            ((DBDComposite) ownerValue).setAttributeValue(ownerAttr, nestedValue);
+                        }
+                        if (ownerAttr.getDataKind() == DBPDataKind.ARRAY) {
+                            // That's a tough case. Collection of elements. We need to create first element in this collection
+                            if (nestedValue instanceof DBDCollection) {
+                                Object elemValue = null;
+                                try {
+                                    DBSDataType componentType = ((DBDCollection) nestedValue).getComponentType();
+                                    DBDValueHandler elemValueHandler = DBUtils.findValueHandler(context.getDataSource(), componentType);
+                                    elemValue = DBUtils.createNewAttributeValue(context, elemValueHandler, componentType, DBDComplexValue.class);
+                                } catch (DBException e) {
+                                    log.warn("Error while getting component type name", e);
+                                }
+                                ((DBDCollection) nestedValue).setContents(new Object[] { elemValue } );
+                            } else {
+                                log.warn("Attribute '" + ownerAttr.getName() + "' has collection type but attribute value is not a collection: " + nestedValue);
+                            }
+                        }
+                    }
+                    ownerValue = nestedValue;
                 } catch (DBCException e) {
                     log.warn("Error getting field [" + ownerAttr.getName() + "] value", e);
                     return false;
@@ -387,6 +414,12 @@ public class ResultSetModel {
             }
             // Check composite type
             if (ownerValue != null) {
+                if (ownerValue instanceof DBDCollection) {
+                    DBDCollection collection = (DBDCollection) ownerValue;
+                    if (collection.getItemCount() > 0) {
+                        ownerValue = collection.getItem(0);
+                    }
+                }
                 if (!(ownerValue instanceof DBDComposite)) {
                     log.warn("Value [" + ownerValue + "] edit is not supported");
                     return false;

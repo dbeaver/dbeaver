@@ -31,10 +31,8 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
@@ -46,6 +44,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -1851,4 +1850,35 @@ public final class DBUtils {
         DBPDataSource dataSource = object.getDataSource();
         return dataSource == null || !dataSource.getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
     }
+
+    public static <T> T createNewAttributeValue(DBCExecutionContext context, DBDValueHandler valueHandler, DBSTypedObject valueType, Class<T> targetType) throws DBCException {
+        DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+                try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Create new object")) {
+                    result = valueHandler.createNewValueObject(session, valueType);
+                } catch (DBCException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        };
+        try {
+            DBWorkbench.getPlatformUI().executeWithProgress(runnable);
+            //UIUtils.runInProgressService(runnable);
+        } catch (InvocationTargetException e) {
+            throw new DBCException(e.getTargetException(), context.getDataSource());
+        } catch (InterruptedException e) {
+            throw new DBCException(e, context.getDataSource());
+        }
+
+        Object result = runnable.getResult();
+        if (result == null) {
+            throw new DBCException("Internal error - null object created");
+        }
+        if (!targetType.isInstance(result)) {
+            throw new DBCException("Internal error - wrong object type '" + result.getClass().getName() + "' while '" + targetType.getName() + "' was expected");
+        }
+        return targetType.cast(result);
+    }
+
 }

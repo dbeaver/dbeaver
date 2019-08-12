@@ -28,9 +28,12 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * User interface interactions
@@ -96,7 +99,9 @@ public interface DBPPlatformUI {
     void executeProcess(@NotNull DBRProcessDescriptor processDescriptor);
 
     // Execute some action in UI thread
-    void executeInUI(@NotNull Runnable runnable);
+    void executeWithProgress(@NotNull Runnable runnable);
+
+    void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException;
 
     @NotNull
     <RESULT> Job createLoadingService(
