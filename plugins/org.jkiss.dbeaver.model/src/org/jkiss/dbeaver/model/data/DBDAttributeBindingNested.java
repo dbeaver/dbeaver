@@ -46,7 +46,7 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
         return parent.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     public DBDAttributeBinding getParentObject() {
         return parent;
     }
@@ -61,14 +61,12 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
 
     @Override
     public boolean isReadOnly() {
-        assert parent != null;
         return parent.getMetaAttribute().isReadOnly();
     }
 
     @Nullable
     @Override
     public DBCEntityMetaData getEntityMetaData() {
-        assert parent != null;
         return parent.getMetaAttribute().getEntityMetaData();
     }
 
@@ -77,7 +75,6 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
      */
     @Nullable
     public DBDRowIdentifier getRowIdentifier() {
-        assert parent != null;
         return parent.getRowIdentifier();
     }
 
