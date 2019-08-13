@@ -200,7 +200,7 @@
                 description="%datasource.mssql.description"
                 id="mssql"
                 parent="generic"
-                label="MS SQL Server"
+                label="MS SQL Server (Generic)"
                 icon="icons/mssql_icon.png">
             <drivers managable="true">
                 <!-- Obsolete -->
