@@ -20,6 +20,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -45,6 +47,15 @@ class EditObjectDialog extends TrayDialog {
     protected IDialogSettings getDialogBoundsSettings() {
         String dialogId = "DBeaver.EditObjectDialog." + dialogPage.getClass().getSimpleName();
         return UIUtils.getDialogSettings(dialogId);
+    }
+
+    @Override
+    protected Point getInitialSize() {
+        Point proposedSize = super.getInitialSize();
+        Point minSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        if (proposedSize.x < minSize.x) proposedSize.x = minSize.x;
+        if (proposedSize.y < minSize.y) proposedSize.y = minSize.y;
+        return proposedSize;
     }
 
     @Override
