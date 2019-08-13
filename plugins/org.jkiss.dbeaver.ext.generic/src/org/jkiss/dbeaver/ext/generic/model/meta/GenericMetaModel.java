@@ -252,23 +252,21 @@ public class GenericMetaModel {
                         specificName = procedureName;
                     }
                     procedureName = GenericUtils.normalizeProcedureName(procedureName);
-                    // Check for packages. Oracle (and may be some other databases) uses catalog name as storage for package name
-                    String packageName = null;
-                    GenericPackage procedurePackage = null;
-                    if (!CommonUtils.isEmpty(procedureCatalog) && CommonUtils.isEmpty(dataSource.getCatalogs())) {
-                        // Catalog name specified while there are no catalogs in data source
-                        packageName = procedureCatalog;
-                    }
 
-                    if (!CommonUtils.isEmpty(packageName)) {
-                        if (packageMap == null) {
-                            packageMap = new TreeMap<>();
-                        }
-                        procedurePackage = packageMap.get(packageName);
-                        if (procedurePackage == null) {
-                            procedurePackage = new GenericPackage(container, packageName, true);
-                            packageMap.put(packageName, procedurePackage);
-                            container.addPackage(procedurePackage);
+                    GenericPackage procedurePackage = null;
+                    // FIXME: remove as a silly workaround
+                    String packageName = getPackageName(dataSource, procedureCatalog, procedureName, specificName);
+                    if (packageName != null) {
+                        if (!CommonUtils.isEmpty(packageName)) {
+                            if (packageMap == null) {
+                                packageMap = new TreeMap<>();
+                            }
+                            procedurePackage = packageMap.get(packageName);
+                            if (procedurePackage == null) {
+                                procedurePackage = new GenericPackage(container, packageName, true);
+                                packageMap.put(packageName, procedurePackage);
+                                container.addPackage(procedurePackage);
+                            }
                         }
                     }
 
@@ -370,6 +368,20 @@ public class GenericMetaModel {
 
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         return "-- Source code not available";
+    }
+
+    public String getPackageName(GenericDataSource dataSource, String catalogName, String procedureName, String specificName) {
+
+        // Caused problems in #6241. Probably we should remove it (for now getPackageName always returns null so it is disabled anyway)
+        if (!CommonUtils.isEmpty(catalogName) && CommonUtils.isEmpty(dataSource.getCatalogs())) {
+            // Check for packages. Oracle (and may be some other databases) uses catalog name as a storage for package name
+            // In fact it is a legacy code from ancient times (before Oracle extension was added).
+
+            // Catalog name specified while there are no catalogs in data source
+            //return catalogName;
+        }
+
+        return null;
     }
 
     //////////////////////////////////////////////////////
