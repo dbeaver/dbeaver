@@ -786,6 +786,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return project;
     }
 
+    @Override
+    public String toString() {
+        return project.getName() + " (" + getClass().getSimpleName() + ")";
+    }
+
     static class ParseResults {
         Set<DataSourceDescriptor> updatedDataSources = new LinkedHashSet<>();
         Set<DataSourceDescriptor> addedDataSources = new LinkedHashSet<>();
