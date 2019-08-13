@@ -702,7 +702,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 json.name(RegistryConstants.TAG_HANDLERS);
                 json.beginObject();
                 for (DBWHandlerConfiguration configuration : connectionInfo.getHandlers()) {
-                    saveNetworkHandlerConfiguration(json, dataSource, null, configuration);
+                    if (configuration.isEnabled()) {
+                        saveNetworkHandlerConfiguration(json, dataSource, null, configuration);
+                    }
                 }
                 json.endObject();
             }
