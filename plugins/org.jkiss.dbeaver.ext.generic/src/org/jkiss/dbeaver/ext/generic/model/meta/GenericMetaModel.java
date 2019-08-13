@@ -226,76 +226,16 @@ public class GenericMetaModel {
         GenericDataSource dataSource = container.getDataSource();
         GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
-            // Read procedures
-            JDBCResultSet dbResult = session.getMetaData().getProcedures(
-                container.getCatalog() == null ? null : container.getCatalog().getName(),
-                container.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
-                dataSource.getAllObjectsPattern());
-            try {
-                while (dbResult.next()) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
-                    String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
-                    String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
-                    int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
-                    String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
-                    DBSProcedureType procedureType;
-                    switch (procTypeNum) {
-                        case DatabaseMetaData.procedureNoResult: procedureType = DBSProcedureType.PROCEDURE; break;
-                        case DatabaseMetaData.procedureReturnsResult: procedureType = DBSProcedureType.FUNCTION; break;
-                        case DatabaseMetaData.procedureResultUnknown: procedureType = DBSProcedureType.PROCEDURE; break;
-                        default: procedureType = DBSProcedureType.UNKNOWN; break;
-                    }
-                    if (CommonUtils.isEmpty(specificName)) {
-                        specificName = procedureName;
-                    }
-                    procedureName = GenericUtils.normalizeProcedureName(procedureName);
-
-                    GenericPackage procedurePackage = null;
-                    // FIXME: remove as a silly workaround
-                    String packageName = getPackageName(dataSource, procedureCatalog, procedureName, specificName);
-                    if (packageName != null) {
-                        if (!CommonUtils.isEmpty(packageName)) {
-                            if (packageMap == null) {
-                                packageMap = new TreeMap<>();
-                            }
-                            procedurePackage = packageMap.get(packageName);
-                            if (procedurePackage == null) {
-                                procedurePackage = new GenericPackage(container, packageName, true);
-                                packageMap.put(packageName, procedurePackage);
-                                container.addPackage(procedurePackage);
-                            }
-                        }
-                    }
-
-                    final GenericProcedure procedure = createProcedureImpl(
-                        procedurePackage != null ? procedurePackage : container,
-                        procedureName,
-                        specificName,
-                        remarks,
-                        procedureType,
-                        null);
-                    if (procedurePackage != null) {
-                        procedurePackage.addProcedure(procedure);
-                    } else {
-                        container.addProcedure(procedure);
-                    }
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-
+            boolean supportsFunctions = false;
             try {
                 // Try to read functions (note: this function appeared only in Java 1.6 so it maybe not implemented by many drivers)
                 // Read procedures
-                dbResult = session.getMetaData().getFunctions(
+                JDBCResultSet dbResult = session.getMetaData().getFunctions(
                     container.getCatalog() == null ? null : container.getCatalog().getName(),
                     container.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
                     dataSource.getAllObjectsPattern());
                 try {
+                    supportsFunctions = true;
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {
                             break;
@@ -342,6 +282,77 @@ public class GenericMetaModel {
                 }
             } catch (Throwable e) {
                 log.debug("Can't read generic functions", e);
+            }
+
+            {
+                // Read procedures
+                JDBCResultSet dbResult = session.getMetaData().getProcedures(
+                    container.getCatalog() == null ? null : container.getCatalog().getName(),
+                    container.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
+                    dataSource.getAllObjectsPattern());
+                try {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
+                        String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                        String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
+                        int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
+                        String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
+                        DBSProcedureType procedureType;
+                        switch (procTypeNum) {
+                            case DatabaseMetaData.procedureNoResult:
+                                procedureType = DBSProcedureType.PROCEDURE;
+                                break;
+                            case DatabaseMetaData.procedureReturnsResult:
+                                procedureType = supportsFunctions ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION;
+                                break;
+                            case DatabaseMetaData.procedureResultUnknown:
+                                procedureType = DBSProcedureType.PROCEDURE;
+                                break;
+                            default:
+                                procedureType = DBSProcedureType.UNKNOWN;
+                                break;
+                        }
+                        if (CommonUtils.isEmpty(specificName)) {
+                            specificName = procedureName;
+                        }
+                        procedureName = GenericUtils.normalizeProcedureName(procedureName);
+
+                        GenericPackage procedurePackage = null;
+                        // FIXME: remove as a silly workaround
+                        String packageName = getPackageName(dataSource, procedureCatalog, procedureName, specificName);
+                        if (packageName != null) {
+                            if (!CommonUtils.isEmpty(packageName)) {
+                                if (packageMap == null) {
+                                    packageMap = new TreeMap<>();
+                                }
+                                procedurePackage = packageMap.get(packageName);
+                                if (procedurePackage == null) {
+                                    procedurePackage = new GenericPackage(container, packageName, true);
+                                    packageMap.put(packageName, procedurePackage);
+                                    container.addPackage(procedurePackage);
+                                }
+                            }
+                        }
+
+                        final GenericProcedure procedure = createProcedureImpl(
+                            procedurePackage != null ? procedurePackage : container,
+                            procedureName,
+                            specificName,
+                            remarks,
+                            procedureType,
+                            null);
+                        if (procedurePackage != null) {
+                            procedurePackage.addProcedure(procedure);
+                        } else {
+                            container.addProcedure(procedure);
+                        }
+                    }
+                } finally {
+                    dbResult.close();
+                }
             }
 
         } catch (SQLException e) {
