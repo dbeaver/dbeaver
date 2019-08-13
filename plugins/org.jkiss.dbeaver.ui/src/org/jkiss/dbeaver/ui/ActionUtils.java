@@ -118,17 +118,18 @@ public class ActionUtils
         @Nullable DBPImage image,
         @Nullable String toolTip,
         boolean showText) {
-        return makeCommandContribution(serviceLocator, commandId, CommandContributionItem.STYLE_PUSH, name, image, toolTip, showText);
+        return makeCommandContribution(serviceLocator, commandId, CommandContributionItem.STYLE_PUSH, name, image, toolTip, showText, null);
     }
 
     public static CommandContributionItem makeCommandContribution(
-            @NotNull IServiceLocator serviceLocator,
-            @NotNull String commandId,
-            int style,
-            @Nullable String name,
-            @Nullable DBPImage image,
-            @Nullable String toolTip,
-            boolean showText)
+        @NotNull IServiceLocator serviceLocator,
+        @NotNull String commandId,
+        int style,
+        @Nullable String name,
+        @Nullable DBPImage image,
+        @Nullable String toolTip,
+        boolean showText,
+        @Nullable Map<String, Object> parameters)
     {
         final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
             serviceLocator,
@@ -144,6 +145,7 @@ public class ActionUtils
             style,
             null,
             false);
+        contributionParameters.parameters = parameters;
         if (showText) {
             contributionParameters.mode = CommandContributionItem.MODE_FORCE_TEXT;
         }
