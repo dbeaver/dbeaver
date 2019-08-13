@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.equinox.http.servlet.internal.util.Throw;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
