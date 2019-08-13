@@ -784,6 +784,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         if (attr != null && row == null) {
             final List<Object> selectedColumns = spreadsheet.getColumnSelection();
+            if (selectedColumns.size() == 1 && attr != null) {
+                selectedColumns.clear();
+                selectedColumns.add(attr);
+            }
             if (!controller.isRecordMode() && !selectedColumns.isEmpty()) {
                 {
                     manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Separator());

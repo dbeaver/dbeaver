@@ -2196,7 +2196,15 @@ public class ResultSetViewer extends Viewer
                 if (attr == null && row != null) {
                     manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
                 } else if (attr != null && row == null) {
-                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_COLUMN_NAMES));
+                    manager.add(ActionUtils.makeCommandContribution(
+                        site,
+                        ResultSetHandlerMain.CMD_COPY_COLUMN_NAMES,
+                        SWT.PUSH,
+                        null,
+                        null,
+                        null,
+                        false,
+                        Collections.singletonMap("columns", attr.getName())));
                 } else {
                     manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
                 }

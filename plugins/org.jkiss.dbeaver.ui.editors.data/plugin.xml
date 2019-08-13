@@ -246,7 +246,9 @@
             </commandParameter>
         </command>
         <command id="org.jkiss.dbeaver.core.resultset.grid.toggleLayout" name="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.description" categoryId="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.grid.copyColumnNames" name="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.copyColumnNames" name="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.description" categoryId="org.jkiss.dbeaver.core.rs">
+            <commandParameter id="columns" name="Columns to copy" optional="true"/>
+        </command>
         <command id="org.jkiss.dbeaver.core.resultset.grid.copyRowNames" name="%command.org.jkiss.dbeaver.core.resultset.grid.copyRowNames.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.copyRowNames.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.columnsFitValue" name="%command.org.jkiss.dbeaver.core.resultset.grid.columnsFitValue.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.columnsFitValue.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.columnsFitScreen" name="%command.org.jkiss.dbeaver.core.resultset.grid.columnsFitScreen.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.columnsFitScreen.description" categoryId="org.jkiss.dbeaver.core.rs"/>

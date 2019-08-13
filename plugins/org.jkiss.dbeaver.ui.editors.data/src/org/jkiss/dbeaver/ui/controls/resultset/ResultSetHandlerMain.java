@@ -306,8 +306,20 @@ public class ResultSetHandlerMain extends AbstractHandler {
             }
             case CMD_COPY_COLUMN_NAMES: {
                 StringBuilder buffer = new StringBuilder();
+                String columnNames = event.getParameter("columns");
+
                 IResultSetSelection selection = rsv.getSelection();
                 List<DBDAttributeBinding> attrs = selection.isEmpty() ? rsv.getModel().getVisibleAttributes() : selection.getSelectedAttributes();
+                if (!CommonUtils.isEmpty(columnNames) && attrs.size() == 1) {
+                    attrs = new ArrayList<>();
+                    for (String colName : columnNames.split(",")) {
+                        for (DBDAttributeBinding attr : rsv.getModel().getVisibleAttributes()) {
+                            if (colName.equals(attr.getName())) {
+                                attrs.add(attr);
+                            }
+                        }
+                    }
+                }
 
                 ResultSetCopySettings settings = new ResultSetCopySettings();
                 if (attrs.size() > 1) {
