@@ -60,14 +60,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         super(parentNode);
     }
 
-    protected void registerNode() {
+    void registerNode() {
         DBNModel model = getModel();
         if (model != null) {
             model.addNode(this);
         }
     }
 
-    protected void unregisterNode(boolean reflect) {
+    void unregisterNode(boolean reflect) {
         DBNModel model = getModel();
         if (model != null) {
             model.removeNode(this, reflect);
@@ -173,7 +173,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     @Override
     public boolean allowsNavigableChildren() {
-        return !isDisposed() && this.getMeta().hasChildren(this, true);
+        return !isDisposed() && this.getMeta() != null && this.getMeta().hasChildren(this, true);
     }
 
     public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
@@ -203,7 +203,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                     if (tmpList.isEmpty()) {
                         this.childNodes = EMPTY_NODES;
                     } else {
-                        this.childNodes = tmpList.toArray(new DBNDatabaseNode[tmpList.size()]);
+                        this.childNodes = tmpList.toArray(new DBNDatabaseNode[0]);
                     }
                     this.afterChildRead();
                 }
@@ -362,7 +362,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
     }
 
-    protected void clearChildren(boolean reflect) {
+    private void clearChildren(boolean reflect) {
         DBNDatabaseNode[] childrenCopy;
         synchronized (this) {
             childrenCopy = childNodes == null ? null : Arrays.copyOf(childNodes, childNodes.length);
@@ -684,7 +684,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return pathName.toString();
     }
 
-    protected void reloadChildren(DBRProgressMonitor monitor, Object source, boolean reflect)
+    private void reloadChildren(DBRProgressMonitor monitor, Object source, boolean reflect)
         throws DBException {
         DBNDatabaseNode[] oldChildren;
         synchronized (this) {
@@ -697,7 +697,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         List<DBNDatabaseNode> newChildren = new ArrayList<>();
         loadChildren(monitor, getMeta(), oldChildren, newChildren, source, reflect);
         synchronized (this) {
-            childNodes = newChildren.toArray(new DBNDatabaseNode[newChildren.size()]);
+            childNodes = newChildren.toArray(new DBNDatabaseNode[0]);
         }
     }
 
@@ -785,7 +785,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return BeanUtils.getCollectionType(propType);
     }
 
-    protected Class<?> getChildrenOrFolderClass(DBXTreeItem childMeta) {
+    private Class<?> getChildrenOrFolderClass(DBXTreeItem childMeta) {
         Class<?> childrenClass = this.getChildrenClass(childMeta);
         if (childrenClass == null && this instanceof DBNContainer) {
             childrenClass = ((DBNContainer) this).getChildrenClass();
@@ -830,7 +830,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
     }
 
-    public static Method findPropertyReadMethod(Class<?> clazz, String propertyName) {
+    private static Method findPropertyReadMethod(Class<?> clazz, String propertyName) {
         String methodName = BeanUtils.propertyNameToMethodName(propertyName);
         return findPropertyGetter(clazz, "get" + methodName, "is" + methodName);
     }

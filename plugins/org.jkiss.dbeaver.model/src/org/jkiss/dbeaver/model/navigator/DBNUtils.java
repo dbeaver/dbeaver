@@ -82,11 +82,14 @@ public class DBNUtils {
         if (forTree) {
             for (int i = 0; i < children.length; i++) {
                 DBNNode node = children[i];
-                if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
-                    if (filtered == null) {
-                        filtered = new ArrayList<>(children.length);
-                        for (int k = 0; k < i; k++) {
-                            filtered.add(children[k]);
+                if (node instanceof DBNDatabaseNode) {
+                    DBNDatabaseNode dbNode = (DBNDatabaseNode) node;
+                    if (dbNode.getMeta() != null && !dbNode.getMeta().isNavigable()) {
+                        if (filtered == null) {
+                            filtered = new ArrayList<>(children.length);
+                            for (int k = 0; k < i; k++) {
+                                filtered.add(children[k]);
+                            }
                         }
                     }
                 } else if (filtered != null) {
