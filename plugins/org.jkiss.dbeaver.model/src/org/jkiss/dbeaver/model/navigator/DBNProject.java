@@ -156,6 +156,12 @@ public class DBNProject extends DBNResource {
         return super.addImplicitMembers(members);
     }
 
+    @Override
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+        project.getDataSourceRegistry().refreshConfig();
+        return super.refreshNode(monitor, source);
+    }
+
     public DBNResource findResource(IResource resource) {
         List<IResource> path = new ArrayList<>();
         for (IResource parent = resource; !(parent instanceof IProject); parent = parent.getParent()) {

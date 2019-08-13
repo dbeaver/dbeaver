@@ -208,4 +208,6 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     GeneralUtils.IVariableResolver getVariablesResolver();
 
+    DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry);
+
 }

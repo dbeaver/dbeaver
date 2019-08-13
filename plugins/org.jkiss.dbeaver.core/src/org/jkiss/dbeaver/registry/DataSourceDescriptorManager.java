@@ -106,14 +106,11 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             dataSource.setName(newName);
             registry.addDataSource(dataSource);
         } else {
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    CreateConnectionDialog dialog = new CreateConnectionDialog(
-                        UIUtils.getActiveWorkbenchWindow(),
-                        new NewConnectionWizard());
-                    dialog.open();
-                }
+            UIUtils.asyncExec(() -> {
+                CreateConnectionDialog dialog = new CreateConnectionDialog(
+                    UIUtils.getActiveWorkbenchWindow(),
+                    new NewConnectionWizard());
+                dialog.open();
             });
         }
         return null;
@@ -122,13 +119,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     @Override
     public void deleteObject(DBECommandContext commandContext, final DataSourceDescriptor object, Map<String, Object> options)
     {
-        Runnable remover = new Runnable() {
-            @Override
-            public void run()
-            {
-                object.getRegistry().removeDataSource(object);
-            }
-        };
+        Runnable remover = () -> object.getRegistry().removeDataSource(object);
         if (object.isConnected()) {
             DataSourceHandler.disconnectDataSource(object, remover);
         } else {

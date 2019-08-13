@@ -195,7 +195,7 @@ public class DataSourceDescriptor
     public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry)
     {
         this.registry = registry;
-        this.origin = source.origin;
+        this.origin = ((DataSourceRegistry)registry).getDefaultOrigin();
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
@@ -1427,6 +1427,13 @@ public class DataSourceDescriptor
                 default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };
+    }
+
+    @Override
+    public DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry) {
+        DataSourceDescriptor copy = new DataSourceDescriptor(this, forRegistry);
+        copy.setId(DataSourceDescriptor.generateNewId(copy.getDriver()));
+        return copy;
     }
 
     public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)

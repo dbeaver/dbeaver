@@ -171,12 +171,26 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Override
     public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+        Set<DBPDataSourceRegistry> registryToRefresh = new LinkedHashSet<>();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
-                DBPDataSourceContainer dsContainer = ((DBNDataSource) node).getDataSourceContainer();
-                dsContainer.getRegistry().removeDataSource(dsContainer);
-                dataSourceRegistry.addDataSource(dsContainer);
+                DBPDataSourceContainer oldContainer = ((DBNDataSource) node).getDataSourceContainer();
+                if (oldContainer.getRegistry() == dataSourceRegistry) {
+                    // the same registry
+                    continue;
+                }
+                DBPDataSourceContainer newContainer = oldContainer.createCopy(dataSourceRegistry);
+                oldContainer.getRegistry().removeDataSource(oldContainer);
+
+                dataSourceRegistry.addDataSource(newContainer);
+
+                registryToRefresh.add(oldContainer.getRegistry());
+                registryToRefresh.add(dataSourceRegistry);
             }
+        }
+
+        for (DBPDataSourceRegistry registy : registryToRefresh) {
+            registy.flushConfig();
         }
     }
 
