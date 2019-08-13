@@ -223,6 +223,8 @@ public class GenericMetaModel {
     {
         Map<String, GenericPackage> packageMap = null;
 
+        Map<String, GenericProcedure> funcMap = new LinkedHashMap<>();
+
         GenericDataSource dataSource = container.getDataSource();
         GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
@@ -275,6 +277,8 @@ public class GenericMetaModel {
                             DBSProcedureType.FUNCTION,
                             functionResultType);
                         container.addProcedure(procedure);
+
+                        funcMap.put(specificName == null ? functionName : specificName, procedure);
                     }
                 }
                 finally {
@@ -317,6 +321,12 @@ public class GenericMetaModel {
                         }
                         if (CommonUtils.isEmpty(specificName)) {
                             specificName = procedureName;
+                        }
+                        GenericProcedure function = funcMap.get(specificName);
+                        if (function != null) {
+                            // Broken driver
+                            log.debug("Broken driver [" + session.getDataSource().getContainer().getDriver().getName() + "] - returns the same list for getProcedures and getFunctons");
+                            break;
                         }
                         procedureName = GenericUtils.normalizeProcedureName(procedureName);
 
