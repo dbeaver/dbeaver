@@ -87,14 +87,12 @@ public class SnowflakeMetaModel extends GenericMetaModel
         boolean isFunction = sourceObject.getProcedureType() == DBSProcedureType.FUNCTION;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Snowflake object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "DESCRIBE " + sourceObject.getProcedureType() + " " + sourceObject.getProcedureSignature(monitor, false)))
+                "SELECT GET_DDL('"  + sourceObject.getProcedureType() + "', '" + sourceObject.getProcedureSignature(monitor, false) + "')"))
             {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
-                        if ("body".equals(dbResult.getString("property"))) {
-                            sql.append(dbResult.getString("value"));
-                        }
+                        sql.append(dbResult.getString(1));
                     }
                     return sql.toString();
                 }
