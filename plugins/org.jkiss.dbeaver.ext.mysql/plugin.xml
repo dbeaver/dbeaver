@@ -177,7 +177,7 @@
                         description="Driver for MySQL 8 and later"
                         promoted="1"
                         categories="sql">
-                    <replace provider="generic" driver="mysql3"/>
+                    <!--<replace provider="generic" driver="mysql3"/>-->
                     <replace provider="mysql" driver="mysql3"/>
                     <replace provider="mysql" driver="mysql5"/>
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.17]" bundle="!drivers.mysql"/>
