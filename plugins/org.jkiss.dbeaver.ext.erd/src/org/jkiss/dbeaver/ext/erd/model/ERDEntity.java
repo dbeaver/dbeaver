@@ -39,7 +39,7 @@ import java.util.*;
 /**
  * Model object representing a relational database Table
  * Also includes the bounds of the table so that the diagram can be
- * restored following a save, although ideally this should be
+ * restored following a serializeDiagram, although ideally this should be
  * in a separate diagram specific model hierarchy
  */
 public class ERDEntity extends ERDElement<DBSEntity> {

@@ -60,7 +60,7 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
         Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
         try {
             if (contentBounds.isEmpty()) {
-                throw new DBException("Can't save empty diagram");
+                throw new DBException("Can't serializeDiagram empty diagram");
             }
             try (FileOutputStream fos = new FileOutputStream(targetFile)) {
                 Rectangle r = figure.getBounds();
