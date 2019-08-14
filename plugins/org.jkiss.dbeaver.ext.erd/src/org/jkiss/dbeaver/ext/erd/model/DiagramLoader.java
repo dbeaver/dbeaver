@@ -55,7 +55,7 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -432,31 +432,19 @@ public class DiagramLoader
         }
     }
 
-    public static void save(DBRProgressMonitor monitor, @Nullable DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, OutputStream out)
+    public static String serializeDiagram(DBRProgressMonitor monitor, @Nullable DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, boolean compact)
         throws IOException
     {
         List allNodeFigures = diagramPart == null ? new ArrayList() : diagramPart.getFigure().getChildren();
-
-        // Prepare DS objects map
-        Map<DBPDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<>();
-        if (diagram != null) {
-            for (ERDEntity erdEntity : diagram.getEntities()) {
-                final DBPDataSourceContainer dsContainer = erdEntity.getObject().getDataSource().getContainer();
-                DataSourceObjects desc = dsMap.get(dsContainer);
-                if (desc == null) {
-                    desc = new DataSourceObjects();
-                    dsMap.put(dsContainer, desc);
-                }
-                desc.entities.add(erdEntity);
-            }
-        }
+        Map<DBPDataSourceContainer, DataSourceObjects> dsMap = createDataSourceObjectMap(diagram);
 
         Map<ERDElement, ElementSaveInfo> elementInfoMap = new IdentityHashMap<>();
         int elementCounter = ERD_VERSION_1;
 
         // Save as XML
+        StringWriter out = new StringWriter(1000);
         XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-        xml.setButify(true);
+        xml.setButify(!compact);
         if (verbose) {
             xml.addContent(
                 "\n<!DOCTYPE diagram [\n" +
@@ -646,6 +634,21 @@ public class DiagramLoader
         xml.endElement();
 
         xml.flush();
+
+        return out.toString();
+    }
+
+    private static Map<DBPDataSourceContainer, DataSourceObjects> createDataSourceObjectMap(EntityDiagram diagram) {
+        // Prepare DS objects map
+        Map<DBPDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<>();
+        if (diagram != null) {
+            for (ERDEntity erdEntity : diagram.getEntities()) {
+                final DBPDataSourceContainer dsContainer = erdEntity.getObject().getDataSource().getContainer();
+                DataSourceObjects desc = dsMap.computeIfAbsent(dsContainer, k -> new DataSourceObjects());
+                desc.entities.add(erdEntity);
+            }
+        }
+        return dsMap;
     }
 
     private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart nodePart) throws IOException {

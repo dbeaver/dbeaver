@@ -46,6 +46,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -152,9 +153,8 @@ public class ERDResourceHandler extends AbstractResourceHandler {
                     newDiagram.setLayoutManualAllowed(true);
                     newDiagram.setLayoutManualDesired(true);
 
-                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                    DiagramLoader.save(monitor1, null, newDiagram, false, buffer);
-                    InputStream data = new ByteArrayInputStream(buffer.toByteArray());
+                    String diagramState = DiagramLoader.serializeDiagram(monitor1, null, newDiagram, false, false);
+                    InputStream data = new ByteArrayInputStream(diagramState.getBytes(StandardCharsets.UTF_8));
 
                     file.create(data, true, RuntimeUtils.getNestedMonitor(monitor1));
                 } catch (Exception e) {
