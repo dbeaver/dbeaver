@@ -238,7 +238,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         // Flush all nested object editors and result containers
         for (IEditorPart editor : editorMap.values()) {
-            if (editor instanceof ObjectPropertiesEditor || editor instanceof IEntityDataContainer) {
+            if (editor instanceof IEntityStructureEditor || editor instanceof IEntityDataEditor) {
                 if (editor.isDirty()) {
                     editor.doSave(monitor);
                 }

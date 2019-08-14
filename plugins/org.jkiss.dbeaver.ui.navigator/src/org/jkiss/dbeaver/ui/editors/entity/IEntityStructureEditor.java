@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 /**
- * Entity data container.
+ * Entity structure editor.
  * Implementors are EntityEditor sub-editors which contain soem data which must be saved before context save.
  */
-public interface IEntityDataContainer {
+public interface IEntityStructureEditor {
 
 }

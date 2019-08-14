@@ -443,7 +443,7 @@ public class DiagramLoader
 
         // Save as XML
         StringWriter out = new StringWriter(1000);
-        XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
+        XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING, !compact);
         xml.setButify(!compact);
         if (verbose) {
             xml.addContent(
@@ -473,7 +473,9 @@ public class DiagramLoader
         if (diagram != null) {
             xml.addAttribute(ATTR_NAME, diagram.getName());
         }
-        xml.addAttribute(ATTR_TIME, RuntimeUtils.getCurrentTimeStamp());
+        if (compact) {
+            xml.addAttribute(ATTR_TIME, RuntimeUtils.getCurrentTimeStamp());
+        }
 
         if (diagram != null) {
             xml.startElement(TAG_ENTITIES);
@@ -527,31 +529,33 @@ public class DiagramLoader
             }
             xml.endElement();
 
-            // Notes
-            xml.startElement(TAG_NOTES);
-            for (ERDNote note : diagram.getNotes()) {
-                NotePart notePart = diagramPart == null ? null : diagramPart.getNotePart(note);
+            if (!CommonUtils.isEmpty(diagram.getNotes())) {
+                // Notes
+                xml.startElement(TAG_NOTES);
+                for (ERDNote note : diagram.getNotes()) {
+                    NotePart notePart = diagramPart == null ? null : diagramPart.getNotePart(note);
 
-                xml.startElement(TAG_NOTE);
-                if (notePart != null) {
-                    ElementSaveInfo info = new ElementSaveInfo(note, notePart, elementCounter++);
-                    elementInfoMap.put(note, info);
-                    xml.addAttribute(ATTR_ID, info.objectId);
+                    xml.startElement(TAG_NOTE);
+                    if (notePart != null) {
+                        ElementSaveInfo info = new ElementSaveInfo(note, notePart, elementCounter++);
+                        elementInfoMap.put(note, info);
+                        xml.addAttribute(ATTR_ID, info.objectId);
 
-                    saveColorAndOrder(allNodeFigures, xml, notePart);
+                        saveColorAndOrder(allNodeFigures, xml, notePart);
 
-                    Rectangle noteBounds = notePart.getBounds();
-                    if (noteBounds != null) {
-                        xml.addAttribute(ATTR_X, noteBounds.x);
-                        xml.addAttribute(ATTR_Y, noteBounds.y);
-                        xml.addAttribute(ATTR_W, noteBounds.width);
-                        xml.addAttribute(ATTR_H, noteBounds.height);
+                        Rectangle noteBounds = notePart.getBounds();
+                        if (noteBounds != null) {
+                            xml.addAttribute(ATTR_X, noteBounds.x);
+                            xml.addAttribute(ATTR_Y, noteBounds.y);
+                            xml.addAttribute(ATTR_W, noteBounds.width);
+                            xml.addAttribute(ATTR_H, noteBounds.height);
+                        }
                     }
+                    xml.addText(note.getObject());
+                    xml.endElement();
                 }
-                xml.addText(note.getObject());
                 xml.endElement();
             }
-            xml.endElement();
 
             // Relations
             xml.startElement(TAG_RELATIONS);
