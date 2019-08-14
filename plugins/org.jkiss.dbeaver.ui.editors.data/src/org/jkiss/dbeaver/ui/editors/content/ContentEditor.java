@@ -51,7 +51,7 @@ import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.editors.entity.IEntityDataContainer;
+import org.jkiss.dbeaver.ui.editors.entity.IEntityDataEditor;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -265,7 +265,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                 if (parentEditorSite instanceof MultiPageEditorSite) {
                     parentEditor = ((MultiPageEditorSite) parentEditorSite).getMultiPageEditor();
                     if (parentEditor instanceof EntityEditor) {
-                        ((EntityEditor) parentEditor).setActiveEditor(IEntityDataContainer.class);
+                        ((EntityEditor) parentEditor).setActiveEditor(IEntityDataEditor.class);
                     }
                 } else {
                     parentEditor = parentEditorSite.getPart();

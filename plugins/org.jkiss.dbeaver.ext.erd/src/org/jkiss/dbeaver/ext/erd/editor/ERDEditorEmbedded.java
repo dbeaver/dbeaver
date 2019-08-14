@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.IEntityStructureEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -48,7 +49,7 @@ import java.util.*;
 /**
  * Embedded ERD editor
  */
-public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor, IActiveWorkbenchPart {
+public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor, IEntityStructureEditor, IActiveWorkbenchPart {
 
     private static final Log log = Log.getLog(ERDEditorEmbedded.class);
 
@@ -330,6 +331,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
 
             String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, true);
             diagramStateMap.put(PROPS_DIAGRAM_SERIALIZED, diagramState);
+
+            vEntity.persistConfiguration();
 
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
