@@ -2225,11 +2225,33 @@ public class ResultSetViewer extends Viewer
 
                 manager.add(new Separator());
 
+                // Filters and View
+                {
+                    MenuManager filtersMenu = new MenuManager(
+                        ResultSetMessages.controls_resultset_viewer_action_filter,
+                        DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
+                        MENU_ID_FILTERS); //$NON-NLS-1$
+                    filtersMenu.setActionDefinitionId(ResultSetHandlerMain.CMD_FILTER_MENU);
+                    filtersMenu.setRemoveAllWhenShown(true);
+                    filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(manager1, attr, row));
+                    manager.add(filtersMenu);
+                }
+                {
+                    MenuManager orderMenu = new MenuManager(
+                        ResultSetMessages.controls_resultset_viewer_action_order,
+                        DBeaverIcons.getImageDescriptor(UIIcon.SORT),
+                        MENU_ID_ORDER); //$NON-NLS-1$
+                    orderMenu.setRemoveAllWhenShown(true);
+                    orderMenu.addMenuListener(manager1 -> fillOrderingsMenu(manager1, attr, row));
+                    manager.add(orderMenu);
+                }
+
                 if (row != null) {
 //                    MenuManager editMenu = new MenuManager(
 //                        IDEWorkbenchMessages.Workbench_edit,
 //                        DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
 //                        MENU_ID_EDIT); //$NON-NLS-1$
+                    manager.add(new Separator());
                     fillEditMenu(manager, attr, row, valueController);
                     //manager.add(editMenu);
                 }
@@ -2237,17 +2259,6 @@ public class ResultSetViewer extends Viewer
         }
         manager.add(new GroupMarker(MENU_GROUP_EDIT));
 
-        // Filters and View
-        {
-            MenuManager filtersMenu = new MenuManager(
-                ResultSetMessages.controls_resultset_viewer_action_order_filter,
-                DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
-                MENU_ID_FILTERS); //$NON-NLS-1$
-            filtersMenu.setActionDefinitionId(ResultSetHandlerMain.CMD_FILTER_MENU);
-            filtersMenu.setRemoveAllWhenShown(true);
-            filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(manager1, attr, row));
-            manager.add(filtersMenu);
-        }
         if (getDataSource() != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             MenuManager viewMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_column_view,
@@ -2679,6 +2690,14 @@ public class ResultSetViewer extends Viewer
                 filtersMenu.add(new FilterResetAttributeAction(attribute));
             }
         }
+        filtersMenu.add(new Separator());
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING));
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING));
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
+    }
+
+    private void fillOrderingsMenu(@NotNull IMenuManager filtersMenu, @Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row)
+    {
         if (attribute != null) {
             filtersMenu.add(new Separator());
             filtersMenu.add(new OrderByAttributeAction(attribute, true));
@@ -2686,10 +2705,6 @@ public class ResultSetViewer extends Viewer
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_ORDER));
             filtersMenu.add(new ToggleServerSideOrderingAction());
         }
-        filtersMenu.add(new Separator());
-        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING));
-        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING));
-        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
     }
 
     @Override

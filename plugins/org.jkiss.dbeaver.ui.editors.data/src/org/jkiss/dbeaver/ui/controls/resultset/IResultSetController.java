@@ -48,6 +48,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     String MENU_ID_VIEW = "view";
     String MENU_ID_VIRTUAL_MODEL = "virtual_model";
     String MENU_ID_FILTERS = "filters";
+    String MENU_ID_ORDER = "orderings";
     String MENU_ID_LAYOUT = "layout";
     String MENU_GROUP_EDIT = "edit";
     String MENU_GROUP_EXPORT = "results_export";
