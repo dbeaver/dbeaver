@@ -50,6 +50,7 @@ public class UITextUtils {
         int w = gc.textExtent("...").x;
         String text = t;
         int l = text.length();
+        if (l > 500) l = 500; // Performance issue fix
         int pivot = l / 2;
         int s = pivot;
         int e = pivot + 1;
