@@ -191,10 +191,7 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.toolbar.general.visible">
             <with variable="activeWorkbenchWindow.activePerspective">
-                <or>
-                    <reference definitionId="DBeaverPerspectiveActive"/>
-                    <test property="org.jkiss.dbeaver.core.ui.toolbarVisible" value="dbeaver-general"/>
-                </or>
+                <reference definitionId="DBeaverPerspectiveActive"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.editor.transactional">
