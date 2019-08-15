@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IDataController;
@@ -137,7 +138,15 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     @Override
     public void updateValue(@Nullable Object value, boolean updatePresentation)
     {
-        boolean updated = controller.getModel().updateCellValue(binding, curRow, value);
+        boolean updated;
+        try {
+            updated = controller.getModel().updateCellValue(binding, curRow, value);
+        } catch (Exception e) {
+            UIUtils.asyncExec(() -> {
+                DBWorkbench.getPlatformUI().showError("Value update", "Error updating value: " + e.getMessage(), e);
+            });
+            return;
+        }
         if (updated && updatePresentation) {
             // Update controls
             UIUtils.syncExec(new Runnable() {

@@ -63,7 +63,8 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
 
                 return DiagramObjectCollector.generateEntityList(
                     ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram(),
-                    objects);
+                    objects,
+                    true);
             }
 
             @Override

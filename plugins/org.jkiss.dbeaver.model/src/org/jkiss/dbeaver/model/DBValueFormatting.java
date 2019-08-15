@@ -223,11 +223,11 @@ public final class DBValueFormatting {
     public static String convertNumberToNativeString(Number value) {
         if (value instanceof BigDecimal) {
             return ((BigDecimal) value).toPlainString();
-        } else if (value instanceof Float) {
+        } /*else if (value instanceof Float) {
             return NATIVE_FLOAT_FORMATTER.format(value);
         } else if (value instanceof Double) {
             return NATIVE_DOUBLE_FORMATTER.format(value);
-        } else {
+        }*/ else {
             return value.toString();
         }
 
