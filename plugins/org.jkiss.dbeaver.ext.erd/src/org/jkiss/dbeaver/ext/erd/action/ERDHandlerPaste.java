@@ -66,7 +66,7 @@ public class ERDHandlerPaste extends AbstractHandler {
             if (editor != null && !editor.isReadOnly()) {
                 final Collection<DBPNamedObject> objects = DatabaseObjectTransfer.getInstance().getObject();
                 if (!CommonUtils.isEmpty(objects)) {
-                    final List<ERDEntity> erdEntities = DiagramObjectCollector.generateEntityList(editor.getDiagram(), objects);
+                    final List<ERDEntity> erdEntities = DiagramObjectCollector.generateEntityList(editor.getDiagram(), objects, true);
                     if (!CommonUtils.isEmpty(erdEntities)) {
                         Command command = editor.getDiagramPart().createEntityAddCommand(erdEntities, new Point(10, 10));
                         editor.getCommandStack().execute(command);
