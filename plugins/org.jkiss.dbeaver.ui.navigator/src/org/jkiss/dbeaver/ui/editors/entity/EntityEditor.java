@@ -681,12 +681,21 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public int promptToSaveOnClose()
     {
+        List<String> changedSubEditors = new ArrayList<>();
+        for (IEditorPart editor : editorMap.values()) {
+            if (editor.isDirty()) {
+                changedSubEditors.add(editor.getTitle());
+            }
+        }
+
+        String subEditorsString = "(" + String.join(", ", changedSubEditors) + ")";
         final int result = ConfirmationDialog.showConfirmDialog(
             ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
             getSite().getShell(),
             NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
-            getEditorInput().getNavigatorNode().getNodeName());
+            getEditorInput().getNavigatorNode().getNodeName(),
+            subEditorsString);
         if (result == IDialogConstants.YES_ID) {
 //            getWorkbenchPart().getSite().getPage().saveEditor(this, false);
             return ISaveablePart2.YES;
