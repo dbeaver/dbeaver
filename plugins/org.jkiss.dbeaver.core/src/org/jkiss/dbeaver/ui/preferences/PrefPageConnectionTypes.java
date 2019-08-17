@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.osgi.util.NLS;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionPermissionsDialog;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
@@ -75,7 +77,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            typeTable = new Table(composite, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
+            typeTable = new Table(composite, SWT.SINGLE | SWT.BORDER);
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_name);
             UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_description);
@@ -240,6 +242,16 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     getSelectedType().setConfirmDataChange(confirmDataChange.getSelection());
                 }
             });
+
+            UIUtils.createDialogButton(groupSettings, "Edit permissions ...", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(getShell(), getSelectedType().getModifyPermission());
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        getSelectedType().setModifyPermissions(dialog.getAccessRestrictions());
+                    }
+                }
+            });
         }
 
         performDefaults();
@@ -276,7 +288,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 item.setText(0, connectionType.getName());
                 item.setText(1, connectionType.getDescription());
                 Color connectionColor = UIUtils.getConnectionTypeColor(connectionType);
-                item.setBackground(0, connectionColor);
+                //item.setBackground(0, connectionColor);
                 item.setBackground(1, connectionColor);
                 break;
             }
@@ -320,7 +332,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         item.setText(1, CommonUtils.toString(connectionType.getDescription()));
         if (connectionType.getColor() != null) {
             Color connectionColor = UIUtils.getConnectionTypeColor(connectionType);
-            item.setBackground(0, connectionColor);
+            //item.setBackground(0, connectionColor);
             item.setBackground(1, connectionColor);
             if (connectionColor != null) {
                 colorPicker.setColorValue(connectionColor.getRGB());
@@ -357,6 +369,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setConfirmExecute(changed.isConfirmExecute());
                 source.setConfirmDataChange(changed.isConfirmDataChange());
                 source.setColor(changed.getColor());
+                source.setModifyPermissions(changed.getModifyPermission());
             }
         }
         registry.saveConnectionTypes();

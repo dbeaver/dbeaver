@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * DBPDataSourceContainer
  */
-public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNamedObject2
+public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNamedObject2, DBPDataSourcePermissionOwner
 {
     /**
      * Container unique ID
@@ -94,12 +94,6 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     boolean isConnectionReadOnly();
 
     void setConnectionReadOnly(boolean connectionReadOnly);
-
-    boolean hasModifyPermission(DBPDataSourcePermission permission);
-
-    List<DBPDataSourcePermission> getModifyPermission();
-
-    void setModifyPermissions(@Nullable Collection<DBPDataSourcePermission> permissions);
 
     boolean isSavePassword();
 
