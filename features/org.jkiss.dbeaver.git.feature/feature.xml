@@ -17,14 +17,16 @@
       %license
    </license>
 
-   <plugin id="org.jkiss.bundle.bouncycastle" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="com.jcraft.jzlib" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="javaewah" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.sshd.core" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.sshd.sftp" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="net.i2p.crypto.eddsa" download-size="0" install-size="0" version="0.0.0"/>
 
    <!-- EGIT and JGIT deps -->
    <plugin id="org.eclipse.jgit" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.eclipse.jgit.http.apache" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.jgit.ssh.apache" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.eclipse.jgit.archive" download-size="0" install-size="0" version="0.0.0"/>
 
    <plugin id="org.eclipse.egit" download-size="0" install-size="0" version="0.0.0"/>

@@ -11,6 +11,7 @@ Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.net.ssh,
  org.jkiss.bundle.sshj,
- org.jkiss.bundle.bouncycastle
+ org.bouncycastle.bcpkix,
+ org.bouncycastle.bcprov
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.net.ssh.sshj
