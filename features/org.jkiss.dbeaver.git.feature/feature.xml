@@ -23,6 +23,10 @@
    <plugin id="org.apache.sshd.sftp" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="net.i2p.crypto.eddsa" download-size="0" install-size="0" version="0.0.0"/>
 
+   <plugin id="org.bouncycastle.bcpg" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.bouncycastle.bcpkix" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.bouncycastle.bcprov" download-size="0" install-size="0" version="0.0.0"/>
+
    <!-- EGIT and JGIT deps -->
    <plugin id="org.eclipse.jgit" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.eclipse.jgit.http.apache" download-size="0" install-size="0" version="0.0.0"/>
