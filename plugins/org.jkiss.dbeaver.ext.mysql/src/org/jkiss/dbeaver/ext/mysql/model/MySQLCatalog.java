@@ -437,7 +437,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                             for (String incName : tableFilters.getInclude()) {
                                 if (hasCond) sql.append(" OR ");
                                 hasCond = true;
-                                sql.append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                                sql.append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), SQLUtils.makeSQLLike(incName)));
                             }
                             sql.append(")");
                         }
