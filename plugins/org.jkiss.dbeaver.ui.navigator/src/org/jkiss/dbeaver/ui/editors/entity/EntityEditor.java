@@ -1051,7 +1051,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     // Save nested editors
                     ProxyProgressMonitor proxyMonitor = new ProxyProgressMonitor(monitor);
                     for (IEditorPart editor : editorMap.values()) {
-                        editor.doSave(proxyMonitor);
+                        if (editor.isDirty()) {
+                            editor.doSave(proxyMonitor);
+                        }
                         if (monitor.isCanceled()) {
                             success = false;
                             return Status.CANCEL_STATUS;
