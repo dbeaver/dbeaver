@@ -31,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
+import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.*;
@@ -125,7 +126,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                                 virtualModels.put(dataSource.getVirtualModel().getId(), dataSource.getVirtualModel());
                             }
                             DBPConnectionType connectionType = dataSource.getConnectionConfiguration().getConnectionType();
-                            if (!connectionType.isPredefined()) {
+                            /*if (!connectionType.isPredefined()) */{
                                 connectionTypes.put(connectionType.getId(), connectionType);
                             }
                             DriverDescriptor driver = dataSource.getDriver();
@@ -198,6 +199,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             JSONUtils.field(jsonWriter, "auto-commit", ct.isAutocommit());
                             JSONUtils.field(jsonWriter, "confirm-execute", ct.isConfirmExecute());
                             JSONUtils.field(jsonWriter, "confirm-data-change", ct.isConfirmDataChange());
+                            serializeModifyPermissions(jsonWriter, ct);
                             jsonWriter.endObject();
                         }
                         jsonWriter.endObject();
@@ -320,17 +322,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
             // Connection types
             for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "connection-types")) {
                 String id = ctMap.getKey();
-                String name = JSONUtils.getObjectProperty(ctMap.getValue(), RegistryConstants.ATTR_NAME);
-                String description = JSONUtils.getObjectProperty(ctMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
-                String color = JSONUtils.getObjectProperty(ctMap.getValue(), RegistryConstants.ATTR_COLOR);
-                Boolean autoCommit = JSONUtils.getObjectProperty(ctMap.getValue(), "auto-commit");
-                Boolean confirmExecute = JSONUtils.getObjectProperty(ctMap.getValue(), "confirm-execute");
-                Boolean confirmDataChange = JSONUtils.getObjectProperty(ctMap.getValue(), "confirm-data-change");
+                Map<String, Object> ctConfig = ctMap.getValue();
+                String name = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_NAME);
+                String description = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_DESCRIPTION);
+                String color = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_COLOR);
+                Boolean autoCommit = JSONUtils.getObjectProperty(ctConfig, "auto-commit");
+                Boolean confirmExecute = JSONUtils.getObjectProperty(ctConfig, "confirm-execute");
+                Boolean confirmDataChange = JSONUtils.getObjectProperty(ctConfig, "confirm-data-change");
                 DBPConnectionType ct = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(id, null);
                 if (ct == null) {
                     ct = new DBPConnectionType(id, name, color, description, CommonUtils.toBoolean(autoCommit), CommonUtils.toBoolean(confirmExecute), CommonUtils.toBoolean(confirmDataChange));
                     DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
                 }
+                deserializeModifyPermissions(ctConfig, ct);
             }
 
             // Drivers
@@ -494,26 +498,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 // Permissions
                 {
-                    Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
-                    if (!CommonUtils.isEmpty(securityCfg)) {
-                        List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
-                        if (!CommonUtils.isEmpty(permissionRestrictions)) {
-                            List<DBPDataSourcePermission> permissions = new ArrayList<>();
-                            for (String perm : permissionRestrictions) {
-                                try {
-                                    DBPDataSourcePermission permission = DBPDataSourcePermission.getById(perm);
-                                    if (permission != null) {
-                                        permissions.add(permission);
-                                    }
-                                } catch (IllegalArgumentException e) {
-                                    log.debug(e);
-                                }
-                            }
-                            if (!permissions.isEmpty()) {
-                                dataSource.setModifyPermissions(permissions);
-                            }
-                        }
-                    }
+                    deserializeModifyPermissions(conObject, dataSource);
                 }
 
                 // Filters
@@ -554,6 +539,29 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
         }
 
+    }
+
+    private void deserializeModifyPermissions(Map<String, Object> conObject, DBPDataSourcePermissionOwner permissionOwner) {
+        Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
+        if (!CommonUtils.isEmpty(securityCfg)) {
+            List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
+            if (!CommonUtils.isEmpty(permissionRestrictions)) {
+                List<DBPDataSourcePermission> permissions = new ArrayList<>();
+                for (String perm : permissionRestrictions) {
+                    try {
+                        DBPDataSourcePermission permission = DBPDataSourcePermission.getById(perm);
+                        if (permission != null) {
+                            permissions.add(permission);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        log.debug(e);
+                    }
+                }
+                if (!permissions.isEmpty()) {
+                    permissionOwner.setModifyPermissions(permissions);
+                }
+            }
+        }
     }
 
     @Nullable
@@ -733,18 +741,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
             json.endObject();
         }
 
-        {
-            // Permissions
-            List<DBPDataSourcePermission> permissions = dataSource.getModifyPermission();
-            if (!CommonUtils.isEmpty(permissions)) {
-                json.name("security");
-                json.beginObject();
-                List<String> permIds = new ArrayList<>(permissions.size());
-                for (DBPDataSourcePermission perm : permissions) permIds.add(perm.getId());
-                JSONUtils.serializeStringList(json, "permission-restrictions", permIds);
-                json.endObject();
-            }
-        }
+        // Permissions
+        serializeModifyPermissions(json, dataSource);
+
         {
             // Filters
             Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
@@ -784,6 +783,18 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
 
         json.endObject();
+    }
+
+    private void serializeModifyPermissions(@NotNull JsonWriter json, DBPDataSourcePermissionOwner permissionOwner) throws IOException {
+        List<DBPDataSourcePermission> permissions = permissionOwner.getModifyPermission();
+        if (!CommonUtils.isEmpty(permissions)) {
+            json.name("security");
+            json.beginObject();
+            List<String> permIds = new ArrayList<>(permissions.size());
+            for (DBPDataSourcePermission perm : permissions) permIds.add(perm.getId());
+            JSONUtils.serializeStringList(json, "permission-restrictions", permIds);
+            json.endObject();
+        }
     }
 
     private void saveNetworkHandlerConfiguration(

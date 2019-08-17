@@ -1,15 +1,24 @@
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourcePermission;
+import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Connection type
  */
-public class DBPConnectionType {
+public class DBPConnectionType implements DBPDataSourcePermissionOwner {
 
-    public static final DBPConnectionType DEV = new DBPConnectionType("dev", ModelMessages.dbp_connection_type_table_development, "255,255,255", ModelMessages.dbp_connection_type_table_regular_development_database, true, false, false, true); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBPConnectionType TEST = new DBPConnectionType("test", ModelMessages.dbp_connection_type_table_test, "196,255,181", ModelMessages.dbp_connection_type_table_test_database, true, false, true, true); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBPConnectionType PROD = new DBPConnectionType("prod", ModelMessages.dbp_connection_type_table_production, "247,159,129", ModelMessages.dbp_connection_type_table_production_database, false, true, true, true); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBPConnectionType DEV = new DBPConnectionType("dev", ModelMessages.dbp_connection_type_table_development, "255,255,255", ModelMessages.dbp_connection_type_table_regular_development_database, true, false, false, true, null); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBPConnectionType TEST = new DBPConnectionType("test", ModelMessages.dbp_connection_type_table_test, "196,255,181", ModelMessages.dbp_connection_type_table_test_database, true, false, true, true, null); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBPConnectionType PROD = new DBPConnectionType("prod", ModelMessages.dbp_connection_type_table_production, "247,159,129", ModelMessages.dbp_connection_type_table_production_database, false, true, true, true, null); //$NON-NLS-1$ //$NON-NLS-3$
 
     public static final DBPConnectionType[] SYSTEM_TYPES = {DEV, TEST, PROD};
     public static final DBPConnectionType DEFAULT_TYPE = DEV;
@@ -22,6 +31,7 @@ public class DBPConnectionType {
     private boolean confirmExecute;
     private boolean confirmDataChange;
     private final boolean predefined;
+    private List<DBPDataSourcePermission> connectionModifyRestrictions;
 
     public DBPConnectionType(DBPConnectionType source) {
         this(
@@ -32,7 +42,8 @@ public class DBPConnectionType {
             source.autocommit,
             source.confirmExecute,
             source.confirmDataChange,
-            source.predefined);
+            source.predefined,
+            source.connectionModifyRestrictions);
     }
 
     public DBPConnectionType(
@@ -44,7 +55,7 @@ public class DBPConnectionType {
         boolean confirmExecute,
         boolean confirmDataChange)
     {
-        this(id, name, color, description, autocommit, confirmExecute, confirmDataChange, false);
+        this(id, name, color, description, autocommit, confirmExecute, confirmDataChange, false, null);
     }
 
     private DBPConnectionType(
@@ -55,7 +66,8 @@ public class DBPConnectionType {
         boolean autocommit,
         boolean confirmExecute,
         boolean confirmDataChange,
-        boolean predefined)
+        boolean predefined,
+        List<DBPDataSourcePermission> connectionModifyRestrictions)
     {
         this.id = id;
         this.name = name;
@@ -65,6 +77,7 @@ public class DBPConnectionType {
         this.confirmExecute = confirmExecute;
         this.confirmDataChange = confirmDataChange;
         this.predefined = predefined;
+        this.connectionModifyRestrictions = connectionModifyRestrictions;
     }
 
     public boolean isPredefined() {
@@ -121,6 +134,29 @@ public class DBPConnectionType {
 
     public void setConfirmDataChange(boolean confirmDataChange) {
         this.confirmDataChange = confirmDataChange;
+    }
+
+    @Override
+    public boolean hasModifyPermission(DBPDataSourcePermission permission) {
+        return connectionModifyRestrictions == null || !connectionModifyRestrictions.contains(permission);
+    }
+
+    @Override
+    public List<DBPDataSourcePermission> getModifyPermission() {
+        if (CommonUtils.isEmpty(this.connectionModifyRestrictions)) {
+            return Collections.emptyList();
+        } else {
+            return new ArrayList<>(this.connectionModifyRestrictions);
+        }
+    }
+
+    @Override
+    public void setModifyPermissions(@Nullable Collection<DBPDataSourcePermission> permissions) {
+        if (CommonUtils.isEmpty(permissions)) {
+            this.connectionModifyRestrictions = null;
+        } else {
+            this.connectionModifyRestrictions = new ArrayList<>(permissions);
+        }
     }
 
     @Override

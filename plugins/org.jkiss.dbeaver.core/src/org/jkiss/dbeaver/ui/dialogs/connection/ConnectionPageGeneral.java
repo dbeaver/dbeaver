@@ -42,14 +42,12 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -92,7 +90,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     private List<FilterInfo> filters = new ArrayList<>();
     private Group filtersGroup;
     private Font boldFont;
-    private List<DBPDataSourcePermission> accessRestritions;
+    private List<DBPDataSourcePermission> accessRestrictions;
 
     ConnectionPageGeneral(ConnectionWizard wizard)
     {
@@ -456,41 +454,10 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     }
 
     private void editPermissions() {
-        new BaseDialog(getShell(), CoreMessages.dialog_connection_wizard_final_group_security, null) {
-            private List<Button> restrictedPermissionButtons = new ArrayList<>();
-
-            @Override
-            protected Composite createDialogArea(Composite parent) {
-                Composite composite = super.createDialogArea(parent);
-                if (accessRestritions == null) {
-                    accessRestritions = dataSourceDescriptor == null ? Collections.emptyList() : dataSourceDescriptor.getModifyPermission();
-                }
-                for (DBPDataSourcePermission permission : DBPDataSourcePermission.values()) {
-                    Button permButton = UIUtils.createCheckbox(
-                        composite,
-                        permission.getLabel(),
-                        permission.getDescription(),
-                        accessRestritions.contains(permission),
-                        1);
-                    permButton.setData(permission);
-                    permButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                    restrictedPermissionButtons.add(permButton);
-                }
-                return composite;
-            }
-
-            @Override
-            protected void okPressed() {
-                List<DBPDataSourcePermission> restrictions = new ArrayList<>();
-                for (Button permbutton : restrictedPermissionButtons) {
-                    if (permbutton.getSelection()) {
-                        restrictions.add((DBPDataSourcePermission) permbutton.getData());
-                    }
-                }
-                accessRestritions = restrictions;
-                super.okPressed();
-            }
-        }.open();
+        EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(getShell(), accessRestrictions);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            accessRestrictions = dialog.getAccessRestrictions();
+        }
     }
 
     private void loadConnectionTypes()
@@ -557,7 +524,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         dataSource.setShowSystemObjects(showSystemObjects.getSelection());
         dataSource.setShowUtilityObjects(showUtilityObjects.getSelection());
         dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
-        dataSource.setModifyPermissions(accessRestritions);
+        dataSource.setModifyPermissions(accessRestrictions);
 
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {
