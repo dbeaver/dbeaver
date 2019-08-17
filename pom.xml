@@ -46,11 +46,6 @@
             <url>${eclipse-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
-        <!--<repository>
-            <id>eclipse-orbit-repo</id>
-            <url>${orbit-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>-->
         <repository>
             <id>local-contrib</id>
             <url>${local-p2-repo.url}</url>
@@ -262,6 +257,16 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+
+            <repositories>
+                <!-- Use Orbit because old Eclipse doesn't have many bundles -->
+                <repository>
+                    <id>eclipse-orbit-repo</id>
+                    <url>${orbit-p2-repo.url}</url>
+                    <layout>p2</layout>
+                </repository>
+            </repositories>
+
             <build>
                 <plugins>
                     <plugin>
