@@ -74,7 +74,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     @Override
     protected Control createContents(final Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         {
             typeTable = new Table(composite, SWT.SINGLE | SWT.BORDER);
@@ -212,10 +212,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 */
             }
 
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-
-            autocommitCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_auto_commit_by_default, false);
+            autocommitCheck = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_auto_commit_by_default, null, false, 2);
             autocommitCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -223,8 +220,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     getSelectedType().setAutocommit(autocommitCheck.getSelection());
                 }
             });
-            autocommitCheck.setLayoutData(gd);
-            confirmCheck = UIUtils.createCheckbox(groupSettings, CoreMessages. pref_page_connection_types_label_confirm_sql_execution, false);
+            confirmCheck = UIUtils.createCheckbox(groupSettings, CoreMessages. pref_page_connection_types_label_confirm_sql_execution, null, false, 2);
             confirmCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -232,7 +228,6 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     getSelectedType().setConfirmExecute(confirmCheck.getSelection());
                 }
             });
-            confirmCheck.setLayoutData(gd);
 
             confirmDataChange = UIUtils.createCheckbox(groupSettings, CoreMessages.pref_page_connection_types_label_confirm_data_change, CoreMessages.pref_page_connection_types_label_confirm_data_change_tip, false, 2);
             confirmDataChange.addSelectionListener(new SelectionAdapter() {
@@ -243,7 +238,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             });
 
-            UIUtils.createDialogButton(groupSettings, "Edit permissions ...", new SelectionAdapter() {
+            Button epButton = UIUtils.createDialogButton(groupSettings, "Edit permissions ...", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(getShell(), getSelectedType().getModifyPermission());
@@ -252,6 +247,9 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     }
                 }
             });
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+            epButton.setLayoutData(gd);
         }
 
         performDefaults();
