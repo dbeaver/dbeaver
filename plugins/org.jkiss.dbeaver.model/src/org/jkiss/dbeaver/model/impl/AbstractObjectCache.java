@@ -94,6 +94,12 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         }
     }
 
+    public int getCacheSize() {
+        synchronized (this) {
+            return objectList == null ? 0 : objectList.size();
+        }
+    }
+
     @Override
     public void cacheObject(@NotNull OBJECT object)
     {

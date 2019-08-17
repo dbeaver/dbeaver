@@ -1881,4 +1881,7 @@ public final class DBUtils {
         return targetType.cast(result);
     }
 
+    public static boolean isView(DBSEntity table) {
+        return table  instanceof DBSView || table instanceof DBSTable && ((DBSTable) table).isView();
+    }
 }
