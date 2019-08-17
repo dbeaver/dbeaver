@@ -104,7 +104,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        List<DBDAttributeBinding> rsAttributes = DBUtils.makeResultAttributeBindings(sourceObject, resultSet);
+        List<DBDAttributeBinding> rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
         columnMappings = new ColumnMapping[rsAttributes.size()];
         targetAttributes = new ArrayList<>(columnMappings.length);
         for (int i = 0; i < rsAttributes.size(); i++) {

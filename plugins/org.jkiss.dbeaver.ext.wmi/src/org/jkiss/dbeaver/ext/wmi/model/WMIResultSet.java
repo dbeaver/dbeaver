@@ -141,7 +141,9 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     @Override
     public boolean moveTo(int position) throws DBCException
     {
-        throw new DBCException("Not Implemented");
+        this.iterator = rows.iterator();
+        while (position-- > 0) nextRow();
+        return true;
     }
 
     @NotNull
