@@ -161,7 +161,7 @@ public final class SQLUtils {
 
     public static boolean isLikePattern(String like)
     {
-        return like.indexOf('%') != -1 || like.indexOf('*') != -1 || like.indexOf('?') != -1;// || like.indexOf('_') != -1;
+        return like.indexOf('%') != -1 || like.indexOf('*') != -1 || like.indexOf('_') != -1 || like.indexOf('?') != -1;// || like.indexOf('_') != -1;
     }
 
     public static String makeLikePattern(String like)
@@ -170,7 +170,7 @@ public final class SQLUtils {
         for (int i = 0; i < like.length(); i++) {
             char c = like.charAt(i);
             if (c == '*') result.append(".*");
-            else if (c == '?') result.append(".");
+            else if (c == '?' || c == '_') result.append(".");
             else if (c == '%') result.append(".*");
             else if (Character.isLetterOrDigit(c)) result.append(c);
             else result.append("\\").append(c);
@@ -180,7 +180,7 @@ public final class SQLUtils {
 
     public static String makeSQLLike(String like)
     {
-        return like.replace("*", "%");
+        return like.replace("*", "%").replace("?", "_");
     }
 
     public static boolean matchesLike(String string, String like)
