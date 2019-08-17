@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -299,34 +298,7 @@ public class ResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
-        int depth = attribute.getLevel();
-        if (depth == 0) {
-            final int index = attribute.getOrdinalPosition();
-            if (index >= row.values.length) {
-                log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.values.length + ")");
-                return null;
-            } else {
-                return row.values[index];
-            }
-        }
-        Object curValue = row.values[attribute.getTopParent().getOrdinalPosition()];
-
-        for (int i = 0; i < depth; i++) {
-            if (curValue == null) {
-                break;
-            }
-            DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
-            assert attr != null;
-            try {
-                curValue = attr.extractNestedValue(curValue);
-            } catch (DBCException e) {
-                log.debug("Error reading nested value of [" + attr.getName() + "]", e);
-                curValue = null;
-                break;
-            }
-        }
-
-        return curValue;
+        return DBUtils.getAttributeValue(attribute, row.values);
     }
 
     /**
