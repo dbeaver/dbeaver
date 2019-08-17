@@ -88,6 +88,7 @@ Require-Bundle: org.eclipse.equinox.security,
  com.github.jsqlparser;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,
  com.google.gson,
- org.jkiss.bundle.bouncycastle;resolution:=optional
+ org.bouncycastle.bcpkix;resolution:=optional,
+ org.bouncycastle.bcprov;resolution:=optional
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model

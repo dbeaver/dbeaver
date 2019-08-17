@@ -53,6 +53,7 @@
 
 								<!-- SSH and BouncyCastle -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
+								<!-- Bouncy castle left here for backward compatibility (older DBeaver versions still require it. To remove in future versions -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:LATEST</id></artifact>
 
 								<!-- Batik -->

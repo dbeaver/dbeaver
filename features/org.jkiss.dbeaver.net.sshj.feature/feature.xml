@@ -22,7 +22,6 @@
    </requires>
 
    <plugin id="org.jkiss.dbeaver.net.ssh.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-   <plugin id="org.jkiss.bundle.bouncycastle" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
    <plugin id="org.jkiss.bundle.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>
