@@ -634,7 +634,7 @@ public final class DBUtils {
 
     /**
      * Returns "bottom" level attributes out of resultset.
-     * For regualar resultsets it is the same as getAttributeBindings, for compelx types it returns only leaf attributes.
+     * For regular resultsets it is the same as getAttributeBindings, for compelx types it returns only leaf attributes.
      */
     @NotNull
     public static List<DBDAttributeBinding> makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {
@@ -646,11 +646,13 @@ public final class DBUtils {
             try {
                 List<Object[]> sampleRows = Collections.emptyList();
                 if (resultSet instanceof DBCResultSetSampleProvider) {
+                    session.getProgressMonitor().subTask("Read sample rows");
                     sampleRows = ((DBCResultSetSampleProvider) resultSet).getSampleRows(session, MAX_SAMPLE_ROWS);
                 }
+                session.getProgressMonitor().subTask("Discover attribute structure");
                 docBinding.lateBinding(session, sampleRows);
-            } catch (DBException e) {
-                log.debug("Document attribute '" + docBinding.getName() + "' binding error", e);
+            } catch (Exception e) {
+                log.error("Document attribute '" + docBinding.getName() + "' binding error", e);
             }
             List<DBDAttributeBinding> nested = docBinding.getNestedBindings();
             if (!CommonUtils.isEmpty(nested)) {
