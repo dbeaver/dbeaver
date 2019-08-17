@@ -24,13 +24,13 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
@@ -38,9 +38,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JDBC table column manager
+ * Table column manager. Fits for all composite entities including NoSQL.
  */
-public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
+public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribute, TABLE_TYPE extends DBSEntity>
     extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
     public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
@@ -117,8 +117,8 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     @Override
     public boolean canEditObject(OBJECT_TYPE object)
     {
-        TABLE_TYPE table = object.getParentObject();
-        return table != null && !table.isView();
+        DBSEntity table = object.getParentObject();
+        return table != null && !DBUtils.isView(table);
     }
 
     @Override
@@ -152,11 +152,11 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
-        final TABLE_TYPE table = command.getObject().getTable();
+        final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getParentObject();
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_table_column,
-                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD "  + getNestedDeclaration(monitor, table, command, options)) );
+                "ALTER TABLE " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + " ADD "  + getNestedDeclaration(monitor, table, command, options)) );
     }
 
     @Override
@@ -164,7 +164,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     {
         actions.add(
             new SQLDatabasePersistAction(
-                ModelMessages.model_jdbc_drop_table_column, "ALTER TABLE " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-2$
+                ModelMessages.model_jdbc_drop_table_column, "ALTER TABLE " + DBUtils.getObjectFullName(command.getObject(), DBPEvaluationContext.DDL) + //$NON-NLS-2$
                     " DROP " + (hasDDLFeature(command.getObject(), DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         );
     }
@@ -179,7 +179,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
                 if (!exists) {
                     // Check for new columns (they are present only within command context)
                     for (DBPObject contextObject : context.getEditedObjects()) {
-                        if (contextObject instanceof JDBCTableColumn && ((JDBCTableColumn) contextObject).getTable() == table && name.equalsIgnoreCase(((JDBCTableColumn) contextObject).getName())) {
+                        if (contextObject instanceof DBSEntityAttribute && ((DBSEntityAttribute) contextObject).getParentObject() == table && name.equalsIgnoreCase(((DBSEntityAttribute) contextObject).getName())) {
                             exists = true;
                             break;
                         }
