@@ -172,6 +172,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 monitor.beginTask(DTMessages.data_transfer_wizard_job_task_export_table_data, (int) totalRows);
 
                 try {
+                    monitor.subTask("Read data");
+
                     // Perform export
                     if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
                         // Just do it in single query
