@@ -523,7 +523,7 @@ public class DataSourceDescriptor
         }
         if (filterMapping != null) {
             filter = filterMapping.getFilter(parentObject, firstMatch);
-            if (filter != null && (firstMatch || !filter.isNotApplicable())) {
+            if (filter != null && (firstMatch || filter.isEnabled())) {
                 return filterMapping;
             }
         }
