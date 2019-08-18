@@ -232,9 +232,14 @@ public class GroupingResultsContainer implements IResultSetContainer {
             if (dialect.supportsOrderByIndex()) {
                 // By default sort by count in desc order
                 int countPosition = groupAttributes.size() + 1;
-                dataFilter.setOrder(String.valueOf(countPosition) + " " + defaultSorting);
+                StringBuilder orderBy = new StringBuilder();
+                orderBy.append(countPosition).append(" ").append(defaultSorting);
+                for (int i = 0; i < groupAttributes.size(); i++) {
+                    orderBy.append(",").append(i + 1);
+                }
+                dataFilter.setOrder(orderBy.toString());
             } else {
-                dataFilter.setOrder(groupFunctions.get(groupFunctions.size() - 1));
+                dataFilter.setOrder(groupFunctions.get(groupFunctions.size() - 1) + " " + defaultSorting);
             }
         }
         groupingViewer.setDataFilter(dataFilter, true);
