@@ -260,11 +260,11 @@
 
             <repositories>
                 <!-- Use Orbit because old Eclipse doesn't have many bundles -->
-                <repository>
+                <!--<repository>
                     <id>eclipse-orbit-repo</id>
                     <url>${orbit-p2-repo.url}</url>
                     <layout>p2</layout>
-                </repository>
+                </repository>-->
             </repositories>
 
             <build>
