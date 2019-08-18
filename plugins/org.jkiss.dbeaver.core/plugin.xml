@@ -77,7 +77,7 @@
             id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
             namespace="org.jkiss.dbeaver.runtime.process"
             properties="running"
-            type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>
+            type="org.eclipse.ui.IWorkbenchPart"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">
