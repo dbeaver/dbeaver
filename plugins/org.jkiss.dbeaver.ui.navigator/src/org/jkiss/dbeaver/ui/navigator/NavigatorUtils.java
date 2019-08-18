@@ -165,14 +165,18 @@ public class NavigatorUtils {
                     String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
-                    for (MenuItem item : m.getItems()) {
-                        Object itemData = item.getData();
-                        if (itemData instanceof IContributionItem) {
-                            String contribId = ((IContributionItem)itemData).getId();
-                            if (contribId != null && contribId.equals(commandID)) {
-                                m.setDefaultItem(item);
+                    try {
+                        for (MenuItem item : m.getItems()) {
+                            Object itemData = item.getData();
+                            if (itemData instanceof IContributionItem) {
+                                String contribId = ((IContributionItem)itemData).getId();
+                                if (contribId != null && contribId.equals(commandID)) {
+                                    m.setDefaultItem(item);
+                                }
                             }
                         }
+                    } catch (Exception ex) {
+                        log.debug(ex);
                     }
                 }
             }
