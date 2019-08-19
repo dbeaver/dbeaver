@@ -354,7 +354,9 @@ public class DataSourceDescriptor
 
     @Override
     public boolean hasModifyPermission(DBPDataSourcePermission permission) {
-        if (connectionReadOnly) {
+        if ((permission == DBPDataSourcePermission.PERMISSION_EDIT_DATA ||
+            permission == DBPDataSourcePermission.PERMISSION_EDIT_METADATA) && connectionReadOnly)
+        {
             return false;
         }
         if (CommonUtils.isEmpty(connectionModifyRestrictions)) {
