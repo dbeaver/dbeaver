@@ -505,6 +505,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     protected void createPages()
     {
+        super.createPages();
+
         final IDatabaseEditorInput editorInput = getEditorInput();
         if (editorInput instanceof DatabaseLazyEditorInput) {
             try {
@@ -549,8 +551,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 EntityEditorPropertyTester.firePropertyChange(EntityEditorPropertyTester.PROP_CAN_REDO);
             }
         });
-
-        super.createPages();
 
         DBSObject databaseObject = editorInput.getDatabaseObject();
         EditorDefaults editorDefaults = null;
@@ -917,6 +917,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
 
         return breadcrumbsPanel;
+        //return null;
     }
 
     @Override
@@ -936,6 +937,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     {
         final DBNDatabaseNode curNode = getEditorInput().getNavigatorNode();
 
+        // FIXME: Drop-downs are too high - lead to minor UI glitches during editor opening. Also they don't make much sense.
         final ToolItem item = new ToolItem(infoGroup, databaseNode instanceof DBNDatabaseFolder ? SWT.DROP_DOWN : SWT.PUSH);
         item.setText(databaseNode.getNodeName());
         item.setImage(DBeaverIcons.getImage(databaseNode.getNodeIconDefault()));
