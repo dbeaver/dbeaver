@@ -48,7 +48,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
 {
     // disable Server time zone manage - it confuses users and makes very little sense
     // as now we use server timestamp format by default
-    private static final boolean MANAGE_SERVER_TIME_ZONE = false;
+    private static final boolean MANAGE_SERVER_TIME_ZONE = true;
 
     private Text hostText;
     private Text portText;
