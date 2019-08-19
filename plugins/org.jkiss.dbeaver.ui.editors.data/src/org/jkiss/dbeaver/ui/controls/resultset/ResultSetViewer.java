@@ -444,10 +444,12 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
         }
+        resultSetSize.setEnabled(!model.getVisibleAttributes().isEmpty());
 
         this.viewerPanel.setRedraw(false);
         try {
             boolean enableFilters = false;
+
             DBCExecutionContext context = getExecutionContext();
             if (context != null) {
                 if (activePresentation instanceof StatisticsPresentation) {
@@ -1573,6 +1575,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             });
+            UIUtils.addDefaultEditActionsSupport(site, resultSetSize);
 
             rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
                 @Override
