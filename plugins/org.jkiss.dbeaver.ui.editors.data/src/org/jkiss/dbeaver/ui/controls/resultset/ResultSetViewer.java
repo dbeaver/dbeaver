@@ -444,7 +444,9 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
         }
-        resultSetSize.setEnabled(!model.getVisibleAttributes().isEmpty());
+        if (resultSetSize != null && !resultSetSize.isDisposed()) {
+            resultSetSize.setEnabled(!model.getVisibleAttributes().isEmpty());
+        }
 
         this.viewerPanel.setRedraw(false);
         try {
