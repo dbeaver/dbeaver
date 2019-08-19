@@ -241,7 +241,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 buttonPanelWidth = 0;
             }
 
-            Composite primaryGroup = new Composite(propertiesGroup, SWT.BORDER);
+            Composite primaryGroup = new Composite(propertiesGroup, SWT.NONE);
             CSSUtils.setCSSClass(primaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
             primaryGroup.setLayout(new GridLayout(2, false));
             GridData gd = new GridData(GridData.FILL_BOTH);
@@ -251,7 +251,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
             Composite secondaryGroup = null;
             if (hasSecondaryProps) {
-                secondaryGroup = new Composite(propertiesGroup, SWT.BORDER);
+                secondaryGroup = new Composite(propertiesGroup, SWT.NONE);
                 secondaryGroup.setLayout(new GridLayout(2, false));
                 CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 gd = new GridData(GridData.FILL_BOTH);
@@ -261,7 +261,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
             Composite specificGroup = null;
             if (hasSpecificProps) {
-                specificGroup = new Composite(propertiesGroup, SWT.BORDER);
+                specificGroup = new Composite(propertiesGroup, SWT.NONE);
                 specificGroup.setLayout(new GridLayout(2, false));
                 CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 gd = new GridData(GridData.FILL_BOTH);
@@ -557,7 +557,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 editor.setText(objectValueToString(value));
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 // Make multline editor at least two lines height
-                gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 2;
+                gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 3;
                 editor.setLayoutData(gd);
                 return editor;
             } else {
