@@ -261,6 +261,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
     }
 
     private void fillKeysCombo() {
+        if (fkCombo.isDisposed()) {
+            return;
+        }
         fkCombo.removeAll();
         if (referenceKeys.isEmpty()) {
             fkCombo.addItem(null);
