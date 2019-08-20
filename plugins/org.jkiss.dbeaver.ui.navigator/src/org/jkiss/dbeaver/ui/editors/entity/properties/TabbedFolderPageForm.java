@@ -557,7 +557,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 editor.setText(objectValueToString(value));
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 // Make multline editor at least two lines height
-                gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 3;
+                gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 2;
                 editor.setLayoutData(gd);
                 return editor;
             } else {
