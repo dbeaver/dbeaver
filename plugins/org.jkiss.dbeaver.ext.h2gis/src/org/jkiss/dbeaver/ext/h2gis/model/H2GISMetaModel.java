@@ -1,6 +1,9 @@
 /*
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * H2GIS ecplise plugin to register a H2GIS spatial database to 
+ * DBeaver, the  Universal Database Manager
+ *
+ * For more information, please consult: <http://www.h2gis.org/>
+ * or contact directly: info_at_h2gis.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +16,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 package org.jkiss.dbeaver.ext.h2gis.model;
 
@@ -34,30 +38,30 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * H2GISMetaModel
+ * Used to create an H2GIS metamodel that creates the H2GIS datasource
+ *
+ * @author Erwan Bocher, CNRS
+ * @author Serge Rider (serge@jkiss.org)
  */
-public class H2GISMetaModel extends GenericMetaModel
-{
-	
-	
+public class H2GISMetaModel extends GenericMetaModel {
+
     public H2GISMetaModel() {
         super();
     }
-    
+
     @Override
     public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container)
-    		throws DBException {
-    	return new H2GISDataSource(monitor, container, this);
+            throws DBException {
+        return new H2GISDataSource(monitor, container, this);
     }
-    
+
     @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read H2GIS view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS " +
-                    "WHERE TABLE_SCHEMA=? AND TABLE_NAME=?"))
-            {
+                    "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS "
+                    + "WHERE TABLE_SCHEMA=? AND TABLE_NAME=?")) {
                 dbStat.setString(1, sourceObject.getContainer().getName());
                 dbStat.setString(2, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -91,13 +95,13 @@ public class H2GISMetaModel extends GenericMetaModel
                         }
                         String description = JDBCUtils.safeGetString(dbResult, "REMARKS");
                         GenericSequence sequence = new GenericSequence(
-                            container,
-                            name,
-                            description,
-                            JDBCUtils.safeGetLong(dbResult, "CURRENT_VALUE"),
-                            JDBCUtils.safeGetLong(dbResult, "MIN_VALUE"),
-                            JDBCUtils.safeGetLong(dbResult, "MAX_VALUE"),
-                            JDBCUtils.safeGetLong(dbResult, "INCREMENT")
+                                container,
+                                name,
+                                description,
+                                JDBCUtils.safeGetLong(dbResult, "CURRENT_VALUE"),
+                                JDBCUtils.safeGetLong(dbResult, "MIN_VALUE"),
+                                JDBCUtils.safeGetLong(dbResult, "MAX_VALUE"),
+                                JDBCUtils.safeGetLong(dbResult, "INCREMENT")
                         );
                         result.add(sequence);
                     }
@@ -112,14 +116,6 @@ public class H2GISMetaModel extends GenericMetaModel
     @Override
     public String getAutoIncrementClause(GenericTableColumn column) {
         return "AUTO_INCREMENT";
-/*
-        if (!column.isPersisted()) {
-            return "AUTO_INCREMENT";
-        } else {
-            // For existing columns auto-increment will in DEFAULT clause
-            return null;
-        }
-*/
     }
 
 }
