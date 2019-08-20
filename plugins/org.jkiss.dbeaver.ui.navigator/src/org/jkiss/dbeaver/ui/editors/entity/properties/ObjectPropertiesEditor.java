@@ -89,6 +89,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private Composite propsPlaceholder;
     @Nullable
     private TabbedFolderPageForm propertiesPanel;
+    private String folderId;
 
     public ObjectPropertiesEditor()
     {
@@ -124,40 +125,48 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         pageControl.createProgressPanel();
 
-        createPropertyBrowser(container);
+        folderId = getEditorInput().getDefaultFolderId();
+
+        UIUtils.asyncExec(() -> createPropertyBrowser(container));
     }
 
     private void createPropertyBrowser(Composite container)
     {
-        TabbedFolderInfo[] folders = collectFolders(this);
-        if (folders.length == 0) {
-            createPropertiesPanel(container);
-        } else {
-            Composite foldersParent = container;
-            if (hasPropertiesEditor() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO)) {
-                sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
-                sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
-                foldersParent = sashForm;
+        pageControl.setRedraw(false);
+        try {
+            TabbedFolderInfo[] folders = collectFolders(this);
+            if (folders.length == 0) {
+                createPropertiesPanel(container);
+            } else {
+                Composite foldersParent = container;
+                if (hasPropertiesEditor() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+                    sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
+                    sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
+                    foldersParent = sashForm;
 
-                createPropertiesPanel(sashForm);
+                    createPropertiesPanel(sashForm);
+                }
+                createFoldersPanel(foldersParent, folders);
             }
-            createFoldersPanel(foldersParent, folders);
-        }
 
-        // Create props
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO)) {
-            if (hasPropertiesEditor()) {
-                propertiesPanel = new TabbedFolderPageForm(this, pageControl, getEditorInput());
+            // Create props
+            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+                if (hasPropertiesEditor()) {
+                    propertiesPanel = new TabbedFolderPageForm(this, pageControl, getEditorInput());
 
-                propertiesPanel.createControl(propsPlaceholder);
+                    propertiesPanel.createControl(propsPlaceholder);
+                }
             }
-        }
 
-        if (sashForm != null) {
-            //Runnable sashUpdater = this::updateSashWidths;
-            //sashUpdater.run();
-            //UIUtils.asyncExec(sashUpdater);
-            updateSashWidths();
+            if (sashForm != null) {
+                //Runnable sashUpdater = this::updateSashWidths;
+                //sashUpdater.run();
+                //UIUtils.asyncExec(sashUpdater);
+                updateSashWidths();
+            }
+            pageControl.layout(true, true);
+        } finally {
+            pageControl.setRedraw(true);
         }
     }
 
@@ -206,7 +215,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             }
         }
 
-        final String folderId = getEditorInput().getDefaultFolderId();
         if (folderId != null) {
             folderComposite.switchFolder(folderId);
         }
@@ -384,6 +392,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Override
     public boolean switchFolder(String folderId)
     {
+        this.folderId = folderId;
         if (folderComposite != null) {
             return folderComposite.switchFolder(folderId);
         }
