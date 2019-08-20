@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="h2gis" class="org.jkiss.dbeaver.ext.h2gis.model.H2GISMetaModel" driverClass="org.h2.Driver"/>
+    </extension>
+
+</plugin>
