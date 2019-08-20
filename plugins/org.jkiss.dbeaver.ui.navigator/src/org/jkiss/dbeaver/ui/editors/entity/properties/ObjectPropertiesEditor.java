@@ -253,7 +253,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
 //        if (propsPlaceholder != null) {
             Point propsSize = propsPlaceholder.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-            Point sashSize = getParentSize(sashForm);
+            Point sashSize = sashForm.getParent().getSize();
             if (sashSize.x > 0 && sashSize.y > 0) {
                 float ratio = (float) propsSize.y / (float) sashSize.y;
                 int propsRatio = Math.min(1000, (int) (1000 * ratio));
