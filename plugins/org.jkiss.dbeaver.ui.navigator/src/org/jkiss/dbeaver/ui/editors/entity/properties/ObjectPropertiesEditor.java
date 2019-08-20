@@ -127,6 +127,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         folderId = getEditorInput().getDefaultFolderId();
 
+        // Create actual editor in async mode. We need to know editor size to make proper layout and avoid blinking
         UIUtils.asyncExec(() -> createPropertyBrowser(container));
     }
 
