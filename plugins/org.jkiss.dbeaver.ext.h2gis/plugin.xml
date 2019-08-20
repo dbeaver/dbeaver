@@ -5,7 +5,7 @@
 
 <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
-        <!-- DB2 i -->
+        <!-- H2GIS driver -->
         <datasource
                 class="org.jkiss.dbeaver.ext.h2gis.H2GISDataSourceProvider"
                 description="%datasource.h2gis.description"
