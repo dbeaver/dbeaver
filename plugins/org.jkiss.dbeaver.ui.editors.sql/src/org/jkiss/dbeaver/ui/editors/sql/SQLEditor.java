@@ -1921,7 +1921,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        if (!tabsToClose.isEmpty()) {
+        if (tabsToClose.size() > 1) {
             int confirmResult = IDialogConstants.YES_ID;
             if (confirmClose) {
                 confirmResult = ConfirmationDialog.showConfirmDialog(
