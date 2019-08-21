@@ -21,14 +21,14 @@
                 label="Text"
                 description="View GIS object in text form"
                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
-                id="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
+                id="text"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
                 supportsInline="true"/>
         <geometryViewer
                 label="Map"
                 description="View GIS object on map"
                 icon="icons/map.png"
-                id="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"
+                id="browser"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
     </extension>
 

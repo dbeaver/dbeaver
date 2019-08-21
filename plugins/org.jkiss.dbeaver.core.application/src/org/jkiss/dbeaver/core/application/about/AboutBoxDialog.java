@@ -158,7 +158,8 @@ public class AboutBoxDialog extends InformationDialog
         imageLabel.setLayoutData(gd);
         imageLabel.setImage(ABOUT_IMAGE);
 
-        Label versionLabel = new Label(group, SWT.NONE);
+        Text versionLabel = new Text(group, SWT.NONE);
+        versionLabel.setEditable(false);
         versionLabel.setBackground(background);
         versionLabel.setText(CoreMessages.dialog_about_label_version + GeneralUtils.getProductVersion().toString());
         gd = new GridData(GridData.FILL_HORIZONTAL);

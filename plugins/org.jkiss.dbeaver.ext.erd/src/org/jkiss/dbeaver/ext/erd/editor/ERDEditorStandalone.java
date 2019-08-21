@@ -20,7 +20,6 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.gef.EditPart;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -29,15 +28,10 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
-import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,11 +41,12 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Standalone ERD editor
  */
-public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProvider, IResourceChangeListener {
+public class ERDEditorStandalone extends ERDEditorPart implements IResourceChangeListener {
 
     private static final Log log = Log.getLog(ERDEditorStandalone.class);
 
@@ -94,11 +89,14 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
     public void doSave(IProgressMonitor monitor)
     {
         try {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            DiagramLoader.save(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, buffer);
+            String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, false);
 
             final IFile file = getEditorFile();
-            file.setContents(new ByteArrayInputStream(buffer.toByteArray()), true, true, monitor);
+            file.setContents(
+                    new ByteArrayInputStream(diagramState.getBytes(StandardCharsets.UTF_8)),
+                    true,
+                    true,
+                    monitor);
 
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
@@ -179,7 +177,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         return EditorUtils.getFileFromInput(getEditorInput());
     }
 
-    @Override
+    /*@Override
     public DBCExecutionContext getExecutionContext()
     {
         for (Object part : getViewer().getSelectedEditParts()) {
@@ -194,7 +192,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
             }
         }
         return null;
-    }
+    }*/
 
     @Override
     public void resourceChanged(IResourceChangeEvent event)

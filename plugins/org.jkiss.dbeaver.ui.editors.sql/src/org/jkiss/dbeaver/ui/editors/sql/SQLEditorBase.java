@@ -57,10 +57,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordDetector;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.ICommentsSupport;
-import org.jkiss.dbeaver.ui.IErrorVisualizer;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -526,14 +523,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         a.setActionDefinitionId(BaseTextEditorCommands.CMD_CONTENT_FORMAT);
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, a);
 
-        setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new Action(SQLEditorMessages.editor_sql_preference) { //$NON-NLS-1$
-            public void run() {
-                Shell shell = getSourceViewer().getTextWidget().getShell();
-                String[] preferencePages = collectContextMenuPreferencePages();
-                if (preferencePages.length > 0 && (shell == null || !shell.isDisposed()))
-                    PreferencesUtil.createPreferenceDialogOn(shell, preferencePages[0], preferencePages, getEditorInput()).open();
-            }
-        });
+        setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new ShowPreferencesAction());
 /*
         // Add the task action to the Edit pulldown menu (bookmark action is  'free')
         ResourceAction ra = new AddTaskAction(bundle, "AddTask.", this);
@@ -891,7 +881,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     protected SQLScriptElement parseQuery(final IDocument document, final int startPos, final int endPos, final int currentPos, final boolean scriptMode, final boolean keepDelimiters) {
-        if (endPos - startPos <= 0) {
+        int length = endPos - startPos;
+        if (length <= 0 || length > document.getLength()) {
             return null;
         }
         SQLDialect dialect = getSQLDialect();
@@ -1873,4 +1864,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return false;
     }
 
+    protected class ShowPreferencesAction extends Action {
+        public ShowPreferencesAction() {
+            super(SQLEditorMessages.editor_sql_preference, DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+        }  //$NON-NLS-1$
+
+        public void run() {
+            Shell shell = getSourceViewer().getTextWidget().getShell();
+            String[] preferencePages = collectContextMenuPreferencePages();
+            if (preferencePages.length > 0 && (shell == null || !shell.isDisposed()))
+                PreferencesUtil.createPreferenceDialogOn(shell, preferencePages[0], preferencePages, getEditorInput()).open();
+        }
+    }
 }

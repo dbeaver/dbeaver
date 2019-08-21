@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -85,7 +82,18 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             }
 
             DBSObject sourceObject = copyFrom == null ? null : copyFrom.getObject();
-            final Object parentObject = container instanceof DBNDatabaseNode ? ((DBNDatabaseNode) container).getValueObject() : null;
+            final Object parentObject;
+            if (container instanceof DBNDatabaseNode) {
+                parentObject = ((DBNDatabaseNode) container).getValueObject();
+            } else if (container instanceof DBNProject) {
+                parentObject = ((DBNProject) container).getProject();
+            } else if (container instanceof DBNProjectDatabases) {
+                parentObject = container.getOwnerProject();
+            } else if (container instanceof DBNLocalFolder) {
+                parentObject = ((DBNLocalFolder) container).getFolder();
+            } else {
+                parentObject = null;
+            }
 
             // Do not check for type - manager must do it. Potentially we can copy anything into anything.
 //            if (sourceObject != null && !childType.isAssignableFrom(sourceObject.getClass())) {

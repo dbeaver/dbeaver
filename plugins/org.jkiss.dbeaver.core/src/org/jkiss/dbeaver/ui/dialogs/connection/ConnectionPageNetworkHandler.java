@@ -43,6 +43,8 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
+
 /**
  * Network handlers edit dialog page
  */
@@ -89,6 +91,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         DBPDataSourceContainer dataSource = site.getActiveDataSource();
         DBPConnectionConfiguration connectionConfiguration = dataSource.getConnectionConfiguration();
         handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
+
         if (handlerConfiguration == null) {
             handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource.getDriver());
             connectionConfiguration.updateHandler(handlerConfiguration);
@@ -147,10 +150,18 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         configurator.createControl(handlerComposite);
+
         configurator.loadSettings(handlerConfiguration);
         useHandlerCheck.setSelection(handlerConfiguration.isEnabled());
         enableHandlerContent();
         updateProfileList();
+
+        if (activeProfile != null) {
+            DBWHandlerConfiguration profileConfig = activeProfile.getConfiguration(handlerDescriptor);
+            if (profileConfig != null) {
+                configurator.loadSettings(profileConfig);
+            }
+        }
 
         setControl(composite);
     }
@@ -231,6 +242,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
+        handlerConfiguration.setProperties(Collections.emptyMap());
         configurator.saveSettings(handlerConfiguration);
         dataSource.getConnectionConfiguration().setConfigProfile(activeProfile);
         dataSource.getConnectionConfiguration().updateHandler(handlerConfiguration);

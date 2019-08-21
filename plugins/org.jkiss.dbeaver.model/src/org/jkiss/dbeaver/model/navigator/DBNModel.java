@@ -651,7 +651,7 @@ public class DBNModel implements IResourceChangeListener {
                 }
 
                 try {
-                    DBWorkbench.getPlatformUI().executeInUI(() -> {
+                    DBWorkbench.getPlatformUI().executeWithProgress(() -> {
                         for (int i = 0; i < realEvents.length; i++) {
                             for (INavigatorListener listener : listenersCopy) {
                                 listener.nodeChanged(realEvents[i]);

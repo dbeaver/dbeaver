@@ -103,24 +103,25 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view) throws DBException {
-        if (!CommonUtils.isEmpty(view.getSource())) {
-            // Source may be empty if it wasn't yet read. Then it definitely wasn't changed
-            String sql = view.getSource().trim();
-            if (!sql.toLowerCase(Locale.ENGLISH).startsWith("create")) {
-                StringBuilder sqlBuf = new StringBuilder();
-                sqlBuf.append("CREATE ");
-                if (!(view instanceof PostgreMaterializedView)) {
-                    sqlBuf.append("OR REPLACE ");
-                }
-                sqlBuf.append(view.getViewType()).append(" ").append(DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL));
-                appendViewDeclarationPrefix(monitor, sqlBuf, view);
-                sqlBuf.append("\nAS ").append(sql);
-                appendViewDeclarationPostfix(monitor, sqlBuf, view);
-                sql = sqlBuf.toString();
-            }
-            actions.add(
-                new SQLDatabasePersistAction("Create view", sql));
+        if (CommonUtils.isEmpty(view.getSource())) {
+            throw new DBException("View '" + view.getName() + "' definition is empty");
         }
+        // Source may be empty if it wasn't yet read. Then it definitely wasn't changed
+        String sql = view.getSource().trim();
+        if (!sql.toLowerCase(Locale.ENGLISH).startsWith("create")) {
+            StringBuilder sqlBuf = new StringBuilder();
+            sqlBuf.append("CREATE ");
+            if (!(view instanceof PostgreMaterializedView)) {
+                sqlBuf.append("OR REPLACE ");
+            }
+            sqlBuf.append(view.getViewType()).append(" ").append(DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL));
+            appendViewDeclarationPrefix(monitor, sqlBuf, view);
+            sqlBuf.append("\nAS ").append(sql);
+            appendViewDeclarationPostfix(monitor, sqlBuf, view);
+            sql = sqlBuf.toString();
+        }
+        actions.add(
+            new SQLDatabasePersistAction("Create view", sql));
     }
 
     public void appendViewDeclarationPrefix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) throws DBException {

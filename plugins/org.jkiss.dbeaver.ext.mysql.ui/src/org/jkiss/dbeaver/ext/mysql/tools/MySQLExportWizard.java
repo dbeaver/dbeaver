@@ -26,7 +26,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
+import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -75,7 +75,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     private MySQLExportWizardPageSettings settingsPage;
 
     public MySQLExportWizard(Collection<DBSObject> objects) {
-        super(objects, MySQLMessages.tools_db_export_wizard_task_name);
+        super(objects, MySQLUIMessages.tools_db_export_wizard_task_name);
         this.method = DumpMethod.NORMAL;
         this.outputFolder = new File(DialogUtils.getCurDialogFolder()); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -134,8 +134,8 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
 	public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
-            MySQLMessages.tools_db_export_wizard_title,
-            CommonUtils.truncateString(NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getObjectsName()), 255),
+            MySQLUIMessages.tools_db_export_wizard_title,
+            CommonUtils.truncateString(NLS.bind(MySQLUIMessages.tools_db_export_wizard_message_export_completed, getObjectsName()), 255),
             SWT.ICON_INFORMATION);
         UIUtils.launchProgram(outputFolder.getAbsolutePath());
 	}
@@ -282,7 +282,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         boolean isFiltering = removeDefiner;
         Thread job = isFiltering ?
             new DumpFilterJob(monitor, process.getInputStream(), outFile) :
-            new DumpCopierJob(monitor, MySQLMessages.tools_db_export_wizard_monitor_export_db, process.getInputStream(), outFile);
+            new DumpCopierJob(monitor, MySQLUIMessages.tools_db_export_wizard_monitor_export_db, process.getInputStream(), outFile);
         job.start();
     }
 
@@ -291,12 +291,12 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     class DumpFilterJob extends DumpJob {
         protected DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, File outFile)
         {
-            super(MySQLMessages.tools_db_export_wizard_job_dump_log_reader, monitor, stream, outFile);
+            super(MySQLUIMessages.tools_db_export_wizard_job_dump_log_reader, monitor, stream, outFile);
         }
 
         @Override
         public void runDump() throws IOException {
-            monitor.beginTask(MySQLMessages.tools_db_export_wizard_monitor_export_db, 100);
+            monitor.beginTask(MySQLUIMessages.tools_db_export_wizard_monitor_export_db, 100);
             long prevStatusUpdateTime = 0;
             try {
                 NumberFormat numberFormat = NumberFormat.getInstance();

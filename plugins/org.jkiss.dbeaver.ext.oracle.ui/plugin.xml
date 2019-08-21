@@ -218,14 +218,35 @@
                 icon="icons/job_log.png">
         </editor>
 
-        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.configurators.OracleConstraintConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleConstraintConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.configurators.OracleDataTypeConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleDataTypeConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.configurators.OracleForeignKeyConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleForeignKeyConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleIndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OraclePackageConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleQueueConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleQueue"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleSchemaConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleSequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSequence"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleTableTriggerConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger"/>
         </configurator>
 
     </extension>

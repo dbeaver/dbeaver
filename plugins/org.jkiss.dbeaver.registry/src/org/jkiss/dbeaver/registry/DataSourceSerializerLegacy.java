@@ -268,13 +268,13 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                         configuration.getUserName(),
                         configuration.isSavePassword() ? configuration.getPassword() : null);
                 }
-                for (Map.Entry<String, String> entry : configuration.getProperties().entrySet()) {
-                    if (CommonUtils.isEmpty(entry.getValue())) {
+                for (Map.Entry<String, Object> entry : configuration.getProperties().entrySet()) {
+                    if (entry.getValue() == null) {
                         continue;
                     }
                     xml.startElement(RegistryConstants.TAG_PROPERTY);
                     xml.addAttribute(RegistryConstants.ATTR_NAME, entry.getKey());
-                    xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.notEmpty(entry.getValue()));
+                    xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.notEmpty(entry.getValue().toString()));
                     xml.endElement();
                 }
                 xml.endElement();
@@ -588,7 +588,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     break;
                 case RegistryConstants.TAG_PROPERTY:
                     if (curNetworkHandler != null) {
-                        curNetworkHandler.getProperties().put(
+                        curNetworkHandler.setProperty(
                             atts.getValue(RegistryConstants.ATTR_NAME),
                             atts.getValue(RegistryConstants.ATTR_VALUE));
                     } else if (curDataSource != null) {

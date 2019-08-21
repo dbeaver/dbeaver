@@ -26,23 +26,23 @@
         <editor
             name="%editor.session_manager.name"
             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
-            class="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreSessionEditor"
-            id="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreSessionEditor"
+            class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSessionEditor"
+            id="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSessionEditor"
             contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
         <editor
             name="%editor.lock_manager.name"
             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png"
-            class="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreLockEditor"
-            id="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreLockEditor">
+            class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor"
+            id="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor">
         </editor>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-        <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="postgresql"/>
         </editorContribution>
-        <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png">
             <supports dataSource="postgresql"/>
         </editorContribution>
     </extension>
@@ -85,40 +85,40 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         </editor>
 
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreConstraintConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreDatabaseConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreForeignKeyConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreIndexConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreIndexConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreProcedureConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreRoleConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreTriggerConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreSchemaConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreSequenceConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreTableColumnConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreExtensionConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreExtensionConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTablespaceConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreTablespaceConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>
         </configurator>
         
@@ -131,7 +131,7 @@
                     <supports dataSource="postgresql" typeName="money"/>
                 </manager>
         -->
-        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
+        <manager class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreEnumValueManager">
             <supports dataSource="postgresql" extension="E"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
@@ -215,10 +215,10 @@
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTriggerDisable"
-                    description="Disable trigger"
+                    description="Disable trigger(s)"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTriggerDisable"
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
-                    label="Disable trigger"
+                    label="Disable trigger(s)"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" if="object.enabledState != 'D'"/>
             </tool>            

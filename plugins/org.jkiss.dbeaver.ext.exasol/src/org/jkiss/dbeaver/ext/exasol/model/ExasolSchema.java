@@ -145,7 +145,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     }
     
     @Override
-    public Collection<ExasolTableBase> getChildren(DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<ExasolTableBase> allChildren = new ArrayList<>();
         allChildren.addAll(tableCache.getAllObjects(monitor, this));
         allChildren.addAll(viewCache.getAllObjects(monitor, this));
@@ -153,7 +153,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     }
 
     @Override
-    public ExasolTableBase getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+    public ExasolTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
 
         ExasolTableBase child = tableCache.getObject(monitor, this, childName);
         if (child == null) {
@@ -163,12 +163,12 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     }
 
     @Override
-    public Class<ExasolTableBase> getChildType(DBRProgressMonitor monitor) throws DBException {
+    public Class<ExasolTableBase> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
     	return ExasolTableBase.class;
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         if (((scope & STRUCT_ENTITIES) != 0)) {
             monitor.subTask("Cache tables");
             tableCache.getAllObjects(monitor, this);

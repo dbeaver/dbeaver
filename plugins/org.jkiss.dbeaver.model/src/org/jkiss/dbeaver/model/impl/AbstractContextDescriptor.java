@@ -57,6 +57,10 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
         return !objectTypes.isEmpty();
     }
 
+    public List<ObjectType> getObjectTypes() {
+        return objectTypes;
+    }
+
     public boolean appliesTo(DBPObject object)
     {
         return appliesTo(object, null);

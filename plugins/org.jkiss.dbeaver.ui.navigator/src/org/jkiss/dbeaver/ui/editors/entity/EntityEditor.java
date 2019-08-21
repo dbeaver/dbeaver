@@ -228,9 +228,17 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return;
         }
 
+        if (DBUtils.isReadOnly(getDatabaseObject())) {
+            DBWorkbench.getPlatformUI().showMessageBox(
+                "Read-only",
+                "Object [" + DBUtils.getObjectFullName(getDatabaseObject(), DBPEvaluationContext.UI) + "] is read-only",
+                true);
+            return;
+        }
+
         // Flush all nested object editors and result containers
         for (IEditorPart editor : editorMap.values()) {
-            if (editor instanceof ObjectPropertiesEditor || editor instanceof IEntityDataContainer) {
+            if (editor instanceof IEntityStructureEditor || editor instanceof IEntityDataEditor) {
                 if (editor.isDirty()) {
                     editor.doSave(monitor);
                 }
@@ -239,6 +247,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 return;
             }
         }
+
+        // Check read-only
 
         // Show preview
         int previewResult = IDialogConstants.PROCEED_ID;
@@ -479,6 +489,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         } catch (InvocationTargetException e) {
             log.error(e);
             DBWorkbench.getPlatformUI().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
+            return IDialogConstants.CANCEL_ID;
         } finally {
             saveInProgress = false;
         }
@@ -494,6 +505,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     protected void createPages()
     {
+        super.createPages();
+
         final IDatabaseEditorInput editorInput = getEditorInput();
         if (editorInput instanceof DatabaseLazyEditorInput) {
             try {
@@ -538,8 +551,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 EntityEditorPropertyTester.firePropertyChange(EntityEditorPropertyTester.PROP_CAN_REDO);
             }
         });
-
-        super.createPages();
 
         DBSObject databaseObject = editorInput.getDatabaseObject();
         EditorDefaults editorDefaults = null;
@@ -670,12 +681,21 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public int promptToSaveOnClose()
     {
+        List<String> changedSubEditors = new ArrayList<>();
+        for (IEditorPart editor : editorMap.values()) {
+            if (editor.isDirty()) {
+                changedSubEditors.add(editor.getTitle());
+            }
+        }
+
+        String subEditorsString = "(" + String.join(", ", changedSubEditors) + ")";
         final int result = ConfirmationDialog.showConfirmDialog(
             ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
             getSite().getShell(),
             NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
-            getEditorInput().getNavigatorNode().getNodeName());
+            getEditorInput().getNavigatorNode().getNodeName(),
+            subEditorsString);
         if (result == IDialogConstants.YES_ID) {
 //            getWorkbenchPart().getSite().getPage().saveEditor(this, false);
             return ISaveablePart2.YES;
@@ -897,6 +917,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
 
         return breadcrumbsPanel;
+        //return null;
     }
 
     @Override
@@ -916,6 +937,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     {
         final DBNDatabaseNode curNode = getEditorInput().getNavigatorNode();
 
+        // FIXME: Drop-downs are too high - lead to minor UI glitches during editor opening. Also they don't make much sense.
         final ToolItem item = new ToolItem(infoGroup, databaseNode instanceof DBNDatabaseFolder ? SWT.DROP_DOWN : SWT.PUSH);
         item.setText(databaseNode.getNodeName());
         item.setImage(DBeaverIcons.getImage(databaseNode.getNodeIconDefault()));
@@ -1031,7 +1053,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     // Save nested editors
                     ProxyProgressMonitor proxyMonitor = new ProxyProgressMonitor(monitor);
                     for (IEditorPart editor : editorMap.values()) {
-                        editor.doSave(proxyMonitor);
+                        if (editor.isDirty()) {
+                            editor.doSave(proxyMonitor);
+                        }
                         if (monitor.isCanceled()) {
                             success = false;
                             return Status.CANCEL_STATUS;

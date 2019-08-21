@@ -61,6 +61,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     private boolean clickOnHeader;
     private boolean isPacking, isInitializing;
     private DBIcon defaultIcon;
+    private boolean forceAutoSize;
 
     private transient Listener menuListener;
 
@@ -108,6 +109,10 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     public boolean isClickOnHeader()
     {
         return clickOnHeader;
+    }
+
+    public void setForceAutoSize(boolean forceAutoSize) {
+        this.forceAutoSize = forceAutoSize;
     }
 
     public void setDefaultIcon(DBIcon defaultIcon) {
@@ -212,7 +217,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 }
             }
             createVisibleColumns();
-            if (pack && !isAllSized()) {
+
+            if (needRefresh) {
+                viewer.refresh();
+            }
+            boolean allSized = isAllSized();
+            if (pack || !allSized) {
                 repackColumns();
                 control.addControlListener(new ControlAdapter() {
                     @Override
@@ -223,18 +233,6 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                         }
                     }
                 });
-            }
-            if (needRefresh && pack) {
-                viewer.refresh();
-                if (needRefresh || !isAllSized()) {
-                    for (ColumnInfo columnInfo : getVisibleColumns()) {
-                        if (columnInfo.column instanceof TreeColumn) {
-                            ((TreeColumn) columnInfo.column).pack();
-                        } else {
-                            ((TableColumn) columnInfo.column).pack();
-                        }
-                    }
-                }
             }
         } finally {
             control.setRedraw(true);
@@ -265,10 +263,10 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 if (((TreeViewer) viewer).getTree().getColumnCount() == 2) {
                     ratios = new float[]{0.6f, 0.4f};
                 }
-                UIUtils.packColumns(((TreeViewer) viewer).getTree(), false, ratios);
+                UIUtils.packColumns(((TreeViewer) viewer).getTree(), forceAutoSize, ratios);
             } else if (viewer instanceof TableViewer) {
                 itemCount = ((TableViewer) viewer).getTable().getItemCount();
-                UIUtils.packColumns(((TableViewer)viewer).getTable());
+                UIUtils.packColumns(((TableViewer)viewer).getTable(), forceAutoSize);
             }
 
             if (itemCount == 0) {
@@ -291,6 +289,17 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         } finally {
             isPacking = false;
         }
+    }
+
+    public void autoSizeColumns() {
+        UIUtils.asyncExec(() -> {
+            Control control = this.viewer.getControl();
+            if (control instanceof Tree) {
+                UIUtils.packColumns((Tree) control, true, null);
+            } else if (control instanceof Table) {
+                UIUtils.packColumns((Table) control, true);
+            }
+        });
     }
 
     public void sortByColumn(int index, int direction) {
@@ -462,13 +471,14 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         return newArray;
     }
 
-    public void configureColumns()
+    public boolean configureColumns()
     {
         ConfigDialog configDialog = new ConfigDialog();
         if (configDialog.open() != IDialogConstants.OK_ID) {
-            return;
+            return false;
         }
         saveColumnConfig();
+        return true;
     }
 
     private void updateColumnOrder(Item column, int[] order) {

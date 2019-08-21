@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.dict;
 
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 
 /**
 * DB connection type

@@ -174,7 +174,7 @@ public class StringEditorTable {
         List<String> values = new ArrayList<>();
         for (TableItem item : table.getItems()) {
             String value = item.getText().trim();
-            if (value.isEmpty() || value.equals("%")) { //$NON-NLS-1$
+            if (value.isEmpty()) { //$NON-NLS-1$
                 continue;
             }
             values.add(value);

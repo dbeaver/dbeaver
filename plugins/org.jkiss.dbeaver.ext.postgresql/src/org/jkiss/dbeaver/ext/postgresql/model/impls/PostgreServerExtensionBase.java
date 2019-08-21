@@ -233,8 +233,8 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                 } catch (DBException e) {
                     log.error(e);
                 }
-                if (tableBase.hasPartitions()) {
-                    ddl.append("\nPARTITION BY ").append(tableBase.getPartKey());
+                if (!CommonUtils.isEmpty(table.getPartitionKey())) {
+                    ddl.append("\nPARTITION BY ").append(table.getPartitionKey());
                 }
             }
             if (tableBase instanceof PostgreTablePartition && !alter) {
@@ -338,6 +338,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         // It doesn't make sense as PG server doesn't support timezones.
         // Everything is in UTC.
         return false;
+    }
+
+    @Override
+    public boolean supportsTeblespaceLocation() {
+        return dataSource.isServerVersionAtLeast(9, 2);
     }
 
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {

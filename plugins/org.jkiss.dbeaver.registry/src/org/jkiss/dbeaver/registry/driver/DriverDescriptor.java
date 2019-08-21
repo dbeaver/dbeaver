@@ -123,6 +123,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean clientRequired;
     private boolean supportsDriverProperties;
     private boolean anonymousAccess;
+    private boolean allowsEmptyPassword;
     private boolean licenseRequired;
     private boolean customDriverLoader;
     private boolean useURLTemplate;
@@ -203,6 +204,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.clientRequired = copyFrom.clientRequired;
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
             this.anonymousAccess = copyFrom.anonymousAccess;
+            this.allowsEmptyPassword = copyFrom.allowsEmptyPassword;
             this.licenseRequired = copyFrom.licenseRequired;
             this.customDriverLoader = copyFrom.customDriverLoader;
             this.useURLTemplate = copyFrom.customDriverLoader;
@@ -256,6 +258,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
         this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
+        this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
         this.custom = false;
         this.isLoaded = false;
@@ -640,6 +643,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public void setAnonymousAccess(boolean anonymousAccess) {
         this.anonymousAccess = anonymousAccess;
+    }
+
+    @Override
+    public boolean isAllowsEmptyPassword() {
+        return allowsEmptyPassword;
+    }
+
+    public void setAllowsEmptyPassword(boolean allowsEmptyPassword) {
+        this.allowsEmptyPassword = allowsEmptyPassword;
     }
 
     @Override

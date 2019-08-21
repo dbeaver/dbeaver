@@ -147,12 +147,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         final DBACertificateStorage securityManager = getContainer().getPlatform().getCertificateStorage();
 
         props.put("useSSL", "true");
-        props.put("verifyServerCertificate", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT))));
-        props.put("requireSSL", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_REQUIRE_SSL))));
+        props.put("verifyServerCertificate", sslConfig.getStringProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT));
+        props.put("requireSSL", sslConfig.getStringProperty(MySQLConstants.PROP_REQUIRE_SSL));
 
-        final String caCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CA_CERT);
-        final String clientCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT);
-        final String clientCertKeyProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_KEY);
+        final String caCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT);
+        final String clientCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT);
+        final String clientCertKeyProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_KEY);
 
         {
             // Trust keystore
@@ -168,16 +168,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             props.put("clientCertificateKeyStoreUrl", ksPath);
             props.put("trustCertificateKeyStoreUrl", ksPath);
         }
-        final String cipherSuites = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CIPHER_SUITES);
+        final String cipherSuites = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CIPHER_SUITES);
         if (!CommonUtils.isEmpty(cipherSuites)) {
             props.put("enabledSSLCipherSuites;", cipherSuites);
         }
-        final boolean retrievePublicKey = CommonUtils.getBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE), false);
+        final boolean retrievePublicKey = sslConfig.getBooleanProperty(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE);
         if (retrievePublicKey) {
             props.put("allowPublicKeyRetrieval", "true");
         }
 
-        if (CommonUtils.getBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_SSL_DEBUG), false)) {
+        if (sslConfig.getBooleanProperty(MySQLConstants.PROP_SSL_DEBUG)) {
             System.setProperty("javax.net.debug", "all");
         }
     }

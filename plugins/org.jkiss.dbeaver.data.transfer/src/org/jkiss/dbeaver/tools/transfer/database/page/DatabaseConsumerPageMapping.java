@@ -104,7 +104,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         {
             // Target container
             // Use first source object as cur selection (it's better than nothing)
-            containerPanel = new ObjectContainerSelectorPanel(composite, DTMessages.data_transfer_db_consumer_target_container, DTMessages.data_transfer_db_consumer_choose_container) {
+            containerPanel = new ObjectContainerSelectorPanel(composite,
+                DBWorkbench.getPlatform().getWorkspace().getActiveProject(),
+                "container.data-transfer.database-consumer",
+                DTMessages.data_transfer_db_consumer_target_container,
+                DTMessages.data_transfer_db_consumer_choose_container)
+            {
                 @Nullable
                 @Override
                 protected DBNNode getSelectedNode() {
@@ -127,10 +132,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 @Override
                 protected void setSelectedNode(DBNDatabaseNode node) {
                     settings.setContainerNode(node);
-                    DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(node);
-                    setContainerInfo(
-                        dataSourceNode == null ? node.getNodeIconDefault() : dataSourceNode.getNodeIconDefault(),
-                        settings.getContainerFullName());
+                    setContainerInfo(node);
                     // Reset mappings
                     for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
                         if (mappingContainer.getMappingType() != DatabaseMappingType.unspecified) {
@@ -622,7 +624,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 rootNode,
                 selectedNode,
                 new Class[] {DBSObjectContainer.class, DBSDataManipulator.class},
-                new Class[] {DBSDataManipulator.class}, null);
+                new Class[] {DBSDataManipulator.class},
+                null);
             if (node != null && node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper) node).getObject();
                 try {
@@ -717,13 +720,25 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     public void activatePage()
     {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
-        settings.loadNode(getContainer());
+
+        DBSObjectContainer producerContainer = null;
+        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
+            if (pipe.getProducer() != null) {
+                DBSObject producerObject = pipe.getProducer().getDatabaseObject();
+                if (producerObject instanceof DBSDataContainer) {
+                    DBSObject container = producerObject.getParentObject();
+                    if (container instanceof DBSObjectContainer) {
+                        producerContainer = (DBSObjectContainer) container;
+                    }
+                }
+            }
+        }
+
+        settings.loadNode(getContainer(), producerContainer);
         DBNDatabaseNode containerNode = settings.getContainerNode();
         if (containerNode != null) {
-            DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(containerNode);
-            containerPanel.setContainerInfo(
-                dataSourceNode == null ? containerNode.getNodeIconDefault() : dataSourceNode.getNodeIcon(),
-                settings.getContainerFullName());
+            //DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(containerNode);
+            containerPanel.setContainerInfo(containerNode);
         }
 
         if (mappingViewer.getInput() == null) {

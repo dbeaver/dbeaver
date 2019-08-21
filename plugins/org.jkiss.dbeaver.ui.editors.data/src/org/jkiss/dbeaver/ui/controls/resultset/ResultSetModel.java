@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -297,34 +298,7 @@ public class ResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
-        int depth = attribute.getLevel();
-        if (depth == 0) {
-            final int index = attribute.getOrdinalPosition();
-            if (index >= row.values.length) {
-                log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.values.length + ")");
-                return null;
-            } else {
-                return row.values[index];
-            }
-        }
-        Object curValue = row.values[attribute.getTopParent().getOrdinalPosition()];
-
-        for (int i = 0; i < depth; i++) {
-            if (curValue == null) {
-                break;
-            }
-            DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
-            assert attr != null;
-            try {
-                curValue = attr.extractNestedValue(curValue);
-            } catch (DBCException e) {
-                log.debug("Error reading nested value of [" + attr.getName() + "]", e);
-                curValue = null;
-                break;
-            }
-        }
-
-        return curValue;
+        return DBUtils.getAttributeValue(attribute, row.values);
     }
 
     /**
@@ -354,7 +328,7 @@ public class ResultSetModel {
             for (int i = 0; i < depth; i++) {
                 if (ownerValue == null) {
                     // Create new owner object
-                    log.warn("Null owner value");
+                    log.warn("Null owner value for '" + attr.getName() + "', row " + row.getVisualNumber());
                     return false;
                 }
                 if (i == depth - 1) {
@@ -363,7 +337,35 @@ public class ResultSetModel {
                 DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
                 assert ownerAttr != null;
                 try {
-                    ownerValue = ownerAttr.extractNestedValue(ownerValue);
+                    Object nestedValue = ownerAttr.extractNestedValue(ownerValue);
+                    if (nestedValue == null) {
+                        // Try to create nested value
+                        DBCExecutionContext context = DBUtils.getDefaultContext(ownerAttr, false);
+                        nestedValue = DBUtils.createNewAttributeValue(context, ownerAttr.getValueHandler(), ownerAttr.getAttribute(), DBDComplexValue.class);
+                        if (ownerValue instanceof DBDComposite) {
+                            ((DBDComposite) ownerValue).setAttributeValue(ownerAttr, nestedValue);
+                        }
+                        if (ownerAttr.getDataKind() == DBPDataKind.ARRAY) {
+                            // That's a tough case. Collection of elements. We need to create first element in this collection
+                            if (nestedValue instanceof DBDCollection) {
+                                Object elemValue = null;
+                                try {
+                                    DBSDataType componentType = ((DBDCollection) nestedValue).getComponentType();
+                                    DBDValueHandler elemValueHandler = DBUtils.findValueHandler(context.getDataSource(), componentType);
+                                    elemValue = DBUtils.createNewAttributeValue(context, elemValueHandler, componentType, DBDComplexValue.class);
+                                } catch (DBException e) {
+                                    log.warn("Error while getting component type name", e);
+                                }
+                                ((DBDCollection) nestedValue).setContents(new Object[] { elemValue } );
+                            } else {
+                                log.warn("Attribute '" + ownerAttr.getName() + "' has collection type but attribute value is not a collection: " + nestedValue);
+                            }
+                        }
+                        if (ownerValue instanceof DBDComposite) {
+                            ((DBDComposite) ownerValue).setAttributeValue(ownerAttr, nestedValue);
+                        }
+                    }
+                    ownerValue = nestedValue;
                 } catch (DBCException e) {
                     log.warn("Error getting field [" + ownerAttr.getName() + "] value", e);
                     return false;
@@ -387,6 +389,12 @@ public class ResultSetModel {
             }
             // Check composite type
             if (ownerValue != null) {
+                if (ownerValue instanceof DBDCollection) {
+                    DBDCollection collection = (DBDCollection) ownerValue;
+                    if (collection.getItemCount() > 0) {
+                        ownerValue = collection.getItem(0);
+                    }
+                }
                 if (!(ownerValue instanceof DBDComposite)) {
                     log.warn("Value [" + ownerValue + "] edit is not supported");
                     return false;
@@ -874,11 +882,17 @@ public class ResultSetModel {
         Collections.addAll(this.visibleAttributes, this.attributes);
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
             DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
-            if (filterConstraint == null || (!forceUpdate && constraint.getVisualPosition() != filterConstraint.getVisualPosition())) {
-                // If visual position doesn't match then probably it is a wrong attribute.
+            if (filterConstraint == null || (!forceUpdate &&
+                constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
+                constraint.getVisualPosition() == constraint.getOriginalVisualPosition()))
+            {
+                // If ordinal position doesn't match then probably it is a wrong attribute.
                 // There can be multiple attributes with the same name in rs (in some databases)
 
-                // We check visual position only when forceUpdate=true (otherwise all previosu filters will be reset, see #6311)
+                // Also check that original visual pos is the same as current position.
+                // Otherwise this means that column was reordered visually and we must respect this change
+
+                // We check order position only when forceUpdate=true (otherwise all previosu filters will be reset, see #6311)
                 continue;
             }
             if (constraint.getOperator() != null) {
@@ -891,7 +905,9 @@ public class ResultSetModel {
             filterConstraint.setOrderPosition(constraint.getOrderPosition());
             filterConstraint.setOrderDescending(constraint.isOrderDescending());
             filterConstraint.setVisible(constraint.isVisible());
-            filterConstraint.setVisualPosition(constraint.getVisualPosition());
+            if (constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION) {
+                filterConstraint.setVisualPosition(constraint.getVisualPosition());
+            }
             DBSAttributeBase cAttr = filterConstraint.getAttribute();
             if (cAttr instanceof DBDAttributeBinding) {
                 if (!constraint.isVisible()) {

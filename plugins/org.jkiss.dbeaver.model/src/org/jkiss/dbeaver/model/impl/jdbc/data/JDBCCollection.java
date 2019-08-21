@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCArrayImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
@@ -188,6 +189,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         DBSDataType arrayType = null, elementType = null;
+        JDBCDataSource dataSource = session.getDataSource();
         try {
             if (column instanceof DBSTypedObjectEx) {
                 arrayType = ((DBSTypedObjectEx) column).getDataType();
@@ -195,7 +197,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
                 if (column instanceof DBCAttributeMetaData) {
                     DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) column).getEntityMetaData();
                     if (entityMetaData != null) {
-                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getDataSource(), entityMetaData);
+                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), dataSource, entityMetaData);
                         if (docEntity != null) {
                             DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
                             if (attribute instanceof DBSTypedObjectEx) {
@@ -205,7 +207,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
                     }
                 }
                 if (arrayType == null) {
-                    arrayType = session.getDataSource().resolveDataType(session.getProgressMonitor(), column.getFullTypeName());
+                    arrayType = dataSource.resolveDataType(session.getProgressMonitor(), column.getFullTypeName());
                 }
             }
             if (arrayType != null) {
@@ -219,7 +221,11 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             try {
                 if (array != null) {
                     String baseTypeName = array.getBaseTypeName();
-                    elementType = session.getDataSource().resolveDataType(monitor, baseTypeName);
+                    if (baseTypeName != null) {
+                        // Strip type name [Presto, #6025]
+                        baseTypeName = SQLUtils.stripColumnTypeModifiers(baseTypeName);
+                        elementType = dataSource.resolveDataType(monitor, baseTypeName);
+                    }
                 }
             } catch (Exception e) {
                 throw new DBCException("Error resolving data type", e);
@@ -229,24 +235,28 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         try {
             if (elementType == null) {
                 if (array == null) {
-                    throw new DBCException("Error resolving array element type: " + column.getFullTypeName());
+                    // Null array of unknown type. Just make NULL read-only array
+                    String defDataTypeName = dataSource.getDefaultDataTypeName(DBPDataKind.OBJECT);
+                    DBSDataType defDataType = dataSource.getLocalDataType(defDataTypeName);
+                    DBDValueHandler defValueHandler = dataSource.getDefaultValueHandler();
+                    return new JDBCCollection(defDataType, defValueHandler, null);
                 }
                 try {
                     return makeCollectionFromResultSet(session, array, null);
                 } catch (SQLException e) {
-                    throw new DBCException(e, session.getDataSource()); //$NON-NLS-1$
+                    throw new DBCException(e, dataSource); //$NON-NLS-1$
                 }
             }
             try {
                 return makeCollectionFromArray(session, array, elementType);
             } catch (SQLException e) {
                 if (array == null) {
-                    throw new DBCException(e, session.getDataSource()); //$NON-NLS-1$
+                    throw new DBCException(e, dataSource); //$NON-NLS-1$
                 }
                 try {
                     return makeCollectionFromResultSet(session, array, elementType);
                 } catch (SQLException e1) {
-                    throw new DBCException(e1, session.getDataSource()); //$NON-NLS-1$
+                    throw new DBCException(e1, dataSource); //$NON-NLS-1$
                 }
             }
         } catch (DBException e) {

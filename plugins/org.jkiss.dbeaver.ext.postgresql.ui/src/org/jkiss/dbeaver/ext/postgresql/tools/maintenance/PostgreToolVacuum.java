@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -77,12 +79,19 @@ public class PostgreToolVacuum implements IUserInterfaceTool
 
         @Override
         protected void generateObjectCommand(List<String> lines, PostgreObject object) {
-            String sql = "VACUUM (VERBOSE";
-            if (fullCheck.getSelection()) sql += ",FULL";
-            if (freezeCheck.getSelection()) sql += ",FREEZE";
-            if (analyzeCheck.getSelection()) sql += ",ANALYZE";
-            if (dpsCheck.getSelection()) sql += ",DISABLE_PAGE_SKIPPING";
-            sql += ")";
+            String sql = "VACUUM ";
+            List<String> options = new ArrayList<>();
+            if (fullCheck.getSelection()) options.add("FULL");
+            if (freezeCheck.getSelection()) options.add("FREEZE");
+            options.add("VERBOSE");
+            if (analyzeCheck.getSelection()) options.add("ANALYZE");
+            if (dpsCheck != null && dpsCheck.getSelection()) options.add("DISABLE_PAGE_SKIPPING");
+            if (((PostgreDataSource)getExecutionContext().getDataSource()).isServerVersionAtLeast(9, 6)) {
+                sql += "(" + String.join(",", options) + ")";
+            } else {
+                sql += String.join(" ", options);
+            }
+            //sql += ")";
             if (object instanceof PostgreTableBase) {
                 sql += " " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL);
             }
@@ -99,8 +108,10 @@ public class PostgreToolVacuum implements IUserInterfaceTool
             freezeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
             analyzeCheck = UIUtils.createCheckbox(optionsGroup, "Analyze", PostgreMessages.tool_vacuum_analyze_check_tooltip, false, 0);
             analyzeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            dpsCheck = UIUtils.createCheckbox(optionsGroup, "Disable page skipping", PostgreMessages.tool_vacuum_dps_check_tooltip, false, 0);
-            dpsCheck.addSelectionListener(SQL_CHANGE_LISTENER);
+            if (((PostgreDataSource)getExecutionContext().getDataSource()).isServerVersionAtLeast(9, 6)) {
+                dpsCheck = UIUtils.createCheckbox(optionsGroup, "Disable page skipping", PostgreMessages.tool_vacuum_dps_check_tooltip, false, 0);
+                dpsCheck.addSelectionListener(SQL_CHANGE_LISTENER);
+            }
 
             createObjectsSelector(parent);
         }

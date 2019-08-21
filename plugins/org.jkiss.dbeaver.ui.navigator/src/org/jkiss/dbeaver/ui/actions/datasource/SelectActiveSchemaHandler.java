@@ -122,13 +122,13 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return;
         }
 
-        String schemaName = "<No active connection>";
+        String schemaName = "< N/A >";
         DBIcon schemaIcon = DBIcon.TREE_SCHEMA;
         String schemaTooltip = UINavigatorMessages.toolbar_datasource_selector_combo_database_tooltip;
 
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         if (dataSource != null && dataSource.isConnected()) {
-            schemaName = "<no schema>";
+            //schemaName = "<no schema>";
 
             IEditorInput editorInput = activeEditor.getEditorInput();
             if (editorInput instanceof IDatabaseEditorInput) {

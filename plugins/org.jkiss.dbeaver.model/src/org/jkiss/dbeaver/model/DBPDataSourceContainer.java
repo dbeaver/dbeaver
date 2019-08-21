@@ -38,11 +38,12 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  * DBPDataSourceContainer
  */
-public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNamedObject2
+public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNamedObject2, DBPDataSourcePermissionOwner
 {
     /**
      * Container unique ID
@@ -200,5 +201,7 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     Date getConnectTime();
 
     GeneralUtils.IVariableResolver getVariablesResolver();
+
+    DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry);
 
 }

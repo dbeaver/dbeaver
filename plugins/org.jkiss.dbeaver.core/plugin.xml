@@ -77,7 +77,7 @@
             id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
             namespace="org.jkiss.dbeaver.runtime.process"
             properties="running"
-            type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>
+            type="org.eclipse.ui.IWorkbenchPart"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">
@@ -119,6 +119,7 @@
         <command id="org.jkiss.dbeaver.core.connect" name="%command.org.jkiss.dbeaver.core.connect.name" description="%command.org.jkiss.dbeaver.core.connect.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.invalidate" name="%command.org.jkiss.dbeaver.core.invalidate.name" description="%command.org.jkiss.dbeaver.core.invalidate.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.disconnectProject" name="%command.org.jkiss.dbeaver.core.disconnectProject.name" description="%command.org.jkiss.dbeaver.core.disconnectProject.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnectAll" name="%command.org.jkiss.dbeaver.core.disconnectAll.name" description="%command.org.jkiss.dbeaver.core.disconnectAll.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.commit" name="%command.org.jkiss.dbeaver.core.commit.name" description="%command.org.jkiss.dbeaver.core.commit.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.rollback" name="%command.org.jkiss.dbeaver.core.rollback.name" description="%command.org.jkiss.dbeaver.core.rollback.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -190,10 +191,7 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.toolbar.general.visible">
             <with variable="activeWorkbenchWindow.activePerspective">
-                <or>
-                    <reference definitionId="DBeaverPerspectiveActive"/>
-                    <test property="org.jkiss.dbeaver.core.ui.toolbarVisible" value="dbeaver-general"/>
-                </or>
+                <reference definitionId="DBeaverPerspectiveActive"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.editor.transactional">
@@ -296,6 +294,13 @@
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.disconnectAll" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectAllHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.disconnectProject" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectProjectHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <test property="org.jkiss.dbeaver.core.global.hasMultipleProjects"/>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.invalidate" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
         </handler>
@@ -463,6 +468,9 @@
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnectAll"/>
+                <command commandId="org.jkiss.dbeaver.core.disconnectProject">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
                 <separator name="session" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.commit">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></visibleWhen>
@@ -598,6 +606,7 @@
             </toolbar>
 
             <toolbar id="dbeaver-connection-selector" label="%toolbar.dbeaver-datasource-selector.label">
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 <command
                     commandId="org.jkiss.dbeaver.ui.tools.select.connection"
                     id="org.jkiss.dbeaver.core.menu.select.connection"

@@ -428,8 +428,8 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 if (object != null || objectName != null) {
                     sql.append(" WHERE ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
                 } else {
-                    DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(MySQLTable.class, owner, false);
-                    if (tableFilters != null && !tableFilters.isEmpty()) {
+                    DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(MySQLTable.class, owner, true);
+                    if (tableFilters != null && !tableFilters.isNotApplicable()) {
                         sql.append(" WHERE ");
                         if (!CommonUtils.isEmpty(tableFilters.getInclude())) {
                             sql.append("(");
@@ -437,7 +437,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                             for (String incName : tableFilters.getInclude()) {
                                 if (hasCond) sql.append(" OR ");
                                 hasCond = true;
-                                sql.append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                                sql.append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), SQLUtils.makeSQLLike(incName)));
                             }
                             sql.append(")");
                         }

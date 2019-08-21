@@ -87,6 +87,10 @@ public class EntityEditorsRegistry {
         return defaultEditor;
     }
 
+    public List<EntityEditorDescriptor> getEntityEditors() {
+        return entityEditors;
+    }
+
     public List<EntityEditorDescriptor> getEntityEditors(DBPObject object, IEntityEditorContext context, String position) {
         List<EntityEditorDescriptor> editors = new ArrayList<>();
         final List<EntityEditorDescriptor> positionList =

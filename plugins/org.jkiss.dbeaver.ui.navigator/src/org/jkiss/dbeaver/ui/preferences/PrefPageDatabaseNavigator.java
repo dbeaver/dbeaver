@@ -25,15 +25,23 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditorsRegistry;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -54,6 +62,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Text longListFetchSizeText;
     private Combo dsDoubleClickBehavior;
     private Combo objDoubleClickBehavior;
+    private Combo defaultEditorPageCombo;
 
     public PrefPageDatabaseNavigator()
     {
@@ -100,11 +109,13 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             objDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_node_expand_collapse, 1);
 
             dsDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_double_click_connection, SWT.DROP_DOWN | SWT.READ_ONLY);
-            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_open_properties, NavigatorViewBase.DoubleClickBehavior.EDIT.ordinal());
-            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_conn_disconn, NavigatorViewBase.DoubleClickBehavior.CONNECT.ordinal());
-            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_open_sqleditor, NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.ordinal());
-            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_expand_collapse, NavigatorViewBase.DoubleClickBehavior.EXPAND.ordinal());
-            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_open_new_sqleditor, NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR_NEW.ordinal());
+            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_open_properties, NavigatorPreferences.DoubleClickBehavior.EDIT.ordinal());
+            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_conn_disconn, NavigatorPreferences.DoubleClickBehavior.CONNECT.ordinal());
+            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_open_sqleditor, NavigatorPreferences.DoubleClickBehavior.SQL_EDITOR.ordinal());
+            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_expand_collapse, NavigatorPreferences.DoubleClickBehavior.EXPAND.ordinal());
+            dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_open_new_sqleditor, NavigatorPreferences.DoubleClickBehavior.SQL_EDITOR_NEW.ordinal());
+
+            defaultEditorPageCombo = UIUtils.createLabelCombo(navigatorGroup, UINavigatorMessages.pref_page_navigator_default_editor_page_label, UINavigatorMessages.pref_page_navigator_default_editor_page_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
         }
 
         performDefaults();
@@ -126,10 +137,24 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         showResourceFolderPlaceholdersCheck.setSelection(store.getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS));
         groupByDriverCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER));
         longListFetchSizeText.setText(store.getString(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE));
-        NavigatorViewBase.DoubleClickBehavior objDCB = NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
-        objDoubleClickBehavior.select(objDCB == NavigatorViewBase.DoubleClickBehavior.EXPAND ? 1 : 0);
+        NavigatorPreferences.DoubleClickBehavior objDCB = CommonUtils.valueOf(NavigatorPreferences.DoubleClickBehavior.class, store.getString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+        objDoubleClickBehavior.select(objDCB == NavigatorPreferences.DoubleClickBehavior.EXPAND ? 1 : 0);
         dsDoubleClickBehavior.select(
-            NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)).ordinal());
+            CommonUtils.valueOf(
+                NavigatorPreferences.DoubleClickBehavior.class,
+                store.getString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK),
+                NavigatorPreferences.DoubleClickBehavior.EDIT)
+                .ordinal());
+
+        String defEditorPage = store.getString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE);
+        List<EntityEditorDescriptor> entityEditors = getAvailableEditorPages();
+        defaultEditorPageCombo.add("");
+        for (EntityEditorDescriptor eed : entityEditors) {
+            defaultEditorPageCombo.add(eed.getName());
+            if (eed.getId().equals(defEditorPage)) {
+                defaultEditorPageCombo.select(defaultEditorPageCombo.getItemCount() - 1);
+            }
+        }
     }
 
     @Override
@@ -146,17 +171,39 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS, showResourceFolderPlaceholdersCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE, longListFetchSizeText.getText());
-        NavigatorViewBase.DoubleClickBehavior objDCB = NavigatorViewBase.DoubleClickBehavior.EXPAND;
+        NavigatorPreferences.DoubleClickBehavior objDCB = NavigatorPreferences.DoubleClickBehavior.EXPAND;
         if (objDoubleClickBehavior.getSelectionIndex() == 0) {
-            objDCB = NavigatorViewBase.DoubleClickBehavior.EDIT;
+            objDCB = NavigatorPreferences.DoubleClickBehavior.EDIT;
         }
         store.setValue(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK, objDCB.name());
         store.setValue(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK,
-            CommonUtils.fromOrdinal(NavigatorViewBase.DoubleClickBehavior.class, dsDoubleClickBehavior.getSelectionIndex()).name());
+            CommonUtils.fromOrdinal(NavigatorPreferences.DoubleClickBehavior.class, dsDoubleClickBehavior.getSelectionIndex()).name());
+
+        List<EntityEditorDescriptor> entityEditors = getAvailableEditorPages();
+        int defEditorIndex = defaultEditorPageCombo.getSelectionIndex();
+        store.setValue(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE, defEditorIndex == 0 ? "" : entityEditors.get(defEditorIndex - 1).getId());
 
         PrefUtils.savePreferenceStore(store);
 
         return true;
+    }
+
+    private List<EntityEditorDescriptor> getAvailableEditorPages() {
+        List<EntityEditorDescriptor> editors = new ArrayList<>(EntityEditorsRegistry.getInstance().getEntityEditors());
+        editors.removeIf(editor -> {
+            if (editor.getType() != EntityEditorDescriptor.Type.editor) return true;
+            for (AbstractDescriptor.ObjectType ot : editor.getObjectTypes()) {
+                if (!DBSDataContainer.class.getName().equals(ot.getImplName()) &&
+                    !DBSObjectContainer.class.getName().equals(ot.getImplName()) &&
+                    !DBSEntity.class.getName().equals(ot.getImplName()))
+                {
+                    return true;
+                }
+            }
+            return false;
+        });
+        editors.sort(Comparator.comparing(EntityEditorDescriptor::getName));
+        return editors;
     }
 
     @Override

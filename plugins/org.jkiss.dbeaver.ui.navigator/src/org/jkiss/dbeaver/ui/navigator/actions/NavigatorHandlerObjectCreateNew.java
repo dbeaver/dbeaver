@@ -37,10 +37,7 @@ import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -228,7 +225,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                         site, nodeItemClass.getName(), node.getNodeType(), nodeIcon, false));
             }
 
-            if (isReadOnly(node.getObject())) {
+            if (!node.getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
                 // Do not add child folders
                 return;
             }

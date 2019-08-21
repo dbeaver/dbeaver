@@ -33,6 +33,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -47,6 +49,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -162,14 +165,18 @@ public class NavigatorUtils {
                     String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
-                    for (MenuItem item : m.getItems()) {
-                        Object itemData = item.getData();
-                        if (itemData instanceof IContributionItem) {
-                            String contribId = ((IContributionItem)itemData).getId();
-                            if (contribId != null && contribId.equals(commandID)) {
-                                m.setDefaultItem(item);
+                    try {
+                        for (MenuItem item : m.getItems()) {
+                            Object itemData = item.getData();
+                            if (itemData instanceof IContributionItem) {
+                                String contribId = ((IContributionItem)itemData).getId();
+                                if (contribId != null && contribId.equals(commandID)) {
+                                    m.setDefaultItem(item);
+                                }
                             }
                         }
+                    } catch (Exception ex) {
+                        log.debug(ex);
                     }
                 }
             }
@@ -240,13 +247,17 @@ public class NavigatorUtils {
     }
 
     public static void executeNodeAction(DBXTreeNodeHandler.Action action, Object node, IServiceLocator serviceLocator) {
+        executeNodeAction(action, node, null, serviceLocator);
+    }
+
+    public static void executeNodeAction(DBXTreeNodeHandler.Action action, Object node, Map<String, Object> parameters, IServiceLocator serviceLocator) {
         String defCommandId = null;
         if (action == DBXTreeNodeHandler.Action.open) {
             defCommandId = NavigatorCommands.CMD_OBJECT_OPEN;
         }
         String actionCommand = getNodeActionCommand(action, node, defCommandId);
         if (actionCommand != null) {
-            ActionUtils.runCommand(actionCommand, new StructuredSelection(node), serviceLocator);
+            ActionUtils.runCommand(actionCommand, new StructuredSelection(node), parameters, serviceLocator);
         } else {
             // do nothing
             // TODO: implement some other behavior
@@ -549,15 +560,20 @@ public class NavigatorUtils {
     }
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window) {
+        openNavigatorNode(node, window, null);
+    }
+
+    public static void openNavigatorNode(Object node, IWorkbenchWindow window, Map<?, ?> parameters) {
         if (node instanceof DBNResource) {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
                 serviceSQL.openResource(((DBNResource) node).getResource());
             }
         } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
+            Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
             NavigatorHandlerObjectOpen.openEntityEditor(
                 (DBNNode) node,
-                null,
+                CommonUtils.toString(activePage, null),
                 window);
         }
     }
@@ -578,5 +594,28 @@ public class NavigatorUtils {
         }
         return (IStructuredSelection)selection;
     }
+
+    public static DBPProject getSelectedProject(ISelection currentSelection, IWorkbenchPart activePart) {
+        DBPProject activeProject = null;
+        if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
+            Object selItem = ((IStructuredSelection) currentSelection).getFirstElement();
+            if (selItem instanceof DBNNode) {
+                activeProject = ((DBNNode) selItem).getOwnerProject();
+            }
+        }
+        if (activeProject == null) {
+            if (activePart instanceof DBPContextProvider) {
+                DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
+                if (executionContext != null) {
+                    activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
+                }
+            }
+        }
+        if (activeProject == null) {
+            activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        }
+        return activeProject;
+    }
+
 
 }

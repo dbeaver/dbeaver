@@ -55,7 +55,7 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -432,31 +432,19 @@ public class DiagramLoader
         }
     }
 
-    public static void save(DBRProgressMonitor monitor, @Nullable DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, OutputStream out)
+    public static String serializeDiagram(DBRProgressMonitor monitor, @Nullable DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, boolean compact)
         throws IOException
     {
         List allNodeFigures = diagramPart == null ? new ArrayList() : diagramPart.getFigure().getChildren();
-
-        // Prepare DS objects map
-        Map<DBPDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<>();
-        if (diagram != null) {
-            for (ERDEntity erdEntity : diagram.getEntities()) {
-                final DBPDataSourceContainer dsContainer = erdEntity.getObject().getDataSource().getContainer();
-                DataSourceObjects desc = dsMap.get(dsContainer);
-                if (desc == null) {
-                    desc = new DataSourceObjects();
-                    dsMap.put(dsContainer, desc);
-                }
-                desc.entities.add(erdEntity);
-            }
-        }
+        Map<DBPDataSourceContainer, DataSourceObjects> dsMap = createDataSourceObjectMap(diagram);
 
         Map<ERDElement, ElementSaveInfo> elementInfoMap = new IdentityHashMap<>();
         int elementCounter = ERD_VERSION_1;
 
         // Save as XML
-        XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-        xml.setButify(true);
+        StringWriter out = new StringWriter(1000);
+        XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING, !compact);
+        xml.setButify(!compact);
         if (verbose) {
             xml.addContent(
                 "\n<!DOCTYPE diagram [\n" +
@@ -485,7 +473,9 @@ public class DiagramLoader
         if (diagram != null) {
             xml.addAttribute(ATTR_NAME, diagram.getName());
         }
-        xml.addAttribute(ATTR_TIME, RuntimeUtils.getCurrentTimeStamp());
+        if (compact) {
+            xml.addAttribute(ATTR_TIME, RuntimeUtils.getCurrentTimeStamp());
+        }
 
         if (diagram != null) {
             xml.startElement(TAG_ENTITIES);
@@ -539,31 +529,33 @@ public class DiagramLoader
             }
             xml.endElement();
 
-            // Notes
-            xml.startElement(TAG_NOTES);
-            for (ERDNote note : diagram.getNotes()) {
-                NotePart notePart = diagramPart == null ? null : diagramPart.getNotePart(note);
+            if (!CommonUtils.isEmpty(diagram.getNotes())) {
+                // Notes
+                xml.startElement(TAG_NOTES);
+                for (ERDNote note : diagram.getNotes()) {
+                    NotePart notePart = diagramPart == null ? null : diagramPart.getNotePart(note);
 
-                xml.startElement(TAG_NOTE);
-                if (notePart != null) {
-                    ElementSaveInfo info = new ElementSaveInfo(note, notePart, elementCounter++);
-                    elementInfoMap.put(note, info);
-                    xml.addAttribute(ATTR_ID, info.objectId);
+                    xml.startElement(TAG_NOTE);
+                    if (notePart != null) {
+                        ElementSaveInfo info = new ElementSaveInfo(note, notePart, elementCounter++);
+                        elementInfoMap.put(note, info);
+                        xml.addAttribute(ATTR_ID, info.objectId);
 
-                    saveColorAndOrder(allNodeFigures, xml, notePart);
+                        saveColorAndOrder(allNodeFigures, xml, notePart);
 
-                    Rectangle noteBounds = notePart.getBounds();
-                    if (noteBounds != null) {
-                        xml.addAttribute(ATTR_X, noteBounds.x);
-                        xml.addAttribute(ATTR_Y, noteBounds.y);
-                        xml.addAttribute(ATTR_W, noteBounds.width);
-                        xml.addAttribute(ATTR_H, noteBounds.height);
+                        Rectangle noteBounds = notePart.getBounds();
+                        if (noteBounds != null) {
+                            xml.addAttribute(ATTR_X, noteBounds.x);
+                            xml.addAttribute(ATTR_Y, noteBounds.y);
+                            xml.addAttribute(ATTR_W, noteBounds.width);
+                            xml.addAttribute(ATTR_H, noteBounds.height);
+                        }
                     }
+                    xml.addText(note.getObject());
+                    xml.endElement();
                 }
-                xml.addText(note.getObject());
                 xml.endElement();
             }
-            xml.endElement();
 
             // Relations
             xml.startElement(TAG_RELATIONS);
@@ -646,6 +638,21 @@ public class DiagramLoader
         xml.endElement();
 
         xml.flush();
+
+        return out.toString();
+    }
+
+    private static Map<DBPDataSourceContainer, DataSourceObjects> createDataSourceObjectMap(EntityDiagram diagram) {
+        // Prepare DS objects map
+        Map<DBPDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<>();
+        if (diagram != null) {
+            for (ERDEntity erdEntity : diagram.getEntities()) {
+                final DBPDataSourceContainer dsContainer = erdEntity.getObject().getDataSource().getContainer();
+                DataSourceObjects desc = dsMap.computeIfAbsent(dsContainer, k -> new DataSourceObjects());
+                desc.entities.add(erdEntity);
+            }
+        }
+        return dsMap;
     }
 
     private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart nodePart) throws IOException {

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -45,7 +46,7 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
         return parent.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     public DBDAttributeBinding getParentObject() {
         return parent;
     }
@@ -60,14 +61,12 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
 
     @Override
     public boolean isReadOnly() {
-        assert parent != null;
         return parent.getMetaAttribute().isReadOnly();
     }
 
     @Nullable
     @Override
     public DBCEntityMetaData getEntityMetaData() {
-        assert parent != null;
         return parent.getMetaAttribute().getEntityMetaData();
     }
 
@@ -76,7 +75,6 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
      */
     @Nullable
     public DBDRowIdentifier getRowIdentifier() {
-        assert parent != null;
         return parent.getRowIdentifier();
     }
 
@@ -86,5 +84,9 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
         return null;
     }
 
-
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DBDAttributeBindingNested &&
+            CommonUtils.equalObjects(parent, ((DBDAttributeBindingNested) obj).parent);
+    }
 }

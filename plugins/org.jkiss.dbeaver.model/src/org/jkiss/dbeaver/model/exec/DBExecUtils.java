@@ -148,8 +148,13 @@ public class DBExecUtils {
                 break;
             } catch (InvocationTargetException e) {
                 lastError = e.getTargetException();
-                if (!recoverEnabled || discoverErrorType(dataSource, lastError) != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                if (!recoverEnabled) {
                     // Can't recover
+                    break;
+                }
+                DBPErrorAssistant.ErrorType errorType = discoverErrorType(dataSource, lastError);
+                if (errorType != DBPErrorAssistant.ErrorType.TRANSACTION_ABORTED && errorType != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                    // Some other error
                     break;
                 }
                 log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
@@ -162,11 +167,17 @@ public class DBExecUtils {
                     monitor = new VoidProgressMonitor();
                 }
                 if (!monitor.isCanceled()) {
-                    // Do not recover if connection was canceled
-                    InvalidateJob.invalidateDataSource(monitor, dataSource, false,
-                        () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
-                    if (i < tryCount - 1) {
-                        log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+
+                    if (errorType == DBPErrorAssistant.ErrorType.TRANSACTION_ABORTED) {
+                        // Transaction aborted
+                        InvalidateJob.invalidateTransaction(monitor, dataSource);
+                    } else {
+                        // Do not recover if connection was canceled
+                        InvalidateJob.invalidateDataSource(monitor, dataSource, false,
+                            () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
+                        if (i < tryCount - 1) {
+                            log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                        }
                     }
                 }
             } catch (InterruptedException e) {

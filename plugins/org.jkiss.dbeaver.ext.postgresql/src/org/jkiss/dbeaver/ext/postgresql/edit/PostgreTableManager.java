@@ -132,6 +132,9 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         final PostgreTableRegular table = (PostgreTableRegular) command.getObject();
         final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
 
+        if (command.hasProperty("partitionKey")) {
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + "PARTITION BY " + table.getPartitionKey()));
+        }
         if (command.hasProperty("hasOids")) {
             actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));
         }

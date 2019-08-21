@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
@@ -112,6 +113,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
     abstract public DBPDataSourceRegistry getDataSourceRegistry();
 
     abstract DBPDriver getSelectedDriver();
+
+    abstract DBPProject getSelectedProject();
 
     public abstract ConnectionPageSettings getPageSettings();
 

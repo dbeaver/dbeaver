@@ -41,7 +41,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute
     private String defaultValue;
     private String description;
     private DBVTransformSettings transformSettings;
-    Map<String, String> properties;
+    private Map<String, Object> properties;
 
     DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
         this.entity = entity;
@@ -66,10 +66,8 @@ public class DBVEntityAttribute implements DBSEntityAttribute
 
     DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name, Map<String, Object> map) {
         this(entity, parent, name);
-        Map<String, String> attrProps = JSONUtils.deserializeProperties(map, "properties");
-        if (!attrProps.isEmpty()) {
-            this.properties = attrProps;
-        }
+        this.properties = JSONUtils.deserializeProperties(map, "properties");
+
         Map<String, Object> transformsCfg = JSONUtils.getObject(map, "transforms");
         if (!transformsCfg.isEmpty()) {
             transformSettings = new DBVTransformSettings();
@@ -88,6 +86,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute
             }
             transformSettings.setTransformOptions(JSONUtils.deserializeProperties(transformsCfg, "properties"));
         }
+        properties = JSONUtils.deserializeProperties(transformsCfg, "properties");
     }
 
     @NotNull
@@ -213,17 +212,18 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         this.transformSettings = transformSettings;
     }
 
-    public Map<String, String> getProperties() {
-        return properties;
+    @NotNull
+    public Map<String, Object> getProperties() {
+        return properties == null ? Collections.emptyMap() : properties;
     }
 
     @Nullable
-    public String getProperty(String name)
+    public Object getProperty(String name)
     {
         return CommonUtils.isEmpty(properties) ? null : properties.get(name);
     }
 
-    public void setProperty(String name, @Nullable String value)
+    public void setProperty(String name, @Nullable Object value)
     {
         if (properties == null) {
             properties = new LinkedHashMap<>();

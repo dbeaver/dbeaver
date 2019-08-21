@@ -16,16 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.List;
-
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerObject;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -33,65 +28,53 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.List;
+
 public class SQLServerToolTriggerToggle implements IUserInterfaceTool {
-  
+
+    private static final Log log = Log.getLog(SQLServerToolTriggerToggle.class);
+
     private boolean isEnable;
 
-    protected SQLServerToolTriggerToggle(boolean enable) {
+    SQLServerToolTriggerToggle(boolean enable) {
         this.isEnable = enable;
     }
+
     @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects)
-	    throws DBException {
-	List<SQLServerTableTrigger> triggeList = CommonUtils.filterCollection(objects, SQLServerTableTrigger.class);
-	if (!triggeList.isEmpty()) {
-	    SQLDialog dialog = new SQLDialog(activePart.getSite(), triggeList);
-	    if (dialog.open() == IDialogConstants.OK_ID) {
-                refreshObjectsState(triggeList);
-            }
+    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) {
+        List<SQLServerTableTrigger> triggeList = CommonUtils.filterCollection(objects, SQLServerTableTrigger.class);
+        if (!triggeList.isEmpty()) {
+            SQLDialog dialog = new SQLDialog(activePart.getSite(), triggeList);
+            dialog.open();
         }
     }
 
-    private void refreshObjectsState(List<SQLServerTableTrigger> triggeList) {
-        try {
-            UIUtils.runInProgressDialog(monitor -> {
-                for (SQLServerTableTrigger trigger : triggeList) {
-                    try {
-                        DBNDatabaseNode triggerNode = DBNUtils.getNodeByObject(trigger);
-                        if (triggerNode != null) {
-                            triggerNode.refreshNode(monitor, SQLServerToolTriggerToggle.this);
-                        } else {
-                            trigger.refreshObjectState(monitor);
-                        }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Refresh triggers state", "Error refreshign trigger state", e.getTargetException());
-        }
-    }
-    
     class SQLDialog extends TableToolDialog {
 
-	public SQLDialog(IWorkbenchPartSite partSite, List<SQLServerTableTrigger> selectedTrigger) {
-	    super(partSite, (isEnable ? "Enable" : "Disable") + " trigger", selectedTrigger);
-	}
+        SQLDialog(IWorkbenchPartSite partSite, List<SQLServerTableTrigger> selectedTrigger) {
+            super(partSite, (isEnable ? "Enable" : "Disable") + " trigger", selectedTrigger);
+        }
 
-	@Override
-	protected void generateObjectCommand(List<String> lines, SQLServerObject object) {
-	    lines.add("ALTER TABLE " + ((SQLServerTableTrigger) object).getTable() + " "
-		    + (isEnable ? "ENABLE" : "DISABLE") + " TRIGGER " + DBUtils.getQuotedIdentifier(object) + " ");
-	}
+        @Override
+        protected void generateObjectCommand(List<String> lines, SQLServerObject object) {
+            lines.add("ALTER TABLE " + ((SQLServerTableTrigger) object).getTable() + " "
+                + (isEnable ? "ENABLE" : "DISABLE") + " TRIGGER " + DBUtils.getQuotedIdentifier(object) + " ");
+        }
 
-	@Override
-	protected void createControls(Composite parent) {
-	    createObjectsSelector(parent);
-	}
+        @Override
+        protected void createControls(Composite parent) {
+            createObjectsSelector(parent);
+        }
+
+        @Override
+        protected boolean needsRefreshOnFinish() {
+            return true;
+        }
     }
 }

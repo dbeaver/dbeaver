@@ -40,6 +40,7 @@ public class DiagramObjectCollector {
 
     private final EntityDiagram diagram;
     private final List<ERDEntity> erdEntities = new ArrayList<>();
+    private boolean showViews;
 
     public DiagramObjectCollector(EntityDiagram diagram)
     {
@@ -54,6 +55,14 @@ public class DiagramObjectCollector {
         Set<DBSEntity> tables = new LinkedHashSet<>();
         collectTables(monitor, roots, tables);
         return tables;
+    }
+
+    public boolean isShowViews() {
+        return showViews;
+    }
+
+    public void setShowViews(boolean showViews) {
+        this.showViews = showViews;
     }
 
     private static void collectTables(
@@ -115,7 +124,6 @@ public class DiagramObjectCollector {
         Collection<? extends DBSObject> roots)
         throws DBException
     {
-        boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
         Collection<DBSEntity> tables = collectTables(monitor, roots);
         for (DBSEntity table : tables) {
             if (DBUtils.isHiddenObject(table)) {
@@ -161,7 +169,7 @@ public class DiagramObjectCollector {
         return erdEntities;
     }
 
-    public static List<ERDEntity> generateEntityList(final EntityDiagram diagram, Collection<DBPNamedObject> objects)
+    public static List<ERDEntity> generateEntityList(final EntityDiagram diagram, Collection<DBPNamedObject> objects, boolean showViews)
     {
         final List<DBSObject> roots = new ArrayList<>();
         for (DBPNamedObject object : objects) {
@@ -175,6 +183,9 @@ public class DiagramObjectCollector {
         try {
             UIUtils.runInProgressService(monitor -> {
                 DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
+                collector.setShowViews(showViews);
+                //boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
+
                 try {
                     collector.generateDiagramObjects(monitor, roots);
                 } catch (DBException e) {

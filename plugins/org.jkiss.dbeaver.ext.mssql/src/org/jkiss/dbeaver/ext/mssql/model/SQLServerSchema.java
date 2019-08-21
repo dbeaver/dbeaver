@@ -168,7 +168,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         tableCache.clearCache();
         indexCache.clearCache();
         uniqueConstraintCache.clearCache();
@@ -226,22 +226,22 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Override
-    public Collection<? extends SQLServerTableBase> getChildren(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends SQLServerTableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public SQLServerTableBase getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+    public SQLServerTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return tableCache.getObject(monitor, this, childName);
     }
 
     @Override
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLServerTable.class;
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         if ((scope & STRUCT_ENTITIES) == STRUCT_ENTITIES) {
             tableCache.getAllObjects(monitor, this);
         }
@@ -334,10 +334,14 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT c.*,t.name as table_name,t.schema_id,COLUMNPROPERTY(c.object_id, c.name, 'charmaxlen') as char_max_length, dc.definition as default_definition,ep.value as description\nFROM ")
+            sql.append("SELECT c.*,t.name as table_name,t.schema_id");
+            if (owner.getDataSource().supportsColumnProperty()) {
+                sql.append(", COLUMNPROPERTY(c.object_id, c.name, 'charmaxlen') as char_max_length, ");
+            }
+            sql.append(", dc.definition as default_definition,ep.value as description\nFROM ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_columns")).append(" c")
                 .append("\nJOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t ON t.object_id=c.object_id")
-                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "default_constraints")).append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id\n")
+                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "default_constraints")).append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id")
                 .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=t.object_id AND ep.minor_id=c.column_id AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
             sql.append("WHERE ");
             if (forTable != null) {

@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
@@ -64,7 +61,7 @@ public class StyledTextUtils {
         text.addDisposeListener(e -> menuMgr.dispose());
     }
 
-    public static void fillDefaultStyledTextContextMenu(IMenuManager menu, final StyledText text) {
+    public static void fillDefaultStyledTextContextMenu(IContributionManager menu, final StyledText text) {
         final Point selectionRange = text.getSelectionRange();
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_COPY, selectionRange.y > 0, text, ST.COPY));
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_PASTE, text.getEditable(), text, ST.PASTE));
@@ -88,7 +85,7 @@ public class StyledTextUtils {
         menu.add(new GroupMarker("styled_text_additions"));
     }
 
-    private static class StyledTextAction extends Action {
+    public static class StyledTextAction extends Action {
         private final StyledText styledText;
         private final int action;
         public StyledTextAction(String actionId, boolean enabled, StyledText styledText, int action) {
@@ -105,7 +102,7 @@ public class StyledTextUtils {
         }
     }
 
-    private static class StyledTextActionEx extends Action {
+    public static class StyledTextActionEx extends Action {
         public StyledTextActionEx(String actionId, int style) {
             super(ActionUtils.findCommandName(actionId), style);
             this.setActionDefinitionId(actionId);

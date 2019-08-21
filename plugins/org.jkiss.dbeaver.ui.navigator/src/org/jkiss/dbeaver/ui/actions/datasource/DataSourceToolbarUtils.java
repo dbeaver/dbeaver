@@ -20,6 +20,7 @@ import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimElement;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -27,6 +28,7 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DataSourceToolbarUtils
 {
@@ -51,14 +53,37 @@ public class DataSourceToolbarUtils
             MTrimBar topTrim = ((WorkbenchWindow) window).getTopTrim();
             for (MTrimElement element : topTrim.getChildren()) {
                 if ("dbeaver-connection-selector".equals(element.getElementId())) {
+                    boolean showConnectionSelector = false;
+                    IEditorPart activeEditor = window.getActivePage().getActiveEditor();
+                    DBPDataSourceContainer dataSourceContainer = null;
+                    if (activeEditor instanceof IDataSourceContainerProvider) {
+                        showConnectionSelector = true;
+                        dataSourceContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
+                    }
+
                     if (element instanceof MElementContainer) {
+                        Object widget = element.getWidget();
+                        if (widget instanceof Composite) {
+                            Composite controlsPanel = (Composite) widget;
+                            if (dataSourceContainer == null) {
+                                controlsPanel.setBackground(null);
+                            } else {
+                                controlsPanel.setBackground(UIUtils.getConnectionTypeColor(dataSourceContainer.getConnectionConfiguration().getConnectionType()));
+                            }
+                        }
+
                         MElementContainer<? extends MUIElement> container = (MElementContainer<? extends MUIElement>)element;
                         for (MUIElement tbItem : container.getChildren()) {
-                            tbItem.setVisible(false);
+                            // Handle Eclipse bug. By default it doesn't update contents of main toolbar elements
+                            // So we need to hide/shot it to force text update
+                            if (showConnectionSelector) {
+                                tbItem.setVisible(false);
+                            }
+                            tbItem.setVisible(showConnectionSelector);
                         }
-                        for (MUIElement tbItem : container.getChildren()) {
-                            tbItem.setVisible(true);
-                        }
+//                        for (MUIElement tbItem : container.getChildren()) {
+//                            tbItem.setVisible(true);
+//                        }
                     }
                     return;
                 }

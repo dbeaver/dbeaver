@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -39,9 +41,9 @@ import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -56,6 +58,7 @@ import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -156,13 +159,13 @@ class GenericFilterValueEdit {
             if (filterPattern.isEmpty()) {
                 filterPattern = null;
             }
-            loadValues();
+            loadValues(null);
         });
         return valueFilterText;
     }
 
 
-    void loadValues() {
+    void loadValues(Runnable onFinish) {
         if (loadJob != null) {
             loadJob.schedule(200);
             return;
@@ -170,23 +173,23 @@ class GenericFilterValueEdit {
         // Load values
         final DBSEntityReferrer enumerableConstraint = ReferenceValueEditor.getEnumerableConstraint(attr);
         if (enumerableConstraint != null) {
-            loadConstraintEnum(enumerableConstraint);
+            loadConstraintEnum(enumerableConstraint, onFinish);
         } else if (attr.getEntityAttribute() instanceof DBSAttributeEnumerable) {
-            loadAttributeEnum((DBSAttributeEnumerable) attr.getEntityAttribute());
+            loadAttributeEnum((DBSAttributeEnumerable) attr.getEntityAttribute(), onFinish);
         } else {
             loadMultiValueList(Collections.emptyList(), isCheckedTable);
         }
     }
 
-    private void loadConstraintEnum(final DBSEntityReferrer refConstraint) {
-        loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values") {
+    private void loadConstraintEnum(final DBSEntityReferrer refConstraint, Runnable onFinish) {
+        loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values", onFinish) {
             @Override
-            List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
+            List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
                 final DBSEntityAttribute tableColumn = attr.getEntityAttribute();
                 if (tableColumn == null) {
                     return null;
                 }
-                final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintAttribute(session.getProgressMonitor(), refConstraint, tableColumn);
+                final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintAttribute(monitor, refConstraint, tableColumn);
                 if (fkColumn == null) {
                     return null;
                 }
@@ -196,7 +199,7 @@ class GenericFilterValueEdit {
                 } else {
                     return null;
                 }
-                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(session.getProgressMonitor(), association, tableColumn, false);
+                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn, false);
                 if (refColumn == null) {
                     return null;
                 }
@@ -205,13 +208,13 @@ class GenericFilterValueEdit {
                 final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
                 if (fkAttribute != null && enumConstraint != null) {
                     return enumConstraint.getDictionaryEnumeration(
-                            session,
-                            refColumn,
-                            filterPattern,
-                            null,
-                            true,
-                            true,
-                            MAX_MULTI_VALUES);
+                        monitor,
+                        refColumn,
+                        filterPattern,
+                        null,
+                        true,
+                        true,
+                        MAX_MULTI_VALUES);
                 }
                 return null;
             }
@@ -220,14 +223,24 @@ class GenericFilterValueEdit {
         loadJob.schedule();
     }
 
-    private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable) {
+    private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable, Runnable onFinish) {
 
         if (tableViewer.getTable().getColumns().length > 1)
             tableViewer.getTable().getColumn(1).setText("Count");
-        loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values") {
+        loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values", onFinish) {
+
+            private List<DBDLabelValuePair> result;
+
             @Override
-            List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
-                return attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
+            List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
+                DBExecUtils.tryExecuteRecover(monitor, attributeEnumerable.getDataSource(), param -> {
+                    try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read value enumeration")) {
+                        result = attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+                return result;
             }
         };
         loadJob.schedule();
@@ -372,8 +385,10 @@ class GenericFilterValueEdit {
     }
 
     private abstract class KeyLoadJob extends AbstractJob {
-        KeyLoadJob(String name) {
+        private final Runnable onFinish;
+        KeyLoadJob(String name, Runnable onFinish) {
             super(name);
+            this.onFinish = onFinish;
         }
 
         @Override
@@ -382,14 +397,17 @@ class GenericFilterValueEdit {
             if (executionContext == null) {
                 return Status.OK_STATUS;
             }
-            try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read value enumeration")) {
-                final List<DBDLabelValuePair> valueEnumeration = readEnumeration(session);
+            try {
+                final List<DBDLabelValuePair> valueEnumeration = readEnumeration(monitor);
                 if (valueEnumeration == null) {
                     return Status.OK_STATUS;
                 } else {
                     populateValues(valueEnumeration);
                 }
-            } catch (DBException e) {
+                if (onFinish != null) {
+                    onFinish.run();
+                }
+            } catch (Throwable e) {
                 populateValues(Collections.emptyList());
                 return GeneralUtils.makeExceptionStatus(e);
             }
@@ -397,7 +415,7 @@ class GenericFilterValueEdit {
         }
 
         @Nullable
-        abstract List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
+        abstract List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException;
 
         boolean mergeResultsWithData() {
             return CommonUtils.isEmpty(filterPattern);

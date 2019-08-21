@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Global proxy selector
@@ -70,19 +69,10 @@ public class GlobalProxySelector extends ProxySelector {
             List<Proxy> proxies = null;
             for (DBWHandlerConfiguration networkHandler : dataSourceContainer.getConnectionConfiguration().getHandlers()) {
                 if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
-                    Map<String, String> proxyProps = networkHandler.getProperties();
-                    String proxyHost = proxyProps.get(SocksConstants.PROP_HOST);
-                    String proxyPort = proxyProps.get(SocksConstants.PROP_PORT);
-                    if (!CommonUtils.isEmpty(proxyHost)) {
-                        int portNumber = SocksConstants.DEFAULT_SOCKS_PORT;
-                        if (!CommonUtils.isEmpty(proxyPort)) {
-                            try {
-                                portNumber = Integer.parseInt(proxyPort);
-                            } catch (NumberFormatException e) {
-                                log.warn("Bad proxy port number", e);
-                            }
-                        }
-                        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, portNumber);
+                    String proxyHost = networkHandler.getStringProperty(SocksConstants.PROP_HOST);
+                    int proxyPort = networkHandler.getIntProperty(SocksConstants.PROP_PORT);
+                    if (!CommonUtils.isEmpty(proxyHost) && proxyPort != 0) {
+                        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
                         Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
                         if (proxies == null) {
                             proxies = new ArrayList<>();

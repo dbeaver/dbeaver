@@ -30,6 +30,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -52,6 +55,7 @@ import java.util.*;
 class ReferencesResultsContainer implements IResultSetContainer {
 
     private static final Log log = Log.getLog(ReferencesResultsContainer.class);
+    private static final String V_PROP_ACTIVE_ASSOCIATIONS = "ref-panel-associations";
 
     private final IResultSetController parentController;
     private final Composite mainComposite;
@@ -72,9 +76,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
         this.mainComposite = UIUtils.createComposite(parent, 1);
 
         Composite keySelectorPanel = UIUtils.createComposite(this.mainComposite, 2);
-        keySelectorPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 5;
+        keySelectorPanel.setLayoutData(gd);
         UIUtils.createControlLabel(keySelectorPanel, "Reference");
-        fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
+        fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
         fkCombo.addItem(null);
         fkCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fkCombo.addSelectionListener(new SelectionAdapter() {
@@ -103,7 +109,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        return parentController.getExecutionContext();
+        return DBUtils.getDefaultContext(dataContainer, false);
     }
 
     @Override
@@ -136,6 +142,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
     }
 
     public void refreshReferences() {
+        dataViewer.resetHistory();
         DBSDataContainer newParentContainer = this.parentController.getDataContainer();
         if (newParentContainer != parentDataContainer) {
             refreshReferenceKeyList();
@@ -162,11 +169,29 @@ class ReferencesResultsContainer implements IResultSetContainer {
         }
 
         parentDataContainer = parentController.getDataContainer();
+        if (parentDataContainer == null) {
+            return;
+        }
         Set<DBSEntity> allEntities = new LinkedHashSet<>();
         for (DBDAttributeBinding attr : visibleAttributes) {
             DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
             if (entityAttribute != null) {
                 allEntities.add(entityAttribute.getParentObject());
+            }
+        }
+
+        List<ReferenceKeyMemo> refKeyMemos = new ArrayList<>();
+        {
+            DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, false);
+            if (vEntityOwner != null) {
+                Object activeAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
+                if (activeAssociations instanceof Collection) {
+                    for (Object refKeyMemoMap : (Collection)activeAssociations) {
+                        if (refKeyMemoMap instanceof Map) {
+                            refKeyMemos.add(new ReferenceKeyMemo((Map) refKeyMemoMap));
+                        }
+                    }
+                }
             }
         }
 
@@ -183,7 +208,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                                 if (assoc instanceof DBSEntityReferrer) {
                                     List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
                                     if (!CommonUtils.isEmpty(attrs)) {
-                                        ReferenceKey referenceKey = new ReferenceKey(false, entity, assoc, attrs);
+                                        ReferenceKey referenceKey = new ReferenceKey(false, assoc.getAssociatedEntity(), assoc, attrs);
                                         refs.add(referenceKey);
                                     }
                                 }
@@ -206,8 +231,23 @@ class ReferencesResultsContainer implements IResultSetContainer {
                         synchronized (referenceKeys) {
                             referenceKeys.clear();
                             referenceKeys.addAll(refs);
+
+                            // Detect active ref key from memo
                             if (!referenceKeys.isEmpty()) {
-                                activeReferenceKey = referenceKeys.get(0);
+                                if (!refKeyMemos.isEmpty()) {
+                                    for (ReferenceKey key : referenceKeys) {
+                                        for (ReferenceKeyMemo memo : refKeyMemos) {
+                                            if (key.matches(memo)) {
+                                                activeReferenceKey = key;
+                                                break;
+                                            }
+                                        }
+                                        if (activeReferenceKey != null) break;
+                                    }
+                                }
+                                if (activeReferenceKey == null) {
+                                    activeReferenceKey = referenceKeys.get(0);
+                                }
                             }
                         }
                         UIUtils.syncExec(() -> fillKeysCombo());
@@ -221,6 +261,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
     }
 
     private void fillKeysCombo() {
+        if (fkCombo.isDisposed()) {
+            return;
+        }
         fkCombo.removeAll();
         if (referenceKeys.isEmpty()) {
             fkCombo.addItem(null);
@@ -276,6 +319,16 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
                 }
             }
+
+            // Save active keys in virtual entity props
+            {
+                DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, true);
+                List<Map<String, Object>> activeAssociations = new ArrayList<>();
+                activeAssociations.add(activeReferenceKey.createMemo());
+                vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
+                vEntityOwner.persistConfiguration();
+            }
+
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Can't shwo references", "Error opening '" + dataContainer.getName() + "' references", e);
         }
@@ -287,11 +340,37 @@ class ReferencesResultsContainer implements IResultSetContainer {
         final DBSEntityAssociation refAssociation;
         final List<? extends DBSEntityAttributeRef> refAttributes;
 
-        public ReferenceKey(boolean isReference, DBSEntity refEntity, DBSEntityAssociation refAssociation, List<? extends DBSEntityAttributeRef> refAttributes) {
+        ReferenceKey(boolean isReference, DBSEntity refEntity, DBSEntityAssociation refAssociation, List<? extends DBSEntityAttributeRef> refAttributes) {
             this.isReference = isReference;
             this.refEntity = refEntity;
             this.refAssociation = refAssociation;
             this.refAttributes = refAttributes;
+        }
+
+        boolean matches(ReferenceKeyMemo memo) {
+            return isReference == memo.isReference &&
+                CommonUtils.equalObjects(DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI), memo.refEntityName) &&
+                CommonUtils.equalObjects(refAssociation.getName(), memo.refAssociationName);
+        }
+
+        Map<String, Object> createMemo() {
+            Map<String, Object> memo = new LinkedHashMap<>();
+            memo.put("ref", isReference);
+            memo.put("entity", DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI));
+            memo.put("name", refAssociation.getName());
+            return memo;
+        }
+    }
+
+    static class ReferenceKeyMemo {
+        final boolean isReference;
+        final String refEntityName;
+        final String refAssociationName;
+
+        ReferenceKeyMemo(Map<String, Object> map) {
+            this.isReference = CommonUtils.toBoolean(map.get("ref"));
+            this.refEntityName = CommonUtils.toString(map.get("entity"));
+            this.refAssociationName = CommonUtils.toString(map.get("name"));
         }
     }
 

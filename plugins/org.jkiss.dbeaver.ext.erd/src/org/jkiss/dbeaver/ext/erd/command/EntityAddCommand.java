@@ -79,7 +79,8 @@ public class EntityAddCommand extends Command
                                 dsNode,
                                 null,
                                 new Class[]{DBSTable.class},
-                                new Class[]{DBSTable.class}, null);
+                                new Class[]{DBSTable.class},
+                            null);
                         if (tableNode instanceof DBNDatabaseNode && ((DBNDatabaseNode) tableNode).getObject() instanceof DBSEntity) {
                             entity = ERDUtils.makeEntityFromObject(
                                 monitor,

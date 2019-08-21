@@ -73,13 +73,13 @@ class DBVModelSerializerModern implements DBVModelSerializer
 
         json.beginObject();
         JSONUtils.fieldNE(json, ATTR_DESCRIPTION, entity.getDescriptionColumnNames());
-        JSONUtils.serializeProperties(json, "properties", entity.properties);
+        JSONUtils.serializeProperties(json, "properties", entity.getProperties());
 
-        if (!CommonUtils.isEmpty(entity.entityAttributes)) {
+        if (!CommonUtils.isEmpty(entity.getEntityAttributes())) {
             // Attributes
             json.name("attributes");
             json.beginObject();
-            for (DBVEntityAttribute attr : entity.entityAttributes) {
+            for (DBVEntityAttribute attr : entity.getEntityAttributes()) {
                 if (!attr.hasValuableData()) {
                     continue;
                 }
@@ -95,17 +95,17 @@ class DBVModelSerializerModern implements DBVModelSerializer
                     JSONUtils.serializeProperties(json, "properties", transformSettings.getTransformOptions());
                     json.endObject();
                 }
-                JSONUtils.serializeProperties(json, "properties", attr.properties);
+                JSONUtils.serializeProperties(json, "properties", attr.getProperties());
                 json.endObject();
             }
             json.endObject();
         }
 
-        if (!CommonUtils.isEmpty(entity.entityConstraints)) {
+        if (!CommonUtils.isEmpty(entity.getConstraints())) {
             // Constraints
             json.name("constraints");
             json.beginObject();
-            for (DBVEntityConstraint c : entity.entityConstraints) {
+            for (DBVEntityConstraint c : entity.getConstraints()) {
                 if (c.hasAttributes()) {
                     json.name(c.getName());
                     json.beginObject();
@@ -125,11 +125,11 @@ class DBVModelSerializerModern implements DBVModelSerializer
             json.endObject();
         }
 
-        if (!CommonUtils.isEmpty(entity.entityForeignKeys)) {
+        if (!CommonUtils.isEmpty(entity.getForeignKeys())) {
             // Foreign keys
             json.name("foreign-keys");
             json.beginArray();
-            for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.entityForeignKeys)) {
+            for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.getForeignKeys())) {
                 json.beginObject();
                 JSONUtils.field(json, "entity", fk.getRefEntityId());
                 JSONUtils.field(json, "constraint", fk.getRefConstraintId());
@@ -149,10 +149,10 @@ class DBVModelSerializerModern implements DBVModelSerializer
         }
 
         // Colors
-        if (!CommonUtils.isEmpty(entity.colorOverrides)) {
+        if (!CommonUtils.isEmpty(entity.getColorOverrides())) {
             json.name("colors");
             json.beginArray();
-            for (DBVColorOverride color : entity.colorOverrides) {
+            for (DBVColorOverride color : entity.getColorOverrides()) {
                 json.beginObject();
                 JSONUtils.field(json, "name", color.getAttributeName());
                 JSONUtils.field(json, "operator", color.getOperator().name());

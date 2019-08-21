@@ -130,6 +130,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsRelationSizeCalc() {
+        return false;
+    }
+
+    @Override
     public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load Redshift table DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

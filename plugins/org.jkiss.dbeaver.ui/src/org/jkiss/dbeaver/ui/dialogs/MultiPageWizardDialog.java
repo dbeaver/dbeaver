@@ -232,22 +232,26 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 // Create page contents
                 page.createControl(pageArea);
                 pageControl = page.getControl();
-                //Point pageSize = pageControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                //if (pageSize.x > maxSize.x) maxSize.x = pageSize.x;
-                //if (pageSize.y > maxSize.y) maxSize.y = pageSize.y;
-                gd = (GridData) pageControl.getLayoutData();
-                if (gd == null) {
-                    gd = new GridData(GridData.FILL_BOTH);
-                    pageControl.setLayoutData(gd);
+                if (pageControl != null) {
+                    //Point pageSize = pageControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                    //if (pageSize.x > maxSize.x) maxSize.x = pageSize.x;
+                    //if (pageSize.y > maxSize.y) maxSize.y = pageSize.y;
+                    gd = (GridData) pageControl.getLayoutData();
+                    if (gd == null) {
+                        gd = new GridData(GridData.FILL_BOTH);
+                        pageControl.setLayoutData(gd);
+                    }
+                    gd.exclude = false;
+                    pageCreated = true;
                 }
-                gd.exclude = false;
-                pageCreated = true;
             }
-            gd = (GridData) pageControl.getLayoutData();
-            gd.exclude = false;
-            page.setVisible(true);
-            if (page instanceof ActiveWizardPage) {
-                ((ActiveWizardPage) page).activatePage();
+            if (pageControl != null) {
+                gd = (GridData) pageControl.getLayoutData();
+                gd.exclude = false;
+                page.setVisible(true);
+                if (page instanceof ActiveWizardPage) {
+                    ((ActiveWizardPage) page).activatePage();
+                }
             }
 
             setTitle(page.getTitle());

@@ -107,6 +107,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_double_click_connection_open_sqleditor;
     public static String pref_page_database_general_label_double_click_connection_open_new_sqleditor;
     public static String pref_page_database_general_label_double_click_connection_expand_collapse;
+    public static String pref_page_navigator_default_editor_page_label;
+    public static String pref_page_navigator_default_editor_page_tip;
 
     // ProjectSettings
     public static String pref_page_projects_settings_label_resource_location;

@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -88,7 +89,7 @@ public abstract class ExasolGrantee
 
 
 	@Override
-	public DBSObject refreshObject(DBRProgressMonitor monitor)
+	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
 			throws DBException
 	{
 		return this;

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.ExecuteBatchImpl;
@@ -554,7 +555,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     /**
      * Returns prepared statements for enumeration fetch
-     * @param session execution context
+     * @param monitor execution context
      * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
@@ -565,7 +566,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     @NotNull
     @Override
     public List<DBDLabelValuePair> getDictionaryEnumeration(
-        @NotNull DBCSession session,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
         Object keyPattern,
         List<DBDAttributeValue> preceedingKeys,
@@ -576,7 +577,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     {
         // Use default one
         return readKeyEnumeration(
-            session,
+            monitor,
             keyColumn,
             keyPattern,
             preceedingKeys,
@@ -588,19 +589,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     @NotNull
     @Override
     public List<DBDLabelValuePair> getDictionaryValues(
-        @NotNull DBCSession session,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
         @NotNull List<Object> keyValues,
         @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean sortByValue,
         boolean sortAsc) throws DBException
     {
-        DBDValueHandler keyValueHandler = DBUtils.findValueHandler(session, keyColumn);
+        DBDValueHandler keyValueHandler = DBUtils.findValueHandler(keyColumn.getDataSource(), keyColumn);
 
         StringBuilder query = new StringBuilder();
         query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
 
-        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), keyColumn);
+        String descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumn);
         if (descColumns != null) {
             query.append(", ").append(descColumns);
         }
@@ -633,30 +634,32 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query.append(" DESC");
         }
 
-        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
-            int paramPos = 0;
-            if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
-                for (DBDAttributeValue precAttribute : preceedingKeys) {
-                    DBDValueHandler precValueHandler = DBUtils.findValueHandler(session, precAttribute.getAttribute());
-                    precValueHandler.bindValueObject(session, dbStat, precAttribute.getAttribute(), paramPos++, precAttribute.getValue());
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Load dictionary values")) {
+            try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
+                int paramPos = 0;
+                if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
+                    for (DBDAttributeValue precAttribute : preceedingKeys) {
+                        DBDValueHandler precValueHandler = DBUtils.findValueHandler(session, precAttribute.getAttribute());
+                        precValueHandler.bindValueObject(session, dbStat, precAttribute.getAttribute(), paramPos++, precAttribute.getValue());
+                    }
                 }
-            }
-            for (Object value : keyValues) {
-                keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, value);
-            }
-            dbStat.setLimit(0, keyValues.size());
-            if (dbStat.executeStatement()) {
-                try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                    return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult);
+                for (Object value : keyValues) {
+                    keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, value);
                 }
-            } else {
-                return Collections.emptyList();
+                dbStat.setLimit(0, keyValues.size());
+                if (dbStat.executeStatement()) {
+                    try (DBCResultSet dbResult = dbStat.openResultSet()) {
+                        return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult);
+                    }
+                } else {
+                    return Collections.emptyList();
+                }
             }
         }
     }
 
     private List<DBDLabelValuePair> readKeyEnumeration(
-        DBCSession session,
+        DBRProgressMonitor monitor,
         DBSEntityAttribute keyColumn,
         Object keyPattern,
         List<DBDAttributeValue> preceedingKeys,
@@ -669,7 +672,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             throw new IllegalArgumentException("Bad key column argument");
         }
 
-        DBDValueHandler keyValueHandler = DBUtils.findValueHandler(session, keyColumn);
+        DBDValueHandler keyValueHandler = DBUtils.findValueHandler(keyColumn.getDataSource(), keyColumn);
 
         boolean searchInKeys = keyPattern != null;
 
@@ -678,20 +681,28 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (keyPattern instanceof Number) {
                     // Subtract gap value to see some values before specified
                     int gapSize = maxResults / 2;
+                    boolean allowNegative = ((Number) keyPattern).longValue() < 0;
                     if (keyPattern instanceof Integer) {
-                        keyPattern = (Integer) keyPattern - gapSize;
+                        int intValue = (Integer) keyPattern;
+                        keyPattern = allowNegative || intValue > gapSize ? intValue - gapSize : 0;
                     } else if (keyPattern instanceof Short) {
-                        keyPattern = (Short) keyPattern - gapSize;
+                        int shortValue = (Short) keyPattern;
+                        keyPattern = allowNegative || shortValue > gapSize ? shortValue - gapSize : (short)0;
                     } else if (keyPattern instanceof Long) {
-                        keyPattern = (Long) keyPattern - gapSize;
+                        long longValue = (Long) keyPattern;
+                        keyPattern = allowNegative || longValue > gapSize ? longValue - gapSize : (long)0;
                     } else if (keyPattern instanceof Float) {
-                        keyPattern = (Float) keyPattern - gapSize;
+                        float floatValue = (Float) keyPattern;
+                        keyPattern = allowNegative || floatValue > gapSize ? floatValue - gapSize : 0.0f;
                     } else if (keyPattern instanceof Double) {
-                        keyPattern = (Double) keyPattern - gapSize;
+                        double doubleValue = (Double) keyPattern;
+                        keyPattern = allowNegative || doubleValue > gapSize ? doubleValue - gapSize : 0.0;
                     } else if (keyPattern instanceof BigInteger) {
-                        keyPattern = ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize));
+                        BigInteger biValue = (BigInteger) keyPattern;
+                        keyPattern = allowNegative || biValue.longValue() > gapSize ? ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize)) : new BigInteger("0");
                     } else if (keyPattern instanceof BigDecimal) {
-                        keyPattern = ((BigDecimal) keyPattern).subtract(new BigDecimal(gapSize));
+                        BigDecimal bdValue = (BigDecimal) keyPattern;
+                        keyPattern = allowNegative || bdValue.longValue() > gapSize ? ((BigDecimal) keyPattern).subtract(new BigDecimal(gapSize)) : new BigDecimal(0);
                     } else {
                         searchInKeys = false;
                     }
@@ -721,10 +732,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         StringBuilder query = new StringBuilder();
         query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
 
-        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), keyColumn);
+        String descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumn);
         Collection<DBSEntityAttribute> descAttributes = null;
         if (descColumns != null) {
-            descAttributes = DBVEntity.getDescriptionColumns(session.getProgressMonitor(), this, descColumns);
+            descAttributes = DBVEntity.getDescriptionColumns(monitor, this, descColumns);
             query.append(", ").append(descColumns);
         }
         query.append(" FROM ").append(DBUtils.getObjectFullName(this, DBPEvaluationContext.DML));
@@ -791,38 +802,40 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query.append(" DESC");
         }
 
-        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
-            int paramPos = 0;
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Load attribute value enumeration")) {
+            try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
+                int paramPos = 0;
 
-            if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
-                for (DBDAttributeValue precAttribute : preceedingKeys) {
-                    DBDValueHandler precValueHandler = DBUtils.findValueHandler(session, precAttribute.getAttribute());
-                    precValueHandler.bindValueObject(session, dbStat, precAttribute.getAttribute(), paramPos++, precAttribute.getValue());
-                }
-            }
-
-            if (keyPattern != null && searchInKeys) {
-                keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++,
-                    keyColumn.getDataKind() == DBPDataKind.STRING ? "%" + keyPattern + "%" : keyPattern);
-            }
-
-            if (searchInDesc) {
-                for (DBSEntityAttribute descAttr : descAttributes) {
-                    if (descAttr.getDataKind() == DBPDataKind.STRING) {
-                        final DBDValueHandler valueHandler = DBUtils.findValueHandler(session, descAttr);
-                        valueHandler.bindValueObject(session, dbStat, descAttr, paramPos++,
-                            descAttr.getDataKind() == DBPDataKind.STRING ? "%" + keyPattern + "%": keyPattern);
+                if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
+                    for (DBDAttributeValue precAttribute : preceedingKeys) {
+                        DBDValueHandler precValueHandler = DBUtils.findValueHandler(session, precAttribute.getAttribute());
+                        precValueHandler.bindValueObject(session, dbStat, precAttribute.getAttribute(), paramPos++, precAttribute.getValue());
                     }
                 }
-            }
 
-            dbStat.setLimit(0, maxResults);
-            if (dbStat.executeStatement()) {
-                try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                    return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult);
+                if (keyPattern != null && searchInKeys) {
+                    keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++,
+                        keyColumn.getDataKind() == DBPDataKind.STRING ? "%" + keyPattern + "%" : keyPattern);
                 }
-            } else {
-                return Collections.emptyList();
+
+                if (searchInDesc) {
+                    for (DBSEntityAttribute descAttr : descAttributes) {
+                        if (descAttr.getDataKind() == DBPDataKind.STRING) {
+                            final DBDValueHandler valueHandler = DBUtils.findValueHandler(session, descAttr);
+                            valueHandler.bindValueObject(session, dbStat, descAttr, paramPos++,
+                                descAttr.getDataKind() == DBPDataKind.STRING ? "%" + keyPattern + "%" : keyPattern);
+                        }
+                    }
+                }
+
+                dbStat.setLimit(0, maxResults);
+                if (dbStat.executeStatement()) {
+                    try (DBCResultSet dbResult = dbStat.openResultSet()) {
+                        return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult);
+                    }
+                } else {
+                    return Collections.emptyList();
+                }
             }
         }
     }

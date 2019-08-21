@@ -68,7 +68,7 @@ public class MetaDataPanel implements IResultSetPanel {
         this.presentation = presentation;
         this.colorDisabled = presentation.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         this.attributeList = new MetaDataTable(parent);
-        this.attributeList.setFitWidth(false);
+        this.attributeList.setFitWidth(true);
         this.attributeList.getItemsViewer().addSelectionChangedListener(event -> {
             DBDAttributeBinding attr = getSelectedAttribute();
             if (attr != null && !updateSelection) {

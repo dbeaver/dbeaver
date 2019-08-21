@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -81,11 +82,14 @@ public class DBNUtils {
         if (forTree) {
             for (int i = 0; i < children.length; i++) {
                 DBNNode node = children[i];
-                if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
-                    if (filtered == null) {
-                        filtered = new ArrayList<>(children.length);
-                        for (int k = 0; k < i; k++) {
-                            filtered.add(children[k]);
+                if (node instanceof DBNDatabaseNode) {
+                    DBNDatabaseNode dbNode = (DBNDatabaseNode) node;
+                    if (dbNode.getMeta() != null && !dbNode.getMeta().isNavigable()) {
+                        if (filtered == null) {
+                            filtered = new ArrayList<>(children.length);
+                            for (int k = 0; k < i; k++) {
+                                filtered.add(children[k]);
+                            }
                         }
                     }
                 } else if (filtered != null) {
@@ -93,7 +97,7 @@ public class DBNUtils {
                 }
             }
         }
-        DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[filtered.size()]);
+        DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[0]);
         sortNodes(result);
         return result;
     }
@@ -146,6 +150,13 @@ public class DBNUtils {
     public static String getLastNodePathSegment(@NotNull String path) {
         int divPos = path.lastIndexOf('/');
         return divPos == -1 ? path : path.substring(divPos + 1);
+    }
+
+    public static boolean isReadOnly(DBNNode node)
+    {
+        return node instanceof DBNDatabaseNode &&
+            !(node instanceof DBNDataSource) &&
+            !((DBNDatabaseNode) node).getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {
