@@ -3228,19 +3228,24 @@ public class ResultSetViewer extends Viewer
         if (executionContext == null || dataContainer == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);
         }
-        try (DBCSession session = executionContext.openSession(
-            monitor,
-            DBCExecutionPurpose.USER,
-            "Read total row count"))
-        {
-            long rowCount = dataContainer.countData(
-                new AbstractExecutionSource(dataContainer, executionContext, this),
-                session,
-                model.getDataFilter(),
-                DBSDataContainer.FLAG_NONE);
-            model.setTotalRowCount(rowCount);
-            return rowCount;
-        }
+        long[] result = new long[1];
+        DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
+            try (DBCSession session = executionContext.openSession(
+                monitor,
+                DBCExecutionPurpose.USER,
+                "Read total row count")) {
+                long rowCount = dataContainer.countData(
+                    new AbstractExecutionSource(dataContainer, executionContext, this),
+                    session,
+                    model.getDataFilter(),
+                    DBSDataContainer.FLAG_NONE);
+                model.setTotalRowCount(rowCount);
+                result[0] = rowCount;
+            } catch (DBCException e) {
+                throw new InvocationTargetException(e);
+            }
+        });
+        return result[0];
     }
 
     private int getSegmentMaxRows()
