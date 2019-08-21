@@ -55,11 +55,16 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     private final DatabaseCache databaseCache = new DatabaseCache();
 
     private String activeDatabaseName;
+    private boolean supportsColumnProperty;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container, new SQLServerDialect());
+    }
+
+    public boolean supportsColumnProperty() {
+        return supportsColumnProperty;
     }
 
     @Override
@@ -123,6 +128,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
             this.activeDatabaseName = SQLServerUtils.getCurrentDatabase(session);
+
+            try {
+                JDBCUtils.queryString(session, "SELECT COLUMNPROPERTY(0, NULL, NULL)");
+                this.supportsColumnProperty = false;
+            } catch (Exception e) {
+                this.supportsColumnProperty = false;
+            }
         } catch (Throwable e) {
             log.error("Error during connection initialization", e);
         }

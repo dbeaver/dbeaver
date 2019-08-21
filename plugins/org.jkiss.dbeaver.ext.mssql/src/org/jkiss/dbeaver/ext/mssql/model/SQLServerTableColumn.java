@@ -124,7 +124,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         this.userTypeId = JDBCUtils.safeGetInt(dbResult, "user_type_id");
         this.dataType = getTable().getDatabase().getDataTypeByUserTypeId(monitor, userTypeId);
         this.bytesMaxLength = JDBCUtils.safeGetInt(dbResult, "max_length");
-        this.maxLength = JDBCUtils.safeGetLong(dbResult, "char_max_length");
+        this.maxLength = getDataSource().supportsColumnProperty() ? JDBCUtils.safeGetLong(dbResult, "char_max_length") : 0;
         if (this.maxLength == 0) {
             this.maxLength = this.bytesMaxLength;
         }
