@@ -105,4 +105,6 @@ public interface PostgreServerExtension
     boolean supportsDatabaseDescription();
 
     boolean supportsTemporalAccessor();
+
+    boolean supportsTeblespaceLocation();
 }

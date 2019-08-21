@@ -340,6 +340,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return false;
     }
 
+    @Override
+    public boolean supportsTeblespaceLocation() {
+        return dataSource.isServerVersionAtLeast(9, 2);
+    }
+
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
