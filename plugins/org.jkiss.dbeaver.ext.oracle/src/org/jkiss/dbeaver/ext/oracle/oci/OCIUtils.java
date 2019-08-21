@@ -17,11 +17,11 @@
 
 package org.jkiss.dbeaver.ext.oracle.oci;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.WindowsRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -97,7 +97,7 @@ public class OCIUtils
     }
 
     private static boolean equalsFileName(String file1, String file2) {
-        if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
+        if (DBWorkbench.getPlatform().getLocalSystem().isWindows()) {
             return file1.equalsIgnoreCase(file2);
         }
         else {
@@ -164,7 +164,7 @@ public class OCIUtils
         }
 
         // find Oracle homes in Windows registry
-        if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
+        if (DBWorkbench.getPlatform().getLocalSystem().isWindows()) {
             try {
                 List<String> oracleKeys = WindowsRegistry.getInstance().readStringSubKeys(WindowsRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
                 if (oracleKeys != null) {
@@ -192,7 +192,7 @@ public class OCIUtils
     }
 
     public static String readWinRegistry(String oraHome, String name) {
-        if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
+        if (DBWorkbench.getPlatform().getLocalSystem().isWindows()) {
             try {
                 List<String> oracleKeys = WindowsRegistry.getInstance().readStringSubKeys(WindowsRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
                 if (oracleKeys != null) {

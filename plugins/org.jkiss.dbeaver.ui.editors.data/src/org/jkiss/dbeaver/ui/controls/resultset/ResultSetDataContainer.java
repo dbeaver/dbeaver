@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -218,6 +219,7 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
             return true;
         }
 
+        @NotNull
         @Override
         public DBCResultSetMetaData getMeta() throws DBCException {
             List<DBDAttributeBinding> attributes = model.getVisibleAttributes();

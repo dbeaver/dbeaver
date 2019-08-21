@@ -197,7 +197,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     }
 
     protected DBPPreferenceStore getTargetPreferenceStore() {
-        return useDataSourceSettings() ?
+        return isDataSourcePreferencePage() ?
             getDataSourceContainer().getPreferenceStore() :
             DBWorkbench.getPlatform().getPreferenceStore();
     }

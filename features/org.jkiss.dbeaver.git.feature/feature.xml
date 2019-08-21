@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.git.feature"
       label="%featureName"
-      version="1.0.2.qualifier"
+      version="1.0.3.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -17,25 +17,31 @@
       %license
    </license>
 
-   <plugin id="org.jkiss.bundle.bouncycastle" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="com.jcraft.jzlib" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="javaewah" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="com.jcraft.jzlib" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="javaewah" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.sshd.core" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.sshd.sftp" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="net.i2p.crypto.eddsa" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+
+   <plugin id="org.bouncycastle.bcpg" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.bouncycastle.bcpkix" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.bouncycastle.bcprov" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
 
    <!-- EGIT and JGIT deps -->
-   <plugin id="org.eclipse.jgit" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.eclipse.jgit.http.apache" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.eclipse.jgit.archive" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.jgit" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.jgit.http.apache" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.jgit.ssh.apache" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.jgit.archive" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
 
-   <plugin id="org.eclipse.egit" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.eclipse.egit.core" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.eclipse.egit.ui" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.egit" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.egit.core" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.egit.ui" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
 
-   <plugin id="org.eclipse.egit.gitflow" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.eclipse.egit.gitflow.ui" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.egit.gitflow" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.egit.gitflow.ui" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
 
    <!-- DBeaver deps -->
-   <plugin id="org.jkiss.dbeaver.team.git" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.jkiss.dbeaver.team.git.ui" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.jkiss.dbeaver.team.git" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.jkiss.dbeaver.team.git.ui" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
 
 </feature>

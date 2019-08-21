@@ -198,18 +198,20 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     private void updateTransformerInfo() {
-        transformerCombo.removeAll();
-        transformerCombo.add(ResultSetViewer.EMPTY_TRANSFORMER_NAME);
-        if (transformerList != null && selector) {
-            for (DBDAttributeTransformerDescriptor td : transformerList) {
-                transformerCombo.add(td.getName());
-                if (td == transformer) {
-                    transformerCombo.select(transformerCombo.getItemCount() - 1);
+        if (selector) {
+            transformerCombo.removeAll();
+            transformerCombo.add(ResultSetViewer.EMPTY_TRANSFORMER_NAME);
+            if (transformerList != null && selector) {
+                for (DBDAttributeTransformerDescriptor td : transformerList) {
+                    transformerCombo.add(td.getName());
+                    if (td == transformer) {
+                        transformerCombo.select(transformerCombo.getItemCount() - 1);
+                    }
                 }
             }
-        }
-        if (transformerCombo.getSelectionIndex() < 0) {
-            transformerCombo.select(0);
+            if (transformerCombo.getSelectionIndex() < 0) {
+                transformerCombo.select(0);
+            }
         }
         if (transformer != null && transformer.getDescription() != null) {
             infoText.setText(transformer.getDescription());
@@ -290,7 +292,7 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     private void loadTransformerSettings(Collection<? extends DBPPropertyDescriptor> properties) {
-        Map<String, String> transformOptions = settings == null ? null : settings.getTransformOptions();
+        Map<String, Object> transformOptions = settings == null ? null : settings.getTransformOptions();
         if (transformOptions == null) {
             transformOptions = Collections.emptyMap();
         }

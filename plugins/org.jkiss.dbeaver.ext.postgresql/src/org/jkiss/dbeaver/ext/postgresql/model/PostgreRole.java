@@ -339,7 +339,7 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) {
         membersCache.clearCache();
         belongsCache.clearCache();
         return this;

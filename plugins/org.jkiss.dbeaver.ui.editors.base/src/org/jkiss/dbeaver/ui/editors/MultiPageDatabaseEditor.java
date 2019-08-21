@@ -32,6 +32,9 @@ import org.jkiss.dbeaver.ui.css.DBStyles;
  */
 public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor implements IDatabaseEditor, DBPContextProvider
 {
+    public static final String PARAMETER_ACTIVE_PAGE = "activePage";
+    public static final String PARAMETER_ACTIVE_FOLDER = "activeFolder";
+
     private DatabaseEditorListener listener;
 
     @Override

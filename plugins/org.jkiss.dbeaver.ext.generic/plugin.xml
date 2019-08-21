@@ -875,7 +875,7 @@
                     icon="icons/presto_icon.png"
                     iconBig="icons/presto_icon_big.png"
                     class="com.facebook.presto.jdbc.PrestoDriver"
-                    sampleURL="jdbc:presto://{host}:{port}/{database}"
+                    sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                     defaultPort="8080"
                     description="Facebook Presto (prestodb) JDBC driver"
                     webURL="https://prestodb.io/"
@@ -892,7 +892,7 @@
                         icon="icons/presto_icon.png"
                         iconBig="icons/presto_icon_big.png"
                         class="io.prestosql.jdbc.PrestoDriver"
-                        sampleURL="jdbc:presto://{host}:{port}/{database}"
+                        sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                         defaultPort="8080"
                         description="Presto (prestosql) JDBC driver"
                         webURL="https://prestosql.io/"
@@ -1069,32 +1069,26 @@
                     <file type="jar" path="https://github.com/KxSystems/kdb/raw/master/c/jdbc.jar"/>
                 </driver>
 
-                <!-- Legacy deprecated drivers -->
+                <!-- Legacy drivers -->
 
                 <driver
-                        id="postgresql"
-                        label="PostgreSQL (Old)"
-                        class="org.postgresql.Driver"
-                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
-                        defaultPort="5432"
-                        webURL="http://jdbc.postgresql.org/"
-                        description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
-
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
-                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
-
-                    <property name="loginTimeout" value="20"/>
-                    <property name="connectTimeout" value="20"/>
-
-                    <parameter name="query-get-active-db" value="select current_schema()"/>
-                    <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
-                    <parameter name="active-entity-type" value="schema"/>
-                    <parameter name="supports-scroll" value="true"/>
+                        id="mysql3"
+                        label="MySQL (Old)"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon_big.png"
+                        class="com.mysql.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        defaultPort="3306"
+                        webURL="http://www.mysql.com/products/connector/"
+                        description="Driver for MySQL (4.x and earlier)">
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
                 </driver>
+
                 <driver
                         id="postgresql_generic"
                         label="PostgreSQL (Old)"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
@@ -1114,6 +1108,19 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="omit-single-catalog" value="true"/>
                 </driver>
+
+                <!-- Deprecated drivers -->
+
+                <driver
+                        id="postgresql"
+                        label="PostgreSQL (Old)"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="http://jdbc.postgresql.org/"
+                        description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
+                </driver>
+
                 <driver
                         id="oracle"
                         label="Oracle"
@@ -1268,15 +1275,6 @@
                     <replace provider="generic" driver="firebird_jaybird"/>
                 </driver>
 
-                <driver
-                        id="mysql3"
-                        label="MySQL 3.x"
-                        class="com.mysql.jdbc.Driver"
-                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                        defaultPort="3306"
-                        webURL="http://www.mysql.com/products/connector/"
-                        description="Driver for MySQL 3.x and earlier">
-                </driver>
                 <driver
                         id="vertica"
                         label="Vertica"

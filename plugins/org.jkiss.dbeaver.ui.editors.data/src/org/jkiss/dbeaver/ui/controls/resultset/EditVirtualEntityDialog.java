@@ -138,15 +138,13 @@ class EditVirtualEntityDialog extends BaseDialog {
     }
 
     private void createUniqueKeysPage(TabFolder tabFolder) {
-        DBDRowIdentifier virtualEntityIdentifier = viewer.getVirtualEntityIdentifier();
-        if (virtualEntityIdentifier == null) {
+        uniqueConstraint = vEntity.getBestIdentifier();
+        if (uniqueConstraint == null) {
             return;
         }
         TabItem ukItem = new TabItem(tabFolder, SWT.NONE);
         ukItem.setText("Virtual Unique Key");
         ukItem.setData(InitPage.UNIQUE_KEY);
-
-        uniqueConstraint = (DBVEntityConstraint) virtualEntityIdentifier.getUniqueKey();
 
         editUniqueKeyPage = new EditConstraintPage(
             "Define unique identifier",

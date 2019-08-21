@@ -98,4 +98,7 @@ public class DBDRowIdentifier implements DBPObject {
         }
     }
 
+    public void clearAttributes() {
+        attributes.clear();
+    }
 }

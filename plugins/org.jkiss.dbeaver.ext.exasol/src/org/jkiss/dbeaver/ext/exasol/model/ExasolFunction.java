@@ -50,7 +50,7 @@ public class ExasolFunction
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor)
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
             throws DBException
     {
         getContainer().functionCache.clearCache();

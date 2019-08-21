@@ -301,6 +301,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             return valueController.getExecutionContext();
         }
 
+        @NotNull
         @Override
         public IDataController getDataController() {
             return valueController.getDataController();

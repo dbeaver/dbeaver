@@ -55,11 +55,16 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     private final DatabaseCache databaseCache = new DatabaseCache();
 
     private String activeDatabaseName;
+    private boolean supportsColumnProperty;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container, new SQLServerDialect());
+    }
+
+    public boolean supportsColumnProperty() {
+        return supportsColumnProperty;
     }
 
     @Override
@@ -74,7 +79,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    protected Properties getAllConnectionProperties(DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, purpose, connectionInfo);
 
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
@@ -123,6 +128,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
             this.activeDatabaseName = SQLServerUtils.getCurrentDatabase(session);
+
+            try {
+                JDBCUtils.queryString(session, "SELECT COLUMNPROPERTY(0, NULL, NULL)");
+                this.supportsColumnProperty = false;
+            } catch (Exception e) {
+                this.supportsColumnProperty = false;
+            }
         } catch (Throwable e) {
             log.error("Error during connection initialization", e);
         }
@@ -281,27 +293,27 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return databaseCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return databaseCache.getObject(monitor, this, childName);
     }
 
     @Override
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLServerDatabase.class;
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         databaseCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         databaseCache.clearCache();
         return super.refreshObject(monitor);
     }

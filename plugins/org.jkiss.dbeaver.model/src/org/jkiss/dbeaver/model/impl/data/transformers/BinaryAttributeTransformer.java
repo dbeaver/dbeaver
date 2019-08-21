@@ -20,20 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterString;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,7 +35,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Transforms string value into binary
@@ -57,9 +50,9 @@ public class BinaryAttributeTransformer implements DBDAttributeTransformer {
     private static final String FORMAT_HEX = "hex";
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         DBPDataSource dataSource = session.getDataSource();
-        String formatterId = options.getOrDefault(PROP_FORMAT, FORMAT_HEX);
+        String formatterId = CommonUtils.toString(options.get(PROP_FORMAT), FORMAT_HEX);
 
         DBDBinaryFormatter formatter;
         if (FORMAT_NATIVE.equals(formatterId) && dataSource instanceof SQLDataSource) {
@@ -71,7 +64,7 @@ public class BinaryAttributeTransformer implements DBDAttributeTransformer {
             formatter = new BinaryFormatterString();
         }
 
-        String encodingName = options.getOrDefault(PROP_ENCODING, GeneralUtils.UTF8_ENCODING);
+        String encodingName = CommonUtils.toString(options.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
         Charset charset;
         try {
             charset = Charset.forName(encodingName);

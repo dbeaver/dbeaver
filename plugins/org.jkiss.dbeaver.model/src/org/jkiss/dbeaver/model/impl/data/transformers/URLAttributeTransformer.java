@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -51,14 +52,14 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
     public static final String URL_TYPE_NAME = "URL.Preview";
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         attribute.setPresentationAttribute(
             new TransformerPresentationAttribute(attribute, URL_TYPE_NAME, -1, DBPDataKind.STRING));
 
         String pattern = null;
         if (options.containsKey(PROP_PATTERN)) {
             try {
-                pattern = options.get(PROP_PATTERN);
+                pattern = CommonUtils.toString(options.get(PROP_PATTERN));
             } catch (IllegalArgumentException e) {
                 log.error("Bad unit option", e);
             }

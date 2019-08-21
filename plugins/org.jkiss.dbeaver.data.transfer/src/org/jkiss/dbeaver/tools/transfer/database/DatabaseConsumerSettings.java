@@ -19,14 +19,11 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -34,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -277,24 +275,20 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         }
     }
 
-    @NotNull
-    public String getContainerFullName() {
-        DBSObjectContainer container = getContainer();
-        return container == null ? "" :
-            container instanceof DBPDataSource ?
-                DBUtils.getObjectFullName(container, DBPEvaluationContext.UI) :
-                DBUtils.getObjectFullName(container, DBPEvaluationContext.UI) + " [" + container.getDataSource().getContainer().getName() + "]";
-    }
-
-    public void loadNode(IRunnableContext runnableContext) {
-        if (containerNode == null && !CommonUtils.isEmpty(containerNodePath)) {
-            if (!CommonUtils.isEmpty(containerNodePath)) {
+    public void loadNode(IRunnableContext runnableContext, @Nullable DBSObjectContainer producerContainer) {
+        if (containerNode == null && (producerContainer != null || !CommonUtils.isEmpty(containerNodePath))) {
+            if (producerContainer != null || !CommonUtils.isEmpty(containerNodePath)) {
                 try {
                     runnableContext.run(true, true, monitor -> {
                         try {
-                            DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(
-                                new DefaultProgressMonitor(monitor),
-                                containerNodePath);
+                            DBNNode node;
+                            if (producerContainer != null) {
+                                node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(producerContainer);
+                            } else {
+                                node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(
+                                    new DefaultProgressMonitor(monitor),
+                                    containerNodePath);
+                            }
                             if (node instanceof DBNDatabaseNode) {
                                 containerNode = (DBNDatabaseNode) node;
                             }

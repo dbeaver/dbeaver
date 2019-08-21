@@ -22,13 +22,14 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPObject;
 
 import java.io.File;
 
 /**
  * DBPWorkspace
  */
-public interface DBPProject
+public interface DBPProject extends DBPObject
 {
     String METADATA_FOLDER = ".dbeaver";
 

@@ -492,13 +492,13 @@ public abstract class LightGrid extends Canvas {
         int savedHSB = keepState ? hScroll.getSelection() : -1;
         int savedVSB = keepState ? vScroll.getSelection() : -1;
 
-        int[] oldWidths = null;
+        Map<Object, Integer> oldWidths = null;
         if (keepState && !controlWasHidden) {
             // Save widths
-            oldWidths = new int[columns.size()];
+            oldWidths = new HashMap<>();
             if (!columns.isEmpty()) {
-                for (int i = 0; i < columns.size(); i++) {
-                    oldWidths[i] = columns.get(i).getWidth();
+                for (GridColumn column : columns) {
+                    oldWidths.put(column.getElement(), column.getWidth());
                 }
             }
         }
@@ -595,9 +595,12 @@ public abstract class LightGrid extends Canvas {
 
             if (oldWidths != null) {
                 // Restore widths
-                if (oldWidths.length == columns.size()) {
-                    for (int i = 0; i < oldWidths.length; i++) {
-                        columns.get(i).setWidth(oldWidths[i]);
+                if (oldWidths.size() == columns.size()) {
+                    for (GridColumn column : columns) {
+                        Integer newWidth = oldWidths.get(column.getElement());
+                        if (newWidth != null) {
+                            column.setWidth(newWidth);
+                        }
                     }
                 }
             }
@@ -642,7 +645,7 @@ public abstract class LightGrid extends Canvas {
         List<GridNode> parents = new ArrayList<>(initialElements.length);
         collectRows(realRows, parents, null, initialElements, 0);
         this.rowElements = realRows.toArray();
-        this.parentNodes = parents.toArray(new GridNode[parents.size()]);
+        this.parentNodes = parents.toArray(new GridNode[0]);
     }
 
     /**
@@ -1841,6 +1844,9 @@ public abstract class LightGrid extends Canvas {
             colHeaderHeight = Math.max(column.getHeaderHeight(true, true), colHeaderHeight);
         }
         headerHeight = colHeaderHeight;
+        if (headerHeight <= 0) {
+            headerHeight = GridColumn.topMargin + fontMetrics.getHeight() + GridColumn.bottomMargin;
+        }
 
         // Row header width
         rowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
@@ -4254,6 +4260,10 @@ public abstract class LightGrid extends Canvas {
         normalFont = font;
         UIUtils.dispose(boldFont);
         boldFont = UIUtils.makeBoldFont(normalFont);
+    }
+
+    public Font getBoldFont() {
+        return boldFont;
     }
 
     public String getCellText(Object colElement, Object rowElement)

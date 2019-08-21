@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -70,9 +68,12 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
         setControl(placeholder);
 
+        connectionProject = wizard.getSelectedProject();
         final List<DBPProject> projects = DBeaverCore.getInstance().getWorkspace().getProjects();
         if (projects.size() == 1) {
-            connectionProject = projects.get(0);
+            if (connectionProject == null) {
+                connectionProject = projects.get(0);
+            }
         } else if (projects.size() > 1) {
 
             Composite projectGroup = UIUtils.createComposite(placeholder, 2);
@@ -82,17 +83,15 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
             final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             projectCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            final DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
             for (DBPProject project : projects) {
                 projectCombo.add(project.getName());
             }
 
-            if (activeProject == null) {
+            if (connectionProject == null) {
                 projectCombo.select(0);
                 connectionProject = projects.get(0);
             } else {
-                connectionProject = activeProject;
-                projectCombo.setText(activeProject.getName());
+                projectCombo.setText(connectionProject.getName());
             }
             projectCombo.addSelectionListener(new SelectionAdapter() {
                 @Override

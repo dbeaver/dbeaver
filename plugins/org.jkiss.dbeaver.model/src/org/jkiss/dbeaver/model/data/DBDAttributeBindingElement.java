@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Collection element binding info
@@ -154,4 +155,23 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
     public DBPImage getObjectImage() {
         return DBValueFormatting.getObjectImage(collection.getComponentType());
     }
+
+    @Override
+    public String toString() {
+        return collection.toString() + "@" + index;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj) && obj instanceof DBDAttributeBindingElement &&
+            CommonUtils.equalObjects(collection, ((DBDAttributeBindingElement) obj).collection) &&
+            index == ((DBDAttributeBindingElement) obj).index;
+    }
+
+    @Override
+    public int hashCode() {
+        return collection.hashCode() + index;
+    }
+
+
 }

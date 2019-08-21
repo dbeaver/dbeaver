@@ -128,6 +128,8 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                    });
                  if (!UIUtils.isInDialog(inlineControl)) {
                      addAutoSaveSupport(inlineControl);
+                 } else {
+                     ((IMultiController) valueController).closeInlineEditor();
                  }
             }
         }

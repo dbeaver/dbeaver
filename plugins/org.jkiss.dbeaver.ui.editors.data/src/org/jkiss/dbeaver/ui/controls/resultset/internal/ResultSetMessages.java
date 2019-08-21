@@ -59,6 +59,8 @@ public class ResultSetMessages extends NLS {
 
     public static String controls_resultset_viewer_action_edit;
     public static String controls_resultset_viewer_action_order_filter;
+    public static String controls_resultset_viewer_action_order;
+    public static String controls_resultset_viewer_action_filter;
     public static String controls_resultset_viewer_action_custom_filter;
     public static String controls_resultset_viewer_action_column_view;
     public static String controls_resultset_viewer_action_logical_structure;
@@ -109,9 +111,6 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
     public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
     public static String sql_editor_resultset_filter_panel_btn_apply;
-    public static String sql_editor_resultset_filter_panel_btn_remove;
-    public static String sql_editor_resultset_filter_panel_btn_save;
-    public static String sql_editor_resultset_filter_panel_btn_custom;
     public static String sql_editor_resultset_filter_panel_label;
     public static String sql_editor_resultset_filter_panel_btn_open_console;
     public static String sql_editor_resultset_filter_panel_control_no_data;

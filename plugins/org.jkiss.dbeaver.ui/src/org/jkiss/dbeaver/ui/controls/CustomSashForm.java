@@ -144,6 +144,7 @@ public class CustomSashForm extends SashForm {
         this.addListener(SWT.Resize, new Listener() {
             public void handleEvent(Event e) {
                 layout(true);
+                removeListener(SWT.Resize, this);
             }
         });
 

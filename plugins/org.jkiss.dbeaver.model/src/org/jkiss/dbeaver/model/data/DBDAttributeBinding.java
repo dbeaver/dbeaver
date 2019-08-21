@@ -214,7 +214,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
         for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParentObject()) {
-            if (attribute.isPseudoAttribute() || attribute.getDataKind() == DBPDataKind.DOCUMENT) {
+            if (attribute.isPseudoAttribute() || (attribute.getParentObject() == null && attribute.getDataKind() == DBPDataKind.DOCUMENT)) {
                 // Skip pseudo attributes and document attributes (e.g. Mongo root document)
                 continue;
             }
@@ -292,7 +292,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         final DBDAttributeTransformer[] transformers = DBVUtils.findAttributeTransformers(this, null);
         if (transformers != null) {
             session.getProgressMonitor().subTask("Transform attribute '" + attribute.getName() + "'");
-            final Map<String, String> transformerOptions = DBVUtils.getAttributeTransformersOptions(this);
+            final Map<String, Object> transformerOptions = DBVUtils.getAttributeTransformersOptions(this);
             for (DBDAttributeTransformer transformer : transformers) {
                 transformer.transformAttribute(session, this, rows, transformerOptions);
             }

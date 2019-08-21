@@ -73,7 +73,10 @@ import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.model.virtual.DBVTransformSettings;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -142,6 +145,7 @@ public class ResultSetViewer extends Viewer
     public static final String DEFAULT_QUERY_TEXT = "SQL";
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
+    private static final String CUSTOM_FILTER_VALUE_STRING = "..";
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
     private IResultSetFilterManager filterManager;
@@ -202,6 +206,7 @@ public class ResultSetViewer extends Viewer
 
     private AutoRefreshControl autoRefreshControl;
     private boolean actionsDisabled;
+    private volatile boolean isUIUpdateRunning;
 
     private Color defaultBackground, defaultForeground;
     private GC sizingGC;
@@ -301,7 +306,7 @@ public class ResultSetViewer extends Viewer
                     }
                 });
                 this.panelFolder.addListener(SWT.Resize, event -> {
-                    if (!viewerSash.isDisposed()) {
+                    if (!viewerSash.isDisposed() && !isUIUpdateRunning) {
                         int[] weights = viewerSash.getWeights();
                         getPresentationSettings().panelRatio = weights[1];
                     }
@@ -400,6 +405,10 @@ public class ResultSetViewer extends Viewer
         setDataFilter(model.createDataFilter(), refresh);
     }
 
+    void showFilterSettingsDialog() {
+        new FilterSettingsDialog(ResultSetViewer.this).open();
+    }
+
     void saveDataFilter() {
         DBCExecutionContext context = getExecutionContext();
         if (context == null) {
@@ -435,10 +444,14 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
         }
+        if (resultSetSize != null && !resultSetSize.isDisposed()) {
+            resultSetSize.setEnabled(!model.getVisibleAttributes().isEmpty());
+        }
 
         this.viewerPanel.setRedraw(false);
         try {
             boolean enableFilters = false;
+
             DBCExecutionContext context = getExecutionContext();
             if (context != null) {
                 if (activePresentation instanceof StatisticsPresentation) {
@@ -554,6 +567,7 @@ public class ResultSetViewer extends Viewer
         }
         boolean changed = false;
         try {
+            isUIUpdateRunning = true;
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
                 availablePresentations = Collections.emptyList();
@@ -600,6 +614,7 @@ public class ResultSetViewer extends Viewer
             if (changed && presentationSwitchFolder != null) {
                 updatePresentationInToolbar();
             }
+            isUIUpdateRunning = false;
         }
 
     }
@@ -1122,7 +1137,6 @@ public class ResultSetViewer extends Viewer
                 activePanelTab.getControl().setFocus();
             }
         }
-
         getPresentationSettings().panelsVisible = show;
         if (saveSettings) {
             savePresentationSettings();
@@ -1229,7 +1243,13 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void fillCopyAsMenu(ContributionManager copyAsMenu) {
+    void fillCopyAsMenu(IContributionManager copyAsMenu) {
+
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
+        // Add copy commands for different formats
+        copyAsMenu.add(new Separator());
 
         ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(getDataContainer(), getModel(), options);
@@ -1557,6 +1577,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             });
+            UIUtils.addDefaultEditActionsSupport(site, resultSetSize);
 
             rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
                 @Override
@@ -1812,7 +1833,7 @@ public class ResultSetViewer extends Viewer
         }
         setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING : DBPMessageType.INFORMATION);
 
-        if (rowCountLabel != null) {
+        if (rowCountLabel != null && !rowCountLabel.isDisposed()) {
             // Update row count label
             if (!hasData()) {
                 rowCountLabel.setMessage("No Data");
@@ -1940,13 +1961,13 @@ public class ResultSetViewer extends Viewer
             {
                 boolean newRecordMode;
                 if (autoRecordMode != null) {
-                    if (rows.size() == 1) {
+                    if (rows.size() <= 1) {
                         newRecordMode = autoRecordMode;
                     } else {
                         newRecordMode = false;
                     }
                 } else {
-                    newRecordMode = (rows.size() == 1);
+                    newRecordMode = (rows.size() <= 1);
                 }
                 if (newRecordMode != recordMode) {
                     toggleMode();
@@ -2041,7 +2062,7 @@ public class ResultSetViewer extends Viewer
         return
             executionContext == null ||
             !executionContext.isConnected() ||
-            executionContext.getDataSource().getContainer().isConnectionReadOnly() ||
+            !executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA) ||
             executionContext.getDataSource().getInfo().isReadOnlyData();
     }
 
@@ -2180,22 +2201,23 @@ public class ResultSetViewer extends Viewer
                 if (attr == null && row != null) {
                     manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
                 } else if (attr != null && row == null) {
-                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_COLUMN_NAMES));
+                    manager.add(ActionUtils.makeCommandContribution(
+                        site,
+                        ResultSetHandlerMain.CMD_COPY_COLUMN_NAMES,
+                        SWT.PUSH,
+                        null,
+                        null,
+                        null,
+                        false,
+                        Collections.singletonMap("columns", attr.getName())));
                 } else {
                     manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
                 }
 
                 if (row != null) {
                     MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
-                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
-                    // Add copy commands for different formats
-                    extCopyMenu.add(new Separator());
-                    fillCopyAsMenu(extCopyMenu);
-//                    extCopyMenu.add(new Separator());
-//                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT,
-//                        ActionUtils.findCommandName(ResultSetHandlerCopyAs.CMD_COPY_AS) + " ...", null));
+                    extCopyMenu.setRemoveAllWhenShown(true);
+                    extCopyMenu.addMenuListener(this::fillCopyAsMenu);
 
                     manager.add(extCopyMenu);
                 }
@@ -2208,11 +2230,33 @@ public class ResultSetViewer extends Viewer
 
                 manager.add(new Separator());
 
+                // Filters and View
+                {
+                    MenuManager filtersMenu = new MenuManager(
+                        ResultSetMessages.controls_resultset_viewer_action_filter,
+                        DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
+                        MENU_ID_FILTERS); //$NON-NLS-1$
+                    filtersMenu.setActionDefinitionId(ResultSetHandlerMain.CMD_FILTER_MENU);
+                    filtersMenu.setRemoveAllWhenShown(true);
+                    filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(manager1, attr, row));
+                    manager.add(filtersMenu);
+                }
+                {
+                    MenuManager orderMenu = new MenuManager(
+                        ResultSetMessages.controls_resultset_viewer_action_order,
+                        DBeaverIcons.getImageDescriptor(UIIcon.SORT),
+                        MENU_ID_ORDER); //$NON-NLS-1$
+                    orderMenu.setRemoveAllWhenShown(true);
+                    orderMenu.addMenuListener(manager1 -> fillOrderingsMenu(manager1, attr, row));
+                    manager.add(orderMenu);
+                }
+
                 if (row != null) {
 //                    MenuManager editMenu = new MenuManager(
 //                        IDEWorkbenchMessages.Workbench_edit,
 //                        DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
 //                        MENU_ID_EDIT); //$NON-NLS-1$
+                    manager.add(new Separator());
                     fillEditMenu(manager, attr, row, valueController);
                     //manager.add(editMenu);
                 }
@@ -2220,17 +2264,6 @@ public class ResultSetViewer extends Viewer
         }
         manager.add(new GroupMarker(MENU_GROUP_EDIT));
 
-        // Filters and View
-        {
-            MenuManager filtersMenu = new MenuManager(
-                ResultSetMessages.controls_resultset_viewer_action_order_filter,
-                DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
-                MENU_ID_FILTERS); //$NON-NLS-1$
-            filtersMenu.setActionDefinitionId(ResultSetHandlerMain.CMD_FILTER_MENU);
-            filtersMenu.setRemoveAllWhenShown(true);
-            filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(manager1, attr, row));
-            manager.add(filtersMenu);
-        }
         if (getDataSource() != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             MenuManager viewMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_column_view,
@@ -2317,6 +2350,11 @@ public class ResultSetViewer extends Viewer
         if (dataSource == null) {
             return;
         }
+        VirtualForeignKeyEditAction fkAddAction = new VirtualForeignKeyEditAction();
+        if (fkAddAction.isEnabled()) {
+            vmMenu.add(fkAddAction);
+        }
+
         VirtualUniqueKeyEditAction vkAction = new VirtualUniqueKeyEditAction(true);
         if (vkAction.isEnabled()) {
             vmMenu.add(vkAction);
@@ -2324,10 +2362,6 @@ public class ResultSetViewer extends Viewer
         VirtualUniqueKeyEditAction vkRemoveAction = new VirtualUniqueKeyEditAction(false);
         if (vkRemoveAction.isEnabled()) {
             vmMenu.add(vkRemoveAction);
-        }
-        VirtualForeignKeyEditAction fkAddAction = new VirtualForeignKeyEditAction();
-        if (fkAddAction.isEnabled()) {
-            vmMenu.add(fkAddAction);
         }
 
         vmMenu.add(new VirtualEntityEditAction());
@@ -2428,8 +2462,8 @@ public class ResultSetViewer extends Viewer
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FOCUS_FILTER));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.LINE_GOTO));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_FIRST));
-        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_PREVIOUS));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_LAST));
         navigateMenu.add(new Separator());
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
@@ -2610,6 +2644,8 @@ public class ResultSetViewer extends Viewer
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
 
             if (row != null) {
+                filtersMenu.add(new Separator());
+
                 //filtersMenu.add(new FilterByListAction(operator, type, attribute));
                 DBCLogicalOperator[] operators = attribute.getValueHandler().getSupportedOperators(attribute);
 
@@ -2619,15 +2655,22 @@ public class ResultSetViewer extends Viewer
                         // Value filters are available only if certain cell is selected
                         continue;
                     }
-                    filtersMenu.add(new Separator());
+                    MenuManager subMenu = null;
+                    //filtersMenu.add(new Separator());
                     if (type.getValue(this, attribute, DBCLogicalOperator.EQUALS, true) == null) {
                         // Null cell value - no operators can be applied
                         continue;
                     }
                     for (DBCLogicalOperator operator : operators) {
                         if (operator.getArgumentCount() > 0) {
-                            filtersMenu.add(new FilterByAttributeAction(operator, type, attribute));
+                            if (subMenu == null) {
+                                subMenu = new MenuManager(type.title, type.icon, type.name());
+                            }
+                            subMenu.add(new FilterByAttributeAction(operator, type, attribute));
                         }
+                    }
+                    if (subMenu != null) {
+                        filtersMenu.add(subMenu);
                     }
                 }
                 filtersMenu.add(new Separator());
@@ -2652,15 +2695,21 @@ public class ResultSetViewer extends Viewer
                 filtersMenu.add(new FilterResetAttributeAction(attribute));
             }
         }
+        filtersMenu.add(new Separator());
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING));
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING));
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
+    }
+
+    private void fillOrderingsMenu(@NotNull IMenuManager filtersMenu, @Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row)
+    {
         if (attribute != null) {
             filtersMenu.add(new Separator());
             filtersMenu.add(new OrderByAttributeAction(attribute, true));
             filtersMenu.add(new OrderByAttributeAction(attribute, false));
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_ORDER));
+            filtersMenu.add(new ToggleServerSideOrderingAction());
         }
-        filtersMenu.add(new Separator());
-        filtersMenu.add(new ToggleServerSideOrderingAction());
-        filtersMenu.add(new ShowFiltersAction(true));
     }
 
     @Override
@@ -2700,7 +2749,7 @@ public class ResultSetViewer extends Viewer
 
         // make constraints
         List<DBDAttributeConstraint> constraints = new ArrayList<>();
-        int visualPosition = 0;
+
         // Set conditions
         List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
         List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
@@ -2719,7 +2768,7 @@ public class ResultSetViewer extends Viewer
                 return;
             }
 
-            DBDAttributeConstraint constraint = new DBDAttributeConstraint(refAttr.getAttribute(), visualPosition++);
+            DBDAttributeConstraint constraint = new DBDAttributeConstraint(refAttr.getAttribute(), DBDAttributeConstraint.NULL_VISUAL_POSITION);
             constraint.setVisible(true);
             constraints.add(constraint);
 
@@ -2761,7 +2810,7 @@ public class ResultSetViewer extends Viewer
 
         // make constraints
         List<DBDAttributeConstraint> constraints = new ArrayList<>();
-        int visualPosition = 0;
+
         // Set conditions
         DBSEntityConstraint refConstraint = association.getReferencedConstraint();
         if (refConstraint == null) {
@@ -2788,7 +2837,7 @@ public class ResultSetViewer extends Viewer
             } else {
                 // Constrain use corresponding own attr
                 DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
-                DBDAttributeConstraint constraint = new DBDAttributeConstraint(ownAttr.getAttribute(), visualPosition++);
+                DBDAttributeConstraint constraint = new DBDAttributeConstraint(ownAttr.getAttribute(), DBDAttributeConstraint.NULL_VISUAL_POSITION);
                 constraint.setVisible(true);
                 constraints.add(constraint);
 
@@ -2890,9 +2939,15 @@ public class ResultSetViewer extends Viewer
     @Override
     public void updatePanelsContent(boolean forceRefresh) {
         updateEditControls();
-        for (IResultSetPanel panel : getActivePanels()) {
-            panel.refresh(forceRefresh);
+        IResultSetPanel visiblePanel = getVisiblePanel();
+        if (visiblePanel != null) {
+            visiblePanel.refresh(forceRefresh);
         }
+//        for (IResultSetPanel panel : getActivePanels()) {
+//            if (visiblePanel == panel) {
+//                panel.refresh(forceRefresh);
+//            }
+//        }
     }
 
     @Override
@@ -3302,6 +3357,12 @@ public class ResultSetViewer extends Viewer
                             return;
                         }
                         model.setUpdateInProgress(false);
+
+                        // update history. Do it first otherwise we are in the incorrect state (getDatacontainer() may return wrong value)
+                        if (saveHistory && error == null) {
+                            setNewState(dataContainer, useDataFilter);
+                        }
+
                         final boolean metadataChanged = model.isMetadataChanged();
                         if (error != null) {
                             String errorMessage = error.getMessage();
@@ -3346,11 +3407,6 @@ public class ResultSetViewer extends Viewer
                         }
 
                         if (!scroll) {
-                            // Add new history item
-                            if (saveHistory && error == null) {
-                                setNewState(dataContainer, dataFilter);
-                            }
-
                             if (dataFilter != null) {
                                 model.updateDataFilter(dataFilter, true);
                                 // New data filter may have different columns visibility
@@ -3766,25 +3822,42 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    boolean editEntityIdentifier(DBRProgressMonitor monitor) {
+    boolean editEntityIdentifier() {
         EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
             ResultSetViewer.this, model.getSingleSource(), getVirtualEntity());
         dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
-        return dialog.open() == IDialogConstants.OK_ID;
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            DBDRowIdentifier virtualID = getVirtualEntityIdentifier();
+            if (virtualID != null) {
+                try {
+                    virtualID.reloadAttributes(new VoidProgressMonitor(), getModel().getAttributes());
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+            persistConfig();
+            return true;
+        }
+        return false;
     }
 
-    private void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
+    private void clearEntityIdentifier()
     {
-        DBDAttributeBinding firstAttribute = model.getVisibleAttribute(0);
-        DBDRowIdentifier rowIdentifier = firstAttribute.getRowIdentifier();
-        if (rowIdentifier != null) {
-            DBVEntityConstraint virtualKey = (DBVEntityConstraint) rowIdentifier.getUniqueKey();
-            virtualKey.setAttributes(Collections.emptyList());
-            rowIdentifier.reloadAttributes(monitor, model.getAttributes());
-            virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
-        }
+        DBVEntity vEntity = getVirtualEntity();
+        if (vEntity != null) {
+            DBVEntityConstraint vConstraint = vEntity.getBestIdentifier();
+            if (vConstraint != null) {
+                vConstraint.setAttributes(Collections.emptyList());
+            }
 
-        persistConfig();
+            DBDAttributeBinding firstAttribute = model.getVisibleAttribute(0);
+            DBDRowIdentifier rowIdentifier = firstAttribute.getRowIdentifier();
+            if (rowIdentifier != null && rowIdentifier.getUniqueKey() == vConstraint) {
+                rowIdentifier.clearAttributes();
+            }
+
+            persistConfig();
+        }
     }
 
     @NotNull
@@ -3931,14 +4004,14 @@ public class ResultSetViewer extends Viewer
                 MenuManager configMenuManager = new MenuManager();
 
                 configMenuManager.add(new Separator());
-                {
+                /*{
                     MenuManager navigateMenu = new MenuManager(
                         ResultSetMessages.controls_resultset_viewer_action_navigate,
                         null,
                         "navigate"); //$NON-NLS-1$
                     fillNavigateMenu(navigateMenu);
                     configMenuManager.add(navigateMenu);
-                }
+                }*/
                 {
                     MenuManager layoutMenu = new MenuManager(
                         ResultSetMessages.controls_resultset_viewer_action_layout,
@@ -3987,24 +4060,6 @@ public class ResultSetViewer extends Viewer
 
     }
 
-    private class ShowFiltersAction extends Action {
-        ShowFiltersAction(boolean context)
-        {
-            super(context ? "Customize ..." : "Order/Filter ...", DBeaverIcons.getImageDescriptor(UIIcon.CONFIG_TABLE));
-        }
-
-        @Override
-        public void run()
-        {
-            new FilterSettingsDialog(ResultSetViewer.this).open();
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return getModel().hasData();
-        }
-    }
-
     private abstract class ToggleConnectionPreferenceAction extends Action {
         private final String prefId;
         ToggleConnectionPreferenceAction(String prefId, String title) {
@@ -4047,7 +4102,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private enum FilterByAttributeType {
-        CLIPBOARD(UIIcon.FILTER_CLIPBOARD) {
+        CLIPBOARD("Clipboard", UIIcon.FILTER_CLIPBOARD) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
@@ -4059,7 +4114,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
-        VALUE(UIIcon.FILTER_VALUE) {
+        VALUE("Cell value", UIIcon.FILTER_VALUE) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
@@ -4074,12 +4129,12 @@ public class ResultSetViewer extends Viewer
                 return cellValue;
             }
         },
-        INPUT(UIIcon.FILTER_INPUT) {
+        INPUT("Custom ... ", UIIcon.FILTER_INPUT) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
                 if (useDefault) {
-                    return "..";
+                    return CUSTOM_FILTER_VALUE_STRING;
                 } else {
                     ResultSetRow[] rows = null;
                     if (operator.getArgumentCount() < 0) {
@@ -4103,7 +4158,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
-        NONE(UIIcon.FILTER_VALUE) {
+        NONE("None", UIIcon.FILTER_VALUE) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
@@ -4111,10 +4166,11 @@ public class ResultSetViewer extends Viewer
             }
         };
 
+        final String title;
         final ImageDescriptor icon;
 
-        FilterByAttributeType(DBPImage icon)
-        {
+        FilterByAttributeType(String title, DBPImage icon) {
+            this.title = title;
             this.icon = DBeaverIcons.getImageDescriptor(icon);
         }
         @Nullable
@@ -4124,15 +4180,18 @@ public class ResultSetViewer extends Viewer
     private String translateFilterPattern(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
     {
         Object value = type.getValue(this, attribute, operator, true);
+
         DBCExecutionContext executionContext = getExecutionContext();
         String strValue = executionContext == null ? String.valueOf(value) : attribute.getValueHandler().getValueDisplayString(attribute, value, DBDDisplayFormat.UI);
-        strValue = strValue.trim();
-        strValue = CommonUtils.cutExtraLines(strValue, 1);
-        strValue = CommonUtils.truncateString(strValue, 30);
+        strValue = strValue.replaceAll("\\s+", " ").replace("@", "^").trim();
+        strValue = UITextUtils.getShortText(sizingGC, strValue, 150);
         if (operator.getArgumentCount() == 0) {
             return operator.getStringValue();
         } else {
-            return operator.getStringValue() + " " + CommonUtils.truncateString(strValue, 64);
+            if (!CUSTOM_FILTER_VALUE_STRING.equals(strValue)) {
+                strValue = "'" + strValue + "'";
+            }
+            return operator.getStringValue() + " " + strValue;
         }
     }
 
@@ -4422,24 +4481,20 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isEnabled()
         {
-            DBDRowIdentifier identifier = getVirtualEntityIdentifier();
-            return identifier != null && (define || !CommonUtils.isEmpty(identifier.getAttributes()));
+            DBVEntity vEntity = getVirtualEntity();
+            DBVEntityConstraint vConstraint = vEntity.getBestIdentifier();
+
+            return vConstraint != null && (define != vConstraint.hasAttributes());
         }
 
         @Override
         public void run()
         {
-            UIUtils.runUIJob("Edit virtual key", monitor -> {
-                try {
-                    if (define) {
-                        editEntityIdentifier(monitor);
-                    } else {
-                        clearEntityIdentifier(monitor);
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
+            if (define) {
+                editEntityIdentifier();
+            } else {
+                clearEntityIdentifier();
+            }
         }
     }
 
@@ -4453,8 +4508,10 @@ public class ResultSetViewer extends Viewer
         public void run()
         {
             UIUtils.runUIJob("Edit virtual foreign key", monitor -> {
-                EditForeignKeyPage.createVirtualForeignKey(getVirtualEntity());
-                persistConfig();
+                if (EditForeignKeyPage.createVirtualForeignKey(getVirtualEntity()) != null) {
+                    persistConfig();
+                    refreshData(null);
+                }
             });
         }
     }
@@ -4475,27 +4532,9 @@ public class ResultSetViewer extends Viewer
             DBVEntity vEntity = getVirtualEntity(entity);
             EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(ResultSetViewer.this, entity, vEntity);
             dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
-            dialog.open();
-        }
-    }
-
-    private class DictionaryEditAction extends Action {
-        DictionaryEditAction() {
-            super("Define dictionary");
-        }
-
-        @Override
-        public void run() {
-            EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
-                ResultSetViewer.this, model.getSingleSource(), getVirtualEntity());
-            dialog.setInitPage(EditVirtualEntityDialog.InitPage.DICTIONARY);
-            dialog.open();
-        }
-
-        @Override
-        public boolean isEnabled() {
-            final DBSEntity singleSource = model.getSingleSource();
-            return singleSource != null;
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                refreshData(null);
+            }
         }
     }
 

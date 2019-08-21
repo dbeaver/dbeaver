@@ -93,7 +93,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
         String connectionName;
         DBPImage connectionIcon;
         if (dataSource == null) {
-            connectionName = "<No active connection>";
+            connectionName = "< N/A >";
             connectionIcon = DBIcon.TREE_DATABASE;
         } else {
             connectionName = dataSource.getName();

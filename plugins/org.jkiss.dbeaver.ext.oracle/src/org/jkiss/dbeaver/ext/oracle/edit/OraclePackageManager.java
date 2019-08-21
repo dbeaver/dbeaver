@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -53,32 +50,9 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     @Override
     protected OraclePackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        OracleSchema schema = (OracleSchema) container;
-
-        return new UITask<OraclePackage>() {
-            @Override
-            protected OraclePackage runTask() {
-                EntityEditPage editPage = new EntityEditPage(schema.getDataSource(), DBSEntityType.PACKAGE);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                String packName = editPage.getEntityName();
-                OraclePackage oraclePackage = new OraclePackage(
-                    schema,
-                    packName);
-                oraclePackage.setObjectDefinitionText(
-                    "CREATE OR REPLACE PACKAGE " + packName + "\n" +
-                    "AS\n" +
-                    "-- Package header\n" +
-                    "END " + packName +";");
-                oraclePackage.setExtendedDefinitionText(
-                    "CREATE OR REPLACE PACKAGE BODY " + packName + "\n" +
-                        "AS\n" +
-                        "-- Package body\n" +
-                        "END " + packName +";");
-                return oraclePackage;
-            }
-        }.execute();
+        return new OraclePackage(
+            (OracleSchema) container,
+            "NEW_PACKAGE");
     }
 
     @Override

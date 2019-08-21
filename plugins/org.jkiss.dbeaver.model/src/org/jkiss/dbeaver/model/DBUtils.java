@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -51,6 +53,7 @@ import java.util.*;
 public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
+    private static final int MAX_SAMPLE_ROWS = 1000;
 
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPNamedObject object)
@@ -613,22 +616,43 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBDAttributeBindingMeta getAttributeBinding(DBSDataContainer dataContainer, @NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
+    public static DBDAttributeBindingMeta getAttributeBinding(@NotNull DBSDataContainer dataContainer, @NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
     {
         return new DBDAttributeBindingMeta(dataContainer, session, attributeMeta);
     }
 
-    public static List<DBDAttributeBinding> makeResultAttributeBindings(DBSDataContainer dataContainer, DBCResultSet resultSet) throws DBCException {
+    @NotNull
+    public static DBDAttributeBindingMeta[] getAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSetMetaData metaData) {
+        List<DBCAttributeMetaData> metaAttributes = metaData.getAttributes();
+        int columnsCount = metaAttributes.size();
+        DBDAttributeBindingMeta[] bindings = new DBDAttributeBindingMeta[columnsCount];
+        for (int i = 0; i < columnsCount; i++) {
+            bindings[i] = DBUtils.getAttributeBinding(dataContainer, session, metaAttributes.get(i));
+        }
+        return bindings;
+    }
+
+    /**
+     * Returns "bottom" level attributes out of resultset.
+     * For regular resultsets it is the same as getAttributeBindings, for compelx types it returns only leaf attributes.
+     */
+    @NotNull
+    public static List<DBDAttributeBinding> makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {
         List<DBDAttributeBinding> metaColumns = new ArrayList<>();
         List<DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
-        DBCSession session = resultSet.getSession();
         if (attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT) {
             DBCAttributeMetaData attributeMeta = attributes.get(0);
             DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(dataContainer, session, attributeMeta);
             try {
-                docBinding.lateBinding(session, Collections.emptyList());
-            } catch (DBException e) {
-                log.debug("Document attribute '" + docBinding.getName() + "' binding error", e);
+                List<Object[]> sampleRows = Collections.emptyList();
+                if (resultSet instanceof DBCResultSetSampleProvider) {
+                    session.getProgressMonitor().subTask("Read sample rows");
+                    sampleRows = ((DBCResultSetSampleProvider) resultSet).getSampleRows(session, MAX_SAMPLE_ROWS);
+                }
+                session.getProgressMonitor().subTask("Discover attribute structure");
+                docBinding.lateBinding(session, sampleRows);
+            } catch (Exception e) {
+                log.error("Document attribute '" + docBinding.getName() + "' binding error", e);
             }
             List<DBDAttributeBinding> nested = docBinding.getNestedBindings();
             if (!CommonUtils.isEmpty(nested)) {
@@ -656,7 +680,55 @@ public final class DBUtils {
                 metaColumns.add(columnBinding);
             }
         }
-        return metaColumns;
+
+        List<DBDAttributeBinding> result = new ArrayList<>(metaColumns.size());
+        for (DBDAttributeBinding binding : metaColumns) {
+            addLeafBindings(result, binding);
+        }
+        return result;
+    }
+
+    private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
+        List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
+        if (CommonUtils.isEmpty(nestedBindings)) {
+            result.add(binding);
+        } else {
+            for (DBDAttributeBinding nested : nestedBindings) {
+                addLeafBindings(result, nested);
+            }
+        }
+    }
+
+    @Nullable
+    public static Object getAttributeValue(@NotNull DBDAttributeBinding attribute, Object[] row) {
+        int depth = attribute.getLevel();
+        if (depth == 0) {
+            final int index = attribute.getOrdinalPosition();
+            if (index >= row.length) {
+                log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.length + ")");
+                return null;
+            } else {
+                return row[index];
+            }
+        }
+        Object curValue = row[attribute.getTopParent().getOrdinalPosition()];
+
+        for (int i = 0; i < depth; i++) {
+            if (curValue == null) {
+                break;
+            }
+            DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
+            assert attr != null;
+            try {
+                curValue = attr.extractNestedValue(curValue);
+            } catch (DBCException e) {
+                log.debug("Error reading nested value of [" + attr.getName() + "]", e);
+                curValue = null;
+                break;
+            }
+        }
+
+        return curValue;
     }
 
     @NotNull
@@ -1839,4 +1911,61 @@ public final class DBUtils {
         }
         return null;
     }
+
+    public static boolean isReadOnly(DBSObject object)
+    {
+        if (object == null) {
+            return true;
+        }
+        DBPDataSource dataSource = object.getDataSource();
+        return dataSource == null || !dataSource.getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
+    }
+
+    public static <T> T createNewAttributeValue(DBCExecutionContext context, DBDValueHandler valueHandler, DBSTypedObject valueType, Class<T> targetType) throws DBCException {
+        DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+                try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Create new object")) {
+                    result = valueHandler.createNewValueObject(session, valueType);
+                } catch (DBCException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        };
+        try {
+            DBWorkbench.getPlatformUI().executeWithProgress(runnable);
+            //UIUtils.runInProgressService(runnable);
+        } catch (InvocationTargetException e) {
+            throw new DBCException(e.getTargetException(), context.getDataSource());
+        } catch (InterruptedException e) {
+            throw new DBCException(e, context.getDataSource());
+        }
+
+        Object result = runnable.getResult();
+        if (result == null) {
+            throw new DBCException("Internal error - null object created");
+        }
+        if (!targetType.isInstance(result)) {
+            throw new DBCException("Internal error - wrong object type '" + result.getClass().getName() + "' while '" + targetType.getName() + "' was expected");
+        }
+        return targetType.cast(result);
+    }
+
+    public static boolean isView(DBSEntity table) {
+        return table  instanceof DBSView || table instanceof DBSTable && ((DBSTable) table).isView();
+    }
+
+    public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) {
+        Object[] row = new Object[attributes.length];
+        for (int i = 0 ; i < attributes.length; i++) {
+            DBDAttributeBinding attribute = attributes[i];
+            try {
+                row[i] = attribute.getValueHandler().fetchValueObject(session, resultSet, attribute.getAttribute(), attribute.getOrdinalPosition());
+            } catch (Exception e) {
+                log.debug("Error fetching '" + attribute.getAttribute().getName() + "' value: " + e.getMessage());
+            }
+        }
+        return row;
+    }
+
 }

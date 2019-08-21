@@ -85,13 +85,13 @@ public class DataTransferJob extends AbstractJob {
                 platformUI.notifyAgent(
                         "Data transfer completed", !hasErrors ? IStatus.INFO : IStatus.ERROR);
             }
-            if (settings.isShowFinalMessage()) {
+            if (settings.isShowFinalMessage() && !hasErrors) {
                 // Show message box
                 UIUtils.showMessageBox(
                     null,
                     DTMessages.data_transfer_wizard_name,
-                    "Data transfer completed " + (hasErrors ? "with errors " : "") + "(" + RuntimeUtils.formatExecutionTime(time) + ")",
-                    hasErrors ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+                    "Data transfer completed (" + RuntimeUtils.formatExecutionTime(time) + ")",
+                    SWT.ICON_INFORMATION);
             }
         });
     }

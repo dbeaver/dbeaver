@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
@@ -60,11 +59,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     private String description;
     private String descriptionColumnNames;
 
-    List<DBVEntityConstraint> entityConstraints;
-    List<DBVEntityForeignKey> entityForeignKeys;
-    List<DBVEntityAttribute> entityAttributes;
-    Map<String, String> properties;
-    List<DBVColorOverride> colorOverrides;
+    private List<DBVEntityConstraint> entityConstraints;
+    private List<DBVEntityForeignKey> entityForeignKeys;
+    private List<DBVEntityAttribute> entityAttributes;
+    private Map<String, Object> properties;
+    private List<DBVColorOverride> colorOverrides;
 
     public DBVEntity(@NotNull DBVContainer container, @NotNull String name, String descriptionColumnNames) {
         this.container = container;
@@ -177,6 +176,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
             addColorOverride(curColor);
         }
+        properties = JSONUtils.deserializeProperties(map, "properties");
     }
 
     @NotNull
@@ -218,7 +218,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     @NotNull
     @Override
     public DBPDataSource getDataSource() {
-        return container == null ? null : container.getDataSource();
+        return container.getDataSource();
     }
 
     public void setDescription(String description) {
@@ -236,12 +236,16 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return DBSEntityType.VIRTUAL_ENTITY;
     }
 
+    /**
+     * Property value can be String, Number, Boolean, List or Map
+     * @param name property name
+     */
     @Nullable
-    public String getProperty(String name) {
+    public Object getProperty(@NotNull String name) {
         return CommonUtils.isEmpty(properties) ? null : properties.get(name);
     }
 
-    public void setProperty(String name, @Nullable String value) {
+    public void setProperty(String name, @Nullable Object value) {
         if (properties == null) {
             properties = new LinkedHashMap<>();
         }
@@ -250,6 +254,15 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         } else {
             properties.put(name, value);
         }
+    }
+
+    @NotNull
+    public Map<String, Object> getProperties() {
+        return properties == null ? Collections.emptyMap() : properties;
+    }
+
+    public List<DBVEntityAttribute> getEntityAttributes() {
+        return entityAttributes;
     }
 
     @NotNull
@@ -325,8 +338,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return entityConstraints;
     }
 
+    @NotNull
     public List<DBVEntityConstraint> getConstraints() {
-        return entityConstraints;
+        return entityConstraints == null ? Collections.emptyList() : entityConstraints;
     }
 
     public DBVEntityConstraint getBestIdentifier() {
@@ -465,8 +479,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return DBUtils.getQuotedIdentifier(stringColumns.values().iterator().next());
     }
 
+    @NotNull
     public List<DBVColorOverride> getColorOverrides() {
-        return colorOverrides;
+        return colorOverrides == null ? Collections.emptyList() : colorOverrides;
     }
 
     public List<DBVColorOverride> getColorOverrides(String attrName) {
@@ -538,7 +553,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Override
     public boolean hasValuableData() {
-        if (!CommonUtils.isEmpty(descriptionColumnNames) || !CommonUtils.isEmpty(properties)) {
+        if (!CommonUtils.isEmpty(descriptionColumnNames) ||
+            !CommonUtils.isEmpty(properties) ||
+            !CommonUtils.isEmpty(entityForeignKeys) ||
+            !CommonUtils.isEmpty(colorOverrides))
+        {
             return true;
         }
         if (!CommonUtils.isEmpty(entityConstraints)) {
@@ -554,9 +573,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                     return true;
                 }
             }
-        }
-        if (!CommonUtils.isEmpty(colorOverrides)) {
-            return true;
         }
         return false;
     }
@@ -601,19 +617,27 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @NotNull
     @Override
-    public List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBCSession session, @NotNull DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc, int maxResults) throws DBException {
-        DBSEntity realEntity = getRealEntity(session.getProgressMonitor());
-        return realEntity instanceof DBSDictionary ?
-            ((DBSDictionary) realEntity).getDictionaryEnumeration(session, keyColumn, keyPattern, preceedingKeys, sortByValue, sortAsc, maxResults) :
-            Collections.emptyList();
+    public List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc, int maxResults) throws DBException {
+        DBSEntity realEntity = getRealEntity(monitor);
+        if (realEntity instanceof DBSDictionary) {
+            return ((DBSDictionary) realEntity).getDictionaryEnumeration(
+                monitor,
+                keyColumn,
+                keyPattern,
+                preceedingKeys,
+                sortByValue,
+                sortAsc,
+                maxResults);
+        }
+        return Collections.emptyList();
     }
 
     @NotNull
     @Override
-    public List<DBDLabelValuePair> getDictionaryValues(@NotNull DBCSession session, @NotNull DBSEntityAttribute keyColumn, @NotNull List<Object> keyValues, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc) throws DBException {
-        DBSEntity realEntity = getRealEntity(session.getProgressMonitor());
+    public List<DBDLabelValuePair> getDictionaryValues(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute keyColumn, @NotNull List<Object> keyValues, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc) throws DBException {
+        DBSEntity realEntity = getRealEntity(monitor);
         return realEntity instanceof DBSDictionary ?
-            ((DBSDictionary) realEntity).getDictionaryValues(session, keyColumn, keyValues, preceedingKeys, sortByValue, sortAsc) :
+            ((DBSDictionary) realEntity).getDictionaryValues(monitor, keyColumn, keyValues, preceedingKeys, sortByValue, sortAsc) :
             Collections.emptyList();
     }
 }

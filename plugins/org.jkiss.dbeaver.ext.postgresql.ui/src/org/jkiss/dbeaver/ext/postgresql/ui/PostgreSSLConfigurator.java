@@ -23,7 +23,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -94,10 +96,10 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
 
     @Override
     public void loadSettings(final DBWHandlerConfiguration configuration) {
-        clientCertText.setText(CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_CLIENT_CERT)));
-        clientKeyText.setText(CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_CLIENT_KEY)));
-        rootCertText.setText(CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_ROOT_CERT)));
-        UIUtils.setComboSelection(sslModeCombo, CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_MODE)));
+        clientCertText.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT)));
+        clientKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY)));
+        rootCertText.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT)));
+        UIUtils.setComboSelection(sslModeCombo, CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_MODE)));
 
         final Job resolveJob = new Job("Find factories") {
             {
@@ -114,7 +116,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
                     for (String cn : finder.getDriverClassNames()) {
                         sslFactoryCombo.add(cn);
                     }
-                    final String factoryValue = configuration.getProperties().get(PostgreConstants.PROP_SSL_FACTORY);
+                    final String factoryValue = configuration.getStringProperty(PostgreConstants.PROP_SSL_FACTORY);
                     if (!CommonUtils.isEmpty(factoryValue)) {
                         sslFactoryCombo.setText(factoryValue);
                     }
@@ -127,10 +129,10 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
 
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration) {
-        configuration.getProperties().put(PostgreConstants.PROP_SSL_ROOT_CERT, rootCertText.getText());
-        configuration.getProperties().put(PostgreConstants.PROP_SSL_CLIENT_CERT, clientCertText.getText());
-        configuration.getProperties().put(PostgreConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText());
-        configuration.getProperties().put(PostgreConstants.PROP_SSL_MODE, sslModeCombo.getText());
-        configuration.getProperties().put(PostgreConstants.PROP_SSL_FACTORY, sslFactoryCombo.getText());
+        configuration.setProperty(PostgreConstants.PROP_SSL_ROOT_CERT, rootCertText.getText());
+        configuration.setProperty(PostgreConstants.PROP_SSL_CLIENT_CERT, clientCertText.getText());
+        configuration.setProperty(PostgreConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText());
+        configuration.setProperty(PostgreConstants.PROP_SSL_MODE, sslModeCombo.getText());
+        configuration.setProperty(PostgreConstants.PROP_SSL_FACTORY, sslFactoryCombo.getText());
     }
 }

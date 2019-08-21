@@ -157,8 +157,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     }
 
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options)
-            throws DBException {
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException {
 
     }
 

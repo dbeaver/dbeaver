@@ -52,22 +52,25 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
                 JSONUtils.fieldNE(json, RegistryConstants.ATTR_PROVIDER, driver.getProviderDescriptor().getId());
             }
             JSONUtils.field(json, RegistryConstants.ATTR_ID, driver.getId());
-            if (driver.isDisabled()) {
-                JSONUtils.field(json, RegistryConstants.ATTR_DISABLED, true);
-            }
-            if (!CommonUtils.isEmpty(driver.getCategory())) {
-                JSONUtils.fieldNE(json, RegistryConstants.ATTR_CATEGORY, driver.getCategory());
-            }
-            JSONUtils.fieldNE(json, RegistryConstants.ATTR_CATEGORIES, String.join(",", driver.getCategories()));
-            JSONUtils.field(json, RegistryConstants.ATTR_CUSTOM, driver.isCustom());
-            JSONUtils.field(json, RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
             JSONUtils.field(json, RegistryConstants.ATTR_NAME, driver.getName());
             JSONUtils.field(json, RegistryConstants.ATTR_CLASS, driver.getDriverClassName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_URL, driver.getSampleURL());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_PORT, driver.getDefaultPort());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_DESCRIPTION, driver.getDescription());
+
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_CATEGORIES, String.join(",", driver.getCategories()));
+            JSONUtils.field(json, RegistryConstants.ATTR_CUSTOM, driver.isCustom());
+            JSONUtils.field(json, RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
+            JSONUtils.field(json, RegistryConstants.ATTR_ANONYMOUS, driver.isAnonymousAccess());
+            JSONUtils.field(json, "allowsEmptyPassword", driver.isAnonymousAccess());
             if (driver.isCustomDriverLoader()) {
                 JSONUtils.field(json, RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER, driver.isCustomDriverLoader());
+            }
+            if (driver.isDisabled()) {
+                JSONUtils.field(json, RegistryConstants.ATTR_DISABLED, true);
+            }
+            if (!CommonUtils.isEmpty(driver.getCategory())) {
+                JSONUtils.fieldNE(json, RegistryConstants.ATTR_CATEGORY, driver.getCategory());
             }
 
             if (!CommonUtils.isEmpty(driver.getDriverLibraries())) {

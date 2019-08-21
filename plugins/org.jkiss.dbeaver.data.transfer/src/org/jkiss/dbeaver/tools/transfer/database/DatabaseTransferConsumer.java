@@ -104,7 +104,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        List<DBDAttributeBinding> rsAttributes = DBUtils.makeResultAttributeBindings(sourceObject, resultSet);
+        List<DBDAttributeBinding> rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
         columnMappings = new ColumnMapping[rsAttributes.size()];
         targetAttributes = new ArrayList<>(columnMappings.length);
         for (int i = 0; i < rsAttributes.size(); i++) {
@@ -277,8 +277,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private void initExporter(DBRProgressMonitor monitor) throws DBCException {
         DBSObject targetDB = checkTargetContainer();
 
+        DBPDataSourceContainer dataSourceContainer = targetDB.getDataSource().getContainer();
+        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_IMPORT_DATA)) {
+            throw new DBCException("Data transfer to database [" + dataSourceContainer.getName() + "] restricted by connection configuration");
+        }
+
         try {
-            useIsolatedConnection = settings.isOpenNewConnections() && !targetDB.getDataSource().getContainer().getDriver().isEmbedded();
+            useIsolatedConnection = settings.isOpenNewConnections() && !dataSourceContainer.getDriver().isEmbedded();
             targetContext = useIsolatedConnection ?
                 DBUtils.getObjectOwnerInstance(targetDB).openIsolatedContext(monitor, "Data transfer consumer") : DBUtils.getDefaultContext(targetDB, false);
         } catch (DBException e) {

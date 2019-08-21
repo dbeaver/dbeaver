@@ -161,7 +161,7 @@ public final class SQLUtils {
 
     public static boolean isLikePattern(String like)
     {
-        return like.indexOf('%') != -1 || like.indexOf('*') != -1 || like.indexOf('?') != -1;// || like.indexOf('_') != -1;
+        return like.indexOf('%') != -1 || like.indexOf('*') != -1 || like.indexOf('_') != -1 || like.indexOf('?') != -1;// || like.indexOf('_') != -1;
     }
 
     public static String makeLikePattern(String like)
@@ -170,7 +170,7 @@ public final class SQLUtils {
         for (int i = 0; i < like.length(); i++) {
             char c = like.charAt(i);
             if (c == '*') result.append(".*");
-            else if (c == '?') result.append(".");
+            else if (c == '?' || c == '_') result.append(".");
             else if (c == '%') result.append(".*");
             else if (Character.isLetterOrDigit(c)) result.append(c);
             else result.append("\\").append(c);
@@ -180,7 +180,7 @@ public final class SQLUtils {
 
     public static String makeSQLLike(String like)
     {
-        return like.replace("*", "%");
+        return like.replace("*", "%").replace("?", "_");
     }
 
     public static boolean matchesLike(String string, String like)
@@ -846,7 +846,8 @@ public final class SQLUtils {
                 }
                 script.append(scriptLine);
                 if (action.getType() != DBEPersistAction.ActionType.COMMENT) {
-                    if (script.lastIndexOf(delimiter) != (script.length() - delimiter.length())) {
+                    String testLine = scriptLine.trim();
+                    if (testLine.lastIndexOf(delimiter) != (testLine.length() - delimiter.length())) {
                         script.append(delimiter);
                     }    
                 } else {
@@ -855,7 +856,7 @@ public final class SQLUtils {
                 script.append(lineSeparator);
 
                 if (action.isComplex() && redefiner != null) {
-                    script.append(redefiner).append(" ").append(sqlDialect.getScriptDelimiter()).append(lineSeparator);
+                    script.append(redefiner).append(" ").append(delimiter).append(lineSeparator);
                 }
             }
         }
@@ -1034,11 +1035,11 @@ public final class SQLUtils {
     public static String stripColumnTypeModifiers(String type) {
         int startPos = type.indexOf("(");
         if (startPos != -1) {
-            int endPos = type.indexOf(")", startPos + 1);
+            int endPos = type.lastIndexOf(")");
             if (endPos != -1) {
-                return type.substring(0, startPos).trim() + " " + type.substring(endPos + 1).trim();
+                return type.substring(0, startPos);
             }
         }
-        return null;
+        return type;
     }
 }

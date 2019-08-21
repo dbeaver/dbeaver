@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
@@ -109,6 +110,11 @@ public class EditConnectionWizard extends ConnectionWizard
         return dataSource.getDriver();
     }
 
+    @Override
+    DBPProject getSelectedProject() {
+        return dataSource.getRegistry().getProject();
+    }
+
     @Nullable
     @Override
     public ConnectionPageSettings getPageSettings()
@@ -172,7 +178,7 @@ public class EditConnectionWizard extends ConnectionWizard
             if (pageName.equals(name)) {
                 return page;
             }
-            if (page instanceof ICompositeDialogPage && !(page instanceof ConnectionPageSettings)) {
+            if (page instanceof ICompositeDialogPage) {
                 final IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(false);
                 if (subPages != null) {
                     for (IDialogPage subPage : subPages) {

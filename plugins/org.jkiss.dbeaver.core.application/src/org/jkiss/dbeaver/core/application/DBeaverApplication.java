@@ -511,10 +511,11 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         return msgResult;
     }
 
-    public void notifyVersionUpgrade(VersionDescriptor versionDescriptor, boolean showSkip) {
+    public void notifyVersionUpgrade(VersionDescriptor currentVersion, VersionDescriptor newVersion, boolean showSkip) {
         VersionUpdateDialog dialog = new VersionUpdateDialog(
             UIUtils.getActiveWorkbenchShell(),
-            versionDescriptor,
+            currentVersion,
+            newVersion,
             showSkip);
         dialog.open();
     }

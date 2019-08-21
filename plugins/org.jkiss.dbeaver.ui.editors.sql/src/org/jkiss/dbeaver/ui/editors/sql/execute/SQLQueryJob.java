@@ -428,6 +428,8 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+
+            scriptContext.clearStatementContext();
         }
 
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
@@ -464,13 +466,14 @@ public class SQLQueryJob extends DataSourceJob
         // Execute statement
         try {
             session.getProgressMonitor().subTask("Execute query");
-            boolean hasResultSet = dbcStatement.executeStatement();
-            curResult.setHasResultSet(hasResultSet);
             statistics.addExecuteTime(System.currentTimeMillis() - startTime);
             statistics.addStatementsCount();
 
+            boolean hasResultSet = dbcStatement.executeStatement();
+            curResult.setHasResultSet(hasResultSet);
+
             long updateCount = -1;
-            while (hasResultSet || resultSetNumber == 0 || updateCount >= 0) {
+            while (true) {
                 // Fetch data only if we have to fetch all results or if it is rs requested
                 if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
                     if (hasResultSet && fetchResultSets) {
@@ -526,7 +529,7 @@ public class SQLQueryJob extends DataSourceJob
                 } else {
                     break;
                 }
-            }
+            };
         }
         finally {
             try {

@@ -217,7 +217,7 @@ public class DataSourceUtils {
                                 break;
                             }
                             for (Map.Entry<String, String> prop : handlerProp.getValue().entrySet()) {
-                                if (!CommonUtils.equalObjects(handler.getProperties().get(prop.getKey()), prop.getValue())) {
+                                if (!CommonUtils.equalObjects(handler.getProperty(prop.getKey()), prop.getValue())) {
                                     matched = false;
                                     break;
                                 }

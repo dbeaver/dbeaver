@@ -38,7 +38,7 @@ public class DBWHandlerConfiguration {
     private String userName;
     private String password;
     private boolean savePassword = true;
-    private final Map<String, String> properties;
+    private final Map<String, Object> properties;
 
     public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDriver driver) {
         this.descriptor = descriptor;
@@ -126,12 +126,38 @@ public class DBWHandlerConfiguration {
         this.savePassword = savePassword;
     }
 
+    @Nullable
+    public Object getProperty(@NotNull String name) {
+        return this.properties.get(name);
+    }
+
+    @Nullable
+    public String getStringProperty(@NotNull String name) {
+        return CommonUtils.toString(this.properties.get(name), null);
+    }
+
+    public int getIntProperty(@NotNull String name) {
+        return CommonUtils.toInt(this.properties.get(name));
+    }
+
+    public boolean getBooleanProperty(@NotNull String name) {
+        return CommonUtils.getBoolean(this.properties.get(name), false);
+    }
+
+    public void setProperty(@NotNull String name, @Nullable Object value) {
+        if (value == null) {
+            this.properties.remove(name);
+        } else {
+            this.properties.put(name, value);
+        }
+    }
+
     @NotNull
-    public Map<String, String> getProperties() {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 
-    public void setProperties(@NotNull Map<String, String> properties) {
+    public void setProperties(@NotNull Map<String, Object> properties) {
         this.properties.clear();
         this.properties.putAll(properties);
     }
@@ -156,9 +182,9 @@ public class DBWHandlerConfiguration {
         userName = userName != null ? GeneralUtils.replaceSystemEnvironmentVariables(userName) : null;
         password = password != null ? GeneralUtils.replaceSystemEnvironmentVariables(password) : null;
         for (String prop : this.properties.keySet()) {
-            String value = this.properties.get(prop);
-            if (!CommonUtils.isEmpty(value)) {
-                this.properties.put(prop, GeneralUtils.replaceSystemEnvironmentVariables(value));
+            Object value = this.properties.get(prop);
+            if (value instanceof String && !CommonUtils.isEmpty((String)value)) {
+                this.properties.put(prop, GeneralUtils.replaceSystemEnvironmentVariables((String)value));
             }
         }
 

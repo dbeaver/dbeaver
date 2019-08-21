@@ -23,7 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
+import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractImportExportWizard;
@@ -51,9 +51,9 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
     MySQLExportWizardPageSettings(MySQLExportWizard wizard)
     {
-        super(wizard, MySQLMessages.tools_db_export_wizard_page_settings_page_name);
-        setTitle(MySQLMessages.tools_db_export_wizard_page_settings_page_name);
-        setDescription((MySQLMessages.tools_db_export_wizard_page_settings_page_description));
+        super(wizard, MySQLUIMessages.tools_db_export_wizard_page_settings_page_name);
+        setTitle(MySQLUIMessages.tools_db_export_wizard_page_settings_page_name);
+        setDescription((MySQLUIMessages.tools_db_export_wizard_page_settings_page_description));
     }
 
     @Override
@@ -74,37 +74,37 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
             }
         };
 
-        Group methodGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_exe_method, 1, GridData.FILL_HORIZONTAL, 0);
+        Group methodGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_exe_method, 1, GridData.FILL_HORIZONTAL, 0);
         methodCombo = new Combo(methodGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
         methodCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        methodCombo.add(MySQLMessages.tools_db_export_wizard_page_settings_combo_item_online_backup);
-        methodCombo.add(MySQLMessages.tools_db_export_wizard_page_settings_combo_item_lock_tables);
-        methodCombo.add(MySQLMessages.tools_db_export_wizard_page_settings_combo_item_normal);
+        methodCombo.add(MySQLUIMessages.tools_db_export_wizard_page_settings_combo_item_online_backup);
+        methodCombo.add(MySQLUIMessages.tools_db_export_wizard_page_settings_combo_item_lock_tables);
+        methodCombo.add(MySQLUIMessages.tools_db_export_wizard_page_settings_combo_item_normal);
         methodCombo.select(wizard.method.ordinal());
         methodCombo.addSelectionListener(changeListener);
 
-        Group settingsGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_settings, 3, GridData.FILL_HORIZONTAL, 0);
-        noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.noCreateStatements);
+        Group settingsGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_settings, 3, GridData.FILL_HORIZONTAL, 0);
+        noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.noCreateStatements);
         noCreateStatementsCheck.addSelectionListener(changeListener);
-        addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.addDropStatements);
+        addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.addDropStatements);
         addDropStatementsCheck.addSelectionListener(changeListener);
-        disableKeysCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_disable_keys, wizard.disableKeys);
+        disableKeysCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_disable_keys, wizard.disableKeys);
         disableKeysCheck.addSelectionListener(changeListener);
-        extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_ext_inserts, wizard.extendedInserts);
+        extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_ext_inserts, wizard.extendedInserts);
         extendedInsertsCheck.addSelectionListener(changeListener);
-        dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_dump_events, wizard.dumpEvents);
+        dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_dump_events, wizard.dumpEvents);
         dumpEventsCheck.addSelectionListener(changeListener);
-        commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.comments);
+        commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.comments);
         commentsCheck.addSelectionListener(changeListener);
-        removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.removeDefiner);
+        removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.removeDefiner);
         removeDefiner.addSelectionListener(changeListener);
-        binaryInHex = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_binary_hex, wizard.binariesInHex);
+        binaryInHex = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_binary_hex, wizard.binariesInHex);
         binaryInHex.addSelectionListener(changeListener);
-        noData = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_no_data, wizard.noData);
+        noData = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_data, wizard.noData);
         noData.addSelectionListener(changeListener);
 
-        Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
-        outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, e -> updateState());
+        Group outputGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
+        outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_label_out_text, e -> updateState());
         outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getOutputFilePattern());
         UIUtils.setContentProposalToolTip(outputFileText, "Output file name pattern",
             AbstractImportExportWizard.VARIABLE_HOST,

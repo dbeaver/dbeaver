@@ -134,7 +134,6 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                     }
                     break;
             }
-            return object;
         }
         return super.getValueFromObject(session, type, object, copy);
     }

@@ -86,7 +86,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         this.aggregateTable.setHeaderVisible(true);
         this.aggregateTable.setLinesVisible(true);
         new TreeColumn(this.aggregateTable, SWT.LEFT).setText("Function");
-        new TreeColumn(this.aggregateTable, SWT.RIGHT).setText("Value");
+        new TreeColumn(this.aggregateTable, SWT.LEFT).setText("Value");
 
         if (this.presentation instanceof ISelectionProvider) {
             ((ISelectionProvider) this.presentation).addSelectionChangedListener(event -> {
@@ -198,7 +198,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                     aggregateSelection((IResultSetSelection)selection);
                 }
             }
-            UIUtils.packColumns(aggregateTable, true, null);
+            UIUtils.packColumns(aggregateTable, false, null);
         } finally {
             aggregateTable.setRedraw(true);
         }

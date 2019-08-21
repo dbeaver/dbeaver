@@ -99,7 +99,7 @@ public class FilterValueEditPopup extends Dialog {
                     public void widgetSelected(SelectionEvent e) {
                         EditDictionaryPage editDictionaryPage = new EditDictionaryPage(((DBSEntityAssociation) descReferrer).getAssociatedEntity());
                         if (editDictionaryPage.edit(parent.getShell())) {
-                            filter.loadValues();
+                            filter.loadValues(null);
                         }
                     }
                 });
@@ -137,11 +137,6 @@ public class FilterValueEditPopup extends Dialog {
                 }
             });
         }
-
-        // Resize the column to fit the contents
-        UIUtils.asyncExec(() -> {
-            UIUtils.packColumns(table, true);
-        });
 
         FocusAdapter focusListener = new FocusAdapter() {
             @Override
@@ -183,8 +178,9 @@ public class FilterValueEditPopup extends Dialog {
             table.setFocus();
         }
         filter.filterPattern = null;
-        filter.loadValues();
-
+        filter.loadValues(() -> {
+            UIUtils.asyncExec(() -> UIUtils.packColumns(table, false));
+        });
 
         return tableComposite;
     }

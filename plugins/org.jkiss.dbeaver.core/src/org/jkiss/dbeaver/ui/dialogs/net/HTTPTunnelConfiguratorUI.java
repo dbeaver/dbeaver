@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * HTTP tunnel configuration
@@ -40,8 +40,7 @@ public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBW
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration)
     {
-        Map<String,String> properties = configuration.getProperties();
-        properties.clear();
+        configuration.setProperties(new LinkedHashMap<>());
     }
 
     @Override

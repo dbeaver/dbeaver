@@ -41,8 +41,8 @@ class GridColumn {
 	 */
 	private static final int DEFAULT_WIDTH = 10;
 
-    private static final int topMargin = 6;
-    private static final int bottomMargin = 6;
+    static final int topMargin = 6;
+    static final int bottomMargin = 6;
     private static final int leftMargin = 6;
     private static final int rightMargin = 6;
     private static final int imageSpacing = 3;

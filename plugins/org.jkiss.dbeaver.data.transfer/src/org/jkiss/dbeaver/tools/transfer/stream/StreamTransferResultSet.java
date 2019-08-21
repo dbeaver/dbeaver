@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
@@ -141,6 +142,7 @@ public class StreamTransferResultSet implements DBCResultSet {
         return false;
     }
 
+    @NotNull
     @Override
     public DBCResultSetMetaData getMeta() throws DBCException {
         return new LocalResultSetMeta(metaAttrs);

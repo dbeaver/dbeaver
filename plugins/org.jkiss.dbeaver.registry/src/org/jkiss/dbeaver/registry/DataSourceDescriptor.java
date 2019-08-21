@@ -134,6 +134,7 @@ public class DataSourceDescriptor
     private boolean showSystemObjects;
     private boolean showUtilityObjects;
     private boolean connectionReadOnly;
+    private List<DBPDataSourcePermission> connectionModifyRestrictions;
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
     private DBDDataFormatterProfile formatterProfile;
     @Nullable
@@ -194,7 +195,7 @@ public class DataSourceDescriptor
     public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry)
     {
         this.registry = registry;
-        this.origin = source.origin;
+        this.origin = ((DataSourceRegistry)registry).getDefaultOrigin();
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
@@ -206,6 +207,8 @@ public class DataSourceDescriptor
         this.connectionInfo = source.connectionInfo;
         this.formatterProfile = source.formatterProfile;
         this.clientHome = source.clientHome;
+
+        this.connectionModifyRestrictions = source.connectionModifyRestrictions == null ? null : new ArrayList<>(source.connectionModifyRestrictions);
 
         this.connectionInfo = new DBPConnectionConfiguration(source.connectionInfo);
         for (Map.Entry<String, FilterMapping> fe : source.filterMap.entrySet()) {
@@ -350,6 +353,38 @@ public class DataSourceDescriptor
     }
 
     @Override
+    public boolean hasModifyPermission(DBPDataSourcePermission permission) {
+        if ((permission == DBPDataSourcePermission.PERMISSION_EDIT_DATA ||
+            permission == DBPDataSourcePermission.PERMISSION_EDIT_METADATA) && connectionReadOnly)
+        {
+            return false;
+        }
+        if (CommonUtils.isEmpty(connectionModifyRestrictions)) {
+            return getConnectionConfiguration().getConnectionType().hasModifyPermission(permission);
+        } else {
+            return !connectionModifyRestrictions.contains(permission);
+        }
+    }
+
+    @Override
+    public List<DBPDataSourcePermission> getModifyPermission() {
+        if (CommonUtils.isEmpty(this.connectionModifyRestrictions)) {
+            return Collections.emptyList();
+        } else {
+            return new ArrayList<>(this.connectionModifyRestrictions);
+        }
+    }
+
+    @Override
+    public void setModifyPermissions(@Nullable Collection<DBPDataSourcePermission> permissions) {
+        if (CommonUtils.isEmpty(permissions)) {
+            this.connectionModifyRestrictions = null;
+        } else {
+            this.connectionModifyRestrictions = new ArrayList<>(permissions);
+        }
+    }
+
+    @Override
     public boolean isDefaultAutoCommit()
     {
         if (connectionInfo.getBootstrap().getDefaultAutoCommit() != null) {
@@ -490,7 +525,7 @@ public class DataSourceDescriptor
         }
         if (filterMapping != null) {
             filter = filterMapping.getFilter(parentObject, firstMatch);
-            if (filter != null && (firstMatch || !filter.isNotApplicable())) {
+            if (filter != null && (firstMatch || filter.isEnabled())) {
                 return filterMapping;
             }
         }
@@ -1356,7 +1391,8 @@ public class DataSourceDescriptor
             CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
             CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
             CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
-            CommonUtils.equalObjects(this.folder, source.folder);
+            CommonUtils.equalObjects(this.folder, source.folder) &&
+            CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
 
     public static class ContextInfo implements DBPObject {
@@ -1397,6 +1433,13 @@ public class DataSourceDescriptor
                 default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };
+    }
+
+    @Override
+    public DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry) {
+        DataSourceDescriptor copy = new DataSourceDescriptor(this, forRegistry);
+        copy.setId(DataSourceDescriptor.generateNewId(copy.getDriver()));
+        return copy;
     }
 
     public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)

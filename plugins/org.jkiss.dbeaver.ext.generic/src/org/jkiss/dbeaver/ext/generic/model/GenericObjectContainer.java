@@ -276,7 +276,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         if (procedures == null) {
             loadProcedures(monitor);
         }
-        return packages == null ? null : packages;
+        return packages;
     }
 
     public GenericPackage getPackage(DBRProgressMonitor monitor, String name)

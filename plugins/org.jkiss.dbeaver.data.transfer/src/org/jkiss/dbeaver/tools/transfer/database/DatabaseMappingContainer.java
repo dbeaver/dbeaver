@@ -269,7 +269,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
         @Override
         public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
-            attributes = DBUtils.makeResultAttributeBindings(source, resultSet);
+            attributes = DBUtils.makeLeafAttributeBindings(session, source, resultSet);
         }
 
         @Override
