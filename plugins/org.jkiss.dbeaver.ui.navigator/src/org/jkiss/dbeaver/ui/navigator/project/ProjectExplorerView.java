@@ -45,8 +45,7 @@ import java.util.Date;
 /**
  * ProjectExplorerView
  */
-public class ProjectExplorerView extends NavigatorViewBase implements DBPProjectListener
-{
+public class ProjectExplorerView extends NavigatorViewBase implements DBPProjectListener {
 
     //static final Log log = Log.getLog(ProjectExplorerView.class);
 
@@ -58,18 +57,15 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     }
 
     @Override
-    public DBNNode getRootNode()
-    {
+    public DBNNode getRootNode() {
         DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode != null ? projectNode : getModel().getRoot();
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         super.createPartControl(parent);
         final TreeViewer viewer = getNavigatorViewer();
-        assert viewer != null;
         viewer.getTree().setHeaderVisible(true);
         createColumns(viewer);
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
@@ -83,12 +79,12 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         updateTitle();
     }
 
-    private void createColumns(final TreeViewer viewer)
-    {
+    private void createColumns(final TreeViewer viewer) {
         final Color shadowColor = viewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
 
         final ILabelProvider mainLabelProvider = (ILabelProvider) viewer.getLabelProvider();
         columnController = new ViewerColumnController("projectExplorer", viewer);
+        columnController.setForceAutoSize(true);
         columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
             public String getText(Object element) {
@@ -192,18 +188,16 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 return "";
             }
         }));
-        columnController.createColumns(false);
+        UIUtils.asyncExec(() -> columnController.createColumns(true));
     }
 
     @Override
-    protected int getTreeStyle()
-    {
+    protected int getTreeStyle() {
         return super.getTreeStyle() | SWT.FULL_SELECTION;
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         DBWorkbench.getPlatform().getWorkspace().removeProjectListener(this);
         super.dispose();
     }
@@ -219,17 +213,15 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     }
 
     @Override
-    public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue)
-    {
+    public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
         UIUtils.asyncExec(() -> {
             getNavigatorTree().reloadTree(getRootNode());
             updateTitle();
-            UIUtils.packColumns(getNavigatorTree().getViewer().getTree(), true, null);
         });
+        //columnController.autoSizeColumns();
     }
 
-    private void updateTitle()
-    {
+    private void updateTitle() {
         setPartName("Project - " + getRootNode().getNodeName());
     }
 
