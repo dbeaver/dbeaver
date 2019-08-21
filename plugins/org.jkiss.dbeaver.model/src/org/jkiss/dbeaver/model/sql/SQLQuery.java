@@ -211,8 +211,7 @@ public class SQLQuery implements SQLScriptElement {
         parseQuery();
         if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
             PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
-            return selectBody.getFromItem() != null &&
-                CommonUtils.isEmpty(selectBody.getIntoTables()) &&
+            return CommonUtils.isEmpty(selectBody.getIntoTables()) &&
                 selectBody.getLimit() == null &&
                 selectBody.getTop() == null &&
                 !selectBody.isForUpdate();
