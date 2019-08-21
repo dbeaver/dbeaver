@@ -17,10 +17,14 @@
 package org.jkiss.dbeaver.ui.navigator.project;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersistor;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
 /**
@@ -33,7 +37,25 @@ public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectNavigator";
 
+    private IMemento memento;
+
     public ProjectNavigatorView() {
+    }
+
+    @Override
+    public void saveState(IMemento memento) {
+        new NavigatorStatePersistor().saveState(getNavigatorViewer(), memento);
+    }
+
+    private void restoreState() {
+        new NavigatorStatePersistor().restoreState(getNavigatorViewer(), getRootNode(), memento);
+    }
+
+    @Override
+    public void init(IViewSite site, IMemento memento) throws PartInitException
+    {
+        this.memento = memento;
+        super.init(site, memento);
     }
 
     @Override
@@ -47,5 +69,6 @@ public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
     {
         super.createPartControl(parent);
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_NAVIGATOR);
+        restoreState();
     }
 }

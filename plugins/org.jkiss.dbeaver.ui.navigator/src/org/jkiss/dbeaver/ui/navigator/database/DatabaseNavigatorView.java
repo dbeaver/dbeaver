@@ -17,6 +17,9 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
@@ -26,14 +29,32 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
+import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersistor;
 
 public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
+    private IMemento memento;
 
     public DatabaseNavigatorView()
     {
         super();
         DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
+    }
+
+    @Override
+    public void saveState(IMemento memento) {
+        new NavigatorStatePersistor().saveState(getNavigatorViewer(), memento);
+    }
+
+    private void restoreState() {
+        new NavigatorStatePersistor().restoreState(getNavigatorViewer(), getRootNode(), memento);
+    }
+
+    @Override
+    public void init(IViewSite site, IMemento memento) throws PartInitException
+    {
+        this.memento = memento;
+        super.init(site, memento);
     }
 
     @Override
@@ -60,6 +81,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     {
         super.createPartControl(parent);
         UIUtils.setHelp(parent, IHelpContextIds.CTX_DATABASE_NAVIGATOR);
+        restoreState();
     }
 
     @Override
