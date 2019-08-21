@@ -217,10 +217,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 }
             }
             createVisibleColumns();
+
             if (needRefresh) {
                 viewer.refresh();
             }
-            if (pack && !isAllSized()) {
+            boolean allSized = isAllSized();
+            if (pack || !allSized) {
                 repackColumns();
                 control.addControlListener(new ControlAdapter() {
                     @Override
@@ -231,14 +233,6 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                         }
                     }
                 });
-            } else if (needRefresh && pack) {
-                for (ColumnInfo columnInfo : getVisibleColumns()) {
-                    if (columnInfo.column instanceof TreeColumn) {
-                        ((TreeColumn) columnInfo.column).pack();
-                    } else {
-                        ((TableColumn) columnInfo.column).pack();
-                    }
-                }
             }
         } finally {
             control.setRedraw(true);
