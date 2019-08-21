@@ -401,9 +401,13 @@ public class SQLQueryJob extends DataSourceJob
             startTime = System.currentTimeMillis();
 
             SQLQuery execStatement = sqlQuery;
-            long execStartTime = startTime;
             DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
                 try {
+                    statistics.setStatementsCount(0);
+                    statistics.setExecuteTime(0);
+                    statistics.setFetchTime(0);
+                    statistics.setRowsUpdated(0);
+                    long execStartTime = System.currentTimeMillis();
                     executeStatement(session, execStatement, execStartTime, curResult);
                 } catch (Throwable e) {
                     throw new InvocationTargetException(e);
