@@ -40,11 +40,10 @@ public class NavigatorStatePersistor {
             memento.putString(KEY_PREFIX + i, createNodeIdentifier((DBNNode) expandedElements[i]));
     }
 
-    public void restoreState(final TreeViewer navigatorViewer, final DBNNode rootNode, final IMemento memento) {
+    public void restoreState(final TreeViewer navigatorViewer, final DBNNode rootNode, int maxDepth, final IMemento memento) {
         DBRRunnableWithProgress runnable = (monitor) -> {
             try {
                 if (memento != null) {
-                    int maxDepth = DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH);
                     for (int i = 0; i < memento.getAttributeKeys().length; i++) {
                         String nodeIdentifier = memento.getString(KEY_PREFIX + i);
                         DBNNode node = findNode(nodeIdentifier, rootNode, 1, maxDepth, monitor);

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersistor;
 
 public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener {
@@ -43,11 +44,14 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
 
     @Override
     public void saveState(IMemento memento) {
-        new NavigatorStatePersistor().saveState(getNavigatorViewer().getExpandedElements(), memento);
+        if (DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH) > 0)
+            new NavigatorStatePersistor().saveState(getNavigatorViewer().getExpandedElements(), memento);
     }
 
     private void restoreState() {
-        new NavigatorStatePersistor().restoreState(getNavigatorViewer(), getRootNode(), memento);
+        int maxDepth = DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH);
+        if (maxDepth > 0)
+            new NavigatorStatePersistor().restoreState(getNavigatorViewer(), getRootNode(), maxDepth, memento);
     }
 
     @Override
