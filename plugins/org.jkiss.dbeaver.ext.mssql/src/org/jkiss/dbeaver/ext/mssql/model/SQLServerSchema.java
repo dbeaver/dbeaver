@@ -336,7 +336,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT c.*,t.name as table_name,t.schema_id");
             if (owner.getDataSource().supportsColumnProperty()) {
-                sql.append(", COLUMNPROPERTY(c.object_id, c.name, 'charmaxlen') as char_max_length, ");
+                sql.append(", COLUMNPROPERTY(c.object_id, c.name, 'charmaxlen') as char_max_length");
             }
             sql.append(", dc.definition as default_definition,ep.value as description\nFROM ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_columns")).append(" c")
