@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.navigator;
 
-import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.ui.IMemento;
 import org.jkiss.dbeaver.DBException;
@@ -36,13 +35,9 @@ public class NavigatorStatePersistor {
     private static final Log log = Log.getLog(NavigatorStatePersistor.class);
     private static final String KEY_PREFIX = "element";
 
-    public void saveState(TreeViewer navigatorViewer, IMemento memento) {
-        Object[] expandedElements = navigatorViewer.getExpandedElements();
-        ITreeSelection treeSelection = navigatorViewer.getStructuredSelection();
-        for (int i = 0; i < expandedElements.length; i++) {
-                DBNNode expandedNode = (DBNNode) expandedElements[i];
-                memento.putString(KEY_PREFIX + i, expandedNode.getNodeItemPath());
-        }
+    public void saveState(Object[] expandedElements, IMemento memento) {
+        for (int i = 0; i < expandedElements.length; i++)
+            memento.putString(KEY_PREFIX + i, createNodeIdentifier((DBNNode) expandedElements[i]));
     }
 
     public void restoreState(final TreeViewer navigatorViewer, final DBNNode rootNode, final IMemento memento) {
@@ -51,46 +46,36 @@ public class NavigatorStatePersistor {
                 if (memento != null) {
                     int maxDepth = DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH);
                     for (int i = 0; i < memento.getAttributeKeys().length; i++) {
-                        String nodeItemPath = memento.getString(KEY_PREFIX + i);
-                        DBNNode node = findNode(rootNode, nodeItemPath, 1, maxDepth, monitor);
+                        String nodeIdentifier = memento.getString(KEY_PREFIX + i);
+                        DBNNode node = findNode(nodeIdentifier, rootNode, 1, maxDepth, monitor);
                         if (node != null && !node.isDisposed()) {
-                            initializeNode(node, monitor);
                             navigatorViewer.setExpandedState(node, true);
                         }
                     }
                 }
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }
         };
         try {
-            UIUtils.runInProgressService(runnable);
-        }
-        catch (InvocationTargetException e)
-        {
-            log.error("Can't restore navigator tree state", e.getTargetException());
-        }
-        catch (InterruptedException e)
-        {
-            // skip it
+            UIUtils.runInUI(runnable);
+        } catch (Exception e) {
+            // this operation should be fail-safe
+            log.error("Can't restore navigator tree state", e);
         }
     }
 
-    private DBNNode findNode(DBNNode rootNode, String nodeItemPath, int currentDepth, int maxDepth, DBRProgressMonitor monitor) throws DBException {
+    private DBNNode findNode(String nodeIdentifier, DBNNode rootNode, int currentDepth, int maxDepth, DBRProgressMonitor monitor) throws DBException {
         if (currentDepth <= maxDepth) {
-            if (nodeItemPath.equals(rootNode.getNodeItemPath()))
+            initializeNode(rootNode, monitor);
+            if (nodeIdentifier.equals(createNodeIdentifier(rootNode)))
                 return rootNode;
             if (currentDepth < maxDepth) {
                 DBNNode[] childNodes = rootNode.getChildren(monitor);
-                if (childNodes != null) {
-                    for (DBNNode node : childNodes) {
-                        if (nodeItemPath.contains(node.getNodeItemPath())) {
-                            return findNode(node, nodeItemPath, currentDepth + 1, maxDepth, monitor);
-                        }
-                    }
-                }
+                if (childNodes != null)
+                    for (DBNNode newRootNode : childNodes)
+                        if (nodeIdentifier.contains(createNodeIdentifier(newRootNode)))
+                            return findNode(nodeIdentifier, newRootNode, currentDepth + 1, maxDepth, monitor);
             }
         }
         return null;
@@ -103,6 +88,13 @@ public class NavigatorStatePersistor {
                 dsContainer.connect(monitor, true, false);
         }
         node.getChildren(monitor);
+    }
+
+    private String createNodeIdentifier(DBNNode node) {
+        StringBuilder identifier = new StringBuilder();
+        for (DBNNode currentNode = node; currentNode != null; currentNode = currentNode.getParentNode())
+            identifier.append(currentNode.getNodeName()).append("/");
+        return identifier.toString();
     }
 
 }

@@ -44,7 +44,7 @@ public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
 
     @Override
     public void saveState(IMemento memento) {
-        new NavigatorStatePersistor().saveState(getNavigatorViewer(), memento);
+        new NavigatorStatePersistor().saveState(getNavigatorViewer().getExpandedElements(), memento);
     }
 
     private void restoreState() {
