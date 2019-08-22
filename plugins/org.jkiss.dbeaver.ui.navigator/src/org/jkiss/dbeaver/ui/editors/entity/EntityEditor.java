@@ -61,7 +61,6 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.*;
-import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -70,8 +69,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * EntityEditor
@@ -512,6 +511,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 addPage(new ProgressEditorPart(this), editorInput);
                 setPageText(0, "Initializing ...");
+                setPageImage(0, DBeaverIcons.getImage(UIIcon.REFRESH));
                 setActivePage(0);
             } catch (PartInitException e) {
                 log.error(e);

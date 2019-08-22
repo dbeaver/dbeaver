@@ -202,6 +202,9 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     private void recreateColumns(boolean pack)
     {
         final Control control = viewer.getControl();
+        if (control == null || control.isDisposed()) {
+        	return;
+        }
         control.setRedraw(false);
         isInitializing = true;
         try {
