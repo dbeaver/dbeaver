@@ -209,7 +209,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         if (localFile == null) {
             throw new IOException("No target file for '" + getPath() + "'");
         }
-        if (!forceUpdate && localFile.exists()) {
+        if (!forceUpdate && localFile.exists() && localFile.length() > 0) {
             return;
         }
         final File localDir = localFile.getParentFile();

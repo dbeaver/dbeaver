@@ -562,7 +562,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 driver,
                 DBPDriverLibrary.FileType.jar,
                 DriverLibraryMavenArtifact.PATH_PREFIX + fd.getArtifact().getPath(),
-                null));
+                null), true);
             changeLibContent();
         }
     }
@@ -578,7 +578,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 driver,
                 DBPDriverLibrary.FileType.jar,
                 selected,
-                null));
+                null), true);
             changeLibContent();
         }
     }
@@ -601,7 +601,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                             driver,
                             fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverLibrary.FileType.jar : DBPDriverLibrary.FileType.lib,
                             new File(folderFile, fileName).getAbsolutePath(),
-                            null));
+                            null), true);
                 }
                 changeLibContent();
             }
@@ -789,7 +789,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         Collection<DBPDriverLibrary> newLibList = CommonUtils.copyList(original ? driver.getOrigFiles() : origLibList);
         for (DBPDriverLibrary lib : newLibList) {
             lib.setDisabled(false);
-            driver.addDriverLibrary(lib);
+            driver.addDriverLibrary(lib, true);
         }
         for (DBPDriverLibrary lib : CommonUtils.copyList(driver.getDriverLibraries())) {
             if (!newLibList.contains(lib)) {
