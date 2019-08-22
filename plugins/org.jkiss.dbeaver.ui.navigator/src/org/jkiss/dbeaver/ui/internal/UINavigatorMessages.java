@@ -192,7 +192,6 @@ public class UINavigatorMessages extends NLS {
     public static String label_error_list;
     public static String label_instance;
 
-
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UINavigatorMessages.class);
