@@ -131,7 +131,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
 
             try {
                 JDBCUtils.queryString(session, "SELECT COLUMNPROPERTY(0, NULL, NULL)");
-                this.supportsColumnProperty = false;
+                this.supportsColumnProperty = true;
             } catch (Exception e) {
                 this.supportsColumnProperty = false;
             }
