@@ -165,7 +165,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         String sqlQuery = query.toString();
         statistics.setQueryText(sqlQuery);
-        statistics.addStatementsCount();
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
 
@@ -204,22 +203,16 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     try {
                         dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
 
-                        startTime = System.currentTimeMillis();
-                        long rowCount = 0;
+                        DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
                         while (dbResult.nextRow()) {
-                            if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
+                            if (fetchProgress.isCanceled() || (hasLimits && fetchProgress.isMaxRowsFetched(maxRows))) {
                                 // Fetch not more than max rows
                                 break;
                             }
                             dataReceiver.fetchRow(session, dbResult);
-                            rowCount++;
-                            if (rowCount % 100 == 0) {
-                                monitor.subTask(rowCount + ModelMessages.model_jdbc__rows_fetched);
-                                monitor.worked(100);
-                            }
+                            fetchProgress.monitorRowFetch();
                         }
-                        statistics.setFetchTime(System.currentTimeMillis() - startTime);
-                        statistics.setRowsFetched(rowCount);
+                        fetchProgress.dumpStatistics(statistics);
                     } finally {
                         // First - close cursor
                         try {
