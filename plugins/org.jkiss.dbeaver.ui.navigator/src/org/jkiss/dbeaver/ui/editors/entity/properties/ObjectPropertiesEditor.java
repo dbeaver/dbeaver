@@ -89,7 +89,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private Composite propsPlaceholder;
     @Nullable
     private TabbedFolderPageForm propertiesPanel;
-    private String folderId;
 
     public ObjectPropertiesEditor()
     {
@@ -125,7 +124,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         pageControl.createProgressPanel();
 
-        folderId = getEditorInput().getDefaultFolderId();
+        curFolderId = getEditorInput().getDefaultFolderId();
 
         // Create actual editor in async mode. We need to know editor size to make proper layout and avoid blinking
         UIUtils.asyncExec(() -> createPropertyBrowser(container));
@@ -216,9 +215,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             }
         }
 
-        if (folderId != null) {
-            folderComposite.switchFolder(folderId);
-        }
+        folderComposite.switchFolder(curFolderId);
 
         folderComposite.addFolderListener(folderId1 -> {
             if (CommonUtils.equalObjects(curFolderId, folderId1)) {
@@ -393,9 +390,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Override
     public boolean switchFolder(String folderId)
     {
-        this.folderId = folderId;
+        this.curFolderId = folderId;
         if (folderComposite != null) {
-            return folderComposite.switchFolder(folderId);
+            return folderComposite.switchFolder(curFolderId);
         }
         return false;
     }
