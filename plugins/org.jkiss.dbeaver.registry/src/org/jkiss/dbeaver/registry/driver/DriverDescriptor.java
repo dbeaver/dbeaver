@@ -775,13 +775,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
         DriverLibraryAbstract lib = DriverLibraryAbstract.createFromPath(this, fileType, path, null);
-        addDriverLibrary(lib);
+        addDriverLibrary(lib, true);
         return lib;
     }
 
-    public boolean addDriverLibrary(DBPDriverLibrary descriptor) {
+    public boolean addDriverLibrary(DBPDriverLibrary descriptor, boolean resetCache) {
         if (!libraries.contains(descriptor)) {
-            resetDriverInstance();
+            if (resetCache) {
+                resetDriverInstance();
+            }
             this.libraries.add(descriptor);
             return true;
         }
