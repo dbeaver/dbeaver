@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -127,6 +128,10 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         this.maxLength = getDataSource().supportsColumnProperty() ? JDBCUtils.safeGetLong(dbResult, "char_max_length") : 0;
         if (this.maxLength == 0) {
             this.maxLength = this.bytesMaxLength;
+            String typeName = getTypeName();
+            if (typeName.equals(SQLServerConstants.TYPE_NVARCHAR) || typeName.equals(SQLServerConstants.TYPE_NCHAR)) {
+                this.maxLength /= 2; // Divide by 2.
+            }
         }
         setRequired(JDBCUtils.safeGetInt(dbResult, "is_nullable") == 0);
         setScale(JDBCUtils.safeGetInteger(dbResult, "scale"));
