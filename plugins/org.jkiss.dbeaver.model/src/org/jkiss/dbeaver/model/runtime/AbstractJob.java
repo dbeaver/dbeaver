@@ -102,7 +102,7 @@ public abstract class AbstractJob extends Job
 
             IStatus result = this.run(progressMonitor);
             if (!logErrorStatus(result)) {
-                if (!result.isOK()) {
+                if (!result.isOK() && result != Status.CANCEL_STATUS) {
                     log.error("Error running job '" + getName() + "' execution: " + result.getMessage());
                 }
             }
