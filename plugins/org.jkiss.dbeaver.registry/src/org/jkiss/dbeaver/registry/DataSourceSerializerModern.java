@@ -437,6 +437,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             config.setUserPassword(creds[1]);
                         }
                     }
+                    {
+                        // Still try to read credentials directly from configuration (#6564)
+                        String userName = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_USER);
+                        if (!CommonUtils.isEmpty(userName)) config.setUserName(userName);
+                        String userPassword = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_PASSWORD);
+                        if (!CommonUtils.isEmpty(userPassword)) config.setUserPassword(userPassword);
+                    }
+
                     config.setClientHomeId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_HOME));
                     config.setConfigProfileName(JSONUtils.getString(cfgObject, "config-profile"));
                     config.setUserProfileName(JSONUtils.getString(cfgObject, "user-profile"));
@@ -588,6 +596,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     curNetworkHandler.setPassword(creds[1]);
                 }
             }
+            {
+                // Still try to read credentials directly from configuration (#6564)
+                String userName = JSONUtils.getString(handlerCfg, RegistryConstants.ATTR_USER);
+                if (!CommonUtils.isEmpty(userName)) curNetworkHandler.setUserName(userName);
+                String userPassword = JSONUtils.getString(handlerCfg, RegistryConstants.ATTR_PASSWORD);
+                if (!CommonUtils.isEmpty(userPassword)) curNetworkHandler.setPassword(userPassword);
+            }
+
             Map<String, Object> properties = JSONUtils.deserializeProperties(handlerCfg, RegistryConstants.TAG_PROPERTIES);
             if (properties != null) {
                 curNetworkHandler.setProperties(properties);
