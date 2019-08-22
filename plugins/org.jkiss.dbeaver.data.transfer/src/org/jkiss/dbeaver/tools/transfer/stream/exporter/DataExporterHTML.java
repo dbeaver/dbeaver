@@ -76,7 +76,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
       out.write("<head><style>" +
               "table {border: medium solid #6495ed;" + 
               "border-collapse: collapse;" + 
-              "width: 50%;} " +
+              "width: 100%;} " +
               "th{font-family: monospace;" + 
               "border: thin solid #6495ed;" + 
 //              "width: 50%;" +
