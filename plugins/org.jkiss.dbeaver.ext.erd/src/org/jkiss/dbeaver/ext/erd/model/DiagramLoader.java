@@ -198,13 +198,13 @@ public class DiagramLoader
         }
 
         final Document document = XMLUtils.parseDocument(in);
+        monitor.done();
 
         loadDiagram(monitor, document, projectMeta, diagram);
     }
 
     public static void loadDiagram(DBRProgressMonitor monitor, Document document, DBPProject projectMeta, EntityDiagram diagram) throws DBException {
         final Element diagramElem = document.getDocumentElement();
-        monitor.done();
 
         // Check version
         final String diagramVersion = diagramElem.getAttribute(ATTR_VERSION);

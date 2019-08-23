@@ -188,6 +188,12 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         } else {
             diagram = new EntityDiagram(getDecorator(), dbObject, dbObject.getName());
 
+            // Fill from database even if we loaded from state (something could change since last view)
+            diagram.fillEntities(
+                monitor,
+                collectDatabaseTables(monitor, dbObject, diagram),
+                dbObject);
+
             boolean hasPersistedState = false;
             try {
                 // Load persisted state
@@ -209,11 +215,6 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             diagram.setLayoutManualAllowed(true);
             diagram.setNeedsAutoLayout(!hasPersistedState);
 
-            // Fill from database even if we loaded from state (something could change since last view)
-            diagram.fillEntities(
-                monitor,
-                collectDatabaseTables(monitor, dbObject, diagram),
-                dbObject);
         }
 
         return diagram;
