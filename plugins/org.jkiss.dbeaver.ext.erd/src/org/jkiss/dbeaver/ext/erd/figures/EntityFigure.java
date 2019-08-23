@@ -74,7 +74,7 @@ public class EntityFigure extends Figure {
         nameLabel = new EditableLabel(entityName) {
             @Override
             public IFigure getToolTip() {
-                return createToolTip();
+                return null;//createToolTip();
             }
         };
         nameLabel.setIcon(tableImage);
