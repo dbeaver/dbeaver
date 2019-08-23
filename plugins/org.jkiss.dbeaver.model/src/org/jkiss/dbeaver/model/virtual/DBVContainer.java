@@ -70,6 +70,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
             String id = element.getKey();
             if (id.startsWith(ENTITY_PREFIX)) {
                 DBVEntity entity = new DBVEntity(this, id.substring(ENTITY_PREFIX.length()), (Map<String, Object>) element.getValue());
+                entities.put(entity.getName(), entity);
             } else if (id.startsWith(CONFIG_PREFIX)) {
                 String configMap = id.substring(CONFIG_PREFIX.length());
                 if (configMap.equals("properties")) {

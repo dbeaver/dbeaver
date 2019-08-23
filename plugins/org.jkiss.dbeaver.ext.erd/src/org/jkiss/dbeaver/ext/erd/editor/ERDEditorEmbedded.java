@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -42,7 +43,11 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.IEntityStructureEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLUtils;
+import org.w3c.dom.Document;
 
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -142,19 +147,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         diagramLoadingJob = LoadingJob.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
                 @Override
-                public EntityDiagram evaluate(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    // Do not refresh actual metadata. It is slow and it may corrupt diagram state
-/*
-                    if (refreshMetadata && object instanceof DBPRefreshableObject) {
-                        try {
-                            getEditorInput().getNavigatorNode().refreshNode(monitor, ERDEditorEmbedded.this);
-                        } catch (DBException e) {
-                            log.warn("Error refreshing database metadata", e);
-                        }
-                    }
-*/
+                public EntityDiagram evaluate(DBRProgressMonitor monitor) {
                     try {
                         return loadFromDatabase(monitor);
                     } catch (DBException e) {
@@ -195,19 +188,38 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         } else {
             diagram = new EntityDiagram(getDecorator(), dbObject, dbObject.getName());
 
+            boolean hasPersistedState = false;
+            try {
+                // Load persisted state
+                DBVObject vObject = this.getVirtualObject();
+                if (vObject != null) {
+                    Map<String, Object> diagramState = vObject.getProperty(PROP_DIAGRAM_STATE);
+                    if (diagramState != null) {
+                        String serializedDiagram = (String) diagramState.get(PROPS_DIAGRAM_SERIALIZED);
+                        if (!CommonUtils.isEmpty(serializedDiagram)) {
+                            Document xmlDocument = XMLUtils.parseDocument(new StringReader(serializedDiagram));
+                            DiagramLoader.loadDiagram(monitor, xmlDocument, dbObject.getDataSource().getContainer().getProject(), diagram);
+                            hasPersistedState = true;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error loading ER diagram from saved state", e);
+            }
             diagram.setLayoutManualAllowed(true);
-            diagram.setNeedsAutoLayout(true);
+            diagram.setNeedsAutoLayout(!hasPersistedState);
 
+            // Fill from database even if we loaded from state (something could change since last view)
             diagram.fillEntities(
                 monitor,
-                collectDatabaseTables(monitor, dbObject),
+                collectDatabaseTables(monitor, dbObject, diagram),
                 dbObject);
         }
 
         return diagram;
     }
 
-    private Collection<DBSEntity> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root) throws DBException
+    private Collection<DBSEntity> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root, EntityDiagram diagram) throws DBException
     {
         Set<DBSEntity> result = new LinkedHashSet<>();
 
@@ -313,6 +325,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             }
 
             monitor.done();
+        }
+
+        // Remove entities already loaded in the diagram
+        for (ERDEntity diagramEntity : diagram.getEntities()) {
+            result.remove(diagramEntity.getObject());
         }
 
         return result;
