@@ -23,6 +23,7 @@ import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
@@ -114,7 +115,17 @@ public class EntityFigure extends Figure {
     }
 
     protected Color getBorderColor() {
-        return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
+        int dsIndex = getPart().getDiagram().getDataSourceIndex(part.getEntity().getDataSource().getContainer());
+        RGB[] extraDsColors = ERDConstants.EXTRA_DS_COLORS;
+        if (dsIndex == 0) {
+            return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
+        } else {
+            dsIndex--;
+            if (dsIndex > extraDsColors.length) {
+                dsIndex = dsIndex % extraDsColors.length;
+            }
+            return UIUtils.getSharedColor(extraDsColors[dsIndex]);
+        }
     }
 
     public EntityPart getPart() {
