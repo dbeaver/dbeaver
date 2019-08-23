@@ -374,7 +374,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         }
     }
 
-    private static class RefKeyLabelProvider extends LabelProvider {
+    private class RefKeyLabelProvider extends LabelProvider {
 
         @Override
         public Image getImage(Object element) {
@@ -392,11 +392,19 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 return "<No references>";
             }
             ReferenceKey key = (ReferenceKey) element;
+            String title;
+            DBSObject targetEntity;
             if (key.isReference) {
-                return key.refAssociation.getParentObject().getName() + " (" + key.refAssociation.getName() + ")";
+                targetEntity = key.refAssociation.getParentObject();
             } else {
-                return key.refAssociation.getReferencedConstraint().getParentObject().getName() + " (" + key.refAssociation.getName() + ")";
+                targetEntity = key.refAssociation.getReferencedConstraint().getParentObject();
             }
+            title = targetEntity.getName() + " (" + key.refAssociation.getName() + ")";
+            if (parentController.getDataContainer() != null && parentController.getDataContainer().getDataSource() != targetEntity.getDataSource()) {
+                title += " [" + targetEntity.getDataSource().getContainer().getName() + "]";
+            }
+
+            return title;
         }
 
     }
