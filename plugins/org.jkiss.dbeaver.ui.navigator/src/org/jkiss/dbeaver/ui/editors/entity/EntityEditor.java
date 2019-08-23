@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -682,13 +683,22 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public int promptToSaveOnClose()
     {
         List<String> changedSubEditors = new ArrayList<>();
+        final DBECommandContext commandContext = getCommandContext();
+        if (commandContext != null && commandContext.isDirty()) {
+            changedSubEditors.add(UINavigatorMessages.registry_entity_editor_descriptor_name);
+        }
+
         for (IEditorPart editor : editorMap.values()) {
             if (editor.isDirty()) {
-                changedSubEditors.add(editor.getTitle());
+
+                EntityEditorDescriptor editorDescriptor = EntityEditorsRegistry.getInstance().getEntityEditor(editor);
+                if (editorDescriptor != null) {
+                    changedSubEditors.add(editorDescriptor.getName());
+                }
             }
         }
 
-        String subEditorsString = "(" + String.join(", ", changedSubEditors) + ")";
+        String subEditorsString = changedSubEditors.isEmpty() ? "" : "(" + String.join(", ", changedSubEditors) + ")";
         final int result = ConfirmationDialog.showConfirmDialog(
             ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
             getSite().getShell(),

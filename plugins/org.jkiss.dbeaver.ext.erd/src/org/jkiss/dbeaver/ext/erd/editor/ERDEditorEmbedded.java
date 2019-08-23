@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVObject;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
@@ -322,17 +322,17 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     public void doSave(IProgressMonitor monitor) {
         try {
             // Save in virtual model as entity property.
-            DBVEntity vEntity = this.getVirtualEntity();
-            if (vEntity == null) {
+            DBVObject vObject = this.getVirtualObject();
+            if (vObject == null) {
                 return;
             }
             Map<String, Object> diagramStateMap = new LinkedHashMap<>();
-            vEntity.setProperty(PROP_DIAGRAM_STATE, diagramStateMap);
+            vObject.setProperty(PROP_DIAGRAM_STATE, diagramStateMap);
 
             String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, true);
             diagramStateMap.put(PROPS_DIAGRAM_SERIALIZED, diagramState);
 
-            vEntity.persistConfiguration();
+            vObject.persistConfiguration();
 
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
@@ -341,12 +341,13 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     }
 
     @Nullable
-    private DBVEntity getVirtualEntity() {
+    private DBVObject getVirtualObject() {
         DBSObject rootObject = getRootObject();
         if (rootObject instanceof DBSEntity) {
             return DBVUtils.getVirtualEntity((DBSEntity) rootObject, true);
+        } else {
+            return DBVUtils.getVirtualObject(rootObject, true);
         }
-        return null;
     }
 
 }

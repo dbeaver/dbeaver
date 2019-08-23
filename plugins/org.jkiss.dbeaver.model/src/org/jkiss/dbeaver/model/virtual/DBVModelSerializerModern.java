@@ -53,6 +53,7 @@ class DBVModelSerializerModern implements DBVModelSerializer
         }
         json.beginObject();
 
+        JSONUtils.serializeProperties(json, DBVContainer.CONFIG_PREFIX + "properties", object.getProperties());
         for (DBVEntity entity : object.getEntities()) {
             if (entity.hasValuableData()) {
                 serializeEntity(monitor, json, entity);

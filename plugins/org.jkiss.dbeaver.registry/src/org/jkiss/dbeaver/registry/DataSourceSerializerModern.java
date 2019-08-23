@@ -704,6 +704,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 json.beginObject();
                 for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
                     DBRShellCommand command = connectionInfo.getEvent(eventType);
+                    if (!command.isEnabled()) {
+                        continue;
+                    }
                     json.name(eventType.name());
                     json.beginObject();
                     JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, command.isEnabled());
