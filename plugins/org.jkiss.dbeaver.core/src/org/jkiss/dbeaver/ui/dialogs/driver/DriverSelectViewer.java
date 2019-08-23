@@ -336,7 +336,7 @@ public class DriverSelectViewer extends Viewer {
 
                     selectorViewer.setFilters(driverFilter);
                     if (selectorViewer instanceof AbstractTreeViewer) {
-                        ((AbstractTreeViewer) selectorViewer).expandAll();
+                        ((AbstractTreeViewer) selectorViewer).expandAll(true);
                     }
                 } finally {
                     selectorViewer.getControl().setRedraw(true);
