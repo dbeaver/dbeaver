@@ -138,7 +138,7 @@ public class DriverTreeViewer extends TreeViewer {
 
         Collection<Object> drivers = collectDrivers();
         this.setInput(drivers);
-        this.expandAll();
+        this.expandAll(true);
         UIUtils.packColumns(getTree(), true, new float[] {0.9f, 0.1f});
 
         if (expandRecent) {
