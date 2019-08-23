@@ -62,8 +62,8 @@ public abstract class DBVObject implements DBSObject {
      * @param name property name
      */
     @Nullable
-    public Object getProperty(@NotNull String name) {
-        return CommonUtils.isEmpty(properties) ? null : properties.get(name);
+    public <T> T getProperty(@NotNull String name) {
+        return CommonUtils.isEmpty(properties) ? null : (T) properties.get(name);
     }
 
     public void setProperty(String name, @Nullable Object value) {

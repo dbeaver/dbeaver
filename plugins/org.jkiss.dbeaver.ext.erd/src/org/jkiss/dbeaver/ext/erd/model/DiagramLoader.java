@@ -187,7 +187,7 @@ public class DiagramLoader
     }
 
     public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, InputStream in)
-        throws IOException, XMLException, DBException
+        throws XMLException, DBException
     {
         monitor.beginTask("Parse diagram", 1);
         final EntityDiagram diagram = diagramPart.getDiagram();
@@ -199,6 +199,10 @@ public class DiagramLoader
 
         final Document document = XMLUtils.parseDocument(in);
 
+        loadDiagram(monitor, document, projectMeta, diagram);
+    }
+
+    public static void loadDiagram(DBRProgressMonitor monitor, Document document, DBPProject projectMeta, EntityDiagram diagram) throws DBException {
         final Element diagramElem = document.getDocumentElement();
         monitor.done();
 

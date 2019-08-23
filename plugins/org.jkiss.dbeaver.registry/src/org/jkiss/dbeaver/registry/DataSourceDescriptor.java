@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -704,6 +705,12 @@ public class DataSourceDescriptor
     public DBPDataSourceRegistry getRegistry()
     {
         return registry;
+    }
+
+    @NotNull
+    @Override
+    public DBPProject getProject() {
+        return registry.getProject();
     }
 
     @Override
