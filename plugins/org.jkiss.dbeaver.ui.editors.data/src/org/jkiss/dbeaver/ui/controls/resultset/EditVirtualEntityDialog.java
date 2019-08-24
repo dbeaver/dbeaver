@@ -183,9 +183,9 @@ public class EditVirtualEntityDialog extends BaseDialog {
         fkTable.setHeaderVisible(true);
         UIUtils.executeOnResize(fkTable, () -> UIUtils.packColumns(fkTable, true));
 
-        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Ref Datasource");
         UIUtils.createTableColumn(fkTable, SWT.LEFT, "Ref Table");
         UIUtils.createTableColumn(fkTable, SWT.LEFT, "Columns");
+        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Ref Datasource");
 
         for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
             createForeignKeyItem(fkTable, fk);
@@ -236,17 +236,22 @@ public class EditVirtualEntityDialog extends BaseDialog {
 
     private void createForeignKeyItem(Table fkTable, DBVEntityForeignKey fk) {
         TableItem item = new TableItem(fkTable, SWT.NONE);
-        item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
-        item.setText(0, fk.getReferencedConstraint().getParentObject().getDataSource().getContainer().getName());
+        //item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
+        DBSEntity refEntity = fk.getReferencedConstraint().getParentObject();
 
+        item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
         if (fk.getReferencedConstraint() != null) {
-            item.setText(1, DBUtils.getObjectFullName(fk.getReferencedConstraint().getParentObject(), DBPEvaluationContext.UI));
+            item.setText(0, DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI));
         }
         String ownAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getAttributeName)
             .collect(Collectors.joining(","));
         String refAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getRefAttributeName)
             .collect(Collectors.joining(","));
-        item.setText(2, "(" + ownAttrNames + ") -> (" + refAttrNames + ")");
+        item.setText(1, "(" + ownAttrNames + ") -> (" + refAttrNames + ")");
+
+        item.setImage(2, DBeaverIcons.getImage(refEntity.getDataSource().getContainer().getDriver().getIcon()));
+        item.setText(2, refEntity.getDataSource().getContainer().getName());
+
         item.setData(fk);
     }
 
