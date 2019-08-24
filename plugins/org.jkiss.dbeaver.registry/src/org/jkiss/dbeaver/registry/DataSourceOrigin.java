@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 
 /**
  * DataSourceOrigin
@@ -25,14 +26,29 @@ class DataSourceOrigin
 {
     private final IFile sourceFile;
     private final boolean isDefault;
+    private final String configSuffix;
 
     public DataSourceOrigin(IFile sourceFile, boolean isDefault) {
         this.sourceFile = sourceFile;
         this.isDefault = isDefault;
+
+        if (isDefault) {
+            configSuffix = "";
+        } else {
+            String configFileName = sourceFile.getName();
+            configSuffix = configFileName.substring(
+                DBPDataSourceRegistry.MODERN_CONFIG_FILE_PREFIX.length(),
+                configFileName.length() - DBPDataSourceRegistry.MODERN_CONFIG_FILE_EXT.length());
+        }
+
     }
 
     public String getName() {
         return sourceFile.getName();
+    }
+
+    public String getConfigSuffix() {
+        return configSuffix;
     }
 
     public boolean isDefault() {

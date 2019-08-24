@@ -666,7 +666,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                         }
                         serializer.saveDataSources(
                             monitor,
-                            origin.isDefault(),
+                            origin,
                             localDataSources,
                             configFile);
                     }

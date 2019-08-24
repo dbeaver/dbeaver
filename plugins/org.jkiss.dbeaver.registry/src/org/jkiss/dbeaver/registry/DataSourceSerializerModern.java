@@ -91,9 +91,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
     @Override
     public void saveDataSources(
         DBRProgressMonitor monitor,
-        boolean primaryConfig,
+        DataSourceOrigin origin,
         List<DataSourceDescriptor> localDataSources,
-        IFile configFile) throws DBException, IOException {
+        IFile configFile) throws DBException, IOException
+    {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
@@ -101,7 +102,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 jsonWriter.beginObject();
 
                 // Save folders
-                if (primaryConfig) {
+                if (origin.isDefault()) {
                     jsonWriter.name("folders");
                     jsonWriter.beginObject();
                     // Folders (only for default origin)
@@ -139,7 +140,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     jsonWriter.endObject();
                 }
 
-                if (primaryConfig) {
+                if (origin.isDefault()) {
                     if (!virtualModels.isEmpty()) {
                         // Save virtual models
                         jsonWriter.name("virtual-models");
@@ -240,12 +241,17 @@ class DataSourceSerializerModern implements DataSourceSerializer
             throw new IOException("Error saving configuration to a file " + configFile.getFullPath(), e);
         }
 
-        saveSecureCredentialsFile(monitor.getNestedMonitor(), (IFolder) configFile.getParent());
+        {
+            saveSecureCredentialsFile(
+                monitor.getNestedMonitor(),
+                (IFolder) configFile.getParent(),
+                origin);
+        }
     }
 
-    private void saveSecureCredentialsFile(IProgressMonitor monitor, IFolder parent) {
+    private void saveSecureCredentialsFile(IProgressMonitor monitor, IFolder parent, DataSourceOrigin origin) {
 
-        IFile credFile = parent.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_NAME);
+        IFile credFile = parent.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
         try {
             // Serialize and encrypt
             String jsonString = SECURE_GSON.toJson(secureProperties, Map.class);
@@ -278,7 +284,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         // Read secured creds file
         IFolder mdFolder = registry.getProject().getMetadataFolder(false);
         if (mdFolder.exists()) {
-            IFile credFile = mdFolder.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_NAME);
+            IFile credFile = mdFolder.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
             if (credFile.exists()) {
                 ByteArrayOutputStream credBuffer = new ByteArrayOutputStream();
                 try (InputStream crdStream = credFile.getContents()) {
