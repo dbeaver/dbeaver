@@ -64,7 +64,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     static {
         IGNORED_RESOURCES.add(PROJECT_DESC_FILE);
-        IGNORED_RESOURCES.add(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_NAME);
+        IGNORED_RESOURCES.add(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX);
     }
 
     public ProjectExportWizard() {

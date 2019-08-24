@@ -80,7 +80,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     @Override
     public void saveDataSources(
         DBRProgressMonitor monitor,
-        boolean primaryConfig,
+        DataSourceOrigin origin,
         List<DataSourceDescriptor> localDataSources,
         IFile configFile) throws DBException, IOException
     {
@@ -90,7 +90,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
-                if (primaryConfig) {
+                if (origin.isDefault()) {
                     // Folders (only for default origin)
                     for (DataSourceFolder folder : registry.getAllFolders()) {
                         saveFolder(xml, folder);
@@ -106,7 +106,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 }
 
                 // Filters
-                if (primaryConfig) {
+                if (origin.isDefault()) {
                     try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
                         for (DBSObjectFilter cf : registry.getSavedFilters()) {
                             if (!cf.isEmpty()) {
