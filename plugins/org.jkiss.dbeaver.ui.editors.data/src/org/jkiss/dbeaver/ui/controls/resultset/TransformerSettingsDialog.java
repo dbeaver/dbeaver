@@ -25,6 +25,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
@@ -70,7 +72,7 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, DBVTransformSettings settings, boolean selector) {
-        super(viewer.getControl().getShell(), "Transformer settings", null);
+        super(viewer.getControl().getShell(), DBUtils.getObjectFullName(viewer.getDataContainer(), DBPEvaluationContext.UI) + " transforms", null);
         this.viewer = viewer;
         this.currentAttribute = currentAttribute;
         this.settings = settings;
@@ -274,6 +276,7 @@ class TransformerSettingsDialog extends BaseDialog {
                             infoText.setText(CommonUtils.notEmpty(transformer.getDescription()));
                             loadTransformerSettings(transformer.getProperties());
                         }
+                        updateAttributeSelection();
                         composite.layout(true, true);
                     }
                 });
