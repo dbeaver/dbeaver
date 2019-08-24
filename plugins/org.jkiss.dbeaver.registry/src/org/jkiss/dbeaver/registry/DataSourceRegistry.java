@@ -575,6 +575,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                         }
                     }
                 }
+                // Save config immediately in the new format
+                flushConfig();
             }
         } catch (CoreException e) {
             log.error("Error reading datasources configuration", e);
@@ -641,9 +643,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                         configFile = getLegacyConfigFile();
                     }
                 } else {
-                    if ("xml".equals(configFile.getFileExtension())) {
+                    if (configFile.getName().startsWith(LEGACY_CONFIG_FILE_PREFIX) && "xml".equals(configFile.getFileExtension())) {
                         // Legacy configuration - move to metadata folder as json
-                        configFile = project.getMetadataFolder(false).getFile(configFile.getName() + ".json");
+                        String newFileName = MODERN_CONFIG_FILE_PREFIX + configFile.getName().substring(LEGACY_CONFIG_FILE_PREFIX.length());
+                        int divPos = newFileName.lastIndexOf(".");
+                        newFileName = newFileName.substring(0, divPos) + ".json";
+                        configFile = project.getMetadataFolder(false).getFile(newFileName);
                     }
                 }
                 try {
