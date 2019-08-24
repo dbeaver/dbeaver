@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -68,6 +69,13 @@ public class SQLResultsView extends ViewPart
 
     private class DetachedContainer implements IResultSetContainer {
         private IResultSetContainer currentContainer;
+
+        @Nullable
+        @Override
+        public DBPProject getProject() {
+            return currentContainer == null ? null : currentContainer.getProject();
+        }
+
         @Nullable
         @Override
         public DBCExecutionContext getExecutionContext() {

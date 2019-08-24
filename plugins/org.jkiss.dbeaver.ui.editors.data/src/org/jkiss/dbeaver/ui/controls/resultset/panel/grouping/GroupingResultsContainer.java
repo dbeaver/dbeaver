@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -74,6 +76,13 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public List<String> getGroupFunctions() {
         return groupFunctions;
+    }
+
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        DBSDataContainer dataContainer = getDataContainer();
+        return dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer().getProject();
     }
 
     @Override

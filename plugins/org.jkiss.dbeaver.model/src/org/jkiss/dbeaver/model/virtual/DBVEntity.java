@@ -294,14 +294,22 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     void addVirtualAttribute(DBVEntityAttribute attribute) {
+        addVirtualAttribute(attribute, true);
+    }
+
+    void addVirtualAttribute(DBVEntityAttribute attribute, boolean reflect) {
         if (entityAttributes == null) {
             entityAttributes = new ArrayList<>();
         }
         entityAttributes.add(attribute);
+        if (reflect) {
+            DBUtils.fireObjectUpdate(this);
+        }
     }
 
-    void resetVirtualAttribute(DBVEntityAttribute attribute) {
+    void removeVirtualAttribute(DBVEntityAttribute attribute) {
         entityAttributes.remove(attribute);
+        DBUtils.fireObjectUpdate(this, attribute);
     }
 
     @Nullable
@@ -331,15 +339,24 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     public void addConstraint(DBVEntityConstraint constraint) {
+        addConstraint(constraint, true);
+    }
+
+    public void addConstraint(DBVEntityConstraint constraint, boolean reflect) {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
         entityConstraints.add(constraint);
+
+        if (reflect) {
+            DBUtils.fireObjectUpdate(this, constraint);
+        }
     }
 
     public void removeConstraint(DBVEntityConstraint constraint) {
         if (entityConstraints != null) {
             entityConstraints.remove(constraint);
+            DBUtils.fireObjectUpdate(this, constraint);
         }
     }
 
@@ -365,11 +382,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             entityForeignKeys = new ArrayList<>();
         }
         entityForeignKeys.add(foreignKey);
+        DBUtils.fireObjectUpdate(this, foreignKey);
     }
 
     public synchronized void removeForeignKey(@NotNull DBVEntityForeignKey foreignKey) {
         if (entityForeignKeys != null) {
             entityForeignKeys.remove(foreignKey);
+            DBUtils.fireObjectUpdate(this, foreignKey);
         }
     }
 
