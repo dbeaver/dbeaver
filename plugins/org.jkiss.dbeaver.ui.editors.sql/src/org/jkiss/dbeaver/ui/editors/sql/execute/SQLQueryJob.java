@@ -111,6 +111,7 @@ public class SQLQueryJob extends DataSourceJob
     private boolean skipConfirmation;
     private int fetchSize;
     private long readFlags;
+    private boolean ignoreParameters;
 
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
@@ -619,6 +620,10 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     public boolean prepareStatementParameters(SQLQuery sqlStatement) {
+        if (ignoreParameters) {
+            return true;
+        }
+
         // Bind parameters
         List<SQLQueryParameter> parameters = sqlStatement.getParameters();
         if (CommonUtils.isEmpty(parameters)) {
@@ -632,6 +637,9 @@ public class SQLQueryJob extends DataSourceJob
             }
         }
 
+        if (ignoreParameters) {
+            return true;
+        }
         // Set values for all parameters
         // Replace parameter tokens with parameter values
         String query = sqlStatement.getText();
@@ -670,17 +678,14 @@ public class SQLQueryJob extends DataSourceJob
             return true;
         }
 
-        boolean okPressed = new UIConfirmation() {
-                @Override
-                public Boolean runTask() {
-                SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                    partSite.getShell(),
-                    parameters);
-                return (dialog.open() == IDialogConstants.OK_ID);
-            }
-        }.execute();
+        int paramsResult = UITask.run(() -> {
+            SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
+                partSite.getShell(),
+                parameters);
+            return dialog.open();
+        });
 
-        if (okPressed) {
+        if (paramsResult == IDialogConstants.OK_ID) {
             // Save values back to script context
             for (SQLQueryParameter param : parameters) {
                 if (param.isNamed() && scriptContext.hasVariable(param.getVarName())) {
@@ -688,8 +693,12 @@ public class SQLQueryJob extends DataSourceJob
                     scriptContext.setVariable(param.getVarName(), strValue);
                 }
             }
+            return true;
+        } else if (paramsResult == IDialogConstants.IGNORE_ID) {
+            ignoreParameters = true;
+            return true;
         }
-        return okPressed;
+        return false;
     }
 
     private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, SQLQueryResult.ExecuteResult executeResult, DBDDataReceiver dataReceiver, boolean updateStatistics)
