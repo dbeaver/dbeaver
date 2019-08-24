@@ -471,6 +471,28 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
+                <driver
+                    id="sqlite_jdbc_crypt"
+                    label="SQLite (Encrypted)"
+                    icon="icons/sqlite_icon.png"
+                    iconBig="icons/sqlite_icon_big.png"
+                    class="org.sqlite.JDBC"
+                    sampleURL="jdbc:sqlite:{file}"
+                    defaultPort=""
+                    webURL="https://github.com/Willena/sqlite-jdbc-crypt"
+                    propertiesURL="https://www.sqlite.org/pragma.html"
+                    embedded="true"
+                    description="SQLite JDBC Driver with encryption and authentication support"
+                    categories="sql,embedded">
+
+                    <file type="jar" path="maven:/io.github.willena:sqlite-jdbc:RELEASE"/>
+
+                    <parameter name="supports-references" value="true"/>
+                    <parameter name="supports-struct-cache" value="false"/>
+                    <parameter name="supports-indexes" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
 
                 <driver
                     id="teradata"
