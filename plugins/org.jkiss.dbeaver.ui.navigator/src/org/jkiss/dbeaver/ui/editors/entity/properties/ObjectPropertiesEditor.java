@@ -254,6 +254,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             if (sashSize.x <= 0 || sashSize.y <= 0) {
                 // This may happen if EntityEditor created with some other active editor (i.e. props editor not visible)
                 sashSize = getParentSize(sashForm);
+                sashSize.y += 20;
             }
             if (sashSize.x > 0 && sashSize.y > 0) {
                 float ratio = (float) propsSize.y / (float) sashSize.y;
