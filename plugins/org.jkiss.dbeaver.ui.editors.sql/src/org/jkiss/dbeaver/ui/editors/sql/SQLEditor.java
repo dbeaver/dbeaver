@@ -1582,7 +1582,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         // Transform query parameters
         if (sqlQuery != null) {
-            new SQLQueryJob(
+            SQLQueryJob queryJob = new SQLQueryJob(
                 getSite(),
                 "Plan query",
                 getExecutionContext(),
@@ -1590,8 +1590,10 @@ public class SQLEditor extends SQLEditorBase implements
                 Collections.emptyList(),
                 this.globalScriptContext,
                 null,
-                null)
-                .transformQueryWithParameters(sqlQuery);
+                null);
+            if (!queryJob.transformQueryWithParameters(sqlQuery)) {
+                return null;
+            }
         }
         
         ExplainPlanViewer planView = null;
