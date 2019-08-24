@@ -250,7 +250,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
                     for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
-                        if (isShowHiddenAttributes() || !DBUtils.isHiddenObject(attr)) {
+                        if (isShowHiddenAttributes() || !DBUtils.isHiddenObject(attr) || DBUtils.isRowIdAttribute(attr)) {
                             attrList.add(attr);
                         }
                     }
