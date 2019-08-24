@@ -113,12 +113,6 @@ public class EditConstraintPage extends AttributesSelectorPage {
         return pageContents;
     }
 
-    @Override
-    protected boolean isShowHiddenAttributes() {
-        // Show hidden attributes for logical (virtual) constraints
-        return constraint instanceof DBVEntityConstraint;
-    }
-
     private void toggleEditAreas() {
         final boolean custom = selectedConstraintType.isCustom();
         columnsGroup.setVisible(!custom);
