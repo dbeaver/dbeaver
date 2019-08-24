@@ -901,7 +901,7 @@
                     defaultPort="8080"
                     description="Facebook Presto (prestodb) JDBC driver"
                     webURL="https://prestodb.io/"
-                    categories="sql,analytic,bigdata">
+                    categories="sql,analytic,bigdata,hadoop">
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
@@ -918,7 +918,7 @@
                         defaultPort="8080"
                         description="Presto (prestosql) JDBC driver"
                         webURL="https://prestosql.io/"
-                        categories="sql,analytic,bigdata">
+                        categories="sql,analytic,bigdata,hadoop">
                     <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
@@ -1090,6 +1090,21 @@
                         categories="timeseries">
                     <file type="jar" path="https://github.com/KxSystems/kdb/raw/master/c/jdbc.jar"/>
                 </driver>
+
+                <!-- Qubole
+                <driver
+                    id="qubole_jdbc"
+                    label="Qubole"
+                    icon="icons/qubole_icon.png"
+                    iconBig="icons/qubole_icon_big.png"
+                    class="com.qubole.jdbc.jdbc41.core.QDriver"
+                    sampleURL="jdbc:qubole://{server}/{host}[/{database}]"
+                    description="Qubole JDBC driver"
+                    webURL="https://docs.qubole.com/en/latest/connectivity-options/use-qubole-drivers/JDBC-driver/use-jdbc-driver.html"
+                    categories="bigdata,hadoop">
+                    <file type="jar" path="maven:/com.qubole:jdbc:RELEASE"/>
+                </driver>
+                -->
 
                 <!-- Legacy drivers -->
 
@@ -1486,6 +1501,11 @@
         <repository id="cratedb-maven-repo" name="CrateDB Repository" url="https://dl.bintray.com/crate/crate" order="21">
             <scope group="io.crate"/>
         </repository>
+<!--
+        <repository id="s3-maven-qubole-releases" name="Qubole Release Repository on S3" url="http://maven-qubole.s3-website-us-east-1.amazonaws.com/maven/release">
+            <scope group="com.qubole"/>
+        </repository>
+-->
     </extension>
 
 </plugin>
