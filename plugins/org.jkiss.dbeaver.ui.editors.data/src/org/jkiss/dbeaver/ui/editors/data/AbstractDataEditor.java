@@ -56,11 +56,14 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     private boolean loaded = false;
     //private boolean running = false;
     private Composite parent;
+    private DBPProject project;
 
     @Override
     public void createPartControl(Composite parent)
     {
         this.parent = parent;
+        // Cache project here. It may be inaccessible thru db object in case of later disconnect
+        this.project = getDatabaseObject().getDataSource().getContainer().getProject();
     }
 
     @Override
@@ -119,7 +122,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     @NotNull
     @Override
     public DBPProject getProject() {
-        return getDatabaseObject().getDataSource().getContainer().getProject();
+        return project;
     }
 
     @Nullable
