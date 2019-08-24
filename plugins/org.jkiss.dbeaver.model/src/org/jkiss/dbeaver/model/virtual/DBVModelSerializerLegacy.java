@@ -255,7 +255,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
                             curEntity,
                             DBSEntityConstraintType.VIRTUAL_KEY,
                             atts.getValue(ATTR_NAME));
-                        curEntity.addConstraint(curConstraint);
+                        curEntity.addConstraint(curConstraint, false);
                     }
                     break;
                 case TAG_ATTRIBUTE:
@@ -267,7 +267,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
                         curAttribute = childAttribute;
                     } else if (curEntity != null) {
                         curAttribute = new DBVEntityAttribute(curEntity, null, atts.getValue(ATTR_NAME));
-                        curEntity.addVirtualAttribute(curAttribute);
+                        curEntity.addVirtualAttribute(curAttribute, false);
                     }
                     break;
                 case TAG_TRANSFORM:

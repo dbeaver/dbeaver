@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -113,6 +114,12 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
             resultSetView = null;
         }
         super.dispose();
+    }
+
+    @NotNull
+    @Override
+    public DBPProject getProject() {
+        return getDatabaseObject().getDataSource().getContainer().getProject();
     }
 
     @Nullable

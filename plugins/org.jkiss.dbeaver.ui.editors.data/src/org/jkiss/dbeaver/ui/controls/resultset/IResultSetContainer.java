@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -29,6 +30,13 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
  * Result set provider
  */
 public interface IResultSetContainer {
+
+    /**
+     * Owner project.
+     * May be null if results container is hosted by some external file editor.
+     */
+    @Nullable
+    DBPProject getProject();
 
     /**
      * Execution context which will be used by Results viewer to read data

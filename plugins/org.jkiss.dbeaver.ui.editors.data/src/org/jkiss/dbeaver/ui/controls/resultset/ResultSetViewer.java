@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -73,10 +74,7 @@ import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
-import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
-import org.jkiss.dbeaver.model.virtual.DBVTransformSettings;
-import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -126,7 +124,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  */
 public class ResultSetViewer extends Viewer
-    implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable
+    implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable, DBPEventListener
 {
     private static final Log log = Log.getLog(ResultSetViewer.class);
 
@@ -355,6 +353,11 @@ public class ResultSetViewer extends Viewer
         }
 
         updateFiltersText();
+
+        DBPProject project = container.getProject();
+        if (project != null) {
+            project.getDataSourceRegistry().addDataSourceListener(this);
+        }
     }
 
     @Override
@@ -417,13 +420,18 @@ public class ResultSetViewer extends Viewer
         }
         DataFilterRegistry.getInstance().saveDataFilter(getDataContainer(), model.getDataFilter());
 
-        DBeaverNotifications.showNotification(DBeaverNotifications.NT_GENERAL,
-            "Data filter was saved",
-            filtersPanel.getFilterText(),
-            DBPMessageType.INFORMATION, null);
+        if (filtersPanel != null) {
+            DBeaverNotifications.showNotification(DBeaverNotifications.NT_GENERAL,
+                "Data filter was saved",
+                filtersPanel.getFilterText(),
+                DBPMessageType.INFORMATION, null);
+        }
     }
 
     void switchFilterFocus() {
+        if (filtersPanel == null) {
+            return;
+        }
         boolean filterFocused = filtersPanel.getEditControl().isFocusControl();
         if (filterFocused) {
             if (activePresentation != null) {
@@ -772,7 +780,9 @@ public class ResultSetViewer extends Viewer
                             }
                             panelButton.setChecked(!isPanelVisible);
                             panelsButton.setChecked(isPanelsVisible());
-                            panelSwitchFolder.redraw();
+                            if (panelSwitchFolder != null) {
+                                panelSwitchFolder.redraw();
+                            }
                         }
                     });
                     panelButton.setChecked(panelsVisible && isPanelVisible(panel.getId()));
@@ -1673,6 +1683,11 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        DBPProject project = container.getProject();
+        if (project != null) {
+            project.getDataSourceRegistry().removeDataSourceListener(this);
+        }
+
         savePresentationSettings();
         clearData();
 
@@ -2495,6 +2510,14 @@ public class ResultSetViewer extends Viewer
         return refTablesMenu;
     }
 
+    @Override
+    public void handleDataSourceEvent(DBPEvent event) {
+        if (event.getObject() instanceof DBVEntity && event.getData() instanceof DBVEntityForeignKey && event.getObject() == getVirtualEntity()) {
+            // Virtual foreign key change - let's refresh
+            refreshData(null);
+        }
+    }
+
 
     private class TransformerAction extends Action {
         private final DBDAttributeBinding attribute;
@@ -2739,9 +2762,6 @@ public class ResultSetViewer extends Viewer
             throw new DBException("Referenced constraint [" + refConstraint + "] is not a referrer");
         }
         DBSEntity targetEntity = refConstraint.getParentObject();
-        if (targetEntity == null) {
-            throw new DBException("Null constraint parent");
-        }
         targetEntity = DBVUtils.getRealEntity(monitor, targetEntity);
         if (!(targetEntity instanceof DBSDataContainer)) {
             throw new DBException("Entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] is not a data container");
@@ -2768,11 +2788,14 @@ public class ResultSetViewer extends Viewer
                 return;
             }
 
-            DBDAttributeConstraint constraint = new DBDAttributeConstraint(refAttr.getAttribute(), DBDAttributeConstraint.NULL_VISUAL_POSITION);
-            constraint.setVisible(true);
-            constraints.add(constraint);
+            DBSEntityAttribute attribute = refAttr.getAttribute();
+            if (attribute != null) {
+                DBDAttributeConstraint constraint = new DBDAttributeConstraint(attribute, DBDAttributeConstraint.NULL_VISUAL_POSITION);
+                constraint.setVisible(true);
+                constraints.add(constraint);
+                createFilterConstraint(rows, ownBinding, constraint);
+            }
 
-            createFilterConstraint(rows, ownBinding, constraint);
         }
         // Save cur data filter in state
         if (curState == null) {
@@ -2799,9 +2822,6 @@ public class ResultSetViewer extends Viewer
         }
 
         DBSEntity targetEntity = association.getParentObject();
-        if (targetEntity == null) {
-            throw new DBException("Null constraint parent");
-        }
         //DBSDataContainer dataContainer = DBUtils.getAdapter(DBSDataContainer.class, targetEntity);
         targetEntity = DBVUtils.getRealEntity(monitor, targetEntity);
         if (!(targetEntity instanceof DBSDataContainer)) {
@@ -2893,9 +2913,7 @@ public class ResultSetViewer extends Viewer
                         viewerPanel.getShell(),
                         ResultSetPreferences.CONFIRM_RS_PANEL_RESET,
                         ConfirmationDialog.CONFIRM);
-                    if (result == IDialogConstants.CANCEL_ID) {
-                        return false;
-                    }
+                    return result != IDialogConstants.CANCEL_ID;
                 }
                 return true;
             }
@@ -3454,7 +3472,6 @@ public class ResultSetViewer extends Viewer
      * In some cases there may be many frequent data read requests (e.g. when user works
      * with references panel). We need to execute only current one and the last one. All
      * intrmediate data read requests must be ignored.
-     * @param dataPumpJob
      */
     private void queueDataPump(ResultSetJobDataRead dataPumpJob) {
         synchronized (dataPumpJobQueue) {
@@ -3764,9 +3781,14 @@ public class ResultSetViewer extends Viewer
     }
 
     private DBVEntity getVirtualEntity(DBSEntity entity) {
-        return entity != null ?
-            DBVUtils.getVirtualEntity(entity, true) :
-            DBVUtils.getVirtualEntity(getDataContainer(), true);
+        if (entity != null) {
+            return DBVUtils.getVirtualEntity(entity, true);
+        }
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer != null) {
+            return DBVUtils.getVirtualEntity(dataContainer, true);
+        }
+        return null;
     }
 
     private void checkEntityIdentifiers(ResultSetPersister persister) throws DBException

@@ -167,7 +167,7 @@
         </editor>
 
         <editor
-            id="org.jkiss.dbeaver.ui.editors.data.VirtualStructureEditor"
+            id="db-logical-structure"
             class="org.jkiss.dbeaver.ui.editors.data.VirtualStructureEditor"
             objectType="org.jkiss.dbeaver.model.struct.DBSEntity"
             main="false"

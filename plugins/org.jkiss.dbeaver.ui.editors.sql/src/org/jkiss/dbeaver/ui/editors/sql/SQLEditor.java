@@ -2722,6 +2722,12 @@ public class SQLEditor extends SQLEditorBase implements
             tabItem.setData(DATA_PINNED, pinned);
         }
 
+        @NotNull
+        @Override
+        public DBPProject getProject() {
+            return SQLEditor.this.getProject();
+        }
+
         @Override
         public DBCExecutionContext getExecutionContext() {
             return SQLEditor.this.getExecutionContext();
