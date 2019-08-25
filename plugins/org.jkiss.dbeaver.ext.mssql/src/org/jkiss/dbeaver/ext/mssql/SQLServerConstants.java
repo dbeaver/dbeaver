@@ -91,4 +91,6 @@ public class SQLServerConstants {
     @Deprecated
     public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
 
+    public static final CharSequence SQL_DW_SERVER_LABEL = "SQL Data Warehouse";
+
 }
