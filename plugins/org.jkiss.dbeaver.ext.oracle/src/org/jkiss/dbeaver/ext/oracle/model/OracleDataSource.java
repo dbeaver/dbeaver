@@ -269,7 +269,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new JDBCDataSourceInfo(metaData);
     }
 

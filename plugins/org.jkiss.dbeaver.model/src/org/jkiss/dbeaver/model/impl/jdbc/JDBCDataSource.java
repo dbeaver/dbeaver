@@ -365,7 +365,7 @@ public abstract class JDBCDataSource
             }
 
             try {
-                dataSourceInfo = createDataSourceInfo(metaData);
+                dataSourceInfo = createDataSourceInfo(monitor, metaData);
             } catch (Throwable e) {
                 log.error("Error obtaining database info");
             }
@@ -624,7 +624,7 @@ public abstract class JDBCDataSource
         return null;
     }
 
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
     {
         return new JDBCDataSourceInfo(metaData);
     }

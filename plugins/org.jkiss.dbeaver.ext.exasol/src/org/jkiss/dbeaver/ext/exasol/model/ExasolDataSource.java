@@ -446,7 +446,7 @@ public class ExasolDataSource extends JDBCDataSource
 
 	@Override
 	protected DBPDataSourceInfo createDataSourceInfo(
-			@NotNull JDBCDatabaseMetaData metaData)
+        DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
 	{
 		final ExasolDataSourceInfo info = new ExasolDataSourceInfo(metaData);
 

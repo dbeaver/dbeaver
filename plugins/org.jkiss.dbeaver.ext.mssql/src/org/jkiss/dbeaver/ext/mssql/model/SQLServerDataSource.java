@@ -56,6 +56,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
 
     private String activeDatabaseName;
     private boolean supportsColumnProperty;
+    private String serverVersion;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -68,9 +69,29 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
     {
-        return new SQLServerDataSourceInfo(this, metaData);
+        SQLServerDataSourceInfo info = new SQLServerDataSourceInfo(this, metaData);
+        if (getServerVersion(monitor).contains(SQLServerConstants.SQL_DW_SERVER_LABEL)) {
+            info.setSupportsResultSetScroll(false);
+        }
+        return info;
+    }
+
+    public String getServerVersion() {
+        return serverVersion;
+    }
+
+    String getServerVersion(DBRProgressMonitor monitor) {
+        if (serverVersion == null) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server version")) {
+                serverVersion = JDBCUtils.queryString(session, "SELECT @@VERSION");
+            } catch (Exception e) {
+                log.debug("Error reading SQL Server version: " + e.getMessage());
+                serverVersion = "";
+            }
+        }
+        return serverVersion;
     }
 
     @Override
