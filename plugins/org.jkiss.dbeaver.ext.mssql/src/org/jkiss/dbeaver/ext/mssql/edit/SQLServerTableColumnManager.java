@@ -28,8 +28,10 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 import java.util.Map;
@@ -68,10 +71,6 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
     protected final ColumnModifier<SQLServerTableColumn> SQLServerDefaultModifier = (monitor, column, sql, command) -> {
         if (!column.isPersisted()) {
-            DefaultModifier.appendModifier(monitor, column, sql, command);
-        } else {
-            // Modify existing column
-            // TODO: implement default constraint create/drop
             DefaultModifier.appendModifier(monitor, column, sql, command);
         }
     };
@@ -109,12 +108,36 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final SQLServerTableColumn column = command.getObject();
+        int totalProps = command.getProperties().size();
         boolean hasComment = command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null;
-        if (!hasComment || command.getProperties().size() > 1) {
-            actionList.add(new SQLDatabasePersistAction(
-                "Modify column",
-                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
-                " ALTER COLUMN " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
+        if (hasComment) totalProps--;
+        if (column.isPersisted() && command.hasProperty("defaultValue")) {
+            totalProps--;
+
+            // [Re]create default constraint. Classic MS-style pain in the ass
+            String oldConstraintName = null;
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, column, "Read default constraint")) {
+                oldConstraintName = JDBCUtils.queryString(session, "SELECT name FROM " +
+                    SQLServerUtils.getSystemTableName(column.getTable().getDatabase(), "DEFAULT_CONSTRAINTS") +
+                    " WHERE PARENT_OBJECT_ID = ? AND PARENT_COLUMN_ID = ?", column.getTable().getObjectId(), column.getObjectId());
+            } catch (SQLException e) {
+                log.error(e);
+            }
+
+            if (oldConstraintName != null) {
+                actionList.add(new SQLDatabasePersistAction("Drop default constraint",
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP CONSTRAINT " + DBUtils.getQuotedIdentifier(column.getDataSource(), oldConstraintName)  //$NON-NLS-1$
+                    ));
+            }
+
+            String defaultValue = column.getDefaultValue();
+            if (!CommonUtils.isEmpty(defaultValue)) {
+                StringBuilder sql = new StringBuilder();
+                sql.append("ALTER TABLE ").append(column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ADD ");
+                DefaultModifier.appendModifier(monitor, column, sql, command);
+                sql.append(" FOR ").append(DBUtils.getQuotedIdentifier(column));
+                actionList.add(new SQLDatabasePersistAction("Alter default value", sql.toString())); //$NON-NLS-1$
+            }
         }
         if (hasComment) {
             boolean isUpdate = SQLServerUtils.isCommentSet(
@@ -131,6 +154,12 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
                         " 'user', '" + column.getTable().getSchema().getName() + "'," +
                         " 'table', '" + column.getTable().getName() + "'," +
                         " 'column', '" + column.getName() + "'"));
+        }
+        if (totalProps > 0) {
+            actionList.add(new SQLDatabasePersistAction(
+                "Modify column",
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
+                    " ALTER COLUMN " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
         }
     }
 
