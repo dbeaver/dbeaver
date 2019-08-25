@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -126,9 +127,13 @@ public class DataExporterCSV extends StreamExporterAbstract {
     {
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             DBDAttributeBinding column = columns.get(i);
-            String colName = column.getLabel();
-            if (CommonUtils.isEmpty(colName)) {
-                colName = column.getName();
+            String colLabel = column.getLabel();
+            String colName = column.getName();
+            if (CommonUtils.equalObjects(colLabel, colName)) {
+                colName = DBUtils.getObjectFullName(column, DBPEvaluationContext.UI);
+            } else if (!CommonUtils.isEmpty(colLabel)) {
+                // Label has higher priority
+                colName = colLabel;
             }
             writeCellValue(colName, true);
             if (i < columnsSize - 1) {
