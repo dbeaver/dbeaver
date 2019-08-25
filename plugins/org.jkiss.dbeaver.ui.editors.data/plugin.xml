@@ -172,7 +172,7 @@
             objectType="org.jkiss.dbeaver.model.struct.DBSEntity"
             main="false"
             label="%editor.virtual-structure.name"
-            description="editor.virtual-structure.description"
+            description="%editor.virtual-structure.description"
             position="additions_end"
             type="folder"
             embeddable="false"
