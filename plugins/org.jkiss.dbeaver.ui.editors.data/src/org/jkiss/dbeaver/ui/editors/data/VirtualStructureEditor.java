@@ -146,6 +146,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         ((GridLayout)composite.getLayout()).makeColumnsEqualWidth = true;
 
         Composite keysComposite = UIUtils.createComposite(composite, 2);
+        ((GridLayout)keysComposite.getLayout()).makeColumnsEqualWidth = true;
         keysComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         //createColumnsPage(tabFolder);
         createUniqueKeysPage(keysComposite);
