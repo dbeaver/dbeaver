@@ -142,22 +142,22 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createEditorUI() {
-        Composite composite = UIUtils.createComposite(parent, 2);
+        Composite composite = UIUtils.createComposite(parent, 1);
         ((GridLayout)composite.getLayout()).makeColumnsEqualWidth = true;
 
-        Composite keysComposite = UIUtils.createComposite(composite, 1);
+        Composite keysComposite = UIUtils.createComposite(composite, 2);
         keysComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         //createColumnsPage(tabFolder);
         createUniqueKeysPage(keysComposite);
         createForeignKeysPage(keysComposite);
         //createDictionaryPage(composite);
 
-        Composite attrsComposite = UIUtils.createComposite(composite, 1);
-        attrsComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+//        Composite attrsComposite = UIUtils.createComposite(composite, 1);
+//        attrsComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         UIUtils.createInfoLabel(composite, "Entity logical structure exists only on the client-side, not in a real database." +
             "\nYou can define virtual unique/foreign keys even if physical database " +
-            "doesn't have or doesn't support them.", GridData.FILL_HORIZONTAL, 2);
+            "doesn't have or doesn't support them.", GridData.FILL_HORIZONTAL, 1);
         parent.layout(true, true);
 
         DBSEntity dbObject = getDatabaseObject();
