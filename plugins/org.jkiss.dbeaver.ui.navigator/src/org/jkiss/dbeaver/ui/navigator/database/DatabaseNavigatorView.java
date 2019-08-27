@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
@@ -77,7 +78,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     {
         UIUtils.asyncExec(() -> {
             getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));
-            getSite().getSelectionProvider().setSelection(getNavigatorTree().getViewer().getSelection());
+            getSite().getSelectionProvider().setSelection(new StructuredSelection());
         });
 
     }
