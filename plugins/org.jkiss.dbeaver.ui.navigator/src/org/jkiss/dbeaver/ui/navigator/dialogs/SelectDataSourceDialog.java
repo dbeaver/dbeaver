@@ -156,7 +156,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 try {
                     treeViewer.refresh();
                     if (showConnected) {
-                        treeViewer.expandAll(true);
+                        treeViewer.expandAll();
                     }
                 } finally {
                     treeViewer.getControl().setRedraw(true);
