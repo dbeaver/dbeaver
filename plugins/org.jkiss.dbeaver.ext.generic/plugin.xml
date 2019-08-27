@@ -318,8 +318,12 @@
                     categories="sql,embedded">
 
                     <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
 
                     <file type="jar" path="drivers/derby/derby.jar" bundle="drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derbytools.jar" bundle="drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derbyshared.jar" bundle="drivers.derby"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
 
                     <parameter name="create-url-param" value=";create=true"/>
@@ -344,8 +348,10 @@
                     categories="sql">
 
                     <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
 
                     <file type="jar" path="drivers/derby/derbyclient.jar" bundle="drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derbyshared.jar" bundle="drivers.derby"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
