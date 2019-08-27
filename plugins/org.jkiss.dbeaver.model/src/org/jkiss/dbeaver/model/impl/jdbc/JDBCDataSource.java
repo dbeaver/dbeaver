@@ -319,15 +319,16 @@ public abstract class JDBCDataSource
         return jdbcFactory;
     }
 
+    @NotNull
     @Override
     public JDBCRemoteInstance getDefaultInstance() {
         return defaultRemoteInstance;
     }
 
+    @NotNull
     @Override
     public List<? extends JDBCRemoteInstance> getAvailableInstances() {
-        JDBCRemoteInstance defaultInstance = getDefaultInstance();
-        return defaultInstance == null ? Collections.emptyList() : Collections.singletonList(defaultInstance);
+        return Collections.singletonList(getDefaultInstance());
     }
 
     @Override

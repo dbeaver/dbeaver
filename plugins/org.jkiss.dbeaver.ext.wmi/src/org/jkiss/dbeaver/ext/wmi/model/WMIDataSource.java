@@ -191,11 +191,13 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
         QMUtils.getDefaultHandler().handleContextClose(this);
     }
 
+    @NotNull
     @Override
     public DBSInstance getDefaultInstance() {
         return this;
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSInstance> getAvailableInstances() {
         return Collections.singletonList(this);
