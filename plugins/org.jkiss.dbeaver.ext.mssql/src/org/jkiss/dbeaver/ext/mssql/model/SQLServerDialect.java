@@ -128,9 +128,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
                 case "char":
                 case "nchar":
                 case "varchar":
-                case "nvarchar":
-                case "text":
-                case "ntext": {
+                case "nvarchar": {
                     long maxLength = column.getMaxLength();
                     if (maxLength == 0) {
                         return null;
@@ -140,6 +138,9 @@ public class SQLServerDialect extends JDBCSQLDialect {
                         return "(" + maxLength + ")";
                     }
                 }
+                case "text":
+                case "ntext":
+                    // text and ntext don't have max length
                 default:
                     return null;
             }
