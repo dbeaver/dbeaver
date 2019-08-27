@@ -348,9 +348,11 @@
                     categories="sql">
 
                     <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
 
                     <file type="jar" path="drivers/derby/derbyclient.jar" bundle="drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derbytools.jar" bundle="drivers.derby"/>
                     <file type="jar" path="drivers/derby/derbyshared.jar" bundle="drivers.derby"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
 
