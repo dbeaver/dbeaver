@@ -213,7 +213,7 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             tree.setRedraw(false);
             try {
-                PropertyTreeViewer.this.expandAll(true);
+                PropertyTreeViewer.this.expandAll();
                 UIUtils.packColumns(tree, true, new float[]{0.1f, 0.9f});
 
                 switch (expandMode) {
@@ -229,7 +229,7 @@ public class PropertyTreeViewer extends TreeViewer {
                                 PropertyTreeViewer.this.expandToLevel(first, ALL_LEVELS);
                             }
                         } else {
-                            PropertyTreeViewer.this.expandAll(true);
+                            PropertyTreeViewer.this.expandAll();
                         }
                         break;
                 }

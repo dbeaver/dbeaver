@@ -37,6 +37,7 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -1932,5 +1933,16 @@ public class UIUtils {
         return control instanceof Text ?
             ((Text) control).getCharCount() == 0 :
             control instanceof StyledText && ((StyledText) control).getCharCount() == 0;
+    }
+
+    public static void expandAll(AbstractTreeViewer treeViewer) {
+        Control control = treeViewer.getControl();
+        control.setRedraw(false);
+        try {
+            // Do not use expandAll(true) as it is not supported by Eclipse versions before 2019
+            treeViewer.expandAll();
+        } finally {
+            control.setRedraw(true);
+        }
     }
 }
