@@ -50,55 +50,60 @@ public class DataSourcePropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof DBPContextProvider)) {
+        try {
+            if (!(receiver instanceof DBPContextProvider)) {
+                return false;
+            }
+            DBPContextProvider contextProvider = (DBPContextProvider)receiver;
+            @Nullable
+            DBCExecutionContext context = contextProvider.getExecutionContext();
+            switch (property) {
+                case PROP_CONNECTED:
+                    boolean isConnected;
+                    if (context != null) {
+                        isConnected = context.getDataSource().getContainer().isConnected();
+                    } else if (receiver instanceof IDataSourceContainerProvider) {
+                        DBPDataSourceContainer container = ((IDataSourceContainerProvider) receiver).getDataSourceContainer();
+                        isConnected = container != null && container.isConnected();
+                    } else {
+                        isConnected = false;
+                    }
+                    boolean checkConnected = Boolean.TRUE.equals(expectedValue);
+                    return checkConnected ? isConnected : !isConnected;
+                case PROP_TRANSACTIONAL: {
+                    if (context == null) {
+                        return false;
+                    }
+                    if (!context.isConnected()) {
+                        return Boolean.FALSE.equals(expectedValue);
+                    }
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                    try {
+                        return txnManager != null && Boolean.valueOf(!txnManager.isAutoCommit()).equals(expectedValue);
+                    } catch (DBCException e) {
+                        log.debug("Error checking auto-commit state", e);
+                        return false;
+                    }
+                }
+                case PROP_SUPPORTS_TRANSACTIONS: {
+                    if (context == null || !context.isConnected()) {
+                        return false;
+                    }
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                    return txnManager != null && txnManager.isEnabled();
+                }
+                case PROP_TRANSACTION_ACTIVE:
+                    if (context != null && context.isConnected()) {
+                        boolean active = QMUtils.isTransactionActive(context);
+                        return Boolean.valueOf(active).equals(expectedValue);
+                    }
+                    return Boolean.FALSE.equals(expectedValue);
+            }
+            return false;
+        } catch (Exception e) {
+            log.debug("Error testing property " + property + ": " + e.getMessage());
             return false;
         }
-        DBPContextProvider contextProvider = (DBPContextProvider)receiver;
-        @Nullable
-        DBCExecutionContext context = contextProvider.getExecutionContext();
-        switch (property) {
-            case PROP_CONNECTED:
-                boolean isConnected;
-                if (context != null) {
-                    isConnected = context.getDataSource().getContainer().isConnected();
-                } else if (receiver instanceof IDataSourceContainerProvider) {
-                    DBPDataSourceContainer container = ((IDataSourceContainerProvider) receiver).getDataSourceContainer();
-                    isConnected = container != null && container.isConnected();
-                } else {
-                    isConnected = false;
-                }
-                boolean checkConnected = Boolean.TRUE.equals(expectedValue);
-                return checkConnected ? isConnected : !isConnected;
-            case PROP_TRANSACTIONAL: {
-                if (context == null) {
-                    return false;
-                }
-                if (!context.isConnected()) {
-                    return Boolean.FALSE.equals(expectedValue);
-                }
-                DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                try {
-                    return txnManager != null && Boolean.valueOf(!txnManager.isAutoCommit()).equals(expectedValue);
-                } catch (DBCException e) {
-                    log.debug("Error checking auto-commit state", e);
-                    return false;
-                }
-            }
-            case PROP_SUPPORTS_TRANSACTIONS: {
-                if (context == null || !context.isConnected()) {
-                    return false;
-                }
-                DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                return txnManager != null && txnManager.isEnabled();
-            }
-            case PROP_TRANSACTION_ACTIVE:
-                if (context != null && context.isConnected()) {
-                    boolean active = QMUtils.isTransactionActive(context);
-                    return Boolean.valueOf(active).equals(expectedValue);
-                }
-                return Boolean.FALSE.equals(expectedValue);
-        }
-        return false;
     }
 
     public static void firePropertyChange(String propName)
