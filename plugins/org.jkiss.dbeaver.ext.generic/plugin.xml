@@ -479,6 +479,7 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
+<!--            SQLiteCrypt commented because it doesn't make sense without proper configurator
                 <driver
                     id="sqlite_jdbc_crypt"
                     label="SQLite (Encrypted)"
@@ -501,6 +502,7 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
+-->
 
                 <driver
                     id="teradata"
