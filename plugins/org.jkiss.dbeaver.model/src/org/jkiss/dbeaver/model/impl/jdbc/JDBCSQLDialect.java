@@ -49,7 +49,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     private boolean isCatalogAtStart;
     private int catalogUsage;
     protected int schemaUsage;
-    protected String validCharacters;
+    protected String validCharacters = "";
     private boolean supportsUnquotedMixedCase;
     private boolean supportsQuotedMixedCase;
     @NotNull
