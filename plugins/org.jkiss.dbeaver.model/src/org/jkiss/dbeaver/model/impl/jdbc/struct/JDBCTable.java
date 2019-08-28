@@ -769,21 +769,21 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     query.append(" LIKE ?");
                 }
             }
-        }
-        // Add desc columns conditions
-        if (searchInDesc) {
-            boolean hasCondition = searchInKeys;
-            for (DBSEntityAttribute descAttr : descAttributes) {
-                if (descAttr.getDataKind() == DBPDataKind.STRING) {
-                    if (hasCondition) {
-                        query.append(" OR ");
+            // Add desc columns conditions
+            if (searchInDesc) {
+                boolean hasCondition = searchInKeys;
+                for (DBSEntityAttribute descAttr : descAttributes) {
+                    if (descAttr.getDataKind() == DBPDataKind.STRING) {
+                        if (hasCondition) {
+                            query.append(" OR ");
+                        }
+                        query.append(DBUtils.getQuotedIdentifier(descAttr)).append(" LIKE ?");
+                        hasCondition = true;
                     }
-                    query.append(DBUtils.getQuotedIdentifier(descAttr)).append(" LIKE ?");
-                    hasCondition = true;
                 }
             }
+            if (hasCond) query.append(")");
         }
-        if (hasCond) query.append(")");
         query.append(" ORDER BY ");
         if (sortByValue) {
             query.append(DBUtils.getQuotedIdentifier(keyColumn));
