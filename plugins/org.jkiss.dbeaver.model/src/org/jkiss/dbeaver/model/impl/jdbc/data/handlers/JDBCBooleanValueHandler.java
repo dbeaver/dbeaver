@@ -90,7 +90,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler implements
     }
 
     @Override
-    public Object generateDefaultValue(DBSTypedObject type) {
+    public Object generateDefaultValue(DBCSession session, DBSTypedObject type) {
         return false;
     }
 
