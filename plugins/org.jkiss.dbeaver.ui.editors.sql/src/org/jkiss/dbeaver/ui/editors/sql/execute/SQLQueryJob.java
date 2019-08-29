@@ -454,9 +454,7 @@ public class SQLQueryJob extends DataSourceJob
             sqlQuery,
             rsOffset,
             rsMaxRows);
-        if (fetchSize > 0) {
-            dbcStatement.setResultsFetchSize(fetchSize);
-        }
+        DBExecUtils.setStatementFetchSize(dbcStatement, rsOffset, rsMaxRows, fetchSize);
         curStatement = dbcStatement;
 
         int statementTimeout = getDataSourceContainer().getPreferenceStore().getInt(SQLPreferenceConstants.STATEMENT_TIMEOUT);
