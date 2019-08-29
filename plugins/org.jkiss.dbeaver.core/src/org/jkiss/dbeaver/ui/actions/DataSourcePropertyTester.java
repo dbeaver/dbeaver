@@ -94,8 +94,10 @@ public class DataSourcePropertyTester extends PropertyTester
                 }
                 case PROP_TRANSACTION_ACTIVE:
                     if (context != null && context.isConnected()) {
-                        boolean active = QMUtils.isTransactionActive(context);
-                        return Boolean.valueOf(active).equals(expectedValue);
+                        DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                        return txnManager != null && !txnManager.isAutoCommit();
+//                        boolean active = QMUtils.isTransactionActive(context);
+//                        return Boolean.valueOf(active).equals(expectedValue);
                     }
                     return Boolean.FALSE.equals(expectedValue);
             }
