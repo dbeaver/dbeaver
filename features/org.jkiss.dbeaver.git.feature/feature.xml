@@ -17,7 +17,7 @@
       %license
    </license>
 
-   <plugin id="com.jcraft.jzlib" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <!--<plugin id="com.jcraft.jzlib" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>-->
    <plugin id="javaewah" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.apache.sshd.core" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.apache.sshd.sftp" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
