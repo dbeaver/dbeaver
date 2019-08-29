@@ -364,7 +364,11 @@ public class CommonUtils {
             try {
                 return Long.parseLong(toString(object));
             } catch (NumberFormatException e) {
-                return defValue;
+                try {
+                    return (int)Double.parseDouble(toString(object));
+                } catch (NumberFormatException e1) {
+                    return defValue;
+                }
             }
         }
     }
