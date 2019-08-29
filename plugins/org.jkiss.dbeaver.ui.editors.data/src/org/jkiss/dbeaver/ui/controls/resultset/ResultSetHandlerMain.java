@@ -509,7 +509,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 options.setSelectedRows(selectedRows);
                 options.setSelectedColumns(selectedAttributes);
 
-                ResultSetDataContainer dataContainer = new ResultSetDataContainer(rsv.getDataContainer(), rsv.getModel(), options);
+                ResultSetDataContainer dataContainer = new ResultSetDataContainer(rsv, options);
                 ActiveWizardDialog dialog = new ActiveWizardDialog(
                     HandlerUtil.getActiveWorkbenchWindow(event),
                     new DataTransferWizard(

@@ -112,7 +112,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
             options.setSelectedRows(selectedRows);
             options.setSelectedColumns(selectedAttributes);
         }
-        ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet.getDataContainer(), resultSet.getModel(), options);
+        ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
             DBWorkbench.getPlatformUI().showError("Copy As " + processor.getName(), ModelMessages.error_not_connected_to_database);
             return;
