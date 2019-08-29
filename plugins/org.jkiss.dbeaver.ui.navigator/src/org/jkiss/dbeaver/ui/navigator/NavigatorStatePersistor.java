@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.navigator;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.ui.IMemento;
 import org.jkiss.dbeaver.DBException;
@@ -23,10 +25,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -41,27 +44,53 @@ public class NavigatorStatePersistor {
     }
 
     public void restoreState(final TreeViewer navigatorViewer, final DBNNode rootNode, int maxDepth, final IMemento memento) {
+        if (memento == null || ArrayUtils.isEmpty(memento.getAttributeKeys())) {
+            return;
+        }
+
         DBRRunnableWithProgress runnable = (monitor) -> {
             try {
                 if (memento != null) {
+                    monitor.beginTask("Expan navigator nodes", memento.getAttributeKeys().length);
                     for (int i = 0; i < memento.getAttributeKeys().length; i++) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
                         String nodeIdentifier = memento.getString(KEY_PREFIX + i);
+                        monitor.subTask("Expan node " + nodeIdentifier);
                         DBNNode node = findNode(nodeIdentifier, rootNode, 1, maxDepth, monitor);
                         if (node != null && !node.isDisposed()) {
-                            navigatorViewer.setExpandedState(node, true);
+                            UIUtils.syncExec(() -> {
+                                navigatorViewer.setExpandedState(node, true);
+                            });
                         }
                     }
+                    monitor.done();
                 }
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }
         };
-        try {
-            UIUtils.runInUI(runnable);
-        } catch (Exception e) {
-            // this operation should be fail-safe
-            log.error("Can't restore navigator tree state", e);
-        }
+
+        AbstractJob expandJob = new AbstractJob("Expand navigator nodes") {
+            {
+                setSystem(false);
+                setUser(true);
+            }
+
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    runnable.run(monitor);
+                } catch (InvocationTargetException e) {
+                    log.error(e);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        UIUtils.asyncExec(expandJob::schedule);
     }
 
     private DBNNode findNode(String nodeIdentifier, DBNNode rootNode, int currentDepth, int maxDepth, DBRProgressMonitor monitor) throws DBException {
