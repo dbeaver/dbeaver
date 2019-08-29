@@ -49,8 +49,11 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -251,8 +254,10 @@ public class ResultSetHandlerMain extends AbstractHandler {
                         } else if (actionId.equals(CMD_CELL_SET_DEFAULT)) {
                             DBDValueHandler valueHandler = valueController.getValueHandler();
                             if (valueHandler instanceof DBDValueDefaultGenerator) {
-                                Object defValue = ((DBDValueDefaultGenerator) valueHandler).generateDefaultValue(valueController.getValueType());
-                                valueController.updateValue(defValue, false);
+                                try (DBCSession session = rsv.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Generate default value")) {
+                                    Object defValue = ((DBDValueDefaultGenerator) valueHandler).generateDefaultValue(session, valueController.getValueType());
+                                    valueController.updateValue(defValue, false);
+                                }
                             }
                         } else {
                             rsv.getModel().resetCellValue(attr, row);

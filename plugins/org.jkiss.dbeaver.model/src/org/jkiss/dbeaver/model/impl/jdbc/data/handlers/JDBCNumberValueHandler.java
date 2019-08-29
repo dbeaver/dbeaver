@@ -359,7 +359,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
     }
 
     @Override
-    public Object generateDefaultValue(DBSTypedObject type) {
+    public Object generateDefaultValue(DBCSession session, DBSTypedObject type) {
         switch (type.getTypeID()) {
             case Types.BIGINT:
                 return 0L;
