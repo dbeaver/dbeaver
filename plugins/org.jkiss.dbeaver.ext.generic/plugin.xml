@@ -525,6 +525,7 @@
                     <file type="license" path="drivers/teradata/LICENSE.txt" bundle="drivers.teradata"/>
 
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-multiple-results" value="true"/>
                 </driver>
 
                 <driver
