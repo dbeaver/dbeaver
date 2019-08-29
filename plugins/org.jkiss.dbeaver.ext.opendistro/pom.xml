@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
      <relativePath>../</relativePath>
   </parent>
-  <artifactId>org.jkiss.dbeaver.ext.opendistro.ui</artifactId>
-  <version>1.0.27-SNAPSHOT</version>
+  <artifactId>org.jkiss.dbeaver.ext.opendistro</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
