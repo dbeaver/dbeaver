@@ -2664,8 +2664,6 @@ public class ResultSetViewer extends Viewer
     private void fillFiltersMenu(@NotNull IMenuManager filtersMenu, @Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row)
     {
         if (attribute != null && supportsDataFilter()) {
-            filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
-
             if (row != null) {
                 filtersMenu.add(new Separator());
 
@@ -2711,6 +2709,8 @@ public class ResultSetViewer extends Viewer
                         filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.NONE, attribute));
                     }
                 }
+
+                filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
             }
             filtersMenu.add(new Separator());
             DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(attribute);
