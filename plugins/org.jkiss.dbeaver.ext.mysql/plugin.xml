@@ -169,7 +169,7 @@
                     <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
+                    <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss Z"/>
                 </driver>
                 <driver
@@ -195,7 +195,7 @@
                     <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
+                    <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss Z"/>
                 </driver>
                 <driver
@@ -217,7 +217,7 @@
                     <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
+                    <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss Z"/>
                 </driver>
 
@@ -236,7 +236,7 @@
                     categories="sql">
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[2.4.3]" bundle="!drivers.mariadb"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
+                    <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                 </driver>
             </drivers>
 
