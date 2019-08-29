@@ -131,6 +131,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         DBCExecutionContext context;
         if (!selectiveExportFromUI && newConnection) {
             context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer");
+        } else if (dataContainer instanceof DBPContextProvider) {
+            context = ((DBPContextProvider) dataContainer).getExecutionContext();
         } else {
             context = DBUtils.getDefaultContext(dataContainer, false);
         }

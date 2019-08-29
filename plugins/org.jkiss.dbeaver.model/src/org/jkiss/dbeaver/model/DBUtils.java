@@ -1811,9 +1811,6 @@ public final class DBUtils {
         if (object == null) {
             return null;
         }
-        if (object instanceof DBPContextProvider) {
-            return ((DBPContextProvider) object).getExecutionContext();
-        }
         DBSInstance instance = getObjectOwnerInstance(object);
         return instance == null ? null : instance.getDefaultContext(meta);
     }
