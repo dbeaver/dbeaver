@@ -68,6 +68,11 @@ public abstract class BaseDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean supportsResultSetOrdering() {
+        return true;
+    }
+
+    @Override
     public boolean isDynamicMetadata() {
         return false;
     }

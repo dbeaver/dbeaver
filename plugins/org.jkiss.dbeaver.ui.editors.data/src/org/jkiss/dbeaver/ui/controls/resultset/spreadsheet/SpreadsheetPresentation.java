@@ -1553,6 +1553,27 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
+        public boolean isElementSupportsSort(@Nullable Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean isElementReadOnly(Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                return controller.isAttributeReadOnly((DBDAttributeBinding) element);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean isGridReadOnly() {
+            return controller.isReadOnly();
+        }
+
+        @Override
         public int getCellState(Object colElement, Object rowElement, String cellText) {
             int state = STATE_NONE;
             boolean recordMode = controller.isRecordMode();
