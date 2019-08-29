@@ -100,7 +100,14 @@ public class UIServiceSQLImpl implements UIServiceSQL {
         editor.createPartControl(editorPH);
         editor.reloadSyntaxRules();
 
-        editorPH.addDisposeListener(e -> editor.dispose());
+        editorPH.addDisposeListener(e -> {
+            try {
+                editor.dispose();
+            } catch (Throwable e1) {
+                // Some internal error may occur during dispose triggered by widget dispose.
+                log.debug("Intertnal error during SQL panel dispose", e1);
+            }
+        });
 
         TextViewer textViewer = editor.getTextViewer();
         textViewer.setData("editor", editor);
