@@ -55,11 +55,13 @@ public class SQLServerConstants {
     public static final String PROP_CONNECTION_AUTHENTICATION_SCHEME = "authenticationScheme";
 
     public static final String PROP_TRUST_SERVER_CERTIFICATE = "trustServerCertificate";
+    public static final String PROP_DOMAIN = "domain";
 
     public static final String AUTH_SQL_SERVER_PASSWORD = "SqlPassword";
     public static final String AUTH_ACTIVE_DIRECTORY_PASSWORD = "ActiveDirectoryPassword";
     public static final String AUTH_ACTIVE_DIRECTORY_INTEGRATED = "ActiveDirectoryIntegrated";
     public static final String AUTH_ACTIVE_DIRECTORY_MSI = "ActiveDirectoryMSI";
+    public static final String AUTH_NTLM = "NTLM";
 
     public static final String AUTH_SCHEME_KERBEROS = "JavaKerberos";
 

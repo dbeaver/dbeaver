@@ -40,6 +40,16 @@ public enum SQLServerAuthentication {
     WINDOWS_INTEGRATED(SQLServerMessages.authentication_windows_title, SQLServerMessages.authentication_windows_description, true, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(true));
     }),
+    NTLM("NTLM", "NTLM authentication", true, true, true, (connectionInfo, properties) -> {
+        properties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(true));
+        properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION_SCHEME, SQLServerConstants.AUTH_NTLM);
+        String userName = connectionInfo.getUserName();
+        int divPos = userName.indexOf('@');
+        if (divPos != -1) {
+            properties.put(SQLServerConstants.PROP_DOMAIN, userName.substring(divPos + 1));
+            properties.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName.substring(0, divPos));
+        }
+    }),
     AD_PASSWORD(SQLServerMessages.authentication_ad_password_title, SQLServerMessages.authentication_ad_password_description, false, true, true, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(false));
         properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_PASSWORD);
@@ -61,6 +71,8 @@ public enum SQLServerAuthentication {
     }),
     AD_INTEGRATED(SQLServerMessages.authentication_ad_integrated_title, SQLServerMessages.authentication_ad_integrated_description, false, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTEGRATED);
+        properties.remove(DBConstants.DATA_SOURCE_PROPERTY_USER);
+        properties.remove(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD);
     }),
     KERBEROS_INTEGRATED(SQLServerMessages.authentication_kerberos_title, SQLServerMessages.authentication_kerberos_description, false, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(true));
