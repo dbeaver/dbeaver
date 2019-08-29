@@ -4432,6 +4432,10 @@ public abstract class LightGrid extends Canvas {
             x + width,
             y + height - 1);
 
+        if (getContentProvider().isGridReadOnly()) {
+
+        }
+
         if (sortOrder != SWT.NONE) {
             int arrowWidth = GridColumnRenderer.SORT_WIDTH;
             Rectangle sortBounds = new Rectangle(

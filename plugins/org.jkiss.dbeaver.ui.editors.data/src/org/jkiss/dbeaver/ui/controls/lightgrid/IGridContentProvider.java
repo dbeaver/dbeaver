@@ -54,6 +54,12 @@ public interface IGridContentProvider extends IContentProvider {
 
     boolean isElementSupportsFilter(@Nullable Object element);
 
+    boolean isElementSupportsSort(@Nullable Object element);
+
+    boolean isElementReadOnly(Object element);
+
+    boolean isGridReadOnly();
+
     /**
      *
      * @param cellText    pre-rendered cell text. Used for cache purposes.
