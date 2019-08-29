@@ -6,7 +6,8 @@
         <serverType id="greenplum"
                     name="Greenplum"
                     class="org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreenplum"
-                    logo="icons/greenplum_logo.png"/>
+                    logo="icons/greenplum_logo.png"
+                    customURL="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
@@ -43,7 +44,6 @@
                         iconBig="icons/greenplum_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
-                        useURL="false"
                         defaultPort="5432"
                         webURL="https://greenplum.org/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
