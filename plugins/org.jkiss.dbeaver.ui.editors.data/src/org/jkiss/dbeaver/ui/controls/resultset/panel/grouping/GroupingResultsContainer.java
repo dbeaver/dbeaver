@@ -90,6 +90,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return presentation.getController().getExecutionContext();
     }
 
+    @NotNull
     @Override
     public IResultSetController getResultSetController() {
         return groupingViewer;
@@ -182,7 +183,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void rebuildGrouping() throws DBException {
         if (groupAttributes.isEmpty() || groupFunctions.isEmpty()) {
-            getResultSetController().showEmptyPresentation();
+            groupingViewer.showEmptyPresentation();
             return;
         }
         DBCStatistics statistics = presentation.getController().getModel().getStatistics();
@@ -190,6 +191,9 @@ public class GroupingResultsContainer implements IResultSetContainer {
             throw new DBException("No main query - can't perform grouping");
         }
         DBPDataSource dataSource = dataContainer.getDataSource();
+        if (dataSource == null) {
+            throw new DBException("No active datasource");
+        }
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, presentation.getController().getPreferenceStore());
@@ -212,7 +216,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         sql.append("SELECT ");
         for (int i = 0; i < groupAttributes.size(); i++) {
             if (i > 0) sql.append(", ");
-            sql.append(DBUtils.getQuotedIdentifier(getDataContainer().getDataSource(), groupAttributes.get(i)));
+            sql.append(DBUtils.getQuotedIdentifier(dataSource, groupAttributes.get(i)));
         }
         for (String func : groupFunctions) {
             sql.append(", ").append(func);
@@ -224,7 +228,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         sql.append("\nGROUP BY ");
         for (int i = 0; i < groupAttributes.size(); i++) {
             if (i > 0) sql.append(", ");
-            sql.append(groupAttributes.get(i));
+            sql.append(DBUtils.getQuotedIdentifier(dataSource, groupAttributes.get(i)));
         }
         boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
 
