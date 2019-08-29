@@ -1221,7 +1221,7 @@ public class ResultSetViewer extends Viewer
     void fillOpenWithMenu(IContributionManager openWithMenu) {
 
         ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
-        ResultSetDataContainer dataContainer = new ResultSetDataContainer(getDataContainer(), getModel(), options);
+        ResultSetDataContainer dataContainer = new ResultSetDataContainer(this, options);
 
         List<DataTransferProcessorDescriptor> appProcessors = new ArrayList<>();
 
@@ -1262,7 +1262,7 @@ public class ResultSetViewer extends Viewer
         copyAsMenu.add(new Separator());
 
         ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
-        ResultSetDataContainer dataContainer = new ResultSetDataContainer(getDataContainer(), getModel(), options);
+        ResultSetDataContainer dataContainer = new ResultSetDataContainer(this, options);
 
         List<DataTransferProcessorDescriptor> appProcessors = new ArrayList<>();
 
