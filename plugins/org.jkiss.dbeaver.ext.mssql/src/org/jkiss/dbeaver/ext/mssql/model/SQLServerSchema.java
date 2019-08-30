@@ -106,6 +106,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return triggerCache;
     }
 
+    @NotNull
     @Override
     public SQLServerDataSource getDataSource() {
         return database.getDataSource();
