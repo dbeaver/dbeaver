@@ -680,6 +680,9 @@ public class ResultSetViewer extends Viewer
         boolean focusInPresentation = UIUtils.isParent(presentationPanel, viewerPanel.getDisplay().getFocusControl());
 
         // Dispose previous presentation and panels
+        if (activePresentation != null) {
+            activePresentation.dispose();
+        }
         UIUtils.disposeChildControls(presentationPanel);
         if (panelFolder != null) {
             CTabItem curItem = panelFolder.getSelection();
@@ -1683,6 +1686,9 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        if (activePresentation != null) {
+            activePresentation.dispose();
+        }
         DBPProject project = container.getProject();
         if (project != null) {
             project.getDataSourceRegistry().removeDataSourceListener(this);

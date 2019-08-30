@@ -54,6 +54,7 @@ public class ErrorPresentation extends AbstractPresentation {
     private StatusPart statusPart;
     private Composite sqlPanel;
     private StyledText textWidget;
+    private Object editorPanel;
 
     public ErrorPresentation(String sqlText, IStatus status) {
         this.sqlText = sqlText;
@@ -75,9 +76,9 @@ public class ErrorPresentation extends AbstractPresentation {
         sqlPanel.setLayout(new FillLayout());
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         try {
-            Object panel = serviceSQL.createSQLPanel(controller.getSite(), sqlPanel, controller, "SQL", true, sqlText);
-            if (panel instanceof TextViewer) {
-                textWidget = ((TextViewer) panel).getTextWidget();
+            editorPanel = serviceSQL.createSQLPanel(controller.getSite(), sqlPanel, controller, "SQL", true, sqlText);
+            if (editorPanel instanceof TextViewer) {
+                textWidget = ((TextViewer) editorPanel).getTextWidget();
             }
         } catch (DBException e) {
             textWidget = new StyledText(sqlPanel, SWT.BORDER | SWT.READ_ONLY);
@@ -148,6 +149,15 @@ public class ErrorPresentation extends AbstractPresentation {
     @Override
     public String copySelectionToString(ResultSetCopySettings settings) {
         return null;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        if (serviceSQL != null) {
+            serviceSQL.disposeSQLPanel(editorPanel);
+        }
     }
 
 }
