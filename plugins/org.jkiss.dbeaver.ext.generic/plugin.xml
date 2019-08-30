@@ -1089,6 +1089,8 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="active-entity-type" value="schema"/>
+                    <parameter name="query-get-active-db" value="select current_schema"/>
+                    <parameter name="query-set-active-db" value="set schema ?"/>
                 </driver>
 
 
