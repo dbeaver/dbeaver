@@ -1069,32 +1069,6 @@
                     <file type="jar" path="https://github.com/KxSystems/kdb/raw/master/c/jdbc.jar"/>
                 </driver>
 
-                <!-- Kognitio -->
-                <driver
-                        id="kognitio"
-                        label="Kognitio"
-                        icon="icons/kognitio_icon.png"
-                        iconBig="icons/kognitio_icon_big.png"
-                        class="com.kognitio.jdbc.Driver"
-                        sampleURL="jdbc:kognitio://{host}:{port}"
-                        defaultPort="6550"
-                        description="Kognitio JDBC Driver"
-                        webURL="https://kognitio.com/documentation/latest/access/config-jdbc.html"
-                        categories="sql,analytic,hadoop">
-                    <file type="jar" path="https://www.kognitio.com/software/KognitioJDBC.jar"/>
-
-                    <property name="requestencryption" value="false"/>
-
-                    <parameter name="supports-indexes" value="false"/>
-                    <parameter name="supports-stored-code" value="false"/>
-                    <parameter name="omit-catalog" value="true"/>
-                    <parameter name="active-entity-type" value="schema"/>
-                    <parameter name="query-get-active-db" value="select current_schema"/>
-                    <parameter name="query-set-active-db" value="set schema ?"/>
-                </driver>
-
-
-
                 <!-- Legacy drivers -->
 
                 <driver
