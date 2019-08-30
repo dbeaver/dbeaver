@@ -1081,6 +1081,7 @@
                         description="Kognitio JDBC Driver"
                         webURL="https://kognitio.com/documentation/latest/access/config-jdbc.html"
                         categories="sql,analytic,hadoop">
+                    <file type="jar" path="https://www.kognitio.com/software/KognitioJDBC.jar"/>
 
                     <property name="requestencryption" value="false"/>
 
