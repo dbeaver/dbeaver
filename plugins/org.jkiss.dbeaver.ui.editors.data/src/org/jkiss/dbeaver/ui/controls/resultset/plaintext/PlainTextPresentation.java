@@ -107,7 +107,6 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 fireSelectionChanged(new PlainTextSelectionImpl());
             }
         });
-        text.addDisposeListener(e -> dispose());
 
         final ScrollBar verticalBar = text.getVerticalBar();
         verticalBar.addSelectionListener(new SelectionAdapter() {

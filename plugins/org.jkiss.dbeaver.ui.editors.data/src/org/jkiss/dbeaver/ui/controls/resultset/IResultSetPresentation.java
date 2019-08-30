@@ -116,4 +116,6 @@ public interface IResultSetPresentation {
 
     void printResultSet();
 
+    void dispose();
+
 }

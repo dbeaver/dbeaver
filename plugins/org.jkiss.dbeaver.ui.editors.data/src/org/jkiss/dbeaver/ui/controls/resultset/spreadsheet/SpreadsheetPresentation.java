@@ -233,8 +233,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         applyThemeSettings();
 
-        this.spreadsheet.addDisposeListener(e -> dispose());
-
         trackPresentationControl();
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
     }
