@@ -84,6 +84,9 @@ class FireBirdPlanParser {
 				case JOIN:
 					joinedItem(parent);
 					break;
+				case HASH:
+					hashedItem(parent);
+					break;
 				case SORT_MERGE:
 					mergedItem(parent, true);
 					break;
@@ -109,6 +112,18 @@ class FireBirdPlanParser {
 		private void joinedItem(FireBirdPlanNode parent) throws FireBirdPlanException {
 			tokenMatch.checkToken(FireBirdPlanToken.JOIN);
 			FireBirdPlanNode node = addPlanNode(parent, "JOIN");
+			tokenMatch.jump();
+			tokenMatch.checkToken(FireBirdPlanToken.LEFTPARENTHESE);
+			do {
+				tokenMatch.jump();
+				planItem(node);
+			} while (tokenMatch.getToken() == FireBirdPlanToken.COMMA);
+			tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
+		}
+			
+		private void hashedItem(FireBirdPlanNode parent) throws FireBirdPlanException {
+			tokenMatch.checkToken(FireBirdPlanToken.HASH);
+			FireBirdPlanNode node = addPlanNode(parent, "HASH");
 			tokenMatch.jump();
 			tokenMatch.checkToken(FireBirdPlanToken.LEFTPARENTHESE);
 			do {
