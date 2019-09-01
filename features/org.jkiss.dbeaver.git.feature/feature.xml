@@ -17,6 +17,8 @@
       %license
    </license>
 
+<!--   <includes id="org.eclipse.egit" version="0.0.0"/>-->
+
    <plugin id="javaewah" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
 <!--
    <plugin id="com.jcraft.jzlib" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
