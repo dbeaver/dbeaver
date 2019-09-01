@@ -17,11 +17,13 @@
       %license
    </license>
 
-   <!--<plugin id="com.jcraft.jzlib" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>-->
    <plugin id="javaewah" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
-   <!--<plugin id="org.apache.sshd.osgi" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.apache.sshd.sftp" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>-->
+<!--
+   <plugin id="com.jcraft.jzlib" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.sshd.osgi" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.apache.sshd.sftp" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="net.i2p.crypto.eddsa" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+-->
 
    <plugin id="org.bouncycastle.bcpg" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.bouncycastle.bcpkix" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
