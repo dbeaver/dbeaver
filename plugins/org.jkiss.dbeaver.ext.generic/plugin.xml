@@ -1141,7 +1141,7 @@
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
                         webURL="http://jdbc.postgresql.org/"
-                        description="PostgreSQL JDBC driver. Can be used for old PostgreSQL server versions or some PostgreSQL based databases (before 8.x).">
+                        description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
