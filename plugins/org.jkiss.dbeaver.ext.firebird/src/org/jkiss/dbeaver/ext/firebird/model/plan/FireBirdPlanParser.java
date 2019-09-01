@@ -183,7 +183,7 @@ class FireBirdPlanParser {
 					tokenMatch.checkToken(FireBirdPlanToken.IDENTIFICATOR);
 					String orderIndex = tokenMatch.getValue();
 					tokenMatch.jump();
-					String text = aliases + " ORDER " + orderIndex;
+					String text = aliases + " ORDER " + orderIndex + indexInfo(orderIndex);
 					if (tokenMatch.getToken() == FireBirdPlanToken.INDEX) {
 						String orderIndexes = collectIndexes();
 						text = text + " INDEX(" + orderIndexes + ")";
