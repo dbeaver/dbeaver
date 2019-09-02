@@ -856,7 +856,7 @@ public final class SQLUtils {
                 script.append(lineSeparator);
 
                 if (action.isComplex() && redefiner != null) {
-                    script.append(redefiner).append(" ").append(delimiter).append(lineSeparator);
+                    script.append(redefiner).append(" ").append(getScriptLineDelimiter(sqlDialect)).append(lineSeparator);
                 }
             }
         }
