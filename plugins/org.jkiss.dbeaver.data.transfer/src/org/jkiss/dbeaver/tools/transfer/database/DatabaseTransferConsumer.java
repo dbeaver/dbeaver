@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -415,6 +416,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     public static String generateTargetTableDDL(DBRProgressMonitor monitor, DBPDataSource dataSource, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
+        if (containerMapping.getMappingType() == DatabaseMappingType.skip) {
+            return "";
+        }
         monitor.subTask("Create table " + containerMapping.getTargetName());
         StringBuilder sql = new StringBuilder(500);
         if (!(dataSource instanceof SQLDataSource)) {
@@ -424,47 +428,55 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         String tableName = DBObjectNameCaseTransformer.transformName(targetDataSource, containerMapping.getTargetName());
         containerMapping.setTargetName(tableName);
-        sql.append("CREATE TABLE ");
-        if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
-            sql.append(DBUtils.getQuotedIdentifier(schema));
-            sql.append(targetDataSource.getSQLDialect().getCatalogSeparator());
-        }
-        sql.append(DBUtils.getQuotedIdentifier(targetDataSource, tableName)).append("(\n");
-        Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<>();
-        for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-            if (attr.getMappingType() != DatabaseMappingType.create) {
-                continue;
+        if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+            sql.append("CREATE TABLE ");
+            if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
+                sql.append(DBUtils.getQuotedIdentifier(schema));
+                sql.append(targetDataSource.getSQLDialect().getCatalogSeparator());
             }
-            if (!mappedAttrs.isEmpty()) sql.append(",\n");
-            sql.append("\t");
-            appendAttributeClause(dataSource, sql, attr);
-            mappedAttrs.put(attr.getSource(), attr);
-        }
-        if (containerMapping.getSource() instanceof DBSEntity) {
-            // Make primary key
-            Collection<? extends DBSEntityAttribute> identifier = DBUtils.getBestTableIdentifier(monitor, (DBSEntity) containerMapping.getSource());
-            if (!CommonUtils.isEmpty(identifier)) {
-                boolean idMapped = true;
-                for (DBSEntityAttribute idAttr : identifier) {
-                    if (!mappedAttrs.containsKey(idAttr)) {
-                        idMapped = false;
-                        break;
-                    }
+            sql.append(DBUtils.getQuotedIdentifier(targetDataSource, tableName)).append("(\n");
+            Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<>();
+            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                if (attr.getMappingType() != DatabaseMappingType.create) {
+                    continue;
                 }
-                if (idMapped) {
-                    sql.append(",\n\tPRIMARY KEY (");
-                    boolean hasAttr = false;
+                if (!mappedAttrs.isEmpty()) sql.append(",\n");
+                sql.append("\t");
+                appendAttributeClause(dataSource, sql, attr);
+                mappedAttrs.put(attr.getSource(), attr);
+            }
+            if (containerMapping.getSource() instanceof DBSEntity) {
+                // Make primary key
+                Collection<? extends DBSEntityAttribute> identifier = DBUtils.getBestTableIdentifier(monitor, (DBSEntity) containerMapping.getSource());
+                if (!CommonUtils.isEmpty(identifier)) {
+                    boolean idMapped = true;
                     for (DBSEntityAttribute idAttr : identifier) {
-                        DatabaseMappingAttribute mappedAttr = mappedAttrs.get(idAttr);
-                        if (hasAttr) sql.append(",");
-                        sql.append(DBUtils.getQuotedIdentifier(dataSource, mappedAttr.getTargetName()));
-                        hasAttr = true;
+                        if (!mappedAttrs.containsKey(idAttr)) {
+                            idMapped = false;
+                            break;
+                        }
                     }
-                    sql.append(")\n");
+                    if (idMapped) {
+                        sql.append(",\n\tPRIMARY KEY (");
+                        boolean hasAttr = false;
+                        for (DBSEntityAttribute idAttr : identifier) {
+                            DatabaseMappingAttribute mappedAttr = mappedAttrs.get(idAttr);
+                            if (hasAttr) sql.append(",");
+                            sql.append(DBUtils.getQuotedIdentifier(dataSource, mappedAttr.getTargetName()));
+                            hasAttr = true;
+                        }
+                        sql.append(")\n");
+                    }
+                }
+            }
+            sql.append(")");
+        } else {
+            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                if (attr.getMappingType() == DatabaseMappingType.create) {
+                    sql.append(generateTargetAttributeDDL(dataSource, attr)).append(";\n");
                 }
             }
         }
-        sql.append(")");
         return sql.toString();
     }
 
@@ -477,15 +489,21 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException {
         session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL) + "." + attribute.getTargetName());
-        StringBuilder sql = new StringBuilder(500);
-        sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL))
-            .append(" ADD ");
-        appendAttributeClause(session.getDataSource(), sql, attribute);
+        String sql = generateTargetAttributeDDL(session.getDataSource(), attribute);
         try {
-            executeDDL(session, sql.toString());
+            executeDDL(session, sql);
         } catch (DBCException e) {
             throw new DBCException("Can't create target column:\n" + sql, e);
         }
+    }
+
+    @NotNull
+    private static String generateTargetAttributeDDL(DBPDataSource dataSource, DatabaseMappingAttribute attribute) {
+        StringBuilder sql = new StringBuilder(500);
+        sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL))
+            .append(" ADD ");
+        appendAttributeClause(dataSource, sql, attribute);
+        return sql.toString();
     }
 
     private void executeDDL(DBCSession session, String sql)
