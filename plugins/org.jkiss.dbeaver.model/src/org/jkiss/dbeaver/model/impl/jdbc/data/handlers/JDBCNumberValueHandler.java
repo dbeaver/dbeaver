@@ -137,7 +137,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                     }
                 } else {
                     // bit string
-                    return CommonUtils.toBinaryString(resultSet.getLong(index), CommonUtils.toInt(type.getPrecision()));
+                    String bitString = CommonUtils.toBinaryString(resultSet.getLong(index), CommonUtils.toInt(type.getPrecision()));
+                    if (resultSet.wasNull()) {
+                        return null;
+                    } else {
+                        return bitString;
+                    }
                 }
                 break;
             default:
