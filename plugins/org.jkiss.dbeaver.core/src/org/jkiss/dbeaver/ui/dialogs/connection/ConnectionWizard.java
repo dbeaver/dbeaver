@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -185,20 +184,14 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
                     }
                 });
 
-                String message = "";
+                String serverVersion = "?", clientVersion = "?";
                 if (!CommonUtils.isEmpty(op.productName)) {
-                    message += "Server: " + op.productName + " " + op.productVersion + "\n";
+                    serverVersion = op.productName + " " + op.productVersion;
                 }
                 if (!CommonUtils.isEmpty(op.driverName)) {
-                    message += "Driver: " + op.driverName + " " + op.driverVersion + "\n";
+                    clientVersion = op.driverName + " " + op.driverVersion;
                 }
-                if (!CommonUtils.isEmpty(message)) {
-                    message += "\n";
-                }
-                message += NLS.bind(CoreMessages.dialog_connection_wizard_start_connection_monitor_connected, op.connectTime);
-
-                MessageDialog.openInformation(getShell(), CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
-                    message);
+                new ConnectionTestDialog(getShell(), serverVersion, clientVersion, op.connectTime).open();
             } catch (InterruptedException ex) {
                 if (!"cancel".equals(ex.getMessage())) {
                     DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,

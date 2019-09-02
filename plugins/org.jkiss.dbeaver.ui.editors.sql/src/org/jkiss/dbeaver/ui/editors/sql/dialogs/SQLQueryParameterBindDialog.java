@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.dialogs;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
@@ -196,6 +198,21 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             item.setText(1, param.getVarName());
             item.setText(2, CommonUtils.notEmpty(param.getValue()));
         }
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        Button skipButton = UIUtils.createDialogButton(parent, IDialogConstants.IGNORE_LABEL, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setReturnCode(IDialogConstants.IGNORE_ID);
+                close();
+            }
+        });
+        skipButton.setToolTipText("Ignore parameters and execute query/script as is");
+
+        ((GridLayout) parent.getLayout()).numColumns++;
+        super.createButtonsForButtonBar(parent);
     }
 
     @Override

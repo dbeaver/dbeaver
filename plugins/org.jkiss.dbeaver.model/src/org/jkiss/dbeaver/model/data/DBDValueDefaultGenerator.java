@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
@@ -26,6 +27,6 @@ public interface DBDValueDefaultGenerator
 {
     String getDefaultValueLabel();
 
-    Object generateDefaultValue(DBSTypedObject type);
+    Object generateDefaultValue(DBCSession session, DBSTypedObject type);
 
 }

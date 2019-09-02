@@ -128,9 +128,14 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
         boolean newConnection = settings.isOpenNewConnections() && !getDatabaseObject().getDataSource().getContainer().getDriver().isEmbedded();
         boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBConstants.FEATURE_LOB_REQUIRE_TRANSACTIONS));
-        DBCExecutionContext context = !selectiveExportFromUI && newConnection ?
-            DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer") :
-            DBUtils.getDefaultContext(getDatabaseObject(), false);
+        DBCExecutionContext context;
+        if (!selectiveExportFromUI && newConnection) {
+            context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer");
+        } else if (dataContainer instanceof DBPContextProvider) {
+            context = ((DBPContextProvider) dataContainer).getExecutionContext();
+        } else {
+            context = DBUtils.getDefaultContext(dataContainer, false);
+        }
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
             try {
                 AbstractExecutionSource transferSource = new AbstractExecutionSource(dataContainer, context, consumer);

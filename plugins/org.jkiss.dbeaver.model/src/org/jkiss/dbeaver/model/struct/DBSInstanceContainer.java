@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -27,6 +26,7 @@ import java.util.Collection;
  */
 public interface DBSInstanceContainer extends DBSObject
 {
+    @NotNull
     DBSInstance getDefaultInstance();
 
     @NotNull

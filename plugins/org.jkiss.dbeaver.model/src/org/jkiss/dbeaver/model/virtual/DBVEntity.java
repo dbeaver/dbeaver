@@ -62,7 +62,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     private List<DBVEntityConstraint> entityConstraints;
     private List<DBVEntityForeignKey> entityForeignKeys;
     private List<DBVEntityAttribute> entityAttributes;
-    private Map<String, Object> properties;
     private List<DBVColorOverride> colorOverrides;
 
     public DBVEntity(@NotNull DBVContainer container, @NotNull String name, String descriptionColumnNames) {
@@ -99,15 +98,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 this.entityAttributes.add(new DBVEntityAttribute(this, null, attribute));
             }
         }
-        if (!CommonUtils.isEmpty(src.properties)) {
-            this.properties = new LinkedHashMap<>(src.properties);
-        }
         if (!CommonUtils.isEmpty(src.colorOverrides)) {
             this.colorOverrides = new ArrayList<>(src.colorOverrides.size());
             for (DBVColorOverride co : src.colorOverrides) {
                 this.colorOverrides.add(new DBVColorOverride(co));
             }
         }
+        super.copyFrom(src);
     }
 
     DBVEntity(@NotNull DBVContainer container, @NotNull String name, @NotNull Map<String, Object> map) {
@@ -176,7 +173,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
             addColorOverride(curColor);
         }
-        properties = JSONUtils.deserializeProperties(map, "properties");
+        loadPropertiesFrom(map, "properties");
     }
 
     @NotNull
@@ -234,31 +231,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     @Override
     public DBSEntityType getEntityType() {
         return DBSEntityType.VIRTUAL_ENTITY;
-    }
-
-    /**
-     * Property value can be String, Number, Boolean, List or Map
-     * @param name property name
-     */
-    @Nullable
-    public Object getProperty(@NotNull String name) {
-        return CommonUtils.isEmpty(properties) ? null : properties.get(name);
-    }
-
-    public void setProperty(String name, @Nullable Object value) {
-        if (properties == null) {
-            properties = new LinkedHashMap<>();
-        }
-        if (value == null) {
-            properties.remove(name);
-        } else {
-            properties.put(name, value);
-        }
-    }
-
-    @NotNull
-    public Map<String, Object> getProperties() {
-        return properties == null ? Collections.emptyMap() : properties;
     }
 
     public List<DBVEntityAttribute> getEntityAttributes() {
@@ -322,14 +294,22 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     void addVirtualAttribute(DBVEntityAttribute attribute) {
+        addVirtualAttribute(attribute, true);
+    }
+
+    void addVirtualAttribute(DBVEntityAttribute attribute, boolean reflect) {
         if (entityAttributes == null) {
             entityAttributes = new ArrayList<>();
         }
         entityAttributes.add(attribute);
+        if (reflect) {
+            DBUtils.fireObjectUpdate(this);
+        }
     }
 
-    void resetVirtualAttribute(DBVEntityAttribute attribute) {
+    void removeVirtualAttribute(DBVEntityAttribute attribute) {
         entityAttributes.remove(attribute);
+        DBUtils.fireObjectUpdate(this, attribute);
     }
 
     @Nullable
@@ -359,15 +339,24 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     public void addConstraint(DBVEntityConstraint constraint) {
+        addConstraint(constraint, true);
+    }
+
+    public void addConstraint(DBVEntityConstraint constraint, boolean reflect) {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
         entityConstraints.add(constraint);
+
+        if (reflect) {
+            DBUtils.fireObjectUpdate(this, constraint);
+        }
     }
 
     public void removeConstraint(DBVEntityConstraint constraint) {
         if (entityConstraints != null) {
             entityConstraints.remove(constraint);
+            DBUtils.fireObjectUpdate(this, constraint);
         }
     }
 
@@ -393,11 +382,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             entityForeignKeys = new ArrayList<>();
         }
         entityForeignKeys.add(foreignKey);
+        DBUtils.fireObjectUpdate(this, foreignKey);
     }
 
     public synchronized void removeForeignKey(@NotNull DBVEntityForeignKey foreignKey) {
         if (entityForeignKeys != null) {
             entityForeignKeys.remove(foreignKey);
+            DBUtils.fireObjectUpdate(this, foreignKey);
         }
     }
 
@@ -554,7 +545,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     @Override
     public boolean hasValuableData() {
         if (!CommonUtils.isEmpty(descriptionColumnNames) ||
-            !CommonUtils.isEmpty(properties) ||
+            !CommonUtils.isEmpty(getProperties()) ||
             !CommonUtils.isEmpty(entityForeignKeys) ||
             !CommonUtils.isEmpty(colorOverrides))
         {
@@ -595,13 +586,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             for (DBVEntityForeignKey fk : entityForeignKeys) {
                 fk.getRealReferenceConatraint(monitor);
             }
-        }
-    }
-
-    public void persistConfiguration() {
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource != null) {
-            dataSource.getContainer().persistConfiguration();
         }
     }
 

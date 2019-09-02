@@ -152,6 +152,11 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsTeblespaceLocation() {
+        return false;
+    }
+
+    @Override
     public boolean supportsExplainPlanXML() {
         return false;
     }

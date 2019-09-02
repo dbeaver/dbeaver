@@ -153,7 +153,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView
         }
         if (ddl == null) {
             if (isPersisted()) {
-                ddl = SQLServerUtils.extractSource(monitor, getDatabase(), getSchema(), getName());
+                ddl = SQLServerUtils.extractSource(monitor, getSchema(), getName());
             } else {
                 ddl = "CREATE VIEW " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n";
             }

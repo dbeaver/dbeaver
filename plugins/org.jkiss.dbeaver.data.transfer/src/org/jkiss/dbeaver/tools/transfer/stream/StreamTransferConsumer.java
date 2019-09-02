@@ -50,6 +50,7 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -109,7 +110,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         // Prepare columns
         columnMetas = DBUtils.getAttributeBindings(session, dataContainer, resultSet.getMeta());
-        columnBindings = DBUtils.makeLeafAttributeBindings(session, dataContainer, resultSet);
+        if (processor instanceof IDocumentDataExporter) {
+            columnBindings = Arrays.asList(columnMetas);
+        } else {
+            columnBindings = DBUtils.makeLeafAttributeBindings(session, dataContainer, resultSet);
+        }
 
         if (!initialized) {
             /*// For multi-streams export header only once
@@ -132,29 +137,34 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         try {
             // Get values
             Object[] srcRow = DBUtils.fetchRow(session, resultSet, columnMetas);
-            Object[] targetRow = new Object[columnBindings.size()];
-            for (int i = 0; i < columnBindings.size(); i++) {
-                DBDAttributeBinding column = columnBindings.get(i);
-                Object value = DBUtils.getAttributeValue(column, srcRow);
-                if (value instanceof DBDContent && !settings.isOutputClipboard()) {
-                    // Check for binary type export
-                    if (!ContentUtils.isTextContent((DBDContent) value)) {
-                        switch (settings.getLobExtractType()) {
-                            case SKIP:
-                                // Set it it null
-                                value = null;
-                                break;
-                            case INLINE:
-                                // Just pass content to exporter
-                                break;
-                            case FILES:
-                                // Save content to file and pass file reference to exporter
-                                value = saveContentToFile(session.getProgressMonitor(), (DBDContent) value);
-                                break;
+            Object[] targetRow;
+            if (processor instanceof IDocumentDataExporter) {
+                targetRow = srcRow;
+            } else {
+                targetRow = new Object[columnBindings.size()];
+                for (int i = 0; i < columnBindings.size(); i++) {
+                    DBDAttributeBinding column = columnBindings.get(i);
+                    Object value = DBUtils.getAttributeValue(column, srcRow);
+                    if (value instanceof DBDContent && !settings.isOutputClipboard()) {
+                        // Check for binary type export
+                        if (!ContentUtils.isTextContent((DBDContent) value)) {
+                            switch (settings.getLobExtractType()) {
+                                case SKIP:
+                                    // Set it it null
+                                    value = null;
+                                    break;
+                                case INLINE:
+                                    // Just pass content to exporter
+                                    break;
+                                case FILES:
+                                    // Save content to file and pass file reference to exporter
+                                    value = saveContentToFile(session.getProgressMonitor(), (DBDContent) value);
+                                    break;
+                            }
                         }
                     }
+                    targetRow[i] = value;
                 }
-                targetRow[i] = value;
             }
             // Export row
             processor.exportRow(session, resultSet, targetRow);

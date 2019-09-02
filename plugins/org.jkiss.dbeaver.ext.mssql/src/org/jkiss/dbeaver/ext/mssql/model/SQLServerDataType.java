@@ -96,6 +96,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         this.valueType = valueType;
     }
 
+    @NotNull
     @Override
     public SQLServerDataSource getDataSource() {
         return (SQLServerDataSource) owner.getDataSource();

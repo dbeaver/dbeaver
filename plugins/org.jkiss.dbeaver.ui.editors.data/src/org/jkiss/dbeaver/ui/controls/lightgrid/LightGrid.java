@@ -2613,6 +2613,14 @@ public abstract class LightGrid extends Canvas {
             }
 
             if (reverse) {
+                if (alt && newCells.size() == 1) {
+                    // Alt pressed - deselect all cells selected in other rows (#6613)
+                    int row = newCells.get(0).row;
+                    newCells = new ArrayList<>();
+                    for (GridColumn col : selectedColumns) {
+                        newCells.add(new GridPos(col.getIndex(), row));
+                    }
+                }
                 selectedCells.removeAll(newCells);
             } else {
                 if (alt && newCells.size() == 1) {
@@ -4423,6 +4431,10 @@ public abstract class LightGrid extends Canvas {
             y + height - 1,
             x + width,
             y + height - 1);
+
+        if (getContentProvider().isGridReadOnly()) {
+
+        }
 
         if (sortOrder != SWT.NONE) {
             int arrowWidth = GridColumnRenderer.SORT_WIDTH;

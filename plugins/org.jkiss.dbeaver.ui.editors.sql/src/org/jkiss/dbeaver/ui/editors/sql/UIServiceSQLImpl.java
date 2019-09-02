@@ -100,8 +100,6 @@ public class UIServiceSQLImpl implements UIServiceSQL {
         editor.createPartControl(editorPH);
         editor.reloadSyntaxRules();
 
-        editorPH.addDisposeListener(e -> editor.dispose());
-
         TextViewer textViewer = editor.getTextViewer();
         textViewer.setData("editor", editor);
 
@@ -116,6 +114,16 @@ public class UIServiceSQLImpl implements UIServiceSQL {
                 ((SQLEditorBase) editor).setInput(
                     new StringEditorInput("SQL", sqlText, true, GeneralUtils.getDefaultFileEncoding()));
                 ((SQLEditorBase) editor).reloadSyntaxRules();
+            }
+        }
+    }
+
+    @Override
+    public void disposeSQLPanel(Object panelObject) {
+        if (panelObject instanceof TextViewer) {
+            Object editor = ((TextViewer) panelObject).getData("editor");
+            if (editor instanceof SQLEditorBase) {
+                UIUtils.asyncExec(((SQLEditorBase) editor)::dispose);
             }
         }
     }

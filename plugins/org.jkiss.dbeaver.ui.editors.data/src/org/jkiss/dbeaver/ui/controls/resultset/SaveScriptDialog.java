@@ -50,6 +50,7 @@ class SaveScriptDialog extends BaseDialog {
     private Object sqlPanel;
     private ResultSetSaveSettings saveSettings;
     private ResultSetSaveReport saveReport;
+    private String scriptText;
 
     SaveScriptDialog(ResultSetViewer viewer, ResultSetSaveReport saveReport) {
         super(viewer.getControl().getShell(), "Preview changes", UIIcon.SQL_SCRIPT);
@@ -193,7 +194,7 @@ class SaveScriptDialog extends BaseDialog {
                 }
             });
 
-            String scriptText = "";
+            scriptText = "";
             if (!sqlScript.isEmpty()) {
                 scriptText = SQLUtils.generateScript(
                     viewer.getDataSource(),
@@ -210,8 +211,16 @@ class SaveScriptDialog extends BaseDialog {
                 }
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Can't generalte SQL script", "Error generating SQL script from changes", e);
+            DBWorkbench.getPlatformUI().showError("Can't generate SQL script", "Error generating SQL script from data changes", e);
         }
     }
 
+    @Override
+    protected void buttonPressed(int buttonId) {
+        if (buttonId == IDialogConstants.DETAILS_ID) {
+            ResultSetUtils.copyToClipboard(scriptText);
+            super.buttonPressed(IDialogConstants.CANCEL_ID);
+        }
+        super.buttonPressed(buttonId);
+    }
 }

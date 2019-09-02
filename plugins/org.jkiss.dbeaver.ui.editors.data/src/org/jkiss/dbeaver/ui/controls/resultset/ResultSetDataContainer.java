@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -38,17 +40,19 @@ import java.util.List;
  * Client-side data container.
  * Wraps RSV model and original data container.
  */
-public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
+public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvider, IAdaptable {
 
     private static final Log log = Log.getLog(ResultSetDataContainer.class);
 
+    private final IResultSetController controller;
     private final DBSDataContainer dataContainer;
     private final ResultSetModel model;
     private ResultSetDataContainerOptions options;
 
-    public ResultSetDataContainer(DBSDataContainer dataContainer, ResultSetModel model, ResultSetDataContainerOptions options) {
-        this.dataContainer = dataContainer;
-        this.model = model;
+    public ResultSetDataContainer(IResultSetController controller, ResultSetDataContainerOptions options) {
+        this.controller = controller;
+        this.dataContainer = controller.getDataContainer();
+        this.model = controller.getModel();
         this.options = options;
     }
 
@@ -147,6 +151,12 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
             return adapter.cast(dataContainer);
         }
         return null;
+    }
+
+    @Nullable
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        return controller.getExecutionContext();
     }
 
     private class ModelResultSet implements DBCResultSet {

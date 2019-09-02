@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.db.feature"
         label="%featureName"
-        version="1.0.6.qualifier"
+        version="1.0.7.qualifier"
         provider-name="%providerName">
 
     <description>
@@ -35,7 +35,9 @@
     <plugin id="org.jkiss.dbeaver.ext.hive" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.hsqldb" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.informix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.kognitio" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.netezza" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.opendistro" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.phoenix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.snowflake.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.teradata" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

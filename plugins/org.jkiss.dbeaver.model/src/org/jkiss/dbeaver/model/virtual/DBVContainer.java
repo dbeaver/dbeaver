@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -34,6 +35,7 @@ import java.util.Map;
 public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     static final String ENTITY_PREFIX = ":";
+    static final String CONFIG_PREFIX = "@";
 
     private final DBVContainer parent;
     private String name;
@@ -58,6 +60,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         for (Map.Entry<String, DBVEntity> ee : source.entities.entrySet()) {
             this.entities.put(ee.getKey(), new DBVEntity(this, ee.getValue()));
         }
+        super.copyFrom(source);
     }
 
     DBVContainer(DBVContainer parent, String name, Map<String, Object> map) {
@@ -68,6 +71,11 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
             if (id.startsWith(ENTITY_PREFIX)) {
                 DBVEntity entity = new DBVEntity(this, id.substring(ENTITY_PREFIX.length()), (Map<String, Object>) element.getValue());
                 entities.put(entity.getName(), entity);
+            } else if (id.startsWith(CONFIG_PREFIX)) {
+                String configMap = id.substring(CONFIG_PREFIX.length());
+                if (configMap.equals("properties")) {
+                    loadPropertiesFrom(map, id);
+                }
             } else if (element.getValue() instanceof Map) {
                 DBVContainer child = new DBVContainer(this, id, (Map<String, Object>) element.getValue());
                 containers.put(child.getName(), child);
@@ -161,6 +169,9 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     @Override
     public boolean hasValuableData() {
+        if (!CommonUtils.isEmpty(getProperties())) {
+            return true;
+        }
         for (DBVEntity entity : getEntities()) {
             if (entity.hasValuableData()) {
                 return true;

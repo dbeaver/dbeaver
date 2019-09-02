@@ -265,7 +265,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         @Override
         public boolean performSearch(String searchString, int options) {
             propertyTree.setFilters(new PropertyTreeViewer.NodeFilter(searchString));
-            propertyTree.expandAll();
+            UIUtils.expandAll(propertyTree);
             return propertyTree.getTree().getItemCount() > 0;
         }
 

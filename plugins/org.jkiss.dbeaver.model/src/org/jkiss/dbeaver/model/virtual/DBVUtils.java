@@ -303,4 +303,10 @@ public abstract class DBVUtils {
         return entity;
     }
 
+    public static DBVObject getVirtualObject(DBSObject source, boolean create) {
+        if (source instanceof DBVObject) {
+            return (DBVObject) source;
+        }
+        return source.getDataSource().getContainer().getVirtualModel().findObject(source, create);
+    }
 }

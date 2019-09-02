@@ -99,6 +99,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         this.themeManager.addPropertyChangeListener(themeChangeListener);
     }
 
+    @Override
     public void dispose() {
         if (themeChangeListener != null) {
             themeManager.removePropertyChangeListener(themeChangeListener);

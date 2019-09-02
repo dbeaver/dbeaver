@@ -62,7 +62,8 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 "COMMENT ON " + (table.isView() ? ((PostgreViewBase)table).getViewType() : "TABLE") + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS " + SQLUtils.quoteString(table, comment)));
         }
-        if (isDDL) {
+        if (isDDL || !table.isPersisted()) {
+            // show comment commands for DDL and new objects
             try {
                 if (showComments) {
                     // Column comments
@@ -113,7 +114,9 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
-                PostgreUtils.getObjectGrantPermissionActions(monitor, table, actions, options);
+                if (isDDL) {
+                    PostgreUtils.getObjectGrantPermissionActions(monitor, table, actions, options);
+                }
             } catch (DBException e) {
                 log.error(e);
             }

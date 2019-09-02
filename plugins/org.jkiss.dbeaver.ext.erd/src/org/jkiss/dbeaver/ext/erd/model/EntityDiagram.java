@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -71,9 +72,19 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         }
     }
 
+    private static class DataSourceInfo {
+        int index;
+        List<ERDEntity> entities = new ArrayList<>();
+
+        public DataSourceInfo(int index) {
+            this.index = index;
+        }
+    }
+
     private ERDDecorator decorator;
     private String name;
     private final List<ERDEntity> entities = new ArrayList<>();
+    private final Map<DBPDataSourceContainer, DataSourceInfo> dataSourceMap = new LinkedHashMap<>();
     private boolean layoutManualDesired = true;
     private boolean layoutManualAllowed = false;
     private boolean needsAutoLayout;
@@ -144,6 +155,10 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
                 entities.add(i, entity);
             }
             entityMap.put(entity.getObject(), entity);
+
+            DBPDataSourceContainer dataSource = entity.getObject().getDataSource().getContainer();
+            DataSourceInfo dsInfo = dataSourceMap.computeIfAbsent(dataSource, dsc -> new DataSourceInfo(dataSourceMap.size()));
+            dsInfo.entities.add(entity);
         }
 
         if (reflect) {
@@ -182,6 +197,14 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         synchronized (entities) {
             entityMap.remove(entity.getObject());
             entities.remove(entity);
+
+            DBPDataSourceContainer dataSource = entity.getObject().getDataSource().getContainer();
+            DataSourceInfo dsInfo = dataSourceMap.get(dataSource);
+            dsInfo.entities.remove(entity);
+            if (dsInfo.entities.isEmpty()) {
+                dataSourceMap.remove(dataSource);
+            }
+
         }
         if (reflect) {
             firePropertyChange(CHILD, entity, null);
@@ -284,6 +307,9 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
             if (monitor.isCanceled()) {
                 break;
             }
+            if (entityMap.containsKey(table)) {
+                continue;
+            }
             monitor.subTask("Load " + table.getName());
             ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, this, entityCache, table, null);
             erdEntity.setPrimary(table == dbObject);
@@ -299,15 +325,12 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
 
         // Load relations
         monitor.beginTask("Load entities' relations", entities.size());
-        for (DBSEntity table : entities) {
+        for (ERDEntity erdEntity : entityCache) {
             if (monitor.isCanceled()) {
                 break;
             }
-            monitor.subTask("Load " + table.getName());
-            final ERDEntity erdEntity = entityMap.get(table);
-            if (erdEntity != null) {
-                erdEntity.addModelRelations(monitor, this, true, false);
-            }
+            monitor.subTask("Load " + erdEntity.getName());
+            erdEntity.addModelRelations(monitor, this, true, false);
             monitor.worked(1);
         }
         monitor.done();
@@ -338,6 +361,20 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
             }
         }
         return result;
+    }
+
+    public List<DBPDataSourceContainer> getDataSources() {
+        return new ArrayList<>(dataSourceMap.keySet());
+    }
+
+    public List<ERDEntity> getEntities(DBPDataSourceContainer dataSourceContainer) {
+        DataSourceInfo dsInfo = dataSourceMap.get(dataSourceContainer);
+        return dsInfo == null ? Collections.emptyList() : dsInfo.entities;
+    }
+
+    public int getDataSourceIndex(DBPDataSourceContainer dataSource) {
+        DataSourceInfo dsInfo = dataSourceMap.get(dataSource);
+        return dsInfo == null ? 0 : dsInfo.index;
     }
 
     public void clear() {
