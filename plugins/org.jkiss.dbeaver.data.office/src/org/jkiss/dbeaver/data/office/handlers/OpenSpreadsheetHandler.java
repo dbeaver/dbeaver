@@ -77,7 +77,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
             options.setSelectedRows(selectedRows);
             options.setSelectedColumns(selectedAttributes);
         }
-        ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet.getDataContainer(), resultSet.getModel(), options);
+        ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
             DBeaverUI.getInstance().showError("Open Excel", ModelMessages.error_not_connected_to_database);
             return null;

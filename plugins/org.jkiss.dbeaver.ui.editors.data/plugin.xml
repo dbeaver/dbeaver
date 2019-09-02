@@ -165,6 +165,19 @@
                 position="additions_start"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_table.png">
         </editor>
+
+        <editor
+            id="db-logical-structure"
+            class="org.jkiss.dbeaver.ui.editors.data.VirtualStructureEditor"
+            objectType="org.jkiss.dbeaver.model.struct.DBSEntity"
+            main="false"
+            label="%editor.virtual-structure.name"
+            description="%editor.virtual-structure.description"
+            position="additions_end"
+            type="folder"
+            embeddable="false"
+            icon="#association">
+        </editor>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">

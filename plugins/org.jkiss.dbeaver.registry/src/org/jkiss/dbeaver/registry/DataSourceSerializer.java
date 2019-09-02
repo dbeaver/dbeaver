@@ -31,7 +31,7 @@ interface DataSourceSerializer
 {
     void saveDataSources(
         DBRProgressMonitor monitor,
-        boolean primaryConfig,
+        DataSourceOrigin origin,
         List<DataSourceDescriptor> localDataSources,
         IFile configFile)
         throws DBException, IOException;

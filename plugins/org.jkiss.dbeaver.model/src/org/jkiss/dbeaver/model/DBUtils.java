@@ -1707,13 +1707,17 @@ public final class DBUtils {
         return null;
     }
 
+    public static boolean isRowIdAttribute(DBSEntityAttribute attr) {
+        DBDPseudoAttribute rowIdAttribute = getRowIdAttribute(attr.getParentObject());
+        return rowIdAttribute != null && rowIdAttribute.getName().equals(attr.getName());
+    }
+
     public static DBDPseudoAttribute getPseudoAttribute(DBSEntity entity, String attrName) {
         if (entity instanceof DBDPseudoAttributeContainer) {
             try {
                 DBDPseudoAttribute[] pseudoAttributes = ((DBDPseudoAttributeContainer) entity).getPseudoAttributes();
                 if (pseudoAttributes != null && pseudoAttributes.length > 0) {
-                    for (int i = 0; i < pseudoAttributes.length; i++) {
-                        DBDPseudoAttribute pa = pseudoAttributes[i];
+                    for (DBDPseudoAttribute pa : pseudoAttributes) {
                         String attrId = pa.getAlias();
                         if (CommonUtils.isEmpty(attrId)) {
                             attrId = pa.getName();

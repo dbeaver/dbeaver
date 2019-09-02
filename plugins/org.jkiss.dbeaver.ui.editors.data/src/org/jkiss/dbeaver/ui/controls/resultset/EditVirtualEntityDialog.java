@@ -47,11 +47,12 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-class EditVirtualEntityDialog extends BaseDialog {
+public class EditVirtualEntityDialog extends BaseDialog {
 
     private static final Log log = Log.getLog(EditVirtualEntityDialog.class);
 
@@ -103,6 +104,22 @@ class EditVirtualEntityDialog extends BaseDialog {
     @Override
     protected Composite createDialogArea(Composite parent)
     {
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
+                    try {
+                        fk.getRealReferenceConatraint(monitor);
+                        fk.getAssociatedEntity(monitor);
+                    } catch (DBException e) {
+                        log.debug(e);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
         Composite composite = super.createDialogArea(parent);
 
         TabFolder tabFolder = new TabFolder(composite, SWT.TOP);
@@ -168,6 +185,7 @@ class EditVirtualEntityDialog extends BaseDialog {
 
         UIUtils.createTableColumn(fkTable, SWT.LEFT, "Ref Table");
         UIUtils.createTableColumn(fkTable, SWT.LEFT, "Columns");
+        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Ref Datasource");
 
         for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
             createForeignKeyItem(fkTable, fk);
@@ -218,15 +236,22 @@ class EditVirtualEntityDialog extends BaseDialog {
 
     private void createForeignKeyItem(Table fkTable, DBVEntityForeignKey fk) {
         TableItem item = new TableItem(fkTable, SWT.NONE);
+        //item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
+        DBSEntity refEntity = fk.getReferencedConstraint().getParentObject();
+
         item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
         if (fk.getReferencedConstraint() != null) {
-            item.setText(0, DBUtils.getObjectFullName(fk.getReferencedConstraint().getParentObject(), DBPEvaluationContext.UI));
+            item.setText(0, DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI));
         }
         String ownAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getAttributeName)
             .collect(Collectors.joining(","));
         String refAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getRefAttributeName)
             .collect(Collectors.joining(","));
         item.setText(1, "(" + ownAttrNames + ") -> (" + refAttrNames + ")");
+
+        item.setImage(2, DBeaverIcons.getImage(refEntity.getDataSource().getContainer().getDriver().getIcon()));
+        item.setText(2, refEntity.getDataSource().getContainer().getName());
+
         item.setData(fk);
     }
 

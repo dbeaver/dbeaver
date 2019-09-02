@@ -121,6 +121,32 @@ public class DBVModel extends DBVContainer {
         return container.getEntity(entity.getName(), createNew);
     }
 
+    public DBVObject findObject(DBSObject source, boolean create) {
+        DBSObject[] path = DBUtils.getObjectPath(source, true);
+        if (path.length == 0) {
+            log.warn("Empty entity path");
+            return null;
+        }
+        if (path[0] != dataSourceContainer) {
+            log.warn("Entity's root must be datasource container '" + dataSourceContainer.getName() + "'");
+            return null;
+        }
+        DBVContainer container = this;
+        for (int i = 1; i < path.length; i++) {
+            DBSObject item = path[i];
+            DBVContainer childContainer = container.getContainer(item.getName(), create);
+            if (childContainer == null) {
+                if (i == path.length - 1) {
+                    return container.getEntity(item.getName(), create);
+                }
+                return null;
+            } else {
+                container = childContainer;
+            }
+        }
+        return container;
+    }
+
     public void serialize(DBRProgressMonitor monitor, JsonWriter json) throws IOException, DBException {
         DBVModelSerializerModern.serializeContainer(monitor, json, this);
     }

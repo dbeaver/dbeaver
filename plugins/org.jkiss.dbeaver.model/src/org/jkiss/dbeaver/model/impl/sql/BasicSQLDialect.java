@@ -54,7 +54,7 @@ public class BasicSQLDialect implements SQLDialect {
         }
     };
     protected static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
-        //SQLConstants.KEYWORD_SELECT, "WITH",
+        SQLConstants.KEYWORD_SELECT, "WITH",
         "EXPLAIN", "DESCRIBE", "DESC", "USE", "SET", "COMMIT", "ROLLBACK"};
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
@@ -379,6 +379,16 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Override
     public boolean supportsOrderByIndex() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsOrderBy() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsGroupBy() {
         return true;
     }
 

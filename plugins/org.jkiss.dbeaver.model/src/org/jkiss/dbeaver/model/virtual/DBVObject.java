@@ -16,8 +16,18 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Virtual model object
@@ -27,6 +37,7 @@ public abstract class DBVObject implements DBSObject {
     static final Log log = Log.getLog(DBVObject.class);
 
     private DBVTransformSettings transformSettings;
+    private Map<String, Object> properties;
 
     @Override
     public abstract DBVContainer getParentObject();
@@ -45,5 +56,48 @@ public abstract class DBVObject implements DBSObject {
     }
 
     abstract public boolean hasValuableData();
+
+    /**
+     * Property value can be String, Number, Boolean, List or Map
+     * @param name property name
+     */
+    @Nullable
+    public <T> T getProperty(@NotNull String name) {
+        return CommonUtils.isEmpty(properties) ? null : (T) properties.get(name);
+    }
+
+    public void setProperty(String name, @Nullable Object value) {
+        if (properties == null) {
+            properties = new LinkedHashMap<>();
+        }
+        if (value == null) {
+            properties.remove(name);
+        } else {
+            properties.put(name, value);
+        }
+    }
+
+    @NotNull
+    public Map<String, Object> getProperties() {
+        return properties == null ? Collections.emptyMap() : properties;
+    }
+
+    protected void copyFrom(@NotNull DBVObject src) {
+        if (!CommonUtils.isEmpty(src.properties)) {
+            this.properties = new LinkedHashMap<>(src.properties);
+        }
+    }
+
+    protected void loadPropertiesFrom(@NotNull Map<String, Object> map, String elemName) {
+        properties = JSONUtils.deserializeProperties(map, elemName);
+    }
+
+
+    public void persistConfiguration() {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            dataSource.getContainer().persistConfiguration();
+        }
+    }
 
 }

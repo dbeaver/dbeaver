@@ -324,7 +324,11 @@ public class CommonUtils {
             try {
                 return Integer.parseInt(toString(object));
             } catch (NumberFormatException e) {
-                return def;
+                try {
+                    return (int)Double.parseDouble(toString(object));
+                } catch (NumberFormatException e1) {
+                    return def;
+                }
             }
         }
     }
@@ -360,7 +364,11 @@ public class CommonUtils {
             try {
                 return Long.parseLong(toString(object));
             } catch (NumberFormatException e) {
-                return defValue;
+                try {
+                    return (int)Double.parseDouble(toString(object));
+                } catch (NumberFormatException e1) {
+                    return defValue;
+                }
             }
         }
     }

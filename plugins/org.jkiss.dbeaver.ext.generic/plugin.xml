@@ -318,8 +318,12 @@
                     categories="sql,embedded">
 
                     <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
 
                     <file type="jar" path="drivers/derby/derby.jar" bundle="drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derbytools.jar" bundle="drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derbyshared.jar" bundle="drivers.derby"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
 
                     <parameter name="create-url-param" value=";create=true"/>
@@ -344,8 +348,12 @@
                     categories="sql">
 
                     <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
 
                     <file type="jar" path="drivers/derby/derbyclient.jar" bundle="drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derbytools.jar" bundle="drivers.derby"/>
+                    <file type="jar" path="drivers/derby/derbyshared.jar" bundle="drivers.derby"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
@@ -471,6 +479,30 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
+<!--            SQLiteCrypt commented because it doesn't make sense without proper configurator
+                <driver
+                    id="sqlite_jdbc_crypt"
+                    label="SQLite (Encrypted)"
+                    icon="icons/sqlite_icon.png"
+                    iconBig="icons/sqlite_icon_big.png"
+                    class="org.sqlite.JDBC"
+                    sampleURL="jdbc:sqlite:{file}"
+                    defaultPort=""
+                    webURL="https://github.com/Willena/sqlite-jdbc-crypt"
+                    propertiesURL="https://www.sqlite.org/pragma.html"
+                    embedded="true"
+                    description="SQLite JDBC Driver with encryption and authentication support"
+                    categories="sql,embedded">
+
+                    <file type="jar" path="maven:/io.github.willena:sqlite-jdbc:RELEASE"/>
+
+                    <parameter name="supports-references" value="true"/>
+                    <parameter name="supports-struct-cache" value="false"/>
+                    <parameter name="supports-indexes" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+-->
 
                 <driver
                     id="teradata"
@@ -493,6 +525,7 @@
                     <file type="license" path="drivers/teradata/LICENSE.txt" bundle="drivers.teradata"/>
 
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-multiple-results" value="true"/>
                 </driver>
 
                 <driver
@@ -879,7 +912,7 @@
                     defaultPort="8080"
                     description="Facebook Presto (prestodb) JDBC driver"
                     webURL="https://prestodb.io/"
-                    categories="sql,analytic,bigdata">
+                    categories="sql,analytic,bigdata,hadoop">
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
@@ -896,7 +929,7 @@
                         defaultPort="8080"
                         description="Presto (prestosql) JDBC driver"
                         webURL="https://prestosql.io/"
-                        categories="sql,analytic,bigdata">
+                        categories="sql,analytic,bigdata,hadoop">
                     <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
@@ -1069,6 +1102,21 @@
                     <file type="jar" path="https://github.com/KxSystems/kdb/raw/master/c/jdbc.jar"/>
                 </driver>
 
+                <!-- Qubole
+                <driver
+                    id="qubole_jdbc"
+                    label="Qubole"
+                    icon="icons/qubole_icon.png"
+                    iconBig="icons/qubole_icon_big.png"
+                    class="com.qubole.jdbc.jdbc41.core.QDriver"
+                    sampleURL="jdbc:qubole://{server}/{host}[/{database}]"
+                    description="Qubole JDBC driver"
+                    webURL="https://docs.qubole.com/en/latest/connectivity-options/use-qubole-drivers/JDBC-driver/use-jdbc-driver.html"
+                    categories="bigdata,hadoop">
+                    <file type="jar" path="maven:/com.qubole:jdbc:RELEASE"/>
+                </driver>
+                -->
+
                 <!-- Legacy drivers -->
 
                 <driver
@@ -1093,7 +1141,7 @@
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
                         webURL="http://jdbc.postgresql.org/"
-                        description="PostgreSQL JDBC driver. Can be used for old PostgreSQL server versions or some PostgreSQL based databases (before 8.x).">
+                        description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
@@ -1464,6 +1512,11 @@
         <repository id="cratedb-maven-repo" name="CrateDB Repository" url="https://dl.bintray.com/crate/crate" order="21">
             <scope group="io.crate"/>
         </repository>
+<!--
+        <repository id="s3-maven-qubole-releases" name="Qubole Release Repository on S3" url="http://maven-qubole.s3-website-us-east-1.amazonaws.com/maven/release">
+            <scope group="com.qubole"/>
+        </repository>
+-->
     </extension>
 
 </plugin>

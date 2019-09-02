@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.controls.finder.viewer;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
@@ -104,10 +103,7 @@ public class AdvancedListViewer extends StructuredViewer {
             elements = filter.filter(this, (Object)null, elements);
         }
         for (Object item : elements) {
-            String text = labelProvider.getText(item);
-            Image icon = labelProvider.getImage(item);
-            String toolTip = toolTipProvider == null ? null : toolTipProvider.getToolTipText(item);
-            AdvancedListItem listItem = new AdvancedListItem(control, text, icon, toolTip);
+            AdvancedListItem listItem = new AdvancedListItem(control, item, labelProvider);
             listItem.setData(item);
         }
 

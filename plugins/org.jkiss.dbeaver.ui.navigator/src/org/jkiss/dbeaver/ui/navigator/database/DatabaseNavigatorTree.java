@@ -64,7 +64,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private DBNModel model;
     private TreeEditor treeEditor;
     private boolean checkEnabled;
-    private ISelection defaultSelection;
     private INavigatorFilter navigatorFilter;
     private Text filterControl;
 
@@ -82,7 +81,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
-        this.defaultSelection = new TreeSelection(new TreePath(rootNode == null ? new Object[0] : new Object[] { rootNode } ));
         this.model = DBWorkbench.getPlatform().getNavigatorModel();
         this.model.addListener(this);
         addDisposeListener(e -> {
@@ -159,7 +157,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             @Override
             public ISelection getSelection() {
                 ISelection selection = super.getSelection();
-                return selection.isEmpty() && defaultSelection != null ? defaultSelection : selection;
+                if (!selection.isEmpty()) {
+                    return selection;
+                }
+                Object rootNode = getInput();
+                return new TreeSelection(new TreePath(rootNode == null ? new Object[0] : new Object[] { rootNode } ));
             }
             protected void handleTreeExpand(TreeEvent event) {
                 // Disable redraw during expand (its blinking)

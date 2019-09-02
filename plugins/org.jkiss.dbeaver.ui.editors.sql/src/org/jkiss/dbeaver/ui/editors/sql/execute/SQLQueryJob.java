@@ -111,6 +111,7 @@ public class SQLQueryJob extends DataSourceJob
     private boolean skipConfirmation;
     private int fetchSize;
     private long readFlags;
+    private boolean ignoreParameters;
 
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
@@ -401,9 +402,13 @@ public class SQLQueryJob extends DataSourceJob
             startTime = System.currentTimeMillis();
 
             SQLQuery execStatement = sqlQuery;
-            long execStartTime = startTime;
             DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
                 try {
+                    statistics.setStatementsCount(0);
+                    statistics.setExecuteTime(0);
+                    statistics.setFetchTime(0);
+                    statistics.setRowsUpdated(0);
+                    long execStartTime = System.currentTimeMillis();
                     executeStatement(session, execStatement, execStartTime, curResult);
                 } catch (Throwable e) {
                     throw new InvocationTargetException(e);
@@ -449,9 +454,7 @@ public class SQLQueryJob extends DataSourceJob
             sqlQuery,
             rsOffset,
             rsMaxRows);
-        if (fetchSize > 0) {
-            dbcStatement.setResultsFetchSize(fetchSize);
-        }
+        DBExecUtils.setStatementFetchSize(dbcStatement, rsOffset, rsMaxRows, fetchSize);
         curStatement = dbcStatement;
 
         int statementTimeout = getDataSourceContainer().getPreferenceStore().getInt(SQLPreferenceConstants.STATEMENT_TIMEOUT);
@@ -466,10 +469,12 @@ public class SQLQueryJob extends DataSourceJob
         // Execute statement
         try {
             session.getProgressMonitor().subTask("Execute query");
+
+            boolean hasResultSet = dbcStatement.executeStatement();
+
             statistics.addExecuteTime(System.currentTimeMillis() - startTime);
             statistics.addStatementsCount();
 
-            boolean hasResultSet = dbcStatement.executeStatement();
             curResult.setHasResultSet(hasResultSet);
 
             long updateCount = -1;
@@ -613,6 +618,10 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     public boolean prepareStatementParameters(SQLQuery sqlStatement) {
+        if (ignoreParameters) {
+            return true;
+        }
+
         // Bind parameters
         List<SQLQueryParameter> parameters = sqlStatement.getParameters();
         if (CommonUtils.isEmpty(parameters)) {
@@ -626,6 +635,9 @@ public class SQLQueryJob extends DataSourceJob
             }
         }
 
+        if (ignoreParameters) {
+            return true;
+        }
         // Set values for all parameters
         // Replace parameter tokens with parameter values
         String query = sqlStatement.getText();
@@ -664,17 +676,14 @@ public class SQLQueryJob extends DataSourceJob
             return true;
         }
 
-        boolean okPressed = new UIConfirmation() {
-                @Override
-                public Boolean runTask() {
-                SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                    partSite.getShell(),
-                    parameters);
-                return (dialog.open() == IDialogConstants.OK_ID);
-            }
-        }.execute();
+        int paramsResult = UITask.run(() -> {
+            SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
+                partSite.getShell(),
+                parameters);
+            return dialog.open();
+        });
 
-        if (okPressed) {
+        if (paramsResult == IDialogConstants.OK_ID) {
             // Save values back to script context
             for (SQLQueryParameter param : parameters) {
                 if (param.isNamed() && scriptContext.hasVariable(param.getVarName())) {
@@ -682,8 +691,12 @@ public class SQLQueryJob extends DataSourceJob
                     scriptContext.setVariable(param.getVarName(), strValue);
                 }
             }
+            return true;
+        } else if (paramsResult == IDialogConstants.IGNORE_ID) {
+            ignoreParameters = true;
+            return true;
         }
-        return okPressed;
+        return false;
     }
 
     private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, SQLQueryResult.ExecuteResult executeResult, DBDDataReceiver dataReceiver, boolean updateStatistics)

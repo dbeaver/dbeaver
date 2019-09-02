@@ -55,6 +55,8 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     private final DatabaseCache databaseCache = new DatabaseCache();
 
     private String activeDatabaseName;
+    private boolean supportsColumnProperty;
+    private String serverVersion;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -62,10 +64,38 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         super(monitor, container, new SQLServerDialect());
     }
 
+    public boolean supportsColumnProperty() {
+        return supportsColumnProperty;
+    }
+
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
     {
-        return new SQLServerDataSourceInfo(this, metaData);
+        SQLServerDataSourceInfo info = new SQLServerDataSourceInfo(this, metaData);
+        if (isDataWarehouseServer(monitor)) {
+            info.setSupportsResultSetScroll(false);
+        }
+        return info;
+    }
+
+    boolean isDataWarehouseServer(DBRProgressMonitor monitor) {
+        return getServerVersion(monitor).contains(SQLServerConstants.SQL_DW_SERVER_LABEL);
+    }
+
+    public String getServerVersion() {
+        return serverVersion;
+    }
+
+    String getServerVersion(DBRProgressMonitor monitor) {
+        if (serverVersion == null) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server version")) {
+                serverVersion = JDBCUtils.queryString(session, "SELECT @@VERSION");
+            } catch (Exception e) {
+                log.debug("Error reading SQL Server version: " + e.getMessage());
+                serverVersion = "";
+            }
+        }
+        return serverVersion;
     }
 
     @Override
@@ -96,9 +126,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     @Override
     protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         super.initializeContextState(monitor, context, setActiveObject);
-        if (setActiveObject) {
+        if (setActiveObject ) {
             SQLServerDatabase defaultObject = getDefaultObject();
-            if (defaultObject!= null) {
+            if (defaultObject!= null && !isDataWarehouseServer(monitor)) {
                 setCurrentDatabase(monitor, context, defaultObject);
             }
         }
@@ -123,6 +153,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
             this.activeDatabaseName = SQLServerUtils.getCurrentDatabase(session);
+
+            try {
+                JDBCUtils.queryString(session, "SELECT COLUMNPROPERTY(0, NULL, NULL)");
+                this.supportsColumnProperty = true;
+            } catch (Exception e) {
+                this.supportsColumnProperty = false;
+            }
         } catch (Throwable e) {
             log.error("Error during connection initialization", e);
         }
@@ -233,7 +270,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
         for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
-            setCurrentDatabase(monitor, context, (SQLServerDatabase) object);
+            if (!setCurrentDatabase(monitor, context, (SQLServerDatabase) object)) {
+                return;
+            }
         }
         activeDatabaseName = object.getName();
 
@@ -263,15 +302,17 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         }
     }
 
-    private void setCurrentDatabase(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, SQLServerDatabase object) throws DBCException {
+    private boolean setCurrentDatabase(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, SQLServerDatabase object) throws DBCException {
         if (object == null) {
             log.debug("Null current schema");
-            return;
+            return false;
         }
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active database")) {
             SQLServerUtils.setCurrentDatabase(session, object.getName());
+            return true;
         } catch (SQLException e) {
-            throw new DBCException(e, this);
+            log.error(e);
+            return false;
         }
     }
 

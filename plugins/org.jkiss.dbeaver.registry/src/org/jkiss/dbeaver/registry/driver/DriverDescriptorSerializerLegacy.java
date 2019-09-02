@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -33,7 +32,6 @@ import org.xml.sax.Attributes;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -259,7 +257,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         lib.setDisabled(true);
                     } else if (lib == null) {
                         lib = DriverLibraryAbstract.createFromPath(curDriver, type, path, version);
-                        curDriver.addDriverLibrary(lib);
+                        curDriver.addDriverLibrary(lib, false);
                     } else if (!CommonUtils.isEmpty(version)) {
                         lib.setPreferredVersion(version);
                     }

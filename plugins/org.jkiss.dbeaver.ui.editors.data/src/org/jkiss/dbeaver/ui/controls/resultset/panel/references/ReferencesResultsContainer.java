@@ -27,11 +27,13 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -105,6 +107,13 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
     public IResultSetPresentation getOwnerPresentation() {
         return parentController.getActivePresentation();
+    }
+
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        DBSDataContainer dataContainer = getDataContainer();
+        return dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer().getProject();
     }
 
     @Override
@@ -261,6 +270,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
     }
 
     private void fillKeysCombo() {
+        if (fkCombo.isDisposed()) {
+            return;
+        }
         fkCombo.removeAll();
         if (referenceKeys.isEmpty()) {
             fkCombo.addItem(null);
@@ -371,7 +383,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         }
     }
 
-    private static class RefKeyLabelProvider extends LabelProvider {
+    private class RefKeyLabelProvider extends LabelProvider {
 
         @Override
         public Image getImage(Object element) {
@@ -389,11 +401,19 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 return "<No references>";
             }
             ReferenceKey key = (ReferenceKey) element;
+            String title;
+            DBSObject targetEntity;
             if (key.isReference) {
-                return key.refAssociation.getParentObject().getName() + " (" + key.refAssociation.getName() + ")";
+                targetEntity = key.refAssociation.getParentObject();
             } else {
-                return key.refAssociation.getReferencedConstraint().getParentObject().getName() + " (" + key.refAssociation.getName() + ")";
+                targetEntity = key.refAssociation.getReferencedConstraint().getParentObject();
             }
+            title = targetEntity.getName() + " (" + key.refAssociation.getName() + ")";
+            if (parentController.getDataContainer() != null && parentController.getDataContainer().getDataSource() != targetEntity.getDataSource()) {
+                title += " [" + targetEntity.getDataSource().getContainer().getName() + "]";
+            }
+
+            return title;
         }
 
     }

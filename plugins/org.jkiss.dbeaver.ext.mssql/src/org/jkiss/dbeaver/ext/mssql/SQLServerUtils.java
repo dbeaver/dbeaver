@@ -144,13 +144,11 @@ public class SQLServerUtils {
         }
     }
 
-    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerDatabase database, @Nullable SQLServerSchema schema, @NotNull  String objectName) throws DBException {
-        SQLServerDataSource dataSource = database.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerSchema schema, @NotNull  String objectName) throws DBException {
+        SQLServerDataSource dataSource = schema.getDataSource();
+        String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            String objectFQN = schema == null ?
-                DBUtils.getQuotedIdentifier(dataSource, objectName) :
-                DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
+            String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(systemSchema + ".sp_helptext '" + objectFQN + "'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();

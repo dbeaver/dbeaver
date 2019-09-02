@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -33,7 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVObject;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
@@ -42,7 +43,11 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.IEntityStructureEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLUtils;
+import org.w3c.dom.Document;
 
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -142,19 +147,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         diagramLoadingJob = LoadingJob.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
                 @Override
-                public EntityDiagram evaluate(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    // Do not refresh actual metadata. It is slow and it may corrupt diagram state
-/*
-                    if (refreshMetadata && object instanceof DBPRefreshableObject) {
-                        try {
-                            getEditorInput().getNavigatorNode().refreshNode(monitor, ERDEditorEmbedded.this);
-                        } catch (DBException e) {
-                            log.warn("Error refreshing database metadata", e);
-                        }
-                    }
-*/
+                public EntityDiagram evaluate(DBRProgressMonitor monitor) {
                     try {
                         return loadFromDatabase(monitor);
                     } catch (DBException e) {
@@ -195,19 +188,39 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         } else {
             diagram = new EntityDiagram(getDecorator(), dbObject, dbObject.getName());
 
-            diagram.setLayoutManualAllowed(true);
-            diagram.setNeedsAutoLayout(true);
-
+            // Fill from database even if we loaded from state (something could change since last view)
             diagram.fillEntities(
                 monitor,
-                collectDatabaseTables(monitor, dbObject),
+                collectDatabaseTables(monitor, dbObject, diagram),
                 dbObject);
+
+            boolean hasPersistedState = false;
+            try {
+                // Load persisted state
+                DBVObject vObject = this.getVirtualObject();
+                if (vObject != null) {
+                    Map<String, Object> diagramState = vObject.getProperty(PROP_DIAGRAM_STATE);
+                    if (diagramState != null) {
+                        String serializedDiagram = (String) diagramState.get(PROPS_DIAGRAM_SERIALIZED);
+                        if (!CommonUtils.isEmpty(serializedDiagram)) {
+                            Document xmlDocument = XMLUtils.parseDocument(new StringReader(serializedDiagram));
+                            DiagramLoader.loadDiagram(monitor, xmlDocument, dbObject.getDataSource().getContainer().getProject(), diagram);
+                            hasPersistedState = true;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error loading ER diagram from saved state", e);
+            }
+            diagram.setLayoutManualAllowed(true);
+            diagram.setNeedsAutoLayout(!hasPersistedState);
+
         }
 
         return diagram;
     }
 
-    private Collection<DBSEntity> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root) throws DBException
+    private Collection<DBSEntity> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root, EntityDiagram diagram) throws DBException
     {
         Set<DBSEntity> result = new LinkedHashSet<>();
 
@@ -315,6 +328,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             monitor.done();
         }
 
+        // Remove entities already loaded in the diagram
+        for (ERDEntity diagramEntity : diagram.getEntities()) {
+            result.remove(diagramEntity.getObject());
+        }
+
         return result;
     }
 
@@ -322,17 +340,17 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     public void doSave(IProgressMonitor monitor) {
         try {
             // Save in virtual model as entity property.
-            DBVEntity vEntity = this.getVirtualEntity();
-            if (vEntity == null) {
+            DBVObject vObject = this.getVirtualObject();
+            if (vObject == null) {
                 return;
             }
             Map<String, Object> diagramStateMap = new LinkedHashMap<>();
-            vEntity.setProperty(PROP_DIAGRAM_STATE, diagramStateMap);
+            vObject.setProperty(PROP_DIAGRAM_STATE, diagramStateMap);
 
             String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, true);
             diagramStateMap.put(PROPS_DIAGRAM_SERIALIZED, diagramState);
 
-            vEntity.persistConfiguration();
+            vObject.persistConfiguration();
 
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
@@ -341,12 +359,13 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     }
 
     @Nullable
-    private DBVEntity getVirtualEntity() {
+    private DBVObject getVirtualObject() {
         DBSObject rootObject = getRootObject();
         if (rootObject instanceof DBSEntity) {
             return DBVUtils.getVirtualEntity((DBSEntity) rootObject, true);
+        } else {
+            return DBVUtils.getVirtualObject(rootObject, true);
         }
-        return null;
     }
 
 }

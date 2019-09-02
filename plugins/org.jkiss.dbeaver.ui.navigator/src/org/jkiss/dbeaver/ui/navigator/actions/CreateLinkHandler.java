@@ -22,6 +22,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -74,7 +75,11 @@ public abstract class CreateLinkHandler extends AbstractHandler {
 
             @Override
             protected void execute(IProgressMonitor monitor)
-                    throws CoreException, InvocationTargetException, InterruptedException {
+                    throws CoreException {
+                if (container instanceof IFolder && !container.exists()) {
+                    // Create parent folder
+                    ((IFolder) container).create(true, true, monitor);
+                }
                 IStatus linked = createLink(container, monitor, locations);
                 int severity = linked.getSeverity();
                 switch (severity) {

@@ -93,6 +93,11 @@ public class DBNProject extends DBNResource {
     }
 
     @Override
+    public DBPProject getOwnerProject() {
+        return project;
+    }
+
+    @Override
     public boolean supportsRename() {
         // Do not rename active projects
         return project.getWorkspace().getActiveProject() != project;

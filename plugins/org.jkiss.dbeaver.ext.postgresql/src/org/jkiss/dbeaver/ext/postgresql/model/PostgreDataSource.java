@@ -424,7 +424,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             final List<PostgreDatabase> allDatabases = databaseCache.getCachedObjects();
             if (allDatabases.isEmpty()) {
                 // Looks like we are not connected or in connection process right now - no instance then
-                return null;
+                throw new IllegalStateException("No databases fond on the server");
             }
             defDatabase = allDatabases.get(0);
         }
@@ -564,7 +564,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
     {
         return new PostgreDataSourceInfo(this, metaData);
     }

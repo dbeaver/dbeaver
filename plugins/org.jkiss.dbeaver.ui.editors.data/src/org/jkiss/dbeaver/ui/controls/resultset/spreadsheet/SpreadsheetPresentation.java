@@ -233,8 +233,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         applyThemeSettings();
 
-        this.spreadsheet.addDisposeListener(e -> dispose());
-
         trackPresentationControl();
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
     }
@@ -1550,6 +1548,27 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return supportsAttributeFilter;
             }
             return false;
+        }
+
+        @Override
+        public boolean isElementSupportsSort(@Nullable Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean isElementReadOnly(Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                return controller.isAttributeReadOnly((DBDAttributeBinding) element);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean isGridReadOnly() {
+            return controller.isReadOnly();
         }
 
         @Override

@@ -230,6 +230,10 @@ public interface SQLDialect {
 
     boolean supportsOrderByIndex();
 
+    boolean supportsOrderBy();
+
+    boolean supportsGroupBy();
+
     /**
      * Check whether dialect support plain comment queries (queries which contains only comments)
      */

@@ -319,15 +319,16 @@ public abstract class JDBCDataSource
         return jdbcFactory;
     }
 
+    @NotNull
     @Override
     public JDBCRemoteInstance getDefaultInstance() {
         return defaultRemoteInstance;
     }
 
+    @NotNull
     @Override
     public List<? extends JDBCRemoteInstance> getAvailableInstances() {
-        JDBCRemoteInstance defaultInstance = getDefaultInstance();
-        return defaultInstance == null ? Collections.emptyList() : Collections.singletonList(defaultInstance);
+        return Collections.singletonList(getDefaultInstance());
     }
 
     @Override
@@ -365,7 +366,7 @@ public abstract class JDBCDataSource
             }
 
             try {
-                dataSourceInfo = createDataSourceInfo(metaData);
+                dataSourceInfo = createDataSourceInfo(monitor, metaData);
             } catch (Throwable e) {
                 log.error("Error obtaining database info");
             }
@@ -624,7 +625,7 @@ public abstract class JDBCDataSource
         return null;
     }
 
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
     {
         return new JDBCDataSourceInfo(metaData);
     }

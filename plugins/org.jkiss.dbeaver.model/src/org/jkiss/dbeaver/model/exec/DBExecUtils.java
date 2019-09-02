@@ -47,6 +47,8 @@ import java.util.List;
  */
 public class DBExecUtils {
 
+    public static final int DEFAULT_READ_FETCH_SIZE = 10000;
+
     private static final Log log = Log.getLog(DBExecUtils.class);
 
     /**
@@ -193,5 +195,20 @@ public class DBExecUtils {
             }
         }
         return true;
+    }
+
+    public static void setStatementFetchSize(DBCStatement dbStat, long firstRow, long maxRows, int fetchSize) {
+        boolean useFetchSize = fetchSize > 0 || dbStat.getSession().getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
+        if (useFetchSize) {
+            if (fetchSize <= 0) {
+                fetchSize = DEFAULT_READ_FETCH_SIZE;
+            }
+            try {
+                dbStat.setResultsFetchSize(
+                    firstRow < 0 || maxRows <= 0 ? fetchSize : (int) (firstRow + maxRows));
+            } catch (Exception e) {
+                log.warn(e);
+            }
+        }
     }
 }

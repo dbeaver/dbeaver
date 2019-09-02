@@ -69,7 +69,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     }
 
     public DBPDataSource getDataSource() {
-        return dataSource;
+        return dataSource != null ? dataSource : getObject().getDataSource();
     }
 
     public String getAlias() {

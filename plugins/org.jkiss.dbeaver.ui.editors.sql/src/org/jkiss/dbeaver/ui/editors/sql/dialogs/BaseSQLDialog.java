@@ -151,6 +151,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
     {
         if (buttonId == IDialogConstants.DETAILS_ID) {
             saveToClipboard();
+            super.buttonPressed(IDialogConstants.CANCEL_ID);
         } else {
             super.buttonPressed(buttonId);
         }

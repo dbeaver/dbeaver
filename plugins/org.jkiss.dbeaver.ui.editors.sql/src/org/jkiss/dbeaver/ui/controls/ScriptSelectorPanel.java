@@ -348,7 +348,7 @@ public class ScriptSelectorPanel {
 
     private void loadScriptTree(List<ResourceInfo> scriptFiles) {
         scriptViewer.setInput(scriptFiles);
-        scriptViewer.expandToLevel(2);
+        UIUtils.expandAll(scriptViewer);
     }
 
     private class ScriptFilter extends ViewerFilter {
@@ -392,7 +392,7 @@ public class ScriptSelectorPanel {
         public IStatus runInUIThread(IProgressMonitor monitor) {
             filterJob = null;
             scriptViewer.setFilters(new ViewerFilter[] { new ScriptFilter() });
-            scriptViewer.expandAll();
+            UIUtils.expandAll(scriptViewer);
             final Tree tree = scriptViewer.getTree();
             if (tree.getItemCount() > 0) {
                 scriptViewer.reveal(tree.getItem(0).getData());

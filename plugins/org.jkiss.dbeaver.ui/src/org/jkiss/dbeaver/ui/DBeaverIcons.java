@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 
@@ -79,14 +80,15 @@ public class DBeaverIcons
     public static Image getImage(@NotNull DBPImage image)
     {
         if (image == null) {
-            return null;
+            return getImage(DBIcon.TYPE_UNKNOWN);
         }
         if (image instanceof DBIconBinary) {
             return ((DBIconBinary) image).getImage();
         } else {
             IconDescriptor icon = getIconByLocation(image.getLocation());
             if (icon == null) {
-                throw new IllegalArgumentException("Image '" + image.getLocation() + "' not found");
+                log.error("Image '" + image.getLocation() + "' not found");
+                return getImage(DBIcon.TYPE_UNKNOWN);
             } else if (image instanceof DBIconComposite) {
                 return getCompositeIcon(icon, (DBIconComposite) image).image;
             } else {
@@ -99,14 +101,15 @@ public class DBeaverIcons
     public static ImageDescriptor getImageDescriptor(@NotNull DBPImage image)
     {
         if (image == null) {
-            return null;
+            return getImageDescriptor(DBIcon.TYPE_UNKNOWN);
         }
         if (image instanceof DBIconBinary) {
             return ((DBIconBinary) image).getImageDescriptor();
         } else {
             IconDescriptor icon = getIconByLocation(image.getLocation());
             if (icon == null) {
-                throw new IllegalArgumentException("Image '" + image.getLocation() + "' not found");
+                log.error("Image '" + image.getLocation() + "' not found");
+                return getImageDescriptor(DBIcon.TYPE_UNKNOWN);
             } else if (image instanceof DBIconComposite) {
                 return getCompositeIcon(icon, (DBIconComposite) image).imageDescriptor;
             } else {

@@ -44,6 +44,8 @@ public class SQLServerConstants {
     public static final String TYPE_SMALLDATETIME = "smalldatetime";
     public static final String TYPE_DATETIMEOFFSET = "datetimeoffset";
     public static final String TYPE_UNIQUEIDENTIFIER = "uniqueidentifier";
+    public static final String TYPE_NVARCHAR = "nvarchar";
+    public static final String TYPE_NCHAR = "nchar";
 
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
@@ -53,11 +55,13 @@ public class SQLServerConstants {
     public static final String PROP_CONNECTION_AUTHENTICATION_SCHEME = "authenticationScheme";
 
     public static final String PROP_TRUST_SERVER_CERTIFICATE = "trustServerCertificate";
+    public static final String PROP_DOMAIN = "domain";
 
     public static final String AUTH_SQL_SERVER_PASSWORD = "SqlPassword";
     public static final String AUTH_ACTIVE_DIRECTORY_PASSWORD = "ActiveDirectoryPassword";
     public static final String AUTH_ACTIVE_DIRECTORY_INTEGRATED = "ActiveDirectoryIntegrated";
     public static final String AUTH_ACTIVE_DIRECTORY_MSI = "ActiveDirectoryMSI";
+    public static final String AUTH_NTLM = "NTLM";
 
     public static final String AUTH_SCHEME_KERBEROS = "JavaKerberos";
 
@@ -88,5 +92,7 @@ public class SQLServerConstants {
 
     @Deprecated
     public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
+
+    public static final CharSequence SQL_DW_SERVER_LABEL = "SQL Data Warehouse";
 
 }

@@ -91,7 +91,7 @@ public class ProgressEditorPart extends EditorPart {
     private void createProgressPane(final Composite parent) {
         progressCanvas = new Canvas(parent, SWT.NONE);
         progressCanvas.addPaintListener(e ->
-            e.gc.drawText("Connecting to datasource '" + getEditorInput().getDatabaseObject().getName() + "'...", 5, 5, true));
+            e.gc.drawText("Opening editor '" + getEditorInput().getDatabaseObject().getName() + "'...", 5, 5, true));
 
         InitNodeService loadingService = new InitNodeService();
         LoadingJob<IDatabaseEditorInput> loadJob = LoadingJob.createService(

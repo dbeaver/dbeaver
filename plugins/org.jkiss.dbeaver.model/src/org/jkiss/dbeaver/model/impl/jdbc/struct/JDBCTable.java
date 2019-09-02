@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -59,7 +58,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private static final Log log = Log.getLog(JDBCTable.class);
 
     private static final String DEFAULT_TABLE_ALIAS = "x";
-    public static final int DEFAULT_READ_FETCH_SIZE = 10000;
 
     private boolean persisted;
 
@@ -165,7 +163,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         String sqlQuery = query.toString();
         statistics.setQueryText(sqlQuery);
-        statistics.addStatementsCount();
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
 
@@ -181,18 +178,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 return statistics;
             }
             if (dbStat instanceof JDBCStatement && (fetchSize > 0 || maxRows > 0)) {
-                boolean useFetchSize = fetchSize > 0 || getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
-                if (useFetchSize) {
-                    if (fetchSize <= 0) {
-                        fetchSize = DEFAULT_READ_FETCH_SIZE;
-                    }
-                    try {
-                        dbStat.setResultsFetchSize(
-                            firstRow < 0 || maxRows <= 0 ? fetchSize : (int) (firstRow + maxRows));
-                    } catch (Exception e) {
-                        log.warn(e);
-                    }
-                }
+                DBExecUtils.setStatementFetchSize(dbStat, firstRow, maxRows, fetchSize);
             }
 
             long startTime = System.currentTimeMillis();
@@ -204,22 +190,16 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     try {
                         dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
 
-                        startTime = System.currentTimeMillis();
-                        long rowCount = 0;
+                        DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
                         while (dbResult.nextRow()) {
-                            if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
+                            if (fetchProgress.isCanceled() || (hasLimits && fetchProgress.isMaxRowsFetched(maxRows))) {
                                 // Fetch not more than max rows
                                 break;
                             }
                             dataReceiver.fetchRow(session, dbResult);
-                            rowCount++;
-                            if (rowCount % 100 == 0) {
-                                monitor.subTask(rowCount + ModelMessages.model_jdbc__rows_fetched);
-                                monitor.worked(100);
-                            }
+                            fetchProgress.monitorRowFetch();
                         }
-                        statistics.setFetchTime(System.currentTimeMillis() - startTime);
-                        statistics.setRowsFetched(rowCount);
+                        fetchProgress.dumpStatistics(statistics);
                     } finally {
                         // First - close cursor
                         try {
@@ -776,21 +756,21 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     query.append(" LIKE ?");
                 }
             }
-        }
-        // Add desc columns conditions
-        if (searchInDesc) {
-            boolean hasCondition = searchInKeys;
-            for (DBSEntityAttribute descAttr : descAttributes) {
-                if (descAttr.getDataKind() == DBPDataKind.STRING) {
-                    if (hasCondition) {
-                        query.append(" OR ");
+            // Add desc columns conditions
+            if (searchInDesc) {
+                boolean hasCondition = searchInKeys;
+                for (DBSEntityAttribute descAttr : descAttributes) {
+                    if (descAttr.getDataKind() == DBPDataKind.STRING) {
+                        if (hasCondition) {
+                            query.append(" OR ");
+                        }
+                        query.append(DBUtils.getQuotedIdentifier(descAttr)).append(" LIKE ?");
+                        hasCondition = true;
                     }
-                    query.append(DBUtils.getQuotedIdentifier(descAttr)).append(" LIKE ?");
-                    hasCondition = true;
                 }
             }
+            if (hasCond) query.append(")");
         }
-        if (hasCond) query.append(")");
         query.append(" ORDER BY ");
         if (sortByValue) {
             query.append(DBUtils.getQuotedIdentifier(keyColumn));

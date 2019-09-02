@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -114,4 +115,12 @@ public class EntityEditorsRegistry {
         return null;
     }
 
+    public EntityEditorDescriptor getEntityEditor(IEditorPart editor) {
+        for (EntityEditorDescriptor ed : entityEditors) {
+            if (ed.getEditorType().getImplName().equals(editor.getClass().getName())) {
+                return ed;
+            }
+        }
+        return null;
+    }
 }

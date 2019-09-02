@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -140,6 +141,12 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
     @Override
     public void setDirty(boolean dirty) {
 
+    }
+
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        return getValueController().getExecutionContext().getDataSource().getContainer().getProject();
     }
 
     @Override
