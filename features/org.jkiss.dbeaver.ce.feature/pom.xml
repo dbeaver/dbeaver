@@ -42,30 +42,6 @@
                             <goal>copy-resources</goal>
                         </goals>
                     </execution>
-
-<!--
-                    <execution>
-                        <id>process-macos-info</id>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/generated-macos/DBeaver.app/Contents</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>root</directory>
-                                    <includes>
-                                        <include>Info.plist</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                    </execution>
--->
-
                 </executions>
             </plugin>
         </plugins>
