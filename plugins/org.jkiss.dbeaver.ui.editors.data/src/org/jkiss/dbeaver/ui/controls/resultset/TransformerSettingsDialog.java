@@ -215,10 +215,12 @@ class TransformerSettingsDialog extends BaseDialog {
                 transformerCombo.select(0);
             }
         }
-        if (transformer != null && transformer.getDescription() != null) {
-            infoText.setText(transformer.getDescription());
-        } else {
-            infoText.setText("");
+        if (infoText != null) {
+            if (transformer != null && transformer.getDescription() != null) {
+                infoText.setText(transformer.getDescription());
+            } else {
+                infoText.setText("");
+            }
         }
 
         if (transformer != null) {
