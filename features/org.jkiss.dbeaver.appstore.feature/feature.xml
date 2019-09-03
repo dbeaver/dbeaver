@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+        id="org.jkiss.dbeaver.appstore.feature"
+        label="%featureName"
+        version="6.2.0.qualifier"
+        provider-name="%providerName"
+        plugin="org.jkiss.dbeaver.core.application">
+
+    <description>
+        %description
+    </description>
+
+    <copyright>
+        %copyright
+    </copyright>
+
+    <license url="%licenseURL">
+        %license
+    </license>
+
+    <url>
+        <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
+    </url>
+
+    <requires>
+        <import plugin="org.apache.commons.logging" match="greaterOrEqual"/>
+        <import plugin="com.jcraft.jsch" match="greaterOrEqual"/>
+        <import plugin="org.objectweb.asm" match="greaterOrEqual"/>
+    </requires>
+
+    <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>
+
+    <includes id="org.jkiss.dbeaver.runtime.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.ui.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
+
+    <!-- Additional plugins for standalone version -->
+
+    <plugin id="org.jkiss.dbeaver.ext.sample.database" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.ui.tipoftheday" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <plugin id="org.eclipse.ui.ide.application" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <!-- EGit and other requirements -->
+    <plugin id="org.eclipse.ui.net" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.eclipse.jsch.core" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.eclipse.jsch.ui" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.eclipse.core.variables" download-size="0" install-size="0" version="0.0.0"/>
+
+    <!-- Include org.eclipse.ui.themes because it was added only in 4.4 -->
+    <plugin id="org.eclipse.ui.themes" download-size="0" install-size="0" version="0.0.0"/>
+
+    <!-- Custom stuff -->
+    <plugin id="org.apache.commons.cli" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+
+</feature>

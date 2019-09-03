@@ -29,6 +29,12 @@
         </application>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.applications" id="appstore" name="AppStore">
+        <application visible="true">
+            <run class="org.jkiss.dbeaver.core.application.DBeaverApplication"/>
+        </application>
+    </extension>
+
     <extension point="org.eclipse.core.runtime.products" id="product">
         <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver">
             <property name="aboutText" value="%aboutText"/>
@@ -52,7 +58,30 @@
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
             <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.ui.tipoftheday/nl/en/tips.xml"/>
+        </product>
+    </extension>
 
+    <extension point="org.eclipse.core.runtime.products" id="appstore">
+        <product application="org.jkiss.dbeaver.core.application.appstore" description="%productSubTitle" name="DBeaver CE">
+            <property name="aboutText" value="%aboutText"/>
+            <property name="copyright" value="%productCopyright"/>
+            <property name="subTitle" value="%productSubTitle"/>
+            <property name="website" value="%productWebsite"/>
+            <property name="email" value="%productEmail"/>
+            <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
+            <property name="appName" value="DBeaver CE"/>
+            <property name="startupForegroundColor" value="000000"/>
+            <property name="versionInfoCoord" value="155,265"/>
+            <property name="versionInfoSize" value="12"/>
+            <property name="versionInfoColor" value="0,0,0"/>
+            <property name="startupMessageRect" value="323,270,242,25"/>
+            <property name="startupProgressRect" value="323,255,242,10"/>
+            <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
+            <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
+            <property name="applicationXMI" value="org.jkiss.dbeaver.core.application/dbeaver.e4xmi"/>
+            <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
+            <property name="preferenceCustomization" value="plugin_customization.ini"/>
+            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.ui.tipoftheday/nl/en/tips.xml"/>
         </product>
     </extension>
 
@@ -330,6 +359,7 @@
     <extension point="org.eclipse.ui.splashHandlers">
         <splashHandler class="org.jkiss.dbeaver.core.application.DBeaverSplashHandler" id="org.jkiss.dbeaver.ui.splash.interactive"/>
         <splashHandlerProductBinding productId="org.jkiss.dbeaver.core.application.product" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
+        <splashHandlerProductBinding productId="org.jkiss.dbeaver.core.appstore.product" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
     </extension>
 
     <extension point="org.eclipse.ui.helpSupport">

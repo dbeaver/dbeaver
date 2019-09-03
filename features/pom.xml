@@ -20,6 +20,7 @@
         <module>org.jkiss.dbeaver.db.ui.feature</module>
         <module>org.jkiss.dbeaver.ide.feature</module>
         <module>org.jkiss.dbeaver.standalone.feature</module>
+        <module>org.jkiss.dbeaver.appstore.feature</module>
         <module>org.jkiss.dbeaver.ce.feature</module>
 
         <module>org.jkiss.dbeaver.debug.feature</module>
