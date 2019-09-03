@@ -32,6 +32,7 @@
         <module>features</module>
 
         <!-- Products -->
+        <module>product/appstore</module>
         <module>product/standalone</module>
         <module>product/repositories</module>
 
