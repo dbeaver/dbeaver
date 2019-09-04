@@ -1,18 +1,13 @@
-${dbeaver-product}
+${dbeaver-product} ${dbeaver-version} for AppStore
 
-${dbeaver-version}
+This is a special DBeaver distribution for Microsoft and Apple app store.
 
-README
-
-Licensing
+License
 ==========================
   Apache License 2 (http://www.apache.org/licenses/LICENSE-2.0)
 
-Web
+Contacts
 ==========
   Main web site: https://dbeaver.io
   Source code: https://github.com/dbeaver/dbeaver
-
-Contacts
-==============
-  dbeaver@jkiss.org       - Technical support, feature suggestions and any other questions.
+  Technical support, sales: dbeaver@jkiss.org
