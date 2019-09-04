@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.tools.transfer.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
@@ -32,7 +31,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * EntityEditorsRegistry
+ * DataTransferRegistry
  */
 public class DataTransferRegistry {
 
@@ -135,17 +134,6 @@ public class DataTransferRegistry {
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getId().equals(id)) {
                 return node;
-            }
-        }
-        return null;
-    }
-
-    public DataTransferPageDescriptor getPageDescriptor(IWizardPage page) {
-        for (DataTransferNodeDescriptor nd : nodes) {
-            for (DataTransferPageDescriptor pd : nd.patPageDescriptors()) {
-                if (pd.getPageClass().getImplName().equals(page.getClass().getName())) {
-                    return pd;
-                }
             }
         }
         return null;
