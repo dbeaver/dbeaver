@@ -51,10 +51,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
 
 import java.io.*;
 import java.net.URL;
@@ -155,11 +151,22 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     public Object start(IApplicationContext context) {
         instance = this;
 
-        // Set display name at the very beginning (#609)
-        // This doesn't initialize display - just sets default title
-        Display.setAppName(GeneralUtils.getProductName());
-
         Location instanceLoc = Platform.getInstanceLocation();
+
+        {
+            String defaultHomePath = WORKSPACE_DIR_CURRENT;
+            if (instanceLoc.isSet()) {
+                defaultHomePath = instanceLoc.getURL().getFile();
+            }
+            if (DBeaverCommandLine.handleCommandLine(defaultHomePath)) {
+                log.debug("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
+                return IApplication.EXIT_OK;
+            }
+
+            // Custom parameters
+            DBeaverCommandLine.handleCustomParameters();
+        }
+
         // Lock the workspace
         try {
             if (!instanceLoc.isSet()) {
@@ -181,10 +188,12 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             e.printStackTrace();
         }
 
+        // Set display name at the very beginning (#609)
+        // This doesn't initialize display - just sets default title
+        Display.setAppName(GeneralUtils.getProductName());
+
         // Create display
         getDisplay();
-
-        DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
 
         try {
             // look and see if there's a splash shell we can parent off of
@@ -202,15 +211,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             System.err.println("Error updating splash shell");
         }
 
-
-        // Add bundle load logger
-        Bundle brandingBundle = context.getBrandingBundle();
-        if (brandingBundle != null) {
-            BundleContext bundleContext = brandingBundle.getBundleContext();
-            if (bundleContext != null) {
-                bundleContext.addBundleListener(new BundleLoadListener());
-            }
-        }
         Log.addListener((message, t) -> DBeaverSplashHandler.showMessage(CommonUtils.toString(message)));
 
         final Runtime runtime = Runtime.getRuntime();
@@ -234,7 +234,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         initializeApplication();
 
         // Run instance server
-        instanceServer = DBeaverInstanceServer.startInstanceServer();
+        instanceServer = DBeaverInstanceServer.startInstanceServer(createInstanceController());
 
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(
@@ -242,6 +242,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             ApplicationWorkbenchAdvisor.DBEAVER_SCHEME_NAME);
         try {
             log.debug("Run workbench");
+            getDisplay();
             int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
 
             if (resetUIOnRestart) {
@@ -281,6 +282,10 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         }
     }
 
+    protected IInstanceController createInstanceController() {
+        return new DBeaverInstanceServer();
+    }
+
     private void resetUISettings(Location instanceLoc) {
         try {
             File instanceDir = new File(instanceLoc.getURL().toURI());
@@ -305,7 +310,11 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     private Display getDisplay() {
         if (display == null) {
             log.debug("Create display");
-            display = PlatformUI.createDisplay();
+            display = Display.getCurrent();
+            if (display == null) {
+                display = PlatformUI.createDisplay();
+            }
+            DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
         }
         return display;
     }
@@ -333,10 +342,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             }
         } catch (Throwable e) {
             log.error("Error migrating old workspace version", e);
-        }
-        if (DBeaverCommandLine.handleCommandLine(defaultHomePath)) {
-            log.debug("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
-            return false;
         }
         try {
             // Make URL manually because file.toURI().toURL() produces bad path (with %20).
@@ -380,8 +385,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             // Error may occur if -data parameter was specified at startup
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
-        // Custom parameters
-        DBeaverCommandLine.handleCustomParameters();
 
         return true;
     }
@@ -522,22 +525,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
     public void setResetUIOnRestart(boolean resetUIOnRestart) {
         this.resetUIOnRestart = resetUIOnRestart;
-    }
-
-    private static class BundleLoadListener implements BundleListener {
-        @Override
-        public void bundleChanged(BundleEvent event) {
-            String message = null;
-
-            if (event.getType() == BundleEvent.STARTED) {
-                message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-            } else if (event.getType() == BundleEvent.STOPPING) {
-                message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-            }
-            if (message != null) {
-                log.debug(message);
-            }
-        }
     }
 
     private class ProxyPrintStream extends OutputStream {

@@ -154,10 +154,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         }
     }
 
-
-    public static IInstanceController startInstanceServer() {
-        DBeaverInstanceServer server = new DBeaverInstanceServer();
-
+    public static IInstanceController startInstanceServer(IInstanceController server) {
         try {
             portNumber = IOUtils.findFreePort(20000, 65000);
 
