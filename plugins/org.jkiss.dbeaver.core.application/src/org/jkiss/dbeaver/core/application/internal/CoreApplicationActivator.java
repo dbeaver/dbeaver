@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
 import org.osgi.framework.hooks.bundle.EventHook;
 
 public class CoreApplicationActivator extends AbstractUIPlugin {
@@ -85,22 +84,6 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
 
     public static CoreApplicationActivator getDefault() {
         return plugin;
-    }
-
-    private static class BundleLoadListener implements BundleListener {
-        @Override
-        public void bundleChanged(BundleEvent event) {
-            String message = null;
-
-            if (event.getType() == BundleEvent.STARTED) {
-                message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-            } else if (event.getType() == BundleEvent.STOPPING) {
-                message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-            }
-            if (message != null) {
-                log.debug(message);
-            }
-        }
     }
 
 }
