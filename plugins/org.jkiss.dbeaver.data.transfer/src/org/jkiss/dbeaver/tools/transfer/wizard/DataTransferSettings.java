@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.registry.*;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.registry.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,15 +47,17 @@ public class DataTransferSettings {
 
     public static class NodeSettings {
         DataTransferNodeDescriptor sourceNode;
+        DataTransferNodeConfiguratorDescriptor nodeConfigurator;
         IDataTransferSettings settings;
         IWizardPage[] pages;
         IWizardPage settingsPage;
 
-        private NodeSettings(DataTransferNodeDescriptor sourceNode, boolean consumerOptional, boolean producerOptional) throws DBException {
+        private NodeSettings(DataTransferNodeDescriptor sourceNode, DataTransferNodeConfiguratorDescriptor nodeConfigurator, boolean consumerOptional, boolean producerOptional) throws DBException {
             this.sourceNode = sourceNode;
+            this.nodeConfigurator = nodeConfigurator;
             this.settings = sourceNode.createSettings();
-            this.pages = sourceNode.createWizardPages(consumerOptional, producerOptional, false);
-            IWizardPage[] sPages = sourceNode.createWizardPages(consumerOptional, producerOptional, true);
+            this.pages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(consumerOptional, producerOptional, false);
+            IWizardPage[] sPages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(consumerOptional, producerOptional, true);
             // There can be only one settings page per node
             this.settingsPage = sPages.length == 0 ? null : sPages[0];
         }
@@ -167,7 +169,8 @@ public class DataTransferSettings {
             return;
         }
         try {
-            nodeSettings.put(nodeClass, new NodeSettings(node, consumerOptional, producerOptional));
+            DataTransferNodeConfiguratorDescriptor configurator = DataTransferConfiguratorRegistry.getInstance().getConfigurator(node.getId());
+            nodeSettings.put(nodeClass, new NodeSettings(node, configurator, consumerOptional, producerOptional));
         } catch (DBException e) {
             log.error("Can't add node '" + node.getId() + "'", e);
         }
@@ -178,7 +181,7 @@ public class DataTransferSettings {
         // Add regular pages
         for (NodeSettings nodeSettings : this.nodeSettings.values()) {
             for (IWizardPage page : nodeSettings.pages) {
-                if (nodeSettings.sourceNode.getPageDescriptor(page).getPageType() == DataTransferPageType.PREVIEW) {
+                if (nodeSettings.nodeConfigurator == null || nodeSettings.nodeConfigurator.getPageDescriptor(page).getPageType() == DataTransferPageType.PREVIEW) {
                     // Add later
                     continue;
                 }
@@ -195,7 +198,7 @@ public class DataTransferSettings {
         // Add preview pages
         for (NodeSettings nodeSettings : this.nodeSettings.values()) {
             for (IWizardPage page : nodeSettings.pages) {
-                if (nodeSettings.sourceNode.getPageDescriptor(page).getPageType() == DataTransferPageType.PREVIEW) {
+                if (nodeSettings.nodeConfigurator != null && nodeSettings.nodeConfigurator.getPageDescriptor(page).getPageType() == DataTransferPageType.PREVIEW) {
                     wizard.addPage(page);
                 }
             }
@@ -219,7 +222,7 @@ public class DataTransferSettings {
         if (nodeSettings != null && ArrayUtils.contains(nodeSettings.pages, page)) {
             // Check does page matches consumer and producer
             for (NodeSettings ns : this.nodeSettings.values()) {
-                DataTransferPageDescriptor pd = ns.sourceNode.getPageDescriptor(page);
+                DataTransferPageDescriptor pd = ns.nodeConfigurator == null ? null : ns.nodeConfigurator.getPageDescriptor(page);
                 if (pd != null) {
                     if (pd.getProducerType() != null && producer != null && !producer.getId().equals(pd.getProducerType())) {
                         // Producer doesn't match

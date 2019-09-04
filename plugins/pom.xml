@@ -100,6 +100,7 @@
         <module>org.jkiss.dbeaver.ext.ui.tipoftheday</module>
         <module>org.jkiss.dbeaver.data.office</module>
         <module>org.jkiss.dbeaver.data.transfer</module>
+        <module>org.jkiss.dbeaver.data.transfer.ui</module>
         <module>org.jkiss.dbeaver.data.gis</module>
         <module>org.jkiss.dbeaver.data.gis.view</module>
 

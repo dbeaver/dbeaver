@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.tools.transfer.registry;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -56,7 +56,6 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     private final ObjectType implType;
     private final ObjectType settingsType;
     private final List<ObjectType> sourceTypes = new ArrayList<>();
-    private final List<DataTransferPageDescriptor> pageTypes = new ArrayList<>();
     private final List<DataTransferProcessorDescriptor> processors = new ArrayList<>();
 
     public DataTransferNodeDescriptor(IConfigurationElement config)
@@ -67,7 +66,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.icon = iconToImage(config.getAttribute("icon"), DBIcon.TYPE_UNKNOWN);
-        this.nodeType = NodeType.valueOf(config.getAttribute("type").toUpperCase(Locale.ENGLISH));
+        this.nodeType = CommonUtils.valueOf(NodeType.class, config.getAttribute("type").toUpperCase(Locale.ENGLISH), NodeType.PRODUCER);
         this.implType = new ObjectType(config.getAttribute("class"));
         this.settingsType = new ObjectType(config.getAttribute("settings"));
 
@@ -77,9 +76,6 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     void loadNodeConfigurations(IConfigurationElement config) {
         for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren("sourceType"))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute("type")));
-        }
-        for (IConfigurationElement pageConfig : ArrayUtils.safeArray(config.getChildren("page"))) {
-            pageTypes.add(new DataTransferPageDescriptor(pageConfig));
         }
         for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren("processor"))) {
             processors.add(new DataTransferProcessorDescriptor(this, processorConfig));
@@ -131,37 +127,6 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         } catch (Throwable e) {
             throw new DBException("Can't create node settings", e);
         }
-    }
-
-    public List<DataTransferPageDescriptor> patPageDescriptors() {
-        return pageTypes;
-    }
-
-    public DataTransferPageDescriptor getPageDescriptor(IWizardPage page) {
-        for (DataTransferPageDescriptor pd : pageTypes) {
-            if (pd.getPageClass().getImplName().equals(page.getClass().getName())) {
-                return pd;
-            }
-        }
-        return null;
-    }
-
-    public IWizardPage[] createWizardPages(boolean consumerOptional, boolean producerOptional, boolean settingsPage)
-    {
-        List<IWizardPage> pages = new ArrayList<>();
-        for (DataTransferPageDescriptor page : pageTypes) {
-            if (page.isConsumerSelector() && !consumerOptional) continue;
-            if (page.isProducerSelector() && !producerOptional) continue;
-            if (settingsPage != (page.getPageType() == DataTransferPageType.SETTINGS)) continue;
-            try {
-                ObjectType type = page.getPageClass();
-                type.checkObjectClass(IWizardPage.class);
-                pages.add(type.getObjectClass(IWizardPage.class).newInstance());
-            } catch (Throwable e) {
-                log.error("Can't create wizard page", e);
-            }
-        }
-        return pages.toArray(new IWizardPage[pages.size()]);
     }
 
     public NodeType getNodeType()

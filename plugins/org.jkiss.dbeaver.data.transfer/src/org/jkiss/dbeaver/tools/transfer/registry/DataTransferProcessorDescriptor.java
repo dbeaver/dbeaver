@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
-import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,8 +51,6 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
     private boolean isBinary;
     private boolean isHTML;
-
-    private transient ProgramInfo program;
 
     DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config) {
         super(config);
@@ -96,15 +93,6 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
 
     public String getAppName() {
         return appName;
-    }
-
-    public ProgramInfo getOpenWithApplication() {
-        if (program == null) {
-            if (!CommonUtils.isEmpty(appFileExtension)) {
-                program = ProgramInfo.getProgram(appFileExtension);
-            }
-        }
-        return program;
     }
 
     public int getOrder() {

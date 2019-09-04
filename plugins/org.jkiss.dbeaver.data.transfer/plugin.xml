@@ -3,6 +3,7 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.dataTransfer" name="%extension-point.org.jkiss.dbeaver.dataTransfer.name" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTransferConfigurator" name="%extension-point.org.jkiss.dbeaver.dataTransferConfigurator.name" schema="schema/org.jkiss.dbeaver.dataTransferConfigurator.exsd"/>
 
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.core.export.data" name="%command.org.jkiss.dbeaver.core.export.data.name" description="%command.org.jkiss.dbeaver.core.export.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
@@ -85,26 +86,32 @@
               description="%dataTransfer.producer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-            <page id="database_producer_input_objects" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseProducerPageInputObjects" producerSelector="true"/>
-            <page id="database_producer_extract_settings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseProducerPageExtractSettings" type="settings"/>
+        </node>
+
+        <node type="consumer"
+            id="database_consumer"
+            class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/table.png"
+            label="%dataTransfer.consumer.database.name"
+            description="%dataTransfer.consumer.database.description"
+            settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
+            <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </node>
 
         <node type="producer"
-              id="stream_producer"
-              class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
-              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/file.png"
-              label="%dataTransfer.producer.stream.name"
-              description="%dataTransfer.producer.stream.description"
-              settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
-            <page id="stream_producer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamProducerPageSettings"/>
-            <page id="stream_producer_preview" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamProducerPagePreview"/>
+            id="stream_producer"
+            class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/file.png"
+            label="%dataTransfer.producer.stream.name"
+            description="%dataTransfer.producer.stream.description"
+            settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
 
             <processor
-                    id="stream.csv"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
-                    description="%dataTransfer.producer.stream.processor.csv.description"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/csv.png"
-                    label="%dataTransfer.producer.stream.processor.csv.name">
+                id="stream.csv"
+                class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
+                description="%dataTransfer.producer.stream.processor.csv.description"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/csv.png"
+                label="%dataTransfer.producer.stream.processor.csv.name">
                 <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.producer.stream.processor.csv.property.extension.label" defaultValue="csv,tsv,txt"/>
                     <property id="encoding" label="%dataTransfer.producer.stream.processor.csv.property.encoding.label" defaultValue="utf-8"/>
@@ -126,8 +133,6 @@
               label="%dataTransfer.consumer.stream.name"
               description="%dataTransfer.consumer.stream.description"
               settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
-            <page id="stream_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamConsumerPageSettings" type="settings"/>
-            <page id="stream_consumer_output" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamConsumerPageOutput" type="preview"/>
 
             <processor
                     id="stream.xml"
@@ -243,18 +248,30 @@
             </processor>
         </node>
 
-        <node type="consumer"
-              id="database_consumer"
-              class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
-              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/table.png"
-              label="%dataTransfer.consumer.database.name"
-              description="%dataTransfer.consumer.database.description"
-              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
-            <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseConsumerPageMapping" producerType="database_producer"/>
-            <page id="database_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseConsumerPageLoadSettings" type="settings"/>
-        </node>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataTransferConfigurator">
+
+        <configPages node="database_producer">
+            <page id="database_producer_input_objects" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseProducerPageInputObjects" producerSelector="true"/>
+            <page id="database_producer_extract_settings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseProducerPageExtractSettings" type="settings"/>
+        </configPages>
+
+        <configPages node="database_consumer">
+            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseConsumerPageMapping" producerType="database_producer"/>
+            <page id="database_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseConsumerPageLoadSettings" type="settings"/>
+        </configPages>
+
+        <configPages node="stream_producer">
+            <page id="stream_producer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamProducerPageSettings"/>
+            <page id="stream_producer_preview" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamProducerPagePreview"/>
+        </configPages>
+
+        <configPages node="stream_consumer">
+            <page id="stream_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamConsumerPageSettings" type="settings"/>
+            <page id="stream_consumer_output" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamConsumerPageOutput" type="preview"/>
+        </configPages>
+
+    </extension>
 
 </plugin>

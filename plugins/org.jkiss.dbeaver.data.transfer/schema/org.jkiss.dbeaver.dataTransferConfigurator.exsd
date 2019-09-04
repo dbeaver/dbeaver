@@ -3,7 +3,7 @@
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.data.transfer" id="org.jkiss.dbeaver.dataTransferProvider" name="Data Export Provider"/>
+         <meta.schema plugin="org.jkiss.dbeaver.data.transfer.ui" id="org.jkiss.dbeaver.dataTransferConfigurator" name="Data Transfer UI Configurators"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]
@@ -48,7 +48,7 @@
       </complexType>
    </element>
 
-   <element name="export">
+   <element name="config-page">
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="sourceType" minOccurs="0" maxOccurs="unbounded"/>
