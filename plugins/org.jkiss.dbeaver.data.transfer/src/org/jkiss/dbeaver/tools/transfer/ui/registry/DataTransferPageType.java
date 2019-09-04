@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.tools.transfer.registry;
+package org.jkiss.dbeaver.tools.transfer.ui.registry;
 
 /**
  * Page type.

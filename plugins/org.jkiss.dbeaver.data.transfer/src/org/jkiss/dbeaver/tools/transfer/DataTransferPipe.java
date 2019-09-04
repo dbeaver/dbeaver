@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
-
 /**
  * Data transfer pipe is tuple of produces and consumer
  */
