@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
-import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
 
 /**
  * Transfer settings

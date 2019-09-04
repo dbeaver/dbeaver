@@ -22,16 +22,13 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-
-import java.util.List;
 
 /**
  * This page hosts other settings pages
@@ -113,7 +110,7 @@ class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
     }
 
     private IWizardPage getSettingsPage(IDataTransferNode node) {
-        DataTransferSettings.NodeSettings producerInfo = getWizard().getSettings().getNodeInfo(node);
+        DataTransferWizard.NodePageSettings producerInfo = getWizard().getNodeInfo(node);
         return producerInfo == null ? null : producerInfo.settingsPage;
     }
 
