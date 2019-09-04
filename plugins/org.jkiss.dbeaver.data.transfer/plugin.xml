@@ -18,8 +18,8 @@
 <!--
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-                class="org.jkiss.dbeaver.tools.transfer.handlers.DataTransferPropertyTester"
-                id="org.jkiss.dbeaver.tools.transfer.handlers.DataTransferPropertyTester"
+                class="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataTransferPropertyTester"
+                id="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataTransferPropertyTester"
                 namespace="org.jkiss.dbeaver.tools.transfer"
                 properties="supportsImportFrom"
                 type="java.lang.Object"/>
@@ -44,7 +44,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.tools.transfer.handlers.DataExportHandler">
+        <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataExportHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -54,7 +54,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.import.data" class="org.jkiss.dbeaver.tools.transfer.handlers.DataImportHandler">
+        <handler commandId="org.jkiss.dbeaver.core.import.data" class="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -253,23 +253,23 @@
     <extension point="org.jkiss.dbeaver.dataTransferConfigurator">
 
         <configPages node="database_producer">
-            <page id="database_producer_input_objects" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseProducerPageInputObjects" producerSelector="true"/>
-            <page id="database_producer_extract_settings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseProducerPageExtractSettings" type="settings"/>
+            <page id="database_producer_input_objects" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseProducerPageInputObjects" producerSelector="true"/>
+            <page id="database_producer_extract_settings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseProducerPageExtractSettings" type="settings"/>
         </configPages>
 
         <configPages node="database_consumer">
-            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseConsumerPageMapping" producerType="database_producer"/>
-            <page id="database_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseConsumerPageLoadSettings" type="settings"/>
+            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseConsumerPageMapping" producerType="database_producer"/>
+            <page id="database_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseConsumerPageLoadSettings" type="settings"/>
         </configPages>
 
         <configPages node="stream_producer">
-            <page id="stream_producer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamProducerPageSettings"/>
-            <page id="stream_producer_preview" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamProducerPagePreview"/>
+            <page id="stream_producer_settings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamProducerPageSettings"/>
+            <page id="stream_producer_preview" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamProducerPagePreview"/>
         </configPages>
 
         <configPages node="stream_consumer">
-            <page id="stream_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamConsumerPageSettings" type="settings"/>
-            <page id="stream_consumer_output" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamConsumerPageOutput" type="preview"/>
+            <page id="stream_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamConsumerPageSettings" type="settings"/>
+            <page id="stream_consumer_output" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamConsumerPageOutput" type="preview"/>
         </configPages>
 
     </extension>

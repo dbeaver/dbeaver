@@ -10,12 +10,12 @@ Bundle-Activator: org.jkiss.dbeaver.tools.transfer.internal.DTActivator
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.tools.transfer,
  org.jkiss.dbeaver.tools.transfer.database,
- org.jkiss.dbeaver.tools.transfer.handlers,
+ org.jkiss.dbeaver.tools.transfer.ui.handlers,
  org.jkiss.dbeaver.tools.transfer.registry,
  org.jkiss.dbeaver.tools.transfer.stream,
  org.jkiss.dbeaver.tools.transfer.stream.exporter,
  org.jkiss.dbeaver.tools.transfer.stream.importer,
- org.jkiss.dbeaver.tools.transfer.wizard
+ org.jkiss.dbeaver.tools.transfer.ui.wizard
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.swt,
  org.eclipse.core.expressions,
