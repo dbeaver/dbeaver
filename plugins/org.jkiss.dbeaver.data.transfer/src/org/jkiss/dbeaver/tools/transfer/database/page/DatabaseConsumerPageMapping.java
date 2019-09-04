@@ -36,16 +36,16 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.database.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -695,21 +696,33 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             return;
         }
         DBPDataSource dataSource = container.getDataSource();
-        try {
-            final String ddl = DatabaseTransferConsumer.generateTargetTableDDL(new VoidProgressMonitor(), dataSource, container, mapping);
-            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-            if (serviceSQL != null) {
-                serviceSQL.openSQLViewer(
-                    DBUtils.getDefaultContext(container, true),
-                    "Target DDL",
-                    null,
-                    ddl,
-                    false);
-            }
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Target DDL", "Error generatiung target DDL", e);
-        }
 
+        final String[] ddl = new String[1];
+        try {
+            getContainer().run(true, true, monitor -> {
+                monitor.beginTask("Generate table DDL", 1);
+                try {
+                    ddl[0] = DatabaseTransferConsumer.generateTargetTableDDL(new DefaultProgressMonitor(monitor), dataSource, container, mapping);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+                monitor.done();
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Target DDL", "Error generating target DDL", e);
+            return;
+        } catch (InterruptedException e) {
+            return;
+        }
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        if (serviceSQL != null) {
+            serviceSQL.openSQLViewer(
+                DBUtils.getDefaultContext(container, true),
+                "Target DDL",
+                null,
+                ddl[0],
+                false);
+        }
     }
 
     private DatabaseMappingObject getSelectedMapping()

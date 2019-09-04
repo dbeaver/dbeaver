@@ -24,10 +24,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.tools.transfer.DTUtils;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -113,10 +110,10 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 continue;
             }
             if (consumerSettings == null) {
-                consumerSettings = settings.getNodeSettings(consumer);
+                consumerSettings = getWizard().getNodeSettings(consumer);
             }
             if (producerSettings == null) {
-                producerSettings = settings.getNodeSettings(pipe.getProducer());
+                producerSettings = getWizard().getNodeSettings(pipe.getProducer());
             }
             DataTransferProcessorDescriptor processorDescriptor = settings.getProcessor();
             IDataTransferProcessor processor = null;

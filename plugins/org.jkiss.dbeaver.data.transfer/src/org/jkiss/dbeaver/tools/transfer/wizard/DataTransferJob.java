@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -101,13 +98,13 @@ public class DataTransferJob extends AbstractJob {
         IDataTransferProducer producer = transferPipe.getProducer();
         IDataTransferConsumer consumer = transferPipe.getConsumer();
 
-        IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
+        IDataTransferSettings consumerSettings = settings.getNodeSettings(settings.getConsumer());
 
         setName(NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
             CommonUtils.truncateString(producer.getObjectName(), 200),
             CommonUtils.truncateString(consumer.getObjectName(), 200)));
 
-        IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
+        IDataTransferSettings nodeSettings = settings.getNodeSettings(settings.getProducer());
         try {
             //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 

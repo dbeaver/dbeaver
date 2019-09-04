@@ -21,7 +21,7 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
 /**
