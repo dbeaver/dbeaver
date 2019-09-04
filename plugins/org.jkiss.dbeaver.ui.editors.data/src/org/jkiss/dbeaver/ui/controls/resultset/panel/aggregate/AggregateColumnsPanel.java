@@ -375,7 +375,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         private final AggregateFunctionDescriptor func;
 
         public AddFunctionItemAction(AggregateFunctionDescriptor func) {
-            super(func.getLabel(), DBeaverIcons.getImageDescriptor(func.getIcon()));
+            super(func.getLabel(), func.getIcon() == null ? null : DBeaverIcons.getImageDescriptor(func.getIcon()));
             this.func = func;
         }
 
