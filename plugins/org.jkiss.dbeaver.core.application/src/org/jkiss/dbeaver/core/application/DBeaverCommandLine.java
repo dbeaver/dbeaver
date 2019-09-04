@@ -64,7 +64,7 @@ public class DBeaverCommandLine
     public final static Options ALL_OPTIONS = new Options()
         .addOption(PARAM_HELP, false, "Help")
 
-        .addOption(PARAM_FILE, "file", true, "File top open")
+        .addOption(PARAM_FILE, "file", true, "Open a file")
         .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
         .addOption(PARAM_THREAD_DUMP, "thread-dump", false, "Print instance thread dump")
         .addOption(PARAM_CONNECT, "connect", true, "Connects to a specified database")

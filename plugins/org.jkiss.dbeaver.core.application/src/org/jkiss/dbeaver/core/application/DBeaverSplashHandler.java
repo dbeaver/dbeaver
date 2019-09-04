@@ -146,7 +146,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     }
 
 	public static void showMessage(String message) {
-		if (message == null || message.isEmpty() || message.startsWith(">")) {
+		if (message == null || message.isEmpty()) {
 			return;
 		}
         try {
