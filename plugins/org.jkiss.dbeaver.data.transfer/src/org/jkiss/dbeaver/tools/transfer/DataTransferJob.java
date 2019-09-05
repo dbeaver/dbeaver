@@ -14,21 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.ui.wizard;
+package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -37,6 +31,8 @@ import org.jkiss.utils.CommonUtils;
 public class DataTransferJob extends AbstractJob {
 
     private DataTransferSettings settings;
+    private long elapsedTime;
+    private boolean hasErrors;
 
     public DataTransferJob(DataTransferSettings settings)
     {
@@ -44,6 +40,18 @@ public class DataTransferJob extends AbstractJob {
         this.settings = settings;
 
         setUser(true);
+    }
+
+    public DataTransferSettings getSettings() {
+        return settings;
+    }
+
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
+
+    public boolean isHasErrors() {
+        return hasErrors;
     }
 
     @Override
@@ -55,7 +63,7 @@ public class DataTransferJob extends AbstractJob {
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
-        boolean hasErrors = false;
+        hasErrors = false;
         long startTime = System.currentTimeMillis();
         for (; ;) {
             DataTransferPipe transferPipe = settings.acquireDataPipe(monitor);
@@ -66,31 +74,8 @@ public class DataTransferJob extends AbstractJob {
                 hasErrors = true;
             }
         }
-        showResult(System.currentTimeMillis() - startTime, hasErrors);
+        elapsedTime = System.currentTimeMillis() - startTime;
         return Status.OK_STATUS;
-    }
-
-    private void showResult(final long time, final boolean hasErrors)
-    {
-        // Run async to avoid blocking progress monitor dialog
-        UIUtils.asyncExec(() -> {
-            // Make a sound
-            Display.getCurrent().beep();
-            // Notify agent
-            DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
-            if (time > platformUI.getLongOperationTimeout() * 1000) {
-                platformUI.notifyAgent(
-                        "Data transfer completed", !hasErrors ? IStatus.INFO : IStatus.ERROR);
-            }
-            if (settings.isShowFinalMessage() && !hasErrors) {
-                // Show message box
-                UIUtils.showMessageBox(
-                    null,
-                    DTMessages.data_transfer_wizard_name,
-                    "Data transfer completed (" + RuntimeUtils.formatExecutionTime(time) + ")",
-                    SWT.ICON_INFORMATION);
-            }
-        });
     }
 
     private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe)
@@ -120,7 +105,7 @@ public class DataTransferJob extends AbstractJob {
             }
             return true;
         } catch (Exception e) {
-            new DataTransferErrorJob(e).schedule();
+            DBWorkbench.getPlatformUI().showError("Data export error", e.getMessage(), e);
             return false;
         }
 

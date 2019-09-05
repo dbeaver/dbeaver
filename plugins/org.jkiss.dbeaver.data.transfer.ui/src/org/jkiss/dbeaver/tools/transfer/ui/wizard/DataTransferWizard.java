@@ -16,11 +16,16 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
@@ -30,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -42,6 +48,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageType;
 import org.jkiss.dbeaver.ui.DialogSettingsMap;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -267,7 +274,34 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
             totalJobs = settings.getMaxJobCount();
         }
         for (int i = 0; i < totalJobs; i++) {
-            new DataTransferJob(settings).schedule();
+            DataTransferJob job = new DataTransferJob(settings);
+            job.addJobChangeListener(new JobChangeAdapter() {
+                @Override
+                public void done(IJobChangeEvent event) {
+                    // Run async to avoid blocking progress monitor dialog
+                    UIUtils.asyncExec(() -> {
+                        // Make a sound
+                        Display.getCurrent().beep();
+                        // Notify agent
+                        long time = job.getElapsedTime();
+                        boolean hasErrors = job.isHasErrors();
+                        DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
+                        if (time > platformUI.getLongOperationTimeout() * 1000) {
+                            platformUI.notifyAgent(
+                                "Data transfer completed", !hasErrors ? IStatus.INFO : IStatus.ERROR);
+                        }
+                        if (settings.isShowFinalMessage() && !hasErrors) {
+                            // Show message box
+                            UIUtils.showMessageBox(
+                                null,
+                                DTMessages.data_transfer_wizard_name,
+                                "Data transfer completed (" + RuntimeUtils.formatExecutionTime(time) + ")",
+                                SWT.ICON_INFORMATION);
+                        }
+                    });
+                }
+            });
+            job.schedule();
         }
     }
 
