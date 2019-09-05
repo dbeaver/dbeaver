@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
@@ -200,7 +199,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
                     }
                 }
             } catch (DBException e) {
-                DBeaverUI.getInstance().showError("Change language", "Can't switch language to " + language, e);
+                DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
 

@@ -21,6 +21,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.HTMLTransfer;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -64,6 +68,7 @@ import org.jkiss.dbeaver.ui.navigator.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -308,12 +313,12 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public void openEntityEditor(@NotNull DBSObject object) {
-        NavigatorHandlerObjectOpen.openEntityEditor(object);
+        UIUtils.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(object));
     }
 
     @Override
     public void openEntityEditor(@NotNull DBNNode selectedNode, String defaultPageId) {
-        NavigatorHandlerObjectOpen.openEntityEditor(selectedNode, defaultPageId, UIUtils.getActiveWorkbenchWindow());
+        UIUtils.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(selectedNode, defaultPageId, UIUtils.getActiveWorkbenchWindow()));
     }
 
     @Override
@@ -384,6 +389,33 @@ public class DBeaverUI implements DBPPlatformUI {
         if (part instanceof IWorkbenchPart) {
             UIUtils.asyncExec(() -> DBeaverUI.getInstance().refreshPartContexts((IWorkbenchPart)part));
         }
+    }
+
+    @Override
+    public void copyTextToClipboard(String text, boolean htmlFormat) {
+        if (CommonUtils.isEmpty(text)) {
+            return;
+        }
+        UIUtils.syncExec(() -> {
+
+            TextTransfer textTransfer = TextTransfer.getInstance();
+            Clipboard clipboard = new Clipboard(UIUtils.getDisplay());
+            if (htmlFormat) {
+                HTMLTransfer htmlTransfer = HTMLTransfer.getInstance();
+                clipboard.setContents(
+                    new Object[]{text, text},
+                    new Transfer[]{textTransfer, htmlTransfer});
+            } else {
+                clipboard.setContents(
+                    new Object[]{text},
+                    new Transfer[]{textTransfer});
+            }
+        });
+    }
+
+    @Override
+    public void executeShellProgram(String shellCommand) {
+        UIUtils.asyncExec(() -> UIUtils.launchProgram(shellCommand));
     }
 
 }

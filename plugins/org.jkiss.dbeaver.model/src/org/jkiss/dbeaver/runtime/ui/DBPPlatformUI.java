@@ -61,7 +61,6 @@ public interface DBPPlatformUI {
 
     UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);
 
-
     /**
      * Notification agent
      */
@@ -113,4 +112,9 @@ public interface DBPPlatformUI {
      * There is no such thing as part in abstract UI. Need some better solution.
      */
     void refreshPartState(Object part);
+
+    void copyTextToClipboard(String text, boolean htmlFormat);
+
+    void executeShellProgram(String shellCommand);
+
 }

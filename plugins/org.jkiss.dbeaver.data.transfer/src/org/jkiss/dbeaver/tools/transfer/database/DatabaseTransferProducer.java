@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Data container transfer producer
@@ -89,12 +87,6 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     public DBPImage getObjectContainerIcon() {
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getDriver().getIcon() : null;
-    }
-
-    @Override
-    public Color getObjectColor() {
-        DBPDataSourceContainer container = getDataSourceContainer();
-        return container != null ? UIUtils.getConnectionColor(container.getConnectionConfiguration()) : null;
     }
 
     private DBPDataSourceContainer getDataSourceContainer() {

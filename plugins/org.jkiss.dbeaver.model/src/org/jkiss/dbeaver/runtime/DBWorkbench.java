@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
@@ -56,7 +57,9 @@ public class DBWorkbench {
                 if (platformUIInstance == null) {
                     platformUIInstance = GeneralUtils.adapt(instance, DBPPlatformUI.class);
                     if (platformUIInstance == null) {
-                        throw new IllegalStateException("Internal configuration error. Platform UI not instantiated.");
+                        // Use console UI
+                        log.debug("No platform UI installed. Use console interface.");
+                        platformUIInstance = new ConsoleUserInterface();
                     }
                 }
             }

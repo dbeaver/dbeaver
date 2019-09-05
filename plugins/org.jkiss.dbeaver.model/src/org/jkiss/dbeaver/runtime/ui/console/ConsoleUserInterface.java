@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
@@ -36,9 +37,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
+    private static final Log log = Log.getLog(ConsoleUserInterface.class);
+
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
         System.out.println(title + (message == null ? "" : ": " + message));
@@ -165,5 +169,19 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public void refreshPartState(Object part) {
         // do nothing
+    }
+
+    @Override
+    public void copyTextToClipboard(String text, boolean htmlFormat) {
+        // do nothing
+    }
+
+    @Override
+    public void executeShellProgram(String shellCommand) {
+        try {
+            Runtime.getRuntime().exec(shellCommand);
+        } catch (Exception e) {
+            log.error(e);
+        }
     }
 }

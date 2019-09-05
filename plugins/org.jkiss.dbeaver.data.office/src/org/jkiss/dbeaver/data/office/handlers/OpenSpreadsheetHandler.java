@@ -22,8 +22,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -55,7 +53,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
     {
     	IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
-            DBeaverUI.getInstance().showError("Open Excel", "No active results viewer");
+            DBWorkbench.getPlatformUI().showError("Open Excel", "No active results viewer");
             return null;
         }
 
@@ -79,7 +77,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
-            DBeaverUI.getInstance().showError("Open Excel", ModelMessages.error_not_connected_to_database);
+            DBWorkbench.getPlatformUI().showError("Open Excel", ModelMessages.error_not_connected_to_database);
             return null;
         }
 
@@ -127,11 +125,11 @@ public class OpenSpreadsheetHandler extends AbstractHandler
 
                     UIUtils.asyncExec(() -> {
                         if (!UIUtils.launchProgram(tempFile.getAbsolutePath())) {
-                            DBeaverUI.getInstance().showError("Open XLSX", "Can't open XLSX file '" + tempFile.getAbsolutePath() + "'");
+                            DBWorkbench.getPlatformUI().showError("Open XLSX", "Can't open XLSX file '" + tempFile.getAbsolutePath() + "'");
                         }
                     });
                 } catch (Exception e) {
-                    DBeaverUI.getInstance().showError("Error opening in Excel", null, e);
+                    DBWorkbench.getPlatformUI().showError("Error opening in Excel", null, e);
                 }
                 return Status.OK_STATUS;
             }

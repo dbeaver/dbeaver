@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -244,7 +243,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType privilegeType) {
 
         if (ArrayUtils.isEmpty(currentObjects)) {
-            DBeaverUI.getInstance().showError("Update privilege", "Can't update privilege - no current object");
+            DBWorkbench.getPlatformUI().showError("Update privilege", "Can't update privilege - no current object");
             return;
         }
 
@@ -525,7 +524,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                         rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreRole.class);
                     }
                     if (rootNode == null) {
-                        DBeaverUI.getInstance().showError("Object tree", "Can't detect root node for objects tree");
+                        DBWorkbench.getPlatformUI().showError("Object tree", "Can't detect root node for objects tree");
                     } else {
                         roleOrObjectTable.reloadTree(rootNode);
                     }
