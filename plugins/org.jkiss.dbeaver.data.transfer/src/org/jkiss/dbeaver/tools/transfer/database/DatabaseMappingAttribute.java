@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -31,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
 * DatabaseMappingAttribute
@@ -268,7 +268,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.targetType = targetType;
     }
 
-    void saveSettings(IDialogSettings settings) {
+    void saveSettings(Map<String, Object> settings) {
         if (targetName != null) {
             settings.put("targetName", targetName);
         }
@@ -280,12 +280,12 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
-    public void loadSettings(IDialogSettings settings) {
-        targetName = settings.get("targetName");
-        targetType = settings.get("targetType");
+    public void loadSettings(Map<String, Object> settings) {
+        targetName = CommonUtils.toString(settings.get("targetName"));
+        targetType = CommonUtils.toString(settings.get("targetType"));
         if (settings.get("mappingType") != null) {
             try {
-                DatabaseMappingType newMappingType = DatabaseMappingType.valueOf(settings.get("mappingType"));
+                DatabaseMappingType newMappingType = DatabaseMappingType.valueOf((String) settings.get("mappingType"));
 
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSDataManipulator targetEntity = parent.getTarget();

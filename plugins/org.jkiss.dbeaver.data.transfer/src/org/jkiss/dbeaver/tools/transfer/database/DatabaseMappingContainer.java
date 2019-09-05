@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -28,18 +26,18 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * DatabaseMappingContainer
  */
+@SuppressWarnings("unchecked")
 public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingContainer.class);
@@ -57,7 +55,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    public DatabaseMappingContainer(IRunnableContext context, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
+    public DatabaseMappingContainer(DBRRunnableContext context, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
@@ -82,7 +80,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return mappingType;
     }
 
-    public void refreshMappingType(IRunnableContext context, DatabaseMappingType mappingType) throws DBException {
+    public void refreshMappingType(DBRRunnableContext context, DatabaseMappingType mappingType) throws DBException {
         this.mappingType = mappingType;
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);
         if (!CommonUtils.isEmpty(mappings)) {
@@ -145,7 +143,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return null;
     }
 
-    public Collection<DatabaseMappingAttribute> getAttributeMappings(IRunnableContext runnableContext) {
+    public Collection<DatabaseMappingAttribute> getAttributeMappings(DBRRunnableContext runnableContext) {
         if (attributeMappings.isEmpty()) {
             try {
                 // Do not use runnable context! It changes active focus and locks UI which breakes whole jface editing framework
@@ -199,7 +197,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         attributeMappings.add(mapping);
     }
 
-    public void saveSettings(IDialogSettings settings) {
+    public void saveSettings(Map<String, Object> settings) {
         if (!CommonUtils.isEmpty(targetName)) {
             settings.put("targetName", targetName);
         } else if (target != null) {
@@ -209,22 +207,24 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             settings.put("mappingType", mappingType.name());
         }
         if (!attributeMappings.isEmpty()) {
-            IDialogSettings attrsSection = settings.addNewSection("attributes");
+            Map<String, Object> attrsSection = new LinkedHashMap<>();
+            settings.put("attributes", attrsSection);
             for (DatabaseMappingAttribute attrMapping : attributeMappings) {
                 DBSAttributeBase sourceAttr = attrMapping.getSource();
                 if (sourceAttr != null) {
-                    IDialogSettings attrSettings = attrsSection.addNewSection(sourceAttr.getName());
+                    Map<String, Object> attrSettings = new LinkedHashMap<>();
+                    attrsSection.put(sourceAttr.getName(), attrSettings);
                     attrMapping.saveSettings(attrSettings);
                 }
             }
         }
     }
 
-    public void loadSettings(IRunnableContext context, IDialogSettings settings) {
-        targetName = settings.get("targetName");
+    public void loadSettings(DBRRunnableContext context, Map<String, Object> settings) {
+        targetName = (String) settings.get("targetName");
         if (settings.get("mappingType") != null) {
             try {
-                DatabaseMappingType newMappingType = DatabaseMappingType.valueOf(settings.get("mappingType"));
+                DatabaseMappingType newMappingType = DatabaseMappingType.valueOf((String) settings.get("mappingType"));
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSObjectContainer objectContainer = consumerSettings.getContainer();
                     if (objectContainer != null) {
@@ -248,12 +248,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         }
         if (!attributeMappings.isEmpty()) {
-            IDialogSettings attrsSection = settings.getSection("attributes");
+            Map<String, Object> attrsSection = (Map<String, Object>) settings.get("attributes");
             if (attrsSection != null) {
                 for (DatabaseMappingAttribute attrMapping : attributeMappings) {
                     DBSAttributeBase sourceAttr = attrMapping.getSource();
                     if (sourceAttr != null) {
-                        IDialogSettings attrSettings = attrsSection.getSection(sourceAttr.getName());
+                        Map<String, Object> attrSettings = (Map<String, Object>) attrsSection.get(sourceAttr.getName());
                         if (attrSettings != null) {
                             attrMapping.loadSettings(attrSettings);
                         }

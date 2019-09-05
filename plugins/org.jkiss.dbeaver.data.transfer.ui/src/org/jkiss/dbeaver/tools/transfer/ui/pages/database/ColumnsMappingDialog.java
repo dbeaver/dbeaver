@@ -72,7 +72,7 @@ public class ColumnsMappingDialog extends StatusDialog {
         super(wizard.getShell());
         this.settings = settings;
         this.mapping = mapping;
-        attributeMappings = mapping.getAttributeMappings(wizard.getContainer());
+        attributeMappings = mapping.getAttributeMappings(wizard.getRunnableContext());
     }
 
     @Override

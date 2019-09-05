@@ -16,13 +16,14 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 /**
  * DatabaseProducerSettings
@@ -108,41 +109,33 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings) {
-        if (dialogSettings.get("extractType") != null) {
+    public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
+        if (settings.get("extractType") != null) {
             try {
-                extractType = ExtractType.valueOf(dialogSettings.get("extractType"));
+                extractType = ExtractType.valueOf((String) settings.get("extractType"));
             } catch (IllegalArgumentException e) {
                 extractType = ExtractType.SINGLE_QUERY;
             }
         }
         try {
-            segmentSize = dialogSettings.getInt("segmentSize");
+            segmentSize = CommonUtils.toInt(settings.get("segmentSize"));
         } catch (NumberFormatException e) {
             segmentSize = DEFAULT_SEGMENT_SIZE;
         }
-        if (!CommonUtils.isEmpty(dialogSettings.get("openNewConnections"))) {
-            openNewConnections = dialogSettings.getBoolean("openNewConnections");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("queryRowCount"))) {
-            queryRowCount = dialogSettings.getBoolean("queryRowCount");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("selectedColumnsOnly"))) {
-            selectedColumnsOnly = dialogSettings.getBoolean("selectedColumnsOnly");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("selectedRowsOnly"))) {
-            selectedRowsOnly = dialogSettings.getBoolean("selectedRowsOnly");
-        }
+        openNewConnections = CommonUtils.toBoolean(settings.get("openNewConnections"));
+        queryRowCount = CommonUtils.toBoolean(settings.get("queryRowCount"));
+        selectedColumnsOnly = CommonUtils.toBoolean(settings.get("selectedColumnsOnly"));
+        selectedRowsOnly = CommonUtils.toBoolean(settings.get("selectedRowsOnly"));
     }
 
     @Override
-    public void saveSettings(IDialogSettings dialogSettings) {
-        dialogSettings.put("extractType", extractType.name());
-        dialogSettings.put("segmentSize", segmentSize);
-        dialogSettings.put("openNewConnections", openNewConnections);
-        dialogSettings.put("queryRowCount", queryRowCount);
-        dialogSettings.put("selectedColumnsOnly", selectedColumnsOnly);
-        dialogSettings.put("selectedRowsOnly", selectedRowsOnly);
+    public void saveSettings(Map<String, Object> settings) {
+        settings.put("extractType", extractType.name());
+        settings.put("segmentSize", segmentSize);
+        settings.put("openNewConnections", openNewConnections);
+        settings.put("queryRowCount", queryRowCount);
+        settings.put("selectedColumnsOnly", selectedColumnsOnly);
+        settings.put("selectedRowsOnly", selectedRowsOnly);
     }
 
     @Override
