@@ -103,7 +103,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             columnsCount = rsAttributes.size();
 
             // Extract column info
-            metaColumns = DBUtils.getAttributeBindings(session, resultSetViewer.getDataContainer(), metaData);
+            metaColumns = DBUtils.getAttributeBindings(session, getDataContainer(), metaData);
 
             resultSetViewer.setMetaData(resultSet, metaColumns);
         }
@@ -156,7 +156,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             try {
                 // Read locators' metadata
                 DBSEntity entity = null;
-                DBSDataContainer dataContainer = targetDataContainer != null ? targetDataContainer : resultSetViewer.getDataContainer();
+                DBSDataContainer dataContainer = getDataContainer();
                 if (dataContainer instanceof DBSEntity) {
                     entity = (DBSEntity) dataContainer;
                 }
@@ -178,13 +178,17 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 resultSetViewer.getActivePresentation().refreshData(true, false, !metadataChanged);
                 resultSetViewer.updateStatusMessage();
             } else {
-                boolean resetOldRows = resultSetViewer.getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING);
+                boolean resetOldRows = getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING);
                 resultSetViewer.appendData(tmpRows, resetOldRows);
                 resultSetViewer.getActivePresentation().refreshData(false, true, true);
             }
             // Check for more data
             hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
         });
+    }
+
+    private DBSDataContainer getDataContainer() {
+        return targetDataContainer != null ? targetDataContainer : resultSetViewer.getDataContainer();
     }
 
     @Override
