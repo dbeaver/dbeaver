@@ -16,17 +16,18 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+
+import java.util.Map;
 
 /**
  * Transfer settings
  */
 public interface IDataTransferSettings {
 
-    void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings);
+    void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings);
 
-    void saveSettings(IDialogSettings dialogSettings);
+    void saveSettings(Map<String, Object> settings);
 
     String getSettingsSummary();
 

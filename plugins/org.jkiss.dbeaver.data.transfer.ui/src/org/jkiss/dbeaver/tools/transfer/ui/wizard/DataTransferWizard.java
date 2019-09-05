@@ -27,16 +27,21 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.tools.transfer.*;
-import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.registry.*;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferNodeConfiguratorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageType;
+import org.jkiss.dbeaver.ui.DialogSettingsMap;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -74,7 +79,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
         this.settings = new DataTransferSettings(producers, consumers);
         setDialogSettings(
             UIUtils.getSettingsSection(
-                DTActivator.getDefault().getDialogSettings(),
+                DTUIActivator.getDefault().getDialogSettings(),
                 RS_EXPORT_WIZARD_DIALOG_SETTINGS));
         loadSettings();
 
@@ -108,6 +113,10 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
                 addNodeSettings(node);
             }
         }
+    }
+
+    public DBRRunnableContext getRunnableContext() {
+        return new RunnableContextDelegate(getContainer());
     }
 
     public IStructuredSelection getCurrentSelection() {
@@ -215,7 +224,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     public boolean performFinish() {
         // Save settings
         saveSettings();
-        DTActivator.getDefault().saveDialogSettings();
+        DTUIActivator.getDefault().saveDialogSettings();
 
         // Start consumers
         try {
@@ -409,7 +418,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
             IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
             IDataTransferSettings settings = this.settings.getNodeSettings(entry.getValue().sourceNode);
             if (settings != null) {
-                settings.loadSettings(runnableContext, this.settings, nodeSection);
+                settings.loadSettings(getRunnableContext(), this.settings, new DialogSettingsMap(nodeSection));
             }
         }
         IDialogSettings processorsSection = dialogSettings.getSection("processors");
@@ -453,7 +462,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
             IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
             IDataTransferSettings settings = this.settings.getNodeSettings(entry.getValue().sourceNode);
             if (settings != null) {
-                settings.saveSettings(nodeSection);
+                settings.saveSettings(new DialogSettingsMap(nodeSection));
             }
         }
 
