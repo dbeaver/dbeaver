@@ -3315,6 +3315,10 @@ public class ResultSetViewer extends Viewer
             return false;
         }
         DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null || dataContainer.getDataSource() != executionContext.getDataSource()) {
+            // This may happen during cross-database entity navigation
+            executionContext = DBUtils.getDefaultContext(dataContainer, false);
+        }
         if (executionContext == null) {
             UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Can't read data - no active connection", SWT.ICON_WARNING);
             return false;

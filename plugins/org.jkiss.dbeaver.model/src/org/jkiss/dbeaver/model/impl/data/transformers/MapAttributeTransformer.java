@@ -89,11 +89,11 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
             }
         }
         if (valueAttributes != null && !valueAttributes.isEmpty()) {
-            createNestedMapBindings(session, attribute, valueAttributes);
+            createNestedMapBindings(session, attribute, valueAttributes, rows);
         }
     }
 
-    private static void createNestedMapBindings(DBCSession session, DBDAttributeBinding topAttribute, List<Pair<DBSAttributeBase, Object[]>> nestedAttributes) throws DBException {
+    private static void createNestedMapBindings(DBCSession session, DBDAttributeBinding topAttribute, List<Pair<DBSAttributeBase, Object[]>> nestedAttributes, List<Object[]> rows) throws DBException {
         int maxPosition = 0;
         for (Pair<DBSAttributeBase, Object[]> attr : nestedAttributes) {
             maxPosition = Math.max(maxPosition, attr.getFirst().getOrdinalPosition());
@@ -130,9 +130,9 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                         continue;
                     }
                     fakeRow[nestedBinding.getOrdinalPosition()] = values[i];
-                    nestedBinding.lateBinding(session, fakeRows);
                 }
             }
+            nestedBinding.lateBinding(session, fakeRows);
         }
 
         if (!nestedBindings.isEmpty()) {

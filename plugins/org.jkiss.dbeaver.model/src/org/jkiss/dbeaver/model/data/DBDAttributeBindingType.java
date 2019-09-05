@@ -18,10 +18,19 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
+import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKeyColumn;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Type attribute value binding info
@@ -30,6 +39,7 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
 
     @NotNull
     private final DBSAttributeBase attribute;
+    private List<DBSEntityReferrer> referrers;
 
     public DBDAttributeBindingType(
         @NotNull DBDAttributeBinding parent,
@@ -145,6 +155,40 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         // TODO: somehow visualize this error in results
         return null;
     }
+
+    @Nullable
+    @Override
+    public List<DBSEntityReferrer> getReferrers() {
+        return referrers;
+    }
+
+    @Override
+    public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
+        // There can be virtual referrers
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer instanceof DBSEntity) {
+            DBSEntity attrEntity = (DBSEntity) dataContainer;
+            DBVEntity vEntity = DBVUtils.getVirtualEntity(attrEntity, false);
+            if (vEntity != null) {
+                List<DBVEntityForeignKey> foreignKeys = vEntity.getForeignKeys();
+                if (!CommonUtils.isEmpty(foreignKeys)) {
+                    for (DBVEntityForeignKey vfk : foreignKeys) {
+                        for (DBVEntityForeignKeyColumn vfkc : vfk.getAttributes()) {
+                            if (CommonUtils.equalObjects(vfkc.getAttributeName(), getFullyQualifiedName(DBPEvaluationContext.DML))) {
+                                if (referrers == null) {
+                                    referrers = new ArrayList<>();
+                                }
+                                referrers.add(vfk);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        super.lateBinding(session, rows);
+    }
+
 
     @Nullable
     @Override
