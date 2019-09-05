@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.jkiss.code.NotNull;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.AbstractMap;
@@ -36,9 +37,15 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
         this.settings = settings;
     }
 
+    @NotNull
     @Override
     public Set<Entry<String, Object>> entrySet() {
         return new LinkedHashSet<>();
+    }
+
+    @Override
+    public Object get(Object key) {
+        return getOrDefault(key, null);
     }
 
     @Override
@@ -51,7 +58,12 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
         if (section != null) {
             return new DialogSettingsMap(section);
         }
-        return null;
+        return defaultValue;
+    }
+
+    @Override
+    public Object put(String key, Object value) {
+        return putIfAbsent(key, value);
     }
 
     @Override

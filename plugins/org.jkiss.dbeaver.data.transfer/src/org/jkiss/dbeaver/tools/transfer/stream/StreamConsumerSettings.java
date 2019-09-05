@@ -195,23 +195,24 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         lobExtractType = CommonUtils.valueOf(LobExtractType.class, (String) settings.get("lobExtractType"), LobExtractType.SKIP);
         lobEncoding = CommonUtils.valueOf(LobEncoding.class, (String) settings.get("lobEncoding"), LobEncoding.HEX);
 
-        outputFolder = (String) settings.get("outputFolder");
-        outputFilePattern = (String) settings.get("outputFilePattern");
-        outputEncoding = (String) settings.get("outputEncoding");
-        outputEncodingBOM = CommonUtils.toBoolean(settings.get("outputEncodingBOM"));
-        outputClipboard = CommonUtils.toBoolean(settings.get("outputClipboard"));
+        outputFolder = CommonUtils.toString(settings.get("outputFolder"), outputFolder);
+        outputFilePattern = CommonUtils.toString(settings.get("outputFilePattern"), outputFilePattern);
+        outputEncoding = CommonUtils.toString(settings.get("outputEncoding"), outputEncoding);
+
+        outputEncodingBOM = CommonUtils.getBoolean(settings.get("outputEncodingBOM"), outputEncodingBOM);
+        outputClipboard = CommonUtils.getBoolean(settings.get("outputClipboard"), outputClipboard);
         if (dataTransferSettings.getDataPipes().size() > 1) {
-            useSingleFile = CommonUtils.toBoolean(settings.get("useSingleFile"));
+            useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile);
         } else {
             useSingleFile = false;
         }
 
-        compressResults = CommonUtils.toBoolean(settings.get("compressResults"));
-        splitOutFiles = CommonUtils.toBoolean(settings.get("splitOutFiles"));
-        maxOutFileSize = CommonUtils.toInt(settings.get("maxOutFileSize"));
-        openFolderOnFinish = CommonUtils.toBoolean(settings.get("openFolderOnFinish"));
-        executeProcessOnFinish = CommonUtils.toBoolean(settings.get("executeProcessOnFinish"));
-        finishProcessCommand = (String) settings.get("finishProcessCommand");
+        compressResults = CommonUtils.getBoolean(settings.get("compressResults"), compressResults);
+        splitOutFiles = CommonUtils.getBoolean(settings.get("splitOutFiles"), splitOutFiles);
+        maxOutFileSize = CommonUtils.toLong(settings.get("maxOutFileSize"), maxOutFileSize);
+        openFolderOnFinish = CommonUtils.getBoolean(settings.get("openFolderOnFinish"), openFolderOnFinish);
+        executeProcessOnFinish = CommonUtils.getBoolean(settings.get("executeProcessOnFinish"), executeProcessOnFinish);
+        finishProcessCommand = CommonUtils.toString(settings.get("finishProcessCommand"), finishProcessCommand);
 
         String formatterProfile = CommonUtils.toString(settings.get("formatterProfile"));
         if (!CommonUtils.isEmpty(formatterProfile)) {

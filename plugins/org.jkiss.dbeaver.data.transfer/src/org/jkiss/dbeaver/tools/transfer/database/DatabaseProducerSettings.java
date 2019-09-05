@@ -110,18 +110,9 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
-        if (settings.get("extractType") != null) {
-            try {
-                extractType = ExtractType.valueOf((String) settings.get("extractType"));
-            } catch (IllegalArgumentException e) {
-                extractType = ExtractType.SINGLE_QUERY;
-            }
-        }
-        try {
-            segmentSize = CommonUtils.toInt(settings.get("segmentSize"));
-        } catch (NumberFormatException e) {
-            segmentSize = DEFAULT_SEGMENT_SIZE;
-        }
+        extractType = CommonUtils.valueOf(ExtractType.class, (String) settings.get("extractType"), extractType);
+        segmentSize = CommonUtils.toInt(settings.get("segmentSize"), DEFAULT_SEGMENT_SIZE);
+        fetchSize = CommonUtils.toInt(settings.get("fetchSize"), fetchSize);
         openNewConnections = CommonUtils.toBoolean(settings.get("openNewConnections"));
         queryRowCount = CommonUtils.toBoolean(settings.get("queryRowCount"));
         selectedColumnsOnly = CommonUtils.toBoolean(settings.get("selectedColumnsOnly"));
@@ -132,6 +123,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
     public void saveSettings(Map<String, Object> settings) {
         settings.put("extractType", extractType.name());
         settings.put("segmentSize", segmentSize);
+        settings.put("fetchSize", fetchSize);
         settings.put("openNewConnections", openNewConnections);
         settings.put("queryRowCount", queryRowCount);
         settings.put("selectedColumnsOnly", selectedColumnsOnly);
