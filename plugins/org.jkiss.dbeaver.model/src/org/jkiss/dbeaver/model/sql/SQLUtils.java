@@ -622,7 +622,13 @@ public final class SQLUtils {
             case NUMERIC:
                 return strValue;
             case CONTENT:
-                return strValue;
+                if (value instanceof DBDContent) {
+                    String contentType = ((DBDContent) value).getContentType();
+                    if (contentType != null && !contentType.startsWith("text")) {
+                        return strValue;
+                    }
+                }
+                // Text content. Fall down
             case STRING:
             case ROWID:
                 if (sqlDialect != null) {
