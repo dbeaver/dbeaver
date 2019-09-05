@@ -91,6 +91,19 @@ class ReferencesResultsContainer implements IResultSetContainer {
             public void widgetSelected(SelectionEvent e) {
                 activeReferenceKey = fkCombo.getSelectedItem();
                 refreshKeyValues(true);
+
+                // Save active keys in virtual entity props
+                {
+                    DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, true);
+                    List<Map<String, Object>> activeAssociations = new ArrayList<>();
+                    activeAssociations.add(activeReferenceKey.createMemo());
+                    Object curActiveAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
+                    if (!CommonUtils.equalObjects(curActiveAssociations, activeAssociations)) {
+                        vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
+                        vEntityOwner.persistConfiguration();
+                    }
+                }
+
             }
         });
 
@@ -318,33 +331,26 @@ class ReferencesResultsContainer implements IResultSetContainer {
                     }
                     lastSelectedRows = selectedRows;
                     if (selectedRows.isEmpty()) {
-                        this.dataViewer.clearData();
-                        this.dataViewer.showEmptyPresentation();
+                        UIUtils.asyncExec(() -> {
+                            this.dataViewer.clearData();
+                            this.dataViewer.showEmptyPresentation();
+                        });
                     } else {
                         if (activeReferenceKey.isReference) {
                             this.dataViewer.navigateReference(
-                                new VoidProgressMonitor(),
+                                monitor,
                                 parentController.getModel(),
                                 activeReferenceKey.refAssociation,
                                 selectedRows,
                                 false);
                         } else {
                             this.dataViewer.navigateAssociation(
-                                new VoidProgressMonitor(),
+                                monitor,
                                 parentController.getModel(),
                                 activeReferenceKey.refAssociation,
                                 selectedRows, false);
 
                         }
-                    }
-
-                    // Save active keys in virtual entity props
-                    {
-                        DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, true);
-                        List<Map<String, Object>> activeAssociations = new ArrayList<>();
-                        activeAssociations.add(activeReferenceKey.createMemo());
-                        vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
-                        vEntityOwner.persistConfiguration();
                     }
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
