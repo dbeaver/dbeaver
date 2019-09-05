@@ -63,8 +63,8 @@ public abstract class DataTransferHandler extends AbstractHandler {
             ActiveWizardDialog dialog = new ActiveWizardDialog(
                 workbenchWindow,
                 new DataTransferWizard(
-                    producers.toArray(new IDataTransferProducer[producers.size()]),
-                    consumers.toArray(new IDataTransferConsumer[consumers.size()])));
+                    producers.toArray(new IDataTransferProducer[0]),
+                    consumers.toArray(new IDataTransferConsumer[0])));
             dialog.open();
         }
 

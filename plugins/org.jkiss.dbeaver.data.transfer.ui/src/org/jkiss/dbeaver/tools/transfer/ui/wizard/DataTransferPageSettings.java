@@ -35,8 +35,6 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
  */
 class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
 
-    private static final Log log = Log.getLog(DataTransferPageSettings.class);
-
     private IWizardPage producerSettingsPage;
     private IWizardPage consumerSettingsPage;
 
