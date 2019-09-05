@@ -575,8 +575,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                         }
                     }
                 }
-                // Save config immediately in the new format
-                flushConfig();
+                if (!origins.isEmpty()) {
+                    // Save config immediately in the new format
+                    flushConfig();
+                }
             }
         } catch (CoreException e) {
             log.error("Error reading datasources configuration", e);
