@@ -221,7 +221,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void loadSettings(DBRRunnableContext context, Map<String, Object> settings) {
-        targetName = (String) settings.get("targetName");
+        targetName = CommonUtils.toString(settings.get("targetName"), targetName);
         if (settings.get("mappingType") != null) {
             try {
                 DatabaseMappingType newMappingType = DatabaseMappingType.valueOf((String) settings.get("mappingType"));

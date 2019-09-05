@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -81,7 +80,6 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
             UIUtils.getSettingsSection(
                 DTUIActivator.getDefault().getDialogSettings(),
                 RS_EXPORT_WIZARD_DIALOG_SETTINGS));
-        loadSettings();
 
         {
             // Load node settings
@@ -113,6 +111,8 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
                 addNodeSettings(node);
             }
         }
+
+        loadSettings();
     }
 
     public DBRRunnableContext getRunnableContext() {
@@ -253,7 +253,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     private void loadSettings() {
         loadFrom(
-            UIUtils.getActiveWorkbenchWindow(), getDialogSettings());
+            getRunnableContext(), getDialogSettings());
     }
 
     private void saveSettings() {
@@ -365,7 +365,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
         return nodePageSettings == null ? null : settings.getNodeSettings(nodePageSettings.sourceNode);
     }
 
-    void loadFrom(IRunnableContext runnableContext, IDialogSettings dialogSettings) {
+    void loadFrom(DBRRunnableContext runnableContext, IDialogSettings dialogSettings) {
         try {
             settings.setMaxJobCount(dialogSettings.getInt("maxJobCount"));
         } catch (NumberFormatException e) {
@@ -418,7 +418,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
             IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
             IDataTransferSettings settings = this.settings.getNodeSettings(entry.getValue().sourceNode);
             if (settings != null) {
-                settings.loadSettings(getRunnableContext(), this.settings, new DialogSettingsMap(nodeSection));
+                settings.loadSettings(runnableContext, this.settings, new DialogSettingsMap(nodeSection));
             }
         }
         IDialogSettings processorsSection = dialogSettings.getSection("processors");
