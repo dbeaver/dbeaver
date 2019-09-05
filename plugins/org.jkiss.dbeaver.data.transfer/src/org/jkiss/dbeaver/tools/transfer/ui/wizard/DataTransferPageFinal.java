@@ -23,7 +23,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -156,7 +158,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 if (producerObjectIcon != null) {
                     item.setImage(1, DBeaverIcons.getImage(producerObjectIcon));
                 }
-                Color producerColor = pipe.getProducer().getObjectColor();
+                Color producerColor = getNodeColor(pipe.getProducer());
                 if (producerColor != null) {
                     item.setBackground(0, producerColor);
                     item.setBackground(1, producerColor);
@@ -178,7 +180,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 if (consumerObjectIcon != null) {
                     item.setImage(3, DBeaverIcons.getImage(consumerObjectIcon));
                 }
-                Color consumerColor = pipe.getConsumer().getObjectColor();
+                Color consumerColor = getNodeColor(pipe.getConsumer());
                 if (consumerColor != null) {
                     item.setBackground(2, consumerColor);
                     item.setBackground(3, consumerColor);
@@ -202,6 +204,15 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             column.setWidth(tableWidth / columns.length - 1);
         }
         updatePageCompletion();
+    }
+
+    private Color getNodeColor(IDataTransferNode node) {
+        DBSObject dbObject = node.getDatabaseObject();
+        if (dbObject != null) {
+            DBPDataSourceContainer container = dbObject.getDataSource().getContainer();
+            return UIUtils.getConnectionColor(container.getConnectionConfiguration());
+        }
+        return null;
     }
 
     private void printSummary(Text text, DataTransferNodeDescriptor node, IDataTransferSettings settings, DataTransferProcessorDescriptor processor) {

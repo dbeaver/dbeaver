@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.HTMLTransfer;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -41,8 +36,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -373,28 +366,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         if (!parameters.isBinary && settings.isOutputClipboard()) {
             if (outputBuffer != null) {
-                UIUtils.syncExec(() -> {
-
-                    TextTransfer textTransfer = TextTransfer.getInstance();
-                    String strContents = outputBuffer.toString();
-                    Clipboard clipboard = new Clipboard(UIUtils.getDisplay());
-                    if (parameters.isHTML) {
-                        HTMLTransfer htmlTransfer = HTMLTransfer.getInstance();
-                        clipboard.setContents(
-                            new Object[]{strContents, strContents},
-                            new Transfer[]{textTransfer, htmlTransfer});
-                    } else {
-                        clipboard.setContents(
-                            new Object[]{strContents},
-                            new Transfer[]{textTransfer});
-                    }
-                });
+                String strContents = outputBuffer.toString();
+                DBWorkbench.getPlatformUI().copyTextToClipboard(strContents, parameters.isHTML);
                 outputBuffer = null;
             }
         } else {
             if (settings.isOpenFolderOnFinish()) {
                 // Last one
-                UIUtils.asyncExec(() -> UIUtils.launchProgram(settings.getOutputFolder()));
+                DBWorkbench.getPlatformUI().executeShellProgram(settings.getOutputFolder());
             }
         }
     }
@@ -429,12 +408,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public DBPImage getObjectContainerIcon() {
-        return settings.isOutputClipboard() ? UIIcon.FILTER_CLIPBOARD : DBIcon.TREE_FOLDER;
-    }
-
-    @Override
-    public Color getObjectColor() {
-        return null;
+        return settings.isOutputClipboard() ? DBIcon.TYPE_TEXT : DBIcon.TREE_FOLDER;
     }
 
     public String getOutputFileName() {

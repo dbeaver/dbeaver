@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -99,11 +98,6 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     @Override
     public DBPImage getObjectContainerIcon() {
         return DBIcon.TREE_FOLDER;
-    }
-
-    @Override
-    public Color getObjectColor() {
-        return null;
     }
 
     public File getInputFile() {

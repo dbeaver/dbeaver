@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -35,11 +34,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -216,11 +212,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 } catch (Throwable e) {
                     log.error("Error inserting row", e);
                     if (!ignoreErrors) {
-                        DBPPlatformUI.UserResponse response = ExecutionQueueErrorJob.showError(
-                            DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI) + " data load",
-                            e,
-                            true);
-                        switch (response) {
+                        switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(
+                            "Error occurred during data load", e, true)) {
                             case STOP:
                                 // just stop execution
                                 throw new DBCException("Can't insert row", e);
@@ -522,10 +515,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
         if (!last && settings.isOpenTableOnFinish()) {
             if (containerMapping != null && containerMapping.getTarget() != null) {
-
-                UIUtils.syncExec(() -> {
-                    DBWorkbench.getPlatformUI().openEntityEditor(containerMapping.getTarget());
-                });
+                DBWorkbench.getPlatformUI().openEntityEditor(containerMapping.getTarget());
             }
         }
     }
@@ -590,12 +580,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public DBPImage getObjectContainerIcon() {
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getDriver().getIcon() : null;
-    }
-
-    @Override
-    public Color getObjectColor() {
-        DBPDataSourceContainer container = getDataSourceContainer();
-        return container != null ? UIUtils.getConnectionColor(container.getConnectionConfiguration()) : null;
     }
 
     private DBPDataSourceContainer getDataSourceContainer() {
