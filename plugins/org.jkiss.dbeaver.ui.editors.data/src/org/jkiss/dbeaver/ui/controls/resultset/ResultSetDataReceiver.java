@@ -178,12 +178,8 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 resultSetViewer.getActivePresentation().refreshData(true, false, !metadataChanged);
                 resultSetViewer.updateStatusMessage();
             } else {
-                if (resultSetViewer.getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
-                    ResultSetRow currentRow = resultSetViewer.getCurrentRow();
-                    resultSetViewer.setData(tmpRows, currentRow == null ? 0 : currentRow.getVisualNumber());
-                } else {
-                    resultSetViewer.appendData(tmpRows);
-                }
+                boolean resetOldRows = resultSetViewer.getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING);
+                resultSetViewer.appendData(tmpRows, resetOldRows);
                 resultSetViewer.getActivePresentation().refreshData(false, true, true);
             }
             // Check for more data

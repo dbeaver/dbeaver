@@ -1997,9 +1997,9 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void appendData(List<Object[]> rows)
+    void appendData(List<Object[]> rows, boolean resetOldRows)
     {
-        model.appendData(rows);
+        model.appendData(rows, resetOldRows);
 
         setStatus(NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 

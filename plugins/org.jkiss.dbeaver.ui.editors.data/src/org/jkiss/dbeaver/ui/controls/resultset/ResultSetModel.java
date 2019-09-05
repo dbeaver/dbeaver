@@ -535,7 +535,7 @@ public class ResultSetModel {
         }
 
         // Add new data
-        appendData(rows);
+        appendData(rows, true);
 
         // Init data filter
         if (metadataChanged) {
@@ -706,7 +706,10 @@ public class ResultSetModel {
         }
     }
 
-    public void appendData(@NotNull List<Object[]> rows) {
+    public void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
+        if (resetOldRows) {
+            curRows.clear();
+        }
         int rowCount = rows.size();
         int firstRowNum = curRows.size();
         List<ResultSetRow> newRows = new ArrayList<>(rowCount);
