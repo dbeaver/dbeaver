@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
@@ -256,6 +257,12 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
         // Done
         return true;
+    }
+
+    @Override
+    public void setContainer(IWizardContainer wizardContainer) {
+        super.setContainer(wizardContainer);
+        //wizardContainer.
     }
 
     private void loadSettings() {
