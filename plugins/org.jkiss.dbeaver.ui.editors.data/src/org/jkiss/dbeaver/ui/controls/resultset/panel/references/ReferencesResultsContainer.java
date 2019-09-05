@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 class ReferencesResultsContainer implements IResultSetContainer {
@@ -188,6 +189,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 allEntities.add(entityAttribute.getParentObject());
             }
         }
+        if (allEntities.isEmpty() && parentDataContainer instanceof DBSEntity) {
+            allEntities.add((DBSEntity) parentDataContainer);
+        }
 
         List<ReferenceKeyMemo> refKeyMemos = new ArrayList<>();
         {
@@ -297,49 +301,59 @@ class ReferencesResultsContainer implements IResultSetContainer {
             //log.error("No active reference key");
             return;
         }
-        if (!(activeReferenceKey.refEntity instanceof DBSDataContainer)) {
-            log.error("Referencing entity is not a data container");
-            return;
-        }
-        dataContainer = (DBSDataContainer) activeReferenceKey.refEntity;
         try {
-            List<ResultSetRow> selectedRows = parentController.getSelection().getSelectedRows();
-            if (!force && CommonUtils.equalObjects(lastSelectedRows, selectedRows)) {
-                return;
-            }
-            lastSelectedRows = selectedRows;
-            if (selectedRows.isEmpty()) {
-                this.dataViewer.clearData();
-                this.dataViewer.showEmptyPresentation();
-            } else {
-                if (activeReferenceKey.isReference) {
-                    this.dataViewer.navigateReference(
-                        new VoidProgressMonitor(),
-                        parentController.getModel(),
-                        activeReferenceKey.refAssociation,
-                        selectedRows,
-                        false);
-                } else {
-                    this.dataViewer.navigateAssociation(
-                        new VoidProgressMonitor(),
-                        parentController.getModel(),
-                        activeReferenceKey.refAssociation,
-                        selectedRows, false);
+            UIUtils.runInProgressService(monitor -> {
 
+                try {
+                    DBSEntity realEntity = DBVUtils.getRealEntity(monitor, activeReferenceKey.refEntity);
+                    if (!(realEntity instanceof DBSDataContainer)) {
+                        log.error("Referencing entity is not a data container");
+                        return;
+                    }
+                    dataContainer = (DBSDataContainer) realEntity;
+
+                    List<ResultSetRow> selectedRows = parentController.getSelection().getSelectedRows();
+                    if (!force && CommonUtils.equalObjects(lastSelectedRows, selectedRows)) {
+                        return;
+                    }
+                    lastSelectedRows = selectedRows;
+                    if (selectedRows.isEmpty()) {
+                        this.dataViewer.clearData();
+                        this.dataViewer.showEmptyPresentation();
+                    } else {
+                        if (activeReferenceKey.isReference) {
+                            this.dataViewer.navigateReference(
+                                new VoidProgressMonitor(),
+                                parentController.getModel(),
+                                activeReferenceKey.refAssociation,
+                                selectedRows,
+                                false);
+                        } else {
+                            this.dataViewer.navigateAssociation(
+                                new VoidProgressMonitor(),
+                                parentController.getModel(),
+                                activeReferenceKey.refAssociation,
+                                selectedRows, false);
+
+                        }
+                    }
+
+                    // Save active keys in virtual entity props
+                    {
+                        DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, true);
+                        List<Map<String, Object>> activeAssociations = new ArrayList<>();
+                        activeAssociations.add(activeReferenceKey.createMemo());
+                        vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
+                        vEntityOwner.persistConfiguration();
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
-            }
-
-            // Save active keys in virtual entity props
-            {
-                DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, true);
-                List<Map<String, Object>> activeAssociations = new ArrayList<>();
-                activeAssociations.add(activeReferenceKey.createMemo());
-                vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
-                vEntityOwner.persistConfiguration();
-            }
-
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't shwo references", "Error opening '" + dataContainer.getName() + "' references", e);
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Can't show references", "Error opening '" + dataContainer.getName() + "' references", e.getTargetException());
+        } catch (InterruptedException e) {
+            // Ignore
         }
     }
 
