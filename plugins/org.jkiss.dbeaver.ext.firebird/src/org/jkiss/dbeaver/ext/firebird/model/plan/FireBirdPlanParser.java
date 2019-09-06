@@ -76,7 +76,6 @@ class FireBirdPlanParser {
 						tokenMatch.jump();
 						planItem(parent);
 					} while (tokenMatch.token == FireBirdPlanToken.COMMA);
-					tokenMatch.jump();
 					tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
 					break;
 				case SORT:
@@ -84,6 +83,9 @@ class FireBirdPlanParser {
 					break;
 				case JOIN:
 					joinedItem(parent);
+					break;
+				case HASH:
+					hashedItem(parent);
 					break;
 				case SORT_MERGE:
 					mergedItem(parent, true);
@@ -115,7 +117,18 @@ class FireBirdPlanParser {
 			do {
 				tokenMatch.jump();
 				planItem(node);
+			} while (tokenMatch.getToken() == FireBirdPlanToken.COMMA);
+			tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
+		}
+			
+		private void hashedItem(FireBirdPlanNode parent) throws FireBirdPlanException {
+			tokenMatch.checkToken(FireBirdPlanToken.HASH);
+			FireBirdPlanNode node = addPlanNode(parent, "HASH");
+			tokenMatch.jump();
+			tokenMatch.checkToken(FireBirdPlanToken.LEFTPARENTHESE);
+			do {
 				tokenMatch.jump();
+				planItem(node);
 			} while (tokenMatch.getToken() == FireBirdPlanToken.COMMA);
 			tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
 		}
@@ -159,6 +172,7 @@ class FireBirdPlanParser {
 			switch (tokenMatch.token) {
 				case NATURAL:
 					addPlanNode(parent, aliases + " NATURAL");
+					tokenMatch.jump();
 					break;
 				case INDEX:
 					String indexes = collectIndexes();
@@ -169,7 +183,7 @@ class FireBirdPlanParser {
 					tokenMatch.checkToken(FireBirdPlanToken.IDENTIFICATOR);
 					String orderIndex = tokenMatch.getValue();
 					tokenMatch.jump();
-					String text = aliases + " ORDER " + orderIndex;
+					String text = aliases + " ORDER " + orderIndex + indexInfo(orderIndex);
 					if (tokenMatch.getToken() == FireBirdPlanToken.INDEX) {
 						String orderIndexes = collectIndexes();
 						text = text + " INDEX(" + orderIndexes + ")";
