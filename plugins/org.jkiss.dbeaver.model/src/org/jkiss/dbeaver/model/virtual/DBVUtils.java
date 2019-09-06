@@ -87,10 +87,14 @@ public abstract class DBVUtils {
         // so we shouldn't eay too much memory for that
         String attrKey = DBUtils.getObjectFullId(dataContainer);
         synchronized (orphanVirtualEntities) {
+            DBPDataSource dataSource = dataContainer.getDataSource();
+            if (dataSource == null) {
+                return null;
+            }
             DBVEntity vEntity = orphanVirtualEntities.get(attrKey);
             if (vEntity == null && create) {
                 vEntity = new DBVEntity(
-                    dataContainer.getDataSource().getContainer().getVirtualModel(),
+                    dataSource.getContainer().getVirtualModel(),
                     dataContainer.getName(),
                     "");
                 orphanVirtualEntities.put(attrKey, vEntity);
