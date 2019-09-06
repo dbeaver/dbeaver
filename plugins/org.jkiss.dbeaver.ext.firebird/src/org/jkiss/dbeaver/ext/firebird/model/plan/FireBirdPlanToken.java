@@ -26,6 +26,7 @@ enum FireBirdPlanToken {
 	SORT_MERGE("\\GSORT\\w+MERGE\\b"),
 	SORT("\\GSORT\\b"), 
 	MERGE("\\GMERGE\\b"), 
+	HASH("\\GHASH\\b"),
 	ORDER("\\GORDER\\b"), 
 	INDEX("\\GINDEX\\b"), 
 	LEFTPARENTHESE("\\G\\("), 
