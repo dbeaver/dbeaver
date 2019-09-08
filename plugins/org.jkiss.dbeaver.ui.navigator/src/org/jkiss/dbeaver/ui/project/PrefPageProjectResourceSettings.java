@@ -203,25 +203,27 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
 
         // Save roots
         DBPProject projectMeta = getProjectMeta();
-        for (TableItem item : resourceTable.getItems()) {
-            DBPResourceHandlerDescriptor descriptor = (DBPResourceHandlerDescriptor) item.getData();
-            String rootPath = item.getText(1);
-            if (!CommonUtils.equalObjects(descriptor.getDefaultRoot(projectMeta), rootPath)) {
-                IResource oldResource = project.findMember(descriptor.getDefaultRoot(projectMeta));
-                if (oldResource != null) {
-                    refreshedResources.add(oldResource);
-                }
+        if (projectMeta != null) {
+            for (TableItem item : resourceTable.getItems()) {
+                DBPResourceHandlerDescriptor descriptor = (DBPResourceHandlerDescriptor) item.getData();
+                String rootPath = item.getText(1);
+                if (!CommonUtils.equalObjects(descriptor.getDefaultRoot(projectMeta), rootPath)) {
+                    IResource oldResource = project.findMember(descriptor.getDefaultRoot(projectMeta));
+                    if (oldResource != null) {
+                        refreshedResources.add(oldResource);
+                    }
 
-                IResource newResource = project.findMember(rootPath);
-                if (newResource != null) {
-                    refreshedResources.add(newResource);
+                    IResource newResource = project.findMember(rootPath);
+                    if (newResource != null) {
+                        refreshedResources.add(newResource);
+                    }
+                    descriptor.setDefaultRoot(projectMeta, rootPath);
                 }
-                descriptor.setDefaultRoot(projectMeta, rootPath);
             }
-        }
-        if (!refreshedResources.isEmpty()) {
-            for (IResource resource : refreshedResources) {
-                DBNUtils.refreshNavigatorResource(resource, this);
+            if (!refreshedResources.isEmpty()) {
+                for (IResource resource : refreshedResources) {
+                    DBNUtils.refreshNavigatorResource(resource, this);
+                }
             }
         }
 
