@@ -106,6 +106,15 @@ public class NumberDataFormatter implements DBDDataFormatter {
         try {
             synchronized (this) {
                 buffer.setLength(0);
+                if (value instanceof BigDecimal && numberFormat.getRoundingMode() == RoundingMode.UNNECESSARY) {
+                    // BigDecimals can't be formatted without rounding (#6698)
+                    numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
+                    try {
+                        return numberFormat.format(value, buffer, position).toString();
+                    } finally {
+                        numberFormat.setRoundingMode(RoundingMode.UNNECESSARY);
+                    }
+                }
                 return numberFormat.format(value, buffer, position).toString();
             }
         } catch (Exception e) {
