@@ -553,6 +553,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             boolean modernFormat = false;
             IFolder metadataFolder = project.getMetadataFolder(false);
             if (metadataFolder.exists()) {
+                metadataFolder.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
                 for (IResource res : metadataFolder.members(IContainer.INCLUDE_HIDDEN)) {
                     if (res instanceof IFile && res.exists() &&
                         res.getName().startsWith(MODERN_CONFIG_FILE_PREFIX) && res.getName().endsWith(MODERN_CONFIG_FILE_EXT)) {
