@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -59,12 +60,13 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
         {
             context.registerService(EventHook.class, (event, contexts) -> {
                 String message = null;
+                Bundle bundle = event.getBundle();
                 if (event.getType() == BundleEvent.STARTED) {
-                    if (event.getBundle().getState() == Bundle.ACTIVE) {
-                        message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+                    if (bundle.getState() == Bundle.ACTIVE) {
+                        message = "> Start " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                     }
                 } else if (event.getType() == BundleEvent.STOPPING) {
-                    message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+                    message = "< Stop " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                 }
                 if (message != null) {
                     log.debug(message);
@@ -74,6 +76,14 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
         }
 
         plugin = this;
+    }
+
+    private static String getBundleName(Bundle bundle) {
+        String bundleName = bundle.getHeaders().get("Bundle-Name");
+        if (CommonUtils.isEmpty(bundleName)) {
+            bundleName = bundle.getSymbolicName();
+        }
+        return bundleName;
     }
 
     @Override

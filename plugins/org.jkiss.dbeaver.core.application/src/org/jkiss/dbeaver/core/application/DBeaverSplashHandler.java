@@ -146,15 +146,20 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     }
 
 	public static void showMessage(String message) {
-		if (message == null || message.isEmpty()) {
+        IProgressMonitor activeMonitor = getActiveMonitor();
+		if (activeMonitor == null || message == null || message.isEmpty()) {
 			return;
 		}
-        try {
-            IProgressMonitor activeMonitor = getActiveMonitor();
-            if (activeMonitor != null) {
-                activeMonitor.setTaskName(message);
-                activeMonitor.worked(1);
+		if (message.startsWith(">") || message.startsWith("<")) {
+            message = message.substring(2);
+            int divPos = message.indexOf("[");
+            if (divPos != -1) {
+                message = message.substring(0, divPos);
             }
+        }
+        try {
+            activeMonitor.setTaskName(message);
+            activeMonitor.worked(1);
         } catch (Throwable e) {
             e.printStackTrace(System.err);
         }
