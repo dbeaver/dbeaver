@@ -22,6 +22,7 @@ import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedModeUI.IExitPolicy;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.templates.Template;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.VerifyEvent;
@@ -205,7 +206,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                     final char character = event.character;
                     final char closingCharacter = getPeerCharacter(character);
 
-                    document.replace(offset, length, String.valueOf(character) + closingCharacter);
+                    document.replace(offset, length, String.valueOf(character)+ getSelection() + closingCharacter);
 
                     SymbolLevel level = new SymbolLevel();
                     bracketLevelStack.add(level);
@@ -240,7 +241,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
 
                     IRegion newSelection = level.uI.getSelectedRegion();
                     sourceViewer.setSelectedRange(newSelection.getOffset(), newSelection.getLength());
-
+                    
                     event.doit = false;
 
                 }
@@ -453,6 +454,18 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
             super(model, viewer);
             setPositionListener(new EditorHistoryUpdater());
         }
+    }
+    
+    private String getSelection() {
+    	ISelectionProvider selectionProvider = editor.getSelectionProvider();
+        if (selectionProvider == null) {
+            return null;
+        }
+        ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
+        if(selection == null) {
+        	return null;
+        }
+        return selection.getText();
     }
 
 }
