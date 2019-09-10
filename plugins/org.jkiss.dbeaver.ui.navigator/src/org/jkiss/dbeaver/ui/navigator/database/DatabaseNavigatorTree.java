@@ -161,6 +161,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     return selection;
                 }
                 Object rootNode = getInput();
+                if (rootNode instanceof DatabaseNavigatorContent) {
+                    rootNode = ((DatabaseNavigatorContent) rootNode).getRootNode();
+                }
                 return new TreeSelection(new TreePath(rootNode == null ? new Object[0] : new Object[] { rootNode } ));
             }
             protected void handleTreeExpand(TreeEvent event) {
