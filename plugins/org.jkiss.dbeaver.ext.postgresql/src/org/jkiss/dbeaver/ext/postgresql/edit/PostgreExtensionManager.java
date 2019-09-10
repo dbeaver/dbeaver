@@ -58,11 +58,11 @@ public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, P
             SQLObjectEditor<PostgreExtension, PostgreDatabase>.ObjectCreateCommand command,
             Map<String, Object> options) {
         final PostgreExtension extension = command.getObject();
-        final StringBuilder script = new StringBuilder("CREATE EXTENSION " + DBUtils.getQuotedIdentifier(extension));
-        script.append(" SCHEMA ").append(extension.getSchema());
 
         actions.add(
-            new SQLDatabasePersistAction("Create extension", script.toString()) //$NON-NLS-2$
+            new SQLDatabasePersistAction(
+                "Create extension",
+                "CREATE EXTENSION " + DBUtils.getQuotedIdentifier(extension) + " SCHEMA " + extension.getSchema()) //$NON-NLS-2$
         );
     }
 
@@ -73,7 +73,7 @@ public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, P
         
         
         actions.add(
-                new SQLDatabasePersistAction("Drop extension", "DROP EXTENSION " + command.getObject().getName() + " CASCADE") //$NON-NLS-2$
+                new SQLDatabasePersistAction("Drop extension", "DROP EXTENSION " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
             );
     }
 
