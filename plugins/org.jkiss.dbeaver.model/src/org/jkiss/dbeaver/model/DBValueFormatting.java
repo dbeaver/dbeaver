@@ -35,6 +35,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -54,9 +55,11 @@ public final class DBValueFormatting {
     static {
         //NATIVE_FLOAT_FORMATTER.setMaximumFractionDigits(NumberDataFormatter.MAX_FLOAT_FRACTION_DIGITS);
         NATIVE_FLOAT_FORMATTER.setDecimalSeparatorAlwaysShown(false);
+        NATIVE_FLOAT_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
 
         //NATIVE_DOUBLE_FORMATTER.setMaximumFractionDigits(340);
         NATIVE_DOUBLE_FORMATTER.setDecimalSeparatorAlwaysShown(false);
+        NATIVE_DOUBLE_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
     }
 
     @NotNull
@@ -223,11 +226,11 @@ public final class DBValueFormatting {
     public static String convertNumberToNativeString(Number value) {
         if (value instanceof BigDecimal) {
             return ((BigDecimal) value).toPlainString();
-        } /*else if (value instanceof Float) {
+        } else if (value instanceof Float) {
             return NATIVE_FLOAT_FORMATTER.format(value);
         } else if (value instanceof Double) {
             return NATIVE_DOUBLE_FORMATTER.format(value);
-        }*/ else {
+        } else {
             return value.toString();
         }
 

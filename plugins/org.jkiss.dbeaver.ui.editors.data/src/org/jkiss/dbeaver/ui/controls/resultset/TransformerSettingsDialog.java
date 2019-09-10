@@ -188,7 +188,9 @@ class TransformerSettingsDialog extends BaseDialog {
         final DBPDataSource dataSource = viewer.getDataSource();
 
         DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(currentAttribute, false);
-        settings = vAttr == null ? null : DBVUtils.getTransformSettings(vAttr, false);
+        if (settings == null) {
+            settings = vAttr == null ? null : DBVUtils.getTransformSettings(vAttr, false);
+        }
 
         if (dataSource != null && settings != null && !CommonUtils.isEmpty(settings.getCustomTransformer())) {
             transformer = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getTransformer(settings.getCustomTransformer());
