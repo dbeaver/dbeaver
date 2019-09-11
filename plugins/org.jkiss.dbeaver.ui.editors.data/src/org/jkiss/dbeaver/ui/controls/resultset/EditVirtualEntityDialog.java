@@ -30,10 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
@@ -152,6 +149,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
             editDictionaryPage.createControl(tabFolder);
             TabItem dictItem = new TabItem(tabFolder, SWT.NONE);
             dictItem.setText("Dictionary");
+            dictItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_PACKAGE));
             dictItem.setControl(editDictionaryPage.getControl());
             dictItem.setData(InitPage.DICTIONARY);
         }
@@ -160,6 +158,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
     private void createColumnsPage(TabFolder tabFolder) {
         TabItem attrsItem = new TabItem(tabFolder, SWT.NONE);
         attrsItem.setText("Virtual Columns");
+        attrsItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_COLUMN));
         attrsItem.setData(InitPage.ATTRIBUTES);
 
         Composite panel = new Composite(tabFolder, 1);
@@ -245,9 +244,14 @@ public class EditVirtualEntityDialog extends BaseDialog {
         if (selection.length <= 0) {
             return;
         }
-        DBVEntityAttribute vAttr = (DBVEntityAttribute) selection[0].getData();
+        TableItem tableItem = selection[0];
+        DBVEntityAttribute vAttr = (DBVEntityAttribute) tableItem.getData();
         BaseDialog editAttrPage = new EditVirtualAttributeDialog(getShell(), viewer, vAttr);
-        editAttrPage.open();
+        if (editAttrPage.open() == IDialogConstants.OK_ID) {
+            tableItem.setText(0, vAttr.getName());
+            tableItem.setText(1, vAttr.getTypeName());
+            tableItem.setText(2, CommonUtils.notEmpty(vAttr.getExpression()));
+        }
     }
 
     private void createAttributeItem(Table attrTable, DBVEntityAttribute attribute) {
@@ -306,6 +310,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
         }
         TabItem ukItem = new TabItem(tabFolder, SWT.NONE);
         ukItem.setText("Virtual Unique Key");
+        ukItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_UNIQUE_KEY));
         ukItem.setData(InitPage.UNIQUE_KEY);
 
         editUniqueKeyPage = new EditConstraintPage(
@@ -318,6 +323,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
     private void createForeignKeysPage(TabFolder tabFolder) {
         TabItem fkItem = new TabItem(tabFolder, SWT.NONE);
         fkItem.setText("Virtual Foreign Keys");
+        fkItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
         fkItem.setData(InitPage.FOREIGN_KEYS);
 
         Composite panel = new Composite(tabFolder, 1);
