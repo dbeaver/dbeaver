@@ -40,7 +40,7 @@ import java.util.*;
  */
 public abstract class DBVUtils {
 
-    static final Log log = Log.getLog(DBVUtils.class);
+    private static final Log log = Log.getLog(DBVUtils.class);
 
     // Entities for unmapped attributes (custom queries, pseudo attributes, etc)
     private static final Map<String, DBVEntity> orphanVirtualEntities = new HashMap<>();
@@ -225,6 +225,46 @@ public abstract class DBVUtils {
             values.add(new DBDLabelValuePair(keyLabel, keyValue));
         }
         return values;
+    }
+
+    @NotNull
+    public static List<DBVEntityAttribute> getCustomAttributes(@NotNull DBSEntity entity) {
+        DBVEntity vEntity = getVirtualEntity(entity, false);
+        if (vEntity != null) {
+            List<DBVEntityAttribute> vAttributes = vEntity.getEntityAttributes();
+            if (!CommonUtils.isEmpty(vAttributes)) {
+                List<DBVEntityAttribute> result = new ArrayList<>();
+                for (DBVEntityAttribute attr : vAttributes) {
+                    if (attr.isCustom()) {
+                        result.add(attr);
+                    }
+                }
+                return result;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    public static List<DBSEntityAttribute> getAllAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) throws DBException {
+        List<DBSEntityAttribute> result = new ArrayList<>();
+        final Collection<? extends DBSEntityAttribute> realAttributes = entity.getAttributes(monitor);
+        if (!CommonUtils.isEmpty(realAttributes)) {
+            result.addAll(realAttributes);
+        }
+        DBVEntity vEntity = getVirtualEntity(entity, false);
+        if (vEntity != null) {
+            List<DBVEntityAttribute> vAttributes = vEntity.getEntityAttributes();
+            if (!CommonUtils.isEmpty(vAttributes)) {
+                for (DBVEntityAttribute attr : vAttributes) {
+                    if (attr.isCustom()) {
+                        result.add(attr);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     @NotNull

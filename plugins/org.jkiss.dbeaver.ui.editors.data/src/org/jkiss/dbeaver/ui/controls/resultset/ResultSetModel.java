@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -265,6 +266,27 @@ public class ResultSetModel {
         return null;
     }
 
+    DBVEntity getVirtualEntity(boolean create) {
+        DBSEntity entity = isSingleSource() ? getSingleSource() : null;
+        return getVirtualEntity(entity, create);
+    }
+
+    DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
+        if (entity != null) {
+            return DBVUtils.getVirtualEntity(entity, true);
+        }
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer != null) {
+            return DBVUtils.getVirtualEntity(dataContainer, create);
+        }
+        return null;
+    }
+
+    @Nullable
+    private DBSDataContainer getDataContainer() {
+        return executionSource == null ? null : executionSource.getDataContainer();
+    }
+
     public boolean isEmpty() {
         return getRowCount() <= 0 || visibleAttributes.size() <= 0;
     }
@@ -457,6 +479,22 @@ public class ResultSetModel {
             this.trace = ((DBCResultSetTrace) resultSet).getExecutionTrace();
         } else {
             this.trace = null;
+        }
+
+        // Add custom attributes
+        DBVEntity vEntity = getVirtualEntity(false);
+        if (vEntity != null) {
+            List<DBVEntityAttribute> customAttributes = DBVUtils.getCustomAttributes(vEntity);
+            if (!CommonUtils.isEmpty(customAttributes)) {
+                DBSDataContainer dataContainer = getDataContainer();
+                if (dataContainer != null) {
+                    DBDAttributeBinding[] customBindings = new DBDAttributeBinding[customAttributes.size()];
+                    for (int i = 0; i < customAttributes.size(); i++) {
+                        customBindings[i] = new DBDAttributeBindingCustom(null, dataContainer, resultSet.getSession(), customAttributes.get(i));
+                    }
+                    newAttributes = ArrayUtils.concatArrays(newAttributes, customBindings);
+                }
+            }
         }
 
         if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
