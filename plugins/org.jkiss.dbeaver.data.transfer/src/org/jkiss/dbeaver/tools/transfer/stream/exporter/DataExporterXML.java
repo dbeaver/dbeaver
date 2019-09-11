@@ -36,14 +36,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.List;
 
 /**
  * XML Exporter
  */
 public class DataExporterXML extends StreamExporterAbstract {
 
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
     private String tableName;
 
     @Override
@@ -73,11 +72,11 @@ public class DataExporterXML extends StreamExporterAbstract {
         out.write("<!DOCTYPE " + tableName + " [\n");
         out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
         out.write("  <!ELEMENT DATA_RECORD (");
-        int columnsSize = columns.size();
+        int columnsSize = columns.length;
         for (int i = 0; i < columnsSize; i++) {
-            String colName = columns.get(i).getLabel();
+            String colName = columns[i].getLabel();
             if (CommonUtils.isEmpty(colName)) {
-                colName = columns.get(i).getName();
+                colName = columns[i].getName();
             }
             out.write(escapeXmlElementName(colName) + "?");
             if (i < columnsSize - 1) {
@@ -86,7 +85,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         }
         out.write(")+>\n");
         for (int i = 0; i < columnsSize; i++) {
-            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getName()) + " (#PCDATA)>\n");
+            out.write("  <!ELEMENT " + escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
         }
         out.write("]>\n");
         out.write("<" + tableName + ">\n");
@@ -98,7 +97,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         PrintWriter out = getWriter();
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
-            DBDAttributeBinding column = columns.get(i);
+            DBDAttributeBinding column = columns[i];
             String columnName = escapeXmlElementName(column.getName());
             out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
@@ -131,8 +130,7 @@ public class DataExporterXML extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws IOException
-    {
+    public void exportFooter(DBRProgressMonitor monitor) {
         getWriter().write("</" + tableName + ">\n");
     }
 

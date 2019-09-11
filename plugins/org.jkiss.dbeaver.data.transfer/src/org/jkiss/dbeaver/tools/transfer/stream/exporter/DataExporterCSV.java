@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -69,7 +68,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private String rowDelimiter;
     private String nullString;
     private HeaderPosition headerPosition;
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
 
     private final StringBuilder buffer = new StringBuilder();
 
@@ -125,8 +124,8 @@ public class DataExporterCSV extends StreamExporterAbstract {
 
     private void printHeader()
     {
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            DBDAttributeBinding column = columns.get(i);
+        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
+            DBDAttributeBinding column = columns[i];
             String colLabel = column.getLabel();
             String colName = column.getName();
             if (CommonUtils.equalObjects(colLabel, colName)) {
@@ -146,8 +145,8 @@ public class DataExporterCSV extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
-        for (int i = 0; i < row.length && i < columns.size(); i++) {
-            DBDAttributeBinding column = columns.get(i);
+        for (int i = 0; i < row.length && i < columns.length; i++) {
+            DBDAttributeBinding column = columns[i];
             if (DBUtils.isNullValue(row[i])) {
                 if (!CommonUtils.isEmpty(nullString)) {
                     getWriter().write(nullString);
@@ -188,8 +187,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException
-    {
+    public void exportFooter(DBRProgressMonitor monitor) {
         if (headerPosition == HeaderPosition.bottom || headerPosition == HeaderPosition.both) {
             printHeader();
         }

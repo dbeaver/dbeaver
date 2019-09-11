@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.List;
 
 /**
  * SQL Exporter
@@ -59,7 +58,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private boolean omitSchema;
     private int rowsInStatement;
     private String tableName;
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
 
     private transient StringBuilder sqlBuffer = new StringBuilder(100);
     private transient long rowCount;
@@ -110,7 +109,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     {
         PrintWriter out = getWriter();
         SQLDialect.MultiValueInsertMode insertMode = rowsInStatement == 1 ? SQLDialect.MultiValueInsertMode.NOT_SUPPORTED : getMultiValueInsertMode();
-        int columnsSize = columns.size();
+        int columnsSize = columns.length;
         boolean firstRow = false;
         if (insertMode == SQLDialect.MultiValueInsertMode.NOT_SUPPORTED || rowCount % rowsInStatement == 0) {
             sqlBuffer.setLength(0);
@@ -124,7 +123,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
             sqlBuffer.append("INSERT INTO ").append(tableName).append(" (");
             boolean hasColumn = false;
             for (int i = 0; i < columnsSize; i++) {
-                DBDAttributeBinding column = columns.get(i);
+                DBDAttributeBinding column = columns[i];
                 if (isSkipColumn(column)) {
                     continue;
                 }
@@ -153,7 +152,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
         rowCount++;
         boolean hasValue = false;
         for (int i = 0; i < columnsSize; i++) {
-            DBDAttributeBinding column = columns.get(i);
+            DBDAttributeBinding column = columns[i];
             if (isSkipColumn(column)) {
                 continue;
             }
@@ -208,8 +207,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException
-    {
+    public void exportFooter(DBRProgressMonitor monitor) {
         switch (getMultiValueInsertMode()) {
             case GROUP_ROWS:
                 if (rowCount > 0) {

@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,14 +44,16 @@ import java.util.List;
  * Custom virtual attribute edit dialog
  */
 class EditVirtualAttributeDialog extends BaseDialog {
+    private final ResultSetViewer viewer;
     private final DBVEntityAttribute vAttr;
     private Text nameText;
     private Combo typeCombo;
     private Combo kindCombo;
     private Text expressionText;
 
-    public EditVirtualAttributeDialog(Shell parentShell, DBVEntityAttribute vAttr) {
+    public EditVirtualAttributeDialog(Shell parentShell, ResultSetViewer viewer, DBVEntityAttribute vAttr) {
         super(parentShell, "Add virtual column", DBIcon.TREE_COLUMN);
+        this.viewer = viewer;
         this.vAttr = vAttr;
     }
 
@@ -117,6 +120,16 @@ class EditVirtualAttributeDialog extends BaseDialog {
         gd.widthHint = 300;
         gd.heightHint = expressionText.getLineHeight() * 5;
         expressionText.setLayoutData(gd);
+
+        List<String> expressionProposals = new ArrayList<>();
+        for (DBDAttributeBinding attr : viewer.getModel().getAttributes()) {
+            expressionProposals.add(attr.getLabel());
+        }
+
+        UIUtils.installContentProposal(
+            expressionText,
+            new TextContentAdapter(),
+            new SimpleContentProposalProvider(expressionProposals.toArray(new String[0])));
 
         return dialogArea;
     }

@@ -59,8 +59,6 @@ public abstract class StreamExporterAbstract implements IStreamDataExporter {
         // do nothing
     }
 
-
-
     protected String getValueDisplayString(
         DBDAttributeBinding column,
         Object value)

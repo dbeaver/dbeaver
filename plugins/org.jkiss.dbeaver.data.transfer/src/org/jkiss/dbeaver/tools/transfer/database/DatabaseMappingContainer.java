@@ -265,7 +265,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private class MetadataReceiver implements DBDDataReceiver {
 
-        private List<DBDAttributeBinding> attributes;
+        private DBDAttributeBinding[] attributes;
 
         @Override
         public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {

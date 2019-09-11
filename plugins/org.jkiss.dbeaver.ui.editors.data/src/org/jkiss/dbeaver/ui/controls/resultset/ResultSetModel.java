@@ -320,7 +320,7 @@ public class ResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
-        return DBUtils.getAttributeValue(attribute, row.values);
+        return DBUtils.getAttributeValue(attribute, attributes, row.values);
     }
 
     /**
@@ -479,30 +479,6 @@ public class ResultSetModel {
             this.trace = ((DBCResultSetTrace) resultSet).getExecutionTrace();
         } else {
             this.trace = null;
-        }
-
-        // Add custom attributes
-        DBVEntity vEntity = getVirtualEntity(false);
-        if (vEntity != null) {
-            List<DBVEntityAttribute> customAttributes = DBVUtils.getCustomAttributes(vEntity);
-            if (!CommonUtils.isEmpty(customAttributes)) {
-                DBSDataContainer dataContainer = getDataContainer();
-                if (dataContainer != null) {
-                    DBDAttributeBinding[] customBindings = new DBDAttributeBinding[customAttributes.size()];
-                    for (int i = 0; i < customAttributes.size(); i++) {
-                        customBindings[i] = new DBDAttributeBindingCustom(
-                            null,
-                            dataContainer,
-                            resultSet.getSession(),
-                            customAttributes.get(i),
-                            newAttributes.length + i);
-                    }
-                    DBDAttributeBinding[] combinedAttrs = new DBDAttributeBinding[newAttributes.length + customBindings.length];
-                    System.arraycopy(newAttributes, 0, combinedAttrs, 0, newAttributes.length);
-                    System.arraycopy(customBindings, 0, combinedAttrs, newAttributes.length, customBindings.length);
-                    newAttributes = combinedAttrs;
-                }
-            }
         }
 
         if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {

@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -48,6 +51,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
     private Map<String, Object> properties;
     private DBPDataKind dataKind = DBPDataKind.UNKNOWN;
     private String typeName = "void";
+    private JexlExpression parsedExpression;
 
     public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
         this.entity = entity;
@@ -237,6 +241,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
 
     public void setExpression(String expression) {
         this.expression = expression;
+        this.parsedExpression = null;
     }
 
     public List<DBVEntityAttribute> getChildren() {
@@ -296,4 +301,24 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
         return transformSettings != null && transformSettings.hasValuableData() || !CommonUtils.isEmpty(properties);
     }
 
+    public JexlExpression getParsedExpression() {
+        if (parsedExpression == null) {
+            if (CommonUtils.isEmpty(expression)) {
+                return null;
+            }
+            parsedExpression = parseExpression();
+        }
+        return parsedExpression;
+    }
+
+    private JexlExpression parseExpression() {
+        JexlBuilder jexlBuilder = new JexlBuilder();
+        Map<String, Object> nsList = new HashMap<>();
+        nsList.put("math", Math.class);
+        jexlBuilder.namespaces(nsList);
+        jexlBuilder.cache(100);
+
+        JexlEngine jexlEngine = jexlBuilder.create();
+        return jexlEngine.createExpression(expression);
+    }
 }
