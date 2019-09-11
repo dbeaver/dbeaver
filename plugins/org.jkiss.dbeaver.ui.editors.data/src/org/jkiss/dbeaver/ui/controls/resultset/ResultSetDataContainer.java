@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDValueMeta;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -164,17 +161,23 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
 
     @Override
     public DBDAttributeBinding[] filterAttributeBindings(DBDAttributeBinding[] attributes) {
-        if (filterAttributes) {
-            List<DBDAttributeBinding> filtered = new ArrayList<>();
-            for (DBDAttributeBinding attr : attributes) {
-                if (options.getSelectedColumns().contains(attr.getName())) {
-                    filtered.add(attr);
-                }
+        DBDDataFilter dataFilter = model.getDataFilter();
+        List<DBDAttributeBinding> filtered = new ArrayList<>();
+        for (DBDAttributeBinding attr : attributes) {
+            DBDAttributeConstraint ac = dataFilter.getConstraint(attr);
+            if (ac != null && !ac.isVisible()) {
+                continue;
             }
-            return filtered.toArray(new DBDAttributeBinding[0]);
-        } else {
-            return attributes;
+            if (!filterAttributes || options.getSelectedColumns().contains(attr.getName())) {
+                filtered.add(attr);
+            }
         }
+        filtered.sort((o1, o2) -> {
+            DBDAttributeConstraint c1 = dataFilter.getConstraint(o1.getName());
+            DBDAttributeConstraint c2 = dataFilter.getConstraint(o2.getName());
+            return c1 == null || c2 == null ? 0 : c1.getVisualPosition() - c2.getVisualPosition();
+        });
+        return filtered.toArray(new DBDAttributeBinding[0]);
     }
 
     private class ModelResultSet implements DBCResultSet {

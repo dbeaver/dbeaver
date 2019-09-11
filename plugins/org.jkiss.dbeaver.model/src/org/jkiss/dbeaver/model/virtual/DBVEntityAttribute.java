@@ -321,4 +321,9 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
         JexlEngine jexlEngine = jexlBuilder.create();
         return jexlEngine.createExpression(expression);
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
