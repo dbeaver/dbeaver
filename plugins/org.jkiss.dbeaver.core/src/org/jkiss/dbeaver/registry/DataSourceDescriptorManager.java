@@ -91,7 +91,8 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             dataSource.copyFrom(dsTpl);
             if (folder != null) {
                 dataSource.setFolder(folder);
-            } else {
+            } else if (dsTpl.getRegistry() == registry) {
+                // Copy folder only if we copy in the same project
                 dataSource.setFolder(dsTpl.getFolder());
             }
             // Generate new name

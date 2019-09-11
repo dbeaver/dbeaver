@@ -243,6 +243,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     {
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         dataSources.add(newNode);
+
+        DBPDataSourceFolder dsFolder = descriptor.getFolder();
+        if (dsFolder != null) {
+            // Add folder node to cache
+            getFolderNode(dsFolder);
+        }
+
         children = null;
         if (reflect) {
             getModel().fireNodeEvent(new DBNEvent(
