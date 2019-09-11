@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,7 +84,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private String nullString;
 
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
 
     private SXSSFWorkbook wb;
 
@@ -316,7 +315,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportHeader(DBCSession session) throws DBException, IOException {
+    public void exportHeader(DBCSession session) {
 
         columns = getSite().getAttributes();
         showDescription = session.getDataSource().getContainer().getPreferenceStore()
@@ -328,10 +327,10 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         if (showDescription) {
             // Read bindings to extract column descriptions
             boolean bindingsOk = true;
-            DBDAttributeBindingMeta[] bindings = new DBDAttributeBindingMeta[columns.size()];
-            for (int i = 0; i < columns.size(); i++) {
-                if (columns.get(i) instanceof DBDAttributeBindingMeta) {
-                    bindings[i] = (DBDAttributeBindingMeta) columns.get(i);
+            DBDAttributeBindingMeta[] bindings = new DBDAttributeBindingMeta[columns.length];
+            for (int i = 0; i < columns.length; i++) {
+                if (columns[i] instanceof DBDAttributeBindingMeta) {
+                    bindings[i] = (DBDAttributeBindingMeta) columns[i];
                 } else {
                     bindingsOk = false;
                     break;
@@ -359,8 +358,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         int startCol = rowNumber ? 1 : 0;
 
         sh.trackAllColumnsForAutoSizing();
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            DBDAttributeBinding column = columns.get(i);
+        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
+            DBDAttributeBinding column = columns[i];
 
             String colName = column.getLabel();
             if (CommonUtils.isEmpty(colName)) {
@@ -374,9 +373,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         if (hasDescription) {
             wsh.incRow();
             Row descRow = sh.createRow(wsh.getCurrentRow());
-            for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+            for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
                 Cell descCell = descRow.createCell(i + startCol, CellType.STRING);
-                String description = columns.get(i).getDescription();
+                String description = columns[i].getDescription();
                 if (CommonUtils.isEmpty(description)) {
                     description = "";
                 }
@@ -385,7 +384,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             }
         }
 
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
             sh.autoSizeColumn(i);
         }
 
@@ -428,7 +427,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
     private Worksheet getWsh(DBCResultSet resultSet, Object[] row) throws DBException {
-        Object colValue = ((splitByCol <= 0) || (splitByCol >= columns.size())) ? "" : row[splitByCol];
+        Object colValue = ((splitByCol <= 0) || (splitByCol >= columns.length)) ? "" : row[splitByCol];
         Worksheet w = worksheets.get(colValue);
         if (w == null) {
             w = createSheet(resultSet, colValue);
@@ -461,7 +460,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
 
         for (int i = 0; i < row.length; i++) {
-            DBDAttributeBinding column = columns.get(i);
+            DBDAttributeBinding column = columns[i];
             Cell cell = rowX.createCell(i + startCol, getCellType(column));
             cell.setCellStyle(style);
 
@@ -529,7 +528,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
         if (rowCount == 0) {
-            exportRow(null, null, new Object[columns.size()]);
+            exportRow(null, null, new Object[columns.length]);
         }
     }
 

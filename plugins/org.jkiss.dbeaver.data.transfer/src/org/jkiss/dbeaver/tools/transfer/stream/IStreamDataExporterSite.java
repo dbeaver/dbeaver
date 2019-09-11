@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,7 +38,7 @@ public interface IStreamDataExporterSite {
 
     Map<Object, Object> getProperties();
 
-    List<DBDAttributeBinding> getAttributes();
+    DBDAttributeBinding[] getAttributes();
 
     OutputStream getOutputStream();
 

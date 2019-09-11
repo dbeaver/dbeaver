@@ -41,7 +41,6 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -58,7 +57,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     private static final String PROP_UPPER_CASE_COLUMN_NAMES = "upperCaseColumnNames";
     private static final String PROP_INCLUDE_NULL_VALUES = "includeNullValues";
 
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
     private String tableName;
     private boolean upperCaseTableName;
     private boolean upperCaseColumnNames;
@@ -84,10 +83,10 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     private String getTableName()
     {
         String result = "UNKNOWN_TABLE_NAME";
-        if (getSite() == null || getSite().getAttributes() == null || getSite().getAttributes().isEmpty()) {
+        if (getSite() == null || getSite().getAttributes() == null || getSite().getAttributes().length == 0) {
             return result;
         }
-        DBSAttributeBase metaAttribute = getSite().getAttributes().get(0).getMetaAttribute();
+        DBSAttributeBase metaAttribute = getSite().getAttributes()[0].getMetaAttribute();
         if (metaAttribute != null && metaAttribute instanceof JDBCColumnMetaData) {
             JDBCColumnMetaData metaData = (JDBCColumnMetaData) metaAttribute;
             result = metaData.getEntityName();
@@ -118,7 +117,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
             if (DBUtils.isNullValue(row[i]) && !includeNullValues) {
                 continue;
             }
-            DBDAttributeBinding column = columns.get(i);
+            DBDAttributeBinding column = columns[i];
             String columnName = escapeXmlElementName(column.getName());
             if (columnName != null && upperCaseColumnNames) {
                 columnName = columnName.toUpperCase();
@@ -187,8 +186,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws IOException
-    {
+    public void exportFooter(DBRProgressMonitor monitor) {
         getWriter().write("</dataset>\n");
     }
 

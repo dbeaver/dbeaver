@@ -37,6 +37,8 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -622,22 +624,52 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBDAttributeBindingMeta[] getAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSetMetaData metaData) {
+    public static DBDAttributeBinding[] getAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSetMetaData metaData) {
         List<DBCAttributeMetaData> metaAttributes = metaData.getAttributes();
         int columnsCount = metaAttributes.size();
-        DBDAttributeBindingMeta[] bindings = new DBDAttributeBindingMeta[columnsCount];
+        DBDAttributeBinding[] bindings = new DBDAttributeBinding[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
             bindings[i] = DBUtils.getAttributeBinding(dataContainer, session, metaAttributes.get(i));
         }
-        return bindings;
+        return injectAndFilterAttributeBindings(session, dataContainer, bindings, false);
+    }
+
+    public static DBDAttributeBinding[] injectAndFilterAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, DBDAttributeBinding[] bindings, boolean filterAttributes) {
+        // Add custom attributes
+        DBVEntity vEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (vEntity != null) {
+            List<DBVEntityAttribute> customAttributes = DBVUtils.getCustomAttributes(vEntity);
+            if (!CommonUtils.isEmpty(customAttributes)) {
+                DBDAttributeBinding[] customBindings = new DBDAttributeBinding[customAttributes.size()];
+                for (int i = 0; i < customAttributes.size(); i++) {
+                    customBindings[i] = new DBDAttributeBindingCustom(
+                        null,
+                        dataContainer,
+                        session,
+                        customAttributes.get(i),
+                        bindings.length + i);
+                }
+                DBDAttributeBinding[] combinedAttrs = new DBDAttributeBinding[bindings.length + customBindings.length];
+                System.arraycopy(bindings, 0, combinedAttrs, 0, bindings.length);
+                System.arraycopy(customBindings, 0, combinedAttrs, bindings.length, customBindings.length);
+                bindings = combinedAttrs;
+            }
+        }
+
+        if (filterAttributes && dataContainer instanceof DBSDataContainerFiltered) {
+            return ((DBSDataContainerFiltered) dataContainer).filterAttributeBindings(bindings);
+        } else {
+            return bindings;
+        }
     }
 
     /**
      * Returns "bottom" level attributes out of resultset.
      * For regular resultsets it is the same as getAttributeBindings, for compelx types it returns only leaf attributes.
+     * @return
      */
     @NotNull
-    public static List<DBDAttributeBinding> makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {
+    public static DBDAttributeBinding[] makeLeafAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, @NotNull DBCResultSet resultSet) throws DBCException {
         List<DBDAttributeBinding> metaColumns = new ArrayList<>();
         List<DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
         if (attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT) {
@@ -685,7 +717,8 @@ public final class DBUtils {
         for (DBDAttributeBinding binding : metaColumns) {
             addLeafBindings(result, binding);
         }
-        return result;
+
+        return injectAndFilterAttributeBindings(session, dataContainer, result.toArray(new DBDAttributeBinding[0]), true);
     }
 
     private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
@@ -700,9 +733,9 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static Object getAttributeValue(@NotNull DBDAttributeBinding attribute, Object[] row) {
+    public static Object getAttributeValue(@NotNull DBDAttributeBinding attribute, DBDAttributeBinding[] allAttributes, Object[] row) {
         if (attribute.isCustom()) {
-            return ((DBDAttributeBindingCustom)attribute).getEntityAttribute().getExpression();
+            return DBVUtils.executeExpression(((DBDAttributeBindingCustom)attribute).getEntityAttribute(), allAttributes, row);
         }
         int depth = attribute.getLevel();
         if (depth == 0) {
@@ -1960,19 +1993,6 @@ public final class DBUtils {
 
     public static boolean isView(DBSEntity table) {
         return table  instanceof DBSView || table instanceof DBSTable && ((DBSTable) table).isView();
-    }
-
-    public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) {
-        Object[] row = new Object[attributes.length];
-        for (int i = 0 ; i < attributes.length; i++) {
-            DBDAttributeBinding attribute = attributes[i];
-            try {
-                row[i] = attribute.getValueHandler().fetchValueObject(session, resultSet, attribute.getAttribute(), attribute.getOrdinalPosition());
-            } catch (Exception e) {
-                log.debug("Error fetching '" + attribute.getAttribute().getName() + "' value: " + e.getMessage());
-            }
-        }
-        return row;
     }
 
 }

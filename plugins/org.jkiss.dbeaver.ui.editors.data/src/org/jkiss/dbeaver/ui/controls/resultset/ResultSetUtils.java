@@ -67,7 +67,7 @@ public class ResultSetUtils
         @NotNull DBCSession session,
         @Nullable DBSEntity sourceEntity,
         @Nullable DBCResultSet resultSet,
-        @NotNull DBDAttributeBindingMeta[] bindings,
+        @NotNull DBDAttributeBinding[] bindings,
         @Nullable List<Object[]> rows) throws DBException
     {
         final DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -118,9 +118,12 @@ public class ResultSetUtils
             final Map<DBSEntity, DBDRowIdentifier> locatorMap = new IdentityHashMap<>();
 
             monitor.subTask("Discover attributes");
-            for (DBDAttributeBindingMeta binding : bindings) {
+            for (DBDAttributeBinding binding : bindings) {
                 monitor.subTask("Discover attribute '" + binding.getName() + "'");
                 DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
+                if (attrMeta == null) {
+                    continue;
+                }
                 // We got table name and column name
                 // To be editable we need this resultset contain set of columns from the same table
                 // which construct any unique key
@@ -148,15 +151,16 @@ public class ResultSetUtils
                     if (attrEntityMeta != null) {
                         log.debug("Table '" + DBUtils.getSimpleQualifiedName(attrEntityMeta.getCatalogName(), attrEntityMeta.getSchemaName(), attrEntityMeta.getEntityName()) + "' not found in metadata catalog");
                     }
-                } else {
+                } else if (binding instanceof DBDAttributeBindingMeta){
+                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
                     DBDPseudoAttribute pseudoAttribute = DBUtils.getPseudoAttribute(attrEntity, attrMeta.getName());
                     if (pseudoAttribute != null) {
-                        binding.setPseudoAttribute(pseudoAttribute);
+                        bindingMeta.setPseudoAttribute(pseudoAttribute);
                     }
 
                     DBSEntityAttribute tableColumn;
-                    if (binding.getPseudoAttribute() != null) {
-                        tableColumn = binding.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
+                    if (bindingMeta.getPseudoAttribute() != null) {
+                        tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else {
                         tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
                     }
@@ -167,12 +171,12 @@ public class ResultSetUtils
                             // Query may have expressions with the same alias as underlying table column
                             // and this expression may return very different data type. It breaks fetch completely.
                             // There should be a better solution but for now let's just disable this too smart feature.
-                            binding.setEntityAttribute(tableColumn, false);
+                            bindingMeta.setEntityAttribute(tableColumn, false);
                             continue;
                         }
                     }
 
-                    if (tableColumn != null && binding.setEntityAttribute(tableColumn, true) && rows != null) {
+                    if (tableColumn != null && bindingMeta.setEntityAttribute(tableColumn, true) && rows != null) {
                         // We have new type and new value handler.
                         // We have to fix already fetched values.
                         // E.g. we fetched strings and found out that we should handle them as LOBs or enums.
@@ -192,7 +196,10 @@ public class ResultSetUtils
             {
                 // Init row identifiers
                 monitor.subTask("Detect unique identifiers");
-                for (DBDAttributeBindingMeta binding : bindings) {
+                for (DBDAttributeBinding binding : bindings) {
+                    if (!(binding instanceof DBDAttributeBindingMeta)) {
+                        continue;
+                    }
                     //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                     DBSEntityAttribute attr = binding.getEntityAttribute();
                     if (attr == null) {
@@ -210,7 +217,7 @@ public class ResultSetUtils
                                 locatorMap.put(attrEntity, rowIdentifier);
                             }
                         }
-                        binding.setRowIdentifier(rowIdentifier);
+                        ((DBDAttributeBindingMeta)binding).setRowIdentifier(rowIdentifier);
                     }
                 }
                 monitor.worked(1);
@@ -255,7 +262,7 @@ public class ResultSetUtils
         throw new DBException("Association not found in attribute [" + attr.getName() + "]");
     }
 
-    private static DBSEntityConstraint getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBindingMeta[] bindings, boolean readMetaData)
+    private static DBSEntityConstraint getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings, boolean readMetaData)
         throws DBException
     {
         List<DBSEntityConstraint> identifiers = new ArrayList<>(2);
@@ -312,8 +319,8 @@ public class ResultSetUtils
         if (CommonUtils.isEmpty(identifiers)) {
             // Check for pseudo attrs (ROWID)
             // Do this after natural identifiers search (see #3829)
-            for (DBDAttributeBindingMeta column : bindings) {
-                DBDPseudoAttribute pseudoAttribute = column.getPseudoAttribute();
+            for (DBDAttributeBinding column : bindings) {
+                DBDPseudoAttribute pseudoAttribute = column instanceof DBDAttributeBindingMeta ? ((DBDAttributeBindingMeta) column).getPseudoAttribute() : null;
                 if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
                     identifiers.add(new DBDPseudoReferrer(table, column));
                     break;

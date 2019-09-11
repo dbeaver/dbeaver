@@ -187,7 +187,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "vcolumn");
-                    BaseDialog editAttrPage = new EditVirtualAttributeDialog(getShell(), vAttr);
+                    BaseDialog editAttrPage = new EditVirtualAttributeDialog(getShell(), viewer, vAttr);
                     if (editAttrPage.open() == IDialogConstants.OK_ID) {
                         vAttr.setCustom(true);
                         vEntity.addVirtualAttribute(vAttr);
@@ -246,7 +246,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
             return;
         }
         DBVEntityAttribute vAttr = (DBVEntityAttribute) selection[0].getData();
-        BaseDialog editAttrPage = new EditVirtualAttributeDialog(getShell(), vAttr);
+        BaseDialog editAttrPage = new EditVirtualAttributeDialog(getShell(), viewer, vAttr);
         editAttrPage.open();
     }
 

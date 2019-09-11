@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataContainerFiltered;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -40,7 +41,7 @@ import java.util.List;
  * Client-side data container.
  * Wraps RSV model and original data container.
  */
-public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvider, IAdaptable {
+public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvider, IAdaptable, DBSDataContainerFiltered {
 
     private static final Log log = Log.getLog(ResultSetDataContainer.class);
 
@@ -48,6 +49,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     private final DBSDataContainer dataContainer;
     private final ResultSetModel model;
     private ResultSetDataContainerOptions options;
+    private boolean filterAttributes;
 
     public ResultSetDataContainer(IResultSetController controller, ResultSetDataContainerOptions options) {
         this.controller = controller;
@@ -82,7 +84,8 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
 
     @Override
     public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
-        if (proceedSelectedRowsOnly(flags) || proceedSelectedColumnsOnly(flags)) {
+        filterAttributes = proceedSelectedRowsOnly(flags);
+        if (filterAttributes || proceedSelectedColumnsOnly(flags)) {
 
             long startTime = System.currentTimeMillis();
             DBCStatistics statistics = new DBCStatistics();
@@ -157,6 +160,21 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     @Override
     public DBCExecutionContext getExecutionContext() {
         return controller.getExecutionContext();
+    }
+
+    @Override
+    public DBDAttributeBinding[] filterAttributeBindings(DBDAttributeBinding[] attributes) {
+        if (filterAttributes) {
+            List<DBDAttributeBinding> filtered = new ArrayList<>();
+            for (DBDAttributeBinding attr : attributes) {
+                if (options.getSelectedColumns().contains(attr.getName())) {
+                    filtered.add(attr);
+                }
+            }
+            return filtered.toArray(new DBDAttributeBinding[0]);
+        } else {
+            return attributes;
+        }
     }
 
     private class ModelResultSet implements DBCResultSet {
@@ -234,14 +252,13 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         public DBCResultSetMetaData getMeta() throws DBCException {
             List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
             List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
-            boolean selectedColumnsOnly = proceedSelectedColumnsOnly(flags);
             for (DBDAttributeBinding attribute : attributes) {
                 DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
-                if (!selectedColumnsOnly || options.getSelectedColumns().contains(metaAttribute.getName())) {
+                if (metaAttribute != null) {
                     meta.add(metaAttribute);
                 }
             }
-            return new LocalResultSetMeta(meta);
+            return new CustomResultSetMeta(meta);
         }
 
         @Override
@@ -261,6 +278,13 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         public void close() {
             // do nothing
         }
+
+        private class CustomResultSetMeta extends LocalResultSetMeta {
+            public CustomResultSetMeta(List<DBCAttributeMetaData> meta) {
+                super(meta);
+            }
+        }
+
     }
 
 }

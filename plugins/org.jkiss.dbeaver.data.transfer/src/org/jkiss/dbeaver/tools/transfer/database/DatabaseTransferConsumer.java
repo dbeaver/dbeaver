@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
@@ -52,6 +53,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
+    private DBDAttributeBinding[] sourceBindings;
     private DBCExecutionContext targetContext;
     private DBCSession targetSession;
     private DBSDataManipulator.ExecuteBatch executeBatch;
@@ -101,14 +103,15 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        List<DBDAttributeBinding> rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
-        columnMappings = new ColumnMapping[rsAttributes.size()];
+        DBDAttributeBinding[] rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
+        columnMappings = new ColumnMapping[rsAttributes.length];
+        sourceBindings = rsAttributes;
         targetAttributes = new ArrayList<>(columnMappings.length);
-        for (int i = 0; i < rsAttributes.size(); i++) {
-            if (isSkipColumn(rsAttributes.get(i))) {
+        for (int i = 0; i < rsAttributes.length; i++) {
+            if (isSkipColumn(rsAttributes[i])) {
                 continue;
             }
-            ColumnMapping columnMapping = new ColumnMapping(rsAttributes.get(i));
+            ColumnMapping columnMapping = new ColumnMapping(rsAttributes[i]);
             if (containerMapping == null) {
                 // No explicit mappings. Mapping must be provided by data producer
                 // Map all attributes directly.
@@ -180,7 +183,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
             final Object attrValue;
             if (column.sourceValueHandler != null) {
-                attrValue = column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
+                if (column.sourceAttr instanceof DBDAttributeBindingCustom) {
+                    attrValue = DBUtils.getAttributeValue(column.sourceAttr, sourceBindings, rowValues);
+                } else {
+                    attrValue = column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
+                }
             } else {
                 // No value handler - get raw value
                 attrValue = resultSet.getAttributeValue(i);

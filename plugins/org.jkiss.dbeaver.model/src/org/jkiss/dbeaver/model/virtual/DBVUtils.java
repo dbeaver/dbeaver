@@ -16,6 +16,11 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -79,6 +84,13 @@ public abstract class DBVUtils {
     }
 
     public static DBVEntity getVirtualEntity(@NotNull DBSDataContainer dataContainer, boolean create) {
+        if (dataContainer instanceof IAdaptable) {
+            // Data container can be a wrapper around another data container (e.g. ResultSetDataContainer). Virtual entity is linked to the nested one.
+            DBSDataContainer nestedDC = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);
+            if (nestedDC != null) {
+                dataContainer = nestedDC;
+            }
+        }
         if (dataContainer instanceof DBSEntity) {
             return getVirtualEntity((DBSEntity)dataContainer, create);
         }
@@ -343,5 +355,46 @@ public abstract class DBVUtils {
             return (DBVObject) source;
         }
         return source.getDataSource().getContainer().getVirtualModel().findObject(source, create);
+    }
+
+    public static Object executeExpression(DBVEntityAttribute attribute, DBDAttributeBinding[] allAttributes, Object[] row) {
+        String exprString = attribute.getExpression();
+        if (CommonUtils.isEmpty(exprString)) {
+            return null;
+        }
+        JexlExpression expression = attribute.getParsedExpression();
+        if (expression == null) {
+            return null;
+        }
+        JexlContext context = new JexlContext() {
+            @Override
+            public Object get(String s) {
+                if (s.equals(attribute.getName())) {
+                    return null;
+                }
+                for (DBDAttributeBinding attr : allAttributes) {
+                    if (s.equals(attr.getLabel())) {
+                        return DBUtils.getAttributeValue(attr, allAttributes, row);
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public void set(String s, Object o) {
+
+            }
+
+            @Override
+            public boolean has(String s) {
+                return get(s) != null;
+            }
+        };
+        try {
+            return expression.evaluate(context);
+        } catch (Exception e) {
+            //log.debug("Error evaluating expression " + exprString);
+            return exprString;
+        }
     }
 }

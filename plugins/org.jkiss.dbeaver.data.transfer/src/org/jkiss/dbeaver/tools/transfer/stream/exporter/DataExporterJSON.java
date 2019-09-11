@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IDocumentDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,7 +41,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.List;
 
 /**
  * JSON Exporter
@@ -52,7 +50,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
     public static final String PROP_FORMAT_DATE_ISO = "formatDateISO";
     public static final String PROP_PRINT_TABLE_NAME = "printTableName";
 
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
     private String tableName;
     private int rowNum = 0;
 
@@ -108,7 +106,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
         } else {
             out.write("\t{\n");
             for (int i = 0; i < row.length; i++) {
-                DBDAttributeBinding column = columns.get(i);
+                DBDAttributeBinding column = columns[i];
                 String columnName = column.getLabel();
                 if (CommonUtils.isEmpty(columnName)) {
                     columnName = column.getName();
@@ -156,7 +154,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
     }
 
     private boolean isJsonDocumentResults(DBRProgressMonitor progressMonitor, Object[] row) {
-        if (columns.size() == 1 && columns.get(0).getDataKind() == DBPDataKind.DOCUMENT) {
+        if (columns.length == 1 && columns[0].getDataKind() == DBPDataKind.DOCUMENT) {
             if (row.length > 0 && !DBUtils.isNullValue(row[0]) && row[0] instanceof DBDDocument) {
                 DBDDocument document = (DBDDocument) row[0];
                 if (MimeTypes.TEXT_JSON.equalsIgnoreCase(document.getDocumentContentType())) {

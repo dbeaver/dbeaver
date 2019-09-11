@@ -36,7 +36,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.List;
 
 /**
  * HTML Exporter
@@ -46,7 +45,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
   private String name;
     private static final int IMAGE_FRAME_SIZE = 200;
 
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
     private int rowCount = 0;
 
     @Override
@@ -98,10 +97,10 @@ public class DataExporterHTML extends StreamExporterAbstract {
         writeTextCell(name, true);
         out.write("</tr>");
         out.write("<tr>");
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            String colName = columns.get(i).getLabel();
+        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
+            String colName = columns[i].getLabel();
             if (CommonUtils.isEmpty(colName)) {
-                colName = columns.get(i).getName();
+                colName = columns[i].getName();
             }
             writeTextCell(colName, true);
         }
@@ -114,7 +113,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
         PrintWriter out = getWriter();
         out.write("<tr" + (rowCount++ % 2 == 0 ? " class=\"odd\"" : "") + ">");
         for (int i = 0; i < row.length; i++) {
-            DBDAttributeBinding column = columns.get(i);
+            DBDAttributeBinding column = columns[i];
             if (DBUtils.isNullValue(row[i])) {
                 writeTextCell(null, false);
             } else if (row[i] instanceof DBDContent) {
@@ -151,8 +150,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws IOException
-    {
+    public void exportFooter(DBRProgressMonitor monitor) {
         getWriter().write("</table></body></html>");
     }
 

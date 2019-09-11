@@ -29,9 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.PrintWriter;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,7 +43,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     private static final String PROP_DELIM_HEADER = "delimHeader";
     private static final String PROP_DELIM_TRAILING = "delimTrailing";
 
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
     private String tableName;
     private int maxColumnSize = 100;
     private int minColumnSize = 3;
@@ -85,10 +83,10 @@ public class DataExporterTXT extends StreamExporterAbstract {
     }
 
     private void printHeader() {
-        colWidths = new int[columns.size()];
+        colWidths = new int[columns.length];
 
-        for (int i = 0; i < columns.size(); i++) {
-            DBDAttributeBinding attr = columns.get(i);
+        for (int i = 0; i < columns.length; i++) {
+            DBDAttributeBinding attr = columns[i];
             int maxLength = (int) attr.getMaxLength();
             if (attr.getDataKind() == DBPDataKind.DATETIME) {
                 // DATETIME attributes are converted to strings so their actual length may differ
@@ -107,9 +105,9 @@ public class DataExporterTXT extends StreamExporterAbstract {
 
         StringBuilder txt = new StringBuilder();
         if (delimLeading) txt.append("|");
-        for (int i = 0; i < columns.size(); i++) {
+        for (int i = 0; i < columns.length; i++) {
             if (i > 0) txt.append("|");
-            DBDAttributeBinding attr = columns.get(i);
+            DBDAttributeBinding attr = columns[i];
             String attrName = getAttributeName(attr);
             txt.append(attrName);
             for (int k = colWidths[i] - attrName.length(); k > 0; k--) {
@@ -123,7 +121,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
             // Print divider
             // Print header
             if (delimLeading) txt.append("|");
-            for (int i = 0; i < columns.size(); i++) {
+            for (int i = 0; i < columns.length; i++) {
                 if (i > 0) txt.append("|");
                 for (int k = colWidths[i]; k > 0; k--) {
                     txt.append("-");
@@ -139,9 +137,9 @@ public class DataExporterTXT extends StreamExporterAbstract {
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) {
         StringBuilder txt = new StringBuilder();
         if (delimLeading) txt.append("|");
-        for (int k = 0; k < columns.size(); k++) {
+        for (int k = 0; k < columns.length; k++) {
             if (k > 0) txt.append("|");
-            DBDAttributeBinding attr = columns.get(k);
+            DBDAttributeBinding attr = columns[k];
             String displayString = getCellString(attr, row[k], DBDDisplayFormat.EDIT);
             if (displayString.length() > colWidths[k]) {
                 displayString = CommonUtils.truncateString(displayString, colWidths[k]);

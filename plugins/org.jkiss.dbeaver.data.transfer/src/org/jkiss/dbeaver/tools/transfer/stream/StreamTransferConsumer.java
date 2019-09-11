@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -29,8 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -43,8 +46,6 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -80,8 +81,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private int multiFileNumber;
     private long bytesWritten = 0;
 
-    private DBDAttributeBindingMeta[] columnMetas;
-    private List<DBDAttributeBinding> columnBindings;
+    private DBDAttributeBinding[] columnMetas;
+    private DBDAttributeBinding[] columnBindings;
     private File lobDirectory;
     private long lobCount;
     private File outputFile;
@@ -104,7 +105,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         // Prepare columns
         columnMetas = DBUtils.getAttributeBindings(session, dataContainer, resultSet.getMeta());
         if (processor instanceof IDocumentDataExporter) {
-            columnBindings = Arrays.asList(columnMetas);
+            columnBindings = DBUtils.injectAndFilterAttributeBindings(session, dataContainer, columnMetas, true);
         } else {
             columnBindings = DBUtils.makeLeafAttributeBindings(session, dataContainer, resultSet);
         }
@@ -129,15 +130,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
         try {
             // Get values
-            Object[] srcRow = DBUtils.fetchRow(session, resultSet, columnMetas);
+            Object[] srcRow = fetchRow(session, resultSet, columnMetas);
             Object[] targetRow;
             if (processor instanceof IDocumentDataExporter) {
                 targetRow = srcRow;
             } else {
-                targetRow = new Object[columnBindings.size()];
-                for (int i = 0; i < columnBindings.size(); i++) {
-                    DBDAttributeBinding column = columnBindings.get(i);
-                    Object value = DBUtils.getAttributeValue(column, srcRow);
+                targetRow = new Object[columnBindings.length];
+                for (int i = 0; i < columnBindings.length; i++) {
+                    DBDAttributeBinding column = columnBindings[i];
+                    Object value = DBUtils.getAttributeValue(column, columnMetas, srcRow);
                     if (value instanceof DBDContent && !settings.isOutputClipboard()) {
                         // Check for binary type export
                         if (!ContentUtils.isTextContent((DBDContent) value)) {
@@ -510,6 +511,25 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return null;
     }
 
+    public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) throws DBCException {
+        int columnCount = resultSet.getMeta().getAttributes().size(); // Column count without virtual columns
+
+        Object[] row = new Object[columnCount];
+        for (int i = 0 ; i < columnCount; i++) {
+            DBDAttributeBinding attribute = attributes[i];
+            DBSAttributeBase metaAttr = attribute.getMetaAttribute();
+            if (metaAttr == null) {
+                continue;
+            }
+            try {
+                row[i] = attribute.getValueHandler().fetchValueObject(session, resultSet, metaAttr, attribute.getOrdinalPosition());
+            } catch (Exception e) {
+                log.debug("Error fetching '" + metaAttr.getName() + "' value: " + e.getMessage());
+            }
+        }
+        return row;
+    }
+
     private class StreamExportSite implements IStreamDataExporterSite {
         @Override
         public DBPNamedObject getSource() {
@@ -532,7 +552,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public List<DBDAttributeBinding> getAttributes() {
+        public DBDAttributeBinding[] getAttributes() {
             return columnBindings;
         }
 
