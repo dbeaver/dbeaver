@@ -165,7 +165,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     /**
      * Meta attribute (obtained from result set)
      */
-    @NotNull
+    @Nullable
     public DBCAttributeMetaData getMetaAttribute() {
         return metaAttribute;
     }

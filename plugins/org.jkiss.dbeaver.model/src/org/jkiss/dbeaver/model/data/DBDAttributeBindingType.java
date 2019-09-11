@@ -123,7 +123,7 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBSAttributeBase getAttribute() {
         return attribute;

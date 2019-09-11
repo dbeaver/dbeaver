@@ -88,7 +88,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     /**
      * Meta attribute (obtained from result set)
      */
-    @NotNull
+    @Nullable
     public abstract DBCAttributeMetaData getMetaAttribute();
 
     /**
@@ -102,7 +102,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
      * Most valuable attribute reference.
      * @return resolved entity attribute or just meta attribute
      */
-    @NotNull
+    @Nullable
     public DBSAttributeBase getAttribute()
     {
         DBSEntityAttribute attr = getEntityAttribute();
@@ -113,7 +113,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
      * Presentation attribute.
      * Usually the same as {@link #getAttribute()} but may be explicitly set by attribute transformers.
      */
-    @NotNull
+    @Nullable
     public DBSAttributeBase getPresentationAttribute() {
         if (presentationAttribute != null) {
             return presentationAttribute;
