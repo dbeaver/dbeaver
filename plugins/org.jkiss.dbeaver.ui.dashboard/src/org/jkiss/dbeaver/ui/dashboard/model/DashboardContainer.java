@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
-import org.apache.commons.jexl2.Expression;
+import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
@@ -72,7 +72,7 @@ public interface DashboardContainer {
 
     String[] getMapLabels();
 
-    Expression getMapFormula();
+    JexlExpression getMapFormula();
 
     List<? extends DashboardQuery> getQueryList();
 

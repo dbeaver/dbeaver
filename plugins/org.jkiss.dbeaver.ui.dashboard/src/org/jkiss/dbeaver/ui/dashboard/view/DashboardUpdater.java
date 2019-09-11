@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
-import org.apache.commons.jexl2.JexlContext;
+import org.apache.commons.jexl3.JexlContext;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;

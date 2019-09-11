@@ -136,7 +136,7 @@ public class SQLQuery implements SQLScriptElement {
                     PlainSelect plainSelect = (PlainSelect) selectBody;
                     if (plainSelect.getFromItem() instanceof Table &&
                         CommonUtils.isEmpty(plainSelect.getJoins()) &&
-                        CommonUtils.isEmpty(plainSelect.getGroupByColumnReferences()) &&
+                        (plainSelect.getGroupBy() == null || CommonUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressions())) &&
                         CommonUtils.isEmpty(plainSelect.getIntoTables())) {
                         fillSingleSource((Table) plainSelect.getFromItem());
                     }
@@ -154,9 +154,9 @@ public class SQLQuery implements SQLScriptElement {
                 fillSingleSource(((Insert) statement).getTable());
             } else if (statement instanceof Update) {
                 type = SQLQueryType.UPDATE;
-                List<Table> tables = ((Update) statement).getTables();
-                if (tables != null && tables.size() == 1) {
-                    fillSingleSource(tables.get(0));
+                Table table = ((Update) statement).getTable();
+                if (table != null) {
+                    fillSingleSource(table);
                 }
             } else if (statement instanceof Delete) {
                 type = SQLQueryType.DELETE;

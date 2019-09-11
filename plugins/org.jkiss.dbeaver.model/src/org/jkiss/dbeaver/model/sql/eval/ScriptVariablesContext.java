@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.eval;
 
-import org.apache.commons.jexl2.JexlContext;
+import org.apache.commons.jexl3.JexlContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 
 /**

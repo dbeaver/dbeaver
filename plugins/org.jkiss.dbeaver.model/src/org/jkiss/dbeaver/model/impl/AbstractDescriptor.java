@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.apache.commons.jexl2.Expression;
-import org.apache.commons.jexl2.JexlContext;
-import org.apache.commons.jexl2.JexlEngine;
-import org.apache.commons.jexl2.JexlException;
+import org.apache.commons.jexl3.*;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -46,12 +43,11 @@ public abstract class AbstractDescriptor {
 
     private static JexlEngine jexlEngine;
 
-    public static Expression parseExpression(String exprString) throws DBException
+    public static JexlExpression parseExpression(String exprString) throws DBException
     {
         synchronized (AbstractDescriptor.class) {
             if (jexlEngine == null) {
-                jexlEngine = new JexlEngine(null, null, null, null);
-                jexlEngine.setCache(100);
+                jexlEngine = new JexlBuilder().cache(100).create();
             }
         }
         try {
@@ -89,7 +85,7 @@ public abstract class AbstractDescriptor {
 
     public static Object evalExpression(String exprString, Object object, Object context) {
         try {
-            Expression expression = AbstractDescriptor.parseExpression(exprString);
+            JexlExpression expression = AbstractDescriptor.parseExpression(exprString);
             return expression.evaluate(AbstractDescriptor.makeContext(object, context));
         } catch (DBException e) {
             log.error("Bad expression: " + exprString, e);
@@ -104,7 +100,7 @@ public abstract class AbstractDescriptor {
 
         private final String implName;
         private Class<?> implClass;
-        private Expression expression;
+        private JexlExpression expression;
         private boolean forceCheck;
 
         public ObjectType(String implName)
