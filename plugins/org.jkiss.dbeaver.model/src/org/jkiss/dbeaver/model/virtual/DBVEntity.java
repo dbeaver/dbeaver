@@ -237,6 +237,33 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return entityAttributes;
     }
 
+    public List<DBVEntityAttribute> getCustomAttributes() {
+        if (!CommonUtils.isEmpty(entityAttributes)) {
+            List<DBVEntityAttribute> result = null;
+            for (DBVEntityAttribute attr : entityAttributes) {
+                if (attr.isCustom()) {
+                    if (result == null) result = new ArrayList<>();
+                    result.add(attr);
+                }
+            }
+            if (result != null) {
+                return result;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    public DBVEntityAttribute getCustomAttribute(String name) {
+        if (!CommonUtils.isEmpty(entityAttributes)) {
+            for (DBVEntityAttribute attr : entityAttributes) {
+                if (attr.isCustom() && CommonUtils.equalObjects(name, attr.getName())) {
+                    return attr;
+                }
+            }
+        }
+        return null;
+    }
+
     @NotNull
     @Override
     public Collection<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -244,10 +271,17 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (realEntity != null) {
             final Collection<? extends DBSEntityAttribute> realAttributes = realEntity.getAttributes(monitor);
             if (!CommonUtils.isEmpty(realAttributes)) {
+                List<DBVEntityAttribute> customAttributes = getCustomAttributes();
+                if (!CommonUtils.isEmpty(customAttributes)) {
+                    List<DBSEntityAttribute> allAttrs = new ArrayList<>();
+                    allAttrs.addAll(realAttributes);
+                    allAttrs.addAll(customAttributes);
+                    return allAttrs;
+                }
                 return realAttributes;
             }
         }
-        return Collections.emptyList();
+        return getCustomAttributes();
     }
 
     @Nullable
@@ -293,7 +327,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return null;
     }
 
-    void addVirtualAttribute(DBVEntityAttribute attribute) {
+    public void addVirtualAttribute(DBVEntityAttribute attribute) {
         addVirtualAttribute(attribute, true);
     }
 
@@ -307,7 +341,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
     }
 
-    void removeVirtualAttribute(DBVEntityAttribute attribute) {
+    public void removeVirtualAttribute(DBVEntityAttribute attribute) {
         entityAttributes.remove(attribute);
         DBUtils.fireObjectUpdate(this, attribute);
     }
@@ -624,4 +658,5 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             ((DBSDictionary) realEntity).getDictionaryValues(monitor, keyColumn, keyValues, preceedingKeys, sortByValue, sortAsc) :
             Collections.emptyList();
     }
+
 }

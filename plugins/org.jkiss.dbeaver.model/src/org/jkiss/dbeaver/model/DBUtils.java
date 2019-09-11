@@ -701,6 +701,9 @@ public final class DBUtils {
 
     @Nullable
     public static Object getAttributeValue(@NotNull DBDAttributeBinding attribute, Object[] row) {
+        if (attribute.isCustom()) {
+            return ((DBDAttributeBindingCustom)attribute).getEntityAttribute().getExpression();
+        }
         int depth = attribute.getLevel();
         if (depth == 0) {
             final int index = attribute.getOrdinalPosition();

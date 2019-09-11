@@ -4553,7 +4553,7 @@ public class ResultSetViewer extends Viewer
             DBSEntity entity = model.isSingleSource() ? model.getSingleSource() : null;
             DBVEntity vEntity = model.getVirtualEntity(entity, true);
             EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(ResultSetViewer.this, entity, vEntity);
-            dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
+            dialog.setInitPage(EditVirtualEntityDialog.InitPage.ATTRIBUTES);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 refreshData(null);
             }

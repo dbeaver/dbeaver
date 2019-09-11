@@ -83,7 +83,7 @@ public class ResultSetModel {
         private Color colorForeground, colorForeground2;
         private Color colorBackground, colorBackground2;
 
-        public AttributeColorSettings(DBVColorOverride co) {
+        AttributeColorSettings(DBVColorOverride co) {
             this.operator = co.getOperator();
             this.rangeCheck = co.isRange();
             this.singleColumn = co.isSingleColumn();
@@ -490,9 +490,17 @@ public class ResultSetModel {
                 if (dataContainer != null) {
                     DBDAttributeBinding[] customBindings = new DBDAttributeBinding[customAttributes.size()];
                     for (int i = 0; i < customAttributes.size(); i++) {
-                        customBindings[i] = new DBDAttributeBindingCustom(null, dataContainer, resultSet.getSession(), customAttributes.get(i));
+                        customBindings[i] = new DBDAttributeBindingCustom(
+                            null,
+                            dataContainer,
+                            resultSet.getSession(),
+                            customAttributes.get(i),
+                            newAttributes.length + i);
                     }
-                    newAttributes = ArrayUtils.concatArrays(newAttributes, customBindings);
+                    DBDAttributeBinding[] combinedAttrs = new DBDAttributeBinding[newAttributes.length + customBindings.length];
+                    System.arraycopy(newAttributes, 0, combinedAttrs, 0, newAttributes.length);
+                    System.arraycopy(customBindings, 0, combinedAttrs, newAttributes.length, customBindings.length);
+                    newAttributes = combinedAttrs;
                 }
             }
         }
@@ -501,7 +509,15 @@ public class ResultSetModel {
             update = true;
         } else {
             for (int i = 0; i < this.attributes.length; i++) {
-                if (!ResultSetUtils.equalAttributes(this.attributes[i].getMetaAttribute(), newAttributes[i].getMetaAttribute())) {
+                DBCAttributeMetaData oldMeta = this.attributes[i].getMetaAttribute();
+                DBCAttributeMetaData newMeta = newAttributes[i].getMetaAttribute();
+                if ((oldMeta == null && newMeta != null) || (oldMeta != null && newMeta == null)) {
+                    update = true;
+                    break;
+                } else if (oldMeta == newMeta) {
+                    continue;
+                }
+                if (!ResultSetUtils.equalAttributes(oldMeta, newMeta)) {
                     update = true;
                     break;
                 }
@@ -511,7 +527,9 @@ public class ResultSetModel {
         this.metadataChanged = update;
         if (update) {
             if (!ArrayUtils.isEmpty(this.attributes) && !ArrayUtils.isEmpty(newAttributes) && isDynamicMetadata() &&
-                this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource()) {
+                this.attributes[0].getTopParent().getMetaAttribute() != null && newAttributes[0].getTopParent().getMetaAttribute() != null &&
+                this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource())
+            {
                 // the same source
                 metadataChanged = false;
             } else {
@@ -778,7 +796,7 @@ public class ResultSetModel {
 //        if (!isSingleSource()) {
 //            return true;
 //        }
-        if (attribute == null || attribute.getMetaAttribute().isReadOnly()) {
+        if (attribute == null || attribute.getMetaAttribute() == null || attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();

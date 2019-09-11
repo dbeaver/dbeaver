@@ -28,9 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
@@ -71,10 +69,10 @@ public class EditVirtualEntityDialog extends BaseDialog {
     private DBVEntityConstraint uniqueConstraint;
     private InitPage initPage = InitPage.UNIQUE_KEY;
 
-    private boolean fkChanged = false;
+    private boolean structChanged = false;
 
     public enum InitPage {
-        //ATTRIBUTES,
+        ATTRIBUTES,
         UNIQUE_KEY,
         FOREIGN_KEYS,
         DICTIONARY,
@@ -125,7 +123,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
         TabFolder tabFolder = new TabFolder(composite, SWT.TOP);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        //createColumnsPage(tabFolder);
+        createColumnsPage(tabFolder);
         createUniqueKeysPage(tabFolder);
         createForeignKeysPage(tabFolder);
         createDictionaryPage(tabFolder);
@@ -152,6 +150,160 @@ public class EditVirtualEntityDialog extends BaseDialog {
             dictItem.setControl(editDictionaryPage.getControl());
             dictItem.setData(InitPage.DICTIONARY);
         }
+    }
+
+    private void createColumnsPage(TabFolder tabFolder) {
+        TabItem attrsItem = new TabItem(tabFolder, SWT.NONE);
+        attrsItem.setText("Virtual Columns");
+        attrsItem.setData(InitPage.ATTRIBUTES);
+
+        Composite panel = new Composite(tabFolder, 1);
+        panel.setLayout(new GridLayout(1, false));
+
+        Table attrTable = new Table(panel, SWT.FULL_SELECTION | SWT.BORDER);
+        attrTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        attrTable.setHeaderVisible(true);
+        UIUtils.executeOnResize(attrTable, () -> UIUtils.packColumns(attrTable, true));
+
+        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Name");
+        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Data kind");
+        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Data type");
+        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Expression");
+
+        for (DBVEntityAttribute attr : vEntity.getCustomAttributes()) {
+            createAttributeItem(attrTable, attr);
+        }
+
+        {
+            Composite buttonsPanel = UIUtils.createComposite(panel, 2);
+            buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            Button btnAdd = createButton(buttonsPanel, -1, "Add", false);
+            btnAdd.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "exp");
+                    BaseDialog editAttrPage = new BaseDialog(getShell(), "Add virtual column", DBIcon.TREE_COLUMN) {
+                        Text nameText;
+                        Text typeText;
+                        Combo kindCombo;
+                        Text expressionText;
+                        @Override
+                        protected Composite createDialogArea(Composite parent) {
+                            Composite dialogArea = super.createDialogArea(parent);
+
+                            Composite panel = UIUtils.createComposite(dialogArea, 2);
+                            String name = "vcolumn";
+                            int index = 1;
+                            while (vEntity.getCustomAttribute(name) != null) {
+                                index++;
+                                name = "vcolumn" + index;
+                            }
+                            nameText = UIUtils.createLabelText(panel, "Column Name", name);
+                            typeText = UIUtils.createLabelText(panel, "Type Name", DBUtils.getDefaultDataTypeName(viewer.getDataSource(), DBPDataKind.STRING));
+                            kindCombo = UIUtils.createLabelCombo(panel, "Data Kind", "Column data kind", SWT.DROP_DOWN | SWT.READ_ONLY);
+                            for (DBPDataKind dataKind : DBPDataKind.values()) {
+                                if (dataKind != DBPDataKind.UNKNOWN) {
+                                    kindCombo.add(dataKind.name());
+                                }
+                            }
+                            kindCombo.setText(DBPDataKind.STRING.name());
+
+                            expressionText = UIUtils.createLabelText(panel, "Expression", "", SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
+                            GridData gd = new GridData(GridData.FILL_BOTH);
+                            gd.widthHint = 300;
+                            gd.heightHint = expressionText.getLineHeight() * 5;
+                            expressionText.setLayoutData(gd);
+
+                            return dialogArea;
+                        }
+
+                        @Override
+                        protected void okPressed() {
+                            vAttr.setName(nameText.getText());
+                            vAttr.setTypeName(typeText.getText());
+                            vAttr.setDataKind(CommonUtils.valueOf(DBPDataKind.class, kindCombo.getText(), DBPDataKind.STRING));
+                            vAttr.setExpression(expressionText.getText());
+                            super.okPressed();
+                        }
+                    };
+                    if (editAttrPage.open() == IDialogConstants.OK_ID) {
+                        vAttr.setCustom(true);
+                        vEntity.addVirtualAttribute(vAttr);
+                        createAttributeItem(attrTable, vAttr);
+                    }
+                }
+            });
+
+            Button btnRemove = createButton(buttonsPanel, -1, "Remove", false);
+            btnRemove.setEnabled(false);
+            btnRemove.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    DBVEntityAttribute virtualAttr = (DBVEntityAttribute) attrTable.getSelection()[0].getData();
+                    if (!UIUtils.confirmAction(getShell(),
+                        "Delete virtual column",
+                        "Are you sure you want to delete virtual column '" + virtualAttr.getName() + "'?")) {
+                        return;
+                    }
+                    vEntity.removeVirtualAttribute(virtualAttr);
+                    attrTable.remove(attrTable.getSelectionIndices());
+                    structChanged = true;
+                }
+            });
+        }
+
+        attrsItem.setControl(panel);
+    }
+
+    private void createAttributeItem(Table attrTable, DBVEntityAttribute attribute) {
+        TableItem item = new TableItem(attrTable, SWT.NONE);
+        item.setImage(0, DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attribute)));
+        item.setText(0, attribute.getName());
+        item.setText(1, attribute.getDataKind().name());
+        item.setText(2, attribute.getTypeName());
+        if (attribute.getExpression() != null) {
+            item.setText(3, attribute.getExpression());
+        }
+        item.setData(attribute);
+    }
+
+    private void updateColumnItem(TableItem attrItem) {
+        DBDAttributeBinding attr = (DBDAttributeBinding) attrItem.getData();
+        String transformStr = "";
+        DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, false);
+        if (vAttr != null) {
+            DBVTransformSettings transformSettings = vAttr.getTransformSettings();
+            if (transformSettings != null) {
+                if (!CommonUtils.isEmpty(transformSettings.getIncludedTransformers())) {
+                    transformStr = String.join(",", transformSettings.getIncludedTransformers());
+                } else if (!CommonUtils.isEmpty(transformSettings.getCustomTransformer())) {
+                    DBDAttributeTransformerDescriptor td =
+                        DBWorkbench.getPlatform().getValueHandlerRegistry().getTransformer(transformSettings.getCustomTransformer());
+                    if (td != null) {
+                        transformStr = td.getName();
+                    }
+                }
+            }
+        }
+        attrItem.setText(1, transformStr);
+
+        String colorSettings = "";
+        {
+            java.util.List<DBVColorOverride> coList = vEntity.getColorOverrides(attr.getName());
+            if (!coList.isEmpty()) {
+                java.util.List<String> coStrings = new ArrayList<>();
+                for (DBVColorOverride co : coList) {
+                    if (co.getAttributeValues() != null) {
+                        for (Object value : co.getAttributeValues()) {
+                            coStrings.add(CommonUtils.toString(value));
+                        }
+                    }
+                }
+                colorSettings = String.join(",", coStrings);
+            }
+        }
+        attrItem.setText(2, colorSettings);
     }
 
     private void createUniqueKeysPage(TabFolder tabFolder) {
@@ -202,7 +354,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
                     DBVEntityForeignKey virtualFK = EditForeignKeyPage.createVirtualForeignKey(vEntity);
                     if (virtualFK != null) {
                         createForeignKeyItem(fkTable, virtualFK);
-                        fkChanged = true;
+                        structChanged = true;
                     }
                 }
             });
@@ -220,7 +372,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
                     }
                     vEntity.removeForeignKey(virtualFK);
                     fkTable.remove(fkTable.getSelectionIndices());
-                    fkChanged = true;
+                    structChanged = true;
                 }
             });
         }
@@ -255,44 +407,6 @@ public class EditVirtualEntityDialog extends BaseDialog {
         item.setData(fk);
     }
 
-    private void updateColumnItem(TableItem attrItem) {
-        DBDAttributeBinding attr = (DBDAttributeBinding) attrItem.getData();
-        String transformStr = "";
-        DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, false);
-        if (vAttr != null) {
-            DBVTransformSettings transformSettings = vAttr.getTransformSettings();
-            if (transformSettings != null) {
-                if (!CommonUtils.isEmpty(transformSettings.getIncludedTransformers())) {
-                    transformStr = String.join(",", transformSettings.getIncludedTransformers());
-                } else if (!CommonUtils.isEmpty(transformSettings.getCustomTransformer())) {
-                    DBDAttributeTransformerDescriptor td =
-                        DBWorkbench.getPlatform().getValueHandlerRegistry().getTransformer(transformSettings.getCustomTransformer());
-                    if (td != null) {
-                        transformStr = td.getName();
-                    }
-                }
-            }
-        }
-        attrItem.setText(1, transformStr);
-
-        String colorSettings = "";
-        {
-            java.util.List<DBVColorOverride> coList = vEntity.getColorOverrides(attr.getName());
-            if (!coList.isEmpty()) {
-                java.util.List<String> coStrings = new ArrayList<>();
-                for (DBVColorOverride co : coList) {
-                    if (co.getAttributeValues() != null) {
-                        for (Object value : co.getAttributeValues()) {
-                            coStrings.add(CommonUtils.toString(value));
-                        }
-                    }
-                }
-                colorSettings = String.join(",", coStrings);
-            }
-        }
-        attrItem.setText(2, colorSettings);
-    }
-
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
@@ -319,7 +433,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
             editDictionaryPage.saveDictionarySettings();
         }
         vEntity.persistConfiguration();
-        if (fkChanged) {
+        if (structChanged) {
             viewer.refreshData(null);
         }
         super.okPressed();

@@ -20,9 +20,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -32,7 +34,7 @@ import java.util.*;
 /**
  * Virtual attribute
  */
-public class DBVEntityAttribute implements DBSEntityAttribute
+public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
 {
     private final DBVEntity entity;
     private final DBVEntityAttribute parent;
@@ -47,7 +49,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute
     private DBPDataKind dataKind = DBPDataKind.UNKNOWN;
     private String typeName = "void";
 
-    DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
+    public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
         this.entity = entity;
         this.parent = parent;
         this.name = name;
@@ -121,12 +123,19 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         return entity.getDataSource();
     }
 
+    @Property(editable = true)
     @NotNull
     @Override
     public String getName() {
         return name;
     }
 
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Property(editable = true)
     @Override
     public String getTypeName() {
         return typeName;
@@ -146,9 +155,15 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         return -1;
     }
 
+    @Property(editable = true)
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataKind;
+    }
+
+    public void setDataKind(DBPDataKind dataKind) {
+        this.dataKind = dataKind;
     }
 
     @Override
@@ -214,6 +229,8 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         this.custom = custom;
     }
 
+    @Property(editable = true)
+    @Nullable
     public String getExpression() {
         return expression;
     }

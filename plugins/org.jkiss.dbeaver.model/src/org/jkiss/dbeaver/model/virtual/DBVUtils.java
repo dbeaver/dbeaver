@@ -231,16 +231,7 @@ public abstract class DBVUtils {
     public static List<DBVEntityAttribute> getCustomAttributes(@NotNull DBSEntity entity) {
         DBVEntity vEntity = getVirtualEntity(entity, false);
         if (vEntity != null) {
-            List<DBVEntityAttribute> vAttributes = vEntity.getEntityAttributes();
-            if (!CommonUtils.isEmpty(vAttributes)) {
-                List<DBVEntityAttribute> result = new ArrayList<>();
-                for (DBVEntityAttribute attr : vAttributes) {
-                    if (attr.isCustom()) {
-                        result.add(attr);
-                    }
-                }
-                return result;
-            }
+            return vEntity.getCustomAttributes();
         }
         return Collections.emptyList();
     }

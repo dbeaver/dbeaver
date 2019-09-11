@@ -44,16 +44,19 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
     @NotNull
     private final DBVEntityAttribute vAttribute;
     private List<DBSEntityReferrer> referrers;
+    private int ordinalPosition;
 
     public DBDAttributeBindingCustom(
         @Nullable DBDAttributeBindingCustom parent,
         @NotNull DBSDataContainer dataContainer,
         @NotNull DBCSession session,
-        @NotNull DBVEntityAttribute vAttribute) {
+        @NotNull DBVEntityAttribute vAttribute,
+        int ordinalPosition) {
         super(DBUtils.findValueHandler(session, vAttribute));
         this.parent = parent;
         this.dataContainer = dataContainer;
         this.vAttribute = vAttribute;
+        this.ordinalPosition = ordinalPosition;
     }
 
     @NotNull
@@ -80,7 +83,11 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
      */
     @Override
     public int getOrdinalPosition() {
-        return vAttribute.getOrdinalPosition();
+        return ordinalPosition;
+    }
+
+    public void setOrdinalPosition(int ordinalPosition) {
+        this.ordinalPosition = ordinalPosition;
     }
 
     @Override
@@ -153,7 +160,7 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
     /**
      * Meta attribute (obtained from result set)
      */
-    @NotNull
+    @Nullable
     public DBCAttributeMetaData getMetaAttribute() {
         return null;
     }
@@ -161,8 +168,8 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
     /**
      * Entity attribute (may be null)
      */
-    @Nullable
-    public DBSEntityAttribute getEntityAttribute() {
+    @NotNull
+    public DBVEntityAttribute getEntityAttribute() {
         return vAttribute;
     }
 
