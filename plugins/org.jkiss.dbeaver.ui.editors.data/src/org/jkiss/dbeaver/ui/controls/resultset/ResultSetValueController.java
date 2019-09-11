@@ -122,10 +122,16 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     @Override
     public String getColumnId() {
         DBCExecutionContext context = getExecutionContext();
-        DBCAttributeMetaData metaAttribute = binding.getMetaAttribute();
+        DBSAttributeBase metaAttribute = binding.getMetaAttribute();
+        if (metaAttribute == null) {
+            metaAttribute = binding.getAttribute();
+        }
+        if (metaAttribute == null) {
+            return binding.getName();
+        }
         return DBUtils.getSimpleQualifiedName(
             context == null ? null : context.getDataSource().getContainer().getName(),
-            metaAttribute.getEntityName(),
+            metaAttribute instanceof DBCAttributeMetaData ? ((DBCAttributeMetaData) metaAttribute).getEntityName() : "",
             metaAttribute.getName());
     }
 
