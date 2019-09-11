@@ -404,10 +404,11 @@ public class SQLQueryJob extends DataSourceJob
             SQLQuery execStatement = sqlQuery;
             DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
                 try {
-                    statistics.setStatementsCount(0);
-                    statistics.setExecuteTime(0);
-                    statistics.setFetchTime(0);
-                    statistics.setRowsUpdated(0);
+                    // We can't reset statistics here (we can be in script mode)
+                    //statistics.setStatementsCount(0);
+                    //statistics.setExecuteTime(0);
+                    //statistics.setFetchTime(0);
+                    //statistics.setRowsUpdated(0);
                     long execStartTime = System.currentTimeMillis();
                     executeStatement(session, execStatement, execStartTime, curResult);
                 } catch (Throwable e) {
