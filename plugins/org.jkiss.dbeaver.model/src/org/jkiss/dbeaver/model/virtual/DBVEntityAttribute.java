@@ -50,7 +50,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
     private DBVTransformSettings transformSettings;
     private Map<String, Object> properties;
     private DBPDataKind dataKind = DBPDataKind.UNKNOWN;
-    private String typeName = "void";
+    private String typeName;
     private JexlExpression parsedExpression;
 
     public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
