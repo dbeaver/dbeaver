@@ -664,7 +664,7 @@
                     icon="icons/phoenix_icon.png"
                     iconBig="icons/phoenix_icon_big.png"
                     class="org.apache.phoenix.jdbc.PhoenixDriver"
-                    sampleURL="jdbc:phoenix:{host}"
+                    sampleURL="jdbc:phoenix:{host}[:{port}]"
                     webURL="http://phoenix.apache.org/"
                     description="Driver for Apache Phoenix HBase Database"
                     category="Hadoop"
