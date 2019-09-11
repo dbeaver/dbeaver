@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -28,7 +30,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
@@ -166,7 +171,6 @@ public class EditVirtualEntityDialog extends BaseDialog {
         UIUtils.executeOnResize(attrTable, () -> UIUtils.packColumns(attrTable, true));
 
         UIUtils.createTableColumn(attrTable, SWT.LEFT, "Name");
-        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Data kind");
         UIUtils.createTableColumn(attrTable, SWT.LEFT, "Data type");
         UIUtils.createTableColumn(attrTable, SWT.LEFT, "Expression");
 
@@ -182,56 +186,21 @@ public class EditVirtualEntityDialog extends BaseDialog {
             btnAdd.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "exp");
-                    BaseDialog editAttrPage = new BaseDialog(getShell(), "Add virtual column", DBIcon.TREE_COLUMN) {
-                        Text nameText;
-                        Text typeText;
-                        Combo kindCombo;
-                        Text expressionText;
-                        @Override
-                        protected Composite createDialogArea(Composite parent) {
-                            Composite dialogArea = super.createDialogArea(parent);
-
-                            Composite panel = UIUtils.createComposite(dialogArea, 2);
-                            String name = "vcolumn";
-                            int index = 1;
-                            while (vEntity.getCustomAttribute(name) != null) {
-                                index++;
-                                name = "vcolumn" + index;
-                            }
-                            nameText = UIUtils.createLabelText(panel, "Column Name", name);
-                            typeText = UIUtils.createLabelText(panel, "Type Name", DBUtils.getDefaultDataTypeName(viewer.getDataSource(), DBPDataKind.STRING));
-                            kindCombo = UIUtils.createLabelCombo(panel, "Data Kind", "Column data kind", SWT.DROP_DOWN | SWT.READ_ONLY);
-                            for (DBPDataKind dataKind : DBPDataKind.values()) {
-                                if (dataKind != DBPDataKind.UNKNOWN) {
-                                    kindCombo.add(dataKind.name());
-                                }
-                            }
-                            kindCombo.setText(DBPDataKind.STRING.name());
-
-                            expressionText = UIUtils.createLabelText(panel, "Expression", "", SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
-                            GridData gd = new GridData(GridData.FILL_BOTH);
-                            gd.widthHint = 300;
-                            gd.heightHint = expressionText.getLineHeight() * 5;
-                            expressionText.setLayoutData(gd);
-
-                            return dialogArea;
-                        }
-
-                        @Override
-                        protected void okPressed() {
-                            vAttr.setName(nameText.getText());
-                            vAttr.setTypeName(typeText.getText());
-                            vAttr.setDataKind(CommonUtils.valueOf(DBPDataKind.class, kindCombo.getText(), DBPDataKind.STRING));
-                            vAttr.setExpression(expressionText.getText());
-                            super.okPressed();
-                        }
-                    };
+                    DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "vcolumn");
+                    BaseDialog editAttrPage = new EditVirtualAttributeDialog(getShell(), vAttr);
                     if (editAttrPage.open() == IDialogConstants.OK_ID) {
                         vAttr.setCustom(true);
                         vEntity.addVirtualAttribute(vAttr);
                         createAttributeItem(attrTable, vAttr);
                     }
+                }
+            });
+            Button btnEdit = createButton(buttonsPanel, -1, "Edit ...", false);
+            btnEdit.setEnabled(false);
+            btnEdit.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    editSelectedAttribute(attrTable);
                 }
             });
 
@@ -251,19 +220,43 @@ public class EditVirtualEntityDialog extends BaseDialog {
                     structChanged = true;
                 }
             });
+
+            attrTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    boolean attrSelected = attrTable.getSelectionIndex() >= 0;
+                    btnEdit.setEnabled(attrSelected);
+                    btnRemove.setEnabled(attrSelected);
+                }
+            });
+            attrTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDoubleClick(MouseEvent e) {
+                    editSelectedAttribute(attrTable);
+                }
+            });
         }
 
         attrsItem.setControl(panel);
+    }
+
+    private void editSelectedAttribute(Table attrTable) {
+        TableItem[] selection = attrTable.getSelection();
+        if (selection.length <= 0) {
+            return;
+        }
+        DBVEntityAttribute vAttr = (DBVEntityAttribute) selection[0].getData();
+        BaseDialog editAttrPage = new EditVirtualAttributeDialog(getShell(), vAttr);
+        editAttrPage.open();
     }
 
     private void createAttributeItem(Table attrTable, DBVEntityAttribute attribute) {
         TableItem item = new TableItem(attrTable, SWT.NONE);
         item.setImage(0, DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attribute)));
         item.setText(0, attribute.getName());
-        item.setText(1, attribute.getDataKind().name());
-        item.setText(2, attribute.getTypeName());
+        item.setText(1, attribute.getTypeName());
         if (attribute.getExpression() != null) {
-            item.setText(3, attribute.getExpression());
+            item.setText(2, attribute.getExpression());
         }
         item.setData(attribute);
     }

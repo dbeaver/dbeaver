@@ -253,10 +253,10 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return Collections.emptyList();
     }
 
-    public DBVEntityAttribute getCustomAttribute(String name) {
+    public DBVEntityAttribute getVirtualAttribute(String name) {
         if (!CommonUtils.isEmpty(entityAttributes)) {
             for (DBVEntityAttribute attr : entityAttributes) {
-                if (attr.isCustom() && CommonUtils.equalObjects(name, attr.getName())) {
+                if (CommonUtils.equalObjects(name, attr.getName())) {
                     return attr;
                 }
             }
