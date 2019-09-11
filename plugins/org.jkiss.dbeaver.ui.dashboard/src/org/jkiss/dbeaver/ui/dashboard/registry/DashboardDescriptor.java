@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.registry;
 
-import org.apache.commons.jexl2.Expression;
+import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -61,7 +61,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     private String[] mapKeys;
     private String[] mapLabels;
     private String mapFormula;
-    private Expression mapFormulaExpr;
+    private JexlExpression mapFormulaExpr;
 
     private String[] tags;
     private final List<DataSourceMapping> dataSourceMappings = new ArrayList<>();
@@ -452,7 +452,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         return mapLabels;
     }
 
-    public Expression getMapFormulaExpr() {
+    public JexlExpression getMapFormulaExpr() {
         return mapFormulaExpr;
     }
 

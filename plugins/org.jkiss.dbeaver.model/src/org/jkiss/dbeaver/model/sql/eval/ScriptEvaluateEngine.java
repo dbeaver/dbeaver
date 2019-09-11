@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.eval;
 
-import org.apache.commons.jexl2.Expression;
-import org.apache.commons.jexl2.JexlEngine;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 
@@ -32,15 +33,14 @@ public class ScriptEvaluateEngine {
 
     private ScriptEvaluateEngine(SQLScriptContext scriptContext) {
         this.scriptContext = scriptContext;
-        jexlEngine = new JexlEngine(null, null, null, null);
-        jexlEngine.setCache(100);
+        jexlEngine = new JexlBuilder().cache(100).create();
 
         variablesContext = new ScriptVariablesContext(scriptContext);
     }
 
     public Object evaluateExpression(String exprString) throws DBException {
         try {
-            Expression expression = jexlEngine.createExpression(exprString);
+            JexlExpression expression = jexlEngine.createExpression(exprString);
             return expression.evaluate(variablesContext);
         } catch (Exception e) {
             throw new DBException("Error evaluating expression [" + exprString + "]", e);

@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.model.navigator.meta;
 
-import org.apache.commons.jexl2.Expression;
+import org.apache.commons.jexl3.JexlExpression;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -32,7 +32,7 @@ public class DBXTreeIcon
 
     private final String exprString;
     private final DBPImage icon;
-    private Expression expression;
+    private JexlExpression expression;
 
     public DBXTreeIcon(String exprString, DBPImage icon)
     {
@@ -54,7 +54,7 @@ public class DBXTreeIcon
         return exprString;
     }
 
-    public Expression getExpression()
+    public JexlExpression getExpression()
     {
         return expression;
     }

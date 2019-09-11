@@ -70,7 +70,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 if (select.getHaving() != null) {
                     throw new DBException("Can't inject COUNT into query with HAVING clause");
                 }
-                if (!CommonUtils.isEmpty(select.getGroupByColumnReferences())) {
+                if (select.getGroupBy() != null && !CommonUtils.isEmpty(select.getGroupBy().getGroupByExpressions())) {
                     throw new DBException("Can't inject COUNT into query with GROUP BY clause");
                 }
 

@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.model.navigator.meta;
 
-import org.apache.commons.jexl2.Expression;
-import org.apache.commons.jexl2.JexlContext;
-import org.apache.commons.jexl2.JexlException;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlException;
+import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -54,7 +53,7 @@ public abstract class DBXTreeNode
     private final boolean virtual;
     private boolean standaloneNode;
     //private final boolean embeddable;
-    private Expression visibleIf;
+    private JexlExpression visibleIf;
     private DBXTreeNode recursiveLink;
     private List<DBXTreeNodeHandler> handlers = null;
 
@@ -306,7 +305,7 @@ public abstract class DBXTreeNode
         return getDefaultIcon();
     }
 
-    public Expression getVisibleIf()
+    public JexlExpression getVisibleIf()
     {
         return visibleIf;
     }
