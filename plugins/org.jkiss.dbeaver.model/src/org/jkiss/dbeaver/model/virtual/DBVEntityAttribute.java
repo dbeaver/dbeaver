@@ -40,8 +40,12 @@ public class DBVEntityAttribute implements DBSEntityAttribute
     private String name;
     private String defaultValue;
     private String description;
+    private String expression;
+    private boolean custom;
     private DBVTransformSettings transformSettings;
     private Map<String, Object> properties;
+    private DBPDataKind dataKind = DBPDataKind.UNKNOWN;
+    private String typeName = "void";
 
     DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
         this.entity = entity;
@@ -66,6 +70,12 @@ public class DBVEntityAttribute implements DBSEntityAttribute
 
     DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name, Map<String, Object> map) {
         this(entity, parent, name);
+        this.custom = JSONUtils.getBoolean(map, "custom");
+        if (this.custom) {
+            this.expression = JSONUtils.getString(map, "expression");
+            this.dataKind = CommonUtils.valueOf(DBPDataKind.class, JSONUtils.getString(map, "dataKind"), DBPDataKind.UNKNOWN);
+            this.typeName = JSONUtils.getString(map, "typeName");
+        }
         this.properties = JSONUtils.deserializeProperties(map, "properties");
 
         Map<String, Object> transformsCfg = JSONUtils.getObject(map, "transforms");
@@ -119,7 +129,11 @@ public class DBVEntityAttribute implements DBSEntityAttribute
 
     @Override
     public String getTypeName() {
-        return "void";
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 
     @Override
@@ -134,7 +148,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute
 
     @Override
     public DBPDataKind getDataKind() {
-        return DBPDataKind.UNKNOWN;
+        return dataKind;
     }
 
     @Override
@@ -192,6 +206,22 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         this.description = description;
     }
 
+    public boolean isCustom() {
+        return custom;
+    }
+
+    public void setCustom(boolean custom) {
+        this.custom = custom;
+    }
+
+    public String getExpression() {
+        return expression;
+    }
+
+    public void setExpression(String expression) {
+        this.expression = expression;
+    }
+
     public List<DBVEntityAttribute> getChildren() {
         return children;
     }
@@ -236,7 +266,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute
     }
 
     public boolean hasValuableData() {
-        if (!CommonUtils.isEmpty(defaultValue) || !CommonUtils.isEmpty(description)) {
+        if (!CommonUtils.isEmpty(defaultValue) || !CommonUtils.isEmpty(description) || !CommonUtils.isEmpty(expression)) {
             return true;
         }
         if (!children.isEmpty()) {
@@ -248,4 +278,5 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         }
         return transformSettings != null && transformSettings.hasValuableData() || !CommonUtils.isEmpty(properties);
     }
+
 }

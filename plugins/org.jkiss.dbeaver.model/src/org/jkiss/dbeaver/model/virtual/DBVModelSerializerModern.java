@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.virtual;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -86,6 +87,14 @@ class DBVModelSerializerModern implements DBVModelSerializer
                 }
                 json.name(attr.getName());
                 json.beginObject();
+
+                if (attr.isCustom()) {
+                    JSONUtils.field(json, "custom", true);
+                    JSONUtils.fieldNE(json, "expression", attr.getExpression());
+                    JSONUtils.fieldNE(json, "dataKind", attr.getDataKind().name());
+                    JSONUtils.fieldNE(json, "typeName", attr.getTypeName());
+                }
+
                 final DBVTransformSettings transformSettings = attr.getTransformSettings();
                 if (transformSettings != null && transformSettings.hasValuableData()) {
                     json.name("transforms");

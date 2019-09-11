@@ -27,8 +27,13 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
+import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKeyColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +45,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @NotNull
     protected DBDValueHandler valueHandler;
     @Nullable
-    protected DBSAttributeBase presentationAttribute;
+    private DBSAttributeBase presentationAttribute;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
     private boolean transformed;
@@ -48,6 +53,13 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     protected DBDAttributeBinding(@NotNull DBDValueHandler valueHandler)
     {
         this.valueHandler = valueHandler;
+    }
+
+    /**
+     * Custom attributes are client-side objects. They also don't have associated meta attributes.
+     */
+    public boolean isCustom() {
+        return false;
     }
 
     @Nullable
@@ -118,7 +130,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     public DBSDataContainer getDataContainer() {
-        return getParentObject().getDataContainer();
+        DBDAttributeBinding parentObject = getParentObject();
+        return parentObject == null ? null : parentObject.getDataContainer();
     }
 
     /**
@@ -297,6 +310,32 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                 transformer.transformAttribute(session, this, rows, transformerOptions);
             }
         }
+    }
+
+    protected List<DBSEntityReferrer> findVirtualReferrers() {
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer instanceof DBSEntity) {
+            DBSEntity attrEntity = (DBSEntity) dataContainer;
+            DBVEntity vEntity = DBVUtils.getVirtualEntity(attrEntity, false);
+            if (vEntity != null) {
+                List<DBVEntityForeignKey> foreignKeys = vEntity.getForeignKeys();
+                if (!CommonUtils.isEmpty(foreignKeys)) {
+                    List<DBSEntityReferrer> referrers = null;
+                    for (DBVEntityForeignKey vfk : foreignKeys) {
+                        for (DBVEntityForeignKeyColumn vfkc : vfk.getAttributes()) {
+                            if (CommonUtils.equalObjects(vfkc.getAttributeName(), getFullyQualifiedName(DBPEvaluationContext.DML))) {
+                                if (referrers == null) {
+                                    referrers = new ArrayList<>();
+                                }
+                                referrers.add(vfk);
+                            }
+                        }
+                    }
+                    return referrers;
+                }
+            }
+        }
+        return null;
     }
 
     @Override

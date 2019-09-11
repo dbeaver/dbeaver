@@ -164,27 +164,7 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
 
     @Override
     public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
-        // There can be virtual referrers
-        DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer instanceof DBSEntity) {
-            DBSEntity attrEntity = (DBSEntity) dataContainer;
-            DBVEntity vEntity = DBVUtils.getVirtualEntity(attrEntity, false);
-            if (vEntity != null) {
-                List<DBVEntityForeignKey> foreignKeys = vEntity.getForeignKeys();
-                if (!CommonUtils.isEmpty(foreignKeys)) {
-                    for (DBVEntityForeignKey vfk : foreignKeys) {
-                        for (DBVEntityForeignKeyColumn vfkc : vfk.getAttributes()) {
-                            if (CommonUtils.equalObjects(vfkc.getAttributeName(), getFullyQualifiedName(DBPEvaluationContext.DML))) {
-                                if (referrers == null) {
-                                    referrers = new ArrayList<>();
-                                }
-                                referrers.add(vfk);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        referrers = findVirtualReferrers();
 
         super.lateBinding(session, rows);
     }

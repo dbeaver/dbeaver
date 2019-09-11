@@ -137,10 +137,8 @@ public class ResultSetViewer extends Viewer
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
 
     static final String EMPTY_TRANSFORMER_NAME = "Default";
-
     static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
-
-    public static final String DEFAULT_QUERY_TEXT = "SQL";
+    static final String DEFAULT_QUERY_TEXT = "SQL";
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
     private static final String CUSTOM_FILTER_VALUE_STRING = "..";
@@ -2518,7 +2516,10 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void handleDataSourceEvent(DBPEvent event) {
-        if (event.getObject() instanceof DBVEntity && event.getData() instanceof DBVEntityForeignKey && event.getObject() == getVirtualEntity()) {
+        if (event.getObject() instanceof DBVEntity &&
+            event.getData() instanceof DBVEntityForeignKey &&
+            event.getObject() == model.getVirtualEntity(false))
+        {
             // Virtual foreign key change - let's refresh
             refreshData(null);
         }
@@ -3785,22 +3786,6 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private DBVEntity getVirtualEntity() {
-        DBSEntity entity = model.isSingleSource() ? model.getSingleSource() : null;
-        return getVirtualEntity(entity);
-    }
-
-    private DBVEntity getVirtualEntity(DBSEntity entity) {
-        if (entity != null) {
-            return DBVUtils.getVirtualEntity(entity, true);
-        }
-        DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer != null) {
-            return DBVUtils.getVirtualEntity(dataContainer, true);
-        }
-        return null;
-    }
-
     private void checkEntityIdentifiers(ResultSetPersister persister) throws DBException
     {
 
@@ -3861,7 +3846,7 @@ public class ResultSetViewer extends Viewer
 
     boolean editEntityIdentifier() {
         EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
-            ResultSetViewer.this, model.getSingleSource(), getVirtualEntity());
+            ResultSetViewer.this, model.getSingleSource(), model.getVirtualEntity(true));
         dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
         if (dialog.open() == IDialogConstants.OK_ID) {
             DBDRowIdentifier virtualID = getVirtualEntityIdentifier();
@@ -3880,7 +3865,7 @@ public class ResultSetViewer extends Viewer
 
     private void clearEntityIdentifier()
     {
-        DBVEntity vEntity = getVirtualEntity();
+        DBVEntity vEntity = model.getVirtualEntity(false);
         if (vEntity != null) {
             DBVEntityConstraint vConstraint = vEntity.getBestIdentifier();
             if (vConstraint != null) {
@@ -4518,8 +4503,8 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isEnabled()
         {
-            DBVEntity vEntity = getVirtualEntity();
-            DBVEntityConstraint vConstraint = vEntity.getBestIdentifier();
+            DBVEntity vEntity = model.getVirtualEntity(false);
+            DBVEntityConstraint vConstraint = vEntity == null ? null : vEntity.getBestIdentifier();
 
             return vConstraint != null && (define != vConstraint.hasAttributes());
         }
@@ -4545,7 +4530,7 @@ public class ResultSetViewer extends Viewer
         public void run()
         {
             UIUtils.runUIJob("Edit virtual foreign key", monitor -> {
-                if (EditForeignKeyPage.createVirtualForeignKey(getVirtualEntity()) != null) {
+                if (EditForeignKeyPage.createVirtualForeignKey(model.getVirtualEntity(true)) != null) {
                     persistConfig();
                     refreshData(null);
                 }
@@ -4566,7 +4551,7 @@ public class ResultSetViewer extends Viewer
                 return;
             }
             DBSEntity entity = model.isSingleSource() ? model.getSingleSource() : null;
-            DBVEntity vEntity = getVirtualEntity(entity);
+            DBVEntity vEntity = model.getVirtualEntity(entity, true);
             EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(ResultSetViewer.this, entity, vEntity);
             dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
             if (dialog.open() == IDialogConstants.OK_ID) {
