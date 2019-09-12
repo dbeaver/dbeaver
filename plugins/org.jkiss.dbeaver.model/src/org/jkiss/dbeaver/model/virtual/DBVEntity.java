@@ -85,24 +85,32 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             for (DBVEntityConstraint c : src.entityConstraints) {
                 this.entityConstraints.add(new DBVEntityConstraint(this, c));
             }
+        } else {
+            this.entityConstraints = null;
         }
         if (!CommonUtils.isEmpty(src.entityForeignKeys)) {
             this.entityForeignKeys = new ArrayList<>(src.entityForeignKeys.size());
             for (DBVEntityForeignKey c : src.entityForeignKeys) {
                 this.entityForeignKeys.add(new DBVEntityForeignKey(this, c));
             }
+        } else {
+            this.entityForeignKeys = null;
         }
         if (!CommonUtils.isEmpty(src.entityAttributes)) {
             this.entityAttributes = new ArrayList<>(src.entityAttributes.size());
             for (DBVEntityAttribute attribute : src.entityAttributes) {
                 this.entityAttributes.add(new DBVEntityAttribute(this, null, attribute));
             }
+        } else {
+            this.entityAttributes = null;
         }
         if (!CommonUtils.isEmpty(src.colorOverrides)) {
             this.colorOverrides = new ArrayList<>(src.colorOverrides.size());
             for (DBVColorOverride co : src.colorOverrides) {
                 this.colorOverrides.add(new DBVColorOverride(co));
             }
+        } else {
+            this.colorOverrides = null;
         }
         super.copyFrom(src);
     }
