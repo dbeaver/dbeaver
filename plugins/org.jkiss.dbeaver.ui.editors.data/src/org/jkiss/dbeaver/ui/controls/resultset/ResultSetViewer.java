@@ -2171,10 +2171,19 @@ public class ResultSetViewer extends Viewer
     }
 
     void showReferencesMenu(boolean openInNewWindow) {
-        MenuManager menuManager = createRefTablesMenu(openInNewWindow);
-        if (menuManager != null) {
-            showContextMenuAtCursor(menuManager);
-            viewerPanel.addDisposeListener(e -> menuManager.dispose());
+        MenuManager[] menuManager = new MenuManager[1];
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                menuManager[0] = createRefTablesMenu(monitor, openInNewWindow);
+            });
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        } catch (InterruptedException e) {
+            // Ignore
+        }
+        if (menuManager[0] != null) {
+            showContextMenuAtCursor(menuManager[0]);
+            viewerPanel.addDisposeListener(e -> menuManager[0].dispose());
         }
     }
 
@@ -2269,6 +2278,14 @@ public class ResultSetViewer extends Viewer
                     orderMenu.setRemoveAllWhenShown(true);
                     orderMenu.addMenuListener(manager1 -> fillOrderingsMenu(manager1, attr, row));
                     manager.add(orderMenu);
+                }
+                {
+                    MenuManager navigateMenu = new MenuManager(
+                        ResultSetMessages.controls_resultset_viewer_action_navigate,
+                        null,
+                        "navigate"); //$NON-NLS-1$
+                    fillNavigateMenu(navigateMenu);
+                    manager.add(navigateMenu);
                 }
 
                 if (row != null) {
@@ -2474,7 +2491,7 @@ public class ResultSetViewer extends Viewer
         }
         if (model.isSingleSource()) {
             // Add menu for referencing tables
-            MenuManager refTablesMenu = createRefTablesMenu(false);
+            MenuManager refTablesMenu = createRefTablesMenu(null, false);
             if (refTablesMenu != null) {
                 navigateMenu.add(refTablesMenu);
                 hasNavTables = true;
@@ -2505,7 +2522,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Nullable
-    private MenuManager createRefTablesMenu(boolean openInNewWindow) {
+    private MenuManager createRefTablesMenu(@Nullable DBRProgressMonitor monitor, boolean openInNewWindow) {
         DBSEntity singleSource = model.getSingleSource();
         if (singleSource == null) {
             return null;
@@ -2515,8 +2532,12 @@ public class ResultSetViewer extends Viewer
         MenuManager refTablesMenu = new MenuManager(menuName, null, "ref-tables");
         refTablesMenu.setActionDefinitionId(ResultSetHandlerMain.CMD_REFERENCES_MENU);
         refTablesMenu.add(ResultSetReferenceMenu.NOREFS_ACTION);
-        refTablesMenu.addMenuListener(manager ->
-            ResultSetReferenceMenu.fillRefTablesActions(this, getSelection().getSelectedRows(), singleSource, manager, openInNewWindow));
+        if (monitor != null) {
+            ResultSetReferenceMenu.fillRefTablesActions(monitor, this, getSelection().getSelectedRows(), singleSource, refTablesMenu, openInNewWindow);
+        } else {
+            refTablesMenu.addMenuListener(manager ->
+                ResultSetReferenceMenu.fillRefTablesActions(null, this, getSelection().getSelectedRows(), singleSource, manager, openInNewWindow));
+        }
 
         return refTablesMenu;
     }
@@ -4034,14 +4055,6 @@ public class ResultSetViewer extends Viewer
                 MenuManager configMenuManager = new MenuManager();
 
                 configMenuManager.add(new Separator());
-                /*{
-                    MenuManager navigateMenu = new MenuManager(
-                        ResultSetMessages.controls_resultset_viewer_action_navigate,
-                        null,
-                        "navigate"); //$NON-NLS-1$
-                    fillNavigateMenu(navigateMenu);
-                    configMenuManager.add(navigateMenu);
-                }*/
                 {
                     MenuManager layoutMenu = new MenuManager(
                         ResultSetMessages.controls_resultset_viewer_action_layout,
