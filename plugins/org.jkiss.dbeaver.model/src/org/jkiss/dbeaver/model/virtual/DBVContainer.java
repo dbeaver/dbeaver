@@ -83,6 +83,18 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         }
     }
 
+    synchronized void dispose() {
+        for (DBVEntity entity : entities.values()) {
+            entity.dispose();
+        }
+        entities.clear();
+
+        for (DBVContainer container : containers.values()) {
+            container.dispose();
+        }
+        containers.clear();
+    }
+
     public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException {
         DBSObjectContainer realParent = parent.getRealContainer(monitor);
         if (realParent == null) {
@@ -153,18 +165,22 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         return entities.values();
     }
 
-    public DBVEntity getEntity(String name, boolean createNew) {
-        String dictName = name;
-        DBVEntity entity = entities.get(dictName);
+    public synchronized DBVEntity getEntity(String name, boolean createNew) {
+        DBVEntity entity = entities.get(name);
         if (entity == null && createNew) {
             entity = new DBVEntity(this, name, (String) null);
-            entities.put(dictName, entity);
+            entities.put(name, entity);
         }
         return entity;
     }
 
-    void addEntity(DBVEntity entity) {
+    synchronized void addEntity(DBVEntity entity) {
         entities.put(entity.getName(), entity);
+    }
+
+    synchronized void removeEntity(DBVEntity entity) {
+        entities.remove(entity.getName());
+        entity.dispose();
     }
 
     @Override

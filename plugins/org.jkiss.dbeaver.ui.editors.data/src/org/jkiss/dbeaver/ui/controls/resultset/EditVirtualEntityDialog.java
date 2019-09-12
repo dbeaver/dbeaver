@@ -108,7 +108,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
             UIUtils.runInProgressService(monitor -> {
                 for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
                     try {
-                        fk.getRealReferenceConatraint(monitor);
+                        fk.getRealReferenceConstraint(monitor);
                         fk.getAssociatedEntity(monitor);
                     } catch (DBException e) {
                         log.debug(e);

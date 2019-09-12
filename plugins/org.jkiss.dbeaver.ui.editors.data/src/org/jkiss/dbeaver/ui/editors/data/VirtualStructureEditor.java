@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -85,7 +84,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             protected IStatus run(DBRProgressMonitor monitor) {
                 for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
                     try {
-                        fk.getRealReferenceConatraint(monitor);
+                        fk.getRealReferenceConstraint(monitor);
                         fk.getAssociatedEntity(monitor);
                     } catch (DBException e) {
                         log.debug(e);

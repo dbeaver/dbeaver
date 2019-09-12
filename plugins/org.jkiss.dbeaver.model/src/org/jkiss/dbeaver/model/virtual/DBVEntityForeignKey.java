@@ -56,13 +56,23 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         this.entity = entity;
         this.refEntityId = copy.refEntityId;
         this.refConstraintId = copy.refConstraintId;
+
+        DBVModel.addToCache(this);
+    }
+
+    void dispose() {
+        if (refEntityId != null) {
+            DBVModel.removeFromCache(this);
+            refEntityId = null;
+            refConstraintId = null;
+        }
     }
 
     @NotNull
     @Override
     public DBSEntityConstraint getReferencedConstraint() {
         try {
-            return getRealReferenceConatraint(new VoidProgressMonitor());
+            return getRealReferenceConstraint(new VoidProgressMonitor());
         } catch (DBException e) {
             throw new IllegalStateException(e);
         }
@@ -71,7 +81,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     @NotNull
     @Override
     public DBSEntityConstraint getReferencedConstraint(DBRProgressMonitor monitor) throws DBException {
-        return getRealReferenceConatraint(monitor);
+        return getRealReferenceConstraint(monitor);
     }
 
     public String getRefEntityId() {
@@ -82,12 +92,18 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         return refConstraintId;
     }
 
-    public void setReferencedConstraint(String refEntityId, String refConsId) {
+    public synchronized void setReferencedConstraint(String refEntityId, String refConsId) {
+        if (refEntityId != null) {
+            DBVModel.removeFromCache(this);
+        }
         this.refEntityId = refEntityId;
         this.refConstraintId = refConsId;
+        if (refEntityId != null) {
+            DBVModel.addToCache(this);
+        }
     }
 
-    public void setReferencedConstraint(DBRProgressMonitor monitor, DBSEntityConstraint constraint) throws DBException {
+    public synchronized void setReferencedConstraint(DBRProgressMonitor monitor, DBSEntityConstraint constraint) throws DBException {
         DBSEntity refEntity = constraint.getParentObject();
         if (refEntity instanceof DBVEntity) {
             refEntity = ((DBVEntity) refEntity).getRealEntity(monitor);
@@ -97,12 +113,18 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
             log.warn("Can't find navigator node for object " + DBUtils.getObjectFullId(refEntity));
             return;
         }
+        if (refEntityId != null) {
+            DBVModel.removeFromCache(this);
+        }
         this.refEntityId = refNode.getNodeItemPath();
         this.refConstraintId = constraint.getName();
+        if (refEntityId != null) {
+            DBVModel.addToCache(this);
+        }
     }
 
     @NotNull
-    public DBSEntityConstraint getRealReferenceConatraint(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public DBSEntityConstraint getRealReferenceConstraint(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBNNode refNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, refEntityId);
         if (!(refNode instanceof DBNDatabaseNode)) {
             throw new DBException("Can't find reference node " + refEntityId + " for virtaul foreign key");

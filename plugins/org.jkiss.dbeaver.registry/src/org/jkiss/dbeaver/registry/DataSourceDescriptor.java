@@ -236,6 +236,7 @@ public class DataSourceDescriptor
         synchronized (users) {
             users.clear();
         }
+        this.virtualModel.dispose();
         disposed = true;
     }
 

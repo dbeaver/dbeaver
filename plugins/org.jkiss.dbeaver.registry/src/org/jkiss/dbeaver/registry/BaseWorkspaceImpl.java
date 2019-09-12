@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -160,6 +161,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
             }
             this.projects.clear();
         }
+        DBVModel.checkGlobalCacheIsEmpty();
 
         // Dispose resource handlers
         for (ResourceHandlerDescriptor handlerDescriptor : this.handlerDescriptors) {

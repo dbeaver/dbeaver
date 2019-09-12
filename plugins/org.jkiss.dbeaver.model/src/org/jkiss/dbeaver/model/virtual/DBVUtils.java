@@ -33,6 +33,9 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -315,15 +318,14 @@ public abstract class DBVUtils {
         if (!CommonUtils.isEmpty(realConstraints)) {
             result.addAll(realConstraints);
         }
-/*
-        DBVEntity vEntity = getVirtualEntity(entity, false);
-        if (vEntity != null) {
-            List<DBVEntityForeignKey> vFKs = vEntity.getForeignKeys();
-            if (!CommonUtils.isEmpty(vFKs)) {
-                result.addAll(vFKs);
+
+        DBNDatabaseNode entityNode = DBNUtils.getNodeByObject(onEntity);
+        if (entityNode != null) {
+            List<DBVEntityForeignKey> globalRefs = DBVModel.getGlobalReferences(entityNode);
+            if (!CommonUtils.isEmpty(globalRefs)) {
+                result.addAll(globalRefs);
             }
         }
-*/
 
         return result;
     }

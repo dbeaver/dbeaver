@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -234,20 +233,20 @@ class ReferencesResultsContainer implements IResultSetContainer {
                                 if (assoc instanceof DBSEntityReferrer) {
                                     List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
                                     if (!CommonUtils.isEmpty(attrs)) {
-                                        ReferenceKey referenceKey = new ReferenceKey(false, assoc.getAssociatedEntity(), assoc, attrs);
+                                        ReferenceKey referenceKey = new ReferenceKey(monitor, false, assoc.getAssociatedEntity(), assoc, attrs);
                                         refs.add(referenceKey);
                                     }
                                 }
                             }
 
                             // References
-                            Collection<? extends DBSEntityAssociation> references = entity.getReferences(monitor);
-                            if (references != null) {
+                            Collection<? extends DBSEntityAssociation> references = DBVUtils.getAllReferences(monitor, entity);
+                            {
                                 for (DBSEntityAssociation assoc : references) {
                                     if (assoc instanceof DBSEntityReferrer) {
                                         List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
                                         if (!CommonUtils.isEmpty(attrs)) {
-                                            ReferenceKey referenceKey = new ReferenceKey(true, entity, assoc, attrs);
+                                            ReferenceKey referenceKey = new ReferenceKey(monitor, true, entity, assoc, attrs);
                                             refs.add(referenceKey);
                                         }
                                     }
@@ -364,16 +363,37 @@ class ReferencesResultsContainer implements IResultSetContainer {
     }
 
     static class ReferenceKey {
-        final boolean isReference;
-        final DBSEntity refEntity;
-        final DBSEntityAssociation refAssociation;
-        final List<? extends DBSEntityAttributeRef> refAttributes;
+        private final boolean isReference;
+        private final DBSEntity refEntity;
+        private final DBSEntityAssociation refAssociation;
+        private final List<? extends DBSEntityAttributeRef> refAttributes;
+        private DBSEntity targetEntity;
 
-        ReferenceKey(boolean isReference, DBSEntity refEntity, DBSEntityAssociation refAssociation, List<? extends DBSEntityAttributeRef> refAttributes) {
+        ReferenceKey(DBRProgressMonitor monitor, boolean isReference, DBSEntity refEntity, DBSEntityAssociation refAssociation, List<? extends DBSEntityAttributeRef> refAttributes) {
             this.isReference = isReference;
             this.refEntity = refEntity;
             this.refAssociation = refAssociation;
             this.refAttributes = refAttributes;
+
+            if (isReference) {
+                targetEntity = refAssociation.getParentObject();
+            } else {
+                targetEntity = refAssociation.getReferencedConstraint().getParentObject();
+            }
+            if (targetEntity instanceof DBVEntity) {
+                try {
+                    DBSEntity realEntity = ((DBVEntity) targetEntity).getRealEntity(monitor);
+                    if (realEntity != null) {
+                        targetEntity = realEntity;
+                    }
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+        }
+
+        public boolean isReference() {
+            return isReference;
         }
 
         boolean matches(ReferenceKeyMemo memo) {
@@ -422,12 +442,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
             }
             ReferenceKey key = (ReferenceKey) element;
             String title;
-            DBSObject targetEntity;
-            if (key.isReference) {
-                targetEntity = key.refAssociation.getParentObject();
-            } else {
-                targetEntity = key.refAssociation.getReferencedConstraint().getParentObject();
-            }
+            DBSObject targetEntity = key.targetEntity;
             title = targetEntity.getName() + " (" + key.refAssociation.getName() + ")";
             if (parentController.getDataContainer() != null && parentController.getDataContainer().getDataSource() != targetEntity.getDataSource()) {
                 title += " [" + targetEntity.getDataSource().getContainer().getName() + "]";
