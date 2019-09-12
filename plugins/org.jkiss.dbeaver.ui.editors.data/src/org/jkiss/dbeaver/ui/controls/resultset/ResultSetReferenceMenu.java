@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -67,8 +68,8 @@ public class ResultSetReferenceMenu
         DBRRunnableWithProgress refCollector = monitor -> {
             try {
                 monitor.beginTask("Read references", 1);
-                Collection<? extends DBSEntityAssociation> refs = singleSource.getReferences(monitor);
-                if (refs != null) {
+                Collection<? extends DBSEntityAssociation> refs = DBVUtils.getAllReferences(monitor, singleSource);
+                {
                     monitor.beginTask("Check references", refs.size());
                     for (DBSEntityAssociation ref : refs) {
                         if (monitor.isCanceled()) {
