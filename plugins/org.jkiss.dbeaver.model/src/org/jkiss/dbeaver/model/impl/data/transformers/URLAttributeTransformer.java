@@ -64,6 +64,9 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
                 log.error("Bad unit option", e);
             }
         }
+        if (pattern == null) {
+            pattern = "http://${value}";
+        }
         attribute.setTransformHandler(new URLValueHandler(attribute.getValueHandler(), pattern));
     }
 

@@ -2565,7 +2565,7 @@ public class ResultSetViewer extends Viewer
             if (dataSource == null) {
                 return;
             }
-            TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(ResultSetViewer.this, null, null, true);
+            TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(ResultSetViewer.this, null, true);
             if (settingsDialog.open() == IDialogConstants.OK_ID) {
                 dataSource.getContainer().persistConfiguration();
                 refreshData(null);
@@ -2619,7 +2619,7 @@ public class ResultSetViewer extends Viewer
                                 final String oldCustomTransformer = settings.getCustomTransformer();
                                 settings.setCustomTransformer(descriptor.getId());
                                 TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
-                                    ResultSetViewer.this, attr, settings, false);
+                                    ResultSetViewer.this, attr, false);
                                 if (settingsDialog.open() == IDialogConstants.OK_ID) {
                                     // If there are no options - save settings without opening dialog
                                     saveTransformerSettings();
@@ -2640,7 +2640,7 @@ public class ResultSetViewer extends Viewer
                 @Override
                 public void run() {
                     TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
-                        ResultSetViewer.this, attr, transformSettings, false);
+                        ResultSetViewer.this, attr, false);
                     if (settingsDialog.open() == IDialogConstants.OK_ID) {
                         saveTransformerSettings();
                     }
