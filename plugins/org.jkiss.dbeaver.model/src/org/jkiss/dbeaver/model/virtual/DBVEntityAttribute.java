@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
-import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -29,8 +27,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.registry.expressions.ExpressionNamespaceDescriptor;
-import org.jkiss.dbeaver.registry.expressions.ExpressionRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -308,26 +304,9 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
             if (CommonUtils.isEmpty(expression)) {
                 return null;
             }
-            parsedExpression = parseExpression();
+            parsedExpression = DBVUtils.parseExpression(expression);
         }
         return parsedExpression;
-    }
-
-    private JexlExpression parseExpression() {
-        JexlBuilder jexlBuilder = new JexlBuilder();
-        Map<String, Object> nsList = new HashMap<>();
-
-        for (ExpressionNamespaceDescriptor ns : ExpressionRegistry.getInstance().getExpressionNamespaces()) {
-            Class<?> implClass = ns.getImplClass();
-            if (implClass != null) {
-                nsList.put(ns.getId(), implClass);
-            }
-        }
-        jexlBuilder.namespaces(nsList);
-        jexlBuilder.cache(100);
-
-        JexlEngine jexlEngine = jexlBuilder.create();
-        return jexlEngine.createExpression(expression);
     }
 
     @Override

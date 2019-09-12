@@ -95,6 +95,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
@@ -2364,24 +2365,30 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillVirtualModelMenu(IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
+    private void fillVirtualModelMenu(@NotNull IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
         final DBPDataSource dataSource = getDataSource();
         if (dataSource == null) {
             return;
         }
-        VirtualForeignKeyEditAction fkAddAction = new VirtualForeignKeyEditAction();
-        if (fkAddAction.isEnabled()) {
-            vmMenu.add(fkAddAction);
+        List<IAction> possibleActions = new ArrayList<>();
+        possibleActions.add(new VirtualAttributeAddAction());
+        if (attr != null) {
+            possibleActions.add(new VirtualAttributeEditAction(attr));
+            possibleActions.add(new VirtualAttributeDeleteAction(attr));
         }
 
-        VirtualUniqueKeyEditAction vkAction = new VirtualUniqueKeyEditAction(true);
-        if (vkAction.isEnabled()) {
-            vmMenu.add(vkAction);
+        possibleActions.add(new VirtualForeignKeyEditAction());
+
+        possibleActions.add(new VirtualUniqueKeyEditAction(true));
+        possibleActions.add(new VirtualUniqueKeyEditAction(false));
+
+        for (IAction action : possibleActions) {
+            if (action.isEnabled()) {
+                vmMenu.add(action);
+            }
         }
-        VirtualUniqueKeyEditAction vkRemoveAction = new VirtualUniqueKeyEditAction(false);
-        if (vkRemoveAction.isEnabled()) {
-            vmMenu.add(vkRemoveAction);
-        }
+
+        vmMenu.add(new Separator());
 
         vmMenu.add(new VirtualEntityEditAction());
     }
@@ -4491,6 +4498,83 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private class VirtualAttributeAddAction extends Action {
+
+        VirtualAttributeAddAction() {
+            super("Add virtual column");
+        }
+
+        @Override
+        public void run()
+        {
+            DBVEntity vEntity = model.getVirtualEntity(false);
+            DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "vcolumn");
+            BaseDialog editAttrPage = new EditVirtualAttributeDialog(getControl().getShell(), ResultSetViewer.this, vAttr);
+            if (editAttrPage.open() == IDialogConstants.OK_ID) {
+                vAttr.setCustom(true);
+                vEntity.addVirtualAttribute(vAttr);
+                vEntity.persistConfiguration();
+                refreshData(null);
+            }
+        }
+    }
+
+    private class VirtualAttributeEditAction extends Action {
+        private DBDAttributeBinding attr;
+        VirtualAttributeEditAction(DBDAttributeBinding attr) {
+            super("Edit virtual column '" + attr.getName() + "'");
+            this.attr = attr;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return (attr instanceof DBDAttributeBindingCustom);
+        }
+
+        @Override
+        public void run() {
+            if (attr == null) {
+                return;
+            }
+            DBVEntityAttribute vAttr = ((DBDAttributeBindingCustom)attr).getEntityAttribute();
+            DBVEntity vEntity = model.getVirtualEntity(false);
+            BaseDialog editAttrPage = new EditVirtualAttributeDialog(getControl().getShell(), ResultSetViewer.this, vAttr);
+            if (editAttrPage.open() == IDialogConstants.OK_ID) {
+                vEntity.persistConfiguration();
+                refreshData(null);
+            }
+        }
+    }
+
+    private class VirtualAttributeDeleteAction extends Action {
+        private DBDAttributeBinding attr;
+        VirtualAttributeDeleteAction(DBDAttributeBinding attr) {
+            super("Delete virtual column '" + attr.getName() + "'");
+            this.attr = attr;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return (attr instanceof DBDAttributeBindingCustom);
+        }
+
+        @Override
+        public void run() {
+            DBDAttributeBinding binding = getActivePresentation().getCurrentAttribute();
+            if (binding == null) {
+                return;
+            }
+            DBVEntityAttribute vAttr = ((DBDAttributeBindingCustom)binding).getEntityAttribute();
+            if (!UIUtils.confirmAction(getControl().getShell(), "Delete column '" + vAttr.getName() + "'", "Are you sure you want to delete virtual column '" + vAttr.getName() + "'?")) {
+                return;
+            }
+            DBVEntity vEntity = model.getVirtualEntity(false);
+            vEntity.removeVirtualAttribute(vAttr);
+            vEntity.persistConfiguration();
+            refreshData(null);
+        }
+    }
+
     private class VirtualUniqueKeyEditAction extends Action {
         private boolean define;
 
@@ -4529,12 +4613,10 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            UIUtils.runUIJob("Edit virtual foreign key", monitor -> {
-                if (EditForeignKeyPage.createVirtualForeignKey(model.getVirtualEntity(true)) != null) {
-                    persistConfig();
-                    refreshData(null);
-                }
-            });
+            if (EditForeignKeyPage.createVirtualForeignKey(model.getVirtualEntity(true)) != null) {
+                persistConfig();
+                refreshData(null);
+            }
         }
     }
 

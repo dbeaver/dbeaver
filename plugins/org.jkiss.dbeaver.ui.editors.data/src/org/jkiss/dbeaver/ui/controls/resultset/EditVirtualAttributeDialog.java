@@ -16,12 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -31,12 +30,12 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -50,6 +49,7 @@ class EditVirtualAttributeDialog extends BaseDialog {
     private Combo typeCombo;
     private Combo kindCombo;
     private Text expressionText;
+    private Text previewText;
 
     public EditVirtualAttributeDialog(Shell parentShell, ResultSetViewer viewer, DBVEntityAttribute vAttr) {
         super(parentShell, "Add virtual column", DBIcon.TREE_COLUMN);
@@ -64,6 +64,7 @@ class EditVirtualAttributeDialog extends BaseDialog {
         DBPDataSource dataSource = vAttr.getEntity().getDataSource();
 
         Composite panel = UIUtils.createComposite(dialogArea, 2);
+        panel.setLayoutData(new GridData(GridData.FILL_BOTH));
         String name = vAttr.getName();
         int index = 1;
         for (;;) {
@@ -72,7 +73,7 @@ class EditVirtualAttributeDialog extends BaseDialog {
                 break;
             }
             index++;
-            name = "vcolumn" + index;
+            name = vAttr.getName() + index;
         }
         nameText = UIUtils.createLabelText(panel, "Column Name", name);
         typeCombo = UIUtils.createLabelCombo(panel, "Type Name", "Colmn type name", SWT.BORDER | SWT.DROP_DOWN);
@@ -131,7 +132,32 @@ class EditVirtualAttributeDialog extends BaseDialog {
             new TextContentAdapter(),
             new SimpleContentProposalProvider(expressionProposals.toArray(new String[0])));
 
+        previewText = UIUtils.createLabelText(panel, "Preview", "", SWT.BORDER | SWT.READ_ONLY);
+        previewText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        expressionText.addModifyListener(e -> generatePreviewValue());
+
+        generatePreviewValue();
+
         return dialogArea;
+    }
+
+    private void generatePreviewValue() {
+        String expression = expressionText.getText();
+
+        ResultSetRow currentRow = viewer.getCurrentRow();
+        if (currentRow == null) {
+            previewText.setText("Select a row in data viewer to see expression results");
+            return;
+        }
+        try {
+            JexlExpression parsedExpression = DBVUtils.parseExpression(expression);
+            Object result = DBVUtils.evaluateDataExpression(viewer.getModel().getAttributes(), currentRow.values, parsedExpression, nameText.getText());
+
+            previewText.setText(CommonUtils.toString(result));
+        } catch (Exception e) {
+            previewText.setText(DBVUtils.getExpressionParseMessage(e));
+        }
     }
 
     @Override

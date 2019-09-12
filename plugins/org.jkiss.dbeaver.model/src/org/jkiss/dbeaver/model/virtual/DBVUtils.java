@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.registry.expressions.ExpressionNamespaceDescriptor;
+import org.jkiss.dbeaver.registry.expressions.ExpressionRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -366,10 +368,15 @@ public abstract class DBVUtils {
         if (expression == null) {
             return null;
         }
+
+        return evaluateDataExpression(allAttributes, row, expression, attribute.getName());
+    }
+
+    public static Object evaluateDataExpression(DBDAttributeBinding[] allAttributes, Object[] row, JexlExpression expression, String attributeName) {
         JexlContext context = new JexlContext() {
             @Override
             public Object get(String s) {
-                if (s.equals(attribute.getName())) {
+                if (s.equals(attributeName)) {
                     return null;
                 }
                 for (DBDAttributeBinding attr : allAttributes) {
@@ -393,8 +400,33 @@ public abstract class DBVUtils {
         try {
             return expression.evaluate(context);
         } catch (Exception e) {
-            //log.debug("Error evaluating expression " + exprString);
-            return exprString;
+            return DBVUtils.getExpressionParseMessage(e);
         }
+    }
+
+    public static JexlExpression parseExpression(String expression) {
+        JexlBuilder jexlBuilder = new JexlBuilder();
+        Map<String, Object> nsList = new HashMap<>();
+
+        for (ExpressionNamespaceDescriptor ns : ExpressionRegistry.getInstance().getExpressionNamespaces()) {
+            Class<?> implClass = ns.getImplClass();
+            if (implClass != null) {
+                nsList.put(ns.getId(), implClass);
+            }
+        }
+        jexlBuilder.namespaces(nsList);
+        jexlBuilder.cache(100);
+
+        JexlEngine jexlEngine = jexlBuilder.create();
+        return jexlEngine.createExpression(expression);
+    }
+
+    public static String getExpressionParseMessage(Exception e) {
+        String message = e.getMessage();
+        if (message == null) {
+            return e.getClass().getName();
+        }
+        int divPos = message.indexOf('@');
+        return divPos == -1 ? message : message.substring(divPos + 1);
     }
 }
