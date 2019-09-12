@@ -42,8 +42,10 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -467,6 +469,50 @@ public class ResultSetUtils
             (int)(c2.red * p + c1.red * (1 - p)),
             (int)(c2.green * p + c1.green * (1 - p)),
             (int)(c2.blue * p + c1.blue * (1 - p)));
+    }
+
+    public static DBSEntityReferrer getEnumerableConstraint(DBDAttributeBinding binding) {
+        try {
+            DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
+            if (entityAttribute != null) {
+                List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(new VoidProgressMonitor(), entityAttribute, true);
+                DBSEntityReferrer constraint = refs.isEmpty() ? null : refs.get(0);
+
+                DBSEntity associatedEntity = getAssociatedEntity(constraint);
+
+                if (associatedEntity instanceof DBSDictionary) {
+                    final DBSDictionary dictionary = (DBSDictionary)associatedEntity;
+                    if (dictionary.supportsDictionaryEnumeration()) {
+                        return constraint;
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            log.error(e);
+        }
+        return null;
+    }
+
+    public static DBSEntity getAssociatedEntity(DBSEntityConstraint constraint) {
+        DBSEntity[] associatedEntity = new DBSEntity[1];
+        if (constraint instanceof DBSEntityAssociationLazy) {
+            try {
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        associatedEntity[0] = ((DBSEntityAssociationLazy) constraint).getAssociatedEntity(monitor);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                log.error(e.getTargetException());
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        } else if (constraint instanceof DBSEntityAssociation) {
+            associatedEntity[0] = ((DBSEntityAssociation) constraint).getAssociatedEntity();
+        }
+        return associatedEntity[0];
     }
 
 }

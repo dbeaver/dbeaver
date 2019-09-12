@@ -37,12 +37,12 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -93,40 +93,7 @@ public class ReferenceValueEditor {
     private DBSEntityReferrer getEnumerableConstraint()
     {
         if (valueController instanceof IAttributeController) {
-            return getEnumerableConstraint(((IAttributeController) valueController).getBinding());
-        }
-        return null;
-    }
-
-    public static DBSEntityReferrer getEnumerableConstraint(DBDAttributeBinding binding) {
-        try {
-            DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
-            if (entityAttribute != null) {
-                List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(new VoidProgressMonitor(), entityAttribute, true);
-                DBSEntityReferrer constraint = refs.isEmpty() ? null : refs.get(0);
-
-                DBSEntity[] associatedEntity = new DBSEntity[1];
-                if (constraint instanceof DBSEntityAssociationLazy) {
-                    UIUtils.runInProgressService(monitor -> {
-                        try {
-                            associatedEntity[0] = ((DBSEntityAssociationLazy) constraint).getAssociatedEntity(monitor);
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    });
-                } else if (constraint instanceof DBSEntityAssociation) {
-                    associatedEntity[0] = ((DBSEntityAssociation) constraint).getAssociatedEntity();
-                }
-
-                if (associatedEntity[0] instanceof DBSDictionary) {
-                    final DBSDictionary dictionary = (DBSDictionary)associatedEntity[0];
-                    if (dictionary.supportsDictionaryEnumeration()) {
-                        return constraint;
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            log.error(e);
+            return ResultSetUtils.getEnumerableConstraint(((IAttributeController) valueController).getBinding());
         }
         return null;
     }
