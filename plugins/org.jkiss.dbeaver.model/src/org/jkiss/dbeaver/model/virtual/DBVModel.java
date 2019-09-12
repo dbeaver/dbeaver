@@ -195,9 +195,13 @@ public class DBVModel extends DBVContainer {
 
     static void removeFromCache(@NotNull DBVEntityForeignKey foreignKey) {
         synchronized (globalReferenceCache) {
-            List<DBVEntityForeignKey> fkList = globalReferenceCache.get(foreignKey.getRefEntityId());
+            String refEntityId = foreignKey.getRefEntityId();
+            List<DBVEntityForeignKey> fkList = globalReferenceCache.get(refEntityId);
             if (fkList != null) {
                 fkList.remove(foreignKey);
+                if (fkList.isEmpty()) {
+                    globalReferenceCache.remove(refEntityId);
+                }
             }
         }
     }
