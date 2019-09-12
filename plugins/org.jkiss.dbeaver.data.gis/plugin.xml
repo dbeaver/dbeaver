@@ -2,6 +2,10 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.expressions">
+        <namespace id="geo" class="org.jkiss.dbeaver.model.gis.GisExpressionFunctions" description="GIS functions"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <!-- Spatial transformer -->
         <transformer
