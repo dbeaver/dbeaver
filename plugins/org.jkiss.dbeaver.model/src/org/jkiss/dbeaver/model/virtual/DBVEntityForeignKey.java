@@ -93,7 +93,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     }
 
     public synchronized void setReferencedConstraint(String refEntityId, String refConsId) {
-        if (refEntityId != null) {
+        if (this.refEntityId != null) {
             DBVModel.removeFromCache(this);
         }
         this.refEntityId = refEntityId;
