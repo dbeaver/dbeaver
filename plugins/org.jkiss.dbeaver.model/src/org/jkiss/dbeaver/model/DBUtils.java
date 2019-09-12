@@ -656,8 +656,8 @@ public final class DBUtils {
             }
         }
 
-        if (filterAttributes && dataContainer instanceof DBSDataContainerFiltered) {
-            return ((DBSDataContainerFiltered) dataContainer).filterAttributeBindings(bindings);
+        if (filterAttributes && dataContainer instanceof DBDAttributeFilter) {
+            return ((DBDAttributeFilter) dataContainer).filterAttributeBindings(bindings);
         } else {
             return bindings;
         }

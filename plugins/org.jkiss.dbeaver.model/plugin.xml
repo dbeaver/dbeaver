@@ -21,6 +21,7 @@
 
     <extension-point id="org.jkiss.dbeaver.service" name="%extension-point.org.jkiss.dbeaver.service.name" schema="schema/org.jkiss.dbeaver.service.exsd"/>
     <extension-point id="org.jkiss.dbeaver.application" name="%extension-point.org.jkiss.dbeaver.application.name" schema="schema/org.jkiss.dbeaver.application.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.expressions" name="%extension-point.org.jkiss.dbeaver.expressions.name" schema="schema/org.jkiss.dbeaver.expressions.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="%extension-point.org.jkiss.dbeaver.dataTypeProvider.name" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.utils" name="%extension-point.org.jkiss.dbeaver.utils.name" schema="schema/org.jkiss.dbeaver.utils.exsd"/>
@@ -30,6 +31,10 @@
             <run class="org.jkiss.dbeaver.runtime.resource.DBeaverNature">
             </run>
         </runtime>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.expressions">
+        <namespace id="math" class="java.lang.Math" description="Math functions"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataFormatter">

@@ -152,7 +152,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     private void loadDefaultFunctions() {
-        for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getFunctions()) {
+        for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getAggregateFunctions()) {
             if (func.isDefault()) {
                 enabledFunctions.add(func);
             }
@@ -165,7 +165,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         panelSettings.put(PARAM_GROUP_AS_STRINGS, aggregateAsStrings);
         IDialogSettings functionsSection = UIUtils.getSettingsSection(panelSettings, "functions");
 
-        for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getFunctions()) {
+        for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getAggregateFunctions()) {
             IDialogSettings funcSection = UIUtils.getSettingsSection(functionsSection, func.getId());
             boolean enabled = enabledFunctions.contains(func);
             funcSection.put("enabled", enabled);
@@ -349,7 +349,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         @Override
         public void run() {
             List<AggregateFunctionDescriptor> missingFunctions = new ArrayList<>();
-            for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getFunctions()) {
+            for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getAggregateFunctions()) {
                 if (!enabledFunctions.contains(func)) {
                     missingFunctions.add(func);
                 }

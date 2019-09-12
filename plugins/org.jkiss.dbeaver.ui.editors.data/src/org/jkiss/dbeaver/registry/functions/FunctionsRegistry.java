@@ -39,7 +39,7 @@ public class FunctionsRegistry
         return instance;
     }
 
-    private final List<AggregateFunctionDescriptor> functions = new ArrayList<>();
+    private final List<AggregateFunctionDescriptor> aggregateFunctions = new ArrayList<>();
 
     private FunctionsRegistry()
     {
@@ -47,27 +47,29 @@ public class FunctionsRegistry
 
     private void loadExtensions(IExtensionRegistry registry)
     {
-        IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(AggregateFunctionDescriptor.EXTENSION_ID);
-        for (IConfigurationElement ext : extConfigs) {
-            // Load functions
-            if (TAG_FUNCTION.equals(ext.getName())) {
-                this.functions.add(
-                    new AggregateFunctionDescriptor(ext));
+        {
+            IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(AggregateFunctionDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extConfigs) {
+                // Load aggregateFunctions
+                if (TAG_FUNCTION.equals(ext.getName())) {
+                    this.aggregateFunctions.add(
+                        new AggregateFunctionDescriptor(ext));
+                }
             }
         }
     }
 
     public void dispose()
     {
-        functions.clear();
+        aggregateFunctions.clear();
     }
 
-    public List<AggregateFunctionDescriptor> getFunctions() {
-        return functions;
+    public List<AggregateFunctionDescriptor> getAggregateFunctions() {
+        return aggregateFunctions;
     }
 
     public AggregateFunctionDescriptor getFunction(String id) {
-        for (AggregateFunctionDescriptor func : functions) {
+        for (AggregateFunctionDescriptor func : aggregateFunctions) {
             if (func.getId().equals(id)) {
                 return func;
             }
