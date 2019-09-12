@@ -127,7 +127,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     public DBSEntityConstraint getRealReferenceConstraint(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBNNode refNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, refEntityId);
         if (!(refNode instanceof DBNDatabaseNode)) {
-            throw new DBException("Can't find reference node " + refEntityId + " for virtaul foreign key");
+            throw new DBException("Can't find reference node " + refEntityId + " for virtual foreign key");
         }
         DBSObject object = ((DBNDatabaseNode) refNode).getObject();
         if (object instanceof DBSEntity) {
