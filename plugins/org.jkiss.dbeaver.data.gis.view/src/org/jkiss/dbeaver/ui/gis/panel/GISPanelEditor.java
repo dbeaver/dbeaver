@@ -48,7 +48,7 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
 
     private static final Log log = Log.getLog(GISPanelEditor.class);
     private static final String PROP_VIEWER_ID = "gis.geometry.viewer.id";
-    private static final String DEFAULT_VIEWER_ID = GISBrowserViewer.class.getName();
+    private static final String DEFAULT_VIEWER_ID = "browser";
 
     private GeometryViewerDescriptor curViewerDescriptor;
     private IGeometryViewer curViewer;
