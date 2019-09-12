@@ -42,8 +42,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
-import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 
 public class FilterValueEditPopup extends Dialog {
@@ -85,7 +85,7 @@ public class FilterValueEditPopup extends Dialog {
     {
         getShell().setText("Filter by '" + filter.attr.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
 
-        DBSEntityReferrer descReferrer = ReferenceValueEditor.getEnumerableConstraint(filter.attr);
+        DBSEntityReferrer descReferrer = ResultSetUtils.getEnumerableConstraint(filter.attr);
 
         Composite group = (Composite) super.createDialogArea(parent);
         {

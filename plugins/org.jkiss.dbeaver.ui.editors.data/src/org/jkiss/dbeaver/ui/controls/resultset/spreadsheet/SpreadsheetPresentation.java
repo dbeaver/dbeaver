@@ -1821,7 +1821,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 StringBuilder text = new StringBuilder();
                 for (DBSEntityReferrer ref : referrers) {
                     if (ref instanceof DBSEntityAssociation) {
-                        DBSEntity associatedEntity = ((DBSEntityAssociation) ref).getAssociatedEntity();
+                        DBSEntity associatedEntity = ResultSetUtils.getAssociatedEntity(ref);
                         if (associatedEntity != null) {
                             if (text.length() > 0) text.append("\n");
                             text.append(DBUtils.getObjectFullName(associatedEntity, DBPEvaluationContext.UI));
