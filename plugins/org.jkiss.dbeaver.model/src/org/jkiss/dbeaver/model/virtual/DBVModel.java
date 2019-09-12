@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -31,6 +32,9 @@ import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,6 +64,10 @@ public class DBVModel extends DBVContainer {
         this.id = dataSourceContainer.getId();
     }
 
+    public void dispose() {
+        super.dispose();
+    }
+
     @NotNull
     public String getId() {
         return id;
@@ -80,6 +88,10 @@ public class DBVModel extends DBVContainer {
     @Override
     public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        if (dataSource == null) {
+            dataSourceContainer.connect(monitor, true, true);
+            dataSource = dataSourceContainer.getDataSource();
+        }
         if (dataSource instanceof DBSObjectContainer) {
             return (DBSObjectContainer) dataSource;
         }
@@ -163,6 +175,39 @@ public class DBVModel extends DBVContainer {
 
     public void copyFrom(DBVModel model) {
         super.copyFrom(model);
+    }
+
+    private static final Map<String, List<DBVEntityForeignKey>> globalReferenceCache = new HashMap<>();
+
+    @Nullable
+    public static List<DBVEntityForeignKey> getGlobalReferences(DBNDatabaseNode databaseNode) {
+        synchronized (globalReferenceCache) {
+            return globalReferenceCache.get(databaseNode.getNodeItemPath());
+        }
+    }
+
+    static void addToCache(@NotNull DBVEntityForeignKey foreignKey) {
+        synchronized (globalReferenceCache) {
+            List<DBVEntityForeignKey> fkList = globalReferenceCache.computeIfAbsent(foreignKey.getRefEntityId(), s -> new ArrayList<>());
+            fkList.add(foreignKey);
+        }
+    }
+
+    static void removeFromCache(@NotNull DBVEntityForeignKey foreignKey) {
+        synchronized (globalReferenceCache) {
+            List<DBVEntityForeignKey> fkList = globalReferenceCache.get(foreignKey.getRefEntityId());
+            if (fkList != null) {
+                fkList.remove(foreignKey);
+            }
+        }
+    }
+
+    public static void checkGlobalCacheIsEmpty() {
+        synchronized (globalReferenceCache) {
+            if (!globalReferenceCache.isEmpty()) {
+                log.error("Virtual references cache is not empty. Possible memory leak: " + globalReferenceCache);
+            }
+        }
     }
 
 }

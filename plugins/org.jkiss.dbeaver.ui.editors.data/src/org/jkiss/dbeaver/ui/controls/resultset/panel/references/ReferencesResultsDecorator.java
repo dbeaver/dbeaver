@@ -45,7 +45,7 @@ public class ReferencesResultsDecorator extends QueryResultsDecorator {
     @Override
     public Boolean getAutoRecordMode() {
         ReferencesResultsContainer.ReferenceKey referenceKey = container.getActiveReferenceKey();
-        return referenceKey != null && !referenceKey.isReference;
+        return referenceKey != null && !referenceKey.isReference();
     }
 
 }

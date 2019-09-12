@@ -26,6 +26,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.*;
@@ -299,7 +301,7 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         return copy;
     }
 
-    public void fillEntities(DBRProgressMonitor monitor, Collection<DBSEntity> entities, DBSObject dbObject) {
+    public void fillEntities(DBRProgressMonitor monitor, Collection<DBSEntity> entities, DBSObject dbObject) throws DBException {
         // Load entities
         monitor.beginTask("Load entities metadata", entities.size());
         List<ERDEntity> entityCache = new ArrayList<>();
@@ -307,6 +309,7 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
             if (monitor.isCanceled()) {
                 break;
             }
+            table= DBVUtils.getRealEntity(monitor, table);
             if (entityMap.containsKey(table)) {
                 continue;
             }

@@ -610,6 +610,14 @@ class ColorSettingsDialog extends BaseDialog {
         super.okPressed();
     }
 
+    @Override
+    public boolean close() {
+        if (this.vEntity != null) {
+            this.vEntity.dispose();
+        }
+        return super.close();
+    }
+
     private class ColorValueController extends ResultSetValueController {
 
         ColorValueController(@Nullable Composite inlinePlaceholder) {

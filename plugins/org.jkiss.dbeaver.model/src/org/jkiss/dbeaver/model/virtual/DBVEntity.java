@@ -76,6 +76,15 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         copyFrom(copy);
     }
 
+    public synchronized void dispose() {
+        if (entityForeignKeys != null) {
+            for (DBVEntityForeignKey  fk : entityForeignKeys) {
+                fk.dispose();
+            }
+            entityForeignKeys.clear();
+        }
+    }
+
     public void copyFrom(@NotNull DBVEntity src) {
         this.name = src.name;
         this.descriptionColumnNames = src.descriptionColumnNames;
@@ -88,13 +97,17 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         } else {
             this.entityConstraints = null;
         }
+        if (this.entityForeignKeys != null) {
+            for (DBVEntityForeignKey fk : this.entityForeignKeys) {
+                fk.dispose();
+            }
+        }
+        this.entityForeignKeys = null;
         if (!CommonUtils.isEmpty(src.entityForeignKeys)) {
             this.entityForeignKeys = new ArrayList<>(src.entityForeignKeys.size());
             for (DBVEntityForeignKey c : src.entityForeignKeys) {
                 this.entityForeignKeys.add(new DBVEntityForeignKey(this, c));
             }
-        } else {
-            this.entityForeignKeys = null;
         }
         if (!CommonUtils.isEmpty(src.entityAttributes)) {
             this.entityAttributes = new ArrayList<>(src.entityAttributes.size());
@@ -408,7 +421,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         // Bind logical foreign keys
         if (entityForeignKeys != null) {
             for (DBVEntityForeignKey fk : entityForeignKeys) {
-                fk.getRealReferenceConatraint(monitor);
+                fk.getRealReferenceConstraint(monitor);
             }
         }
         return entityForeignKeys;
@@ -431,6 +444,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (entityForeignKeys != null) {
             entityForeignKeys.remove(foreignKey);
             DBUtils.fireObjectUpdate(this, foreignKey);
+            foreignKey.dispose();
         }
     }
 
@@ -626,7 +640,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public void bindEntity(DBRProgressMonitor monitor) throws DBException {
         if (!CommonUtils.isEmpty(entityForeignKeys)) {
             for (DBVEntityForeignKey fk : entityForeignKeys) {
-                fk.getRealReferenceConatraint(monitor);
+                fk.getRealReferenceConstraint(monitor);
             }
         }
     }
@@ -665,6 +679,15 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return realEntity instanceof DBSDictionary ?
             ((DBSDictionary) realEntity).getDictionaryValues(monitor, keyColumn, keyValues, preceedingKeys, sortByValue, sortAsc) :
             Collections.emptyList();
+    }
+
+    public DBVModel getModel() {
+        for (DBVContainer container = getContainer(); container != null; container = container.getParentObject()) {
+            if (container instanceof DBVModel) {
+                return (DBVModel) container;
+            }
+        }
+        throw new IllegalStateException("Root container must be model");
     }
 
 }
