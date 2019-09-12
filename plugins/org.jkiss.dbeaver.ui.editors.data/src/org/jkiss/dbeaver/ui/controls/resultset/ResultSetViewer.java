@@ -2726,6 +2726,7 @@ public class ResultSetViewer extends Viewer
 
                 filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
             }
+
             filtersMenu.add(new Separator());
             DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(attribute);
             if (constraint != null && constraint.hasCondition()) {
@@ -4158,7 +4159,7 @@ public class ResultSetViewer extends Viewer
                 return cellValue;
             }
         },
-        INPUT("Custom ... ", UIIcon.FILTER_INPUT) {
+        INPUT("Custom", UIIcon.FILTER_INPUT) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {

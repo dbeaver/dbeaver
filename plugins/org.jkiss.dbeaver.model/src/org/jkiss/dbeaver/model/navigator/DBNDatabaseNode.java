@@ -595,7 +595,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         throw new IllegalStateException("No parent datasource node");
     }
 
-    @NotNull
+    @Nullable
     public DBPDataSource getDataSource() {
         DBSObject object = getObject();
         if (object != null) {
