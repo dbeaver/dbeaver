@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
  * Filtered data container
  */
-public interface DBSDataContainerFiltered extends DBSDataContainer {
+public interface DBDAttributeFilter extends DBSDataContainer {
 
     DBDAttributeBinding[] filterAttributeBindings(DBDAttributeBinding[] attributes);
 
