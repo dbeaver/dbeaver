@@ -55,7 +55,6 @@ class TransformerSettingsDialog extends BaseDialog {
     private final DBVEntity vEntity;
 
     private DBDAttributeBinding currentAttribute;
-    private DBVTransformSettings settings;
 
     private PropertyTreeViewer propertiesEditor;
     private PropertySourceCustom propertySource;
@@ -68,14 +67,13 @@ class TransformerSettingsDialog extends BaseDialog {
     private Table attributeTable;
 
     TransformerSettingsDialog(ResultSetViewer viewer) {
-        this(viewer, null, null, false);
+        this(viewer, null, false);
     }
 
-    TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, DBVTransformSettings settings, boolean selector) {
+    TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, boolean selector) {
         super(viewer.getControl().getShell(), DBUtils.getObjectFullName(viewer.getDataContainer(), DBPEvaluationContext.UI) + " transforms", null);
         this.viewer = viewer;
         this.currentAttribute = currentAttribute;
-        this.settings = settings;
         this.selector = selector;
 
         this.vEntitySrc = DBVUtils.getVirtualEntity(viewer.getDataContainer(), true);
@@ -188,9 +186,7 @@ class TransformerSettingsDialog extends BaseDialog {
         final DBPDataSource dataSource = viewer.getDataSource();
 
         DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(currentAttribute, false);
-        if (settings == null) {
-            settings = vAttr == null ? null : DBVUtils.getTransformSettings(vAttr, false);
-        }
+        DBVTransformSettings settings = vAttr == null ? null : DBVUtils.getTransformSettings(vAttr, false);
 
         if (dataSource != null && settings != null && !CommonUtils.isEmpty(settings.getCustomTransformer())) {
             transformer = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getTransformer(settings.getCustomTransformer());
@@ -234,12 +230,19 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     private void saveTransformerSettings() {
-        if (currentAttribute == null || (settings == null && transformer == null)) {
+        if (currentAttribute == null || transformer == null) {
             // Nothign to save - just ignore
             return;
         }
+        DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(currentAttribute, true);
+        if (vAttr == null) {
+            log.error("Can't get attribute settings for " + currentAttribute.getName());
+            return;
+        }
+        DBVTransformSettings settings = DBVUtils.getTransformSettings(vAttr, true);
         if (settings == null) {
-            settings = DBVUtils.getTransformSettings(vEntity.getVirtualAttribute(currentAttribute, true), true);
+            log.error("Can't get transform settings for " + currentAttribute.getName());
+            return;
         }
         if (selector) {
             settings.setCustomTransformer(transformer == null ? null : transformer.getId());
@@ -299,6 +302,7 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     private void loadTransformerSettings(Collection<? extends DBPPropertyDescriptor> properties) {
+        DBVTransformSettings settings = currentAttribute == null ? null : DBVUtils.getTransformSettings(currentAttribute, false);
         Map<String, Object> transformOptions = settings == null ? null : settings.getTransformOptions();
         if (transformOptions == null) {
             transformOptions = Collections.emptyMap();
