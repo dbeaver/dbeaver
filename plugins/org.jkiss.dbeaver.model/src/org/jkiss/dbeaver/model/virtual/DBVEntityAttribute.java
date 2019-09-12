@@ -43,12 +43,14 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
     private String name;
     private String defaultValue;
     private String description;
-    private String expression;
+
     private boolean custom;
-    private DBVTransformSettings transformSettings;
-    private Map<String, Object> properties;
+    private String expression;
     private DBPDataKind dataKind = DBPDataKind.UNKNOWN;
     private String typeName;
+
+    private DBVTransformSettings transformSettings;
+    private Map<String, Object> properties;
     private JexlExpression parsedExpression;
 
     public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
@@ -66,6 +68,12 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
         }
         this.defaultValue = copy.defaultValue;
         this.description = copy.description;
+
+        this.custom = copy.custom;
+        this.expression = copy.expression;
+        this.dataKind = copy.dataKind;
+        this.typeName = copy.typeName;
+
         this.transformSettings = copy.transformSettings == null ? null : new DBVTransformSettings(copy.transformSettings);
         if (!CommonUtils.isEmpty(copy.properties)) {
             this.properties = new LinkedHashMap<>(copy.properties);
