@@ -897,7 +897,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         String blockTogglePattern = null;
         int lastTokenLineFeeds = 0;
         int prevNotEmptyTokenType = SQLToken.T_UNKNOWN;
-        String firstKeyword = null;
+        String lastKeyword = null;
         for (; ; ) {
             IToken token = ruleManager.nextToken();
             int tokenOffset = ruleManager.getTokenOffset();
@@ -995,7 +995,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }
 
-                if (firstKeyword == null && tokenLength > 0 && !token.isWhitespace()) {
+                if (tokenLength > 0 && !token.isWhitespace()) {
                     switch (tokenType) {
                         case SQLToken.T_BLOCK_BEGIN:
                         case SQLToken.T_BLOCK_END:
@@ -1003,7 +1003,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         case SQLToken.T_BLOCK_HEADER:
                         case SQLToken.T_UNKNOWN:
                             try {
-                                firstKeyword = document.get(tokenOffset, tokenLength);
+                                lastKeyword = document.get(tokenOffset, tokenLength);
                             } catch (BadLocationException e) {
                                 log.error("Error getting first keyword", e);
                             }
@@ -1074,12 +1074,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         String queryText = document.get(statementStart, tokenOffset - statementStart);
                         queryText = SQLUtils.fixLineFeeds(queryText);
 
-                        if (isDelimiter && (keepDelimiters || (hasBlocks ?
-                            dialect.isDelimiterAfterBlock() && firstKeyword != null &&
-                                (SQLUtils.isBlockStartKeyword(dialect, firstKeyword) ||
-                                    ArrayUtils.containsIgnoreCase(dialect.getDDLKeywords(), firstKeyword) ||
-                                    ArrayUtils.containsIgnoreCase(dialect.getBlockHeaderStrings(), firstKeyword)) :
-                            dialect.isDelimiterAfterQuery()))) {
+                        if (isDelimiter && (keepDelimiters ||
+                            (hasBlocks && dialect.isDelimiterAfterQuery()) ||
+                            (dialect.isDelimiterAfterBlock() && SQLConstants.BLOCK_END.equals(lastKeyword))))
+                        {
                             if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                                 // Add delimiter in the end of query. Do this only for semicolon delimiters.
                                 // For SQL server add it in the end of query. For Oracle only after END clause
