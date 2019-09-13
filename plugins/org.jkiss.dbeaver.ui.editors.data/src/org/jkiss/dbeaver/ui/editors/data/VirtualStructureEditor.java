@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.EditVirtualColumnsPage;
 import org.jkiss.dbeaver.ui.controls.resultset.EditVirtualEntityDialog;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
@@ -62,6 +63,8 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     private DBVEntityConstraint uniqueConstraint;
     private Table ukTable;
     private Table fkTable;
+    private Table refTable;
+    private EditVirtualColumnsPage columnsPage;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -97,6 +100,8 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void refreshVisuals() {
+        columnsPage.refreshAttributes();
+
         ukTable.removeAll();
         try {
             for (DBVEntityConstraint uk : vEntity.getConstraints()) {
@@ -118,6 +123,16 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             DBWorkbench.getPlatformUI().showError("Foreign keys", "Error loading virtual foreign keys", e);
         }
         UIUtils.packColumns(fkTable, true);
+
+        refTable.removeAll();
+        try {
+            for (DBVEntityForeignKey fk : DBVUtils.getVirtualReferences(entity)) {
+                createForeignKeyItem(refTable, fk);
+            }
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Foreign keys", "Error loading virtual foreign keys", e);
+        }
+        UIUtils.packColumns(refTable, true);
     }
 
     @Override
@@ -147,10 +162,10 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         Composite keysComposite = UIUtils.createComposite(composite, 2);
         ((GridLayout)keysComposite.getLayout()).makeColumnsEqualWidth = true;
         keysComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        //createColumnsPage(tabFolder);
+        createColumnsPage(keysComposite);
         createUniqueKeysPage(keysComposite);
         createForeignKeysPage(keysComposite);
-        //createDictionaryPage(composite);
+        createReferencesPage(keysComposite);
 
 //        Composite attrsComposite = UIUtils.createComposite(composite, 1);
 //        attrsComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -177,6 +192,14 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         }
     }
 
+    private void createColumnsPage(Composite parent) {
+        Group group = UIUtils.createControlGroup(parent, "Virtual Columns", 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        columnsPage = new EditVirtualColumnsPage(null, vEntity);
+        columnsPage.createControl(group);
+    }
+
     private void createUniqueKeysPage(Composite parent) {
         uniqueConstraint = vEntity.getBestIdentifier();
         if (uniqueConstraint == null) {
@@ -188,7 +211,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         ukTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         ukTable.setHeaderVisible(true);
 
-        UIUtils.createTableColumn(ukTable, SWT.LEFT, "Ref Table");
+        UIUtils.createTableColumn(ukTable, SWT.LEFT, "Key name");
         UIUtils.createTableColumn(ukTable, SWT.LEFT, "Columns");
 
         {
@@ -282,9 +305,9 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         fkTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         fkTable.setHeaderVisible(true);
 
-        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Ref Table");
+        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Target Table");
         UIUtils.createTableColumn(fkTable, SWT.LEFT, "Columns");
-        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Ref Datasource");
+        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Target Datasource");
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 2);
@@ -320,6 +343,29 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     btnRemove.setEnabled(fkTable.getSelectionIndex() >= 0);
+                }
+            });
+        }
+    }
+
+    private void createReferencesPage(Composite parent) {
+        Group group = UIUtils.createControlGroup(parent, "Virtual references", 1, GridData.FILL_BOTH, SWT.DEFAULT);
+
+        refTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
+        refTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        refTable.setHeaderVisible(true);
+
+        UIUtils.createTableColumn(refTable, SWT.LEFT, "Source Table");
+        UIUtils.createTableColumn(refTable, SWT.LEFT, "Columns");
+        UIUtils.createTableColumn(refTable, SWT.LEFT, "Source Datasource");
+
+        {
+            Composite buttonsPanel = UIUtils.createComposite(group, 2);
+            buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            UIUtils.createDialogButton(buttonsPanel, "Refresh", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
                 }
             });
         }

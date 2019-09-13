@@ -49,12 +49,7 @@ public abstract class BaseObjectEditPage extends DialogPage {
     public void createControl(Composite parent) {
         Control pageContents = createPageContents(parent);
         setControl(pageContents);
-        pageContents.addHelpListener(new HelpListener() {
-            @Override
-            public void helpRequested(HelpEvent e) {
-                performHelp();
-            }
-        });
+        pageContents.addHelpListener(e -> performHelp());
     }
 
 
