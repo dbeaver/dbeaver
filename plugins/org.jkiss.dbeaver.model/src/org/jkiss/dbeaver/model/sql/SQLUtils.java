@@ -395,6 +395,18 @@ public final class SQLUtils {
         return false;
     }
 
+    public static boolean isBlockEndKeyword(SQLDialect dialect, String keyword) {
+        String[][] blockBoundStrings = dialect.getBlockBoundStrings();
+        if (blockBoundStrings != null) {
+            for (String[] block : blockBoundStrings) {
+                if (block.length > 1 && keyword.equalsIgnoreCase(block[1])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @NotNull
     public static SQLDialect getDialectFromObject(DBPObject object)
     {
