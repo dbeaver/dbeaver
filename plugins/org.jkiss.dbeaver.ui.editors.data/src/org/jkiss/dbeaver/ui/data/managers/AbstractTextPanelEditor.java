@@ -68,6 +68,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     private static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
 
     private static final Log log = Log.getLog(AbstractTextPanelEditor.class);
+    public static final int LONG_CONTENT_LENGTH = 10000;
 
     private IValueController valueController;
     private IEditorSite subSite;
@@ -215,16 +216,18 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     {
         try {
             // Load contents in two steps (empty + real in async mode). Workaround for some strange bug in StyledText in E4.13 (#6701)
-            editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
             TextViewer textViewer = editor.getTextViewer();
             final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, monitor);
+            if (textInput.getContentLength() > LONG_CONTENT_LENGTH) {
+                editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
+            }
             UIUtils.asyncExec(() -> {
 
                 if (textViewer != null) {
                     StyledText textWidget = textViewer.getTextWidget();
                     GC gc = new GC(textWidget);
                     try {
-                        if (textInput.getContentLength() > 10000) {
+                        if (textInput.getContentLength() > LONG_CONTENT_LENGTH) {
                             UIUtils.drawMessageOverControl(textWidget, gc, "Loading content ... (" + textInput.getContentLength() + ")", 0);
                         }
 
