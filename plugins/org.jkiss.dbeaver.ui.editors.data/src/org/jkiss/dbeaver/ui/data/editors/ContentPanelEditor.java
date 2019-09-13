@@ -356,7 +356,10 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         private Menu createMenu(ToolItem toolItem) {
-            if (menu == null) {
+            if (menu != null) {
+                menu.dispose();
+            }
+            {
                 ToolBar toolBar = toolItem.getParent();
                 menu = new Menu(toolBar);
                 List<StreamValueManagerDescriptor> managers = new ArrayList<>(streamManagers.keySet());
