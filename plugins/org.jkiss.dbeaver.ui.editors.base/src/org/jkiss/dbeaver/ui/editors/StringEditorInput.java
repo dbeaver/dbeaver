@@ -208,6 +208,10 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
         public String getString() {
             return buffer.toString();
         }
+
+        public int getLength() {
+            return buffer.length();
+        }
     }
 
 }

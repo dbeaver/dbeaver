@@ -166,6 +166,15 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         return valueController.getValue();
     }
 
+    public long getContentLength() {
+        if (stringStorage != null) {
+            return stringStorage.getLength();
+        } else if (contentFile != null) {
+            return contentFile.length();
+        } else {
+            return 0;
+        }
+    }
     private void prepareContent(DBRProgressMonitor monitor)
         throws DBException
     {

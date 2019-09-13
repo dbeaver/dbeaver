@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.json;
 
 
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.formatter.ContentFormatter;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.IFormattingStrategy;
@@ -44,10 +45,22 @@ public class JSONSourceViewerConfiguration extends SourceViewerConfiguration {
     @Override
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         PresentationReconciler reconciler = new PresentationReconciler();
+        reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+
         DefaultDamagerRepairer dr = new DefaultDamagerRepairer(jsonScanner);
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
         return reconciler;
+
+/*
+        NonRuleBasedDamagerRepairer ndr =
+            new NonRuleBasedDamagerRepairer(
+                new TextAttribute(
+                    colorManager.getColor(COLOR_XML_COMMENT)));
+        reconciler.setDamager(ndr, XMLPartitionScanner.XML_COMMENT);
+        reconciler.setRepairer(ndr, XMLPartitionScanner.XML_COMMENT);
+        return reconciler;
+*/
     }
 
     @Override
