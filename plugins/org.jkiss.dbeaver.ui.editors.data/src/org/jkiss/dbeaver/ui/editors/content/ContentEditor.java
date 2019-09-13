@@ -531,7 +531,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
     @Override
     public boolean isReadOnly() {
-        return getValueController().isReadOnly();
+        return getEditorInput().isReadOnly();
     }
 
     @Override
