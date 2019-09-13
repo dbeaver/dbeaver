@@ -22,17 +22,15 @@ import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -42,7 +40,7 @@ import java.util.List;
 /**
  * Custom virtual attribute edit dialog
  */
-class EditVirtualAttributeDialog extends BaseDialog {
+public class EditVirtualAttributePage extends BaseObjectEditPage {
     private final ResultSetViewer viewer;
     private final DBVEntityAttribute vAttr;
     private Text nameText;
@@ -51,15 +49,16 @@ class EditVirtualAttributeDialog extends BaseDialog {
     private Text expressionText;
     private Text previewText;
 
-    public EditVirtualAttributeDialog(Shell parentShell, ResultSetViewer viewer, DBVEntityAttribute vAttr) {
-        super(parentShell, "Add virtual column", DBIcon.TREE_COLUMN);
+    public EditVirtualAttributePage(Shell parentShell, ResultSetViewer viewer, DBVEntityAttribute vAttr) {
+        super("Add virtual column", DBIcon.TREE_COLUMN);
         this.viewer = viewer;
         this.vAttr = vAttr;
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent) {
-        Composite dialogArea = super.createDialogArea(parent);
+    protected Control createPageContents(Composite parent) {
+        final Composite dialogArea = UIUtils.createComposite(parent, 1);
+        dialogArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         DBPDataSource dataSource = vAttr.getEntity().getDataSource();
 
@@ -123,8 +122,10 @@ class EditVirtualAttributeDialog extends BaseDialog {
         expressionText.setLayoutData(gd);
 
         List<String> expressionProposals = new ArrayList<>();
-        for (DBDAttributeBinding attr : viewer.getModel().getAttributes()) {
-            expressionProposals.add(attr.getLabel());
+        if (viewer != null) {
+            for (DBDAttributeBinding attr : viewer.getModel().getAttributes()) {
+                expressionProposals.add(attr.getLabel());
+            }
         }
 
         UIUtils.installContentProposal(
@@ -143,6 +144,9 @@ class EditVirtualAttributeDialog extends BaseDialog {
     }
 
     private void generatePreviewValue() {
+        if (viewer == null) {
+            return;
+        }
         String expression = expressionText.getText();
 
         ResultSetRow currentRow = viewer.getCurrentRow();
@@ -161,11 +165,12 @@ class EditVirtualAttributeDialog extends BaseDialog {
     }
 
     @Override
-    protected void okPressed() {
+    public void performFinish() throws DBException {
         vAttr.setName(nameText.getText());
         vAttr.setTypeName(typeCombo.getText());
         vAttr.setDataKind(CommonUtils.valueOf(DBPDataKind.class, kindCombo.getText(), DBPDataKind.STRING));
         vAttr.setExpression(expressionText.getText());
-        super.okPressed();
+        super.performFinish();
     }
+
 }

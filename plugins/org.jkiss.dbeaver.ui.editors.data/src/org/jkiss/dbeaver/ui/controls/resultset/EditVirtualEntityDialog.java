@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -30,7 +28,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
@@ -70,6 +70,8 @@ public class EditVirtualEntityDialog extends BaseDialog {
     private EditConstraintPage editUniqueKeyPage;
     private DBVEntityConstraint uniqueConstraint;
     private InitPage initPage = InitPage.UNIQUE_KEY;
+
+    private EditVirtualColumnsPage columnsPage;
 
     private boolean structChanged = false;
 
@@ -161,108 +163,15 @@ public class EditVirtualEntityDialog extends BaseDialog {
         attrsItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_COLUMN));
         attrsItem.setData(InitPage.ATTRIBUTES);
 
-        Composite panel = new Composite(tabFolder, 1);
-        panel.setLayout(new GridLayout(1, false));
-
-        Table attrTable = new Table(panel, SWT.FULL_SELECTION | SWT.BORDER);
-        attrTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        attrTable.setHeaderVisible(true);
-        UIUtils.executeOnResize(attrTable, () -> UIUtils.packColumns(attrTable, true));
-
-        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Name");
-        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Data type");
-        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Expression");
-
-        for (DBVEntityAttribute attr : vEntity.getCustomAttributes()) {
-            createAttributeItem(attrTable, attr);
-        }
-
-        {
-            Composite buttonsPanel = UIUtils.createComposite(panel, 2);
-            buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-            Button btnAdd = createButton(buttonsPanel, -1, "Add", false);
-            btnAdd.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "vcolumn");
-                    BaseDialog editAttrPage = new EditVirtualAttributeDialog(getShell(), viewer, vAttr);
-                    if (editAttrPage.open() == IDialogConstants.OK_ID) {
-                        vAttr.setCustom(true);
-                        vEntity.addVirtualAttribute(vAttr);
-                        createAttributeItem(attrTable, vAttr);
-                    }
-                }
-            });
-            Button btnEdit = createButton(buttonsPanel, -1, "Edit ...", false);
-            btnEdit.setEnabled(false);
-            btnEdit.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    editSelectedAttribute(attrTable);
-                }
-            });
-
-            Button btnRemove = createButton(buttonsPanel, -1, "Remove", false);
-            btnRemove.setEnabled(false);
-            btnRemove.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    DBVEntityAttribute virtualAttr = (DBVEntityAttribute) attrTable.getSelection()[0].getData();
-                    if (!UIUtils.confirmAction(getShell(),
-                        "Delete virtual column",
-                        "Are you sure you want to delete virtual column '" + virtualAttr.getName() + "'?")) {
-                        return;
-                    }
-                    vEntity.removeVirtualAttribute(virtualAttr);
-                    attrTable.remove(attrTable.getSelectionIndices());
-                    structChanged = true;
-                }
-            });
-
-            attrTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    boolean attrSelected = attrTable.getSelectionIndex() >= 0;
-                    btnEdit.setEnabled(attrSelected);
-                    btnRemove.setEnabled(attrSelected);
-                }
-            });
-            attrTable.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDoubleClick(MouseEvent e) {
-                    editSelectedAttribute(attrTable);
-                }
-            });
-        }
+        Composite panel = createColumnsEditPanel(tabFolder);
 
         attrsItem.setControl(panel);
     }
 
-    private void editSelectedAttribute(Table attrTable) {
-        TableItem[] selection = attrTable.getSelection();
-        if (selection.length <= 0) {
-            return;
-        }
-        TableItem tableItem = selection[0];
-        DBVEntityAttribute vAttr = (DBVEntityAttribute) tableItem.getData();
-        BaseDialog editAttrPage = new EditVirtualAttributeDialog(getShell(), viewer, vAttr);
-        if (editAttrPage.open() == IDialogConstants.OK_ID) {
-            tableItem.setText(0, vAttr.getName());
-            tableItem.setText(1, vAttr.getTypeName());
-            tableItem.setText(2, CommonUtils.notEmpty(vAttr.getExpression()));
-        }
-    }
-
-    private void createAttributeItem(Table attrTable, DBVEntityAttribute attribute) {
-        TableItem item = new TableItem(attrTable, SWT.NONE);
-        item.setImage(0, DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attribute)));
-        item.setText(0, attribute.getName());
-        item.setText(1, attribute.getTypeName());
-        if (attribute.getExpression() != null) {
-            item.setText(2, attribute.getExpression());
-        }
-        item.setData(attribute);
+    @NotNull
+    private Composite createColumnsEditPanel(TabFolder tabFolder) {
+        columnsPage = new EditVirtualColumnsPage(viewer, vEntity);
+        return columnsPage.createPageContents(tabFolder);
     }
 
     private void updateColumnItem(TableItem attrItem) {
@@ -432,7 +341,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
             editDictionaryPage.saveDictionarySettings();
         }
         vEntity.persistConfiguration();
-        if (structChanged) {
+        if (structChanged || columnsPage.isStructChanged()) {
             viewer.refreshData(null);
         }
         super.okPressed();

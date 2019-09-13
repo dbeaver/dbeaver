@@ -95,7 +95,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
@@ -4523,8 +4522,7 @@ public class ResultSetViewer extends Viewer
         {
             DBVEntity vEntity = model.getVirtualEntity(false);
             DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "vcolumn");
-            BaseDialog editAttrPage = new EditVirtualAttributeDialog(getControl().getShell(), ResultSetViewer.this, vAttr);
-            if (editAttrPage.open() == IDialogConstants.OK_ID) {
+            if (new EditVirtualAttributePage(getControl().getShell(), ResultSetViewer.this, vAttr).edit()) {
                 vAttr.setCustom(true);
                 vEntity.addVirtualAttribute(vAttr);
                 vEntity.persistConfiguration();
@@ -4552,8 +4550,7 @@ public class ResultSetViewer extends Viewer
             }
             DBVEntityAttribute vAttr = ((DBDAttributeBindingCustom)attr).getEntityAttribute();
             DBVEntity vEntity = model.getVirtualEntity(false);
-            BaseDialog editAttrPage = new EditVirtualAttributeDialog(getControl().getShell(), ResultSetViewer.this, vAttr);
-            if (editAttrPage.open() == IDialogConstants.OK_ID) {
+            if (new EditVirtualAttributePage(getControl().getShell(), ResultSetViewer.this, vAttr).edit()) {
                 vEntity.persistConfiguration();
                 refreshData(null);
             }
@@ -4574,11 +4571,10 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void run() {
-            DBDAttributeBinding binding = getActivePresentation().getCurrentAttribute();
-            if (binding == null) {
+            if (!(attr instanceof DBDAttributeBindingCustom)) {
                 return;
             }
-            DBVEntityAttribute vAttr = ((DBDAttributeBindingCustom)binding).getEntityAttribute();
+            DBVEntityAttribute vAttr = ((DBDAttributeBindingCustom)attr).getEntityAttribute();
             if (!UIUtils.confirmAction(getControl().getShell(), "Delete column '" + vAttr.getName() + "'", "Are you sure you want to delete virtual column '" + vAttr.getName() + "'?")) {
                 return;
             }

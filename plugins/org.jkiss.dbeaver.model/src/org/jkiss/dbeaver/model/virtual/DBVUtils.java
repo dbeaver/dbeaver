@@ -319,15 +319,21 @@ public abstract class DBVUtils {
             result.addAll(realConstraints);
         }
 
+        result.addAll(getVirtualReferences(onEntity));
+
+        return result;
+    }
+
+    @NotNull
+    public static List<DBVEntityForeignKey> getVirtualReferences(@NotNull DBSEntity onEntity) {
         DBNDatabaseNode entityNode = DBNUtils.getNodeByObject(onEntity);
         if (entityNode != null) {
             List<DBVEntityForeignKey> globalRefs = DBVModel.getGlobalReferences(entityNode);
             if (!CommonUtils.isEmpty(globalRefs)) {
-                result.addAll(globalRefs);
+                return globalRefs;
             }
         }
-
-        return result;
+        return Collections.emptyList();
     }
 
     @NotNull
