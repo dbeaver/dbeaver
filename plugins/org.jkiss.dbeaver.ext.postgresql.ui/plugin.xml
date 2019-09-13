@@ -137,6 +137,10 @@
         <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
             <supports dataSource="postgresql" typeName="BIT"/>
         </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ContentValueManager" id="org.jkiss.dbeaver.ui.data.managers.ContentValueManager">
+            <supports dataSource="postgresql" typeName="JSON"/>
+            <supports dataSource="postgresql" typeName="JSONB"/>
+        </manager>
         <!--
                 <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreHStoreValueManager">
                     <supports dataSource="postgresql" typeName="hstore"/>
