@@ -1422,13 +1422,17 @@ public class UIUtils {
     }
 
     public static void drawMessageOverControl(Control control, PaintEvent e, String message, int offset) {
+        drawMessageOverControl(control, e.gc, message, offset);
+    }
+
+    public static void drawMessageOverControl(Control control, GC gc, String message, int offset) {
         Rectangle bounds = control.getBounds();
         for (String line : message.split("\n")) {
             line = line.trim();
-            Point ext = e.gc.textExtent(line);
-            e.gc.drawText(line,
-                    (bounds.width - ext.x) / 2,
-                    bounds.height / 2 + offset);
+            Point ext = gc.textExtent(line);
+            gc.drawText(line,
+                (bounds.width - ext.x) / 2,
+                bounds.height / 2 + offset);
             offset += ext.y;
         }
     }

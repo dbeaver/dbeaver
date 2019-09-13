@@ -28,6 +28,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -55,6 +56,8 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.nio.charset.StandardCharsets;
 
 /**
 * AbstractTextPanelEditor
@@ -210,13 +213,27 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     @Override
     public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
     {
-        monitor.beginTask("Load text", 1);
         try {
-            monitor.subTask("Loading text value");
-            final IEditorInput sqlInput = new ContentEditorInput(valueController, null, null, monitor);
-            UIUtils.syncExec(() -> {
-                editor.setInput(sqlInput);
-                applyEditorStyle();
+            // Load contents in two steps (empty + real in async mode). Workaround for some strange bug in StyledText in E4.13 (#6701)
+            editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
+            TextViewer textViewer = editor.getTextViewer();
+            final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, monitor);
+            UIUtils.asyncExec(() -> {
+
+                if (textViewer != null) {
+                    StyledText textWidget = textViewer.getTextWidget();
+                    GC gc = new GC(textWidget);
+                    try {
+                        if (textInput.getContentLength() > 10000) {
+                            UIUtils.drawMessageOverControl(textWidget, gc, "Loading content ... (" + textInput.getContentLength() + ")", 0);
+                        }
+
+                        editor.setInput(textInput);
+                    } finally {
+                        gc.dispose();
+                    }
+                    applyEditorStyle();
+                }
             });
         } catch (Exception e) {
             throw new DBException("Error loading text value", e);
