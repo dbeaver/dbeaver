@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.virtual;
 import org.apache.commons.jexl3.JexlExpression;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -35,7 +32,7 @@ import java.util.*;
 /**
  * Virtual attribute
  */
-public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
+public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, DBPImageProvider
 {
     private final DBVEntity entity;
     private final DBVEntityAttribute parent;
@@ -320,5 +317,11 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2
     @Override
     public String toString() {
         return name;
+    }
+
+    @Nullable
+    @Override
+    public DBPImage getObjectImage() {
+        return DBValueFormatting.getTypeImage(this);
     }
 }
