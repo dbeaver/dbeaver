@@ -64,9 +64,6 @@
             radius: 4,
             weight: 3,
         };
-        const geojsonStyle = {
-            weight: 2,
-        };
         const popupOption = {
             closeButton: false,
             minWidth: 260,
@@ -86,8 +83,15 @@
             }
         }
 
+        function polyStyle(feature) {
+            return {
+                weight: 2,
+                color: 'blue',
+            };
+        }
+
         var vectorLayer = L.geoJSON([], {
-            style: geojsonStyle,
+            style: polyStyle,
             pointToLayer: function(feature, latlng) {
                 return L.circleMarker(latlng, geojsonMarkerOptions);
             },

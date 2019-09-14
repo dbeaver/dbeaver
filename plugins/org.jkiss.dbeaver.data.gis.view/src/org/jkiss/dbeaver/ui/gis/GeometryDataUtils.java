@@ -67,14 +67,13 @@ public class GeometryDataUtils {
             if (attr.getValueHandler().getValueObjectType(attr.getAttribute()) == DBGeometry.class) {
                 GeomAttrs geomAttrs = new GeomAttrs(attr, descAttrs);
                 result.add(geomAttrs);
-                descAttrs = new ArrayList<>();
             } else {
                 descAttrs.add(attr);
             }
         }
-        if (result.size() == 1) {
-            result.get(0).descAttrs.addAll(descAttrs);
-        }
+//        if (result.size() == 1) {
+//            result.get(0).descAttrs.addAll(descAttrs);
+//        }
         return result;
     }
 

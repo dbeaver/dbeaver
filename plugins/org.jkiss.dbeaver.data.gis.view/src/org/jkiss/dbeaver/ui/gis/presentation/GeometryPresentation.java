@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
@@ -138,16 +139,17 @@ public class GeometryPresentation extends AbstractPresentation {
                 if (geometry != null) {
                     geometries.add(geometry);
                     // Now get description
+                    Map<String, Object> properties = new LinkedHashMap<>();
+                    properties.put("Column", DBUtils.getObjectFullName(geomAttrs.geomAttr, DBPEvaluationContext.UI));
                     if (!geomAttrs.descAttrs.isEmpty()) {
-                        Map<String, Object> properties = new LinkedHashMap<>();
                         for (DBDAttributeBinding da : geomAttrs.descAttrs) {
                             Object descValue = model.getCellValue(da, row);
                             if (!DBUtils.isNullValue(descValue)) {
                                 properties.put(da.getName(), descValue);
                             }
                         }
-                        geometry.setProperties(properties);
                     }
+                    geometry.setProperties(properties);
                 }
             }
         }
