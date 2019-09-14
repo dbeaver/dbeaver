@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.WorkbenchJob;
@@ -402,8 +403,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 return;
             }
 
+            IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
             if (!(newSelection.getData() instanceof DBNNode) ||
-                !(ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite()))) {
+                activePart == null || !(ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, activePart.getSite()))) {
                 curSelection = null;
                 return;
             }
