@@ -128,6 +128,9 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
 
     @NotNull
     public DBSEntityConstraint getRealReferenceConstraint(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (refEntityId == null) {
+            throw new DBException("Ref entity ID not set for virtual FK " + getName());
+        }
         DBNNode refNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, refEntityId);
         if (!(refNode instanceof DBNDatabaseNode)) {
             throw new DBException("Can't find reference node " + refEntityId + " for virtual foreign key");
@@ -201,7 +204,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     @NotNull
     @Override
     public String getName() {
-        return getConstraintType().getId() + "_" + entity.getName() + "_" + DBNUtils.getLastNodePathSegment(refEntityId);
+        return getConstraintType().getId() + "_" + entity.getName() + "_" + (refEntityId == null ? "?" : DBNUtils.getLastNodePathSegment(refEntityId));
     }
 
     @Override

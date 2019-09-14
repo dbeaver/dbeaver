@@ -19,8 +19,12 @@ package org.jkiss.dbeaver.ui.gis.presentation;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -31,6 +35,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.panel.GISLeafletViewer;
@@ -126,7 +131,17 @@ public class GeometryPresentation extends AbstractPresentation {
 
         // Now extract all geom values from data
         List<DBGeometry> geometries = new ArrayList<>();
-        for (GeometryDataUtils.GeomAttrs geomAttrs : result) {
+        for (int i = 0; i < result.size(); i++) {
+            GeometryDataUtils.GeomAttrs geomAttrs = result.get(i);
+            Color attrColor;
+            if (i == 0) {
+                attrColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
+            } else {
+                attrColor = UIColors.getColor(i);
+            }
+            RGB rgb = attrColor.getRGB();
+            String colorCode = String.format("#%02x%02x%02x", rgb.red, rgb.green, rgb.blue);
+
             for (ResultSetRow row : model.getAllRows()) {
                 Object value = model.getCellValue(geomAttrs.geomAttr, row);
 
@@ -141,7 +156,7 @@ public class GeometryPresentation extends AbstractPresentation {
                     // Now get description
                     Map<String, Object> properties = new LinkedHashMap<>();
                     properties.put("id", DBUtils.getObjectFullName(geomAttrs.geomAttr, DBPEvaluationContext.UI));
-                    properties.put("color", "blue");
+                    properties.put("color", colorCode);
                     if (!geomAttrs.descAttrs.isEmpty()) {
                         Map<String, Object> infoMap = new LinkedHashMap<>();
                         properties.put("info", infoMap);

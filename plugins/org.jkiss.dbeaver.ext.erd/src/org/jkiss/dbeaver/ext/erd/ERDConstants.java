@@ -66,14 +66,4 @@ public class ERDConstants {
 
     public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false, false, true);
 
-    public static final RGB[] EXTRA_DS_COLORS = new RGB[] {
-        new RGB(119, 206, 130),
-        new RGB(206, 63, 34),
-        new RGB(242, 132, 35),
-        new RGB(124, 38, 19),
-        new RGB(157, 214, 245),
-        new RGB(173, 140, 127),
-        new RGB(249, 214, 205)
-    };
-
 }
