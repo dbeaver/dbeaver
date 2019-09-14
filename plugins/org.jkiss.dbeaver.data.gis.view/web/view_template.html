@@ -94,9 +94,11 @@
         }
 
         function polyStyle(feature) {
+            var objColor = 'blue';
+            if (feature.geometry.tip && feature.geometry.tip.color) objColor = feature.geometry.tip.color;
             return {
                 weight: 2,
-                color: 'blue',
+                color: objColor,
             };
         }
 

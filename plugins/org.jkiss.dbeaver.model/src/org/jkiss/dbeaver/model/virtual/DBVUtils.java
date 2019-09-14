@@ -300,11 +300,13 @@ public abstract class DBVUtils {
         if (!CommonUtils.isEmpty(realConstraints)) {
             result.addAll(realConstraints);
         }
-        DBVEntity vEntity = getVirtualEntity(entity, false);
-        if (vEntity != null) {
-            List<DBVEntityForeignKey> vFKs = vEntity.getForeignKeys();
-            if (!CommonUtils.isEmpty(vFKs)) {
-                result.addAll(vFKs);
+        if (!(entity instanceof DBVEntity)) {
+            DBVEntity vEntity = getVirtualEntity(entity, false);
+            if (vEntity != null) {
+                List<DBVEntityForeignKey> vFKs = vEntity.getForeignKeys();
+                if (!CommonUtils.isEmpty(vFKs)) {
+                    result.addAll(vFKs);
+                }
             }
         }
 

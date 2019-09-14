@@ -227,6 +227,10 @@ class ReferencesResultsContainer implements IResultSetContainer {
                     try {
                         List<ReferenceKey> refs = new ArrayList<>();
                         for (DBSEntity entity : allEntities) {
+                            if (entity instanceof DBVEntity) {
+                                // Skip virtual entities
+                                continue;
+                            }
                             // Foreign keys
                             Collection<? extends DBSEntityAssociation> associations = DBVUtils.getAllAssociations(monitor, entity);
                             for (DBSEntityAssociation assoc : associations) {

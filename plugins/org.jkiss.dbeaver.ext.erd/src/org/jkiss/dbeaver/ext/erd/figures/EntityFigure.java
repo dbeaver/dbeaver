@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -141,16 +142,10 @@ public class EntityFigure extends Figure {
 
     protected Color getBorderColor() {
         int dsIndex = getPart().getDiagram().getDataSourceIndex(part.getEntity().getDataSource().getContainer());
-        RGB[] extraDsColors = ERDConstants.EXTRA_DS_COLORS;
         if (dsIndex == 0) {
             return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
-        } else {
-            dsIndex--;
-            if (dsIndex > extraDsColors.length) {
-                dsIndex = dsIndex % extraDsColors.length;
-            }
-            return UIUtils.getSharedColor(extraDsColors[dsIndex]);
         }
+        return UIColors.getColor(dsIndex - 1);
     }
 
     public EntityPart getPart() {
