@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.data.gis.handlers.GeometryConverter;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.utils.CommonUtils;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -127,5 +128,21 @@ public class DBGeometry implements DBDValue {
 
     public DBGeometry copy() {
         return new DBGeometry(this);
+    }
+
+    /**
+     * @return true if all geometry points set to zero
+     */
+    public boolean isEmpty() {
+        Geometry geometry = getGeometry();
+        if (geometry == null) {
+            return false;
+        }
+        for (Coordinate coord : geometry.getCoordinates()) {
+            if (coord.getX() != 0 || coord.getY() != 0 || coord.getZ() != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }

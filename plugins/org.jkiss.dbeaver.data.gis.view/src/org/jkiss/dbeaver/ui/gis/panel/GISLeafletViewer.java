@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.gis.panel;
 
-import org.eclipse.jface.action.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.dnd.Clipboard;
@@ -32,9 +36,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -65,7 +67,6 @@ import org.locationtech.jts.geom.Geometry;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class GISLeafletViewer implements IGeometryValueEditor {
 
@@ -77,6 +78,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
     private static final String PROP_FLIP_COORDINATES = "gis.flipCoords";
     private static final String PROP_SRID = "gis.srid";
+
+    private static final Gson gson = new GsonBuilder().create();
 
     private final IValueController valueController;
     private final Browser browser;
@@ -276,16 +279,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             if (CommonUtils.isEmpty(value.getProperties())) {
                 geomTipValues.add("null");
             } else {
-                StringBuilder geomProps = new StringBuilder("{");
-                boolean first = true;
-                for (Map.Entry<String, Object> prop : value.getProperties().entrySet()) {
-                    if (!first) geomProps.append(",");
-                    first = false;
-                    geomProps.append('"').append(prop.getKey().replace("\"", "\\\"")).append("\":\"")
-                        .append(CommonUtils.escapeJavaString(DBValueFormatting.getDefaultValueDisplayString(prop.getValue(), DBDDisplayFormat.UI))).append("\"");
-                }
-                geomProps.append("}");
-                geomTipValues.add(geomProps.toString());
+                geomTipValues.add(gson.toJson(value.getProperties()));
             }
         }
         if (actualSourceSRID == GisConstants.SRID_SIMPLE) {
