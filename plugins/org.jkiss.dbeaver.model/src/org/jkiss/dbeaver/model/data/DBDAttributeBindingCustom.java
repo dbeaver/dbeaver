@@ -49,10 +49,10 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
     public DBDAttributeBindingCustom(
         @Nullable DBDAttributeBindingCustom parent,
         @NotNull DBSDataContainer dataContainer,
-        @NotNull DBCSession session,
+        @NotNull DBPDataSource dataSource,
         @NotNull DBVEntityAttribute vAttribute,
         int ordinalPosition) {
-        super(DBUtils.findValueHandler(session, vAttribute));
+        super(DBUtils.findValueHandler(dataSource, vAttribute));
         this.parent = parent;
         this.dataContainer = dataContainer;
         this.vAttribute = vAttribute;

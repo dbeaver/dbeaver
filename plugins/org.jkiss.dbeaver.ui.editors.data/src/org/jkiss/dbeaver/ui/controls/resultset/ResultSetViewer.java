@@ -109,8 +109,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -3214,6 +3214,25 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    // Refreshes model metadata (virtual objects + colors and other)
+    public boolean refreshMetaData() {
+        DBPDataSource dataSource = getDataSource();
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataSource == null || dataContainer == null) {
+            log.error("Can't refresh metadata on disconnected data viewer");
+            return false;
+        }
+
+        DBDAttributeBinding[] curAttributes = model.getRealAttributes();
+        DBDAttributeBinding[] newAttributes = DBUtils.injectAndFilterAttributeBindings(dataSource, dataContainer, curAttributes, false);
+        model.updateMetaData(newAttributes);
+        model.updateDataFilter();
+
+        redrawData(true, false);
+
+        return true;
+    }
+
     public void readNextSegment()
     {
         if (!dataReceiver.isHasMoreData()) {
@@ -4526,7 +4545,7 @@ public class ResultSetViewer extends Viewer
                 vAttr.setCustom(true);
                 vEntity.addVirtualAttribute(vAttr);
                 vEntity.persistConfiguration();
-                refreshData(null);
+                refreshMetaData();
             }
         }
     }
@@ -4552,7 +4571,7 @@ public class ResultSetViewer extends Viewer
             DBVEntity vEntity = model.getVirtualEntity(false);
             if (new EditVirtualAttributePage(getControl().getShell(), ResultSetViewer.this, vAttr).edit()) {
                 vEntity.persistConfiguration();
-                refreshData(null);
+                refreshMetaData();
             }
         }
     }
@@ -4581,7 +4600,7 @@ public class ResultSetViewer extends Viewer
             DBVEntity vEntity = model.getVirtualEntity(false);
             vEntity.removeVirtualAttribute(vAttr);
             vEntity.persistConfiguration();
-            refreshData(null);
+            refreshMetaData();
         }
     }
 
@@ -4625,7 +4644,7 @@ public class ResultSetViewer extends Viewer
         {
             if (EditForeignKeyPage.createVirtualForeignKey(model.getVirtualEntity(true)) != null) {
                 persistConfig();
-                refreshData(null);
+                refreshMetaData();
             }
         }
     }
@@ -4647,7 +4666,7 @@ public class ResultSetViewer extends Viewer
             EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(ResultSetViewer.this, entity, vEntity);
             dialog.setInitPage(EditVirtualEntityDialog.InitPage.ATTRIBUTES);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                refreshData(null);
+                refreshMetaData();
             }
         }
     }
