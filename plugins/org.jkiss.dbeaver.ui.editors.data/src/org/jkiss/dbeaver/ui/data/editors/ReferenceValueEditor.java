@@ -253,7 +253,7 @@ public class ReferenceValueEditor {
         }
         final Object curValue = valueController.getValue();
 
-        reloadSelectorValues(curValue instanceof Number ? curValue : null);
+        reloadSelectorValues(curValue);
 
         return true;
     }
