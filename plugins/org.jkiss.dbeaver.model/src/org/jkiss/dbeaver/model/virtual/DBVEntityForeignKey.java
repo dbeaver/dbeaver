@@ -56,6 +56,9 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         this.entity = entity;
         this.refEntityId = copy.refEntityId;
         this.refConstraintId = copy.refConstraintId;
+        for (DBVEntityForeignKeyColumn fkc : copy.attributes) {
+            this.attributes.add(new DBVEntityForeignKeyColumn(this, fkc));
+        }
 
         DBVModel.addToCache(this);
     }
