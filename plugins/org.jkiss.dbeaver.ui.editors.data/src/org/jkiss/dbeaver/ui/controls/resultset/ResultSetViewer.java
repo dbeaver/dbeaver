@@ -3215,6 +3215,7 @@ public class ResultSetViewer extends Viewer
     }
 
     // Refreshes model metadata (virtual objects + colors and other)
+    // It is a bit hacky function because we need to bind custom attributes (usually this happens during data read)
     public boolean refreshMetaData() {
         DBPDataSource dataSource = getDataSource();
         DBSDataContainer dataContainer = getDataContainer();
@@ -3224,7 +3225,27 @@ public class ResultSetViewer extends Viewer
         }
 
         DBDAttributeBinding[] curAttributes = model.getRealAttributes();
+        // Add virtual attributes
         DBDAttributeBinding[] newAttributes = DBUtils.injectAndFilterAttributeBindings(dataSource, dataContainer, curAttributes, false);
+        if (newAttributes.length > curAttributes.length) {
+            // Bind custom attributes
+            try (DBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), dataContainer, "Bind custom attributes")) {
+                int rowCount = model.getRowCount();
+                List<Object[]> rows = new ArrayList<>(rowCount);
+                for (int i = 0; i < rowCount; i++) {
+                    rows.add(model.getRowData(i));
+                }
+                for (DBDAttributeBinding attr : newAttributes) {
+                    if (attr instanceof DBDAttributeBindingCustom) {
+                        try {
+                            attr.lateBinding(session, rows);
+                        } catch (DBException e) {
+                            log.debug("Error binding virtual attribute '" + attr.getName() + "'", e);
+                        }
+                    }
+                }
+            }
+        }
         model.updateMetaData(newAttributes);
         model.updateDataFilter();
 
