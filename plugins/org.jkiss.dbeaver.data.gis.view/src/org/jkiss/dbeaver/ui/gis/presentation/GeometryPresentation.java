@@ -136,16 +136,19 @@ public class GeometryPresentation extends AbstractPresentation {
                     geomAttrs.geomAttr,
                     value);
 
-                if (geometry != null) {
+                if (geometry != null && !(geometry.getSRID() != 0 && geometry.isEmpty())) {
                     geometries.add(geometry);
                     // Now get description
                     Map<String, Object> properties = new LinkedHashMap<>();
-                    properties.put("Column", DBUtils.getObjectFullName(geomAttrs.geomAttr, DBPEvaluationContext.UI));
+                    properties.put("id", DBUtils.getObjectFullName(geomAttrs.geomAttr, DBPEvaluationContext.UI));
+                    properties.put("color", "blue");
                     if (!geomAttrs.descAttrs.isEmpty()) {
+                        Map<String, Object> infoMap = new LinkedHashMap<>();
+                        properties.put("info", infoMap);
                         for (DBDAttributeBinding da : geomAttrs.descAttrs) {
                             Object descValue = model.getCellValue(da, row);
-                            if (!DBUtils.isNullValue(descValue)) {
-                                properties.put(da.getName(), descValue);
+                            if (!DBUtils.isNullValue(descValue) && !(descValue instanceof String && ((String) descValue).isEmpty())) {
+                                infoMap.put(da.getName(), descValue);
                             }
                         }
                     }

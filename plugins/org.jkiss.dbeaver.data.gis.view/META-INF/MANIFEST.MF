@@ -19,7 +19,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.data,
- org.jkiss.bundle.gis
+ org.jkiss.bundle.gis,
+ com.google.gson
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ui.gis
 Automatic-Module-Name: org.jkiss.dbeaver.data.gis.view

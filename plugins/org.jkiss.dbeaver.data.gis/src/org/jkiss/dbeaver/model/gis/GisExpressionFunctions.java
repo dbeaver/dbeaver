@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.gis;
 
+import graphql.execution.nextgen.Common;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,6 +32,15 @@ public class GisExpressionFunctions {
     }
 
     public static Object wktPoint(Object longitude, Object latitude, Object srid) {
+        if (longitude == null || latitude == null) {
+            return null;
+        }
+        if (longitude instanceof Number && ((Number) longitude).doubleValue() == 0.0 &&
+            latitude instanceof Number && ((Number) latitude).doubleValue() == 0.0)
+        {
+            // Zeroes
+            return null;
+        }
         String strValue = "POINT(" + longitude + " " + latitude + ")";
         return new DBGeometry(strValue, CommonUtils.toInt(srid, GisConstants.SRID_4326));
     }
