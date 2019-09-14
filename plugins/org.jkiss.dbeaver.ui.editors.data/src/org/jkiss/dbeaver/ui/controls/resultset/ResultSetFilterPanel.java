@@ -612,6 +612,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         final DBRRunnableWithProgress reader = monitor -> {
             DBDAttributeBinding[] attributes = viewer.getModel().getAttributes();
             for (DBDAttributeBinding attribute : attributes) {
+                if (attribute.isCustom()) {
+                    continue;
+                }
                 final String name = DBUtils.getUnQuotedIdentifier(attribute.getDataSource(), attribute.getName());
                 if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
                     final String content = DBUtils.getQuotedIdentifier(attribute) + " ";
