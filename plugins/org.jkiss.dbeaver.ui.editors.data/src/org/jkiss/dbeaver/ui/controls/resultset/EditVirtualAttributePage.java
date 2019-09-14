@@ -88,6 +88,12 @@ public class EditVirtualAttributePage extends BaseObjectEditPage {
                 String defTypeName = vAttr.getTypeName();
                 if (CommonUtils.isEmpty(defTypeName)) {
                     defTypeName = dataTypeProvider.getDefaultDataTypeName(DBPDataKind.STRING);
+                    vAttr.setTypeName(defTypeName);
+
+                    DBSDataType dataType = dataTypeProvider.getLocalDataType(defTypeName);
+                    if (dataType != null) {
+                        vAttr.setDataKind(dataType.getDataKind());
+                    }
                 }
                 if (!CommonUtils.isEmpty(defTypeName)) {
                     typeCombo.setText(defTypeName);

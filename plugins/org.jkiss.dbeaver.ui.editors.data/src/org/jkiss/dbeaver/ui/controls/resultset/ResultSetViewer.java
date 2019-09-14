@@ -2588,7 +2588,7 @@ public class ResultSetViewer extends Viewer
             TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(ResultSetViewer.this, null, true);
             if (settingsDialog.open() == IDialogConstants.OK_ID) {
                 dataSource.getContainer().persistConfiguration();
-                refreshData(null);
+                refreshMetaData();
             }
         }
     }
@@ -3229,6 +3229,7 @@ public class ResultSetViewer extends Viewer
         model.updateDataFilter();
 
         redrawData(true, false);
+        updatePanelsContent(true);
 
         return true;
     }
