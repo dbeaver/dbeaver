@@ -224,16 +224,18 @@ public final class DBValueFormatting {
     }
 
     public static String convertNumberToNativeString(Number value) {
-        if (value instanceof BigDecimal) {
-            return ((BigDecimal) value).toPlainString();
-        } else if (value instanceof Float) {
-            return NATIVE_FLOAT_FORMATTER.format(value);
-        } else if (value instanceof Double) {
-            return NATIVE_DOUBLE_FORMATTER.format(value);
-        } else {
-            return value.toString();
+        try {
+            if (value instanceof BigDecimal) {
+                return ((BigDecimal) value).toPlainString();
+            } else if (value instanceof Float) {
+                return NATIVE_FLOAT_FORMATTER.format(value);
+            } else if (value instanceof Double) {
+                return NATIVE_DOUBLE_FORMATTER.format(value);
+            }
+        } catch (Exception e) {
+            log.debug("Error converting number to string: " + e.getMessage());
         }
-
+        return value.toString();
     }
 
     public static String getBooleanString(boolean propertyValue) {
