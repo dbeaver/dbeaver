@@ -297,6 +297,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 public void widgetSelected(SelectionEvent e)
                 {
                     handleUniqueKeySelect();
+                    updatePageState();
                 }
             });
             if (enableCustomKeys) {
@@ -588,7 +589,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 DBXTreeItem itemsMeta = ((DBNDatabaseFolder) childNode).getItemsMeta();
                 if (itemsMeta != null) {
                     Class<?> childrenClass = ((DBNDatabaseFolder) childNode).getChildrenClass(itemsMeta);
-                    if (DBSEntity.class.isAssignableFrom(childrenClass)) {
+                    if (childrenClass != null && DBSEntity.class.isAssignableFrom(childrenClass)) {
                         loadEntities(monitor, entities, (DBNDatabaseFolder) childNode);
                     }
                 }
