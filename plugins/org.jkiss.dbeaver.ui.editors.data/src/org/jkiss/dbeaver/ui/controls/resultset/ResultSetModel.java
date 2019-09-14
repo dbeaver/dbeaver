@@ -205,6 +205,20 @@ public class ResultSetModel {
         return attributes[index];
     }
 
+    /**
+     * Returns real (non-virtual) attribute bindings
+     */
+    @NotNull
+    public DBDAttributeBinding[] getRealAttributes() {
+        List<DBDAttributeBinding> result = new ArrayList<>();
+        for (DBDAttributeBinding attr : attributes) {
+            if (!attr.isCustom()) {
+                result.add(attr);
+            }
+        }
+        return result.toArray(new DBDAttributeBinding[0]);
+    }
+
     @NotNull
     public List<DBDAttributeBinding> getVisibleAttributes() {
         return visibleAttributes;
@@ -468,7 +482,6 @@ public class ResultSetModel {
      */
     public void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] newAttributes) {
 
-        boolean update = false;
         DBCStatement sourceStatement = resultSet.getSourceStatement();
         if (sourceStatement != null) {
             this.executionSource = sourceStatement.getStatementSource();
@@ -481,6 +494,12 @@ public class ResultSetModel {
             this.trace = null;
         }
 
+        this.clearData();
+        this.updateMetaData(newAttributes);
+    }
+
+    void updateMetaData(@NotNull DBDAttributeBinding[] newAttributes) {
+        boolean update = false;
         if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
             update = true;
         } else {
@@ -512,20 +531,19 @@ public class ResultSetModel {
                 metadataChanged = true;
             }
         }
-        this.clearData();
+
         this.attributes = newAttributes;
         this.documentAttribute = null;
 
-        metadataDynamic =
+        this.metadataDynamic =
             this.attributes.length > 0 &&
             this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
-
 
         {
             // Detect document attribute
             // It has to be only one attribute in list (excluding pseudo attributes).
             DBDAttributeBinding realAttr = null;
-            if (attributes.length == 1) {
+            if (this.attributes.length == 1) {
                 realAttr = attributes[0];
             } else {
                 for (DBDAttributeBinding attr : attributes) {
@@ -545,6 +563,17 @@ public class ResultSetModel {
                 }
             }
             updateColorMapping(false);
+        }
+    }
+
+    void updateDataFilter() {
+        // Init data filter
+        if (metadataChanged) {
+            this.dataFilter = createDataFilter();
+        } else {
+            DBDDataFilter prevFilter = dataFilter;
+            this.dataFilter = createDataFilter();
+            updateDataFilter(prevFilter, false);
         }
     }
 
@@ -568,15 +597,8 @@ public class ResultSetModel {
 
         // Add new data
         appendData(rows, true);
+        updateDataFilter();
 
-        // Init data filter
-        if (metadataChanged) {
-            this.dataFilter = createDataFilter();
-        } else {
-            DBDDataFilter prevFilter = dataFilter;
-            this.dataFilter = createDataFilter();
-            updateDataFilter(prevFilter, false);
-        }
         this.visibleAttributes.sort(POSITION_SORTER);
 
         {

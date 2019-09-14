@@ -631,10 +631,10 @@ public final class DBUtils {
         for (int i = 0; i < columnsCount; i++) {
             bindings[i] = DBUtils.getAttributeBinding(dataContainer, session, metaAttributes.get(i));
         }
-        return injectAndFilterAttributeBindings(session, dataContainer, bindings, false);
+        return injectAndFilterAttributeBindings(session.getDataSource(), dataContainer, bindings, false);
     }
 
-    public static DBDAttributeBinding[] injectAndFilterAttributeBindings(@NotNull DBCSession session, @NotNull DBSDataContainer dataContainer, DBDAttributeBinding[] bindings, boolean filterAttributes) {
+    public static DBDAttributeBinding[] injectAndFilterAttributeBindings(@NotNull DBPDataSource dataSource, @NotNull DBSDataContainer dataContainer, DBDAttributeBinding[] bindings, boolean filterAttributes) {
         // Add custom attributes
         DBVEntity vEntity = DBVUtils.getVirtualEntity(dataContainer, false);
         if (vEntity != null) {
@@ -645,7 +645,7 @@ public final class DBUtils {
                     customBindings[i] = new DBDAttributeBindingCustom(
                         null,
                         dataContainer,
-                        session,
+                        dataSource,
                         customAttributes.get(i),
                         bindings.length + i);
                 }
@@ -718,7 +718,7 @@ public final class DBUtils {
             addLeafBindings(result, binding);
         }
 
-        return injectAndFilterAttributeBindings(session, dataContainer, result.toArray(new DBDAttributeBinding[0]), true);
+        return injectAndFilterAttributeBindings(session.getDataSource(), dataContainer, result.toArray(new DBDAttributeBinding[0]), true);
     }
 
     private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
