@@ -16,23 +16,21 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
 
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Group;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 
 
-class PostgreFDWConfigWizardPageSettings extends ActiveWizardPage<PostgreFDWConfigWizard>
-{
+class PostgreFDWConfigWizardPageSettings extends ActiveWizardPage<PostgreFDWConfigWizard> {
+    private DatabaseObjectsSelectorPanel selectorPanel;
 
-    private TextWithOpenFile inputFileText;
-    private Combo formatCombo;
-    private Button cleanFirstButton;
-
-    protected PostgreFDWConfigWizardPageSettings(PostgreFDWConfigWizard wizard)
+    protected PostgreFDWConfigWizardPageSettings()
     {
         super("Settings");
         setTitle("Configure foreign data wrappers");
@@ -48,38 +46,40 @@ class PostgreFDWConfigWizardPageSettings extends ActiveWizardPage<PostgreFDWConf
     @Override
     public void createControl(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
-        Listener updateListener = event -> updateState();
+        {
+            Group databasesGroup = UIUtils.createControlGroup(composite, "Foreign databases", 1, GridData.FILL_BOTH, 0);
 
-/*
-        Group formatGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_restore_page_setting_label_setting, 2, GridData.FILL_HORIZONTAL, 0);
-        formatCombo = UIUtils.createLabelCombo(formatGroup, PostgreMessages.wizard_restore_page_setting_label_format, SWT.DROP_DOWN | SWT.READ_ONLY);
-        formatCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        for (PostgreBackupWizard.ExportFormat format : PostgreBackupWizard.ExportFormat.values()) {
-            formatCombo.add(format.getTitle());
+            selectorPanel = new DatabaseObjectsSelectorPanel(
+                databasesGroup,
+                getWizard().getRunnableContext()) {
+
+                @Override
+                protected boolean isObjectVisible(DBSObject obj) {
+                    return super.isObjectVisible(obj);
+                }
+
+                @Override
+                protected void onSelectionChange() {
+                    updateState();
+                }
+
+                @Override
+                protected boolean isFolderVisible(DBNLocalFolder folder) {
+                    return super.isFolderVisible(folder);
+                }
+
+                @Override
+                protected boolean isDataSourceVisible(DBNDataSource dataSource) {
+                    if (dataSource.getDataSourceContainer() == getWizard().getDatabase().getDataSource().getContainer()) {
+                        // Do not show own datasource
+                        return false;
+                    }
+                    return super.isDataSourceVisible(dataSource);
+                }
+            };
         }
-        formatCombo.select(wizard.format.ordinal());
-        formatCombo.addListener(SWT.Selection, updateListener);
-
-        cleanFirstButton = UIUtils.createCheckbox(formatGroup,
-        	PostgreMessages.wizard_restore_page_setting_btn_clean_first,
-            null,
-            false,
-            2
-        );
-        cleanFirstButton.addListener(SWT.Selection, updateListener);
-
-        Group inputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_restore_page_setting_label_input, 2, GridData.FILL_HORIZONTAL, 0);
-        UIUtils.createControlLabel(inputGroup, PostgreMessages.wizard_restore_page_setting_label_backup_file);
-        inputFileText = new TextWithOpenFile(inputGroup, PostgreMessages.wizard_restore_page_setting_label_choose_backup_file, new String[] {"*.backup","*"});
-        inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
-
-        createExtraArgsInput(inputGroup);
-
-        createSecurityGroup(composite);
-*/
 
         setControl(composite);
     }

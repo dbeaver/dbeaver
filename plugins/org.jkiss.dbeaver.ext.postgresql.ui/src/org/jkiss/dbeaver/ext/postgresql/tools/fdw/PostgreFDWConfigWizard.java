@@ -35,7 +35,7 @@ class PostgreFDWConfigWizard extends ActiveWizard {
 
     @Override
     public void addPages() {
-        settingsPage = new PostgreFDWConfigWizardPageSettings(this);
+        settingsPage = new PostgreFDWConfigWizardPageSettings();
         addPage(settingsPage);
         super.addPages();
     }

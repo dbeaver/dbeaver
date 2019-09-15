@@ -16,7 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,26 +26,25 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.dbeaver.ui.search.internal.UISearchMessages;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class SearchDataPage extends AbstractSearchPage {
 
@@ -58,20 +58,19 @@ public class SearchDataPage extends AbstractSearchPage {
     private static final String PROP_HISTORY = "search.data.history"; //$NON-NLS-1$
 
     private Combo searchText;
-    private DatabaseNavigatorTree dataSourceTree;
 
     private SearchDataParams params = new SearchDataParams();
     private Set<String> searchHistory = new LinkedHashSet<>();
-    private DatabaseObjectsTreeManager checkboxTreeManager;
 
     private static final Map<Class<? extends AbstractSearchPage>, String> searchStateCache = new IdentityHashMap<>();
+    private DatabaseObjectsSelectorPanel selectorPanel;
 
     public SearchDataPage() {
-		super("Database objects search");
+        super("Database objects search");
     }
 
-	@Override
-	public void createControl(Composite parent) {
+    @Override
+    public void createControl(Composite parent) {
         super.createControl(parent);
         initializeDialogUnits(parent);
 
@@ -104,53 +103,26 @@ public class SearchDataPage extends AbstractSearchPage {
 
         {
             Group databasesGroup = UIUtils.createControlGroup(optionsGroup, "Databases", 1, GridData.FILL_BOTH, 0);
-            gd = new GridData(GridData.FILL_BOTH);
-            //gd.heightHint = 300;
-            databasesGroup.setLayoutData(gd);
-            DBPPlatform platform = DBWorkbench.getPlatform();
-            final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(NavigatorUtils.getSelectedProject());
-            DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
-            dataSourceTree = new DatabaseNavigatorTree(databasesGroup, rootNode, SWT.SINGLE | SWT.CHECK);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
-            dataSourceTree.setLayoutData(gd);
-            final CheckboxTreeViewer viewer = (CheckboxTreeViewer) dataSourceTree.getViewer();
-            viewer.addFilter(new ViewerFilter() {
+            databasesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            selectorPanel = new DatabaseObjectsSelectorPanel(
+                databasesGroup,
+                new RunnableContextDelegate(container.getRunnableContext())) {
                 @Override
-                public boolean select(Viewer viewer, Object parentElement, Object element) {
-                    if (element instanceof TreeNodeSpecial) {
-                        return true;
-                    }
-                    if (element instanceof DBNNode) {
-                        if (element instanceof DBNDatabaseFolder) {
-                            DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
-                            Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
-                            return folderItemsClass != null &&
-                                (DBSObjectContainer.class.isAssignableFrom(folderItemsClass) ||
-                                    DBSEntity.class.isAssignableFrom(folderItemsClass));
-                        }
-                        if (element instanceof DBNLocalFolder ||
-                            element instanceof DBNProjectDatabases ||
-                            element instanceof DBNDataSource)
-                        {
-                            return true;
-                        }
-                        if (element instanceof DBSWrapper) {
-                            DBSObject obj = ((DBSWrapper) element).getObject();
-                            if (obj instanceof DBSObjectContainer) return true;
-                            if (obj instanceof DBSDataContainer && obj instanceof DBSEntity) {
-                                if ((((DBSDataContainer)obj).getSupportedFeatures() & DBSDataContainer.DATA_SEARCH) != 0) {
-                                    return true;
-                                }
-                            }
+                protected boolean isObjectVisible(DBSObject obj) {
+                    if (obj instanceof DBSDataContainer && obj instanceof DBSEntity) {
+                        if ((((DBSDataContainer) obj).getSupportedFeatures() & DBSDataContainer.DATA_SEARCH) == 0) {
+                            return false;
                         }
                     }
-                    return false;
+                    return super.isObjectVisible(obj);
                 }
-            });
-            checkboxTreeManager = new DatabaseObjectsTreeManager(new RunnableContextDelegate(container.getRunnableContext()), viewer,
-                new Class[]{DBSDataContainer.class});
-            viewer.addCheckStateListener(event -> updateEnablement());
+
+                @Override
+                protected void onSelectionChange() {
+                    updateEnablement();
+                }
+            };
         }
         {
             //new Label(searchGroup, SWT.NONE);
@@ -168,8 +140,7 @@ public class SearchDataPage extends AbstractSearchPage {
             final Button caseCheckbox = UIUtils.createCheckbox(optionsGroup2, UISearchMessages.dialog_search_objects_case_sensitive, "Case sensitive search", params.caseSensitive, 2);
             caseCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     params.caseSensitive = caseCheckbox.getSelection();
                 }
             });
@@ -177,8 +148,7 @@ public class SearchDataPage extends AbstractSearchPage {
             final Button fastSearchCheckbox = UIUtils.createCheckbox(optionsGroup2, "Fast search (indexed)", "Search only in indexed columns", params.fastSearch, 2);
             fastSearchCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     params.fastSearch = fastSearchCheckbox.getSelection();
                 }
             });
@@ -187,8 +157,7 @@ public class SearchDataPage extends AbstractSearchPage {
             final Button searchNumbersCheckbox = UIUtils.createCheckbox(optionsGroup2, "Search in numbers", "Search in numeric columns (search value must be a number)", params.searchNumbers, 2);
             searchNumbersCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     params.searchNumbers = searchNumbersCheckbox.getSelection();
                 }
             });
@@ -196,8 +165,7 @@ public class SearchDataPage extends AbstractSearchPage {
             final Button searchLOBCheckbox = UIUtils.createCheckbox(optionsGroup2, "Search in LOBs", "Search in BLOB/CLOB/binary columns", params.searchLOBs, 2);
             searchLOBCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     params.searchLOBs = searchNumbersCheckbox.getSelection();
                 }
             });
@@ -205,8 +173,7 @@ public class SearchDataPage extends AbstractSearchPage {
             final Button searchForeignCheckbox = UIUtils.createCheckbox(optionsGroup2, "Search in foreign objects", "Search in foreign tables or DB links. Searching in such tables may cause performance issues.", params.searchForeignObjects, 2);
             searchForeignCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     params.searchForeignObjects = searchForeignCheckbox.getSelection();
                 }
             });
@@ -214,16 +181,14 @@ public class SearchDataPage extends AbstractSearchPage {
         UIUtils.asyncExec(this::restoreCheckedNodes);
 
         if (!params.selectedNodes.isEmpty()) {
-            dataSourceTree.getViewer().setSelection(
-                new StructuredSelection(params.selectedNodes), true);
+            selectorPanel.setSelection(params.selectedNodes);
         }
 
-        dataSourceTree.setEnabled(true);
+        selectorPanel.setEnabled(true);
     }
 
     @Override
-    public SearchDataQuery createQuery() throws DBException
-    {
+    public SearchDataQuery createQuery() throws DBException {
         params.sources = getCheckedSources();
 
         // Save search query
@@ -237,8 +202,7 @@ public class SearchDataPage extends AbstractSearchPage {
     }
 
     @Override
-    public void loadState(DBPPreferenceStore store)
-    {
+    public void loadState(DBPPreferenceStore store) {
         params.searchString = store.getString(PROP_MASK);
         params.caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
         params.fastSearch = store.getBoolean(PROP_FAST_SEARCH);
@@ -246,7 +210,7 @@ public class SearchDataPage extends AbstractSearchPage {
         params.searchLOBs = store.getBoolean(PROP_SEARCH_LOBS);
         params.searchForeignObjects = store.getBoolean(PROP_SEARCH_FOREIGN);
         params.maxResults = store.getInt(PROP_SAMPLE_ROWS);
-        for (int i = 0; ;i++) {
+        for (int i = 0; ; i++) {
             String history = store.getString(PROP_HISTORY + "." + i); //$NON-NLS-1$
             if (CommonUtils.isEmpty(history)) {
                 break;
@@ -266,8 +230,7 @@ public class SearchDataPage extends AbstractSearchPage {
     }
 
     @Override
-    public void saveState(DBPPreferenceStore store)
-    {
+    public void saveState(DBPPreferenceStore store) {
         store.setValue(PROP_MASK, params.searchString);
         store.setValue(PROP_CASE_SENSITIVE, params.caseSensitive);
         store.setValue(PROP_SAMPLE_ROWS, params.maxResults);
@@ -275,7 +238,7 @@ public class SearchDataPage extends AbstractSearchPage {
         store.setValue(PROP_SEARCH_NUMBERS, params.searchNumbers);
         store.setValue(PROP_SEARCH_LOBS, params.searchLOBs);
         store.setValue(PROP_SEARCH_FOREIGN, params.searchForeignObjects);
-        saveTreeState(dataSourceTree);
+        saveTreeState();
 
         {
             // Search history
@@ -290,12 +253,11 @@ public class SearchDataPage extends AbstractSearchPage {
         }
     }
 
-    private List<DBSDataContainer> getCheckedSources()
-    {
+    private List<DBSDataContainer> getCheckedSources() {
         List<DBSDataContainer> result = new ArrayList<>();
-        for (Object sel : ((CheckboxTreeViewer)dataSourceTree.getViewer()).getCheckedElements()) {
-            if (sel instanceof DBSWrapper) {
-                DBSObject object = ((DBSWrapper) sel).getObject();
+        for (DBNNode node : selectorPanel.getCheckedNodes()) {
+            if (node instanceof DBNDatabaseNode) {
+                DBSObject object = ((DBNDatabaseNode) node).getObject();
                 if (object instanceof DBSDataContainer && object.getDataSource() != null) {
                     result.add((DBSDataContainer) object);
                 }
@@ -304,21 +266,14 @@ public class SearchDataPage extends AbstractSearchPage {
         return result;
     }
 
-    protected void updateEnablement()
-    {
-        boolean enabled = false;
-        if (!ArrayUtils.isEmpty(((CheckboxTreeViewer)dataSourceTree.getViewer()).getCheckedElements())) {
-            enabled = true;
-        }
-        container.setPerformActionEnabled(enabled);
+    protected void updateEnablement() {
+        container.setPerformActionEnabled(selectorPanel.hasCheckedNodes());
     }
 
-    protected void saveTreeState(DatabaseNavigatorTree tree)
-    {
+    protected void saveTreeState() {
         // Object sources
         StringBuilder sourcesString = new StringBuilder();
-        for (Object obj : ((CheckboxTreeViewer) tree.getViewer()).getCheckedElements()) {
-            DBNNode node = (DBNNode) obj;
+        for (DBNNode node : selectorPanel.getCheckedNodes()) {
             if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSDataContainer) {
                 if (sourcesString.length() > 0) {
                     sourcesString.append("|"); //$NON-NLS-1$
@@ -329,8 +284,7 @@ public class SearchDataPage extends AbstractSearchPage {
         searchStateCache.put(getClass(), sourcesString.toString());
     }
 
-    protected List<DBNNode> loadTreeState(DBRProgressMonitor monitor)
-    {
+    protected List<DBNNode> loadTreeState(DBRProgressMonitor monitor) {
         final String sources = searchStateCache.get(getClass());
         return loadTreeState(monitor, sources);
     }
@@ -355,18 +309,7 @@ public class SearchDataPage extends AbstractSearchPage {
         }
 
         if (!checkedNodes.isEmpty()) {
-            boolean first = true;
-            for (DBNNode node : checkedNodes) {
-                ((CheckboxTreeViewer) dataSourceTree.getViewer()).setChecked(node, true);
-                if (first) {
-                    DBNDataSource dsNode = DBNDataSource.getDataSourceNode(node);
-                    if (dsNode != null) {
-                        dataSourceTree.getViewer().reveal(dsNode);
-                    }
-                    first = false;
-                }
-            }
-            checkboxTreeManager.updateCheckStates();
+            selectorPanel.checkNodes(checkedNodes);
             updateEnablement();
         }
     }
