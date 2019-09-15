@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.fdw.FDWConfigDescriptor;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -54,6 +55,7 @@ class PostgreFDWConfigWizard extends ActiveWizard implements DBPContextProvider 
     private List<DBSEntity> proposedEntities = null;
     private List<DBNDatabaseNode> selectedEntities;
     private DBPDataSourceContainer selectedDataSource;
+    private PostgreSchema selectedSchema;
     private FDWInfo selectedFDW;
     private String fdwServerId;
     private PropertySourceCustom fdwPropertySource;
@@ -80,6 +82,14 @@ class PostgreFDWConfigWizard extends ActiveWizard implements DBPContextProvider 
 
     public PostgreDatabase getDatabase() {
         return database;
+    }
+
+    public PostgreSchema getSelectedSchema() {
+        return selectedSchema;
+    }
+
+    public void setSelectedSchema(PostgreSchema selectedSchema) {
+        this.selectedSchema = selectedSchema;
     }
 
     public FDWInfo getSelectedFDW() {

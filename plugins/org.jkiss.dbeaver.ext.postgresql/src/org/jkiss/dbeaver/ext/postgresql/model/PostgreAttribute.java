@@ -68,6 +68,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         OWNER table)
     {
         super(table, false);
+        this.isLocal = true;
     }
 
     public PostgreAttribute(

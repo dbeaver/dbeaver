@@ -46,6 +46,8 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         DBEObjectEditor<OBJECT_TYPE>,
         DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> {
 
+    public static final String OPTION_SKIP_CONFIGURATION = "skip.object.configuration";
+
     public static final String PATTERN_ITEM_INDEX = "%INDEX%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_TABLE = "%TABLE%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_INDEX_SHORT = "%INDEX_SHORT%"; //$NON-NLS-1$
@@ -82,9 +84,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + container.getClass().getSimpleName());
         }
-        newObject = configureObject(monitor, container, newObject);
-        if (newObject == null) {
-            return null;
+        if (!CommonUtils.getOption(options, OPTION_SKIP_CONFIGURATION)) {
+            newObject = configureObject(monitor, container, newObject);
+            if (newObject == null) {
+                return null;
+            }
         }
 
         final ObjectCreateCommand createCommand = makeCreateCommand(newObject, options);
