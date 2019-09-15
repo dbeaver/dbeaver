@@ -24,10 +24,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.fdw.FDWConfigDescriptor;
 import org.jkiss.dbeaver.ext.postgresql.model.fdw.FDWConfigRegistry;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
@@ -50,9 +53,12 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
     private Table entityTable;
     private Combo fdwCombo;
     private Text fdwServerText;
+    private Combo schemaCombo;
     private PropertyTreeViewer propsEditor;
     private Text targetDataSourceText;
     private Text targetDriverText;
+
+    private List<PostgreSchema> schemaList;
     private List<PostgreFDWConfigWizard.FDWInfo> fdwList;
 
     protected PostgreFDWConfigWizardPageConfig(PostgreFDWConfigWizard wizard)
@@ -66,7 +72,12 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
     @Override
     public boolean isPageComplete()
     {
-        return activated;
+        PostgreFDWConfigWizard wizard = getWizard();
+        return activated &&
+            !CommonUtils.isEmpty(wizard.getFdwServerId()) &&
+            wizard.getSelectedFDW() != null &&
+            wizard.getSelectedSchema() != null &&
+            !wizard.getSelectedEntities().isEmpty();
     }
 
     @Override
@@ -78,7 +89,7 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
             Composite fdwGroup = UIUtils.createComposite(composite, 2);
             fdwGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            fdwCombo = UIUtils.createLabelCombo(fdwGroup, "Foreign Data Wrapper", SWT.DROP_DOWN | SWT.READ_ONLY);
+            fdwCombo = UIUtils.createLabelCombo(fdwGroup, "Wrapper", SWT.DROP_DOWN | SWT.READ_ONLY);
             fdwCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -92,14 +103,24 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
                 public void widgetSelected(SelectionEvent e) {
                 }
             });
-            fdwServerText = UIUtils.createLabelText(fdwGroup, "Server ID", "", SWT.BORDER);
-            fdwServerText.addModifyListener(e -> getWizard().setFdwServerId(fdwServerText.getText()));
         }
 
         SashForm sashForm = new SashForm(composite, SWT.HORIZONTAL);
         sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
         {
             Group settingsGroup = UIUtils.createControlGroup(sashForm, "Settings", 2, GridData.FILL_BOTH, 0);
+
+            fdwServerText = UIUtils.createLabelText(settingsGroup, "Server ID", "", SWT.BORDER);
+            fdwServerText.addModifyListener(e -> getWizard().setFdwServerId(fdwServerText.getText()));
+
+            schemaCombo = UIUtils.createLabelCombo(settingsGroup, "Target schema", SWT.DROP_DOWN | SWT.READ_ONLY);
+            schemaCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getWizard().setSelectedSchema(schemaList.get(schemaCombo.getSelectionIndex()));
+                    updatePageCompletion();
+                }
+            });
 
             //UIUtils.createControlLabel(settingsGroup, "Options", 2);
             propsEditor = new PropertyTreeViewer(settingsGroup, SWT.BORDER);
@@ -170,6 +191,9 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
         try {
             getWizard().getRunnableContext().run(false, true, monitor -> {
                 try {
+                    schemaList = new ArrayList<>();
+                    schemaList.addAll(getWizard().getDatabase().getSchemas(monitor));
+
                     // Fill from both installed FDW and pre-configured FDW
                     fdwList = new ArrayList<>();
                     for (PostgreForeignDataWrapper fdw : CommonUtils.safeCollection(getWizard().getDatabase().getForeignDataWrappers(monitor))) {
@@ -191,15 +215,6 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
                             fdwInfo.fdwDescriptor = fdw;
                             fdwList.add(fdwInfo);
                         }
-                    }
-
-                    fdwCombo.removeAll();
-                    for (PostgreFDWConfigWizard.FDWInfo fdw : fdwList) {
-                        String fdwName = fdw.getId();
-                        if (!CommonUtils.isEmpty(fdw.getDescription())) {
-                            fdwName += " (" + fdw.getDescription() + ")";
-                        }
-                        fdwCombo.add(fdwName);
                     }
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
@@ -227,9 +242,33 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
                 }
             }
         }
+
+        fdwCombo.removeAll();
+        for (PostgreFDWConfigWizard.FDWInfo fdw : fdwList) {
+            String fdwName = fdw.getId();
+            if (!CommonUtils.isEmpty(fdw.getDescription())) {
+                fdwName += " (" + fdw.getDescription() + ")";
+            }
+            fdwCombo.add(fdwName);
+        }
         if (fdwInfo != null) {
             getWizard().setSelectedFDW(fdwInfo);
             fdwCombo.setText(fdwInfo.getId());
+        }
+
+        schemaCombo.removeAll();
+        for (PostgreSchema schema : schemaList) {
+            schemaCombo.add(schema.getName());
+        }
+        PostgreSchema selectedSchema = getWizard().getSelectedSchema();
+        if (selectedSchema != null) {
+            schemaCombo.setText(selectedSchema.getName());
+        } else {
+            PostgreSchema publicSchema = DBUtils.findObject(schemaList, PostgreConstants.PUBLIC_SCHEMA_NAME);
+            if (publicSchema != null) {
+                schemaCombo.setText(publicSchema.getName());
+                getWizard().setSelectedSchema(publicSchema);
+            }
         }
 
         refreshFDWProperties();
@@ -252,6 +291,7 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
         }
         UIUtils.packColumns(entityTable, false);
         propsEditor.repackColumns();
+        updatePageCompletion();
     }
 
 }

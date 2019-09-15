@@ -265,9 +265,15 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         } else if (tableBase instanceof PostgreTableForeign) {
             PostgreTableForeign table = (PostgreTableForeign)tableBase;
             try {
-                PostgreForeignServer foreignServer = table.getForeignServer(monitor);
-                if (foreignServer != null ) {
-                    ddl.append("\nSERVER ").append(DBUtils.getQuotedIdentifier(foreignServer));
+                String foreignServerName = table.getForeignServerName();
+                if (CommonUtils.isEmpty(foreignServerName)) {
+                    PostgreForeignServer foreignServer = table.getForeignServer(monitor);
+                    if (foreignServer != null) {
+                        foreignServerName = DBUtils.getQuotedIdentifier(foreignServer);
+                    }
+                }
+                if (foreignServerName != null ) {
+                    ddl.append("\nSERVER ").append(foreignServerName);
                 }
                 String[] foreignOptions = table.getForeignOptions(monitor);
                 if (!ArrayUtils.isEmpty(foreignOptions)) {

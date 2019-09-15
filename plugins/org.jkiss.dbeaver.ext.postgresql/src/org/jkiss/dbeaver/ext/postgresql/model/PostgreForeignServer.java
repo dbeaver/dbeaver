@@ -47,6 +47,10 @@ public class PostgreForeignServer extends PostgreInformation implements PostgreS
     private long dataWrapperId;
     private UserMappingCache userMappingCache = new UserMappingCache();
 
+    public PostgreForeignServer(PostgreDatabase database) {
+        super(database);
+    }
+
     public PostgreForeignServer(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {

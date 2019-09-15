@@ -37,6 +37,7 @@ import java.sql.SQLException;
 public class PostgreTableForeign extends PostgreTable implements DBPForeignObject, DBPImageProvider
 {
     private long foreignServerId;
+    private String foreignServerName;
     private String[] foreignOptions;
 
     public PostgreTableForeign(PostgreSchema catalog)
@@ -57,10 +58,22 @@ public class PostgreTableForeign extends PostgreTable implements DBPForeignObjec
         return PostgreUtils.getObjectById(monitor, getDatabase().foreignServerCache, getDatabase(), foreignServerId);
     }
 
+    public String getForeignServerName() {
+        return foreignServerName;
+    }
+
+    public void setForeignServerName(String foreignServerName) {
+        this.foreignServerName = foreignServerName;
+    }
+
     @Property(viewable = false, order = 201)
     public String[] getForeignOptions(DBRProgressMonitor monitor) throws DBException {
         readForeignInfo(monitor);
         return foreignOptions;
+    }
+
+    public void setForeignOptions(String[] foreignOptions) {
+        this.foreignOptions = foreignOptions;
     }
 
     private void readForeignInfo(DBRProgressMonitor monitor) throws DBException {
