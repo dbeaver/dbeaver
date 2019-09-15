@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
@@ -116,7 +117,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
             //gd.heightHint = 300;
             sourceGroup.setLayoutData(gd);
             DBPPlatform platform = DBWorkbench.getPlatform();
-            final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(platform.getWorkspace().getActiveProject());
+            final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(NavigatorUtils.getSelectedProject());
             DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
             dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE);
             gd = new GridData(GridData.FILL_BOTH);

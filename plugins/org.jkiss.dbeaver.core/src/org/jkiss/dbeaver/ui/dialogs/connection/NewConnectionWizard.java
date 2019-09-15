@@ -62,9 +62,7 @@ public class NewConnectionWizard extends ConnectionWizard
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
 
-        IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
-        ISelection selection = activePart == null ? null : activePart.getSite().getSelectionProvider().getSelection();
-        selectedProject = NavigatorUtils.getSelectedProject(selection, activePart);
+        selectedProject = NavigatorUtils.getSelectedProject();
     }
 
     @Override

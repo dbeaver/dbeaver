@@ -595,6 +595,13 @@ public class NavigatorUtils {
         return (IStructuredSelection)selection;
     }
 
+    public static DBPProject getSelectedProject() {
+        IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
+        ISelection selection = activePart == null ? null : activePart.getSite().getSelectionProvider().getSelection();
+        return NavigatorUtils.getSelectedProject(selection, activePart);
+
+    }
+
     public static DBPProject getSelectedProject(ISelection currentSelection, IWorkbenchPart activePart) {
         DBPProject activeProject = null;
         if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
