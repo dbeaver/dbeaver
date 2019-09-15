@@ -16,11 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper;
+import org.jkiss.dbeaver.ext.postgresql.model.fdw.FDWConfigDescriptor;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -31,11 +37,12 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 
 import java.util.*;
 
-class PostgreFDWConfigWizard extends ActiveWizard {
+class PostgreFDWConfigWizard extends ActiveWizard implements DBPContextProvider {
 
     private static final Log log = Log.getLog(PostgreFDWConfigWizard.class);
 
@@ -47,15 +54,53 @@ class PostgreFDWConfigWizard extends ActiveWizard {
     private List<DBSEntity> proposedEntities = null;
     private List<DBNDatabaseNode> selectedEntities;
     private DBPDataSourceContainer selectedDataSource;
+    private FDWInfo selectedFDW;
+    private String fdwServerId;
+    private PropertySourceCustom fdwPropertySource;
+
+    static class FDWInfo {
+        PostgreForeignDataWrapper installedFDW;
+        FDWConfigDescriptor fdwDescriptor;
+
+        String getId() {
+            return installedFDW != null ? installedFDW.getName() : fdwDescriptor.getFdwId();
+        }
+        String getDescription() {
+            return installedFDW != null ? installedFDW.getDescription() : fdwDescriptor.getDescription();
+        }
+    }
 
     PostgreFDWConfigWizard(PostgreDatabase database) {
         setWindowTitle("Foreign Data Wrappers configurator");
         this.database = database;
         setNeedsProgressMonitor(true);
+
+        this.fdwPropertySource = new PropertySourceCustom();
+        this.fdwPropertySource.setDefValueResolver(database.getDataSource().getContainer().getVariablesResolver());
     }
 
     public PostgreDatabase getDatabase() {
         return database;
+    }
+
+    public FDWInfo getSelectedFDW() {
+        return selectedFDW;
+    }
+
+    public void setSelectedFDW(FDWInfo selectedFDW) {
+        this.selectedFDW = selectedFDW;
+    }
+
+    public String getFdwServerId() {
+        return fdwServerId;
+    }
+
+    public void setFdwServerId(String fdwServerId) {
+        this.fdwServerId = fdwServerId;
+    }
+
+    public PropertySourceCustom getFdwPropertySource() {
+        return fdwPropertySource;
     }
 
     @Override
@@ -64,6 +109,7 @@ class PostgreFDWConfigWizard extends ActiveWizard {
         configPage = new PostgreFDWConfigWizardPageConfig(this);
         addPage(inputPage);
         addPage(configPage);
+        addPage(new PostgreFDWConfigWizardPageFinal(this));
         super.addPages();
     }
 
@@ -167,4 +213,9 @@ class PostgreFDWConfigWizard extends ActiveWizard {
         return false;
     }
 
+    @Nullable
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        return DBUtils.getDefaultContext(database, true);
+    }
 }

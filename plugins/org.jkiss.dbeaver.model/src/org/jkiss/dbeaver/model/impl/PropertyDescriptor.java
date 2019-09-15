@@ -125,6 +125,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.category = category;
         this.id = config.getAttribute(ATTR_ID);
         this.name = config.getAttribute(ATTR_LABEL);
+        if (CommonUtils.isEmpty(this.name)) this.name = CommonUtils.toString(this.id);
         this.description = config.getAttribute(ATTR_DESCRIPTION);
         this.required = CommonUtils.getBoolean(config.getAttribute(ATTR_REQUIRED));
         String typeString = config.getAttribute(ATTR_TYPE);

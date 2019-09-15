@@ -35,6 +35,7 @@ public class PropertySourceCustom implements DBPPropertySource {
     private Map<Object, Object> originalValues = new TreeMap<>();
     private Map<Object, Object> propValues = new TreeMap<>();
     private Map<Object,Object> defaultValues = new TreeMap<>();
+    private GeneralUtils.IVariableResolver defValueResolver = null;
 
     public PropertySourceCustom()
     {
@@ -44,6 +45,10 @@ public class PropertySourceCustom implements DBPPropertySource {
     {
         addProperties(properties);
         setValues(values);
+    }
+
+    public void setDefValueResolver(GeneralUtils.IVariableResolver defValueResolver) {
+        this.defValueResolver = defValueResolver;
     }
 
     public void setValues(Map<?, ?> values)
@@ -98,8 +103,7 @@ public class PropertySourceCustom implements DBPPropertySource {
         }
     }
 
-    public void addProperties(Collection<? extends DBPPropertyDescriptor> properties)
-    {
+    public void addProperties(Collection<? extends DBPPropertyDescriptor> properties) {
         props.addAll(properties);
         for (DBPPropertyDescriptor prop : properties) {
             final Object defaultValue = prop.getDefaultValue();
@@ -107,6 +111,13 @@ public class PropertySourceCustom implements DBPPropertySource {
                 defaultValues.put(prop.getId(), defaultValue);
             }
         }
+    }
+
+    private Object getDefaultValue(Object defaultValue) {
+        if (defValueResolver != null && defaultValue instanceof String) {
+            return GeneralUtils.replaceVariables((String) defaultValue, defValueResolver);
+        }
+        return defaultValue;
     }
 
     @Override
@@ -130,7 +141,7 @@ public class PropertySourceCustom implements DBPPropertySource {
         if (value == null) {
             value = originalValues.get(id);
         }
-        return value != null ? value : defaultValues.get(id);
+        return value != null ? value : getDefaultValue(defaultValues.get(id));
     }
 
     @Override
@@ -146,7 +157,7 @@ public class PropertySourceCustom implements DBPPropertySource {
         if (value == null) {
             return false;
         }
-        final Object defaultValue = defaultValues.get(id);
+        final Object defaultValue = getDefaultValue(defaultValues.get(id));
         return !CommonUtils.equalObjects(value, defaultValue);
     }
 
