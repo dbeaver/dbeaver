@@ -16,15 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
-import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.*;
@@ -38,6 +36,7 @@ import java.util.List;
 
 public class DatabaseObjectsSelectorPanel extends Composite {
 
+    private final DBPProject project;
     private DatabaseNavigatorTree dataSourceTree;
     private DatabaseObjectsTreeManager checkboxTreeManager;
     private DBRRunnableContext runnableContext;
@@ -54,7 +53,8 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         this.runnableContext = runnableContext;
 
         DBPPlatform platform = DBWorkbench.getPlatform();
-        final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(NavigatorUtils.getSelectedProject());
+        project = NavigatorUtils.getSelectedProject();
+        final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(project);
         DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
         dataSourceTree = new DatabaseNavigatorTree(this, rootNode, SWT.SINGLE | SWT.CHECK | SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -95,22 +95,28 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         viewer.addCheckStateListener(event -> onSelectionChange());
     }
 
+    public DBPProject getProject() {
+        return project;
+    }
+
     public void setSelection(Collection<DBNNode> nodes) {
         dataSourceTree.getViewer().setSelection(
             new StructuredSelection(nodes), true);
     }
 
-    public void checkNodes(Collection<DBNNode> nodes) {
+    public void checkNodes(Collection<DBNNode> nodes, boolean revealAll) {
         boolean first = true;
         for (DBNNode node : nodes) {
-            ((CheckboxTreeViewer) dataSourceTree.getViewer()).setChecked(node, true);
-            if (first) {
+            if (revealAll) {
+                dataSourceTree.getViewer().reveal(node);
+            } else if (first) {
                 DBNDataSource dsNode = DBNDataSource.getDataSourceNode(node);
                 if (dsNode != null) {
                     dataSourceTree.getViewer().reveal(dsNode);
                 }
                 first = false;
             }
+            ((CheckboxTreeViewer) dataSourceTree.getViewer()).setChecked(node, true);
         }
         checkboxTreeManager.updateCheckStates();
     }
@@ -151,5 +157,15 @@ public class DatabaseObjectsSelectorPanel extends Composite {
 
     }
 
+    public void refreshNodes() {
+        dataSourceTree.getViewer().refresh();
+    }
 
+    public void addSelectionListener(ISelectionChangedListener listener) {
+        dataSourceTree.getViewer().addSelectionChangedListener(listener);
+    }
+
+    public ISelection getSelection() {
+        return dataSourceTree.getViewer().getSelection();
+    }
 }

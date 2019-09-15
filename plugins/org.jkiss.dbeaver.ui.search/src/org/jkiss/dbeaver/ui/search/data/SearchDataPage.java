@@ -309,7 +309,7 @@ public class SearchDataPage extends AbstractSearchPage {
         }
 
         if (!checkedNodes.isEmpty()) {
-            selectorPanel.checkNodes(checkedNodes);
+            selectorPanel.checkNodes(checkedNodes, false);
             updateEnablement();
         }
     }

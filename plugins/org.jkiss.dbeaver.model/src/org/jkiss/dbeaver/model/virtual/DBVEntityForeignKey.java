@@ -21,7 +21,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -222,5 +224,13 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     @Override
     public DBSForeignKeyModifyRule getUpdateRule() {
         return DBSForeignKeyModifyRule.NO_ACTION;
+    }
+
+    public DBPDataSourceContainer getAssociatedDataSource() {
+        if (refEntityId == null) {
+            return null;
+        }
+        DBNDataSource dsNode = DBWorkbench.getPlatform().getNavigatorModel().getDataSourceByPath(refEntityId);
+        return dsNode == null ? null : dsNode.getDataSourceContainer();
     }
 }

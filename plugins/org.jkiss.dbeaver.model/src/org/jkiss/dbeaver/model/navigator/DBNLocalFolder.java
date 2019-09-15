@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -245,6 +246,21 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
             }
         }
         return false;
+    }
+
+    public List<DBNDataSource> getNestedDataSources() {
+        List<DBNDataSource> result = new ArrayList<>();
+        fillNestedDataSources(result);
+        return result;
+    }
+
+    private void fillNestedDataSources(List<DBNDataSource> dataSources) {
+        for (DBNNode childFolder : getChildren(new VoidProgressMonitor())) {
+            if (childFolder instanceof DBNLocalFolder) {
+                ((DBNLocalFolder) childFolder).fillNestedDataSources(dataSources);
+            }
+        }
+        dataSources.addAll(getDataSources());
     }
 
     @Override
