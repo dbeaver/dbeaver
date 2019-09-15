@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -44,16 +43,17 @@ class PostgreFDWConfigWizardPageInput extends ActiveWizardPage<PostgreFDWConfigW
     private DatabaseObjectsSelectorPanel selectorPanel;
     private boolean activated;
 
-    protected PostgreFDWConfigWizardPageInput()
+    protected PostgreFDWConfigWizardPageInput(PostgreFDWConfigWizard wizard)
     {
         super("Settings");
         setTitle("Configure foreign data wrappers");
         setDescription("Choose which databases/tables you need to configure");
+        setWizard(wizard);
     }
 
     @Override
     public boolean isPageComplete() {
-        return selectorPanel.hasCheckedNodes();
+        return !getWizard().getSelectedEntities().isEmpty();
     }
 
     @Override
@@ -104,7 +104,7 @@ class PostgreFDWConfigWizardPageInput extends ActiveWizardPage<PostgreFDWConfigW
                         DBPDataSourceContainer dataSource = dialog.getDataSource();
                         if (dataSource != null) {
                             getWizard().addAvailableDataSource(dataSource);
-                            selectorPanel.refreshNodes();
+                            refreshDataSources();
                         }
                     }
                 }
@@ -116,7 +116,7 @@ class PostgreFDWConfigWizardPageInput extends ActiveWizardPage<PostgreFDWConfigW
                     DBNNode selectedNode = NavigatorUtils.getSelectedNode(selectorPanel.getSelection());
                     if (selectedNode instanceof DBNDatabaseNode) {
                         getWizard().removeAvailableDataSource(((DBNDatabaseNode) selectedNode).getDataSourceContainer());
-                        selectorPanel.refreshNodes();
+                        refreshDataSources();
                     }
                 }
             });
@@ -163,10 +163,29 @@ class PostgreFDWConfigWizardPageInput extends ActiveWizardPage<PostgreFDWConfigW
         selectorPanel.refreshNodes();
         selectorPanel.checkNodes(selection, true);
         selectorPanel.setSelection(selection);
+        updateState();
     }
 
     protected void updateState()
     {
+        List<DBNDatabaseNode> selectedEntities = new ArrayList<>();
+        DBPDataSourceContainer dsContainer = null;
+        for (DBNNode node : selectorPanel.getCheckedNodes()) {
+            if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSEntity) {
+                DBPDataSourceContainer nodeContainer = ((DBNDatabaseNode) node).getDataSourceContainer();
+                if (dsContainer != null && dsContainer != nodeContainer) {
+                    selectedEntities.clear();
+                    setErrorMessage("You can't select tables from different data sources");
+                    break;
+                }
+                dsContainer = nodeContainer;
+                selectedEntities.add((DBNDatabaseNode) node);
+            }
+        }
+        if (!selectedEntities.isEmpty()) {
+            setErrorMessage(null);
+        }
+        getWizard().setSelectedEntities(selectedEntities);
         getContainer().updateButtons();
     }
 

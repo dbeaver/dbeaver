@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -44,6 +45,8 @@ class PostgreFDWConfigWizard extends ActiveWizard {
 
     private List<DBPDataSourceContainer> availableDataSources = null;
     private List<DBSEntity> proposedEntities = null;
+    private List<DBNDatabaseNode> selectedEntities;
+    private DBPDataSourceContainer selectedDataSource;
 
     PostgreFDWConfigWizard(PostgreDatabase database) {
         setWindowTitle("Foreign Data Wrappers configurator");
@@ -57,8 +60,8 @@ class PostgreFDWConfigWizard extends ActiveWizard {
 
     @Override
     public void addPages() {
-        inputPage = new PostgreFDWConfigWizardPageInput();
-        configPage = new PostgreFDWConfigWizardPageConfig();
+        inputPage = new PostgreFDWConfigWizardPageInput(this);
+        configPage = new PostgreFDWConfigWizardPageConfig(this);
         addPage(inputPage);
         addPage(configPage);
         super.addPages();
@@ -70,6 +73,19 @@ class PostgreFDWConfigWizard extends ActiveWizard {
 
     public List<DBSEntity> getProposedEntities() {
         return proposedEntities == null ? Collections.emptyList() : proposedEntities;
+    }
+
+    public DBPDataSourceContainer getSelectedDataSource() {
+        return selectedDataSource;
+    }
+
+    public List<DBNDatabaseNode> getSelectedEntities() {
+        return selectedEntities == null ? Collections.emptyList() : selectedEntities;
+    }
+
+    public void setSelectedEntities(List<DBNDatabaseNode> entities) {
+        this.selectedEntities = entities;
+        this.selectedDataSource = entities.isEmpty() ? null : entities.get(0).getDataSourceContainer();
     }
 
     public void addAvailableDataSource(DBPDataSourceContainer dataSource) {

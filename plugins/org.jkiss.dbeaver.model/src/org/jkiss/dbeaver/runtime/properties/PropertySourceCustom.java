@@ -89,6 +89,15 @@ public class PropertySourceCustom implements DBPPropertySource {
         return allValues;
     }
 
+    public void addProperty(DBPPropertyDescriptor property)
+    {
+        props.add(property);
+        final Object defaultValue = property.getDefaultValue();
+        if (defaultValue != null) {
+            defaultValues.put(property.getId(), defaultValue);
+        }
+    }
+
     public void addProperties(Collection<? extends DBPPropertyDescriptor> properties)
     {
         props.addAll(properties);
@@ -108,7 +117,7 @@ public class PropertySourceCustom implements DBPPropertySource {
 
     @Override
     public DBPPropertyDescriptor[] getPropertyDescriptors2() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+        return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
     @Override
