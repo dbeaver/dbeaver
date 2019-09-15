@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -33,7 +34,7 @@ import java.util.List;
 /**
  * PropertyDescriptor
  */
-public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
+public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>, DBPNamedObject2
 {
 
     public static final String CURRENT_DATE_STRING_VAR_PREFIX = "${now as ";
@@ -170,6 +171,17 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.defaultValue = defaultValue;
         this.validValues = validValues;
         this.editable = editable;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Nullable
