@@ -21,6 +21,7 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.postgresql.serverType" name="PostgreSQL Server Type" schema="schema/org.jkiss.dbeaver.postgresql.serverType.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.postgresql.fdw.config" name="PostgreSQL Foreign Data Wrappers Config" schema="schema/org.jkiss.dbeaver.postgresql.fdw.config.exsd"/>
 
     <extension point="org.jkiss.dbeaver.postgresql.serverType">
         <serverType id="postgresql" name="PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL" logo="icons/postgresql_logo.png" customURL="true"/>
@@ -29,6 +30,23 @@
         <serverType id="timescale" name="TimescaleDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTimescale" logo="icons/timescale_logo.png" customURL="true"/>
         <serverType id="yellowbrick" name="Yellowbrick" class="org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick" logo="icons/yellowbrick_logo.png" customURL="true"/>
         <serverType id="cockroach" name="CockroachDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB" logo="icons/cockroach_logo.png" defaultDatbase="system" defaultUser="root" customURL="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.postgresql.fdw.config">
+        <fdw id="postgresql" fdwId="postgres_fdw" databases="postgres" name="PostgreSQL" description="Default FDW for PostgreSQL servers" docURL="https://www.postgresql.org/docs/current/postgres-fdw.html">
+            <propertyGroup label="Options">
+                <property id="host" description="Host name" defaultValue="${host}"/>
+                <property id="port" description="Port number" defaultValue="${port}"/>
+                <property id="dbname" description="Database name" defaultValue="${database}"/>
+            </propertyGroup>
+        </fdw>
+        <fdw id="clickhouse" fdwId="clickhousedb_fdw" databases="clickhouse" name="Yandex Clickhouse" description="Clickhouse FDW by Percona Labs" docURL="https://github.com/Percona-Lab/clickhousedb_fdw">
+            <propertyGroup label="Options">
+                <property id="host" description="Host name" defaultValue="${host}"/>
+                <property id="port" description="Port number" defaultValue="${port}"/>
+                <property id="dbname" description="Database name" defaultValue="${database}"/>
+            </propertyGroup>
+        </fdw>
     </extension>
 
     <!--

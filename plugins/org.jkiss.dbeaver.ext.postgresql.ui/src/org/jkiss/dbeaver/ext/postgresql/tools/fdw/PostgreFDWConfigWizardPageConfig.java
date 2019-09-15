@@ -24,6 +24,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper;
+import org.jkiss.dbeaver.ext.postgresql.model.fdw.FDWConfigDescriptor;
+import org.jkiss.dbeaver.ext.postgresql.model.fdw.FDWConfigRegistry;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -35,6 +38,8 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfigWizard> {
@@ -44,9 +49,11 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
     private boolean activated;
     private Table entityTable;
     private Combo fdwCombo;
+    private Text fdwServerText;
     private PropertyTreeViewer propsEditor;
     private Text targetDataSourceText;
     private Text targetDriverText;
+    private List<PostgreFDWConfigWizard.FDWInfo> fdwList;
 
     protected PostgreFDWConfigWizardPageConfig(PostgreFDWConfigWizard wizard)
     {
@@ -59,7 +66,7 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
     @Override
     public boolean isPageComplete()
     {
-        return false;
+        return activated;
     }
 
     @Override
@@ -72,13 +79,21 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
             fdwGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             fdwCombo = UIUtils.createLabelCombo(fdwGroup, "Foreign Data Wrapper", SWT.DROP_DOWN | SWT.READ_ONLY);
+            fdwCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getWizard().setSelectedFDW(fdwList.get(fdwCombo.getSelectionIndex()));
+                    refreshFDWProperties();
+                }
+            });
             UIUtils.createEmptyLabel(fdwGroup, 1, 1);
             UIUtils.createLink(fdwGroup, "If you don't see right data wrapper in the list then try to <a>install it</a>", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    super.widgetSelected(e);
                 }
             });
+            fdwServerText = UIUtils.createLabelText(fdwGroup, "Server ID", "", SWT.BORDER);
+            fdwServerText.addModifyListener(e -> getWizard().setFdwServerId(fdwServerText.getText()));
         }
 
         SashForm sashForm = new SashForm(composite, SWT.HORIZONTAL);
@@ -88,6 +103,8 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
 
             //UIUtils.createControlLabel(settingsGroup, "Options", 2);
             propsEditor = new PropertyTreeViewer(settingsGroup, SWT.BORDER);
+            propsEditor.setNamesEditable(true);
+            propsEditor.setNewPropertiesAllowed(true);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             propsEditor.getControl().setLayoutData(gd);
@@ -112,6 +129,26 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
         setControl(composite);
     }
 
+    private void refreshFDWProperties() {
+        {
+            // Fill options
+            DBPDataSourceContainer targetDataSource = getWizard().getSelectedDataSource();
+            PostgreFDWConfigWizard.FDWInfo selectedFDW = getWizard().getSelectedFDW();
+
+            PropertySourceCustom propertySource = new PropertySourceCustom();
+            propertySource.setDefValueResolver(targetDataSource.getVariablesResolver());
+            if (selectedFDW != null && selectedFDW.fdwDescriptor != null) {
+                propertySource.addProperties(selectedFDW.fdwDescriptor.getProperties());
+            } else if (selectedFDW != null) {
+                // Add some default props
+                propertySource.addProperty(new PropertyDescriptor(null, "host", "host", "Remote database host", false, String.class, "${host}", null));
+                propertySource.addProperty(new PropertyDescriptor(null, "port", "port", "Remote database port", false, String.class, "${port}", null));
+                propertySource.addProperty(new PropertyDescriptor(null, "dbname", "dbname", "Remote database name", false, String.class, "${database}", null));
+            }
+            propsEditor.loadProperties(propertySource);
+        }
+    }
+
     @Override
     public void activatePage() {
         if (!activated) {
@@ -132,7 +169,37 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
         try {
             getWizard().getRunnableContext().run(false, true, monitor -> {
                 try {
-                    getWizard().getDatabase().getForeignDataWrappers(monitor);
+                    // Fill from both installed FDW and pre-configured FDW
+                    fdwList = new ArrayList<>();
+                    for (PostgreForeignDataWrapper fdw : CommonUtils.safeCollection(getWizard().getDatabase().getForeignDataWrappers(monitor))) {
+                        PostgreFDWConfigWizard.FDWInfo fdwInfo = new PostgreFDWConfigWizard.FDWInfo();
+                        fdwInfo.installedFDW = fdw;
+                        fdwList.add(fdwInfo);
+                    }
+                    for (FDWConfigDescriptor fdw : FDWConfigRegistry.getInstance().getConfigDescriptors()) {
+                        boolean found = false;
+                        for (PostgreFDWConfigWizard.FDWInfo fdwInfo : fdwList) {
+                            if (fdwInfo.getId().equals(fdw.getFdwId())) {
+                                fdwInfo.fdwDescriptor = fdw;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            PostgreFDWConfigWizard.FDWInfo fdwInfo = new PostgreFDWConfigWizard.FDWInfo();
+                            fdwInfo.fdwDescriptor = fdw;
+                            fdwList.add(fdwInfo);
+                        }
+                    }
+
+                    fdwCombo.removeAll();
+                    for (PostgreFDWConfigWizard.FDWInfo fdw : fdwList) {
+                        String fdwName = fdw.getId();
+                        if (!CommonUtils.isEmpty(fdw.getDescription())) {
+                            fdwName += " (" + fdw.getDescription() + ")";
+                        }
+                        fdwCombo.add(fdwName);
+                    }
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -146,18 +213,31 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
         }
         setErrorMessage(null);
 
-        String hostName = CommonUtils.notEmpty(targetDataSource.getConnectionConfiguration().getHostName());
-        String hostPort = CommonUtils.notEmpty(targetDataSource.getConnectionConfiguration().getHostPort());
-        String databaseName = CommonUtils.notEmpty(targetDataSource.getConnectionConfiguration().getDatabaseName());
-
-        {
-            // Fill options
-            PropertySourceCustom propertySource = new PropertySourceCustom();
-            propertySource.addProperty(new PropertyDescriptor(null, "host", "host", "Remote database host", false, String.class, hostName, null));
-            propertySource.addProperty(new PropertyDescriptor(null, "port", "port", "Remote database port", false, String.class, hostPort, null));
-            propertySource.addProperty(new PropertyDescriptor(null, "dbname", "dbname", "Remote database name", false, String.class, databaseName, null));
-            propsEditor.loadProperties(propertySource);
+        // Detect FDW from target container
+        if (CommonUtils.isEmpty(fdwServerText.getText())) {
+            String fdwServerId = targetDataSource.getDriver().getId() + "_srv";
+            getWizard().setFdwServerId(fdwServerId);
+            fdwServerText.setText(fdwServerId);
         }
+
+        PostgreFDWConfigWizard.FDWInfo fdwInfo = getWizard().getSelectedFDW();
+        if (fdwInfo == null) {
+            FDWConfigDescriptor fdwConfig = FDWConfigRegistry.getInstance().findFirstMatch(targetDataSource);
+            if (fdwConfig != null) {
+                for (PostgreFDWConfigWizard.FDWInfo fdw : fdwList) {
+                    if (fdw.fdwDescriptor == fdwConfig) {
+                        fdwInfo = fdw;
+                        break;
+                    }
+                }
+            }
+        }
+        if (fdwInfo != null) {
+            getWizard().setSelectedFDW(fdwInfo);
+            fdwCombo.setText(fdwInfo.getId());
+        }
+
+        refreshFDWProperties();
 
         // Fill entities
         targetDataSourceText.setText(targetDataSource.getName());
