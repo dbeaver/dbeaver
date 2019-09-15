@@ -22,13 +22,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 
 class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigWizard> {
@@ -90,11 +93,11 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
     }
 
     private void generateScript() {
-        // Fill FDW list
+        StringBuilder script = new StringBuilder();
         try {
             getWizard().getRunnableContext().run(false, true, monitor -> {
                 try {
-                    throw new DBCException("Not implemented yet");
+                    generateScript(monitor, script);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -108,12 +111,41 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
         }
         setErrorMessage(null);
 
-        String sql = "CREATE FOREIGN SERVER";
+        String sql = script.toString();
 
         UIServiceSQL service = DBWorkbench.getService(UIServiceSQL.class);
         if (service != null) {
             service.setSQLPanelText(sqlPanel, sql);
         }
+    }
+
+    private void generateScript(DBRProgressMonitor monitor, StringBuilder script) throws DBException {
+        PostgreFDWConfigWizard.FDWInfo selectedFDW = getWizard().getSelectedFDW();
+        PropertySourceCustom propertySource = getWizard().getFdwPropertySource();
+        Map<Object, Object> propValues = propertySource.getPropertiesWithDefaults();
+
+        script.append("-- CREATE EXTENSION ").append(selectedFDW.getId()).append(";\n\n");
+        String serverId = getWizard().getFdwServerId();
+        script.append("CREATE SERVER ").append(serverId)
+            .append("\n\tFOREIGN DATA WRAPPER ").append(selectedFDW.getId())
+            .append("\n\tOPTIONS(");
+        boolean firstProp = true;
+        for (Map.Entry<Object, Object> pe : propValues.entrySet()) {
+            String propName = CommonUtils.toString(pe.getKey());
+            String propValue = CommonUtils.toString(pe.getValue());
+            if (CommonUtils.isEmpty(propName) || CommonUtils.isEmpty(propValue)) {
+                continue;
+            }
+            if (!firstProp) script.append(", ");
+            script.append(propName).append(" '").append(propValue).append("'");
+            firstProp = false;
+        }
+        script
+            .append(");\n\n");
+
+        script.append("CREATE USER MAPPING FOR CURRENT_USER SERVER ").append(serverId).append(";\n\n");
+
+        //CREATE SERVER clickhouse_svr FOREIGN DATA WRAPPER clickhousedb_fdw OPTIONS(dbname 'default', driver '/usr/local/lib/odbc/libclickhouseodbc.so', host '46.101.202.143');
     }
 
 }
