@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -298,7 +299,7 @@ public abstract class DBXTreeNode
                     }
                 } catch (JexlException e) {
                     // do nothing
-                    log.debug("Error evaluating expression '" + icon.getExprString() + "'", e);
+                    log.debug("Error evaluating expression '" + icon.getExprString() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
                 }
             }
         }

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -166,7 +167,7 @@ public class EditVirtualAttributePage extends BaseObjectEditPage {
 
             previewText.setText(CommonUtils.toString(result));
         } catch (Exception e) {
-            previewText.setText(DBVUtils.getExpressionParseMessage(e));
+            previewText.setText(GeneralUtils.getExpressionParseMessage(e));
         }
     }
 

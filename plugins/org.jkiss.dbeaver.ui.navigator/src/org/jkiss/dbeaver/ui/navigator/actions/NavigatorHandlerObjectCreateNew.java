@@ -265,7 +265,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             String typeName = childMeta.getNodeType(node.getDataSource(), null);
             if (typeName != null) {
                 IContributionItem item = makeCreateContributionItem(
-                    site, objectClass.getName(), typeName, childMeta.getIcon(node), true);
+                    site, objectClass.getName(), typeName, childMeta.getIcon(null), true);
                 createActions.add(item);
                 return true;
             }
