@@ -368,6 +368,15 @@ public class GeneralUtils {
         return calendar.getTime();
     }
 
+    public static String getExpressionParseMessage(Exception e) {
+        String message = e.getMessage();
+        if (message == null) {
+            return e.getClass().getName();
+        }
+        int divPos = message.indexOf('@');
+        return divPos == -1 ? message : message.substring(divPos + 1);
+    }
+
     public interface IVariableResolver {
         String get(String name);
     }

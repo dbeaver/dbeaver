@@ -34,13 +34,13 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.expressions.ExpressionNamespaceDescriptor;
 import org.jkiss.dbeaver.registry.expressions.ExpressionRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -410,7 +410,7 @@ public abstract class DBVUtils {
         try {
             return expression.evaluate(context);
         } catch (Exception e) {
-            return DBVUtils.getExpressionParseMessage(e);
+            return GeneralUtils.getExpressionParseMessage(e);
         }
     }
 
@@ -431,12 +431,4 @@ public abstract class DBVUtils {
         return jexlEngine.createExpression(expression);
     }
 
-    public static String getExpressionParseMessage(Exception e) {
-        String message = e.getMessage();
-        if (message == null) {
-            return e.getClass().getName();
-        }
-        int divPos = message.indexOf('@');
-        return divPos == -1 ? message : message.substring(divPos + 1);
-    }
 }
