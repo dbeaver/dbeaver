@@ -165,7 +165,7 @@
                     label="%tools.backup.db.name"
                     icon="#export"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
@@ -253,6 +253,21 @@
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
             </tool>
+
+            <toolGroup
+                id="org.jkiss.dbeaver.ext.postgresql.tools.config"
+                label="Configuration"
+                icon="#tools"/>
+            <tool
+                class="org.jkiss.dbeaver.ext.postgresql.tools.fdw.PostgreFDWConfigTool"
+                description="Foreign Data Wrappers configurator"
+                id="org.jkiss.dbeaver.ext.postgresql.tools.fdw.PostgreFDWConfigTool"
+                label="Foreign data wrappers configurator"
+                icon="#server"
+                singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
+            </tool>
+
         </tools>
     </extension>
 
