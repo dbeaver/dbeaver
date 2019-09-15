@@ -76,7 +76,6 @@ class PostgreFDWConfigWizard extends ActiveWizard implements DBPContextProvider 
         setNeedsProgressMonitor(true);
 
         this.fdwPropertySource = new PropertySourceCustom();
-        this.fdwPropertySource.setDefValueResolver(database.getDataSource().getContainer().getVariablesResolver());
     }
 
     public PostgreDatabase getDatabase() {

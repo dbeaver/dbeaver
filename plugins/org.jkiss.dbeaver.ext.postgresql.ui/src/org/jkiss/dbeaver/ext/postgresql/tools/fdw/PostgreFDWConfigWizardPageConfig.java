@@ -135,8 +135,9 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
             DBPDataSourceContainer targetDataSource = getWizard().getSelectedDataSource();
             PostgreFDWConfigWizard.FDWInfo selectedFDW = getWizard().getSelectedFDW();
 
-            PropertySourceCustom propertySource = new PropertySourceCustom();
+            PropertySourceCustom propertySource = getWizard().getFdwPropertySource();
             propertySource.setDefValueResolver(targetDataSource.getVariablesResolver());
+            propertySource.removeAll();
             if (selectedFDW != null && selectedFDW.fdwDescriptor != null) {
                 propertySource.addProperties(selectedFDW.fdwDescriptor.getProperties());
             } else if (selectedFDW != null) {
@@ -214,12 +215,6 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
         setErrorMessage(null);
 
         // Detect FDW from target container
-        if (CommonUtils.isEmpty(fdwServerText.getText())) {
-            String fdwServerId = targetDataSource.getDriver().getId() + "_srv";
-            getWizard().setFdwServerId(fdwServerId);
-            fdwServerText.setText(fdwServerId);
-        }
-
         PostgreFDWConfigWizard.FDWInfo fdwInfo = getWizard().getSelectedFDW();
         if (fdwInfo == null) {
             FDWConfigDescriptor fdwConfig = FDWConfigRegistry.getInstance().findFirstMatch(targetDataSource);
@@ -238,6 +233,12 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
         }
 
         refreshFDWProperties();
+
+        if (CommonUtils.isEmpty(fdwServerText.getText())) {
+            String fdwServerId = (fdwInfo == null ? targetDataSource.getDriver().getId() : fdwInfo.getId()) + "_srv";
+            getWizard().setFdwServerId(fdwServerId);
+            fdwServerText.setText(fdwServerId);
+        }
 
         // Fill entities
         targetDataSourceText.setText(targetDataSource.getName());

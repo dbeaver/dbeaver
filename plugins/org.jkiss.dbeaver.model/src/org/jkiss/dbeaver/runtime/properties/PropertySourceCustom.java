@@ -91,6 +91,11 @@ public class PropertySourceCustom implements DBPPropertySource {
         Map<Object, Object> allValues = new HashMap<>(defaultValues);
         allValues.putAll(originalValues);
         allValues.putAll(propValues);
+        if (defValueResolver != null) {
+            for (Map.Entry<Object, Object> prop : allValues.entrySet()) {
+                prop.setValue(getDefaultValue(prop.getValue()));
+            }
+        }
         return allValues;
     }
 
@@ -141,7 +146,10 @@ public class PropertySourceCustom implements DBPPropertySource {
         if (value == null) {
             value = originalValues.get(id);
         }
-        return value != null ? value : getDefaultValue(defaultValues.get(id));
+        if (value == null) {
+            value = defaultValues.get(id);
+        }
+        return value != null ? getDefaultValue(value) : null;
     }
 
     @Override
@@ -158,7 +166,7 @@ public class PropertySourceCustom implements DBPPropertySource {
             return false;
         }
         final Object defaultValue = getDefaultValue(defaultValues.get(id));
-        return !CommonUtils.equalObjects(value, defaultValue);
+        return !CommonUtils.equalObjects(getDefaultValue(value), defaultValue);
     }
 
     @Override
@@ -199,4 +207,11 @@ public class PropertySourceCustom implements DBPPropertySource {
         originalValues.remove(id);
     }
 
+    public void removeAll() {
+        props.clear();
+
+        originalValues.clear();
+        propValues.clear();
+        defaultValues.clear();
+    }
 }
