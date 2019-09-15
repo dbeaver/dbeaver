@@ -144,6 +144,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         return true;
     }
 
+    @NotNull
     public Collection<DBVContainer> getContainers() {
         return containers.values();
     }
@@ -161,6 +162,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         containers.put(container.getName(), container);
     }
 
+    @NotNull
     public Collection<DBVEntity> getEntities() {
         return entities.values();
     }

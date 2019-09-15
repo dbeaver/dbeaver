@@ -179,6 +179,12 @@ public class DBVModel extends DBVContainer {
 
     private static final Map<String, List<DBVEntityForeignKey>> globalReferenceCache = new HashMap<>();
 
+    public static Map<String, List<DBVEntityForeignKey>> getGlobalReferenceCache() {
+        synchronized (globalReferenceCache) {
+            return new HashMap<>(globalReferenceCache);
+        }
+    }
+
     @Nullable
     public static List<DBVEntityForeignKey> getGlobalReferences(DBNDatabaseNode databaseNode) {
         synchronized (globalReferenceCache) {
