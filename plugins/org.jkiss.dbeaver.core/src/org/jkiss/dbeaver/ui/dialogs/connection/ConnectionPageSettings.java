@@ -270,7 +270,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public DBRRunnableContext getRunnableContext() {
-        return new RunnableContextDelegate(wizard.getContainer());
+        return wizard.getRunnableContext();
     }
 
     @Override
