@@ -51,6 +51,8 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     {
         super(parent, style);
         setExpandSingleRoot(false);
+        setNewPropertiesAllowed(true);
+        setNamesEditable(true);
     }
 
     public PropertySourceCustom makeProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
@@ -119,7 +121,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         String propName = EnterNameDialog.chooseName(getControl().getShell(), UIConnectionMessages.controls_connection_properties_dialog_new_property_title);
         if (propName != null) {
             // Check property name (must be unique
-            addProperty(node, new PropertyDescriptor(category, propName, propName, null, null, false, null, null, true));
+            addProperty(node, new PropertyDescriptor(category, propName, propName, null, null, false, null, null, true), true);
         }
     }
 
