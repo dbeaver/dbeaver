@@ -88,6 +88,9 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     @Override
     public void setActiveEditor(IEditorPart part) {
         super.setActiveEditor(part);
+        if (part != null && !(part instanceof ContentEditor)) {
+            return;
+        }
         this.activeEditor = (ContentEditor) part;
 
         if (this.activeEditor != null) {
