@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.gis;
 
-import graphql.execution.nextgen.Common;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
 
