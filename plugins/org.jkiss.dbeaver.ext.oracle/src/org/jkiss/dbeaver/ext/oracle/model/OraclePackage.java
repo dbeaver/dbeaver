@@ -157,7 +157,8 @@ public class OraclePackage extends OracleSchemaObject
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
-        this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE);
+        this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE) &&
+        		OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE_BODY);
     }
 
     @Override
@@ -172,7 +173,7 @@ public class OraclePackage extends OracleSchemaObject
                     "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
                 ));
         }
-        if (!CommonUtils.isEmpty(sourceDefinition)) {
+        /*if (!CommonUtils.isEmpty(sourceDefinition)) */ {
             actions.add(
                 new OracleObjectPersistAction(
                     OracleObjectType.PACKAGE_BODY,
