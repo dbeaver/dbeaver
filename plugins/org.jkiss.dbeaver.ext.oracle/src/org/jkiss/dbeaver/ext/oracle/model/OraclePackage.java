@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -50,6 +51,9 @@ import java.util.*;
 public class OraclePackage extends OracleSchemaObject
     implements OracleSourceObject, DBPScriptObjectExt, DBSObjectContainer, DBSPackage, DBPRefreshableObject, DBSProcedureContainer
 {
+
+    private static final Log log = Log.getLog(OraclePackage.class);
+
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
     private String sourceDeclaration;
@@ -157,7 +161,8 @@ public class OraclePackage extends OracleSchemaObject
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
-        this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE);
+        this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE) &&
+        		OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE_BODY);
     }
 
     @Override
@@ -172,13 +177,17 @@ public class OraclePackage extends OracleSchemaObject
                     "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
                 ));
         }
-        if (!CommonUtils.isEmpty(sourceDefinition)) {
-            actions.add(
-                new OracleObjectPersistAction(
-                    OracleObjectType.PACKAGE_BODY,
-                    "Compile package body",
-                    "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE BODY"
-                ));
+        try {
+            if (!CommonUtils.isEmpty(getExtendedDefinitionText(monitor))) {
+                actions.add(
+                        new OracleObjectPersistAction(
+                            OracleObjectType.PACKAGE_BODY,
+                            "Compile package body",
+                            "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE BODY"
+                            ));
+            }
+        } catch (DBException e) {
+            log.warn("Unable to retrieve package body, not compiling it", e);
         }
         return actions.toArray(new DBEPersistAction[0]);
     }
