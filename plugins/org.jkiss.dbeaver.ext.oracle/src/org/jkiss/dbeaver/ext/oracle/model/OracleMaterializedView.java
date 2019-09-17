@@ -170,7 +170,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
     {
         return new DBEPersistAction[] {
             new OracleObjectPersistAction(

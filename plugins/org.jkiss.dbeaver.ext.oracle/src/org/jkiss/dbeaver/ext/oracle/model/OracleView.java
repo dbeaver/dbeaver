@@ -224,7 +224,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
     {
         return new DBEPersistAction[] {
             new OracleObjectPersistAction(

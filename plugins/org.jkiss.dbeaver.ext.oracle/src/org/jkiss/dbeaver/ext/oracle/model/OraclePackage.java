@@ -161,7 +161,7 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
     {
         List<DBEPersistAction> actions = new ArrayList<>();
         /*if (!CommonUtils.isEmpty(sourceDeclaration)) */{

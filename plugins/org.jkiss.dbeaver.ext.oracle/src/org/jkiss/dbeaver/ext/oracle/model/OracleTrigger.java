@@ -199,7 +199,7 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
     {
         return new DBEPersistAction[] {
             new OracleObjectPersistAction(
