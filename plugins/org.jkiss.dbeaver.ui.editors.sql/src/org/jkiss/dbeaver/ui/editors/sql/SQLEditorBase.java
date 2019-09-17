@@ -727,6 +727,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
                 if (currentLine == firstLine) {
                     for (String delim : statementDelimiters) {
+                        if (Character.isLetterOrDigit(delim.charAt(0))) {
+                            // Skip literal delimiters
+                            continue;
+                        }
                         final int offset = TextUtils.getOffsetOf(document, firstLine, delim);
                         if (offset >= 0 ) {
                             int delimOffset = document.getLineOffset(firstLine) + offset + delim.length();
