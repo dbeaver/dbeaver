@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
+import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -102,8 +103,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         paramTable.setLinesVisible(true);
 
         final TableColumn indexColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "#");
+        indexColumn.addListener(SWT.Selection, new TableColumnSortListener(paramTable, 0));
         indexColumn.setWidth(40);
         final TableColumn nameColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_name);
+        nameColumn.addListener(SWT.Selection, new TableColumnSortListener(paramTable, 1));
         nameColumn.setWidth(100);
         final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_value);
         valueColumn.setWidth(200);
