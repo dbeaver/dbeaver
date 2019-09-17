@@ -200,7 +200,7 @@ public class CompileHandler extends OracleTaskHandler
 
     public static boolean compileUnit(DBRProgressMonitor monitor, DBCCompileLog compileLog, OracleSourceObject unit) throws DBCException
     {
-        final DBEPersistAction[] compileActions = unit.getCompileActions();
+        final DBEPersistAction[] compileActions = unit.getCompileActions(monitor);
         if (ArrayUtils.isEmpty(compileActions)) {
             return true;
         }

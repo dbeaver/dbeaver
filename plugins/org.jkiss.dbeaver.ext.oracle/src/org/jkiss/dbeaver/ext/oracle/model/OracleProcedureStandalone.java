@@ -117,7 +117,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
     {
         return new DBEPersistAction[] {
             new OracleObjectPersistAction(
