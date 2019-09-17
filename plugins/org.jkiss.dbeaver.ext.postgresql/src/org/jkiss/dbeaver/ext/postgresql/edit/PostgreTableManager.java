@@ -118,7 +118,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            if (command.getObject() instanceof PostgreTableRegular) {
+            if (command.getObject() instanceof PostgreTable) {
                 try {
                     generateAlterActions(monitor, actionList, command);
                 } catch (DBException e) {
