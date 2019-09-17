@@ -64,6 +64,7 @@
         <module>org.jkiss.dbeaver.ext.import_config</module>
         <module>org.jkiss.dbeaver.ext.format.sqlworkbenchj</module>
         <module>org.jkiss.dbeaver.ext.h2</module>
+        <module>org.jkiss.dbeaver.ext.h2gis</module>
         <module>org.jkiss.dbeaver.ext.hana</module>
         <module>org.jkiss.dbeaver.ext.hive</module>
         <module>org.jkiss.dbeaver.ext.hsqldb</module>
@@ -111,7 +112,6 @@
 
         <module>org.jkiss.dbeaver.team.git.ui</module>
         <module>org.jkiss.dbeaver.team.git</module>
-        <module>org.jkiss.dbeaver.ext.h2gis</module>
     </modules>
 
 </project>

@@ -20,18 +20,15 @@
                     label="H2GIS Embedded"
                     icon="icons/h2gis_icon.png"
                     iconBig="icons/h2gis_icon_big.png"
-                    category="H2GIS"
+                    category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:{database}"
                     webURL="http://www.h2gis.org/"
                     embedded="true"
                     description="H2GIS Embedded"
                     categories="spatial,sql,embedded">
-                    <replace provider="generic" driver="h2gis_embedded"/>
 
-                    <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE" bundle="!drivers.h2"/>
-
-                    <file type="jar" path="drivers/h2gis/h2gis.jar" bundle="drivers.h2"/>
+                    <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
@@ -44,18 +41,15 @@
                     label="H2GIS Server"
                     icon="icons/h2gis_icon.png"
                     iconBig="icons/h2gis_icon_big.png"
-                    category="H2GIS"
+                    category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
                     defaultPort="9092"
                     webURL="http://www.h2gis.org/"
                     description="H2GIS Embedded"
                     categories="spatial,sql,server">
-                    <replace provider="generic" driver="h2gis_server"/>
 
-                    <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE" bundle="!drivers.h2"/>
-
-                    <file type="jar" path="drivers/h2gis/h2gis.jar" bundle="drivers.h2"/>
+                    <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
