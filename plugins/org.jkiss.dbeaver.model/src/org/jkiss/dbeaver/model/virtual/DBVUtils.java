@@ -225,6 +225,7 @@ public abstract class DBVUtils {
                 }
                 hasNulls = true;
             }
+            String valueStr = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.EDIT);
             String keyLabel;
             if (metaColumns.size() > 1) {
                 StringBuilder keyLabel2 = new StringBuilder();
@@ -239,7 +240,7 @@ public abstract class DBVUtils {
             } else {
                 keyLabel = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
-            values.add(new DBDLabelValuePair(keyLabel, keyValue));
+            values.add(new DBDLabelValuePair(keyLabel, valueStr));
         }
         return values;
     }
