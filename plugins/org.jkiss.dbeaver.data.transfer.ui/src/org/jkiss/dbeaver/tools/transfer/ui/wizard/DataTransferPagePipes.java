@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -74,18 +75,12 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        SashForm sash = new SashForm(composite, SWT.HORIZONTAL);
+        SashForm sash = new SashForm(composite, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        if (getWizard().getSettings().isConsumerOptional()) {
-            createInputsTable(sash);
-            createNodesTable(sash);
-            sash.setWeights(new int[]{50, 50});
-        } else {
-            createNodesTable(sash);
-            createInputsTable(sash);
-            sash.setWeights(new int[]{50, 50});
-        }
+        createNodesTable(sash);
+        createInputsTable(sash);
+        sash.setWeights(new int[]{80, 20});
 
         updatePageCompletion();
 
@@ -96,7 +91,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         Composite panel = UIUtils.createComposite(composite, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createControlLabel(panel, getWizard().getSettings().isConsumerOptional() ? DTMessages.data_transfer_wizard_final_column_target : DTMessages.data_transfer_wizard_final_column_source);
+        //UIUtils.createControlLabel(panel, getWizard().getSettings().isConsumerOptional() ? DTMessages.data_transfer_wizard_final_column_target : DTMessages.data_transfer_wizard_final_column_source);
 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         nodesTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -222,6 +217,16 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         Composite panel = UIUtils.createComposite(composite, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        Text inputsText = new Text(panel, SWT.READ_ONLY | SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+        inputsText.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        StringBuilder txt = new StringBuilder();
+        for (DBSObject input : getWizard().getSettings().getSourceObjects()) {
+            if (txt.length() > 0) txt.append(", ");
+            txt.append(DBUtils.getObjectFullName(input, DBPEvaluationContext.UI));
+        }
+        inputsText.setText(txt.toString());
+/*
         UIUtils.createControlLabel(panel, !getWizard().getSettings().isConsumerOptional() ? DTMessages.data_transfer_wizard_final_column_target : DTMessages.data_transfer_wizard_final_column_source);
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         inputsTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -257,6 +262,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             UIUtils.packColumns(inputsTable.getTable());
             UIUtils.maxTableColumnsWidth(inputsTable.getTable());
         });
+*/
     }
 
     private void loadConsumers()
