@@ -86,7 +86,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizardDialog;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
@@ -96,7 +96,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
@@ -2510,13 +2509,11 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     }
 
-                    ActiveWizardDialog dialog = new ActiveWizardDialog(
+                    DataTransferWizardDialog.openWizard(
                         getSite().getWorkbenchWindow(),
-                        new DataTransferWizard(
-                            producers.toArray(new IDataTransferProducer[0]),
-                            null),
+                        producers.toArray(new IDataTransferProducer[0]),
+                        null,
                         new StructuredSelection(this));
-                    dialog.open();
                 } else {
                     final SQLQueryJob job = new SQLQueryJob(
                         getSite(),

@@ -394,7 +394,6 @@ public class CoreMessages extends NLS {
 	public static String toolbar_editors_sql_run_explain_name;
 
 	public static String tools_script_execute_wizard_task_completed;
-	public static String tools_wizard_dialog_button_start;
 	public static String tools_wizard_error_task_error_message;
 	public static String tools_wizard_error_task_error_title;
 	public static String tools_wizard_error_task_canceled;

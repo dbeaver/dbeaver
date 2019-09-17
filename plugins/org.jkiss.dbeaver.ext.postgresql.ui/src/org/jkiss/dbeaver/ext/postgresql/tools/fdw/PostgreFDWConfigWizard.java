@@ -39,11 +39,11 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
+import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 
 import java.util.*;
 
-class PostgreFDWConfigWizard extends ActiveWizard implements DBPContextProvider {
+class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
 
     private static final Log log = Log.getLog(PostgreFDWConfigWizard.class);
 

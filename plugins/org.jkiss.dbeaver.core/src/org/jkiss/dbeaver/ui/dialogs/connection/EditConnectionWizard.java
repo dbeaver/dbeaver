@@ -311,8 +311,4 @@ public class EditConnectionWizard extends ConnectionWizard
 */
     }
 
-    private static boolean isPageActive(IDialogPage page) {
-        return page != null && page.getControl() != null;
-    }
-
 }
