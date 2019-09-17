@@ -64,7 +64,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     static {
         IGNORED_RESOURCES.add(PROJECT_DESC_FILE);
-        IGNORED_RESOURCES.add(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX);
+        //IGNORED_RESOURCES.add(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX);
     }
 
     public ProjectExportWizard() {
@@ -303,7 +303,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             exportData.archiveStream.closeEntry();
 
             // Export children
-            final IResource[] members = ((IContainer) resource).members();
+            final IResource[] members = ((IContainer) resource).members(IContainer.INCLUDE_HIDDEN | IContainer.INCLUDE_TEAM_PRIVATE_MEMBERS);
             for (IResource child : members) {
                 if (child.isLinked()) {
                     continue;

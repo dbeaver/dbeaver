@@ -125,14 +125,12 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     final Element libsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_LIBRARIES);
                     if (libsElement != null) {
                         final Collection<Element> libList = XMLUtils.getChildElementList(libsElement, RegistryConstants.TAG_FILE);
-                        monitor.beginTask(CoreMessages.dialog_project_import_wizard_monitor_load_libraries, libList.size());
                         for (Element libElement : libList) {
                             libMap.put(
                                 libElement.getAttribute(ExportConstants.ATTR_PATH),
                                 libElement.getAttribute(ExportConstants.ATTR_FILE));
                             monitor.worked(1);
                         }
-                        monitor.done();
                     }
                 }
 
@@ -161,16 +159,13 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     final Element projectsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_PROJECTS);
                     if (projectsElement != null) {
                         final Collection<Element> projectList = XMLUtils.getChildElementList(projectsElement, ExportConstants.TAG_PROJECT);
-                        monitor.beginTask(CoreMessages.dialog_project_import_wizard_monitor_import_projects, projectList.size());
                         for (Element projectElement : projectList) {
                             if (monitor.isCanceled()) {
                                 break;
                             }
 
                             importProject(monitor, projectElement, zipFile, driverMap);
-                            monitor.worked(1);
                         }
-                        monitor.done();
                     }
                 }
 
@@ -339,8 +334,6 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             throw new DBException("Project '" + targetProjectName + "' already exists");
         }
 
-        monitor.subTask(CoreMessages.dialog_project_import_wizard_monitor_import_project + targetProjectName);
-
         final IProjectDescription description = eclipseWorkspace.newProjectDescription(project.getName());
         if (!CommonUtils.isEmpty(projectDescription)) {
             description.setComment(projectDescription);
@@ -349,11 +342,17 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         project.create(description, 0, RuntimeUtils.getNestedMonitor(monitor));
 
         try {
+            monitor.beginTask(CoreMessages.dialog_project_import_wizard_monitor_import_projects, zipFile.size());
+            monitor.subTask("Import project properties");
+
             // Open project
             project.open(RuntimeUtils.getNestedMonitor(monitor));
 
+            monitor.worked(1);
+
             // Set project properties
             loadResourceProperties(monitor, project, projectElement);
+            monitor.worked(1);
 
             // Load resources
             importChildResources(
@@ -366,6 +365,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             // Update driver references in datasources
             updateDriverReferences(monitor, project, driverMap);
 
+            monitor.done();
         } catch (Exception e) {
             // Cleanup project which was partially imported
             try {
@@ -384,18 +384,16 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     {
         for (Element childElement : XMLUtils.getChildElementList(resourceElement, ExportConstants.TAG_RESOURCE)) {
             String childName = childElement.getAttribute(ExportConstants.ATTR_NAME);
-            boolean isDirectory = CommonUtils.getBoolean(childElement.getAttribute(ExportConstants.ATTR_DIRECTORY));
+            monitor.subTask("Import " + childName);
+            monitor.worked(1);
             String entryPath = containerPath + childName;
-            if (isDirectory) {
-                entryPath += "/"; //$NON-NLS-1$
-            }
-            final ZipEntry resourceEntry = zipFile.getEntry(entryPath);
+            ZipEntry resourceEntry = zipFile.getEntry(entryPath);
             if (resourceEntry == null) {
-                throw new DBException("Project resource '" + entryPath + "' not found in archive");
+                // Maybe it is a directory
+                log.error("Project resource '" + entryPath + "' not found in archive");
+                continue;
             }
-            if (isDirectory != resourceEntry.isDirectory()) {
-                throw new DBException("Directory '" + entryPath + "' stored as file in archive");
-            }
+            boolean isDirectory = resourceEntry.isDirectory();
             IResource childResource;
             if (isDirectory) {
                 IFolder folder;
@@ -410,7 +408,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     folder.create(true, true, RuntimeUtils.getNestedMonitor(monitor));
                 }
                 childResource = folder;
-                importChildResources(monitor, folder, childElement, entryPath, zipFile);
+                importChildResources(monitor, folder, childElement, entryPath + "/", zipFile);
             } else {
                 IFile file;
                 if (resource instanceof IFolder) {
