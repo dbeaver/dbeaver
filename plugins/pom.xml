@@ -107,11 +107,11 @@
         <module>org.jkiss.dbeaver.net.ssh</module>
         <module>org.jkiss.dbeaver.net.ssh.jsch</module>
         <module>org.jkiss.dbeaver.net.ssh.sshj</module>
-        <module>org.jkiss.dbeaver.net.ssh.ui</module>
+        <module>org.jkiss.dbeaver.net.ssh.ui</module>        
 
         <module>org.jkiss.dbeaver.team.git.ui</module>
         <module>org.jkiss.dbeaver.team.git</module>
-
+        <module>org.jkiss.dbeaver.ext.h2gis</module>
     </modules>
 
 </project>
