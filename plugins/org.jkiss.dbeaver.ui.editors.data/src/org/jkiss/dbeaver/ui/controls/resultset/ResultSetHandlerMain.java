@@ -57,12 +57,11 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizardDialog;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -510,16 +509,12 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 options.setSelectedColumns(selectedAttributes);
 
                 ResultSetDataContainer dataContainer = new ResultSetDataContainer(rsv, options);
-                ActiveWizardDialog dialog = new ActiveWizardDialog(
+                DataTransferWizardDialog.openWizard(
                     HandlerUtil.getActiveWorkbenchWindow(event),
-                    new DataTransferWizard(
-                        new IDataTransferProducer[] {
-                            new DatabaseTransferProducer(dataContainer, rsv.getModel().getDataFilter())},
-                        null
-                    ),
-                    rsv.getSelection()
-                );
-                dialog.open();
+                    new IDataTransferProducer[] {
+                        new DatabaseTransferProducer(dataContainer, rsv.getModel().getDataFilter())},
+                    null,
+                    rsv.getSelection());
                 break;
             }
             case CMD_ZOOM_IN:

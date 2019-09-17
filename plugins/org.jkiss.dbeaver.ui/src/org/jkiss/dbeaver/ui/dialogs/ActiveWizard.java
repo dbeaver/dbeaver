@@ -33,9 +33,10 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * ActiveWizard
+ * ActiveWizard.
+ *
  */
-public abstract class ActiveWizard extends Wizard
+public abstract class ActiveWizard extends BaseWizard
 {
     private List<WizardPrefPage> prefPages = new ArrayList<>();
 
@@ -93,15 +94,11 @@ public abstract class ActiveWizard extends Wizard
         }
     }
 
-    private static boolean isPageActive(IDialogPage page) {
-        return page != null && page.getControl() != null;
-    }
-
     protected void createPreferencePages(IPreferenceNode[] preferenceNodes) {
         createPreferencePages(null, preferenceNodes);
     }
 
-    protected void createPreferencePages(WizardPrefPage parent, IPreferenceNode[] preferenceNodes) {
+    private void createPreferencePages(WizardPrefPage parent, IPreferenceNode[] preferenceNodes) {
         Arrays.sort(preferenceNodes, Comparator.comparing(IPreferenceNode::getLabelText));
         for (IPreferenceNode node : preferenceNodes) {
             if (isNodeHasParent(node, preferenceNodes)) {
@@ -136,10 +133,6 @@ public abstract class ActiveWizard extends Wizard
             }
         }
         return false;
-    }
-
-    public DBRRunnableContext getRunnableContext() {
-        return new RunnableContextDelegate(getContainer());
     }
 
 }

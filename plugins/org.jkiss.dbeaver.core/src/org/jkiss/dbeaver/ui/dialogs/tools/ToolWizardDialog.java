@@ -28,13 +28,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesPanel;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 /**
  * Tool wizard dialog
@@ -74,7 +72,7 @@ public class ToolWizardDialog extends ActiveWizardDialog
         Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
         cancelButton.setText(IDialogConstants.CLOSE_LABEL);
         Button finishButton = getButton(IDialogConstants.FINISH_ID);
-        finishButton.setText(CoreMessages.tools_wizard_dialog_button_start);
+        finishButton.setText(UIMessages.button_start);
     }
 
     @Override
