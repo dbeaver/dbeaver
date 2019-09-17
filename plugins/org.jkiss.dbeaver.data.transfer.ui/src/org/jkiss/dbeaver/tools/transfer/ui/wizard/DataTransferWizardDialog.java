@@ -22,14 +22,14 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 public class DataTransferWizardDialog extends ActiveWizardDialog {
 
     private static final int PROFILE_CONFIG_BTN_ID = 1000;
+    private Combo profileCombo;
 
     private DataTransferWizardDialog(IWorkbenchWindow window, DataTransferWizard wizard) {
         this(window, wizard, null);
@@ -65,10 +66,16 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
                 {
-                    Composite configPanel = UIUtils.createComposite(parent, 2);
+                    Composite configPanel = UIUtils.createComposite(parent, 3);
                     configPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-                    UIUtils.createLabelCombo(configPanel, "Profile", SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+                    profileCombo = UIUtils.createLabelCombo(configPanel, "Preset", SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+                    ((GridData)profileCombo.getLayoutData()).widthHint = UIUtils.getFontHeight(profileCombo) * 16;
+
+                    ToolBar editToolbar = new ToolBar(configPanel, SWT.HORIZONTAL);
+                    ToolItem editItem = new ToolItem(editToolbar, SWT.PUSH);
+                    editItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
+                    editItem.setToolTipText("Edit profiles");
                 }
 
                 Label spacer = new Label(parent, SWT.NONE);
