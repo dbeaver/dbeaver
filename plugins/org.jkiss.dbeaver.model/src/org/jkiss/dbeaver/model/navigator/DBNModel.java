@@ -561,7 +561,7 @@ public class DBNModel implements IResourceChangeListener {
                             } else {
                                 getRoot().addProject(projectMeta, true);
                             }
-                        } else {
+                        } else if (childDelta.getKind() != IResourceDelta.REMOVED) {
                             // Project not found - report an error
                             log.error("Project '" + childDelta.getResource().getName() + "' not found in navigator");
                         }
