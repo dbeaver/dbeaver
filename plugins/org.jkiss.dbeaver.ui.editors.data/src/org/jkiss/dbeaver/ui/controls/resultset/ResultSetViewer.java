@@ -1159,7 +1159,7 @@ public class ResultSetViewer extends Viewer
         boolean panelsActive = UIUtils.hasFocus(panelFolder);
         if (panelsActive) {
             presentationPanel.setFocus();
-        } else {
+        } else if (panelFolder != null) {
             CTabItem activePanelTab = panelFolder.getSelection();
             if (activePanelTab != null && activePanelTab.getControl() != null) {
                 activePanelTab.getControl().setFocus();
@@ -1210,11 +1210,11 @@ public class ResultSetViewer extends Viewer
             items.add(new CommandContributionItem(params));
         }
         items.add(new Separator());
-        if (viewerSash.getMaximizedControl() == null) {
-            items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
-        }
+//        if (viewerSash.getMaximizedControl() == null) {
+//            items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
+//        }
         items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_MAXIMIZE));
-        items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
+//        items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
         items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ACTIVATE_PANELS));
         return items;
     }
