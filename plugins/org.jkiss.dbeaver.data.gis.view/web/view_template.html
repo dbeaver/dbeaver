@@ -74,7 +74,7 @@
         var lastClickCoordinates = "";
         function onEachFeature(feature, layer) {
             var tip = feature.tip;
-            if (tip != null) {
+            if (tip != null && (tip.id != null || tip.objInfo != null)) {
                 var tipText = "";
                 if (tip.id != null) {
                     var color = tip.color;
