@@ -13,6 +13,7 @@ Export-Package: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.registry.language,
  org.jkiss.dbeaver.registry.maven,
  org.jkiss.dbeaver.registry.network,
+ org.jkiss.dbeaver.registry.task,
  org.jkiss.dbeaver.registry.updater
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,

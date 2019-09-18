@@ -47,6 +47,12 @@ public class PropertySourceCustom implements DBPPropertySource {
         setValues(values);
     }
 
+    public PropertySourceCustom(DBPPropertyDescriptor[] properties, Map<?, ?> values)
+    {
+        addProperties(properties);
+        setValues(values);
+    }
+
     public void setDefValueResolver(GeneralUtils.IVariableResolver defValueResolver) {
         this.defValueResolver = defValueResolver;
     }
@@ -110,6 +116,16 @@ public class PropertySourceCustom implements DBPPropertySource {
 
     public void addProperties(Collection<? extends DBPPropertyDescriptor> properties) {
         props.addAll(properties);
+        for (DBPPropertyDescriptor prop : properties) {
+            final Object defaultValue = prop.getDefaultValue();
+            if (defaultValue != null) {
+                defaultValues.put(prop.getId(), defaultValue);
+            }
+        }
+    }
+
+    public void addProperties(DBPPropertyDescriptor[] properties) {
+        Collections.addAll(props, properties);
         for (DBPPropertyDescriptor prop : properties) {
             final Object defaultValue = prop.getDefaultValue();
             if (defaultValue != null) {

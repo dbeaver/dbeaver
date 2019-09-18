@@ -16,9 +16,22 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
+import java.util.Map;
+
 /**
  * Task handler
  */
 public interface DBTTaskHandler {
+
+    void executeTask(
+        DBRProgressMonitor monitor,
+        DBTTaskDescriptor task,
+        List<Object> inputObjects,
+        Map<String, Object> properties)
+        throws DBException;
 
 }

@@ -14,25 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.task;
 
-package org.jkiss.dbeaver.ui.tools;
-
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.util.Collection;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
- * Database external user interface utility.
- * Usually utilizes external native software to perform specific database tasks.
- * This interface is deprecated. All tools functionality should be replaced with tasks.
+ * Task type descriptor
  */
-@Deprecated
-public interface IUserInterfaceTool {
+public interface DBTTaskTypeDescriptor {
 
-    void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects)
-        throws DBException;
+    String getId();
+
+    String getName();
+
+    String getDescription();
+
+    DBPImage getIcon();
+
+    DBTTaskDescriptor[] getTasks();
 
 }

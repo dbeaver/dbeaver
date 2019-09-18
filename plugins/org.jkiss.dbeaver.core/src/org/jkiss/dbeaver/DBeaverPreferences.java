@@ -30,8 +30,6 @@ public final class DBeaverPreferences
 
     public static final String SECURITY_USE_BOUNCY_CASTLE = "security.jce.bc"; //$NON-NLS-1$
 
-    public static final String PLATFORM_LANGUAGE = "platform.language"; //$NON-NLS-1$
-
     public static final String TOOLBARS_SHOW_GENERAL_ALWAYS = "toolbars.show.general.always"; //$NON-NLS-1$
     public static final String TOOLBARS_SHOW_EDIT = "toolbars.show.edit"; //$NON-NLS-1$
 

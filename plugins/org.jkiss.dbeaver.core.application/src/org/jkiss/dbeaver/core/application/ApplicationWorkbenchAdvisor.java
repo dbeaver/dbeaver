@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.*;
@@ -33,6 +32,7 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -162,7 +162,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         return
             property.equals(DBeaverPreferences.LOGS_DEBUG_ENABLED) ||
             property.equals(DBeaverPreferences.LOGS_DEBUG_LOCATION) ||
-            property.equals(DBeaverPreferences.PLATFORM_LANGUAGE);
+            property.equals(ModelPreferences.PLATFORM_LANGUAGE);
     }
 
     private void filterPreferencePages() {

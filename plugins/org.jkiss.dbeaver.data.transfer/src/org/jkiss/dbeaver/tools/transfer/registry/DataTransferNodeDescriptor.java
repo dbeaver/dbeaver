@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -38,8 +37,6 @@ import java.util.*;
  */
 public class DataTransferNodeDescriptor extends AbstractDescriptor
 {
-    private static final Log log = Log.getLog(DataTransferNodeDescriptor.class);
-
     public enum NodeType {
         PRODUCER,
         CONSUMER
@@ -56,7 +53,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     private final ObjectType implType;
     private final ObjectType settingsType;
     private final List<ObjectType> sourceTypes = new ArrayList<>();
-    private final List<DataTransferProcessorDescriptor> processors = new ArrayList<>();
+    private DataTransferProcessorDescriptor[] processors;
 
     public DataTransferNodeDescriptor(IConfigurationElement config)
     {
@@ -70,24 +67,29 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         this.implType = new ObjectType(config.getAttribute("class"));
         this.settingsType = new ObjectType(config.getAttribute("settings"));
 
+        for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren("sourceType"))) {
+            sourceTypes.add(new ObjectType(typeCfg.getAttribute("type")));
+        }
+
         loadNodeConfigurations(config);
     }
 
     void loadNodeConfigurations(IConfigurationElement config) {
-        for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren("sourceType"))) {
-            sourceTypes.add(new ObjectType(typeCfg.getAttribute("type")));
-        }
+        List<DataTransferProcessorDescriptor> procList = new ArrayList<>();
         for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren("processor"))) {
-            processors.add(new DataTransferProcessorDescriptor(this, processorConfig));
+            procList.add(new DataTransferProcessorDescriptor(this, processorConfig));
         }
-        processors.sort(Comparator.comparing(DataTransferProcessorDescriptor::getName));
+        procList.sort(Comparator.comparing(DataTransferProcessorDescriptor::getName));
+        this.processors = procList.toArray(new DataTransferProcessorDescriptor[0]);
     }
 
+    @NotNull
     public String getId()
     {
         return id;
     }
 
+    @NotNull
     public String getName()
     {
         return name;
@@ -151,7 +153,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return false;
     }
 
-    public List<DataTransferProcessorDescriptor> getProcessors() {
+    public DataTransferProcessorDescriptor[] getProcessors() {
         return processors;
     }
 
