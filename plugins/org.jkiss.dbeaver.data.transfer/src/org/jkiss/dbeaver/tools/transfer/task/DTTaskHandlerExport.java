@@ -14,34 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
-
-import org.jkiss.code.NotNull;
-
-import java.util.Date;
-import java.util.Map;
+package org.jkiss.dbeaver.tools.transfer.task;
 
 /**
- * Task configuration
+ * DTTaskHandlerExport
  */
-public interface DBTTaskConfiguration {
-
-    @NotNull
-    String getLabel();
-
-    @NotNull
-    String getDescription();
-
-    @NotNull
-    Date getCreateTime();
-
-    @NotNull
-    Date getUpdateTime();
-
-    @NotNull
-    DBTTaskDescriptor getDescriptor();
-
-    @NotNull
-    Map<String, Object> getProperties();
+public class DTTaskHandlerExport extends DTTaskHandlerTransfer {
 
 }

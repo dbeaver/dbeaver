@@ -14,34 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
+
+package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
+import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 
-import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Task configuration
+ * Data transfer task configurator
  */
-public interface DBTTaskConfiguration {
+public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
-    @NotNull
-    String getLabel();
+    @Override
+    public void configureTask(@NotNull DBPPlatform platform, @NotNull DBTTaskDescriptor task, @NotNull List<Object> inputObjects, @NotNull Map<String, Object> properties) {
 
-    @NotNull
-    String getDescription();
-
-    @NotNull
-    Date getCreateTime();
-
-    @NotNull
-    Date getUpdateTime();
-
-    @NotNull
-    DBTTaskDescriptor getDescriptor();
-
-    @NotNull
-    Map<String, Object> getProperties();
-
+    }
 }

@@ -50,7 +50,6 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
         return label;
     }
 
-    @Override
     public void setLabel(@NotNull String label) {
         this.label = label;
     }
@@ -61,7 +60,6 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
         return description;
     }
 
-    @Override
     public void setDescription(@NotNull String description) {
         this.description = description;
     }

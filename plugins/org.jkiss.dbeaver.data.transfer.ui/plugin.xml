@@ -100,4 +100,8 @@
 
     </extension>
 
+    <extension point="org.jkiss.dbeaver.task">
+        <configurator type="dataTransfer" class="org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferTaskConfigurator"/>
+    </extension>
+
 </plugin>
