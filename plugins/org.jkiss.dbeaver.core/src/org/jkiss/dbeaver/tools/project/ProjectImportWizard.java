@@ -452,7 +452,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             configFile = project.getFile(DataSourceRegistry.OLD_CONFIG_FILE_NAME);
         }
         if (configFile == null || !configFile.exists()) {
-            throw new DBException("Cannot find configuration file '" + DataSourceRegistry.LEGACY_CONFIG_FILE_NAME + "'");
+            return;
         }
         // Read and filter datasources config
         final InputStream configContents = configFile.getContents();
