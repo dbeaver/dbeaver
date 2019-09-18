@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
 import java.io.File;
 
@@ -52,7 +53,11 @@ public interface DBPProject extends DBPObject
 
     void ensureOpen();
 
+    @NotNull
     DBPDataSourceRegistry getDataSourceRegistry();
+
+    @NotNull
+    DBTTaskManager getTaskManager();
 
     @NotNull
     ISecurePreferences getSecurePreferences();
