@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskTypeDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -35,6 +37,7 @@ public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBT
 
     private final IConfigurationElement config;
     private final List<TaskDescriptor> tasks = new ArrayList<>();
+    private TaskConfiguratorDescriptor configuratorDescriptor;
 
     TaskTypeDescriptor(IConfigurationElement config) {
         super(config);
@@ -67,9 +70,28 @@ public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBT
         return iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
     }
 
+    @NotNull
     @Override
     public DBTTaskDescriptor[] getTasks() {
         return tasks.toArray(new DBTTaskDescriptor[0]);
+    }
+
+    @Override
+    public boolean supportsConfigurator() {
+        return configuratorDescriptor != null;
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskConfigurator createConfigurator() throws DBException {
+        if (configuratorDescriptor == null) {
+            throw new DBException("No configurator for task type " + getId());
+        }
+        return configuratorDescriptor.createConfigurator();
+    }
+
+    void setConfigurator(TaskConfiguratorDescriptor configurator) {
+        this.configuratorDescriptor = configurator;
     }
 
     @Override

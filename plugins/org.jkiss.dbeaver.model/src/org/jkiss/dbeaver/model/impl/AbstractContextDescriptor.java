@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 
@@ -32,32 +31,34 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
 {
     private static final String OBJECT_TYPE = "objectType";
 
-    private List<ObjectType> objectTypes = new ArrayList<>();
+    private final ObjectType[] objectTypes;
 
     public AbstractContextDescriptor(IConfigurationElement config)
     {
         super(config.getContributor().getName());
-        if (config != null) {
-            String objectType = config.getAttribute(OBJECT_TYPE);
-            if (objectType != null) {
-                objectTypes.add(new ObjectType(objectType));
-            }
-            for (IConfigurationElement typeCfg : config.getChildren(OBJECT_TYPE)) {
-                objectTypes.add(new ObjectType(typeCfg));
-            }
+
+        List<ObjectType> objectTypes = new ArrayList<>();
+        String objectType = config.getAttribute(OBJECT_TYPE);
+        if (objectType != null) {
+            objectTypes.add(new ObjectType(objectType));
         }
+        for (IConfigurationElement typeCfg : config.getChildren(OBJECT_TYPE)) {
+            objectTypes.add(new ObjectType(typeCfg));
+        }
+        this.objectTypes = objectTypes.toArray(new ObjectType[0]);
     }
 
     public AbstractContextDescriptor(String pluginId)
     {
         super(pluginId);
+        this.objectTypes = new ObjectType[0];
     }
 
     public boolean hasObjectTypes() {
-        return !objectTypes.isEmpty();
+        return objectTypes.length > 0;
     }
 
-    public List<ObjectType> getObjectTypes() {
+    public ObjectType[] getObjectTypes() {
         return objectTypes;
     }
 

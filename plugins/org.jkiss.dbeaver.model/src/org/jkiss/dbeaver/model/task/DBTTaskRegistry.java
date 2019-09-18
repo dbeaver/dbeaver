@@ -16,13 +16,21 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * Task registry
  */
 public interface DBTTaskRegistry {
 
+    @NotNull
     DBTTaskDescriptor[] getAllTasks();
 
+    @Nullable
+    DBTTaskDescriptor getTask(String id);
+
+    @NotNull
     DBTTaskTypeDescriptor[] getTaskTypes();
 
 }
