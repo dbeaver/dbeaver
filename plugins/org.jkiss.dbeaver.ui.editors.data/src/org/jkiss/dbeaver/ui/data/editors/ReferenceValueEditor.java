@@ -208,7 +208,7 @@ public class ReferenceValueEditor {
             final String curTextValue = valueController.getValueHandler().getValueDisplayString(
                 ((IAttributeController) valueController).getBinding(),
                 curEditorValue,
-                DBDDisplayFormat.UI);
+                DBDDisplayFormat.EDIT);
             boolean valueFound = false;
             if (curTextValue != null) {
                 TreeItem[] items = editorSelector.getItems();
@@ -288,7 +288,7 @@ public class ReferenceValueEditor {
                     valuesData.keyHandler.getValueDisplayString(
                         valuesData.keyColumn.getAttribute(),
                         entry.getValue(),
-                        DBDDisplayFormat.UI));
+                        DBDDisplayFormat.EDIT));
                 discItem.setText(1, entry.getLabel());
                 discItem.setData(entry.getValue());
             }
@@ -309,7 +309,7 @@ public class ReferenceValueEditor {
                 final String curTextValue = valueController.getValueHandler().getValueDisplayString(
                         ((IAttributeController) valueController).getBinding(),
                         curValue,
-                        DBDDisplayFormat.UI);
+                        DBDDisplayFormat.EDIT);
 
                 TreeItem curItem = null;
                 TreeItem[] items = editorSelector.getItems();
