@@ -48,7 +48,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     private final int order;
     @NotNull
     private final DBPImage icon;
-    private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private final DBPPropertyDescriptor[] properties;
     private boolean isBinary;
     private boolean isHTML;
 
@@ -70,9 +70,11 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
             sourceTypes.add(new ObjectType(typeCfg.getAttribute("type")));
         }
 
+        List<DBPPropertyDescriptor> props = new ArrayList<>();
         for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
-            properties.addAll(PropertyDescriptor.extractProperties(prop));
+            props.addAll(PropertyDescriptor.extractProperties(prop));
         }
+        this.properties = props.toArray(new DBPPropertyDescriptor[0]);
     }
 
     public String getId() {
@@ -104,7 +106,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return icon;
     }
 
-    public List<DBPPropertyDescriptor> getProperties() {
+    public DBPPropertyDescriptor[] getProperties() {
         return properties;
     }
 
