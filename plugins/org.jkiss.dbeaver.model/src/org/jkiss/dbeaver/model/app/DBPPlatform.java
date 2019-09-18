@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.model.task.DBTTaskRegistry;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,9 +65,6 @@ public interface DBPPlatform
 
     @NotNull
     DBERegistry getEditorsRegistry();
-
-    @NotNull
-    DBTTaskRegistry getTaskRegistry();
 
     @NotNull
     DBPDataFormatterRegistry getDataFormatterRegistry();

@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.registry.task.TaskManager;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -66,6 +68,7 @@ public class ProjectMetadata implements DBPProject {
 
     private ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DataSourceRegistry dataSourceRegistry;
+    private volatile TaskManager taskManager;
     private Map<String, Map<String, Object>> resourceProperties;
     private final Object metadataSync = new Object();
 
@@ -154,6 +157,7 @@ public class ProjectMetadata implements DBPProject {
         checkAndUpdateProjectStructure();
     }
 
+    @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         ensureOpen();
@@ -165,6 +169,20 @@ public class ProjectMetadata implements DBPProject {
             }
         }
         return dataSourceRegistry;
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskManager getTaskManager() {
+        ensureOpen();
+        if (taskManager == null) {
+            synchronized (metadataSync) {
+                if (taskManager == null) {
+                    taskManager = new TaskManager(this);
+                }
+            }
+        }
+        return taskManager;
     }
 
     @NotNull
