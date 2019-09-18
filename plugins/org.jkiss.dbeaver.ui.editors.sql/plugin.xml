@@ -684,11 +684,17 @@
                     </visibleWhen>
                 </command>
                 <separator name="misc" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"><parameter name="noCustomLabel" value="true"/></command>
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"><parameter name="noCustomLabel" value="true"/></command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" style="push"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
+
+                <separator name="sync" visible="true"/>
+
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"><parameter name="noCustomLabel" value="true"/></command>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"><parameter name="noCustomLabel" value="true"/></command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" style="toggle"/>
+
             </menu>
         </menuContribution>
 

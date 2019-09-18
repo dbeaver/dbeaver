@@ -621,12 +621,6 @@
                     mode="FORCE_TEXT">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
-                <command
-                    commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"
-                    id="org.jkiss.dbeaver.core.menu.sql.sync"
-                    style="pulldown">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
-                </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
 
@@ -846,13 +840,6 @@
         </menuContribution>
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.select.schema">
             <dynamic id="org.jkiss.dbeaver.core.menu.select.schema.list" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveSchemaHandler$MenuContributor"/>
-        </menuContribution>
-
-        <!-- SQL editor connection sync drop-down menu -->
-        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.sql.sync">
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" style="toggle"/>
-            <separator name="sync_additions" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 
         <!-- Transaction log menu -->
