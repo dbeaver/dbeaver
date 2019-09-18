@@ -60,7 +60,7 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        {
+        if (false) {
             boolean nativeClientRequired = getWizard().isProfileSelectorVisible();
             if (nativeClientRequired) {
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));

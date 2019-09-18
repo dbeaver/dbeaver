@@ -17,20 +17,20 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.cache;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExasolTablePartitionColumnCache extends AbstractObjectCache<ExasolTable, ExasolTablePartitionColumn> {
 

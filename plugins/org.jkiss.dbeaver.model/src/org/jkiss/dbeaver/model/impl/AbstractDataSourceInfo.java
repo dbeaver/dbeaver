@@ -23,9 +23,9 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * BaseDataSourceInfo
+ * AbstractDataSourceInfo
  */
-public abstract class BaseDataSourceInfo implements DBPDataSourceInfo
+public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
 {
     @Override
     public boolean supportsTransactions() {
