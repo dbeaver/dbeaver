@@ -44,5 +44,8 @@ public interface DBTTaskConfiguration {
     @NotNull
     Map<String, Object> getProperties();
 
+    void setLabel(@NotNull String label);
+
+    void setDescription(@NotNull String description);
 
 }

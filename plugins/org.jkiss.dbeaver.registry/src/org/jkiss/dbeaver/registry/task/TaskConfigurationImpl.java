@@ -24,9 +24,9 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * TaskConfiguration
+ * TaskConfigurationImpl
  */
-public class TaskConfiguration implements DBTTaskConfiguration {
+public class TaskConfigurationImpl implements DBTTaskConfiguration {
 
     private String label;
     private String description;
@@ -35,7 +35,7 @@ public class TaskConfiguration implements DBTTaskConfiguration {
     private DBTTaskDescriptor task;
     private Map<String, Object> properties;
 
-    public TaskConfiguration(String label, String description, Date createTime, Date updateTime, DBTTaskDescriptor task, Map<String, Object> properties) {
+    public TaskConfigurationImpl(String label, String description, Date createTime, Date updateTime, DBTTaskDescriptor task, Map<String, Object> properties) {
         this.label = label;
         this.description = description;
         this.createTime = createTime;
@@ -50,7 +50,8 @@ public class TaskConfiguration implements DBTTaskConfiguration {
         return label;
     }
 
-    public void setLabel(String label) {
+    @Override
+    public void setLabel(@NotNull String label) {
         this.label = label;
     }
 
@@ -60,7 +61,8 @@ public class TaskConfiguration implements DBTTaskConfiguration {
         return description;
     }
 
-    public void setDescription(String description) {
+    @Override
+    public void setDescription(@NotNull String description) {
         this.description = description;
     }
 

@@ -29,16 +29,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TaskManager
+ * TaskManagerImpl
  */
-public class TaskManager implements DBTTaskManager {
+public class TaskManagerImpl implements DBTTaskManager {
 
     public static final String CONFIG_FILE = "tasks.json";
 
     private final ProjectMetadata projectMetadata;
-    private final List<TaskConfiguration> tasks = new ArrayList<>();
+    private final List<TaskConfigurationImpl> tasks = new ArrayList<>();
 
-    public TaskManager(ProjectMetadata projectMetadata) {
+    public TaskManagerImpl(ProjectMetadata projectMetadata) {
         this.projectMetadata = projectMetadata;
         loadConfiguration();
     }
