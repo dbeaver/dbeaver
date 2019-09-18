@@ -651,7 +651,7 @@
                     description=""
                     webURL="http://scn.sap.com/community/developer-center/hana"
                     categories="sql">
-                    <!--<library path="C:\Program Files\Java\lib\jdbc\ngdbc.jar"/>-->
+                    <file type="jar" path="maven:/com.sap.cloud.db.jdbc:ngdbc:RELEASE"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUMMY"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA &quot;?&quot;"/>
