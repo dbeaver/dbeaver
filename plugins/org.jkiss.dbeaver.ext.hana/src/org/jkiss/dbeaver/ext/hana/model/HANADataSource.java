@@ -16,30 +16,125 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.IntKeyMap;
-
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HANADataSource extends GenericDataSource {
+import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.hana.model.plan.HANAPlanAnalyser;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+
+public class HANADataSource extends GenericDataSource implements DBCQueryPlanner, IAdaptable {
 
     private static final Log log = Log.getLog(HANADataSource.class);
+    private static final String APPLICATION_NAME_CONNECTION_PROPERTY = "SESSIONVARIABLE:APPLICATION";
+    
 
+    private HashMap<String, String> sysViewColumnUnits; 
+    
     public HANADataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
     {
         super(monitor, container, metaModel, new HANASQLDialect());
+    }
+
+    @Override
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
+    {
+        final HANADataSourceInfo info = new HANADataSourceInfo(metaData);
+        return info;
+    }
+    
+    /*
+     * search
+     */
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == DBSStructureAssistant.class)
+            return adapter.cast(new HANAStructureAssistant(this));
+        return super.getAdapter(adapter);
+    }
+    
+    /*
+     * explain
+     */
+    @Override
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query)
+    throws DBCException {
+        HANAPlanAnalyser plan = new HANAPlanAnalyser(this, query);
+        plan.explain(session);
+        return plan;
+    }
+
+    @Override
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
+    }
+  
+    /*
+     * application
+     */
+    @Override
+    protected boolean isPopulateClientAppName() { 
+        return false; // basically true, but different property name 
+    } 
+
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+        Map<String, String> props = new HashMap<>();
+        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+            String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
+            props.put(APPLICATION_NAME_CONNECTION_PROPERTY, appName);
+        }
+        return props;
+    }
+    
+    /*
+     * column unit for views in SYS schema
+     */
+    public void initializeSysViewColumnUnits(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (sysViewColumnUnits != null)
+            return;
+        sysViewColumnUnits = new HashMap<String, String>();
+        String stmt = "SELECT VIEW_NAME||'.'||VIEW_COLUMN_NAME, UNIT FROM SYS.M_MONITOR_COLUMNS WHERE UNIT IS NOT NULL";
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read generic metadata")) {
+            try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
+                    try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+                        while(resultSet.next()) {
+                            sysViewColumnUnits.put(resultSet.getString(1), resultSet.getString(2));
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                log.debug("Error getting SYS column units: " + e.getMessage());
+            }
+        }
+    }
+    
+    String getSysViewColumnUnit(String objectName, String columnName)
+    {
+        return sysViewColumnUnits.get(objectName+"."+columnName);
     }
 }
