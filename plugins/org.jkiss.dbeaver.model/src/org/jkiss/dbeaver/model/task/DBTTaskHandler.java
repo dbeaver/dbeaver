@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -28,10 +30,11 @@ import java.util.Map;
 public interface DBTTaskHandler {
 
     void executeTask(
-        DBRProgressMonitor monitor,
-        DBTTaskDescriptor task,
-        List<Object> inputObjects,
-        Map<String, Object> properties)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBTTaskDescriptor task,
+        @NotNull List<Object> inputObjects,
+        @NotNull Locale locale,
+        @NotNull Map<String, Object> properties)
         throws DBException;
 
 }

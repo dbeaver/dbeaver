@@ -14,20 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * Data source configurator.
- * Data source provider may implement this interface to allow extra connection configuration (e.g. SSL).
+ * Task configurator.
+ * Usually some UI dialog/wizard for task configuration.
  */
-public interface DBPDataSourceConfigurator
-{
-    boolean supportsExtraConnectionProperties(DBWHandlerDescriptor handler);
+public interface DBTTaskConfigurator {
 
-    Map<Object, Object> getExtraConnectionProperties(DBWHandlerConfiguration handlerConfiguration);
+    void configureTask(
+        @NotNull DBPPlatform platform,
+        @NotNull DBTTaskDescriptor task,
+        @NotNull List<Object> inputObjects,
+        @NotNull Map<String, Object> properties);
+
 }

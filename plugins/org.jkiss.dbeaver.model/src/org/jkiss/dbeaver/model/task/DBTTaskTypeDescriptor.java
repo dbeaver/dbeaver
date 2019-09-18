@@ -16,21 +16,36 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 
 /**
- * Task type descriptor
+ * Task type descriptor.
+ *
+ * Task type groups similar tasks. Tasks of the same type have the same configurator and are shown in the same category in UI.
  */
 public interface DBTTaskTypeDescriptor {
 
+    @NotNull
     String getId();
 
+    @NotNull
     String getName();
 
+    @Nullable
     String getDescription();
 
+    @Nullable
     DBPImage getIcon();
 
+    @NotNull
     DBTTaskDescriptor[] getTasks();
+
+    boolean supportsConfigurator();
+
+    @NotNull
+    DBTTaskConfigurator createConfigurator() throws DBException;
 
 }

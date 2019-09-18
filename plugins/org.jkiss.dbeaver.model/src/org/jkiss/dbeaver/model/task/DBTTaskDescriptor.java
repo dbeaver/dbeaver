@@ -17,11 +17,10 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-
-import java.util.List;
 
 /**
  * Task handler
@@ -34,8 +33,10 @@ public interface DBTTaskDescriptor {
     @NotNull
     String getName();
 
+    @Nullable
     String getDescription();
 
+    @Nullable
     DBPImage getIcon();
 
     @NotNull
@@ -44,8 +45,10 @@ public interface DBTTaskDescriptor {
     @NotNull
     DBPPropertyDescriptor[] getConfigurationProperties();
 
-    List<Class<?>> getInputTypes();
+    @NotNull
+    Class<?>[] getInputTypes();
 
+    @NotNull
     DBTTaskHandler createHandler() throws DBException;
 
 }
