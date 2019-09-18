@@ -64,15 +64,13 @@
 
     <extension point="org.eclipse.ui.menus">
 
-        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-            <toolbar id="dbeaver-dashboard-launcher" label="%toolbar.dashboard.label">
-                <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
-                    <visibleWhen>
-                        <reference definitionId="DBeaverPerspectiveActive"/>
-                    </visibleWhen>
-                </command>
-                <separator name="additions" visible="false"/>
-            </toolbar>
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
+            <separator name="dashboard" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
+                <visibleWhen>
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                </visibleWhen>
+            </command>
         </menuContribution>
 
 <!--

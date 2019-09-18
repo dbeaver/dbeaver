@@ -135,17 +135,15 @@
             <command commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" label="%command.ToggleBreakpoint.label" style="push"/>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-            <toolbar id="dbeaver-debug" label="%toolbar.debug.label">
-                <command commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" id="org.jkiss.dbeaver.debug.ui.menu.pulldown"
-                         label="%commands.command.debugConfigurations.name"
-                         tooltip="%commands.command.debugConfigurations.description" style="pulldown">
-                    <visibleWhen>
-                        <reference definitionId="DBeaverPerspectiveActive"/>
-                    </visibleWhen>
-                </command>
-                <separator name="additions" visible="false"/>
-            </toolbar>
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
+            <separator name="debug" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" id="org.jkiss.dbeaver.debug.ui.menu.pulldown"
+                     label="%commands.command.debugConfigurations.name"
+                     tooltip="%commands.command.debugConfigurations.description" style="pulldown">
+                <visibleWhen>
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                </visibleWhen>
+            </command>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.debug.ui.menu.pulldown">

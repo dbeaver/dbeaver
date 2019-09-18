@@ -751,6 +751,12 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+            <toolbar id="dbeaver-tools" label="Database Tools Toolbar">
+                <separator name="additions" visible="false"/>
+            </toolbar>
+        </menuContribution>
+
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
             <command commandId="org.jkiss.dbeaver.core.object.create">
                 <visibleWhen>
