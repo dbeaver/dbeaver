@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2XSRDecomposition;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2XSRStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2XSRType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;

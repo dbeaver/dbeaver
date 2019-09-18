@@ -16,9 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.impl.BaseDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.AbstractDataSourceInfo;
 import org.osgi.framework.Version;
 
 import java.util.Collection;
@@ -26,7 +25,7 @@ import java.util.Collection;
 /**
  * Info
  */
-public class WMIDataSourceInfo extends BaseDataSourceInfo {
+public class WMIDataSourceInfo extends AbstractDataSourceInfo {
 
     public WMIDataSourceInfo()
     {
