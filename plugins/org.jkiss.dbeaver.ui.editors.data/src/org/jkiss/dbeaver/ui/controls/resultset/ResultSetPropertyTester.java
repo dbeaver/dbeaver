@@ -127,9 +127,8 @@ public class ResultSetPropertyTester extends PropertyTester
             case PROP_CAN_SWITCH_PRESENTATION:
                 return
                     !actionsDisabled &&
-                        !rsv.isRefreshInProgress() &&
-                        rsv.getAvailablePresentations() != null &&
-                        rsv.getAvailablePresentations().size() > 1;
+                    !rsv.isRefreshInProgress() &&
+                    !rsv.getAvailablePresentations().isEmpty();
             case PROP_SUPPORTS_COUNT:
                 return rsv.hasData() && rsv.isHasMoreData() &&
                     (rsv.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0;

@@ -109,8 +109,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -541,8 +541,9 @@ public class ResultSetViewer extends Viewer
     ////////////////////////////////////////////////////////////
     // Presentation & panels
 
+    @NotNull
     public List<ResultSetPresentationDescriptor> getAvailablePresentations() {
-        return availablePresentations;
+        return availablePresentations != null ? availablePresentations : Collections.emptyList();
     }
 
     @Override
