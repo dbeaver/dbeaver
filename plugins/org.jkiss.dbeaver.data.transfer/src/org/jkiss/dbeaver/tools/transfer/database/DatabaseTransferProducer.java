@@ -255,7 +255,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
         @Override
         public DatabaseTransferProducer deserializeObject(Map<String, Object> state) {
-            return null;
+            DatabaseTransferProducer producer = new DatabaseTransferProducer();
+
+            return producer;
         }
     }
 

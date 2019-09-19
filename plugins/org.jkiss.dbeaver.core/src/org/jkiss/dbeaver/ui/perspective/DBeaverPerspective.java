@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.ui.task.DatabaseTasksView;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 
@@ -81,6 +82,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
         bottomRight.addPlaceholder(IActionConstants.LOG_VIEW_ID);
         bottomRight.addPlaceholder(QueryManagerView.VIEW_ID);
         bottomRight.addPlaceholder(ShellProcessView.VIEW_ID);
+        bottomRight.addPlaceholder(DatabaseTasksView.VIEW_ID);
         bottomRight.addPlaceholder(IPageLayout.ID_PROP_SHEET);
         bottomRight.addPlaceholder(IPageLayout.ID_PROGRESS_VIEW);
         bottomRight.addPlaceholder(IPageLayout.ID_OUTLINE);
