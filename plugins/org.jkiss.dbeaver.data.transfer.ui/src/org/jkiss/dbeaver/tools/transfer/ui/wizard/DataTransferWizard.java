@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.dialogs.DialogSettings;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -281,7 +279,7 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
 
     private void loadSettings() {
         loadFrom(
-            getRunnableContext(), getDialogSettings());
+            getRunnableContext(), new DialogSettingsMap(getDialogSettings()));
     }
 
     private void saveSettings() {
@@ -420,21 +418,15 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         return nodePageSettings == null ? null : settings.getNodeSettings(nodePageSettings.sourceNode);
     }
 
-    private void loadFrom(DBRRunnableContext runnableContext, IDialogSettings dialogSettings) {
-        try {
-            settings.setMaxJobCount(dialogSettings.getInt("maxJobCount"));
-        } catch (NumberFormatException e) {
-            settings.setMaxJobCount(DataTransferSettings.DEFAULT_THREADS_NUM);
-        }
-        if (dialogSettings.get("showFinalMessage") != null) {
-            settings.setShowFinalMessage(dialogSettings.getBoolean("showFinalMessage"));
-        }
+    private void loadFrom(DBRRunnableContext runnableContext, Map<String, Object> dialogSettings) {
+        settings.setMaxJobCount(CommonUtils.toInt(dialogSettings.get("maxJobCount"), DataTransferSettings.DEFAULT_THREADS_NUM));
+        settings.setShowFinalMessage(CommonUtils.getBoolean(dialogSettings.get("showFinalMessage"), settings.isShowFinalMessage()));
 
         if (settings.isConsumerOptional() || settings.isProducerOptional()) {
             DataTransferNodeDescriptor savedConsumer = null, savedProducer = null, savedNode = null;
             {
                 if (settings.isConsumerOptional()) {
-                    String consumerId = dialogSettings.get("consumer");
+                    String consumerId = CommonUtils.toString(dialogSettings.get("consumer"));
                     if (!CommonUtils.isEmpty(consumerId)) {
                         DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
                         if (consumerNode != null) {
@@ -443,7 +435,7 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
                     }
                 }
                 if (settings.isProducerOptional()) {
-                    String producerId = dialogSettings.get("producer");
+                    String producerId = CommonUtils.toString(dialogSettings.get("producer"));
                     if (!CommonUtils.isEmpty(producerId)) {
                         DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
                         if (producerNode != null) {
@@ -455,7 +447,7 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
 
             DataTransferProcessorDescriptor savedProcessor = null;
             if (savedNode != null) {
-                String processorId = dialogSettings.get("processor");
+                String processorId = CommonUtils.toString(dialogSettings.get("processor"));
                 if (!CommonUtils.isEmpty(processorId)) {
                     savedProcessor = savedNode.getProcessor(processorId);
                 }
@@ -470,17 +462,18 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
 
         // Load nodes' settings
         for (Map.Entry<Class, NodePageSettings> entry : nodeSettings.entrySet()) {
-            IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
+            Map<String, Object> nodeSection = (Map<String, Object>) dialogSettings.get(entry.getKey().getSimpleName());
             IDataTransferSettings settings = this.settings.getNodeSettings(entry.getValue().sourceNode);
             if (settings != null) {
-                settings.loadSettings(runnableContext, this.settings, new DialogSettingsMap(nodeSection));
+                settings.loadSettings(runnableContext, this.settings, nodeSection);
             }
         }
-        IDialogSettings processorsSection = dialogSettings.getSection("processors");
+        Map<String, Object> processorsSection = (Map<String, Object>) dialogSettings.get("processors");
         if (processorsSection != null) {
-            for (IDialogSettings procSection : ArrayUtils.safeArray(processorsSection.getSections())) {
-                String processorId = procSection.getName();
-                String nodeId = procSection.get("@node");
+            for (Map.Entry<String, Object> procIter : processorsSection.entrySet()) {
+                Map<String, Object> procSection = (Map<String, Object>) procIter.getValue();
+                String processorId = procIter.getKey();
+                String nodeId = CommonUtils.toString(procSection.get("@node"));
                 if (CommonUtils.isEmpty(nodeId)) {
                     // Legacy code support
                     int divPos = processorId.indexOf(':');
@@ -489,7 +482,7 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
                         processorId = processorId.substring(divPos + 1);
                     }
                 }
-                String propNamesId = procSection.get("@propNames");
+                String propNamesId = CommonUtils.toString(procSection.get("@propNames"));
                 DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
                 if (node != null) {
                     Map<Object, Object> props = new HashMap<>();

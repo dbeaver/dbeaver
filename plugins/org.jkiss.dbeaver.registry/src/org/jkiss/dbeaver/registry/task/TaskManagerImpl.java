@@ -55,6 +55,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         .serializeNulls()
         .setPrettyPrinting()
         .create();
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
 
     private final ProjectMetadata projectMetadata;
     private final List<TaskConfigurationImpl> tasks = new ArrayList<>();
@@ -110,7 +111,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 */
         Date createTime = new Date();
         String id = UUID.randomUUID().toString();
-        TaskConfigurationImpl task = new TaskConfigurationImpl(id, label, description, createTime, createTime, taskDescriptor);
+        TaskConfigurationImpl task = new TaskConfigurationImpl(taskDescriptor, id, label, description, createTime, createTime);
         task.setProperties(properties);
         synchronized (tasks) {
             tasks.add(task);
@@ -135,6 +136,42 @@ public class TaskManagerImpl implements DBTTaskManager {
         IFile configFile = getConfigFile(false);
         if (!configFile.exists()) {
             return;
+        }
+        try (InputStream is = configFile.getContents()) {
+            try (Reader configReader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
+
+                for (Map.Entry<String, Object> taskMap : jsonMap.entrySet()) {
+                    Map<String, Object> taskJSON = (Map<String, Object>) taskMap.getValue();
+
+                    try {
+                        String id = taskMap.getKey();
+                        String task = JSONUtils.getString(taskJSON, "task");
+                        String label = JSONUtils.getString(taskJSON, "label");
+                        String description = JSONUtils.getString(taskJSON, "description");
+                        Date createTime = dateFormat.parse(JSONUtils.getString(taskJSON, "createTime"));
+                        Date updateTime = dateFormat.parse(JSONUtils.getString(taskJSON, "updateTime"));
+                        Map<String, Object> state = JSONUtils.getObject(taskJSON, "state");
+
+                        DBTTaskDescriptor taskDescriptor = getRegistry().getTask(task);
+                        if (taskDescriptor == null) {
+                            log.error("Can't find task descriptor " + task);
+                            continue;
+                        }
+                        TaskConfigurationImpl taskConfig = new TaskConfigurationImpl(taskDescriptor, id, label, description, createTime, updateTime);
+                        taskConfig.setProperties(state);
+
+                        synchronized (tasks) {
+                            tasks.add(taskConfig);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Error parsing task configuration", e);
+                    }
+
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error loading tasks configuration", e);
         }
     }
 
@@ -180,7 +217,6 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     private void serializeTasks(DBRProgressMonitor monitor, JsonWriter jsonWriter) throws IOException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
         jsonWriter.setIndent("\t");
         jsonWriter.beginObject();
         for (TaskConfigurationImpl task : tasks) {

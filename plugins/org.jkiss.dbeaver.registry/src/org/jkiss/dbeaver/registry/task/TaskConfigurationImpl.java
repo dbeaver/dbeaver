@@ -36,7 +36,7 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
     private DBTTaskDescriptor task;
     private Map<String, Object> properties;
 
-    public TaskConfigurationImpl(String id, String label, String description, Date createTime, Date updateTime, DBTTaskDescriptor task) {
+    public TaskConfigurationImpl(DBTTaskDescriptor task, String id, String label, String description, Date createTime, Date updateTime) {
         this.id = id;
         this.label = label;
         this.description = description;
