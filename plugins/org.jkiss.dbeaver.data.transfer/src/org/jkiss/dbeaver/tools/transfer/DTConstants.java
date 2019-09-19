@@ -14,26 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.runtime.utils;
-
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.util.Collection;
-import java.util.Locale;
-import java.util.Map;
+package org.jkiss.dbeaver.tools.transfer;
 
 /**
- * Database utility.
+ * DataTransfer constants
  */
-public interface DBUUtility {
+public class DTConstants {
 
-    void initTool(DBPProject project, Collection<DBSObject> objects)
-        throws DBException;
-
-    void updateToolSettings(Locale locale, Map<Object, Object> properties)
-        throws DBException;
+    public static final String TASK_IMPORT = "dataImport";
+    public static final String TASK_EXPORT = "dataExport";
 
 }

@@ -43,9 +43,9 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.database.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
@@ -106,7 +106,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             // Target container
             // Use first source object as cur selection (it's better than nothing)
             containerPanel = new ObjectContainerSelectorPanel(composite,
-                DBWorkbench.getPlatform().getWorkspace().getActiveProject(),
+                getWizard().getProject(),
                 "container.data-transfer.database-consumer",
                 DTMessages.data_transfer_db_consumer_target_container,
                 DTMessages.data_transfer_db_consumer_choose_container)

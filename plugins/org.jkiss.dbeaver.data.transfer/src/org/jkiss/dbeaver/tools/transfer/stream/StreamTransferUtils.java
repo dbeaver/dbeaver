@@ -18,12 +18,11 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV;
 
 import java.util.Map;
 
 /**
- * Stream transfer utils
+ * Stream transfer serialize
  */
 public class StreamTransferUtils {
 

@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageType;
 import org.jkiss.dbeaver.ui.DialogSettingsMap;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -121,6 +123,18 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         }
 
         loadSettings();
+    }
+
+    public DBPProject getProject() {
+        return NavigatorUtils.getSelectedProject();
+    }
+
+    public String getTaskId() {
+        if (getSettings().isProducerOptional()) {
+            return DTConstants.TASK_IMPORT;
+        } else {
+            return DTConstants.TASK_EXPORT;
+        }
     }
 
     public IStructuredSelection getCurrentSelection() {

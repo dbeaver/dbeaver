@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
 import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskRegistry;
 import org.jkiss.dbeaver.registry.ProjectMetadata;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -63,8 +65,18 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public DBTTaskConfiguration createTaskConfiguration(DBTTaskDescriptor task, String label, String description, Map<String, Object> properties) {
-        throw new RuntimeException("Not Implemented");
+    public DBTTaskConfiguration createTaskConfiguration(String taskId, String label, String description, Map<String, Object> properties) throws DBException {
+        DBTTaskDescriptor taskDescriptor = getRegistry().getTask(taskId);
+        if (taskDescriptor == null) {
+            throw new DBException("Task " + taskId + " not found");
+        }
+        Date createTime = new Date();
+        TaskConfigurationImpl task = new TaskConfigurationImpl(label, description, createTime, createTime, taskDescriptor, properties);
+        tasks.add(task);
+
+        saveConfiguration();
+
+        return task;
     }
 
     @Override
