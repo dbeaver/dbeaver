@@ -17,9 +17,6 @@
 package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
 import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 
@@ -33,6 +30,7 @@ import java.util.Map;
  */
 public class TaskConfigurationImpl implements DBTTaskConfiguration {
 
+    private String id;
     private String label;
     private String description;
     private Date createTime;
@@ -40,13 +38,18 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
     private DBTTaskDescriptor task;
     private Map<String, Object> properties;
 
-    public TaskConfigurationImpl(String label, String description, Date createTime, Date updateTime, DBTTaskDescriptor task, Map<String, Object> properties) {
+    public TaskConfigurationImpl(String id, String label, String description, Date createTime, Date updateTime, DBTTaskDescriptor task, Map<String, Object> properties) {
+        this.id = id;
         this.label = label;
         this.description = description;
         this.createTime = createTime;
         this.updateTime = updateTime;
         this.task = task;
         this.properties = properties;
+    }
+
+    public String getId() {
+        return id;
     }
 
     @NotNull
@@ -99,7 +102,7 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
 
     @NotNull
     @Override
-    public List<DBSObject> getSourceObjects(DBRProgressMonitor monitor) throws DBException {
+    public List<Map<String, Object>> getSourceObjects() {
         return Collections.emptyList();
     }
 }
