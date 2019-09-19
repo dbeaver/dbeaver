@@ -240,6 +240,20 @@ public class JSONUtils {
         return state;
     }
 
+    public static Object deserializeObject(@NotNull Map<String, Object> objectConfig) {
+        String typeID = CommonUtils.toString(objectConfig.get("type"));
+        DBPObjectSerializer serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
+        if (serializer == null) {
+            log.error("No deserializer found for type " + typeID);
+            return null;
+        }
+        Map<String, Object> location = (Map<String, Object>) objectConfig.get("location");
+        if (location != null) {
+            return serializer.deserializeObject(location);
+        }
+        return null;
+    }
+
     @NotNull
     public static Map<String, Object> parseMap(@NotNull Gson gson, @NotNull Reader reader) {
         return gson.fromJson(reader, new TypeToken<Map<String, Object>>(){}.getType());
