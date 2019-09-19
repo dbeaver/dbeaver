@@ -85,6 +85,16 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
+    public DBTTaskDescriptor[] getExistingTaskTypes() {
+        Set<DBTTaskDescriptor> result = new LinkedHashSet<>();
+        for (DBTTaskConfiguration tc : tasks) {
+            result.add(tc.getDescriptor());
+        }
+        return result.toArray(new DBTTaskDescriptor[0]);
+    }
+
+    @NotNull
+    @Override
     public DBTTaskConfiguration[] getTaskConfigurations(DBTTaskDescriptor task) {
         List<DBTTaskConfiguration> result = new ArrayList<>();
         for (DBTTaskConfiguration tc : tasks) {

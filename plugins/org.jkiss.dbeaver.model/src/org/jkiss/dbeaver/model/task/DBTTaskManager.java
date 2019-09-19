@@ -37,6 +37,9 @@ public interface DBTTaskManager {
     DBTTaskConfiguration[] getTaskConfigurations();
 
     @NotNull
+    DBTTaskDescriptor[] getExistingTaskTypes();
+
+    @NotNull
     DBTTaskConfiguration[] getTaskConfigurations(DBTTaskDescriptor task);
 
     @NotNull
