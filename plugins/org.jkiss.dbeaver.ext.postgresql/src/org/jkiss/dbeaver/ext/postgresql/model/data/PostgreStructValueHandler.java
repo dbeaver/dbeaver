@@ -108,7 +108,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
         String[] parsedValues = PostgreUtils.parseObjectString(value);
         if (parsedValues.length != attributes.size()) {
-            log.debug("Number o attributes (" + attributes.size() + ") doesn't match actual number of parsed strings (" + parsedValues.length + ")");
+            log.debug("Number of attributes (" + attributes.size() + ") doesn't match actual number of parsed strings (" + parsedValues.length + ")");
         }
         Object[] attrValues = new Object[attributes.size()];
 

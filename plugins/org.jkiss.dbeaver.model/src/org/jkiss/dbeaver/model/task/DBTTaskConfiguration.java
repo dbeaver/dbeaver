@@ -17,8 +17,12 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,5 +47,8 @@ public interface DBTTaskConfiguration {
 
     @NotNull
     Map<String, Object> getProperties();
+
+    @NotNull
+    List<DBSObject> getSourceObjects(DBRProgressMonitor monitor) throws DBException;
 
 }
