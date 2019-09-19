@@ -46,7 +46,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 /**
- * Virtual model utils
+ * Virtual model serialize
  */
 public abstract class DBVUtils {
 
@@ -85,7 +85,8 @@ public abstract class DBVUtils {
         if (source instanceof DBVEntity) {
             return (DBVEntity) source;
         }
-        return source.getDataSource().getContainer().getVirtualModel().findEntity(source, create);
+        DBPDataSource dataSource = source.getDataSource();
+        return dataSource == null ? null : dataSource.getContainer().getVirtualModel().findEntity(source, create);
     }
 
     public static DBVEntity getVirtualEntity(@NotNull DBSDataContainer dataContainer, boolean create) {
