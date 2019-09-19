@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -191,11 +194,21 @@ public class DBNProject extends DBNResource {
     @Override
     protected void handleChildResourceChange(IResourceDelta delta) {
         final String name = delta.getResource().getName();
-        if (name.equals(DBPProject.METADATA_FOLDER) ||
-            (name.startsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_PREFIX) && name.endsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_EXT)))
-        {
+        if (name.equals(DBPProject.METADATA_FOLDER)) {
             // Metadata configuration changed
-            getDatabases().getDataSourceRegistry().refreshConfig();
+            IResourceDelta[] configFiles = delta.getAffectedChildren();
+            boolean dsChanged = false;
+            if (configFiles != null) {
+                for (IResourceDelta rd : configFiles) {
+                    IResource childRes = rd.getResource();
+                    if (childRes instanceof IFile && childRes.getName().startsWith(DBPDataSourceRegistry.MODERN_CONFIG_FILE_PREFIX)) {
+                        dsChanged = true;
+                    }
+                }
+            }
+            if (dsChanged) {
+                getDatabases().getDataSourceRegistry().refreshConfig();
+            }
         } else {
             super.handleChildResourceChange(delta);
         }
