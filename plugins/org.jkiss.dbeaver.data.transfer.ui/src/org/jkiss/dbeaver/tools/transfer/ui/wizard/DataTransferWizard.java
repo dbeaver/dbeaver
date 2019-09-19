@@ -285,7 +285,7 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
     }
 
     private void saveSettings() {
-        saveTo(getDialogSettings());
+        saveTo(new DialogSettingsMap(getDialogSettings()));
     }
 
     private void executeJobs() {
@@ -420,7 +420,7 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         return nodePageSettings == null ? null : settings.getNodeSettings(nodePageSettings.sourceNode);
     }
 
-    void loadFrom(DBRRunnableContext runnableContext, IDialogSettings dialogSettings) {
+    private void loadFrom(DBRRunnableContext runnableContext, IDialogSettings dialogSettings) {
         try {
             settings.setMaxJobCount(dialogSettings.getInt("maxJobCount"));
         } catch (NumberFormatException e) {
@@ -509,15 +509,18 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         }
     }
 
-    void saveTo(IDialogSettings dialogSettings) {
+    void saveTo(Map<String, Object> dialogSettings) {
         dialogSettings.put("maxJobCount", settings.getMaxJobCount());
         dialogSettings.put("showFinalMessage", settings.isShowFinalMessage());
         // Save nodes' settings
         for (Map.Entry<Class, NodePageSettings> entry : nodeSettings.entrySet()) {
-            IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
+            //IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
+            Map<String, Object> nodeSection = new LinkedHashMap<>();
+            dialogSettings.put(entry.getKey().getSimpleName(), nodeSection);
+
             IDataTransferSettings settings = this.settings.getNodeSettings(entry.getValue().sourceNode);
             if (settings != null) {
-                settings.saveSettings(new DialogSettingsMap(nodeSection));
+                settings.saveSettings(nodeSection);
             }
         }
 
@@ -532,9 +535,14 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         }
 
         // Save processors' properties
-        IDialogSettings processorsSection = dialogSettings.addNewSection("processors");
+        Map<String, Object> processorsSection = new LinkedHashMap<>();
+
+        dialogSettings.put("processors", processorsSection);
         for (DataTransferProcessorDescriptor procDescriptor : settings.getProcessorPropsHistory().keySet()) {
-            IDialogSettings procSettings = processorsSection.addNewSection(procDescriptor.getFullId());
+
+            Map<String, Object> procSettings = new LinkedHashMap<>();
+            processorsSection.put(procDescriptor.getFullId(), procSettings);
+
             Map<Object, Object> props = settings.getProcessorPropsHistory().get(procDescriptor);
             if (!CommonUtils.isEmpty(props)) {
                 StringBuilder propNames = new StringBuilder();

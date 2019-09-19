@@ -111,12 +111,16 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
         String label = "Task";
         String description = "DT task";
         Map<String, Object> state = new LinkedHashMap<>();
+        getWizard().saveTo(state);
         try {
             taskManager.createTaskConfiguration(getWizard().getTaskId(), label, description, state);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
         }
     }
+
+
+
 
     public static int openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
