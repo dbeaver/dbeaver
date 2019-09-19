@@ -23,6 +23,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.data.transfer,
  org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.navigator,
  net.sf.opencsv
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer.ui

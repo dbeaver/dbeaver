@@ -25,16 +25,21 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
+import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
+import java.util.Map;
+
 /**
  * Data container transfer producer
  */
+@DBSerializable("databaseTransferProducer")
 public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseProducerSettings> {
 
     private static final Log log = Log.getLog(DatabaseTransferProducer.class);
@@ -208,6 +213,19 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     context.close();
                 }
             }
+        }
+    }
+
+    public static class ObjectSerializer implements DBPObjectSerializer<DatabaseTransferProducer> {
+
+        @Override
+        public void serializeObject(DatabaseTransferProducer object, Map<String, Object> state) {
+
+        }
+
+        @Override
+        public DatabaseTransferProducer deserializeObject(Map<String, Object> state) {
+            return null;
         }
     }
 

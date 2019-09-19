@@ -14,28 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.utils;
 
-import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.Log;
+package org.jkiss.dbeaver.model.meta;
 
-public class UtilityTaskRegistry
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * Property
+ */
+@Target(value = {ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DBSerializable
 {
-    private static final Log log = Log.getLog(UtilityTaskRegistry.class);
-
-    private static UtilityTaskRegistry instance = null;
-
-    public synchronized static UtilityTaskRegistry getInstance()
-    {
-        if (instance == null) {
-            instance = new UtilityTaskRegistry(Platform.getExtensionRegistry());
-        }
-        return instance;
-    }
-
-    private UtilityTaskRegistry(IExtensionRegistry registry)
-    {
-    }
+    /**
+     * Object serializer ID.
+     * Points to DBPObjectSerializer implementation
+     */
+    String value(); //NON-NLS-1
 
 }

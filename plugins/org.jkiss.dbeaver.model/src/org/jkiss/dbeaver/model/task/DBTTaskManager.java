@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
 import java.util.Map;
@@ -36,7 +37,7 @@ public interface DBTTaskManager {
     DBTTaskConfiguration[] getTaskConfigurations();
 
     @NotNull
-    DBTTaskConfiguration createTaskConfiguration(DBTTaskDescriptor task, String label, String description, Map<String, Object> properties);
+    DBTTaskConfiguration createTaskConfiguration(String taskId, String label, String description, Map<String, Object> properties) throws DBException;
 
     void updateTaskConfiguration(DBTTaskConfiguration task);
 

@@ -53,7 +53,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     private final ObjectType implType;
     private final ObjectType settingsType;
     private final List<ObjectType> sourceTypes = new ArrayList<>();
-    private DataTransferProcessorDescriptor[] processors;
+    private final List<DataTransferProcessorDescriptor> processors = new ArrayList<>();
 
     public DataTransferNodeDescriptor(IConfigurationElement config)
     {
@@ -80,7 +80,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
             procList.add(new DataTransferProcessorDescriptor(this, processorConfig));
         }
         procList.sort(Comparator.comparing(DataTransferProcessorDescriptor::getName));
-        this.processors = procList.toArray(new DataTransferProcessorDescriptor[0]);
+        this.processors.addAll(procList);
     }
 
     @NotNull
@@ -154,7 +154,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     }
 
     public DataTransferProcessorDescriptor[] getProcessors() {
-        return processors;
+        return processors.toArray(new DataTransferProcessorDescriptor[0]);
     }
 
     /**

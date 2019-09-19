@@ -31,8 +31,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
+import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -42,18 +44,21 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Data container transfer producer
  */
+@DBSerializable("streamTransferProducer")
 public class StreamTransferProducer implements IDataTransferProducer<StreamProducerSettings> {
 
     private static final Log log = Log.getLog(StreamTransferProducer.class);
 
     public static final String NODE_ID = "stream_producer";
 
-    @NotNull
     private File inputFile;
     private DataTransferProcessorDescriptor defaultProcessor;
     private StreamSourceObject sourceObject;
@@ -214,16 +219,18 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             return DATA_SELECT;
         }
 
+        @NotNull
         @Override
-        public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
+        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
             throw new DBCException("Not implemented");
         }
 
         @Override
-        public long countData(DBCExecutionSource source, DBCSession session, DBDDataFilter dataFilter, long flags) throws DBCException {
+        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags) throws DBCException {
             return -1;
         }
 
+        @NotNull
         @Override
         public String getName() {
             return StreamTransferProducer.this.getObjectName();
@@ -240,7 +247,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         private final StreamSourceObject sourceObject;
         private final StreamProducerSettings.AttributeMapping attributeMapping;
 
-        public StreamSourceAttribute(StreamSourceObject sourceObject, StreamProducerSettings.AttributeMapping attributeMapping) {
+        StreamSourceAttribute(StreamSourceObject sourceObject, StreamProducerSettings.AttributeMapping attributeMapping) {
             super(attributeMapping.getSourceAttributeName(), "String", 1, attributeMapping.getSourceAttributeIndex(), Integer.MAX_VALUE, null, null, false, false);
             this.sourceObject = sourceObject;
             this.attributeMapping = attributeMapping;
@@ -256,14 +263,29 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             return attributeMapping.getDefaultValue();
         }
 
+        @NotNull
         @Override
         public DBSEntity getParentObject() {
             return sourceObject;
         }
 
+        @NotNull
         @Override
         public DBPDataSource getDataSource() {
             return sourceObject.getDataSource();
+        }
+    }
+
+    public static class ObjectSerializer implements DBPObjectSerializer<StreamTransferProducer> {
+
+        @Override
+        public void serializeObject(StreamTransferProducer object, Map<String, Object> state) {
+
+        }
+
+        @Override
+        public StreamTransferProducer deserializeObject(Map<String, Object> state) {
+            return null;
         }
     }
 

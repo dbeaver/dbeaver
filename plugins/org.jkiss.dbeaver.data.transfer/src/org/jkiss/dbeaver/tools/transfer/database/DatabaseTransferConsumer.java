@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.utils.CommonUtils;
@@ -44,6 +46,7 @@ import java.util.*;
 /**
  * Stream transfer consumer
  */
+@DBSerializable("databaseTransferConsumer")
 public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor> {
 
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
@@ -598,6 +601,19 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return container.getDataSource().getContainer();
         }
         return null;
+    }
+
+    public static class ObjectSerializer implements DBPObjectSerializer<DatabaseTransferConsumer> {
+
+        @Override
+        public void serializeObject(DatabaseTransferConsumer object, Map<String, Object> state) {
+
+        }
+
+        @Override
+        public DatabaseTransferConsumer deserializeObject(Map<String, Object> state) {
+            return null;
+        }
     }
 
 }

@@ -15,20 +15,17 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.utils;
+package org.jkiss.dbeaver.runtime.serialize;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import java.util.Map;
 
 /**
- * Script utility.
- * Generates target database script as a result of utility work
+ * Object serializer
  */
-public interface DBUScriptUtility extends DBUUtility {
+public interface DBPObjectSerializer<OBJECT_TYPE> {
 
-    String generateScript(DBRProgressMonitor monitor)
-        throws DBException;
+    void serializeObject(OBJECT_TYPE object, Map<String, Object> state);
 
-    
+    OBJECT_TYPE deserializeObject(Map<String, Object> state);
 
 }
