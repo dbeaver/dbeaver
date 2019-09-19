@@ -59,6 +59,11 @@ public class SerializerRegistry
         return object.getClass().getAnnotation(DBSerializable.class) != null;
     }
 
+    public String getObjectType(Object object) {
+        DBSerializable dbSerializable = object.getClass().getAnnotation(DBSerializable.class);
+        return dbSerializable != null ? dbSerializable.value() : null;
+    }
+
     @Nullable
     public DBPObjectSerializer createSerializer(Object object) {
         DBSerializable dbSerializable = object.getClass().getAnnotation(DBSerializable.class);

@@ -40,7 +40,11 @@ public interface DBTTaskManager {
     DBTTaskConfiguration[] getTaskConfigurations(DBTTaskDescriptor task);
 
     @NotNull
-    DBTTaskConfiguration createTaskConfiguration(DBTTaskDescriptor task, String label, String description, Map<String, Object> properties) throws DBException;
+    DBTTaskConfiguration createTaskConfiguration(
+        DBTTaskDescriptor task,
+        String label,
+        String description,
+        Map<String, Object> properties) throws DBException;
 
     void updateTaskConfiguration(DBTTaskConfiguration task);
 
