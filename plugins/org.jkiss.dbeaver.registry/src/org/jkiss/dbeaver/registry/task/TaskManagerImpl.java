@@ -84,11 +84,25 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public DBTTaskConfiguration createTaskConfiguration(String taskId, String label, String description, Map<String, Object> properties) throws DBException {
+    public DBTTaskConfiguration[] getTaskConfigurations(DBTTaskDescriptor task) {
+        List<DBTTaskConfiguration> result = new ArrayList<>();
+        for (DBTTaskConfiguration tc : tasks) {
+            if (tc.getDescriptor() == task) {
+                result.add(tc);
+            }
+        }
+        return result.toArray(new DBTTaskConfiguration[0]);
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskConfiguration createTaskConfiguration(DBTTaskDescriptor taskDescriptor, String label, String description, Map<String, Object> properties) throws DBException {
+/*
         DBTTaskDescriptor taskDescriptor = getRegistry().getTask(taskId);
         if (taskDescriptor == null) {
             throw new DBException("Task " + taskId + " not found");
         }
+*/
         Date createTime = new Date();
         String id = UUID.randomUUID().toString();
         TaskConfigurationImpl task = new TaskConfigurationImpl(id, label, description, createTime, createTime, taskDescriptor, properties);
@@ -103,7 +117,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @Override
     public void updateTaskConfiguration(DBTTaskConfiguration task) {
-        throw new RuntimeException("Not Implemented");
+        saveConfiguration();
     }
 
     @Override

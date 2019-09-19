@@ -28,13 +28,14 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.task.EditTaskConfigurationDialog;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -108,19 +109,17 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
 
     private void saveConfigurationAsTask() {
         DBTTaskManager taskManager = getWizard().getProject().getTaskManager();
-        String label = "Task";
-        String description = "DT task";
+        DBTTaskDescriptor task = taskManager.getRegistry().getTask(getWizard().getTaskId());
+        if (task == null) {
+            DBWorkbench.getPlatformUI().showError("Create task", "Task " + getWizard().getTaskId() + " not found");
+            return;
+        }
         Map<String, Object> state = new LinkedHashMap<>();
         getWizard().saveTo(state);
-        try {
-            taskManager.createTaskConfiguration(getWizard().getTaskId(), label, description, state);
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
-        }
+
+        EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(getShell(), getWizard().getProject(), task, state);
+        dialog.open();
     }
-
-
-
 
     public static int openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
