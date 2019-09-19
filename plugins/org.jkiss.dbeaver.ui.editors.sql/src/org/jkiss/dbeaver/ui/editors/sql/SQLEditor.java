@@ -2511,7 +2511,7 @@ public class SQLEditor extends SQLEditorBase implements
 
                     DataTransferWizardDialog.openWizard(
                         getSite().getWorkbenchWindow(),
-                        producers.toArray(new IDataTransferProducer[0]),
+                        producers,
                         null,
                         new StructuredSelection(this));
                 } else {

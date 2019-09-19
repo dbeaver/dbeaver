@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizardDialog;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -68,6 +67,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -511,8 +511,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 ResultSetDataContainer dataContainer = new ResultSetDataContainer(rsv, options);
                 DataTransferWizardDialog.openWizard(
                     HandlerUtil.getActiveWorkbenchWindow(event),
-                    new IDataTransferProducer[] {
-                        new DatabaseTransferProducer(dataContainer, rsv.getModel().getDataFilter())},
+                    Collections.singletonList(
+                        new DatabaseTransferProducer(dataContainer, rsv.getModel().getDataFilter())),
                     null,
                     rsv.getSelection());
                 break;
