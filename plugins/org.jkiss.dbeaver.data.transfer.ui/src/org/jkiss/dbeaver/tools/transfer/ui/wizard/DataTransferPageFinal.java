@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -209,8 +210,11 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     private Color getNodeColor(IDataTransferNode node) {
         DBSObject dbObject = node.getDatabaseObject();
         if (dbObject != null) {
-            DBPDataSourceContainer container = dbObject.getDataSource().getContainer();
-            return UIUtils.getConnectionColor(container.getConnectionConfiguration());
+            DBPDataSource dataSource = dbObject.getDataSource();
+            if (dataSource != null) {
+                DBPDataSourceContainer container = dataSource.getContainer();
+                return UIUtils.getConnectionColor(container.getConnectionConfiguration());
+            }
         }
         return null;
     }

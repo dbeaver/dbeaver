@@ -17,10 +17,15 @@
 package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
 import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -90,5 +95,11 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
     @Override
     public Map<String, Object> getProperties() {
         return properties;
+    }
+
+    @NotNull
+    @Override
+    public List<DBSObject> getSourceObjects(DBRProgressMonitor monitor) throws DBException {
+        return Collections.emptyList();
     }
 }
