@@ -20,9 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
 import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,16 +35,14 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
     private Date updateTime;
     private DBTTaskDescriptor task;
     private Map<String, Object> properties;
-    private List<Map<String, Object>> objectsConfig = new ArrayList<>();
 
-    public TaskConfigurationImpl(String id, String label, String description, Date createTime, Date updateTime, DBTTaskDescriptor task, Map<String, Object> properties) {
+    public TaskConfigurationImpl(String id, String label, String description, Date createTime, Date updateTime, DBTTaskDescriptor task) {
         this.id = id;
         this.label = label;
         this.description = description;
         this.createTime = createTime;
         this.updateTime = updateTime;
         this.task = task;
-        this.properties = properties;
     }
 
     public String getId() {
@@ -105,9 +101,4 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
         this.properties = properties;
     }
 
-    @NotNull
-    @Override
-    public List<Map<String, Object>> getSourceObjects() {
-        return objectsConfig;
-    }
 }

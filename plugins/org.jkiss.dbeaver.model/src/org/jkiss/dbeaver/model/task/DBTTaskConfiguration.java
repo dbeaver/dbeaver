@@ -17,10 +17,8 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,8 +43,5 @@ public interface DBTTaskConfiguration {
 
     @NotNull
     Map<String, Object> getProperties();
-
-    @NotNull
-    List<Map<String, Object>> getSourceObjects() throws DBException;
 
 }

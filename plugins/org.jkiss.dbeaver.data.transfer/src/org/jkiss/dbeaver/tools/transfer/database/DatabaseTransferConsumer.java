@@ -607,7 +607,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         @Override
         public void serializeObject(DatabaseTransferConsumer object, Map<String, Object> state) {
-
+            if (object.targetObject instanceof DBSEntity) {
+                state.put("entityId", DBUtils.getObjectFullId(object.targetObject));
+            } else {
+                log.error("Unsupported consumer data container: " + object.targetObject);
+            }
+            // Mappings
         }
 
         @Override

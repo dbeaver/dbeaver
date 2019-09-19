@@ -66,16 +66,6 @@ public class EditTaskConfigurationDialog extends BaseDialog
         this.state = state;
     }
 
-    public EditTaskConfigurationDialog(Shell parentShell, DBPProject project, DBTTaskConfiguration configuration, Map<String, Object> state)
-    {
-        super(parentShell, "Edit task " + configuration.getDescriptor().getName(), DBIcon.TREE_PACKAGE);
-        this.project = project;
-        this.taskDescriptor = configuration.getDescriptor();
-        this.configuration = configuration;
-        this.state = state;
-    }
-
-
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
@@ -110,9 +100,11 @@ public class EditTaskConfigurationDialog extends BaseDialog
                 int selectionIndex = taskLabelCombo.getSelectionIndex();
                 if (selectionIndex == 0) {
                     configuration = null;
+                    setTitle("Create task " + taskDescriptor.getName());
                 } else {
                     configuration = allTasks[selectionIndex - 1];
                     taskDescriptionText.setText(CommonUtils.notEmpty(configuration.getDescription()));
+                    setTitle("Edit task " + configuration.getLabel());
                 }
             }
         });

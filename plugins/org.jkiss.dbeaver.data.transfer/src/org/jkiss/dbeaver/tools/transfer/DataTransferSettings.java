@@ -53,7 +53,9 @@ public class DataTransferSettings {
     private Map<DataTransferProcessorDescriptor, Map<Object, Object>> processorPropsHistory = new HashMap<>();
     private boolean producerProcessor;
 
-    private List<DBSObject> initObjects = new ArrayList<>();
+    private final IDataTransferProducer[] initProducers;
+    private final @Nullable IDataTransferConsumer[] initConsumers;
+    private final List<DBSObject> initObjects = new ArrayList<>();
 
     private boolean consumerOptional;
     private boolean producerOptional;
@@ -64,6 +66,8 @@ public class DataTransferSettings {
     private boolean showFinalMessage = true;
 
     public DataTransferSettings(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers) {
+        this.initProducers = producers;
+        this.initConsumers = consumers;
         dataPipes = new ArrayList<>();
 
         DataTransferRegistry registry = DataTransferRegistry.getInstance();
@@ -129,6 +133,15 @@ public class DataTransferSettings {
 
     public boolean isProducerOptional() {
         return producerOptional;
+    }
+
+    public IDataTransferNode[] getInitProducers() {
+        return initProducers;
+    }
+
+    @Nullable
+    public IDataTransferConsumer[] getInitConsumers() {
+        return initConsumers;
     }
 
     public List<DBSObject> getSourceObjects() {

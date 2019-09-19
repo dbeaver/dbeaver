@@ -96,7 +96,12 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public DBTTaskConfiguration createTaskConfiguration(DBTTaskDescriptor taskDescriptor, String label, String description, Map<String, Object> properties) throws DBException {
+    public DBTTaskConfiguration createTaskConfiguration(
+        DBTTaskDescriptor taskDescriptor,
+        String label,
+        String description,
+        Map<String, Object> properties) throws DBException
+    {
 /*
         DBTTaskDescriptor taskDescriptor = getRegistry().getTask(taskId);
         if (taskDescriptor == null) {
@@ -105,7 +110,8 @@ public class TaskManagerImpl implements DBTTaskManager {
 */
         Date createTime = new Date();
         String id = UUID.randomUUID().toString();
-        TaskConfigurationImpl task = new TaskConfigurationImpl(id, label, description, createTime, createTime, taskDescriptor, properties);
+        TaskConfigurationImpl task = new TaskConfigurationImpl(id, label, description, createTime, createTime, taskDescriptor);
+        task.setProperties(properties);
         synchronized (tasks) {
             tasks.add(task);
         }
@@ -186,12 +192,6 @@ public class TaskManagerImpl implements DBTTaskManager {
             JSONUtils.field(jsonWriter, "createTime", dateFormat.format(task.getCreateTime()));
             JSONUtils.field(jsonWriter, "updateTime", dateFormat.format(task.getUpdateTime()));
             JSONUtils.serializeProperties(jsonWriter, "state", task.getProperties());
-            jsonWriter.name("objects");
-            jsonWriter.beginArray();
-            for (Map<String, Object> objectInfo : task.getSourceObjects()) {
-                JSONUtils.serializeMap(jsonWriter, objectInfo);
-            }
-            jsonWriter.endArray();
             jsonWriter.endObject();
         }
         jsonWriter.endObject();

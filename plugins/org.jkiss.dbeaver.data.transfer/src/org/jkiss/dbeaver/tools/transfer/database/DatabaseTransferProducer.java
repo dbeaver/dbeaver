@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,13 +28,16 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -220,7 +224,33 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
         @Override
         public void serializeObject(DatabaseTransferProducer object, Map<String, Object> state) {
-
+            DBSDataContainer dataContainer = object.dataContainer;
+            if (dataContainer instanceof IAdaptable) {
+                DBSDataContainer nestedDataContainer = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);
+                if (nestedDataContainer != null) {
+                    dataContainer = nestedDataContainer;
+                }
+            }
+            if (dataContainer instanceof DBSEntity) {
+                state.put("type", "entity");
+                state.put("entityId", DBUtils.getObjectFullId(dataContainer));
+            } else if (dataContainer instanceof SQLQueryContainer) {
+                state.put("type", "query");
+                SQLQueryContainer queryContainer = (SQLQueryContainer) dataContainer;
+                DBPDataSourceContainer dataSource = queryContainer.getDataSourceContainer();
+                if (dataSource != null) {
+                    state.put("dataSource", dataSource.getId());
+                }
+                state.put("query", queryContainer.getQuery());
+            } else {
+                state.put("type", "unknown");
+                log.error("Unsupported producer data container: " + dataContainer);
+            }
+            if (object.dataFilter != null) {
+                Map<String, Object> dataFilterState = new LinkedHashMap<>();
+                object.dataFilter.serialize(dataFilterState);
+                state.put("dataFilter", dataFilterState);
+            }
         }
 
         @Override

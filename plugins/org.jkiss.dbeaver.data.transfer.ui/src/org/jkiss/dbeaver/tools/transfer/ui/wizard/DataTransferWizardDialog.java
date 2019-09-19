@@ -28,16 +28,20 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.task.EditTaskConfigurationDialog;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -115,7 +119,27 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
             return;
         }
         Map<String, Object> state = new LinkedHashMap<>();
-        getWizard().saveTo(state);
+
+        DataTransferSettings settings = getWizard().getSettings();
+
+        if (settings.getInitProducers() != null) {
+            List<Map<String, Object>> inputObjects = new ArrayList<>();
+            for (Object inputObject : settings.getInitProducers()) {
+                inputObjects.add(JSONUtils.serializeObject(inputObject));
+            }
+            state.put("producers", inputObjects);
+        }
+        if (settings.getInitConsumers() != null) {
+            List<Map<String, Object>> inputObjects = new ArrayList<>();
+            for (Object inputObject : settings.getInitConsumers()) {
+                inputObjects.add(JSONUtils.serializeObject(inputObject));
+            }
+            state.put("consumers", inputObjects);
+        }
+
+        Map<String, Object> config = new LinkedHashMap<>();
+        getWizard().saveTo(config);
+        state.put("configuration", config);
 
         EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(getShell(), getWizard().getProject(), task, state);
         dialog.open();

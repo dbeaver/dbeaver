@@ -5,7 +5,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -17,7 +16,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
-class SQLQueryDataContainer implements DBSDataContainer, IDataSourceContainerProvider, SQLQueryContainer, DBPContextProvider {
+class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContainer, DBPContextProvider {
 
     private SQLQueryJob queryJob;
     private SQLQueryResultsConsumer resultsConsumer;
