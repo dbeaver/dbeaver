@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -44,14 +46,18 @@ public interface DBTTaskManager {
 
     @NotNull
     DBTTask createTaskConfiguration(
-        DBTTaskType task,
-        String label,
-        String description,
-        Map<String, Object> properties) throws DBException;
+        @NotNull DBTTaskType task,
+        @NotNull String label,
+        @Nullable String description,
+        @NotNull Map<String, Object> properties) throws DBException;
 
-    void updateTaskConfiguration(DBTTask task);
+    void updateTaskConfiguration(@NotNull DBTTask task);
 
-    void deleteTaskConfiguration(DBTTask task);
+    void deleteTaskConfiguration(@NotNull DBTTask task);
 
+    @NotNull
+    File getStatisticsFolder();
+
+    void runTask(DBTTask task, Map<String, Object> options) throws DBException;
 
 }

@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -47,18 +48,23 @@ public class TaskManagerImpl implements DBTTaskManager {
     private static final Log log = Log.getLog(TaskManagerImpl.class);
 
     public static final String CONFIG_FILE = "tasks.json";
+    public static final String TASK_STATS_FOLDER = "task-stats";
     private static Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .setPrettyPrinting()
         .create();
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
+
+    static final SimpleDateFormat systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
 
     private final ProjectMetadata projectMetadata;
     private final List<TaskImpl> tasks = new ArrayList<>();
+    private File statisticsFolder;
 
     public TaskManagerImpl(ProjectMetadata projectMetadata) {
         this.projectMetadata = projectMetadata;
+        this.statisticsFolder = new File(projectMetadata.getWorkspace().getMetadataFolder(), TASK_STATS_FOLDER);
+
         loadConfiguration();
     }
 
@@ -105,10 +111,10 @@ public class TaskManagerImpl implements DBTTaskManager {
     @NotNull
     @Override
     public DBTTask createTaskConfiguration(
-        DBTTaskType taskDescriptor,
-        String label,
-        String description,
-        Map<String, Object> properties) throws DBException
+        @NotNull DBTTaskType taskDescriptor,
+        @NotNull String label,
+        @Nullable String description,
+        @NotNull Map<String, Object> properties) throws DBException
     {
 /*
         DBTTaskType taskDescriptor = getRegistry().getTask(taskId);
@@ -132,7 +138,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     @Override
-    public void updateTaskConfiguration(DBTTask task) {
+    public void updateTaskConfiguration(@NotNull DBTTask task) {
         synchronized (tasks) {
             tasks.remove(task);
         }
@@ -143,9 +149,20 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     @Override
-    public void deleteTaskConfiguration(DBTTask task) {
+    public void deleteTaskConfiguration(@NotNull DBTTask task) {
 
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_REMOVE));
+    }
+
+    @NotNull
+    @Override
+    public File getStatisticsFolder() {
+        return statisticsFolder;
+    }
+
+    @Override
+    public void runTask(DBTTask task, Map<String, Object> options) {
+        new TaskRunJob((TaskImpl) task, Locale.getDefault()).schedule();
     }
 
     private void loadConfiguration() {
@@ -165,8 +182,8 @@ public class TaskManagerImpl implements DBTTaskManager {
                         String task = JSONUtils.getString(taskJSON, "task");
                         String label = JSONUtils.getString(taskJSON, "label");
                         String description = JSONUtils.getString(taskJSON, "description");
-                        Date createTime = dateFormat.parse(JSONUtils.getString(taskJSON, "createTime"));
-                        Date updateTime = dateFormat.parse(JSONUtils.getString(taskJSON, "updateTime"));
+                        Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, "createTime"));
+                        Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, "updateTime"));
                         Map<String, Object> state = JSONUtils.getObject(taskJSON, "state");
 
                         DBTTaskType taskDescriptor = getRegistry().getTask(task);
@@ -241,8 +258,8 @@ public class TaskManagerImpl implements DBTTaskManager {
             JSONUtils.field(jsonWriter, "task", task.getType().getId());
             JSONUtils.field(jsonWriter, "label", task.getLabel());
             JSONUtils.field(jsonWriter, "description", task.getDescription());
-            JSONUtils.field(jsonWriter, "createTime", dateFormat.format(task.getCreateTime()));
-            JSONUtils.field(jsonWriter, "updateTime", dateFormat.format(task.getUpdateTime()));
+            JSONUtils.field(jsonWriter, "createTime", systemDateFormat.format(task.getCreateTime()));
+            JSONUtils.field(jsonWriter, "updateTime", systemDateFormat.format(task.getUpdateTime()));
             JSONUtils.serializeProperties(jsonWriter, "state", task.getProperties());
             jsonWriter.endObject();
         }

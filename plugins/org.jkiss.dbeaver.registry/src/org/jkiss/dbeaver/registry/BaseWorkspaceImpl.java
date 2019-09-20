@@ -300,6 +300,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         return eclipseWorkspace.getRoot().getLocation().toFile();
     }
 
+    @NotNull
+    @Override
+    public File getMetadataFolder() {
+        return GeneralUtils.getMetadataFolder(getAbsolutePath());
+    }
+
     public void save(DBRProgressMonitor monitor) throws DBException {
         try {
             eclipseWorkspace.save(true, monitor.getNestedMonitor());
