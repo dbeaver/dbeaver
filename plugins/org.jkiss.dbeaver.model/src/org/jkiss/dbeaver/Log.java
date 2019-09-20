@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,6 +48,7 @@ public class Log
     }
 
     private final String name;
+    private PrintStream logWriter;
 
     public static Log getLog(Class<?> forClass) {
         return new Log(forClass.getName());
@@ -84,6 +86,18 @@ public class Log
     private Log(String name)
     {
         this.name = name;
+        logWriter = null;
+    }
+
+    public Log(String name, OutputStream out) {
+        this.name = name;
+        this.logWriter = new PrintStream(out);
+    }
+
+    public void flush() {
+        if (logWriter != null) {
+            logWriter.flush();
+        }
     }
 
     public String getName()
@@ -140,10 +154,11 @@ public class Log
 
     public void debug(Object message, Throwable t)
     {
-        debugMessage(message, t, System.err);
+        debugMessage(message, t);
     }
 
-    private static void debugMessage(Object message, Throwable t, PrintStream debugWriter) {
+    private void debugMessage(Object message, Throwable t) {
+        PrintStream debugWriter = logWriter != null ? logWriter : System.err;
         synchronized (Log.class) {
             debugWriter.print(sdf.format(new Date()) + " - "); //$NON-NLS-1$
             debugWriter.println(message);
@@ -163,7 +178,7 @@ public class Log
             info(message.toString(), (Throwable) message);
             return;
         }
-        debugMessage(message, null, System.err);
+        debugMessage(message, null);
         int severity = Status.INFO;
         writeEclipseLog(createStatus(severity, message));
     }
@@ -179,7 +194,7 @@ public class Log
             warn(message.toString(), (Throwable)message);
             return;
         }
-        debugMessage(message, null, System.err);
+        debugMessage(message, null);
         int severity = Status.WARNING;
         writeEclipseLog(createStatus(severity, message));
     }
@@ -195,7 +210,7 @@ public class Log
             error(null, (Throwable)message);
             return;
         }
-        debugMessage(message, null, System.err);
+        debugMessage(message, null);
         int severity = Status.ERROR;
         writeEclipseLog(createStatus(severity, message));
     }
@@ -215,17 +230,25 @@ public class Log
         error(message, t);
     }
 
-    private static void writeExceptionStatus(int severity, Object message, Throwable t)
+    private void writeExceptionStatus(int severity, Object message, Throwable t)
     {
-        debugMessage(message, t, System.err);
-        if (t == null) {
-            writeEclipseLog(createStatus(severity, message));
-        } else {
-            if (message == null) {
-                writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, t));
+        debugMessage(message, t);
+        if (logWriter == null) {
+            if (t == null) {
+                writeEclipseLog(createStatus(severity, message));
             } else {
-                writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
+                if (message == null) {
+                    writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, t));
+                } else {
+                    writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
+                }
             }
+        }
+    }
+
+    private void writeEclipseLog(IStatus status) {
+        if (logWriter == null && eclipseLog != null) {
+            eclipseLog.log(status);
         }
     }
 
@@ -253,9 +276,4 @@ public class Log
         void loggedMessage(Object message, Throwable t);
     }
 
-    private static void writeEclipseLog(IStatus status) {
-        if (eclipseLog != null) {
-            eclipseLog.log(status);
-        }
-    }
 }

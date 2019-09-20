@@ -18,43 +18,38 @@ package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.app.DBPProject;
 
+import java.io.File;
 import java.util.Date;
-import java.util.Map;
 
 /**
- * Task configuration
+ * Task run information
  */
-public interface DBTTask {
+public interface DBTTaskRun {
 
     @NotNull
-    DBPProject getProject();
+    DBTTask getTask();
 
     @NotNull
-    String getLabel();
+    Date getStartTime();
 
     @NotNull
-    String getDescription();
+    String getStartUser();
 
     @NotNull
-    Date getCreateTime();
+    String getStartedBy();
 
-    @NotNull
-    Date getUpdateTime();
+    long getRunDuration();
 
-    @NotNull
-    DBTTaskType getType();
-
-    @NotNull
-    Map<String, Object> getProperties();
+    boolean isRunSuccess();
 
     @Nullable
-    DBTTaskRun getLastRun();
+    String getErrorMessage();
 
-    @NotNull
-    DBTTaskRun[] getRunStatistics();
+    @Nullable
+    String getErrorStackTrace();
 
-    void cleanRunStatistics();
+    @Nullable
+    File getLogFile();
 
 }

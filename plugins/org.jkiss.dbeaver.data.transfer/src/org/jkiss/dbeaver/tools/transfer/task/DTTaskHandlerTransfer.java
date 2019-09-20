@@ -18,13 +18,12 @@ package org.jkiss.dbeaver.tools.transfer.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
-import org.jkiss.dbeaver.model.task.DBTTaskType;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * DTTaskHandlerTransfer
@@ -34,10 +33,8 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
     @Override
     public void executeTask(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBTTaskType task,
-        @NotNull List<Object> inputObjects,
-        @NotNull Locale locale,
-        @NotNull Map<String, Object> properties) throws DBException
+        @NotNull DBTTask task,
+        @NotNull Locale locale, @NotNull Log log) throws DBException
     {
         throw new DBException("Not implemented yet");
     }

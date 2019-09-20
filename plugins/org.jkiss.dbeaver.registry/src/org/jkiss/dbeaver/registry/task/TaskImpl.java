@@ -17,10 +17,13 @@
 package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 
+import java.io.File;
 import java.util.Date;
 import java.util.Map;
 
@@ -106,8 +109,29 @@ public class TaskImpl implements DBTTask {
         return properties;
     }
 
+    @Nullable
+    @Override
+    public DBTTaskRun getLastRun() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskRun[] getRunStatistics() {
+        return new DBTTaskRun[0];
+    }
+
+    @Override
+    public void cleanRunStatistics() {
+
+    }
+
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
+    }
+
+    File getTaskStatsFolder() {
+        return new File(project.getTaskManager().getStatisticsFolder(), id);
     }
 
     @Override

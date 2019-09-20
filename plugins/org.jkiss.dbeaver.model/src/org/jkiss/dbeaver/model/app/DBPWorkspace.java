@@ -46,6 +46,9 @@ public interface DBPWorkspace
     File getAbsolutePath();
 
     @NotNull
+    File getMetadataFolder();
+
+    @NotNull
     IWorkspace getEclipseWorkspace();
 
     List<DBPProject> getProjects();
