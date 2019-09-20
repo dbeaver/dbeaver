@@ -279,6 +279,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             windowMenu.add(new ToggleViewAction(DatabaseNavigatorView.VIEW_ID));
             windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID));
             windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID));
+            //windowMenu.add(new ToggleViewAction(DatabaseTasksView.VIEW_ID));
             {
                 MenuManager showViewMenuMgr = new MenuManager(CoreMessages.actions_menu_window_showView, "showView"); //$NON-NLS-1$
                 IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
