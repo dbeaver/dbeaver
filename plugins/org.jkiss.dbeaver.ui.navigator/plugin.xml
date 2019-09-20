@@ -61,7 +61,6 @@
             allowMultiple="false"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"
             name="%view.project.explorer.title"/>
-<!--
         <view
             id="org.jkiss.dbeaver.tasks"
             category="org.jkiss.dbeaver.core.category"
@@ -69,7 +68,6 @@
             allowMultiple="false"
             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/package.png"
             name="%view.tasks.title"/>
--->
     </extension>
 
     <extension point="org.eclipse.ui.newWizards">
