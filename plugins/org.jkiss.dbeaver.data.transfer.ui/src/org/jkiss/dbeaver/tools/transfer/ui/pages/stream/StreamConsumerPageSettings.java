@@ -21,15 +21,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -68,30 +69,16 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         initializeDialogUnits(parent);
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
-        Composite composite = new Composite(parent, SWT.NULL);
-        GridLayout gl = new GridLayout();
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        composite.setLayout(gl);
+        Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group generalSettings = new Group(composite, SWT.NONE);
-            generalSettings.setText(DTMessages.data_transfer_wizard_settings_group_general);
-            gl = new GridLayout(4, false);
-            generalSettings.setLayout(gl);
-            generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Composite generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 5, GridData.FILL_HORIZONTAL, 0);
 
             {
-                Composite formattingGroup = UIUtils.createPlaceholder(generalSettings, 3);
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.horizontalSpan = 4;
-                formattingGroup.setLayoutData(gd);
-
-                UIUtils.createControlLabel(formattingGroup, DTMessages.data_transfer_wizard_settings_label_formatting);
-                formatProfilesCombo = new Combo(formattingGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.widthHint = 200;
+                formatProfilesCombo = UIUtils.createLabelCombo(generalSettings, DTMessages.data_transfer_wizard_settings_label_formatting, SWT.DROP_DOWN | SWT.READ_ONLY);
+                GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 3;
                 formatProfilesCombo.setLayoutData(gd);
                 formatProfilesCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -106,14 +93,10 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                     }
                 });
 
-                Button profilesManageButton = new Button(formattingGroup, SWT.PUSH);
-                profilesManageButton.setText(DTMessages.data_transfer_wizard_settings_button_edit);
-                profilesManageButton.addSelectionListener(new SelectionAdapter() {
+                UIUtils.createDialogButton(generalSettings, DTMessages.data_transfer_wizard_settings_button_edit, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-                        //DataFormatProfilesEditDialog dialog = new DataFormatProfilesEditDialog(getShell());
-                        //dialog.open();
                         PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
                             getShell(),
                             dataFormatterRegistry,
@@ -129,10 +112,8 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                 });
 
                 reloadFormatProfiles();
-            }
-            {
-                UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_settings_label_binaries);
-                lobExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
+
+                lobExtractType = UIUtils.createLabelCombo(generalSettings, DTMessages.data_transfer_wizard_settings_label_binaries, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobExtractType.setItems(
                     DTMessages.data_transfer_wizard_settings_binaries_item_set_to_null,
                     DTMessages.data_transfer_wizard_settings_binaries_item_save_to_file,
@@ -167,15 +148,15 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                         }
                     }
                 });
+                UIUtils.createEmptyLabel(generalSettings, 1, 1);
             }
         }
 
-        Group exporterSettings = new Group(composite, SWT.NONE);
-        exporterSettings.setText(DTMessages.data_transfer_wizard_settings_group_exporter);
-        exporterSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
-        exporterSettings.setLayout(new GridLayout(1, false));
+        {
+            Composite exporterSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_exporter, 1, GridData.FILL_BOTH, 0);
 
-        propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
+            propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
+        }
 
         setControl(composite);
     }

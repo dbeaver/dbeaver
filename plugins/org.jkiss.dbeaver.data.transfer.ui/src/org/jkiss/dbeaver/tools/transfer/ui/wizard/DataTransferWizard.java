@@ -133,8 +133,7 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         }
 
         if (configuration != null) {
-            Map<String, Object> configMap = JSONUtils.getObject(configuration, "configuration");
-            loadConfiguration(runnableContext, configMap);
+            loadConfiguration(runnableContext, configuration);
         } else {
             loadSettings();
         }

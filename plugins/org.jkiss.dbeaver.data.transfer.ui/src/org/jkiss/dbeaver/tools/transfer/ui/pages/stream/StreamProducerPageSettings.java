@@ -21,19 +21,17 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -68,10 +66,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         settingsDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group inputFilesGroup = new Group(settingsDivider, SWT.NONE);
-            inputFilesGroup.setText(DTMessages.data_transfer_wizard_settings_group_input_files);
-            inputFilesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-            inputFilesGroup.setLayout(new GridLayout(1, false));
+            Composite inputFilesGroup = UIUtils.createControlGroup(settingsDivider, DTMessages.data_transfer_wizard_settings_group_input_files, 1, GridData.FILL_BOTH, 0);
 
             filesTable = new Table(inputFilesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             filesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -104,10 +99,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
 
         {
-            Group exporterSettings = new Group(settingsDivider, SWT.NONE);
-            exporterSettings.setText(DTMessages.data_transfer_wizard_settings_group_importer);
-            exporterSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
-            exporterSettings.setLayout(new GridLayout(1, false));
+            Composite exporterSettings = UIUtils.createControlGroup(settingsDivider, DTMessages.data_transfer_wizard_settings_group_importer, 1, GridData.FILL_BOTH, 0);
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
         }
