@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-    import java.util.HashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -386,4 +386,15 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof SimplePreferenceStore)) {
+            return false;
+        }
+        SimplePreferenceStore copy = (SimplePreferenceStore)obj;
+        return
+            CommonUtils.equalObjects(parentStore, copy.parentStore) &&
+            CommonUtils.equalObjects(properties, copy.properties) &&
+            CommonUtils.equalObjects(defaultProperties, copy.defaultProperties);
+    }
 }

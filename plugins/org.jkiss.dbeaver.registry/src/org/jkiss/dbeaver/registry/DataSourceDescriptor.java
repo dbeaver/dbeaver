@@ -28,14 +28,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -219,6 +215,8 @@ public class DataSourceDescriptor
         this.folder = source.folder;
 
         this.preferenceStore = new DataSourcePreferenceStore(this);
+        this.preferenceStore.setProperties(source.preferenceStore.getProperties());
+        this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
         this.virtualModel = new DBVModel(this, source.virtualModel);
     }
 
@@ -1400,6 +1398,7 @@ public class DataSourceDescriptor
             CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
             CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
             CommonUtils.equalObjects(this.folder, source.folder) &&
+            CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
             CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
 

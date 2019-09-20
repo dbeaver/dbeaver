@@ -44,6 +44,10 @@ public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
         setDescription(description);
     }
 
+    public IPreferencePage getPreferencePage() {
+        return preferencePage;
+    }
+
     @Override
     public boolean isPageComplete()
     {
