@@ -26,6 +26,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
@@ -34,10 +36,12 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
@@ -53,6 +57,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private Tree taskTree;
     private FilteredTree filteredTree;
     private ViewerColumnController columnController;
+    private final List<DBTTask> allTasks = new ArrayList<>();
 
     //private final SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
@@ -84,7 +89,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     public void createPartControl(Composite parent) {
         Composite group = UIUtils.createComposite(parent, 1);
 
-        filteredTree = new FilteredTree(group, SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true);
+        filteredTree = new FilteredTree(group, SWT.MULTI | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true);
         TreeViewer viewer = filteredTree.getViewer();
         taskTree = viewer.getTree();
         taskTree.setHeaderVisible(true);
@@ -94,8 +99,19 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         columnController.addColumn("Name", "Task name", SWT.LEFT, true, true, new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
-                cell.setImage(DBeaverIcons.getImage(DBIcon.TREE_PACKAGE));
-                cell.setText(((DBTTask) cell.getElement()).getLabel());
+                DBTTask task = (DBTTask) cell.getElement();
+                DBPImage icon = task.getType().getIcon();
+                cell.setImage(DBeaverIcons.getImage(icon != null ? icon : DBIcon.TREE_PACKAGE));
+                cell.setText(task.getLabel());
+            }
+
+            @Override
+            public String getToolTipText(Object element) {
+                String description = ((DBTTask) element).getDescription();
+                if (CommonUtils.isEmpty(description)) {
+                    description = ((DBTTask) element).getLabel();
+                }
+                return description;
             }
         });
         columnController.addColumn("Created", "Task create time", SWT.LEFT, true, false, new CellLabelProvider() {
@@ -177,6 +193,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         MenuManager menuMgr = createContextMenu(viewer);
         getSite().registerContextMenu(menuMgr, viewer);
+        getSite().setSelectionProvider(filteredTree.getViewer());
 
         viewer.addDoubleClickListener(event -> openCurrentTask());
 
@@ -185,14 +202,25 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private MenuManager createContextMenu(TreeViewer viewer) {
         final MenuManager menuMgr = new MenuManager();
-        menuMgr.add(new Action("Open task") {
-            @Override
-            public void run() {
-                openCurrentTask();
-            }
+        menuMgr.setRemoveAllWhenShown(true);
+        menuMgr.addMenuListener(manager -> {
+            manager.add(new Action("Run task") {
+                @Override
+                public void run() {
+                    openCurrentTask();
+                }
+            });
+            manager.add(new Action("Open task configuration") {
+                @Override
+                public void run() {
+                    openCurrentTask();
+                }
+            });
+            manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, "Delete task", null));
+            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            manager.add(new Separator());
+            columnController.fillConfigMenu(manager);
         });
-        menuMgr.add(new Separator());
-        columnController.fillConfigMenu(menuMgr);
 
         Control control = viewer.getControl();
         control.setMenu(menuMgr.createContextMenu(control));
@@ -255,23 +283,26 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     @Override
     public void handleTaskEvent(DBTTaskEvent event) {
+        DBTTask task = event.getTask();
         switch (event.getAction()) {
             case TASK_ADD:
-                filteredTree.getViewer().add(null, event.getTask());
+                allTasks.add(task);
+                filteredTree.getViewer().add(filteredTree.getViewer().getInput(), task);
                 break;
             case TASK_REMOVE:
-                filteredTree.getViewer().remove(event.getTask());
+                allTasks.remove(task);
+                filteredTree.getViewer().remove(task);
                 break;
             case TASK_UPDATE:
-                filteredTree.getViewer().refresh(event.getTask());
+                filteredTree.getViewer().refresh(task);
                 break;
         }
     }
 
     private void loadTasks() {
+        allTasks.clear();
 
         List<DBPProject> projectsWithTasks = new ArrayList<>();
-        List<DBTTask> allTasks = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             DBTTaskManager taskManager = project.getTaskManager();
             DBTTask[] tasks = taskManager.getTaskConfigurations();

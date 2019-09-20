@@ -587,7 +587,8 @@ public class UIUtils {
     public static Text createLabelText(@NotNull Composite parent, @NotNull String label, @Nullable String value, int style,
         @Nullable Object layoutData)
     {
-        createControlLabel(parent, label);
+        Label controlLabel = createControlLabel(parent, label);
+        ((GridData)controlLabel.getLayoutData()).verticalAlignment = GridData.BEGINNING;
 
         Text text = new Text(parent, style);
         fixReadonlyTextBackground(text);
