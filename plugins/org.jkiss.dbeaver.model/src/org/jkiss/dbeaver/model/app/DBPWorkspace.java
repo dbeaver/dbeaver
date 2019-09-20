@@ -52,6 +52,7 @@ public interface DBPWorkspace
     DBPProject getActiveProject();
     void setActiveProject(DBPProject project);
     DBPProject getProject(IProject project);
+    DBPProject getProject(String projectName);
 
     /**
      * Reloads workspace contents. Creates missing projects, removes unexistent projects
@@ -75,4 +76,5 @@ public interface DBPWorkspace
     DBPDataSourceRegistry getDefaultDataSourceRegistry();
 
     void dispose();
+
 }

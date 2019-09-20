@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.runtime.serialize;
 
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+
 import java.util.Map;
 
 /**
@@ -26,6 +28,6 @@ public interface DBPObjectSerializer<OBJECT_TYPE> {
 
     void serializeObject(OBJECT_TYPE object, Map<String, Object> state);
 
-    OBJECT_TYPE deserializeObject(Map<String, Object> state);
+    OBJECT_TYPE deserializeObject(DBRRunnableContext runnableContext, Map<String, Object> state);
 
 }

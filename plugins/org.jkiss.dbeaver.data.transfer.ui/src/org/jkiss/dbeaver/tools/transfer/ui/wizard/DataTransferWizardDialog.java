@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.task.EditTaskConfigurationDialog;
@@ -59,6 +60,7 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
         setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
 
         setHelpAvailable(false);
+
     }
 
     @Override
@@ -69,9 +71,7 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         {
-            //boolean nativeClientRequired = getWizard().isProfileSelectorVisible();
-            /*if (nativeClientRequired) */
-            {
+            if (!getWizard().isTaskEditor()) {
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
                 Button saveAsTaskButton = createButton(parent, SAVE_TASK_BTN_ID, "Save as task ..", false);
@@ -131,7 +131,7 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
         @Nullable Collection<IDataTransferProducer> producers,
         @Nullable Collection<IDataTransferConsumer> consumers)
     {
-        DataTransferWizard wizard = new DataTransferWizard(producers, consumers, null);
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
         DataTransferWizardDialog dialog = new DataTransferWizardDialog(workbenchWindow, wizard);
         return dialog.open();
     }
@@ -142,7 +142,7 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
         @Nullable Collection<IDataTransferConsumer> consumers,
         @Nullable IStructuredSelection selection)
     {
-        DataTransferWizard wizard = new DataTransferWizard(producers, consumers, null);
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
         DataTransferWizardDialog dialog = new DataTransferWizardDialog(workbenchWindow, wizard, selection);
         return dialog.open();
     }
@@ -151,7 +151,7 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
         @NotNull IWorkbenchWindow workbenchWindow,
         @NotNull Map<String, Object> state)
     {
-        DataTransferWizard wizard = new DataTransferWizard(state);
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), state);
         DataTransferWizardDialog dialog = new DataTransferWizardDialog(workbenchWindow, wizard, null);
         return dialog.open();
     }

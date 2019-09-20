@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -284,7 +285,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
 
         @Override
-        public StreamTransferProducer deserializeObject(Map<String, Object> state) {
+        public StreamTransferProducer deserializeObject(DBRRunnableContext runnableContext, Map<String, Object> state) {
             return null;
         }
     }

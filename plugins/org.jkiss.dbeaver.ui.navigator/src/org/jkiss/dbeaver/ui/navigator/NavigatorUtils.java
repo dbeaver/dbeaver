@@ -57,8 +57,8 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Navigator utils
@@ -597,7 +597,13 @@ public class NavigatorUtils {
 
     public static DBPProject getSelectedProject() {
         IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
-        ISelection selection = activePart == null ? null : activePart.getSite().getSelectionProvider().getSelection();
+        ISelection selection;
+        if (activePart == null) {
+            selection = null;
+        } else {
+            ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
+            selection = selectionProvider == null ? null : selectionProvider.getSelection();
+        }
         return NavigatorUtils.getSelectedProject(selection, activePart);
 
     }

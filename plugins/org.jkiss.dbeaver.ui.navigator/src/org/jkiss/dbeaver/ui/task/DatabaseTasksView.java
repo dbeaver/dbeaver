@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.task;
 
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
@@ -30,11 +31,13 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
 import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.model.task.DBTTaskTypeDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -80,10 +83,11 @@ public class DatabaseTasksView extends ViewPart {
         Composite group = UIUtils.createComposite(parent, 1);
 
         filteredTree = new FilteredTree(group, SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true);
-        taskTree = filteredTree.getViewer().getTree();
+        TreeViewer viewer = filteredTree.getViewer();
+        taskTree = viewer.getTree();
         taskTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        filteredTree.getViewer().setLabelProvider(new CellLabelProvider() {
+        viewer.setLabelProvider(new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 Object element = cell.getElement();
@@ -99,7 +103,7 @@ public class DatabaseTasksView extends ViewPart {
                 }
             }
         });
-        filteredTree.getViewer().setContentProvider(new TreeContentProvider() {
+        viewer.setContentProvider(new TreeContentProvider() {
             @Override
             public Object[] getChildren(Object parentElement) {
                 if (parentElement instanceof DBPProject) {
@@ -124,7 +128,50 @@ public class DatabaseTasksView extends ViewPart {
             }
         });
 
+        MenuManager menuMgr = createContextMenu(viewer);
+        getSite().registerContextMenu(menuMgr, viewer);
+
+        viewer.addDoubleClickListener(event -> openCurrentTask());
+
         loadTasks();
+    }
+
+    private MenuManager createContextMenu(TreeViewer viewer) {
+        final MenuManager menuMgr = new MenuManager();
+        menuMgr.add(new Action("Open task") {
+            @Override
+            public void run() {
+                openCurrentTask();
+            }
+        });
+
+        Control control = viewer.getControl();
+        control.setMenu(menuMgr.createContextMenu(control));
+        control.addDisposeListener(e -> menuMgr.dispose());
+        return menuMgr;
+    }
+
+    private void openCurrentTask() {
+        ISelection selection = filteredTree.getViewer().getSelection();
+        if (!(selection instanceof IStructuredSelection) || selection.isEmpty()) {
+            return;
+        }
+        Object element = ((IStructuredSelection) selection).getFirstElement();
+        if (!(element instanceof DBTTaskConfiguration)) {
+            return;
+        }
+
+        DBTTaskConfiguration task = (DBTTaskConfiguration)element;
+        DBTTaskTypeDescriptor taskTypeDescriptor = task.getDescriptor().getType();
+        if (!taskTypeDescriptor.supportsConfigurator()) {
+            return;
+        }
+
+        try {
+            taskTypeDescriptor.createConfigurator().configureTask(DBWorkbench.getPlatform(), task);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task configuration editor", e);
+        }
     }
 
     @Override
