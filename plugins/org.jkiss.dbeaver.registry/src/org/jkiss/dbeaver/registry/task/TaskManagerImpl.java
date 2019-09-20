@@ -121,7 +121,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 */
         Date createTime = new Date();
         String id = UUID.randomUUID().toString();
-        TaskConfigurationImpl task = new TaskConfigurationImpl(taskDescriptor, id, label, description, createTime, createTime);
+        TaskConfigurationImpl task = new TaskConfigurationImpl(projectMetadata, taskDescriptor, id, label, description, createTime, createTime);
         task.setProperties(properties);
         synchronized (tasks) {
             tasks.add(task);
@@ -168,7 +168,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                             log.error("Can't find task descriptor " + task);
                             continue;
                         }
-                        TaskConfigurationImpl taskConfig = new TaskConfigurationImpl(taskDescriptor, id, label, description, createTime, updateTime);
+                        TaskConfigurationImpl taskConfig = new TaskConfigurationImpl(projectMetadata, taskDescriptor, id, label, description, createTime, updateTime);
                         taskConfig.setProperties(state);
 
                         synchronized (tasks) {
