@@ -77,12 +77,13 @@ public class EditTaskConfigurationDialog extends BaseDialog
         Composite composite = super.createDialogArea(parent);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite labelPanel = UIUtils.createComposite(composite, 2);
-        labelPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite formPanel = UIUtils.createComposite(composite, 2);
+        formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createLabelText(labelPanel, "Type", taskDescriptor.getName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(formPanel, "Type", taskDescriptor.getName(), SWT.BORDER | SWT.READ_ONLY);
 
-        taskLabelCombo = UIUtils.createLabelCombo(labelPanel, "Task", "", SWT.BORDER);
+        taskLabelCombo = UIUtils.createLabelCombo(formPanel, "Task", "", SWT.BORDER);
+        ((GridData)taskLabelCombo.getLayoutData()).widthHint = 300;
         ModifyListener modifyListener = e -> {
             updateButtons();
         };
@@ -109,7 +110,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
             }
         });
 
-        taskDescriptionText = UIUtils.createLabelText(composite, "Description", "", SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+        taskDescriptionText = UIUtils.createLabelText(formPanel, "Description", "", SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
         ((GridData)taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 5;
         taskDescriptionText.addModifyListener(modifyListener);
 

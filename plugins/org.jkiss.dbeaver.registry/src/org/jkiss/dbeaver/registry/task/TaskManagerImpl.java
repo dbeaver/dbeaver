@@ -139,10 +139,6 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @Override
     public void updateTaskConfiguration(@NotNull DBTTask task) {
-        synchronized (tasks) {
-            tasks.remove(task);
-        }
-
         saveConfiguration();
 
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_UPDATE));
@@ -150,6 +146,10 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @Override
     public void deleteTaskConfiguration(@NotNull DBTTask task) {
+        synchronized (tasks) {
+            tasks.remove(task);
+        }
+        saveConfiguration();
 
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_REMOVE));
     }
