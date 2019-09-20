@@ -19,9 +19,6 @@ package org.jkiss.dbeaver.model.task;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * Task configurator.
  * Usually some UI dialog/wizard for task configuration.
@@ -29,9 +26,6 @@ import java.util.Map;
 public interface DBTTaskConfigurator {
 
     void configureTask(
-        @NotNull DBPPlatform platform,
-        @NotNull DBTTaskDescriptor task,
-        @NotNull List<Object> inputObjects,
-        @NotNull Map<String, Object> properties);
+        @NotNull DBPPlatform platform, DBTTaskConfiguration taskConfiguration);
 
 }

@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -119,7 +118,7 @@ public class DataTransferRegistry {
         return result;
     }
 
-    public DataTransferNodeDescriptor getNodeByType(Class<? extends IDataTransferNode> type)
+    public DataTransferNodeDescriptor getNodeByType(Class<?> type)
     {
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeClass().equals(type)) {

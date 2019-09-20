@@ -61,8 +61,8 @@ public abstract class DataTransferHandler extends AbstractHandler {
         if (!producers.isEmpty() || !consumers.isEmpty()) {
             DataTransferWizardDialog.openWizard(
                 workbenchWindow,
-                producers.toArray(new IDataTransferProducer[0]),
-                consumers.toArray(new IDataTransferConsumer[0]));
+                producers,
+                consumers);
         }
 
         return null;

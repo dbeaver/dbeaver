@@ -17,16 +17,18 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Task configuration
  */
 public interface DBTTaskConfiguration {
+
+    @NotNull
+    DBPProject getProject();
 
     @NotNull
     String getLabel();
@@ -45,8 +47,5 @@ public interface DBTTaskConfiguration {
 
     @NotNull
     Map<String, Object> getProperties();
-
-    @NotNull
-    List<Map<String, Object>> getSourceObjects() throws DBException;
 
 }

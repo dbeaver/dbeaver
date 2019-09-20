@@ -59,23 +59,33 @@ public class SerializerRegistry
         return object.getClass().getAnnotation(DBSerializable.class) != null;
     }
 
+    public String getObjectType(Object object) {
+        DBSerializable dbSerializable = object.getClass().getAnnotation(DBSerializable.class);
+        return dbSerializable != null ? dbSerializable.value() : null;
+    }
+
     @Nullable
     public DBPObjectSerializer createSerializer(Object object) {
         DBSerializable dbSerializable = object.getClass().getAnnotation(DBSerializable.class);
         if (dbSerializable != null) {
-            SerializerDescriptor sd = serializers.get(dbSerializable.value());
-            if (sd == null) {
-                log.error("Serializer '" + dbSerializable.value() + "' not found");
-                return null;
-            }
-            try {
-                return sd.createSerializer();
-            } catch (Exception e) {
-                log.error("Erro creating serializer " + sd.getId(), e);
-                return null;
-            }
+            return createSerializerByType(dbSerializable.value());
         }
         return null;
+    }
+
+    @Nullable
+    public DBPObjectSerializer createSerializerByType(String typeID) {
+        SerializerDescriptor sd = serializers.get(typeID);
+        if (sd == null) {
+            log.error("Serializer '" + typeID + "' not found");
+            return null;
+        }
+        try {
+            return sd.createSerializer();
+        } catch (Exception e) {
+            log.error("Erro creating serializer " + sd.getId(), e);
+            return null;
+        }
     }
 
 }

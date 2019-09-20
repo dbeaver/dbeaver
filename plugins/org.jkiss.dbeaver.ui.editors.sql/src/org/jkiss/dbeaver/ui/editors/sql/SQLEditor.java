@@ -120,8 +120,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2511,7 +2511,7 @@ public class SQLEditor extends SQLEditorBase implements
 
                     DataTransferWizardDialog.openWizard(
                         getSite().getWorkbenchWindow(),
-                        producers.toArray(new IDataTransferProducer[0]),
+                        producers,
                         null,
                         new StructuredSelection(this));
                 } else {
@@ -2621,7 +2621,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, IDataSourceContainerProvider, SQLQueryContainer {
+    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, SQLQueryContainer {
 
         private static final String DATA_PINNED = "results.tab.pinned";
 
