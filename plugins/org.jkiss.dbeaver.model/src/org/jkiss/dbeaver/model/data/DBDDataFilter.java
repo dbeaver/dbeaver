@@ -271,4 +271,8 @@ public class DBDDataFilter {
         }
         return count > 1;
     }
+
+    public void serialize(Map<String, Object> state) {
+
+    }
 }

@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DataTransferSettings
@@ -53,7 +50,9 @@ public class DataTransferSettings {
     private Map<DataTransferProcessorDescriptor, Map<Object, Object>> processorPropsHistory = new HashMap<>();
     private boolean producerProcessor;
 
-    private List<DBSObject> initObjects = new ArrayList<>();
+    private final IDataTransferProducer[] initProducers;
+    private final @Nullable IDataTransferConsumer[] initConsumers;
+    private final List<DBSObject> initObjects = new ArrayList<>();
 
     private boolean consumerOptional;
     private boolean producerOptional;
@@ -63,24 +62,26 @@ public class DataTransferSettings {
 
     private boolean showFinalMessage = true;
 
-    public DataTransferSettings(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers) {
+    public DataTransferSettings(@Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers) {
+        this.initProducers = producers == null ? null : producers.toArray(new IDataTransferProducer[0]);
+        this.initConsumers = consumers == null ? null : consumers.toArray(new IDataTransferConsumer[0]);
         dataPipes = new ArrayList<>();
 
         DataTransferRegistry registry = DataTransferRegistry.getInstance();
 
-        if (!ArrayUtils.isEmpty(producers) && !ArrayUtils.isEmpty(consumers)) {
-            if (producers.length != consumers.length) {
+        if (!ArrayUtils.isEmpty(initProducers) && !ArrayUtils.isEmpty(initConsumers)) {
+            if (initProducers.length != initConsumers.length) {
                 throw new IllegalArgumentException("Producers number must match consumers number");
             }
             // Make pipes
-            for (int i = 0; i < producers.length; i++) {
-                if (producers[i].getDatabaseObject() != null) initObjects.add(producers[i].getDatabaseObject());
-                dataPipes.add(new DataTransferPipe(producers[i], consumers[i]));
+            for (int i = 0; i < initProducers.length; i++) {
+                if (initProducers[i].getDatabaseObject() != null) initObjects.add(initProducers[i].getDatabaseObject());
+                dataPipes.add(new DataTransferPipe(initProducers[i], initConsumers[i]));
             }
             consumerOptional = false;
-        } else if (!ArrayUtils.isEmpty(producers)) {
+        } else if (!ArrayUtils.isEmpty(initProducers)) {
             // Make pipes
-            for (IDataTransferProducer source : producers) {
+            for (IDataTransferProducer source : initProducers) {
                 if (source.getDatabaseObject() != null) initObjects.add(source.getDatabaseObject());
                 dataPipes.add(new DataTransferPipe(source, null));
             }
@@ -93,9 +94,9 @@ public class DataTransferSettings {
             } else {
                 DBWorkbench.getPlatformUI().showError("Can't find producer", "Can't find data propducer descriptor in registry");
             }
-        } else if (!ArrayUtils.isEmpty(consumers)) {
+        } else if (!ArrayUtils.isEmpty(initConsumers)) {
             // Make pipes
-            for (IDataTransferConsumer target : consumers) {
+            for (IDataTransferConsumer target : initConsumers) {
                 if (target.getDatabaseObject() != null) initObjects.add(target.getDatabaseObject());
                 dataPipes.add(new DataTransferPipe(null, target));
             }
@@ -113,8 +114,8 @@ public class DataTransferSettings {
             throw new IllegalArgumentException("Producers or consumers must be specified");
         }
 
-        if (!ArrayUtils.isEmpty(consumers)) {
-            for (IDataTransferConsumer target : consumers) {
+        if (!ArrayUtils.isEmpty(initConsumers)) {
+            for (IDataTransferConsumer target : initConsumers) {
                 DataTransferNodeDescriptor node = registry.getNodeByType(target.getClass());
                 if (node != null) {
                     this.consumer = node;
@@ -129,6 +130,15 @@ public class DataTransferSettings {
 
     public boolean isProducerOptional() {
         return producerOptional;
+    }
+
+    public IDataTransferNode[] getInitProducers() {
+        return initProducers;
+    }
+
+    @Nullable
+    public IDataTransferConsumer[] getInitConsumers() {
+        return initConsumers;
     }
 
     public List<DBSObject> getSourceObjects() {

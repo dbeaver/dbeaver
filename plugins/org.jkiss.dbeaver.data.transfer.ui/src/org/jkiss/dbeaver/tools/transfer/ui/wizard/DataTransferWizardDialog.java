@@ -28,14 +28,18 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.task.EditTaskConfigurationDialog;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -56,6 +60,7 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
         setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
 
         setHelpAvailable(false);
+
     }
 
     @Override
@@ -66,9 +71,7 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         {
-            //boolean nativeClientRequired = getWizard().isProfileSelectorVisible();
-            /*if (nativeClientRequired) */
-            {
+            if (!getWizard().isTaskEditor()) {
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
                 Button saveAsTaskButton = createButton(parent, SAVE_TASK_BTN_ID, "Save as task ..", false);
@@ -108,36 +111,48 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
 
     private void saveConfigurationAsTask() {
         DBTTaskManager taskManager = getWizard().getProject().getTaskManager();
-        String label = "Task";
-        String description = "DT task";
-        Map<String, Object> state = new LinkedHashMap<>();
-        getWizard().saveTo(state);
-        try {
-            taskManager.createTaskConfiguration(getWizard().getTaskId(), label, description, state);
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
+        DBTTaskDescriptor task = taskManager.getRegistry().getTask(getWizard().getTaskId());
+        if (task == null) {
+            DBWorkbench.getPlatformUI().showError("Create task", "Task " + getWizard().getTaskId() + " not found");
+            return;
         }
+
+        DataTransferSettings settings = getWizard().getSettings();
+
+        Map<String, Object> state = new LinkedHashMap<>();
+        getWizard().saveState(state);
+
+        EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(getShell(), getWizard().getProject(), task, state);
+        dialog.open();
     }
-
-
-
 
     public static int openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
-        @Nullable IDataTransferProducer[] producers,
-        @Nullable IDataTransferConsumer[] consumers) {
-        DataTransferWizard wizard = new DataTransferWizard(producers, consumers);
+        @Nullable Collection<IDataTransferProducer> producers,
+        @Nullable Collection<IDataTransferConsumer> consumers)
+    {
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
         DataTransferWizardDialog dialog = new DataTransferWizardDialog(workbenchWindow, wizard);
         return dialog.open();
     }
 
     public static int openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
-        @Nullable IDataTransferProducer[] producers,
-        @Nullable IDataTransferConsumer[] consumers,
-        @Nullable IStructuredSelection selection) {
-        DataTransferWizard wizard = new DataTransferWizard(producers, consumers);
+        @Nullable Collection<IDataTransferProducer> producers,
+        @Nullable Collection<IDataTransferConsumer> consumers,
+        @Nullable IStructuredSelection selection)
+    {
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
         DataTransferWizardDialog dialog = new DataTransferWizardDialog(workbenchWindow, wizard, selection);
+        return dialog.open();
+    }
+
+    public static int openWizard(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull Map<String, Object> state)
+    {
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), state);
+        DataTransferWizardDialog dialog = new DataTransferWizardDialog(workbenchWindow, wizard, null);
         return dialog.open();
     }
 

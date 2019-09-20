@@ -23,6 +23,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
+import org.jkiss.dbeaver.runtime.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -220,6 +223,36 @@ public class JSONUtils {
             }
         }
         json.endObject();
+    }
+
+    public static Map<String, Object> serializeObject(@NotNull Object object) {
+        DBPObjectSerializer serializer = SerializerRegistry.getInstance().createSerializer(object);
+        if (serializer == null) {
+            log.error("No serializer found for object " + object.getClass().getName());
+            return null;
+        }
+        Map<String, Object> state = new LinkedHashMap<>();
+
+        Map<String, Object> location = new LinkedHashMap<>();
+        serializer.serializeObject(object, location);
+        state.put("type", SerializerRegistry.getInstance().getObjectType(object));
+        state.put("location", location);
+
+        return state;
+    }
+
+    public static Object deserializeObject(@NotNull DBRRunnableContext runnableContext,  @NotNull Map<String, Object> objectConfig) {
+        String typeID = CommonUtils.toString(objectConfig.get("type"));
+        DBPObjectSerializer serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
+        if (serializer == null) {
+            log.error("No deserializer found for type " + typeID);
+            return null;
+        }
+        Map<String, Object> location = (Map<String, Object>) objectConfig.get("location");
+        if (location != null) {
+            return serializer.deserializeObject(runnableContext, location);
+        }
+        return null;
     }
 
     @NotNull

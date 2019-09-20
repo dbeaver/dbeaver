@@ -17,23 +17,32 @@
 
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -220,12 +229,86 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
         @Override
         public void serializeObject(DatabaseTransferProducer object, Map<String, Object> state) {
-
+            DBSDataContainer dataContainer = object.dataContainer;
+            if (dataContainer instanceof IAdaptable) {
+                DBSDataContainer nestedDataContainer = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);
+                if (nestedDataContainer != null) {
+                    dataContainer = nestedDataContainer;
+                }
+            }
+            if (dataContainer instanceof DBSEntity) {
+                state.put("type", "entity");
+                if (dataContainer.getDataSource() != null) {
+                    state.put("project", dataContainer.getDataSource().getContainer().getProject().getName());
+                }
+                state.put("entityId", DBUtils.getObjectFullId(dataContainer));
+            } else if (dataContainer instanceof SQLQueryContainer) {
+                state.put("type", "query");
+                SQLQueryContainer queryContainer = (SQLQueryContainer) dataContainer;
+                DBPDataSourceContainer dataSource = queryContainer.getDataSourceContainer();
+                if (dataSource != null) {
+                    state.put("project", dataSource.getProject().getName());
+                    state.put("dataSource", dataSource.getId());
+                }
+                state.put("query", queryContainer.getQuery());
+            } else {
+                state.put("type", "unknown");
+                log.error("Unsupported producer data container: " + dataContainer);
+            }
+            if (object.dataFilter != null) {
+                Map<String, Object> dataFilterState = new LinkedHashMap<>();
+                object.dataFilter.serialize(dataFilterState);
+                state.put("dataFilter", dataFilterState);
+            }
         }
 
         @Override
-        public DatabaseTransferProducer deserializeObject(Map<String, Object> state) {
-            return null;
+        public DatabaseTransferProducer deserializeObject(DBRRunnableContext runnableContext, Map<String, Object> state) {
+            DatabaseTransferProducer producer = new DatabaseTransferProducer();
+            try {
+                runnableContext.run(false, true, monitor -> {
+                    try {
+                        String selType = CommonUtils.toString(state.get("type"));
+                        String projectName = CommonUtils.toString(state.get("project"));
+                        DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                        if (project == null) {
+                            project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+                        }
+                        if (project == null) {
+                            log.debug("Can't detect project for transfer node");
+                            return;
+                        }
+                        switch (selType) {
+                            case "entity": {
+                                String id = CommonUtils.toString(state.get("entityId"));
+                                producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
+                                break;
+                            }
+                            case "query": {
+                                String dsId = CommonUtils.toString(state.get("dataSource"));
+                                String query = CommonUtils.toString(state.get("query"));
+                                DBPDataSourceContainer ds = project.getDataSourceRegistry().getDataSource(dsId);
+                                if (ds == null) {
+                                    log.debug("Can't find datasource "+ dsId);
+                                    return;
+                                }
+                                //producer.dataContainer = new SQLQueryContainer()
+                                throw new DBException("SQL data containers not supported yet");
+                            }
+                            default:
+                                log.warn("Unsupported selector type: " + selType);
+                        }
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                log.debug("Error deserializing node location", e.getTargetException());
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+
+            return producer;
         }
     }
 

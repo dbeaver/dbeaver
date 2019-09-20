@@ -19,11 +19,9 @@ package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
-import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
-
-import java.util.List;
-import java.util.Map;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Data transfer task configurator
@@ -31,7 +29,8 @@ import java.util.Map;
 public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
-    public void configureTask(@NotNull DBPPlatform platform, @NotNull DBTTaskDescriptor task, @NotNull List<Object> inputObjects, @NotNull Map<String, Object> properties) {
-
+    public void configureTask(@NotNull DBPPlatform platform, DBTTaskConfiguration taskConfiguration) {
+        DataTransferWizardDialog.openWizard(UIUtils.getActiveWorkbenchWindow(), taskConfiguration.getProperties());
     }
+
 }
