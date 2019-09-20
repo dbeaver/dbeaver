@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
 import java.util.Date;
 import java.util.Map;
@@ -25,6 +26,9 @@ import java.util.Map;
  * Task configuration
  */
 public interface DBTTaskConfiguration {
+
+    @NotNull
+    DBPProject getProject();
 
     @NotNull
     String getLabel();

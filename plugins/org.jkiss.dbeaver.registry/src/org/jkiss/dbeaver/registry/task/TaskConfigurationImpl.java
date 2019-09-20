@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
 import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 
@@ -28,6 +29,7 @@ import java.util.Map;
  */
 public class TaskConfigurationImpl implements DBTTaskConfiguration {
 
+    private final DBPProject project;
     private String id;
     private String label;
     private String description;
@@ -36,7 +38,8 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
     private DBTTaskDescriptor task;
     private Map<String, Object> properties;
 
-    public TaskConfigurationImpl(DBTTaskDescriptor task, String id, String label, String description, Date createTime, Date updateTime) {
+    public TaskConfigurationImpl(DBPProject project, DBTTaskDescriptor task, String id, String label, String description, Date createTime, Date updateTime) {
+        this.project = project;
         this.id = id;
         this.label = label;
         this.description = description;
@@ -47,6 +50,12 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
 
     public String getId() {
         return id;
+    }
+
+    @NotNull
+    @Override
+    public DBPProject getProject() {
+        return project;
     }
 
     @NotNull
