@@ -43,9 +43,9 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
@@ -54,7 +54,9 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     static final Log log = Log.getLog(TargetPrefPage.class);
 
+    private DBPDataSourceContainer dataSourceContainer;
     private DBNDataSource containerNode;
+
     private Button dataSourceSettingsButton;
     private Control configurationBlockControl;
     private Link changeSettingsTargetLink;
@@ -64,7 +66,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     }
 
     public final boolean isDataSourcePreferencePage() {
-        return containerNode != null;
+        return dataSourceContainer != null;
     }
 
     protected abstract boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dsContainer);
@@ -85,7 +87,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     protected abstract String getPropertyPageID();
 
     public DBPDataSourceContainer getDataSourceContainer() {
-        return containerNode == null ? null : containerNode.getObject();
+        return dataSourceContainer;
     }
 
     @Override
@@ -102,6 +104,8 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         if (element == null) {
             return;
         }
+        dataSourceContainer = element instanceof DBPDataSourceContainer ? (DBPDataSourceContainer)element : null;
+
         containerNode = element.getAdapter(DBNDataSource.class);
         if (containerNode == null) {
             final DBPDataSourceContainer dsContainer = element.getAdapter(DBPDataSourceContainer.class);
@@ -123,6 +127,9 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
                     containerNode = (DBNDataSource) DBWorkbench.getPlatform().getNavigatorModel().findNode((DBPDataSourceContainer) element);
                 }
             }
+        }
+        if (dataSourceContainer == null && containerNode != null) {
+            dataSourceContainer = containerNode.getDataSourceContainer();
         }
     }
 
@@ -148,7 +155,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
                     enableDataSourceSpecificSettings(enabled);
                 }
             });
-            String dataSourceName = containerNode.getDataSourceContainer().getName();
+            String dataSourceName = dataSourceContainer.getName();
             dataSourceSettingsButton.setText(NLS.bind(UINavigatorMessages.pref_page_target_button_use_datasource_settings, dataSourceName));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             dataSourceSettingsButton.setLayoutData(gd);

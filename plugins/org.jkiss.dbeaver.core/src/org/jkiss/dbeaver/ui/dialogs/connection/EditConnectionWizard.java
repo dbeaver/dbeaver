@@ -24,6 +24,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -169,7 +170,7 @@ public class EditConnectionWizard extends ConnectionWizard
 
     @Override
     protected IAdaptable getActiveElement() {
-        return originalDataSource;
+        return dataSource;
     }
 
     public IWizardPage getPage(String name) {
@@ -287,6 +288,14 @@ public class EditConnectionWizard extends ConnectionWizard
         pageGeneral.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
         pageEvents.saveSettings(dataSource);
+        for (IDialogPage page : getPages()) {
+            if (page instanceof WizardPrefPage) {
+                page = ((WizardPrefPage) page).getPreferencePage();
+            }
+            if (page instanceof IWorkbenchPropertyPage) {
+                ((IWorkbenchPropertyPage) page).setElement(dataSource);
+            }
+        }
         super.savePrefPageSettings();
 
         // Reset password if "Save password" was disabled
