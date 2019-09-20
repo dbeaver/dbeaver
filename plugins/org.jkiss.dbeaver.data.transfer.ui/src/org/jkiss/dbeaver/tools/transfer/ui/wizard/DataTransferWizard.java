@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -59,6 +60,7 @@ import java.util.*;
 public class DataTransferWizard extends BaseWizard implements IExportWizard, IImportWizard {
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataTransfer";//$NON-NLS-1$
+    private final boolean taskEditor;
     //private static final Log log = Log.getLog(DataTransferWizard.class);
 
     public static class NodePageSettings {
@@ -82,31 +84,17 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
     private IStructuredSelection currentSelection;
     private Map<Class, NodePageSettings> nodeSettings = new LinkedHashMap<>();
 
-    public DataTransferWizard(Map<String, Object> state) {
+    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> state) {
         this(
-            getNodesFromLocation(state, "producers", IDataTransferProducer.class),
-            getNodesFromLocation(state, "consumers", IDataTransferConsumer.class),
+            runnableContext,
+            getNodesFromLocation(runnableContext, state, "producers", IDataTransferProducer.class),
+            getNodesFromLocation(runnableContext, state, "consumers", IDataTransferConsumer.class),
             JSONUtils.getObject(state, "configuration"));
     }
 
-    private static <T> List<T> getNodesFromLocation(Map<String, Object> config, String nodeType, Class<T> nodeClass) {
-        List<T> result = new ArrayList<>();
-        Object nodeList = config.get(nodeType);
-        if (nodeList instanceof Collection) {
-            for (Object nodeObj : (Collection)nodeList) {
-                if (nodeObj instanceof Map) {
-                    Object node = JSONUtils.deserializeObject((Map<String, Object>) nodeObj);
-                    if (nodeClass.isInstance(node)) {
-                        result.add(nodeClass.cast(node));
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    DataTransferWizard(@Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable Map<String, Object> configuration) {
+    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable Map<String, Object> configuration) {
         this.settings = new DataTransferSettings(producers, consumers);
+        this.taskEditor = !CommonUtils.isEmpty(configuration);
         setDialogSettings(
             UIUtils.getSettingsSection(
                 DTUIActivator.getDefault().getDialogSettings(),
@@ -145,10 +133,14 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
 
         if (configuration != null) {
             Map<String, Object> configMap = JSONUtils.getObject(configuration, "configuration");
-            loadConfiguration(UIUtils.getDefaultRunnableContext (), configMap);
+            loadConfiguration(runnableContext, configMap);
         } else {
             loadSettings();
         }
+    }
+
+    public boolean isTaskEditor() {
+        return taskEditor;
     }
 
     public DBPProject getProject() {
@@ -528,6 +520,22 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
                 }
             }
         }
+    }
+
+    private static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, Map<String, Object> config, String nodeType, Class<T> nodeClass) {
+        List<T> result = new ArrayList<>();
+        Object nodeList = config.get(nodeType);
+        if (nodeList instanceof Collection) {
+            for (Object nodeObj : (Collection)nodeList) {
+                if (nodeObj instanceof Map) {
+                    Object node = JSONUtils.deserializeObject(runnableContext, (Map<String, Object>) nodeObj);
+                    if (nodeClass.isInstance(node)) {
+                        result.add(nodeClass.cast(node));
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     void saveState(Map<String, Object> state) {

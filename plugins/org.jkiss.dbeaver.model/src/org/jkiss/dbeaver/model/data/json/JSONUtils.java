@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.runtime.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -240,7 +241,7 @@ public class JSONUtils {
         return state;
     }
 
-    public static Object deserializeObject(@NotNull Map<String, Object> objectConfig) {
+    public static Object deserializeObject(@NotNull DBRRunnableContext runnableContext,  @NotNull Map<String, Object> objectConfig) {
         String typeID = CommonUtils.toString(objectConfig.get("type"));
         DBPObjectSerializer serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
         if (serializer == null) {
@@ -249,7 +250,7 @@ public class JSONUtils {
         }
         Map<String, Object> location = (Map<String, Object>) objectConfig.get("location");
         if (location != null) {
-            return serializer.deserializeObject(location);
+            return serializer.deserializeObject(runnableContext, location);
         }
         return null;
     }

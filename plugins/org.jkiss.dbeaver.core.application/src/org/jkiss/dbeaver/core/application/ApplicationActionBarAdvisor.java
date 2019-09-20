@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.ui.task.DatabaseTasksView;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -279,7 +280,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             windowMenu.add(new ToggleViewAction(DatabaseNavigatorView.VIEW_ID));
             windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID));
             windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID));
-            //windowMenu.add(new ToggleViewAction(DatabaseTasksView.VIEW_ID));
+            windowMenu.add(new ToggleViewAction(DatabaseTasksView.VIEW_ID));
             {
                 MenuManager showViewMenuMgr = new MenuManager(CoreMessages.actions_menu_window_showView, "showView"); //$NON-NLS-1$
                 IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -616,7 +617,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         @Override
-        public DatabaseTransferConsumer deserializeObject(Map<String, Object> state) {
+        public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, Map<String, Object> state) {
             return null;
         }
     }

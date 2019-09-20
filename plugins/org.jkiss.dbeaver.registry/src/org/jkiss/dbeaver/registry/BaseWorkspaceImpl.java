@@ -208,6 +208,15 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @Override
+    public DBPProject getProject(String projectName) {
+        IProject eProject = eclipseWorkspace.getRoot().getProject(projectName);
+        if (!eProject.exists()) {
+            return null;
+        }
+        return getProject(eProject);
+    }
+
+    @Override
     public void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException {
         try {
             IWorkspaceRoot root = eclipseWorkspace.getRoot();
