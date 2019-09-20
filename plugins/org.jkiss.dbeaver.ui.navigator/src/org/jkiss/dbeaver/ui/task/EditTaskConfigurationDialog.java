@@ -30,10 +30,10 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
-import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
-import org.jkiss.dbeaver.registry.task.TaskConfigurationImpl;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -50,15 +50,15 @@ public class EditTaskConfigurationDialog extends BaseDialog
     private static final String DIALOG_ID = "DBeaver.EditTaskConfigurationDialog";//$NON-NLS-1$
 
     private final DBPProject project;
-    private final DBTTaskDescriptor taskDescriptor;
-    private DBTTaskConfiguration configuration;
+    private final DBTTaskType taskDescriptor;
+    private DBTTask configuration;
     private Map<String, Object> state;
 
     private Combo taskLabelCombo;
     private Text taskDescriptionText;
-    private DBTTaskConfiguration[] allTasks;
+    private DBTTask[] allTasks;
 
-    public EditTaskConfigurationDialog(Shell parentShell, DBPProject project, DBTTaskDescriptor taskDescriptor, Map<String, Object> state)
+    public EditTaskConfigurationDialog(Shell parentShell, DBPProject project, DBTTaskType taskDescriptor, Map<String, Object> state)
     {
         super(parentShell, "Create new task " + taskDescriptor.getName(), DBIcon.TREE_PACKAGE);
         this.project = project;
@@ -89,7 +89,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
         taskLabelCombo.add("");
         DBTTaskManager taskManager = project.getTaskManager();
         allTasks = taskManager.getTaskConfigurations(taskDescriptor);
-        for (DBTTaskConfiguration tc : allTasks) {
+        for (DBTTask tc : allTasks) {
             taskLabelCombo.add(tc.getLabel());
         }
 
@@ -139,7 +139,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
                 DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
             }
         } else {
-            TaskConfigurationImpl impl = (TaskConfigurationImpl) configuration;
+            TaskImpl impl = (TaskImpl) configuration;
             impl.setLabel(taskLabelCombo.getText());
             impl.setDescription(taskDescriptionText.getText());
             impl.setUpdateTime(new Date());
@@ -150,7 +150,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
         super.okPressed();
     }
 
-    public DBTTaskConfiguration getTaskConfiguration() {
+    public DBTTask getTaskConfiguration() {
         return configuration;
     }
 }

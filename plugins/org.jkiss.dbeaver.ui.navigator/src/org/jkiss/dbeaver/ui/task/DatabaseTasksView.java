@@ -34,10 +34,10 @@ import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
-import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskCategory;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
-import org.jkiss.dbeaver.model.task.DBTTaskTypeDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -59,10 +59,10 @@ public class DatabaseTasksView extends ViewPart {
         protected boolean isLeafMatch(Viewer viewer, Object element) {
             if (element instanceof DBPProject) {
                 return wordMatches(((DBPProject) element).getName());
-            } else if (element instanceof DBTTaskDescriptor) {
-                return wordMatches(((DBTTaskDescriptor) element).getName());
-            } else if (element instanceof DBTTaskConfiguration) {
-                return wordMatches(((DBTTaskConfiguration) element).getLabel());
+            } else if (element instanceof DBTTaskType) {
+                return wordMatches(((DBTTaskType) element).getName());
+            } else if (element instanceof DBTTask) {
+                return wordMatches(((DBTTask) element).getLabel());
             }
             return true;
         }
@@ -70,9 +70,9 @@ public class DatabaseTasksView extends ViewPart {
 
     private static class TaskTypeInfo {
         DBPProject project;
-        DBTTaskDescriptor task;
+        DBTTaskType task;
 
-        public TaskTypeInfo(DBPProject project, DBTTaskDescriptor task) {
+        public TaskTypeInfo(DBPProject project, DBTTaskType task) {
             this.project = project;
             this.task = task;
         }
@@ -97,9 +97,9 @@ public class DatabaseTasksView extends ViewPart {
                 } else if (element instanceof TaskTypeInfo) {
                     cell.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATA_TYPE));
                     cell.setText(((TaskTypeInfo) element).task.getName());
-                } else if (element instanceof DBTTaskConfiguration) {
+                } else if (element instanceof DBTTask) {
                     cell.setImage(DBeaverIcons.getImage(DBIcon.TREE_PACKAGE));
-                    cell.setText(((DBTTaskConfiguration) element).getLabel());
+                    cell.setText(((DBTTask) element).getLabel());
                 }
             }
         });
@@ -109,7 +109,7 @@ public class DatabaseTasksView extends ViewPart {
                 if (parentElement instanceof DBPProject) {
                     DBPProject project = (DBPProject) parentElement;
                     DBTTaskManager taskManager = project.getTaskManager();
-                    DBTTaskDescriptor[] existingTaskTypes = taskManager.getExistingTaskTypes();
+                    DBTTaskType[] existingTaskTypes = taskManager.getExistingTaskTypes();
                     if (existingTaskTypes.length == 0) {
                         return null;
                     }
@@ -157,12 +157,12 @@ public class DatabaseTasksView extends ViewPart {
             return;
         }
         Object element = ((IStructuredSelection) selection).getFirstElement();
-        if (!(element instanceof DBTTaskConfiguration)) {
+        if (!(element instanceof DBTTask)) {
             return;
         }
 
-        DBTTaskConfiguration task = (DBTTaskConfiguration)element;
-        DBTTaskTypeDescriptor taskTypeDescriptor = task.getDescriptor().getType();
+        DBTTask task = (DBTTask)element;
+        DBTTaskCategory taskTypeDescriptor = task.getType().getCategory();
         if (!taskTypeDescriptor.supportsConfigurator()) {
             return;
         }
@@ -202,7 +202,7 @@ public class DatabaseTasksView extends ViewPart {
         List<DBPProject> projectsWithTasks = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             DBTTaskManager taskManager = project.getTaskManager();
-            DBTTaskDescriptor[] taskTypes = taskManager.getExistingTaskTypes();
+            DBTTaskType[] taskTypes = taskManager.getExistingTaskTypes();
             if (taskTypes.length == 0) {
                 continue;
             }
@@ -216,7 +216,7 @@ public class DatabaseTasksView extends ViewPart {
 
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             DBTTaskManager taskManager = project.getTaskManager();
-            DBTTaskDescriptor[] taskTypes = taskManager.getExistingTaskTypes();
+            DBTTaskType[] taskTypes = taskManager.getExistingTaskTypes();
             if (taskTypes.length == 0) {
                 continue;
             }
@@ -224,13 +224,13 @@ public class DatabaseTasksView extends ViewPart {
             projectItem.setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
             projectItem.setText(0, project.getName());
             projectItem.setData(project);
-            for (DBTTaskDescriptor task : taskTypes) {
+            for (DBTTaskType task : taskTypes) {
                 TreeItem taskTypeItem = new TreeItem(projectItem, SWT.NONE);
                 taskTypeItem.setText(0, task.getName());
                 taskTypeItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATA_TYPE));
                 taskTypeItem.setData(task);
 
-                for (DBTTaskConfiguration taskConfig : taskManager.getTaskConfigurations(task)) {
+                for (DBTTask taskConfig : taskManager.getTaskConfigurations(task)) {
                     TreeItem taskItem = new TreeItem(taskTypeItem, SWT.NONE);
                     taskItem.setText(0, taskConfig.getLabel());
                     taskItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_PACKAGE));

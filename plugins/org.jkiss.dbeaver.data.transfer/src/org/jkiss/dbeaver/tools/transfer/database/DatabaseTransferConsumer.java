@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -604,7 +605,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         return null;
     }
 
-    public static class ObjectSerializer implements DBPObjectSerializer<DatabaseTransferConsumer> {
+    public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferConsumer> {
 
         @Override
         public void serializeObject(DatabaseTransferConsumer object, Map<String, Object> state) {
@@ -617,7 +618,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         @Override
-        public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, Map<String, Object> state) {
+        public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
             return null;
         }
     }

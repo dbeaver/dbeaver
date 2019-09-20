@@ -31,7 +31,7 @@ public interface DBTTaskHandler {
 
     void executeTask(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBTTaskDescriptor task,
+        @NotNull DBTTaskType task,
         @NotNull List<Object> inputObjects,
         @NotNull Locale locale,
         @NotNull Map<String, Object> properties)

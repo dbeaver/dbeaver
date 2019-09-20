@@ -18,16 +18,16 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
-import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
 
 import java.util.Date;
 import java.util.Map;
 
 /**
- * TaskConfigurationImpl
+ * TaskImpl
  */
-public class TaskConfigurationImpl implements DBTTaskConfiguration {
+public class TaskImpl implements DBTTask {
 
     private final DBPProject project;
     private String id;
@@ -35,17 +35,17 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
     private String description;
     private Date createTime;
     private Date updateTime;
-    private DBTTaskDescriptor task;
+    private DBTTaskType type;
     private Map<String, Object> properties;
 
-    public TaskConfigurationImpl(DBPProject project, DBTTaskDescriptor task, String id, String label, String description, Date createTime, Date updateTime) {
+    public TaskImpl(DBPProject project, DBTTaskType type, String id, String label, String description, Date createTime, Date updateTime) {
         this.project = project;
         this.id = id;
         this.label = label;
         this.description = description;
         this.createTime = createTime;
         this.updateTime = updateTime;
-        this.task = task;
+        this.type = type;
     }
 
     public String getId() {
@@ -96,8 +96,8 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
 
     @NotNull
     @Override
-    public DBTTaskDescriptor getDescriptor() {
-        return task;
+    public DBTTaskType getType() {
+        return type;
     }
 
     @NotNull
@@ -110,4 +110,8 @@ public class TaskConfigurationImpl implements DBTTaskConfiguration {
         this.properties = properties;
     }
 
+    @Override
+    public String toString() {
+        return id + " " + label + " (" + type.getName() + ")";
+    }
 }

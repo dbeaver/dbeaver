@@ -14,38 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPProject;
-
-import java.util.Date;
-import java.util.Map;
-
 /**
- * Task configuration
+ * DBTTaskEvent
  */
-public interface DBTTaskConfiguration {
+public class DBTTaskEvent
+{
+    public enum Action
+    {
+        TASK_ADD,
+        TASK_UPDATE,
+        TASK_REMOVE
+    }
 
-    @NotNull
-    DBPProject getProject();
+    private DBTTask task;
+    private Action action;
 
-    @NotNull
-    String getLabel();
+    public DBTTaskEvent(DBTTask task, Action action) {
+        this.task = task;
+        this.action = action;
+    }
 
-    @NotNull
-    String getDescription();
+    public Action getAction()
+    {
+        return action;
+    }
 
-    @NotNull
-    Date getCreateTime();
+    public DBTTask getTask() {
+        return task;
+    }
 
-    @NotNull
-    Date getUpdateTime();
-
-    @NotNull
-    DBTTaskDescriptor getDescriptor();
-
-    @NotNull
-    Map<String, Object> getProperties();
-
+    @Override
+    public String toString() {
+        return action + " " + task;
+    }
 }

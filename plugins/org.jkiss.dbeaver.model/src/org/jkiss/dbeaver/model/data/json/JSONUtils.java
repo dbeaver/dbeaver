@@ -225,8 +225,8 @@ public class JSONUtils {
         json.endObject();
     }
 
-    public static Map<String, Object> serializeObject(@NotNull Object object) {
-        DBPObjectSerializer serializer = SerializerRegistry.getInstance().createSerializer(object);
+    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(@NotNull OBJECT_TYPE object) {
+        DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
         if (serializer == null) {
             log.error("No serializer found for object " + object.getClass().getName());
             return null;
@@ -241,18 +241,15 @@ public class JSONUtils {
         return state;
     }
 
-    public static Object deserializeObject(@NotNull DBRRunnableContext runnableContext,  @NotNull Map<String, Object> objectConfig) {
+    public static <OBJECT_CONTEXT, OBJECT_TYPE> Object deserializeObject(@NotNull DBRRunnableContext runnableContext,  OBJECT_CONTEXT objectContext, @NotNull Map<String, Object> objectConfig) {
         String typeID = CommonUtils.toString(objectConfig.get("type"));
-        DBPObjectSerializer serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
+        DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
         if (serializer == null) {
             log.error("No deserializer found for type " + typeID);
             return null;
         }
-        Map<String, Object> location = (Map<String, Object>) objectConfig.get("location");
-        if (location != null) {
-            return serializer.deserializeObject(runnableContext, location);
-        }
-        return null;
+        Map<String, Object> location = getObject(objectConfig, "location");
+        return serializer.deserializeObject(runnableContext, objectContext, location);
     }
 
     @NotNull

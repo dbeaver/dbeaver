@@ -18,23 +18,34 @@ package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
- * Task registry
+ * Task type descriptor.
+ *
+ * Task type groups similar tasks. Tasks of the same type have the same configurator and are shown in the same category in UI.
  */
-public interface DBTTaskRegistry {
+public interface DBTTaskCategory {
 
     @NotNull
-    DBTTaskType[] getAllTasks();
+    String getId();
+
+    @NotNull
+    String getName();
 
     @Nullable
-    DBTTaskType getTask(String id);
+    String getDescription();
+
+    @Nullable
+    DBPImage getIcon();
 
     @NotNull
-    DBTTaskCategory[] getTaskTypes();
+    DBTTaskType[] getTasks();
 
-    void addTaskListener(DBTTaskListener listener);
+    boolean supportsConfigurator();
 
-    void removeTaskListener(DBTTaskListener listener);
+    @NotNull
+    DBTTaskConfigurator createConfigurator() throws DBException;
 
 }

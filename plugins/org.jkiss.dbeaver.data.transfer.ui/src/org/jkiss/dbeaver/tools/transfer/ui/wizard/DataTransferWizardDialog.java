@@ -28,8 +28,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -111,7 +112,7 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
 
     private void saveConfigurationAsTask() {
         DBTTaskManager taskManager = getWizard().getProject().getTaskManager();
-        DBTTaskDescriptor task = taskManager.getRegistry().getTask(getWizard().getTaskId());
+        DBTTaskType task = taskManager.getRegistry().getTask(getWizard().getTaskId());
         if (task == null) {
             DBWorkbench.getPlatformUI().showError("Create task", "Task " + getWizard().getTaskId() + " not found");
             return;
@@ -149,9 +150,9 @@ public class DataTransferWizardDialog extends ActiveWizardDialog {
 
     public static int openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
-        @NotNull Map<String, Object> state)
+        @NotNull DBTTask task)
     {
-        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), state);
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), task);
         DataTransferWizardDialog dialog = new DataTransferWizardDialog(workbenchWindow, wizard, null);
         return dialog.open();
     }

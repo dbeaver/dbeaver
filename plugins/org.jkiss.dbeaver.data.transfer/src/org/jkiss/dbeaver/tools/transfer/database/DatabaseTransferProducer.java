@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -225,7 +226,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         }
     }
 
-    public static class ObjectSerializer implements DBPObjectSerializer<DatabaseTransferProducer> {
+    public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {
 
         @Override
         public void serializeObject(DatabaseTransferProducer object, Map<String, Object> state) {
@@ -263,7 +264,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         }
 
         @Override
-        public DatabaseTransferProducer deserializeObject(DBRRunnableContext runnableContext, Map<String, Object> state) {
+        public DatabaseTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
             DatabaseTransferProducer producer = new DatabaseTransferProducer();
             try {
                 runnableContext.run(false, true, monitor -> {

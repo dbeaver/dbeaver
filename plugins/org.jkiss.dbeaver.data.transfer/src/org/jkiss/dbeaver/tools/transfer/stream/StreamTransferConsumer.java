@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
@@ -673,7 +674,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     }
 
-    public static class ObjectSerializer implements DBPObjectSerializer<StreamTransferConsumer> {
+    public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferConsumer> {
 
         @Override
         public void serializeObject(StreamTransferConsumer object, Map<String, Object> state) {
@@ -681,7 +682,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public StreamTransferConsumer deserializeObject(DBRRunnableContext runnableContext, Map<String, Object> state) {
+        public StreamTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
             return null;
         }
     }

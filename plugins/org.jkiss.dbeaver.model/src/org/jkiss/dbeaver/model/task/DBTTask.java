@@ -17,38 +17,35 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.app.DBPProject;
+
+import java.util.Date;
+import java.util.Map;
 
 /**
- * Task handler
+ * Task configuration
  */
-public interface DBTTaskDescriptor {
+public interface DBTTask {
 
     @NotNull
-    String getId();
+    DBPProject getProject();
 
     @NotNull
-    String getName();
+    String getLabel();
 
-    @Nullable
+    @NotNull
     String getDescription();
 
-    @Nullable
-    DBPImage getIcon();
+    @NotNull
+    Date getCreateTime();
 
     @NotNull
-    DBTTaskTypeDescriptor getType();
+    Date getUpdateTime();
 
     @NotNull
-    DBPPropertyDescriptor[] getConfigurationProperties();
+    DBTTaskType getType();
 
     @NotNull
-    Class<?>[] getInputTypes();
-
-    @NotNull
-    DBTTaskHandler createHandler() throws DBException;
+    Map<String, Object> getProperties();
 
 }

@@ -22,9 +22,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
-import org.jkiss.dbeaver.model.task.DBTTaskRegistry;
-import org.jkiss.dbeaver.model.task.DBTTaskTypeDescriptor;
+import org.jkiss.dbeaver.model.task.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -47,8 +45,9 @@ public class TaskRegistry implements DBTTaskRegistry
         return instance;
     }
 
-    private final List<TaskTypeDescriptor> taskTypeDescriptors = new ArrayList<>();
-    private final Map<String, TaskDescriptor> taskDescriptors = new LinkedHashMap<>();
+    private final List<TaskCategoryDescriptor> taskCategories = new ArrayList<>();
+    private final Map<String, TaskTypeDescriptor> taskDescriptors = new LinkedHashMap<>();
+    private final List<DBTTaskListener> taskListeners = new ArrayList<>();
 
     private TaskRegistry(IExtensionRegistry registry)
     {
@@ -56,20 +55,20 @@ public class TaskRegistry implements DBTTaskRegistry
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
-                if ("type".equals(ext.getName())) {
-                    TaskTypeDescriptor descriptor = new TaskTypeDescriptor(ext);
-                    taskTypeDescriptors.add(descriptor);
+                if ("category".equals(ext.getName())) {
+                    TaskCategoryDescriptor descriptor = new TaskCategoryDescriptor(ext);
+                    taskCategories.add(descriptor);
                 }
             }
             for (IConfigurationElement ext : extElements) {
                 if ("task".equals(ext.getName())) {
                     String typeId = ext.getAttribute("type");
-                    TaskTypeDescriptor taskType = getTaskType(typeId);
-                    TaskDescriptor taskDescriptor = new TaskDescriptor(taskType, ext);
+                    TaskCategoryDescriptor taskType = getTaskType(typeId);
+                    TaskTypeDescriptor taskDescriptor = new TaskTypeDescriptor(taskType, ext);
                     taskDescriptors.put(taskDescriptor.getId(), taskDescriptor);
                 } else if ("configurator".equals(ext.getName())) {
                     String typeId = ext.getAttribute("type");
-                    TaskTypeDescriptor taskType = getTaskType(typeId);
+                    TaskCategoryDescriptor taskType = getTaskType(typeId);
                     if (taskType == null) {
                         log.debug("");
                     } else {
@@ -83,25 +82,51 @@ public class TaskRegistry implements DBTTaskRegistry
 
     @NotNull
     @Override
-    public DBTTaskDescriptor[] getAllTasks() {
-        return taskDescriptors.values().toArray(new DBTTaskDescriptor[0]);
+    public DBTTaskType[] getAllTasks() {
+        return taskDescriptors.values().toArray(new DBTTaskType[0]);
     }
 
     @Nullable
     @Override
-    public DBTTaskDescriptor getTask(String id) {
+    public DBTTaskType getTask(String id) {
         return taskDescriptors.get(id);
     }
 
     @NotNull
     @Override
-    public DBTTaskTypeDescriptor[] getTaskTypes() {
-        return taskTypeDescriptors.toArray(new DBTTaskTypeDescriptor[0]);
+    public DBTTaskCategory[] getTaskTypes() {
+        return taskCategories.toArray(new DBTTaskCategory[0]);
+    }
+
+    @Override
+    public void addTaskListener(DBTTaskListener listener) {
+        synchronized (taskListeners) {
+            taskListeners.add(listener);
+        }
+    }
+
+    @Override
+    public void removeTaskListener(DBTTaskListener listener) {
+        synchronized (taskListeners) {
+            if (!taskListeners.remove(listener)) {
+                log.debug("Task listener " + listener + " not found");
+            }
+        }
+    }
+
+    void notifyTaskListeners(DBTTaskEvent event) {
+        DBTTaskListener[] listenersCopy;
+        synchronized (taskListeners) {
+            listenersCopy = taskListeners.toArray(new DBTTaskListener[0]);
+        }
+        for (DBTTaskListener listener : listenersCopy) {
+            listener.handleTaskEvent(event);
+        }
     }
 
     @Nullable
-    private TaskTypeDescriptor getTaskType(String id) {
-        for (TaskTypeDescriptor ttd : taskTypeDescriptors) {
+    private TaskCategoryDescriptor getTaskType(String id) {
+        for (TaskCategoryDescriptor ttd : taskCategories) {
             if (id.equals(ttd.getId())) {
                 return ttd;
             }
