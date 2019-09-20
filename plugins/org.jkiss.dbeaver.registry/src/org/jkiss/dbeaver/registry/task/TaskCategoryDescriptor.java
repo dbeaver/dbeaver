@@ -22,13 +22,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskCategory;
-import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,26 +33,19 @@ import java.util.List;
 /**
  * TaskTypeDescriptor
  */
-public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBTTaskType, DBPNamedObjectLocalized {
+public class TaskCategoryDescriptor extends AbstractContextDescriptor implements DBTTaskCategory, DBPNamedObjectLocalized {
 
-    private final TaskCategoryDescriptor category;
     private final IConfigurationElement config;
-    private final ObjectType handlerImplType;
-    private final DBPPropertyDescriptor[] properties;
+    private final List<TaskTypeDescriptor> tasks = new ArrayList<>();
+    private TaskConfiguratorDescriptor configuratorDescriptor;
 
-    TaskTypeDescriptor(TaskCategoryDescriptor category, IConfigurationElement config) {
+    TaskCategoryDescriptor(IConfigurationElement config) {
         super(config);
-        this.category = category;
-        this.category.addTask(this);
         this.config = config;
+    }
 
-        this.handlerImplType = new ObjectType(config, "handler");
-
-        List<DBPPropertyDescriptor> props = new ArrayList<>();
-        for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
-            props.addAll(PropertyDescriptor.extractProperties(prop));
-        }
-        this.properties = props.toArray(new DBPPropertyDescriptor[0]);
+    void addTask(TaskTypeDescriptor task) {
+        this.tasks.add(task);
     }
 
     @NotNull
@@ -71,11 +61,6 @@ public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBT
     }
 
     @Override
-    public String getLocalizedName(String locale) {
-        return config.getAttribute(RegistryConstants.ATTR_LABEL, locale);
-    }
-
-    @Override
     public String getDescription() {
         return config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
     }
@@ -87,38 +72,36 @@ public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBT
 
     @NotNull
     @Override
-    public DBTTaskCategory getCategory() {
-        return category;
+    public DBTTaskType[] getTasks() {
+        return tasks.toArray(new DBTTaskType[0]);
+    }
+
+    @Override
+    public boolean supportsConfigurator() {
+        return configuratorDescriptor != null;
     }
 
     @NotNull
     @Override
-    public DBPPropertyDescriptor[] getConfigurationProperties() {
-        return this.properties;
-    }
-
-    @NotNull
-    @Override
-    public Class<?>[] getInputTypes() {
-        List<Class<?>> objClasses = new ArrayList<>();
-        for (ObjectType objectType : getObjectTypes()) {
-            Class<?> aClass = objectType.getObjectClass();
-            if (aClass != null) {
-                objClasses.add(aClass);
-            }
+    public DBTTaskConfigurator createConfigurator() throws DBException {
+        if (configuratorDescriptor == null) {
+            throw new DBException("No configurator for task type " + getId());
         }
-        return objClasses.toArray(new Class[0]);
+        return configuratorDescriptor.createConfigurator();
     }
 
-    @NotNull
-    @Override
-    public DBTTaskHandler createHandler() throws DBException {
-        return handlerImplType.createInstance(DBTTaskHandler.class);
+    void setConfigurator(TaskConfiguratorDescriptor configurator) {
+        this.configuratorDescriptor = configurator;
     }
 
     @Override
     public String toString() {
         return getId();
+    }
+
+    @Override
+    public String getLocalizedName(String locale) {
+        return config.getAttribute(RegistryConstants.ATTR_NAME, locale);
     }
 
 }

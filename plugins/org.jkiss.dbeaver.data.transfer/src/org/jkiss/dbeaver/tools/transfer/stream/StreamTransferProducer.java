@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
@@ -277,7 +278,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
     }
 
-    public static class ObjectSerializer implements DBPObjectSerializer<StreamTransferProducer> {
+    public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferProducer> {
 
         @Override
         public void serializeObject(StreamTransferProducer object, Map<String, Object> state) {
@@ -285,7 +286,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
 
         @Override
-        public StreamTransferProducer deserializeObject(DBRRunnableContext runnableContext, Map<String, Object> state) {
+        public StreamTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
             return null;
         }
     }

@@ -24,10 +24,10 @@ import java.util.Map;
 /**
  * Object serializer
  */
-public interface DBPObjectSerializer<OBJECT_TYPE> {
+public interface DBPObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
 
     void serializeObject(OBJECT_TYPE object, Map<String, Object> state);
 
-    OBJECT_TYPE deserializeObject(DBRRunnableContext runnableContext, Map<String, Object> state);
+    OBJECT_TYPE deserializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE objectContext, Map<String, Object> state);
 
 }

@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.tools.transfer.task;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
 
 import java.util.List;
 import java.util.Locale;
@@ -34,7 +34,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
     @Override
     public void executeTask(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBTTaskDescriptor task,
+        @NotNull DBTTaskType task,
         @NotNull List<Object> inputObjects,
         @NotNull Locale locale,
         @NotNull Map<String, Object> properties) throws DBException

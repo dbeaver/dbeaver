@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.*;
@@ -84,12 +85,12 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
     private IStructuredSelection currentSelection;
     private Map<Class, NodePageSettings> nodeSettings = new LinkedHashMap<>();
 
-    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> state) {
+    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
         this(
             runnableContext,
-            getNodesFromLocation(runnableContext, state, "producers", IDataTransferProducer.class),
-            getNodesFromLocation(runnableContext, state, "consumers", IDataTransferConsumer.class),
-            JSONUtils.getObject(state, "configuration"));
+            getNodesFromLocation(runnableContext, task, "producers", IDataTransferProducer.class),
+            getNodesFromLocation(runnableContext, task, "consumers", IDataTransferConsumer.class),
+            JSONUtils.getObject(task.getProperties(), "configuration"));
     }
 
     DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable Map<String, Object> configuration) {
@@ -522,13 +523,14 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         }
     }
 
-    private static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, Map<String, Object> config, String nodeType, Class<T> nodeClass) {
+    private static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, DBTTask task, String nodeType, Class<T> nodeClass) {
+        Map<String, Object> config = task.getProperties();
         List<T> result = new ArrayList<>();
         Object nodeList = config.get(nodeType);
         if (nodeList instanceof Collection) {
             for (Object nodeObj : (Collection)nodeList) {
                 if (nodeObj instanceof Map) {
-                    Object node = JSONUtils.deserializeObject(runnableContext, (Map<String, Object>) nodeObj);
+                    Object node = JSONUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
                     if (nodeClass.isInstance(node)) {
                         result.add(nodeClass.cast(node));
                     }

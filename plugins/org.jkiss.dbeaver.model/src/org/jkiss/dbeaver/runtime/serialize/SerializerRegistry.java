@@ -74,7 +74,7 @@ public class SerializerRegistry
     }
 
     @Nullable
-    public DBPObjectSerializer createSerializerByType(String typeID) {
+    public <OBJECT_CONTEXT, OBJECT_TYPE> DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> createSerializerByType(String typeID) {
         SerializerDescriptor sd = serializers.get(typeID);
         if (sd == null) {
             log.error("Serializer '" + typeID + "' not found");
@@ -83,7 +83,7 @@ public class SerializerRegistry
         try {
             return sd.createSerializer();
         } catch (Exception e) {
-            log.error("Erro creating serializer " + sd.getId(), e);
+            log.error("Error creating serializer " + sd.getId(), e);
             return null;
         }
     }

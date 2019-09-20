@@ -18,23 +18,37 @@ package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 /**
- * Task registry
+ * Task handler
  */
-public interface DBTTaskRegistry {
+public interface DBTTaskType {
 
     @NotNull
-    DBTTaskType[] getAllTasks();
+    String getId();
+
+    @NotNull
+    String getName();
 
     @Nullable
-    DBTTaskType getTask(String id);
+    String getDescription();
+
+    @Nullable
+    DBPImage getIcon();
 
     @NotNull
-    DBTTaskCategory[] getTaskTypes();
+    DBTTaskCategory getCategory();
 
-    void addTaskListener(DBTTaskListener listener);
+    @NotNull
+    DBPPropertyDescriptor[] getConfigurationProperties();
 
-    void removeTaskListener(DBTTaskListener listener);
+    @NotNull
+    Class<?>[] getInputTypes();
+
+    @NotNull
+    DBTTaskHandler createHandler() throws DBException;
 
 }

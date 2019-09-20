@@ -34,24 +34,24 @@ public interface DBTTaskManager {
     DBPProject getProject();
 
     @NotNull
-    DBTTaskConfiguration[] getTaskConfigurations();
+    DBTTask[] getTaskConfigurations();
 
     @NotNull
-    DBTTaskDescriptor[] getExistingTaskTypes();
+    DBTTaskType[] getExistingTaskTypes();
 
     @NotNull
-    DBTTaskConfiguration[] getTaskConfigurations(DBTTaskDescriptor task);
+    DBTTask[] getTaskConfigurations(DBTTaskType task);
 
     @NotNull
-    DBTTaskConfiguration createTaskConfiguration(
-        DBTTaskDescriptor task,
+    DBTTask createTaskConfiguration(
+        DBTTaskType task,
         String label,
         String description,
         Map<String, Object> properties) throws DBException;
 
-    void updateTaskConfiguration(DBTTaskConfiguration task);
+    void updateTaskConfiguration(DBTTask task);
 
-    void deleteTaskConfiguration(DBTTaskConfiguration task);
+    void deleteTaskConfiguration(DBTTask task);
 
 
 }

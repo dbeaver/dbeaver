@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.model.task.DBTTaskConfiguration;
-import org.jkiss.dbeaver.model.task.DBTTaskDescriptor;
-import org.jkiss.dbeaver.model.task.DBTTaskManager;
-import org.jkiss.dbeaver.model.task.DBTTaskRegistry;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.ProjectMetadata;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
@@ -58,7 +55,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
 
     private final ProjectMetadata projectMetadata;
-    private final List<TaskConfigurationImpl> tasks = new ArrayList<>();
+    private final List<TaskImpl> tasks = new ArrayList<>();
 
     public TaskManagerImpl(ProjectMetadata projectMetadata) {
         this.projectMetadata = projectMetadata;
@@ -79,49 +76,49 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public DBTTaskConfiguration[] getTaskConfigurations() {
-        return tasks.toArray(new DBTTaskConfiguration[0]);
+    public DBTTask[] getTaskConfigurations() {
+        return tasks.toArray(new DBTTask[0]);
     }
 
     @NotNull
     @Override
-    public DBTTaskDescriptor[] getExistingTaskTypes() {
-        Set<DBTTaskDescriptor> result = new LinkedHashSet<>();
-        for (DBTTaskConfiguration tc : tasks) {
-            result.add(tc.getDescriptor());
+    public DBTTaskType[] getExistingTaskTypes() {
+        Set<DBTTaskType> result = new LinkedHashSet<>();
+        for (DBTTask tc : tasks) {
+            result.add(tc.getType());
         }
-        return result.toArray(new DBTTaskDescriptor[0]);
+        return result.toArray(new DBTTaskType[0]);
     }
 
     @NotNull
     @Override
-    public DBTTaskConfiguration[] getTaskConfigurations(DBTTaskDescriptor task) {
-        List<DBTTaskConfiguration> result = new ArrayList<>();
-        for (DBTTaskConfiguration tc : tasks) {
-            if (tc.getDescriptor() == task) {
+    public DBTTask[] getTaskConfigurations(DBTTaskType task) {
+        List<DBTTask> result = new ArrayList<>();
+        for (DBTTask tc : tasks) {
+            if (tc.getType() == task) {
                 result.add(tc);
             }
         }
-        return result.toArray(new DBTTaskConfiguration[0]);
+        return result.toArray(new DBTTask[0]);
     }
 
     @NotNull
     @Override
-    public DBTTaskConfiguration createTaskConfiguration(
-        DBTTaskDescriptor taskDescriptor,
+    public DBTTask createTaskConfiguration(
+        DBTTaskType taskDescriptor,
         String label,
         String description,
         Map<String, Object> properties) throws DBException
     {
 /*
-        DBTTaskDescriptor taskDescriptor = getRegistry().getTask(taskId);
+        DBTTaskType taskDescriptor = getRegistry().getTask(taskId);
         if (taskDescriptor == null) {
             throw new DBException("Task " + taskId + " not found");
         }
 */
         Date createTime = new Date();
         String id = UUID.randomUUID().toString();
-        TaskConfigurationImpl task = new TaskConfigurationImpl(projectMetadata, taskDescriptor, id, label, description, createTime, createTime);
+        TaskImpl task = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, createTime);
         task.setProperties(properties);
         synchronized (tasks) {
             tasks.add(task);
@@ -129,17 +126,26 @@ public class TaskManagerImpl implements DBTTaskManager {
 
         saveConfiguration();
 
+        TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_ADD));
+
         return task;
     }
 
     @Override
-    public void updateTaskConfiguration(DBTTaskConfiguration task) {
+    public void updateTaskConfiguration(DBTTask task) {
+        synchronized (tasks) {
+            tasks.remove(task);
+        }
+
         saveConfiguration();
+
+        TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_UPDATE));
     }
 
     @Override
-    public void deleteTaskConfiguration(DBTTaskConfiguration task) {
-        throw new RuntimeException("Not Implemented");
+    public void deleteTaskConfiguration(DBTTask task) {
+
+        TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_REMOVE));
     }
 
     private void loadConfiguration() {
@@ -163,12 +169,12 @@ public class TaskManagerImpl implements DBTTaskManager {
                         Date updateTime = dateFormat.parse(JSONUtils.getString(taskJSON, "updateTime"));
                         Map<String, Object> state = JSONUtils.getObject(taskJSON, "state");
 
-                        DBTTaskDescriptor taskDescriptor = getRegistry().getTask(task);
+                        DBTTaskType taskDescriptor = getRegistry().getTask(task);
                         if (taskDescriptor == null) {
                             log.error("Can't find task descriptor " + task);
                             continue;
                         }
-                        TaskConfigurationImpl taskConfig = new TaskConfigurationImpl(projectMetadata, taskDescriptor, id, label, description, createTime, updateTime);
+                        TaskImpl taskConfig = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, updateTime);
                         taskConfig.setProperties(state);
 
                         synchronized (tasks) {
@@ -229,10 +235,10 @@ public class TaskManagerImpl implements DBTTaskManager {
     private void serializeTasks(DBRProgressMonitor monitor, JsonWriter jsonWriter) throws IOException {
         jsonWriter.setIndent("\t");
         jsonWriter.beginObject();
-        for (TaskConfigurationImpl task : tasks) {
+        for (TaskImpl task : tasks) {
             jsonWriter.name(task.getId());
             jsonWriter.beginObject();
-            JSONUtils.field(jsonWriter, "task", task.getDescriptor().getId());
+            JSONUtils.field(jsonWriter, "task", task.getType().getId());
             JSONUtils.field(jsonWriter, "label", task.getLabel());
             JSONUtils.field(jsonWriter, "description", task.getDescription());
             JSONUtils.field(jsonWriter, "createTime", dateFormat.format(task.getCreateTime()));
