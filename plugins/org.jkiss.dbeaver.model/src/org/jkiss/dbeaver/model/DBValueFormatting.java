@@ -23,12 +23,9 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -145,7 +142,13 @@ public final class DBValueFormatting {
                 image = getTypeImage((DBSTypedObject) object);
             }
             if (image == null && useDefault) {
-                image = DBIcon.TYPE_OBJECT;
+                if (object instanceof DBSEntity) {
+                    image = DBIcon.TREE_TABLE;
+                } else if (object instanceof DBSEntityAssociation) {
+                    image = DBIcon.TREE_ASSOCIATION;
+                } else {
+                    image = DBIcon.TYPE_OBJECT;
+                }
             }
         }
         return image;
