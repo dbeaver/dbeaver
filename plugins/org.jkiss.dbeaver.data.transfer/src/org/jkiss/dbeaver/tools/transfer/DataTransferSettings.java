@@ -16,11 +16,15 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -127,6 +131,13 @@ public class DataTransferSettings {
         }
     }
 
+    public DataTransferSettings(DBRRunnableContext runnableContext, DBTTask task) {
+        this(
+            getNodesFromLocation(runnableContext, task, "producers", IDataTransferProducer.class),
+            getNodesFromLocation(runnableContext, task, "consumers", IDataTransferConsumer.class)
+        );
+    }
+
     public boolean isConsumerOptional() {
         return consumerOptional;
     }
@@ -135,7 +146,7 @@ public class DataTransferSettings {
         return producerOptional;
     }
 
-    public IDataTransferNode[] getInitProducers() {
+    public IDataTransferProducer[] getInitProducers() {
         return initProducers;
     }
 
@@ -327,5 +338,22 @@ public class DataTransferSettings {
         this.showFinalMessage = showFinalMessage;
     }
 
+
+    private static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, DBTTask task, String nodeType, Class<T> nodeClass) {
+        Map<String, Object> config = task.getProperties();
+        List<T> result = new ArrayList<>();
+        Object nodeList = config.get(nodeType);
+        if (nodeList instanceof Collection) {
+            for (Object nodeObj : (Collection)nodeList) {
+                if (nodeObj instanceof Map) {
+                    Object node = JSONUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
+                    if (nodeClass.isInstance(node)) {
+                        result.add(nodeClass.cast(node));
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
 }

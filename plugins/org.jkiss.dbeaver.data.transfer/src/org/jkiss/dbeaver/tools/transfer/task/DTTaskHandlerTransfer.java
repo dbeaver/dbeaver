@@ -19,10 +19,16 @@ package org.jkiss.dbeaver.tools.transfer.task;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.tools.transfer.DataTransferJob;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -32,10 +38,57 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
 
     @Override
     public void executeTask(
-        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBRRunnableContext runnableContext,
         @NotNull DBTTask task,
-        @NotNull Locale locale, @NotNull Log log) throws DBException
+        @NotNull Locale locale,
+        @NotNull Log log,
+        @NotNull DBTTaskExecutionListener listener) throws DBException
     {
-        throw new DBException("Not implemented yet");
+        DataTransferSettings settings = new DataTransferSettings(runnableContext, task);
+        executeWithSettings(runnableContext, locale, log, listener, settings);
     }
+
+    public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, @NotNull Locale locale, @NotNull Log log, @NotNull DBTTaskExecutionListener listener, DataTransferSettings settings) throws DBException {
+        // Start consumers
+        List<DataTransferPipe> dataPipes = settings.getDataPipes();
+        try {
+            runnableContext.run(false, false, monitor -> {
+                try {
+                    for (int i = 0; i < dataPipes.size(); i++) {
+                        DataTransferPipe pipe = dataPipes.get(i);
+                        pipe.initPipe(settings, i, dataPipes.size());
+                        pipe.getConsumer().startTransfer(monitor);
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            throw new DBException("Error starting data transfer", e.getTargetException());
+        } catch (InterruptedException e) {
+            return;
+        }
+
+        listener.taskStarted(settings);
+
+        // Schedule jobs for data providers
+        int totalJobs = settings.getDataPipes().size();
+        if (totalJobs > settings.getMaxJobCount()) {
+            totalJobs = settings.getMaxJobCount();
+        }
+        Throwable error = null;
+        for (int i = 0; i < totalJobs; i++) {
+            DataTransferJob job = new DataTransferJob(settings, locale, log, listener);
+            try {
+                runnableContext.run(true, true, job);
+            } catch (InvocationTargetException e) {
+                error = e.getTargetException();
+            } catch (InterruptedException e) {
+                break;
+            }
+            listener.subTaskFinished(error);
+        }
+        listener.taskFinished(settings, error);
+    }
+
 }

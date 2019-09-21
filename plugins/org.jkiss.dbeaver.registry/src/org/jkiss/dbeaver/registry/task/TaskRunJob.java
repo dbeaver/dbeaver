@@ -18,11 +18,12 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -30,13 +31,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.Locale;
 
 /**
  * TaskRunJob
  */
-public class TaskRunJob extends AbstractJob {
+public class TaskRunJob extends AbstractJob implements DBRRunnableContext, DBTTaskExecutionListener {
 
     private static final String RUN_LOG_PREFIX = "run_";
     private static final String RUN_LOG_EXT = "log";
@@ -44,6 +46,7 @@ public class TaskRunJob extends AbstractJob {
     private final TaskImpl task;
     private final Locale locale;
     private Log taskLog;
+    private DBRProgressMonitor activeMonitor;
 
     protected TaskRunJob(TaskImpl task, Locale locale) {
         super("Task [" + task.getType().getName() + "] runner - " + task.getName());
@@ -76,8 +79,29 @@ public class TaskRunJob extends AbstractJob {
     }
 
     private void executeTask(DBRProgressMonitor monitor) throws DBException {
+        activeMonitor = monitor;
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        taskHandler.executeTask(monitor, task, locale, taskLog);
+        taskHandler.executeTask(this, task, locale, taskLog, this);
+    }
+
+    @Override
+    public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
+        runnable.run(activeMonitor);
+    }
+
+    @Override
+    public void taskStarted(@NotNull Object task) {
+
+    }
+
+    @Override
+    public void taskFinished(@NotNull Object task, @Nullable Throwable error) {
+
+    }
+
+    @Override
+    public void subTaskFinished(@Nullable Throwable error) {
+
     }
 
     private class LoggingProgressMonitor extends ProxyProgressMonitor {

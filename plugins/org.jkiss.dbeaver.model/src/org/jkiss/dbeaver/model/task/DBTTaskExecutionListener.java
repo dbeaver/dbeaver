@@ -17,23 +17,17 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-
-import java.util.Locale;
+import org.jkiss.code.Nullable;
 
 /**
- * Task handler
+ * Task execution listener
  */
-public interface DBTTaskHandler {
+public interface DBTTaskExecutionListener {
 
-    void executeTask(
-        @NotNull DBRRunnableContext runnableContext,
-        @NotNull DBTTask task,
-        @NotNull Locale locale,
-        @NotNull Log log,
-        @NotNull DBTTaskExecutionListener listener)
-        throws DBException;
+    void taskStarted(@NotNull Object task);
+
+    void taskFinished(@NotNull Object task, @Nullable Throwable error);
+
+    void subTaskFinished(@Nullable Throwable error);
 
 }
