@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.task;
 
+import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -65,6 +66,23 @@ public abstract class TaskConfigurationWizard extends BaseWizard {
             wizTitle += " - [" + currentTask.getName() + "]";
         }
         setWindowTitle(wizTitle);
+    }
+
+    @Override
+    public boolean canFinish() {
+        if (currentTask != null) {
+            return true;
+        }
+        for (IWizardPage page : getPages()) {
+            if (isPageValid(page) && !page.isPageComplete()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected boolean isPageValid(IWizardPage page) {
+        return true;
     }
 
 

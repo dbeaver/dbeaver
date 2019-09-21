@@ -233,19 +233,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     }
 
     @Override
-    public boolean canFinish() {
-        for (IWizardPage page : getPages()) {
-            if (isPageValid(page) && !page.isPageComplete()) {
-                return false;
-            }
-            if (page instanceof DataTransferPageFinal && !((DataTransferPageFinal) page).isActivated()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
     public boolean performCancel() {
         // Save settings anyway?
         //saveSettings();
@@ -263,7 +250,10 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         try {
             UIUtils.run(getContainer(), true, true, monitor -> {
                 try {
-                    for (DataTransferPipe pipe : settings.getDataPipes()) {
+                    List<DataTransferPipe> dataPipes = settings.getDataPipes();
+                    for (int i = 0; i < dataPipes.size(); i++) {
+                        DataTransferPipe pipe = dataPipes.get(i);
+                        pipe.initPipe(getSettings(), i, dataPipes.size());
                         pipe.getConsumer().startTransfer(monitor);
                     }
                 } catch (DBException e) {
@@ -296,7 +286,8 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     }
 
     private void saveSettings() {
-        saveConfiguration(new DialogSettingsMap(getDialogSettings()));
+        DialogSettingsMap dialogSettings = new DialogSettingsMap(getDialogSettings());
+        saveConfiguration(dialogSettings);
     }
 
     private void executeJobs() {
@@ -379,7 +370,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         }
     }
 
-    public boolean isPageValid(IWizardPage page) {
+    protected boolean isPageValid(IWizardPage page) {
         return page instanceof DataTransferPageSettings || isPageValid(page, settings.getProducer()) || isPageValid(page, settings.getConsumer());
     }
 
@@ -426,52 +417,52 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         return null;
     }
 
-    public IDataTransferSettings getNodeSettings(IDataTransferNode node) {
-        NodePageSettings nodePageSettings = this.nodeSettings.get(node.getClass());
-        return nodePageSettings == null ? null : settings.getNodeSettings(nodePageSettings.sourceNode);
-    }
-
     private void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
         settings.setMaxJobCount(CommonUtils.toInt(config.get("maxJobCount"), DataTransferSettings.DEFAULT_THREADS_NUM));
         settings.setShowFinalMessage(CommonUtils.getBoolean(config.get("showFinalMessage"), settings.isShowFinalMessage()));
 
-        if (settings.isConsumerOptional() || settings.isProducerOptional()) {
-            DataTransferNodeDescriptor savedConsumer = null, savedProducer = null, savedNode = null;
+        DataTransferNodeDescriptor savedConsumer = null, savedProducer = null, processorNode = null;
+        {
             {
-                if (settings.isConsumerOptional()) {
-                    String consumerId = CommonUtils.toString(config.get("consumer"));
-                    if (!CommonUtils.isEmpty(consumerId)) {
-                        DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
-                        if (consumerNode != null) {
-                            settings.setConsumer(savedNode = savedConsumer = consumerNode);
-                        }
-                    }
-                }
-                if (settings.isProducerOptional()) {
-                    String producerId = CommonUtils.toString(config.get("producer"));
-                    if (!CommonUtils.isEmpty(producerId)) {
-                        DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
-                        if (producerNode != null) {
-                            settings.setProducer(savedNode = savedProducer = producerNode);
+                String consumerId = CommonUtils.toString(config.get("consumer"));
+                if (!CommonUtils.isEmpty(consumerId)) {
+                    DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
+                    if (consumerNode != null) {
+                        settings.setConsumer(savedConsumer = consumerNode);
+                        if (settings.isConsumerOptional()) {
+                            processorNode = savedConsumer;
                         }
                     }
                 }
             }
-
-            DataTransferProcessorDescriptor savedProcessor = null;
-            if (savedNode != null) {
-                String processorId = CommonUtils.toString(config.get("processor"));
-                if (!CommonUtils.isEmpty(processorId)) {
-                    savedProcessor = savedNode.getProcessor(processorId);
+            {
+                String producerId = CommonUtils.toString(config.get("producer"));
+                if (!CommonUtils.isEmpty(producerId)) {
+                    DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
+                    if (producerNode != null) {
+                        settings.setProducer(savedProducer = producerNode);
+                        if (settings.isProducerOptional()) {
+                            processorNode = savedProducer;
+                        }
+                    }
                 }
-            }
-            if (savedConsumer != null) {
-                settings.selectConsumer(savedConsumer, savedProcessor, false);
-            }
-            if (savedProducer != null) {
-                settings.selectProducer(savedProducer, savedProcessor, false);
             }
         }
+
+        DataTransferProcessorDescriptor savedProcessor = null;
+        if (processorNode != null) {
+            String processorId = CommonUtils.toString(config.get("processor"));
+            if (!CommonUtils.isEmpty(processorId)) {
+                savedProcessor = processorNode.getProcessor(processorId);
+            }
+        }
+        if (settings.isConsumerOptional() && savedConsumer != null) {
+            settings.selectConsumer(savedConsumer, savedProcessor, false);
+        }
+        if (settings.isProducerOptional() && savedProducer != null) {
+            settings.selectProducer(savedProducer, savedProcessor, false);
+        }
+
 
         // Load nodes' settings
         for (Map.Entry<Class, NodePageSettings> entry : nodeSettings.entrySet()) {
@@ -565,12 +556,13 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         for (Map.Entry<Class, NodePageSettings> entry : nodeSettings.entrySet()) {
             //IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
             Map<String, Object> nodeSection = new LinkedHashMap<>();
-            config.put(entry.getKey().getSimpleName(), nodeSection);
 
             IDataTransferSettings settings = this.settings.getNodeSettings(entry.getValue().sourceNode);
             if (settings != null) {
                 settings.saveSettings(nodeSection);
             }
+            // Note: do it in the end because of limitation of IDialogSettings wrapper
+            config.put(entry.getKey().getSimpleName(), nodeSection);
         }
 
         if (settings.getProducer() != null) {
@@ -590,7 +582,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         for (DataTransferProcessorDescriptor procDescriptor : settings.getProcessorPropsHistory().keySet()) {
 
             Map<String, Object> procSettings = new LinkedHashMap<>();
-            processorsSection.put(procDescriptor.getFullId(), procSettings);
 
             Map<Object, Object> props = settings.getProcessorPropsHistory().get(procDescriptor);
             if (!CommonUtils.isEmpty(props)) {
@@ -603,6 +594,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
                     procSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
                 }
             }
+            processorsSection.put(procDescriptor.getFullId(), procSettings);
         }
         return config;
     }

@@ -16,10 +16,14 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+
 /**
  * Data transfer pipe is tuple of produces and consumer
  */
 public class DataTransferPipe {
+
     private IDataTransferProducer producer;
     private IDataTransferConsumer consumer;
 
@@ -49,4 +53,27 @@ public class DataTransferPipe {
         this.consumer = consumer;
     }
 
+    public void initPipe(DataTransferSettings settings, int pipeIndex, int totalPipes) throws DBException {
+        if (consumer == null || producer == null) {
+            throw new DBException("Empty pipe");
+        }
+        IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
+        DataTransferProcessorDescriptor processorDescriptor = settings.getProcessor();
+        IDataTransferProcessor processor = processorDescriptor == null ? null : processorDescriptor.getInstance();
+
+        IDataTransferConsumer.TransferParameters parameters = new IDataTransferConsumer.TransferParameters(
+            processorDescriptor != null && processorDescriptor.isBinaryFormat(),
+            processorDescriptor != null && processorDescriptor.isHTMLFormat());
+        parameters.orderNumber = pipeIndex;
+        parameters.totalConsumers = totalPipes;
+        consumer.initTransfer(
+            producer.getDatabaseObject(),
+            consumerSettings,
+            parameters,
+            processor,
+            processor == null ?
+                null :
+                settings.getProcessorProperties());
+
+    }
 }
