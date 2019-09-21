@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -38,7 +36,7 @@ import java.util.Locale;
 /**
  * TaskRunJob
  */
-public class TaskRunJob extends AbstractJob implements DBRRunnableContext, DBTTaskExecutionListener {
+public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     private static final String RUN_LOG_PREFIX = "run_";
     private static final String RUN_LOG_EXT = "log";
@@ -47,13 +45,15 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext, DBTTa
 
     private final TaskImpl task;
     private final Locale locale;
+    private DBTTaskExecutionListener executionListener;
     private Log taskLog = log;
     private DBRProgressMonitor activeMonitor;
 
-    protected TaskRunJob(TaskImpl task, Locale locale) {
+    protected TaskRunJob(TaskImpl task, Locale locale, DBTTaskExecutionListener executionListener) {
         super("Task [" + task.getType().getName() + "] runner - " + task.getName());
         this.task = task;
         this.locale = locale;
+        this.executionListener = executionListener;
 
     }
 
@@ -84,27 +84,12 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext, DBTTa
     private void executeTask(DBRProgressMonitor monitor) throws DBException {
         activeMonitor = monitor;
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        taskHandler.executeTask(this, task, locale, taskLog, this);
+        taskHandler.executeTask(this, task, locale, taskLog, executionListener);
     }
 
     @Override
     public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         runnable.run(activeMonitor);
-    }
-
-    @Override
-    public void taskStarted(@NotNull Object task) {
-
-    }
-
-    @Override
-    public void taskFinished(@NotNull Object task, @Nullable Throwable error) {
-
-    }
-
-    @Override
-    public void subTaskFinished(@Nullable Throwable error) {
-
     }
 
     private class LoggingProgressMonitor extends ProxyProgressMonitor {
