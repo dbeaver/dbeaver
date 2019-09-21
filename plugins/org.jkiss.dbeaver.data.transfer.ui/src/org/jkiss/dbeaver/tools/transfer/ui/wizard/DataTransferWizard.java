@@ -16,14 +16,9 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
@@ -35,7 +30,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -49,11 +43,9 @@ import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageType;
 import org.jkiss.dbeaver.ui.DialogSettingsMap;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.task.TaskConfigurationWizard;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class DataTransferWizard extends TaskConfigurationWizard implements IExportWizard, IImportWizard {
@@ -83,17 +75,19 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     private Map<Class, NodePageSettings> nodeSettings = new LinkedHashMap<>();
 
     DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
-        this(
-            runnableContext,
-            getNodesFromLocation(runnableContext, task, "producers", IDataTransferProducer.class),
-            getNodesFromLocation(runnableContext, task, "consumers", IDataTransferConsumer.class),
-            task);
+        super(task);
+        this.settings = new DataTransferSettings(runnableContext, task);
+        loadSettings(runnableContext);
     }
 
     DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable DBTTask task) {
         super(task);
         this.settings = new DataTransferSettings(producers, consumers);
 
+        loadSettings(runnableContext);
+    }
+
+    private void loadSettings(@NotNull DBRRunnableContext runnableContext) {
         setDialogSettings(
             UIUtils.getSettingsSection(
                 DTUIActivator.getDefault().getDialogSettings(),
@@ -104,20 +98,20 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             Collection<DBSObject> objectTypes = settings.getSourceObjects();
             List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
             DataTransferRegistry registry = DataTransferRegistry.getInstance();
-            if (CommonUtils.isEmpty(producers)) {
+            if (ArrayUtils.isEmpty(settings.getInitProducers())) {
                 nodes.addAll(registry.getAvailableProducers(objectTypes));
             } else {
-                for (IDataTransferProducer source : producers) {
+                for (IDataTransferProducer source : settings.getInitProducers()) {
                     DataTransferNodeDescriptor node = registry.getNodeByType(source.getClass());
                     if (node != null && !nodes.contains(node)) {
                         nodes.add(node);
                     }
                 }
             }
-            if (CommonUtils.isEmpty(consumers)) {
+            if (ArrayUtils.isEmpty(settings.getInitConsumers())) {
                 nodes.addAll(registry.getAvailableConsumers(objectTypes));
             } else {
-                for (IDataTransferConsumer target : consumers) {
+                for (IDataTransferConsumer target : settings.getInitConsumers()) {
                     DataTransferNodeDescriptor node = registry.getNodeByType(target.getClass());
                     if (node != null && !nodes.contains(node)) {
                         nodes.add(node);
@@ -130,7 +124,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             }
         }
 
-        Map<String, Object> configuration = task == null ? null : JSONUtils.getObject(task.getProperties(), "configuration");
+        Map<String, Object> configuration = getCurrentTask() == null ? null : JSONUtils.getObject(getCurrentTask().getProperties(), "configuration");
         if (configuration != null) {
             loadConfiguration(runnableContext, configuration);
         } else {
@@ -246,29 +240,13 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         saveSettings();
         DTUIActivator.getDefault().saveDialogSettings();
 
-        // Start consumers
+        DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), getSettings());
         try {
-            UIUtils.run(getContainer(), true, true, monitor -> {
-                try {
-                    List<DataTransferPipe> dataPipes = settings.getDataPipes();
-                    for (int i = 0; i < dataPipes.size(); i++) {
-                        DataTransferPipe pipe = dataPipes.get(i);
-                        pipe.initPipe(getSettings(), i, dataPipes.size());
-                        pipe.getConsumer().startTransfer(monitor);
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Transfer init failed", "Can't start data transfer", e.getTargetException());
-            return false;
-        } catch (InterruptedException e) {
+            executor.executeTask();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't init data transfer", e);
             return false;
         }
-
-        // Run export jobs
-        executeJobs();
 
         // Done
         return true;
@@ -288,44 +266,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     private void saveSettings() {
         DialogSettingsMap dialogSettings = new DialogSettingsMap(getDialogSettings());
         saveConfiguration(dialogSettings);
-    }
-
-    private void executeJobs() {
-        // Schedule jobs for data providers
-        int totalJobs = settings.getDataPipes().size();
-        if (totalJobs > settings.getMaxJobCount()) {
-            totalJobs = settings.getMaxJobCount();
-        }
-        for (int i = 0; i < totalJobs; i++) {
-            DataTransferJob job = new DataTransferJob(settings);
-            job.addJobChangeListener(new JobChangeAdapter() {
-                @Override
-                public void done(IJobChangeEvent event) {
-                    // Run async to avoid blocking progress monitor dialog
-                    UIUtils.asyncExec(() -> {
-                        // Make a sound
-                        Display.getCurrent().beep();
-                        // Notify agent
-                        long time = job.getElapsedTime();
-                        boolean hasErrors = job.isHasErrors();
-                        DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
-                        if (time > platformUI.getLongOperationTimeout() * 1000) {
-                            platformUI.notifyAgent(
-                                "Data transfer completed", !hasErrors ? IStatus.INFO : IStatus.ERROR);
-                        }
-                        if (settings.isShowFinalMessage() && !hasErrors) {
-                            // Show message box
-                            UIUtils.showMessageBox(
-                                null,
-                                DTMessages.data_transfer_wizard_name,
-                                "Data transfer completed (" + RuntimeUtils.formatExecutionTime(time) + ")",
-                                SWT.ICON_INFORMATION);
-                        }
-                    });
-                }
-            });
-            job.schedule();
-        }
     }
 
     private void addNodeSettings(DataTransferNodeDescriptor node) {
@@ -504,23 +444,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
                 }
             }
         }
-    }
-
-    private static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, DBTTask task, String nodeType, Class<T> nodeClass) {
-        Map<String, Object> config = task.getProperties();
-        List<T> result = new ArrayList<>();
-        Object nodeList = config.get(nodeType);
-        if (nodeList instanceof Collection) {
-            for (Object nodeObj : (Collection)nodeList) {
-                if (nodeObj instanceof Map) {
-                    Object node = JSONUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
-                    if (nodeClass.isInstance(node)) {
-                        result.add(nodeClass.cast(node));
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     public void saveTaskState(Map<String, Object> state) {

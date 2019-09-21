@@ -16,30 +16,37 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 
 /**
  * Data transfer job
  */
-public class DataTransferJob extends AbstractJob {
+public class DataTransferJob implements DBRRunnableWithProgress {
 
     private DataTransferSettings settings;
     private long elapsedTime;
     private boolean hasErrors;
 
-    public DataTransferJob(DataTransferSettings settings)
-    {
-        super(DTMessages.data_transfer_wizard_job_name);
-        this.settings = settings;
+    private Locale locale;
+    private Log log;
+    private DBTTaskExecutionListener listener;
 
-        setUser(true);
+    public DataTransferJob(DataTransferSettings settings, Locale locale, Log log, DBTTaskExecutionListener listener)
+    {
+        this.settings = settings;
+        this.locale = locale;
+        this.log = log;
+        this.listener = listener;
     }
 
     public DataTransferSettings getSettings() {
@@ -55,39 +62,41 @@ public class DataTransferJob extends AbstractJob {
     }
 
     @Override
-    public boolean belongsTo(Object family)
-    {
-        return family == settings;
-    }
-
-    @Override
-    protected IStatus run(DBRProgressMonitor monitor)
-    {
+    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         hasErrors = false;
         long startTime = System.currentTimeMillis();
         for (; ;) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             DataTransferPipe transferPipe = settings.acquireDataPipe(monitor);
             if (transferPipe == null) {
                 break;
             }
-            if (!transferData(monitor, transferPipe)) {
-                hasErrors = true;
+            try {
+                if (!transferData(monitor, transferPipe)) {
+                    hasErrors = true;
+                }
+            } catch (DBException e) {
+                listener.subTaskFinished(e);
+                throw new InvocationTargetException(e);
             }
         }
+        listener.subTaskFinished(null);
         elapsedTime = System.currentTimeMillis() - startTime;
-        return Status.OK_STATUS;
     }
 
-    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe)
+    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe) throws DBException
     {
         IDataTransferProducer producer = transferPipe.getProducer();
         IDataTransferConsumer consumer = transferPipe.getConsumer();
 
-        IDataTransferSettings consumerSettings = settings.getNodeSettings(settings.getConsumer());
+        //IDataTransferSettings consumerSettings = settings.getNodeSettings(settings.getConsumer());
 
-        setName(NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
-            CommonUtils.truncateString(producer.getObjectName(), 200),
-            CommonUtils.truncateString(consumer.getObjectName(), 200)));
+        monitor.beginTask(
+            NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
+                CommonUtils.truncateString(producer.getObjectName(), 200),
+                CommonUtils.truncateString(consumer.getObjectName(), 200)), 1);
 
         IDataTransferSettings nodeSettings = settings.getNodeSettings(settings.getProducer());
         try {
@@ -105,8 +114,10 @@ public class DataTransferJob extends AbstractJob {
             }
             return true;
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Data export error", e.getMessage(), e);
-            return false;
+            log.error("Error transfering data from " + producer.getObjectName() + " to " + consumer.getObjectName(), e);
+            throw new DBException("Data transfer error", e);
+        } finally {
+            monitor.done();
         }
 
     }

@@ -13,6 +13,7 @@ Export-Package: org.jkiss.dbeaver.tools.transfer,
  org.jkiss.dbeaver.tools.transfer.stream,
  org.jkiss.dbeaver.tools.transfer.stream.exporter,
  org.jkiss.dbeaver.tools.transfer.stream.importer,
+ org.jkiss.dbeaver.tools.transfer.task,
  org.jkiss.dbeaver.tools.transfer.internal
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
