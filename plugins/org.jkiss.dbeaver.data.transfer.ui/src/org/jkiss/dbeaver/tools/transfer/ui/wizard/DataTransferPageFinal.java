@@ -22,11 +22,13 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -105,61 +107,43 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         DataTransferSettings settings = getWizard().getSettings();
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
 
-        IDataTransferSettings producerSettings = null, consumerSettings = null;
+        IDataTransferSettings consumerSettings = null, producerSettings = null;
+
         for (int i = 0; i < dataPipes.size(); i++) {
             DataTransferPipe pipe = dataPipes.get(i);
-            IDataTransferConsumer consumer = pipe.getConsumer();
-            if (consumer == null || pipe.getProducer() == null) {
+            try {
+                pipe.initPipe(settings, i, dataPipes.size());
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Error initializing transfer pipe", "Error initializing data transfer pipe", e);
                 continue;
             }
+
+            IDataTransferConsumer consumer = pipe.getConsumer();
+            IDataTransferProducer producer = pipe.getProducer();
+
             if (consumerSettings == null) {
-                consumerSettings = getWizard().getNodeSettings(consumer);
+                consumerSettings = settings.getNodeSettings(consumer);
             }
             if (producerSettings == null) {
-                producerSettings = getWizard().getNodeSettings(pipe.getProducer());
+                producerSettings = settings.getNodeSettings(producer);
             }
             DataTransferProcessorDescriptor processorDescriptor = settings.getProcessor();
-            IDataTransferProcessor processor = null;
-            if (processorDescriptor != null) {
-                // Processor is optional
-                try {
-                    processor = processorDescriptor.getInstance();
-                } catch (Throwable e) {
-                    log.error("Can't create processor", e);
-                    continue;
-                }
-            }
-
-            IDataTransferConsumer.TransferParameters parameters = new IDataTransferConsumer.TransferParameters(
-                processorDescriptor != null && processorDescriptor.isBinaryFormat(),
-                processorDescriptor != null && processorDescriptor.isHTMLFormat());
-            parameters.orderNumber = i;
-            parameters.totalConsumers = dataPipes.size();
-            consumer.initTransfer(
-                pipe.getProducer().getDatabaseObject(),
-                consumerSettings,
-                parameters,
-                processor,
-                processor == null ?
-                    null :
-                    settings.getProcessorProperties());
-
 
             TableItem item = new TableItem(resultTable, SWT.NONE);
             {
-                item.setText(0, pipe.getProducer().getObjectContainerName());
-                if (pipe.getProducer().getObjectContainerIcon() != null) {
-                    item.setImage(0, DBeaverIcons.getImage(pipe.getProducer().getObjectContainerIcon()));
+                item.setText(0, producer.getObjectContainerName());
+                if (producer.getObjectContainerIcon() != null) {
+                    item.setImage(0, DBeaverIcons.getImage(producer.getObjectContainerIcon()));
                 }
-                item.setText(1, pipe.getProducer().getObjectName());
-                DBPImage producerObjectIcon = pipe.getProducer().getObjectIcon();
+                item.setText(1, producer.getObjectName());
+                DBPImage producerObjectIcon = producer.getObjectIcon();
                 if (producerObjectIcon == null) {
                     producerObjectIcon = settings.getProducer().getIcon();
                 }
                 if (producerObjectIcon != null) {
                     item.setImage(1, DBeaverIcons.getImage(producerObjectIcon));
                 }
-                Color producerColor = getNodeColor(pipe.getProducer());
+                Color producerColor = getNodeColor(producer);
                 if (producerColor != null) {
                     item.setBackground(0, producerColor);
                     item.setBackground(1, producerColor);
@@ -167,8 +151,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             }
             {
                 item.setText(2, consumer.getObjectContainerName());
-                if (pipe.getConsumer().getObjectContainerIcon() != null) {
-                    item.setImage(2, DBeaverIcons.getImage(pipe.getConsumer().getObjectContainerIcon()));
+                if (consumer.getObjectContainerIcon() != null) {
+                    item.setImage(2, DBeaverIcons.getImage(consumer.getObjectContainerIcon()));
                 }
                 item.setText(3, consumer.getObjectName());
                 DBPImage consumerObjectIcon = consumer.getObjectIcon();
@@ -181,7 +165,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 if (consumerObjectIcon != null) {
                     item.setImage(3, DBeaverIcons.getImage(consumerObjectIcon));
                 }
-                Color consumerColor = getNodeColor(pipe.getConsumer());
+                Color consumerColor = getNodeColor(consumer);
                 if (consumerColor != null) {
                     item.setBackground(2, consumerColor);
                     item.setBackground(3, consumerColor);
@@ -205,6 +189,11 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             column.setWidth(tableWidth / columns.length - 1);
         }
         updatePageCompletion();
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        return activated;
     }
 
     private Color getNodeColor(IDataTransferNode node) {

@@ -69,11 +69,8 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
     @Override
     public Object putIfAbsent(String key, Object value) {
         if (value instanceof Map) {
-            IDialogSettings section = settings.getSection(key);
-            if (section == null) {
-                section = settings.addNewSection(key);
-            }
-            fillSection(section, (Map)value);
+            IDialogSettings section = settings.addNewSection(key);
+            return fillSection(section, (Map)value);
         } else {
             settings.put(key, CommonUtils.toString(value));
         }
@@ -86,7 +83,7 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
     }
 
     private DialogSettingsMap fillSection(IDialogSettings section, Map<String, Object> value) {
-        DialogSettingsMap settingsMap = new DialogSettingsMap(settings);
+        DialogSettingsMap settingsMap = new DialogSettingsMap(section);
         for (Map.Entry<String, Object> entry : value.entrySet()) {
             settingsMap.put(entry.getKey(), entry.getValue());
         }

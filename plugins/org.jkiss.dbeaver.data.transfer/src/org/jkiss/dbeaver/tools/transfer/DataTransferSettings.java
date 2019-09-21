@@ -148,6 +148,15 @@ public class DataTransferSettings {
         return initObjects;
     }
 
+    public IDataTransferSettings getNodeSettings(IDataTransferNode node) {
+        for (Map.Entry<DataTransferNodeDescriptor, IDataTransferSettings> nsEntry : nodeSettings.entrySet()) {
+            if (nsEntry.getKey().getNodeClass().isInstance(node)) {
+                return nsEntry.getValue();
+            }
+        }
+        return null;
+    }
+
     @Nullable
     public IDataTransferSettings getNodeSettings(DataTransferNodeDescriptor node) {
         IDataTransferSettings settings = nodeSettings.get(node);
