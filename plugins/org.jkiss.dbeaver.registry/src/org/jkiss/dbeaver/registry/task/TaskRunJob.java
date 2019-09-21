@@ -43,15 +43,18 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext, DBTTa
     private static final String RUN_LOG_PREFIX = "run_";
     private static final String RUN_LOG_EXT = "log";
 
+    private static final Log log = Log.getLog(TaskRunJob.class);
+
     private final TaskImpl task;
     private final Locale locale;
-    private Log taskLog;
+    private Log taskLog = log;
     private DBRProgressMonitor activeMonitor;
 
     protected TaskRunJob(TaskImpl task, Locale locale) {
         super("Task [" + task.getType().getName() + "] runner - " + task.getName());
         this.task = task;
         this.locale = locale;
+
     }
 
     @Override
@@ -59,7 +62,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext, DBTTa
         try {
             Date startTime = new Date();
             File taskStatsFolder = task.getTaskStatsFolder();
-            if (!taskStatsFolder.mkdirs()) {
+            if (!taskStatsFolder.exists() && !taskStatsFolder.mkdirs()) {
                 throw new IOException("Can't create task log folder '" + taskStatsFolder.getAbsolutePath() + "'");
             }
             File logFile = new File(taskStatsFolder, RUN_LOG_PREFIX + TaskManagerImpl.systemDateFormat.format(startTime) + "." + RUN_LOG_EXT);

@@ -122,10 +122,10 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             IDataTransferProducer producer = pipe.getProducer();
 
             if (consumerSettings == null) {
-                consumerSettings = settings.getNodeSettings(consumer);
+                consumerSettings = settings.getNodeSettings(settings.getConsumer());
             }
             if (producerSettings == null) {
-                producerSettings = settings.getNodeSettings(producer);
+                producerSettings = settings.getNodeSettings(settings.getProducer());
             }
             DataTransferProcessorDescriptor processorDescriptor = settings.getProcessor();
 

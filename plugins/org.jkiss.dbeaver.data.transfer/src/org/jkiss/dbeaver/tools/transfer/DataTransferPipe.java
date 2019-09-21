@@ -57,7 +57,7 @@ public class DataTransferPipe {
         if (consumer == null || producer == null) {
             throw new DBException("Empty pipe");
         }
-        IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
+        IDataTransferSettings consumerSettings = settings.getNodeSettings(settings.getConsumer());
         DataTransferProcessorDescriptor processorDescriptor = settings.getProcessor();
         IDataTransferProcessor processor = processorDescriptor == null ? null : processorDescriptor.getInstance();
 
