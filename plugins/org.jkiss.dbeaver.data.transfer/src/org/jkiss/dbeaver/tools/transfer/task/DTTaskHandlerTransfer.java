@@ -50,6 +50,8 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
 
     public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, @NotNull Locale locale, @NotNull Log log, @NotNull DBTTaskExecutionListener listener, DataTransferSettings settings) throws DBException {
         // Start consumers
+        listener.taskStarted(settings);
+
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
         try {
             runnableContext.run(false, false, monitor -> {
@@ -68,8 +70,6 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         } catch (InterruptedException e) {
             return;
         }
-
-        listener.taskStarted(settings);
 
         // Schedule jobs for data providers
         int totalJobs = settings.getDataPipes().size();

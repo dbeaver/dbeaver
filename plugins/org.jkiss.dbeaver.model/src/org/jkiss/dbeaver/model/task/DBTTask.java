@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
+import java.io.File;
 import java.util.Date;
 import java.util.Map;
 
@@ -50,6 +51,8 @@ public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
 
     @NotNull
     DBTTaskRun[] getRunStatistics();
+
+    File getRunLog(DBTTaskRun run);
 
     void cleanRunStatistics();
 

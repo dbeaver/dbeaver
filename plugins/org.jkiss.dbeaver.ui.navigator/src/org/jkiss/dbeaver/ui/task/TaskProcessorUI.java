@@ -17,15 +17,12 @@
 package org.jkiss.dbeaver.ui.task;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -33,12 +30,11 @@ import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
-public abstract class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionListener {
+public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionListener {
     private static final Log log = Log.getLog(TaskProcessorUI.class);
 
     @Nullable
@@ -52,7 +48,6 @@ public abstract class TaskProcessorUI implements DBRRunnableContext, DBTTaskExec
 
     private TaskProcessorUI(@NotNull DBRRunnableContext staticContext) {
         this.staticContext = staticContext;
-        this.startTime = System.currentTimeMillis();
     }
 
     protected TaskProcessorUI(@NotNull DBRRunnableContext staticContext, @NotNull DBTTask task) {
@@ -65,7 +60,9 @@ public abstract class TaskProcessorUI implements DBRRunnableContext, DBTTaskExec
         this.taskName = taskName;
     }
 
-    protected abstract void runTask() throws DBException;
+    protected void runTask() throws DBException {
+        throw new DBException("Empty task execute implementation");
+    }
 
     protected boolean isShowFinalMessage() {
         return true;
@@ -86,20 +83,22 @@ public abstract class TaskProcessorUI implements DBRRunnableContext, DBTTaskExec
     @Override
     public void taskStarted(@NotNull Object task) {
         this.started = true;
+        this.startTime = System.currentTimeMillis();
     }
 
     @Override
     public void taskFinished(@NotNull Object task, @Nullable Throwable error) {
         this.started = false;
 
+        long elapsedTime = System.currentTimeMillis() - startTime;
+
         UIUtils.asyncExec(() -> {
             // Make a sound
             Display.getCurrent().beep();
             // Notify agent
-            long time = System.currentTimeMillis() - startTime;
             boolean hasErrors = error != null;
             DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
-            if (time > platformUI.getLongOperationTimeout() * 1000) {
+            if (elapsedTime > platformUI.getLongOperationTimeout() * 1000) {
                 platformUI.notifyAgent(
                     "Data transfer completed", !hasErrors ? IStatus.INFO : IStatus.ERROR);
             }
@@ -108,7 +107,7 @@ public abstract class TaskProcessorUI implements DBRRunnableContext, DBTTaskExec
                 UIUtils.showMessageBox(
                     null,
                     getTaskName(),
-                    getTaskType() + " task completed (" + RuntimeUtils.formatExecutionTime(time) + ")",
+                    getTaskType() + " task completed (" + RuntimeUtils.formatExecutionTime(elapsedTime) + ")",
                     SWT.ICON_INFORMATION);
             }
         });
@@ -122,23 +121,7 @@ public abstract class TaskProcessorUI implements DBRRunnableContext, DBTTaskExec
 
     @Override
     public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-        if (!started) {
-            staticContext.run(false, true, runnable);
-        } else {
-            new AbstractJob("Task [" + getTaskName() + "]") {
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    try {
-                        runnable.run(monitor);
-                    } catch (InvocationTargetException e) {
-                        return GeneralUtils.makeErrorStatus("Error running data transfer", e.getTargetException());
-                    } catch (InterruptedException e) {
-                        return Status.CANCEL_STATUS;
-                    }
-                    return Status.OK_STATUS;
-                }
-            }.schedule();
-        }
+        staticContext.run(false, true, runnable);
     }
 
 }
