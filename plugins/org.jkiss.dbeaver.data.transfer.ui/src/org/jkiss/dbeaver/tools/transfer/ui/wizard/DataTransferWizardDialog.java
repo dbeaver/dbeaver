@@ -17,114 +17,29 @@
 
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskManager;
-import org.jkiss.dbeaver.model.task.DBTTaskType;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
-import org.jkiss.dbeaver.ui.task.EditTaskConfigurationDialog;
+import org.jkiss.dbeaver.ui.task.TaskConfigurationWizardDialog;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Data transfer wizard dialog
  */
-public class DataTransferWizardDialog extends ActiveWizardDialog {
-
-    private static final int SAVE_TASK_BTN_ID = 1000;
-    //private Combo profileCombo;
+public class DataTransferWizardDialog extends TaskConfigurationWizardDialog<DataTransferWizard> {
 
     private DataTransferWizardDialog(IWorkbenchWindow window, DataTransferWizard wizard) {
-        this(window, wizard, null);
+        super(window, wizard);
     }
 
     private DataTransferWizardDialog(IWorkbenchWindow window, DataTransferWizard wizard, IStructuredSelection selection) {
         super(window, wizard, selection);
-        setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
-
-        setHelpAvailable(false);
-
-    }
-
-    @Override
-    protected DataTransferWizard getWizard() {
-        return (DataTransferWizard) super.getWizard();
-    }
-
-    @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        {
-            /*if (!getWizard().isTaskEditor()) */{
-                parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
-                Button saveAsTaskButton = createButton(parent, SAVE_TASK_BTN_ID, "Save as task ...", false);
-                //saveAsTaskButton.setImage(DBeaverIcons.getImage(UIIcon.SAVE_AS));
-
-                Label spacer = new Label(parent, SWT.NONE);
-                spacer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
-                ((GridLayout) parent.getLayout()).numColumns += 1;
-            }
-        }
-
-        super.createButtonsForButtonBar(parent);
-        Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        cancelButton.setText(IDialogConstants.CLOSE_LABEL);
-        Button finishButton = getButton(IDialogConstants.FINISH_ID);
-        finishButton.setText(UIMessages.button_start);
-    }
-
-    @Override
-    protected void buttonPressed(int buttonId) {
-        if (buttonId == SAVE_TASK_BTN_ID) {
-            saveConfigurationAsTask();
-            return;
-        }
-        super.buttonPressed(buttonId);
-    }
-
-    @Override
-    public void updateButtons() {
-        super.updateButtons();
-        Button saveAsButton = getButton(SAVE_TASK_BTN_ID);
-        if (saveAsButton != null) {
-            saveAsButton.setEnabled(getWizard().canFinish());
-        }
-    }
-
-    private void saveConfigurationAsTask() {
-        DBTTaskManager taskManager = getWizard().getProject().getTaskManager();
-        DBTTaskType task = taskManager.getRegistry().getTask(getWizard().getTaskId());
-        if (task == null) {
-            DBWorkbench.getPlatformUI().showError("Create task", "Task " + getWizard().getTaskId() + " not found");
-            return;
-        }
-
-        DataTransferSettings settings = getWizard().getSettings();
-
-        Map<String, Object> state = new LinkedHashMap<>();
-        getWizard().saveState(state);
-
-        EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(getShell(), getWizard().getProject(), task, state);
-        dialog.open();
     }
 
     public static int openWizard(

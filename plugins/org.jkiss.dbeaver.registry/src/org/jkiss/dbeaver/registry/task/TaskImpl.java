@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskRun;
@@ -30,7 +32,7 @@ import java.util.Map;
 /**
  * TaskImpl
  */
-public class TaskImpl implements DBTTask {
+public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescription {
 
     private final DBPProject project;
     private String id;
@@ -63,11 +65,12 @@ public class TaskImpl implements DBTTask {
 
     @NotNull
     @Override
-    public String getLabel() {
+    public String getName() {
         return label;
     }
 
-    public void setLabel(@NotNull String label) {
+    @Override
+    public void setName(@NotNull String label) {
         this.label = label;
     }
 

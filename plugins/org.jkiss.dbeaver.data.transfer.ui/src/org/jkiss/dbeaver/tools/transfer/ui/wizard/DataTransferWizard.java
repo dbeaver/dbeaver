@@ -30,7 +30,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -49,8 +48,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageType;
 import org.jkiss.dbeaver.ui.DialogSettingsMap;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.task.TaskConfigurationWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,10 +56,9 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public class DataTransferWizard extends BaseWizard implements IExportWizard, IImportWizard {
+public class DataTransferWizard extends TaskConfigurationWizard implements IExportWizard, IImportWizard {
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataTransfer";//$NON-NLS-1$
-    private final boolean taskEditor;
     //private static final Log log = Log.getLog(DataTransferWizard.class);
 
     public static class NodePageSettings {
@@ -90,12 +87,13 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
             runnableContext,
             getNodesFromLocation(runnableContext, task, "producers", IDataTransferProducer.class),
             getNodesFromLocation(runnableContext, task, "consumers", IDataTransferConsumer.class),
-            JSONUtils.getObject(task.getProperties(), "configuration"));
+            task);
     }
 
-    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable Map<String, Object> configuration) {
+    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable DBTTask task) {
+        super(task);
         this.settings = new DataTransferSettings(producers, consumers);
-        this.taskEditor = !CommonUtils.isEmpty(configuration);
+
         setDialogSettings(
             UIUtils.getSettingsSection(
                 DTUIActivator.getDefault().getDialogSettings(),
@@ -132,6 +130,7 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
             }
         }
 
+        Map<String, Object> configuration = task == null ? null : JSONUtils.getObject(task.getProperties(), "configuration");
         if (configuration != null) {
             loadConfiguration(runnableContext, configuration);
         } else {
@@ -139,15 +138,8 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         }
     }
 
-    public boolean isTaskEditor() {
-        return taskEditor;
-    }
-
-    public DBPProject getProject() {
-        return NavigatorUtils.getSelectedProject();
-    }
-
-    public String getTaskId() {
+    @Override
+    public String getTaskTypeId() {
         if (getSettings().isProducerOptional()) {
             return DTConstants.TASK_IMPORT;
         } else {
@@ -167,10 +159,6 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         return type.cast(getNodeSettings(page));
     }
 
-    public boolean isProfileSelectorVisible() {
-        return true;
-    }
-
     @Override
     public void addPages() {
         super.addPages();
@@ -183,9 +171,14 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
-        setWindowTitle(DTMessages.data_transfer_wizard_name);
+        updateWizardTitle();
         setNeedsProgressMonitor(true);
         this.currentSelection = currentSelection;
+    }
+
+    @Override
+    protected String getDefaultWindowTitle() {
+        return DTMessages.data_transfer_wizard_name;
     }
 
     @Nullable
@@ -539,13 +532,23 @@ public class DataTransferWizard extends BaseWizard implements IExportWizard, IIm
         return result;
     }
 
-    void saveState(Map<String, Object> state) {
-        saveNodesLocation(state, settings.getInitProducers(), "producers");
-        saveNodesLocation(state, settings.getInitConsumers(), "consumers");
+    public void saveTaskState(Map<String, Object> state) {
+        List<IDataTransferNode> producers = new ArrayList<>();
+        List<IDataTransferNode> consumers = new ArrayList<>();
+        for (DataTransferPipe pipe : settings.getDataPipes()) {
+            if (pipe.getProducer() != null) {
+                producers.add(pipe.getProducer());
+            }
+            if (pipe.getConsumer() != null) {
+                consumers.add(pipe.getConsumer());
+            }
+        }
+        saveNodesLocation(state, producers, "producers");
+        saveNodesLocation(state, consumers, "consumers");
         state.put("configuration", saveConfiguration(new LinkedHashMap<>()));
     }
 
-    private static void saveNodesLocation(Map<String, Object> state, IDataTransferNode[] nodes, String nodeType) {
+    private static void saveNodesLocation(Map<String, Object> state, Collection<IDataTransferNode> nodes, String nodeType) {
         if (nodes != null) {
             List<Map<String, Object>> inputObjects = new ArrayList<>();
             for (Object inputObject : nodes) {

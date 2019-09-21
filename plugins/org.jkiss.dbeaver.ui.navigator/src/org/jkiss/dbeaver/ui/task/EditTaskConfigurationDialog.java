@@ -49,9 +49,9 @@ public class EditTaskConfigurationDialog extends BaseDialog
 {
     private static final String DIALOG_ID = "DBeaver.EditTaskConfigurationDialog";//$NON-NLS-1$
 
+    private DBTTask task;
     private final DBPProject project;
     private final DBTTaskType taskDescriptor;
-    private DBTTask configuration;
     private Map<String, Object> state;
 
     private Combo taskLabelCombo;
@@ -61,9 +61,19 @@ public class EditTaskConfigurationDialog extends BaseDialog
     public EditTaskConfigurationDialog(Shell parentShell, DBPProject project, DBTTaskType taskDescriptor, Map<String, Object> state)
     {
         super(parentShell, "Create new task " + taskDescriptor.getName(), DBIcon.TREE_PACKAGE);
+        this.task = null;
         this.project = project;
         this.taskDescriptor = taskDescriptor;
         this.state = state;
+    }
+
+    public EditTaskConfigurationDialog(Shell parentShell, DBTTask task)
+    {
+        super(parentShell, "Edit task " + task.getName(), DBIcon.TREE_PACKAGE);
+        this.task = task;
+        this.project = task.getProject();
+        this.taskDescriptor = task.getType();
+        this.state = task.getProperties();
     }
 
     @Override
@@ -80,43 +90,53 @@ public class EditTaskConfigurationDialog extends BaseDialog
         Composite formPanel = UIUtils.createComposite(composite, 2);
         formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        ModifyListener modifyListener = e -> {
+            updateButtons();
+        };
+
         UIUtils.createLabelText(formPanel, "Type", taskDescriptor.getName(), SWT.BORDER | SWT.READ_ONLY);
 
         taskLabelCombo = UIUtils.createLabelCombo(formPanel, "Task", "", SWT.BORDER);
         ((GridData)taskLabelCombo.getLayoutData()).widthHint = 300;
-        ModifyListener modifyListener = e -> {
-            updateButtons();
-        };
-        taskLabelCombo.add("");
-        DBTTaskManager taskManager = project.getTaskManager();
-        allTasks = taskManager.getTaskConfigurations(taskDescriptor);
-        for (DBTTask tc : allTasks) {
-            taskLabelCombo.add(tc.getLabel());
+        if (task != null) {
+            taskLabelCombo.setText(task.getName());
+        } else {
+            taskLabelCombo.add("");
+            DBTTaskManager taskManager = project.getTaskManager();
+            allTasks = taskManager.getTaskConfigurations(taskDescriptor);
+            for (DBTTask tc : allTasks) {
+                taskLabelCombo.add(tc.getName());
+            }
+
+            taskLabelCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    int selectionIndex = taskLabelCombo.getSelectionIndex();
+                    if (selectionIndex == 0) {
+                        task = null;
+                        setTitle("Create task " + taskDescriptor.getName());
+                    } else {
+                        task = allTasks[selectionIndex - 1];
+                        taskDescriptionText.setText(CommonUtils.notEmpty(task.getDescription()));
+                        setTitle("Edit task " + task.getName());
+                    }
+                }
+            });
         }
 
         taskLabelCombo.addModifyListener(modifyListener);
-        taskLabelCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                int selectionIndex = taskLabelCombo.getSelectionIndex();
-                if (selectionIndex == 0) {
-                    configuration = null;
-                    setTitle("Create task " + taskDescriptor.getName());
-                } else {
-                    configuration = allTasks[selectionIndex - 1];
-                    taskDescriptionText.setText(CommonUtils.notEmpty(configuration.getDescription()));
-                    setTitle("Edit task " + configuration.getLabel());
-                }
-            }
-        });
 
-        taskDescriptionText = UIUtils.createLabelText(formPanel, "Description", "", SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+        taskDescriptionText = UIUtils.createLabelText(formPanel, "Description", task == null ? "" : CommonUtils.notEmpty(task.getDescription()), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
         ((GridData)taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 5;
         taskDescriptionText.addModifyListener(modifyListener);
 
         UIUtils.asyncExec(() -> taskLabelCombo.setFocus());
 
         return composite;
+    }
+
+    private boolean isTaskEditor() {
+        return task != null;
     }
 
     @Override
@@ -133,25 +153,25 @@ public class EditTaskConfigurationDialog extends BaseDialog
     @Override
     protected void okPressed() {
         DBTTaskManager taskManager = project.getTaskManager();
-        if (configuration == null) {
+        if (task == null) {
             try {
-                configuration = taskManager.createTaskConfiguration(taskDescriptor, taskLabelCombo.getText(), taskDescriptionText.getText(), state);
+                task = taskManager.createTaskConfiguration(taskDescriptor, taskLabelCombo.getText(), taskDescriptionText.getText(), state);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
             }
         } else {
-            TaskImpl impl = (TaskImpl) configuration;
-            impl.setLabel(taskLabelCombo.getText());
+            TaskImpl impl = (TaskImpl) task;
+            impl.setName(taskLabelCombo.getText());
             impl.setDescription(taskDescriptionText.getText());
             impl.setUpdateTime(new Date());
             impl.setProperties(state);
-            taskManager.updateTaskConfiguration(configuration);
+            taskManager.updateTaskConfiguration(task);
         }
 
         super.okPressed();
     }
 
-    public DBTTask getTaskConfiguration() {
-        return configuration;
+    public DBTTask getTask() {
+        return task;
     }
 }

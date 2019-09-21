@@ -678,12 +678,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         @Override
         public void serializeObject(StreamTransferConsumer object, Map<String, Object> state) {
-
         }
 
         @Override
         public StreamTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
-            return null;
+            return new StreamTransferConsumer();
         }
     }
 

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -50,7 +51,7 @@ import java.util.Map;
  * Data container transfer producer
  */
 @DBSerializable("databaseTransferProducer")
-public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseProducerSettings> {
+public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseProducerSettings>, IDataTransferNodePrimary {
 
     private static final Log log = Log.getLog(DatabaseTransferProducer.class);
 
@@ -273,11 +274,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                         String projectName = CommonUtils.toString(state.get("project"));
                         DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
                         if (project == null) {
-                            project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-                        }
-                        if (project == null) {
-                            log.debug("Can't detect project for transfer node");
-                            return;
+                            project = objectContext.getProject();
                         }
                         switch (selType) {
                             case "entity": {
