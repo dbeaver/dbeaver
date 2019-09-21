@@ -161,8 +161,8 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     @Override
-    public void runTask(DBTTask task, Map<String, Object> options) {
-        new TaskRunJob((TaskImpl) task, Locale.getDefault()).schedule();
+    public void runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) {
+        new TaskRunJob((TaskImpl) task, Locale.getDefault(), listener).schedule();
     }
 
     private void loadConfiguration() {

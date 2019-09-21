@@ -240,9 +240,12 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         try {
             DBTTask currentTask = getCurrentTask();
             if (currentTask != null) {
-                currentTask.getProject().getTaskManager().runTask(currentTask, Collections.emptyMap());
+                // Run task thru task manager
+                // Pass executor to visualize task progress in UI
+                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), getCurrentTask(), getSettings());
+                currentTask.getProject().getTaskManager().runTask(currentTask, executor, Collections.emptyMap());
             } else {
-                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), getSettings());
+                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), DTMessages.data_transfer_wizard_job_name, getSettings());
                 executor.executeTask();
             }
         } catch (DBException e) {

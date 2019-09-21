@@ -58,6 +58,6 @@ public interface DBTTaskManager {
     @NotNull
     File getStatisticsFolder();
 
-    void runTask(DBTTask task, Map<String, Object> options) throws DBException;
+    void runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) throws DBException;
 
 }
