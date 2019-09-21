@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -66,7 +67,7 @@ public class DataTransferSettings {
 
     private boolean showFinalMessage = true;
 
-    public DataTransferSettings(@Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers) {
+    public DataTransferSettings(DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, Map<String, Object> configuration) {
         this.initProducers = producers == null ? null : producers.toArray(new IDataTransferProducer[0]);
         this.initConsumers = consumers == null ? null : consumers.toArray(new IDataTransferConsumer[0]);
         dataPipes = new ArrayList<>();
@@ -129,13 +130,107 @@ public class DataTransferSettings {
                 }
             }
         }
+
+        loadConfiguration(runnableContext, configuration);
     }
 
     public DataTransferSettings(DBRRunnableContext runnableContext, DBTTask task) {
         this(
+            runnableContext,
             getNodesFromLocation(runnableContext, task, "producers", IDataTransferProducer.class),
-            getNodesFromLocation(runnableContext, task, "consumers", IDataTransferConsumer.class)
+            getNodesFromLocation(runnableContext, task, "consumers", IDataTransferConsumer.class),
+            JSONUtils.getObject(task.getProperties(), "configuration")
         );
+    }
+
+    private void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
+        this.setMaxJobCount(CommonUtils.toInt(config.get("maxJobCount"), DataTransferSettings.DEFAULT_THREADS_NUM));
+        this.setShowFinalMessage(CommonUtils.getBoolean(config.get("showFinalMessage"), this.isShowFinalMessage()));
+
+        DataTransferNodeDescriptor savedConsumer = null, savedProducer = null, processorNode = null;
+        {
+            {
+                String consumerId = CommonUtils.toString(config.get("consumer"));
+                if (!CommonUtils.isEmpty(consumerId)) {
+                    DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
+                    if (consumerNode != null) {
+                        this.setConsumer(savedConsumer = consumerNode);
+                        if (this.isConsumerOptional()) {
+                            processorNode = savedConsumer;
+                        }
+                    }
+                }
+            }
+            {
+                String producerId = CommonUtils.toString(config.get("producer"));
+                if (!CommonUtils.isEmpty(producerId)) {
+                    DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
+                    if (producerNode != null) {
+                        this.setProducer(savedProducer = producerNode);
+                        if (this.isProducerOptional()) {
+                            processorNode = savedProducer;
+                        }
+                    }
+                }
+            }
+        }
+
+        DataTransferProcessorDescriptor savedProcessor = null;
+        if (processorNode != null) {
+            String processorId = CommonUtils.toString(config.get("processor"));
+            if (!CommonUtils.isEmpty(processorId)) {
+                savedProcessor = processorNode.getProcessor(processorId);
+            }
+        }
+        if (this.isConsumerOptional() && savedConsumer != null) {
+            this.selectConsumer(savedConsumer, savedProcessor, false);
+        }
+        if (this.isProducerOptional() && savedProducer != null) {
+            this.selectProducer(savedProducer, savedProcessor, false);
+        }
+
+        // Load nodes' settings (key is impl class simple name, value is descriptor)
+        Map<String, DataTransferNodeDescriptor> nodeNames = new LinkedHashMap<>();
+        if (producer != null) {
+            nodeNames.put(producer.getNodeClass().getSimpleName(), producer);
+            nodeNames.put(consumer.getNodeClass().getSimpleName(), consumer);
+        }
+        for (Map.Entry<String, DataTransferNodeDescriptor> node : nodeNames.entrySet()) {
+            Map<String, Object> nodeSection = JSONUtils.getObject(config, node.getKey());
+            IDataTransferSettings nodeSettings = this.getNodeSettings(node.getValue());
+            if (nodeSettings != null) {
+                nodeSettings.loadSettings(runnableContext, this, nodeSection);
+            }
+        }
+
+        Map<String, Object> processorsSection = JSONUtils.getObject(config, "processors");
+        {
+            for (Map.Entry<String, Object> procIter : processorsSection.entrySet()) {
+                Map<String, Object> procSection = (Map<String, Object>) procIter.getValue();
+                String processorId = procIter.getKey();
+                String nodeId = CommonUtils.toString(procSection.get("@node"));
+                if (CommonUtils.isEmpty(nodeId)) {
+                    // Legacy code support
+                    int divPos = processorId.indexOf(':');
+                    if (divPos != -1) {
+                        nodeId = processorId.substring(0, divPos);
+                        processorId = processorId.substring(divPos + 1);
+                    }
+                }
+                String propNamesId = CommonUtils.toString(procSection.get("@propNames"));
+                DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
+                if (node != null) {
+                    Map<Object, Object> props = new HashMap<>();
+                    DataTransferProcessorDescriptor nodeProcessor = node.getProcessor(processorId);
+                    if (nodeProcessor != null) {
+                        for (String prop : CommonUtils.splitString(propNamesId, ',')) {
+                            props.put(prop, procSection.get(prop));
+                        }
+                        this.getProcessorPropsHistory().put(nodeProcessor, props);
+                    }
+                }
+            }
+        }
     }
 
     public boolean isConsumerOptional() {
@@ -157,15 +252,6 @@ public class DataTransferSettings {
 
     public List<DBSObject> getSourceObjects() {
         return initObjects;
-    }
-
-    public IDataTransferSettings getNodeSettings(IDataTransferNode node) {
-        for (Map.Entry<DataTransferNodeDescriptor, IDataTransferSettings> nsEntry : nodeSettings.entrySet()) {
-            if (nsEntry.getKey().getNodeClass().isInstance(node)) {
-                return nsEntry.getValue();
-            }
-        }
-        return null;
     }
 
     @Nullable
@@ -200,7 +286,6 @@ public class DataTransferSettings {
         }
         processorPropsHistory.put(processor, properties);
     }
-
 
     public List<DataTransferPipe> getDataPipes() {
         return dataPipes;

@@ -74,24 +74,28 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     private IStructuredSelection currentSelection;
     private Map<Class, NodePageSettings> nodeSettings = new LinkedHashMap<>();
 
-    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
+    private DataTransferWizard(@Nullable DBTTask task) {
         super(task);
+        setDialogSettings(
+            UIUtils.getSettingsSection(
+                DTUIActivator.getDefault().getDialogSettings(),
+                RS_EXPORT_WIZARD_DIALOG_SETTINGS));
+    }
+
+    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
+        this(task);
         this.settings = new DataTransferSettings(runnableContext, task);
         loadSettings(runnableContext);
     }
 
     DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable DBTTask task) {
-        super(task);
-        this.settings = new DataTransferSettings(producers, consumers);
+        this(task);
+        this.settings = new DataTransferSettings(runnableContext, producers, consumers, new DialogSettingsMap(getDialogSettings()));
 
         loadSettings(runnableContext);
     }
 
     private void loadSettings(@NotNull DBRRunnableContext runnableContext) {
-        setDialogSettings(
-            UIUtils.getSettingsSection(
-                DTUIActivator.getDefault().getDialogSettings(),
-                RS_EXPORT_WIZARD_DIALOG_SETTINGS));
 
         {
             // Load node settings
@@ -122,13 +126,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             for (DataTransferNodeDescriptor node : nodes) {
                 addNodeSettings(node);
             }
-        }
-
-        Map<String, Object> configuration = getCurrentTask() == null ? null : JSONUtils.getObject(getCurrentTask().getProperties(), "configuration");
-        if (configuration != null) {
-            loadConfiguration(runnableContext, configuration);
-        } else {
-            loadSettings();
         }
     }
 
@@ -240,9 +237,14 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         saveSettings();
         DTUIActivator.getDefault().saveDialogSettings();
 
-        DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), getSettings());
         try {
-            executor.executeTask();
+            DBTTask currentTask = getCurrentTask();
+            if (currentTask != null) {
+                currentTask.getProject().getTaskManager().runTask(currentTask, Collections.emptyMap());
+            } else {
+                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), getSettings());
+                executor.executeTask();
+            }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't init data transfer", e);
             return false;
@@ -256,11 +258,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     public void setContainer(IWizardContainer wizardContainer) {
         super.setContainer(wizardContainer);
         //wizardContainer.
-    }
-
-    private void loadSettings() {
-        loadConfiguration(
-            getRunnableContext(), new DialogSettingsMap(getDialogSettings()));
     }
 
     private void saveSettings() {
@@ -355,95 +352,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             }
         }
         return null;
-    }
-
-    private void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
-        settings.setMaxJobCount(CommonUtils.toInt(config.get("maxJobCount"), DataTransferSettings.DEFAULT_THREADS_NUM));
-        settings.setShowFinalMessage(CommonUtils.getBoolean(config.get("showFinalMessage"), settings.isShowFinalMessage()));
-
-        DataTransferNodeDescriptor savedConsumer = null, savedProducer = null, processorNode = null;
-        {
-            {
-                String consumerId = CommonUtils.toString(config.get("consumer"));
-                if (!CommonUtils.isEmpty(consumerId)) {
-                    DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
-                    if (consumerNode != null) {
-                        settings.setConsumer(savedConsumer = consumerNode);
-                        if (settings.isConsumerOptional()) {
-                            processorNode = savedConsumer;
-                        }
-                    }
-                }
-            }
-            {
-                String producerId = CommonUtils.toString(config.get("producer"));
-                if (!CommonUtils.isEmpty(producerId)) {
-                    DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
-                    if (producerNode != null) {
-                        settings.setProducer(savedProducer = producerNode);
-                        if (settings.isProducerOptional()) {
-                            processorNode = savedProducer;
-                        }
-                    }
-                }
-            }
-        }
-
-        DataTransferProcessorDescriptor savedProcessor = null;
-        if (processorNode != null) {
-            String processorId = CommonUtils.toString(config.get("processor"));
-            if (!CommonUtils.isEmpty(processorId)) {
-                savedProcessor = processorNode.getProcessor(processorId);
-            }
-        }
-        if (settings.isConsumerOptional() && savedConsumer != null) {
-            settings.selectConsumer(savedConsumer, savedProcessor, false);
-        }
-        if (settings.isProducerOptional() && savedProducer != null) {
-            settings.selectProducer(savedProducer, savedProcessor, false);
-        }
-
-
-        // Load nodes' settings
-        for (Map.Entry<Class, NodePageSettings> entry : nodeSettings.entrySet()) {
-            Map<String, Object> nodeSection = JSONUtils.getObject(config, entry.getKey().getSimpleName());
-            IDataTransferSettings settings = this.settings.getNodeSettings(entry.getValue().sourceNode);
-            if (settings != null) {
-                settings.loadSettings(runnableContext, this.settings, nodeSection);
-            }
-        }
-        Map<String, Object> processorsSection = JSONUtils.getObject(config, "processors");
-        {
-            for (Map.Entry<String, Object> procIter : processorsSection.entrySet()) {
-                Map<String, Object> procSection = (Map<String, Object>) procIter.getValue();
-                String processorId = procIter.getKey();
-                String nodeId = CommonUtils.toString(procSection.get("@node"));
-                if (CommonUtils.isEmpty(nodeId)) {
-                    // Legacy code support
-                    int divPos = processorId.indexOf(':');
-                    if (divPos != -1) {
-                        nodeId = processorId.substring(0, divPos);
-                        processorId = processorId.substring(divPos + 1);
-                    }
-                }
-                String propNamesId = CommonUtils.toString(procSection.get("@propNames"));
-                DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
-                if (node != null) {
-                    Map<Object, Object> props = new HashMap<>();
-                    DataTransferProcessorDescriptor nodeProcessor = node.getProcessor(processorId);
-                    if (nodeProcessor != null) {
-                        for (String prop : CommonUtils.splitString(propNamesId, ',')) {
-                            props.put(prop, procSection.get(prop));
-                        }
-                        settings.getProcessorPropsHistory().put(nodeProcessor, props);
-                        NodePageSettings nodePageSettings = this.nodeSettings.get(node.getNodeClass());
-                        if (nodePageSettings != null) {
-
-                        }
-                    }
-                }
-            }
-        }
     }
 
     public void saveTaskState(Map<String, Object> state) {
