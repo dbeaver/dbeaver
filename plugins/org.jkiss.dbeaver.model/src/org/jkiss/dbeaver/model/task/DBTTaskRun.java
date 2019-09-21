@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.task;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.io.File;
 import java.util.Date;
 
 /**
@@ -28,7 +27,7 @@ import java.util.Date;
 public interface DBTTaskRun {
 
     @NotNull
-    DBTTask getTask();
+    String getId();
 
     @NotNull
     Date getStartTime();
@@ -48,8 +47,5 @@ public interface DBTTaskRun {
 
     @Nullable
     String getErrorStackTrace();
-
-    @Nullable
-    File getLogFile();
 
 }

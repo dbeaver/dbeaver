@@ -96,7 +96,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         columnController = new ViewerColumnController("tasks", filteredTree.getViewer());
-        columnController.addColumn("Name", "Task name", SWT.LEFT, true, true, new CellLabelProvider() {
+        columnController.addColumn("Name", "Task name", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 DBTTask task = (DBTTask) cell.getElement();
@@ -114,13 +114,13 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 return description;
             }
         });
-        columnController.addColumn("Created", "Task create time", SWT.LEFT, true, false, new CellLabelProvider() {
+        columnController.addColumn("Created", "Task create time", SWT.LEFT, true, false, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 cell.setText(dateFormat.format(((DBTTask) cell.getElement()).getCreateTime()));
             }
         });
-        columnController.addColumn("Last Run", "Task last start time", SWT.LEFT, true, false, new CellLabelProvider() {
+        columnController.addColumn("Last Run", "Task last start time", SWT.LEFT, true, false, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 DBTTaskRun lastRun = ((DBTTask) cell.getElement()).getLastRun();
@@ -131,7 +131,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 }
             }
         });
-        columnController.addColumn("Last Duration", "Task last run duration", SWT.LEFT, false, false, new CellLabelProvider() {
+        columnController.addColumn("Last Duration", "Task last run duration", SWT.LEFT, false, false, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 DBTTaskRun lastRun = ((DBTTask) cell.getElement()).getLastRun();
@@ -142,25 +142,25 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 }
             }
         });
-        columnController.addColumn("Description", "Task description", SWT.LEFT, false, false, new CellLabelProvider() {
+        columnController.addColumn("Description", "Task description", SWT.LEFT, false, false, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 cell.setText(CommonUtils.notEmpty(((DBTTask) cell.getElement()).getDescription()));
             }
         });
-        columnController.addColumn("Type", "Task type", SWT.LEFT, true, false, new CellLabelProvider() {
+        columnController.addColumn("Type", "Task type", SWT.LEFT, true, false, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 cell.setText(((DBTTask) cell.getElement()).getType().getName());
             }
         });
-        columnController.addColumn("Category", "Task category", SWT.LEFT, false, false, new CellLabelProvider() {
+        columnController.addColumn("Category", "Task category", SWT.LEFT, false, false, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 cell.setText(((DBTTask) cell.getElement()).getType().getCategory().getName());
             }
         });
-        columnController.addColumn("Project", "Task container project", SWT.LEFT, true, false, new CellLabelProvider() {
+        columnController.addColumn("Project", "Task container project", SWT.LEFT, true, false, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 cell.setText(((DBTTask) cell.getElement()).getProject().getName());
@@ -208,7 +208,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             manager.add(new Action("Run task") {
                 @Override
                 public void run() {
-                    openCurrentTask();
+                    runCurrentTask();
                 }
             });
             manager.add(new Action("Open task configuration") {
@@ -241,6 +241,20 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         }
     }
 
+    private void runCurrentTask() {
+        DBTTask task = getSelectedTask();
+        if (task == null) {
+            return;
+        }
+
+        try {
+            TaskProcessorUI listener = new TaskProcessorUI(UIUtils.getDefaultRunnableContext(), task);
+            task.getProject().getTaskManager().runTask(task, listener, Collections.emptyMap());
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Task run", "Error running task '" + task.getName() + "'", e);
+        }
+    }
+
     private void openCurrentTask() {
         DBTTask task = getSelectedTask();
         if (task == null) {
@@ -254,7 +268,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         try {
             taskTypeDescriptor.createConfigurator().configureTask(DBWorkbench.getPlatform(), task);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task configuration editor", e);
+            DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
         }
     }
 
@@ -304,20 +318,22 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     @Override
     public void handleTaskEvent(DBTTaskEvent event) {
-        DBTTask task = event.getTask();
-        switch (event.getAction()) {
-            case TASK_ADD:
-                allTasks.add(task);
-                filteredTree.getViewer().add(filteredTree.getViewer().getInput(), task);
-                break;
-            case TASK_REMOVE:
-                allTasks.remove(task);
-                filteredTree.getViewer().remove(task);
-                break;
-            case TASK_UPDATE:
-                filteredTree.getViewer().refresh(task);
-                break;
-        }
+        UIUtils.asyncExec(() -> {
+            DBTTask task = event.getTask();
+            switch (event.getAction()) {
+                case TASK_ADD:
+                    allTasks.add(task);
+                    filteredTree.getViewer().add(filteredTree.getViewer().getInput(), task);
+                    break;
+                case TASK_REMOVE:
+                    allTasks.remove(task);
+                    filteredTree.getViewer().remove(task);
+                    break;
+                case TASK_UPDATE:
+                    filteredTree.getViewer().refresh(task);
+                    break;
+            }
+        });
     }
 
     private void loadTasks() {

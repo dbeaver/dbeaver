@@ -18,30 +18,31 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * TaskRunJob
  */
 public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
-    private static final String RUN_LOG_PREFIX = "run_";
-    private static final String RUN_LOG_EXT = "log";
-
     private static final Log log = Log.getLog(TaskRunJob.class);
+
+    private static AtomicInteger taskNumber = new AtomicInteger(0);
 
     private final TaskImpl task;
     private final Locale locale;
@@ -49,11 +50,15 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private Log taskLog = log;
     private DBRProgressMonitor activeMonitor;
 
+    private long startTime;
+    private long elapsedTime;
+    private Throwable taskError;
+
     protected TaskRunJob(TaskImpl task, Locale locale, DBTTaskExecutionListener executionListener) {
         super("Task [" + task.getType().getName() + "] runner - " + task.getName());
         this.task = task;
         this.locale = locale;
-        this.executionListener = executionListener;
+        this.executionListener = new LoggingExecutionListener(executionListener);
 
     }
 
@@ -61,11 +66,17 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     protected IStatus run(DBRProgressMonitor monitor) {
         try {
             Date startTime = new Date();
-            File taskStatsFolder = task.getTaskStatsFolder();
-            if (!taskStatsFolder.exists() && !taskStatsFolder.mkdirs()) {
-                throw new IOException("Can't create task log folder '" + taskStatsFolder.getAbsolutePath() + "'");
-            }
-            File logFile = new File(taskStatsFolder, RUN_LOG_PREFIX + TaskManagerImpl.systemDateFormat.format(startTime) + "." + RUN_LOG_EXT);
+            File taskStatsFolder = task.getTaskStatsFolder(true);
+            File logFile = new File(taskStatsFolder, TaskRunImpl.RUN_LOG_PREFIX + TaskManagerImpl.systemDateFormat.format(startTime) + "." + TaskRunImpl.RUN_LOG_EXT);
+
+            String taskId = TaskManagerImpl.systemDateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
+            TaskRunImpl taskRun = new TaskRunImpl(
+                taskId,
+                new Date(),
+                System.getProperty(StandardConstants.ENV_USER_NAME),
+                GeneralUtils.getProductTitle(),
+                0, null, null);
+
             try (OutputStream logStream = new FileOutputStream(logFile)) {
                 taskLog = new Log(getName(), logStream);
                 try {
@@ -73,6 +84,15 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 } finally {
                     taskLog.flush();
                 }
+            } finally {
+                taskRun.setRunDuration(elapsedTime);
+                if (taskError != null) {
+                    taskRun.setErrorMessage(CommonUtils.notEmpty(taskError.getMessage()));
+                    StringWriter buf = new StringWriter();
+                    taskError.printStackTrace(new PrintWriter(buf, true));
+                    taskRun.setErrorStackTrace(buf.toString());
+                }
+                task.addNewRun(taskRun);
             }
         } catch (Exception e) {
             taskLog.error("Task fatal error", e);
@@ -107,6 +127,33 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         public void subTask(String name) {
             super.subTask(name);
             taskLog.debug(">>> " + name);
+        }
+    }
+
+    private class LoggingExecutionListener implements DBTTaskExecutionListener {
+
+        DBTTaskExecutionListener parent;
+
+        public LoggingExecutionListener(DBTTaskExecutionListener src) {
+            this.parent = src;
+        }
+
+        @Override
+        public void taskStarted(@NotNull Object task) {
+            startTime = System.currentTimeMillis();
+            parent.taskStarted(task);
+        }
+
+        @Override
+        public void taskFinished(@NotNull Object task, @Nullable Throwable error) {
+            parent.taskFinished(task, error);
+            elapsedTime = System.currentTimeMillis() - startTime;
+            taskError = error;
+        }
+
+        @Override
+        public void subTaskFinished(@Nullable Throwable error) {
+            parent.subTaskFinished(error);
         }
     }
 
