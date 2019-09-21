@@ -23,19 +23,28 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskCategory;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-public class TaskPropertiesHandler extends AbstractHandler {
+public class TaskEditHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         if (selection instanceof IStructuredSelection) {
-            IStructuredSelection structSelection = (IStructuredSelection)selection;
-            Object element = structSelection.getFirstElement();
+            Object element = ((IStructuredSelection)selection).getFirstElement();
             if (element instanceof DBTTask) {
-                EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(HandlerUtil.getActiveShell(event), (DBTTask) element);
-                dialog.open();
+                DBTTask task = (DBTTask) element;
+                DBTTaskCategory taskTypeDescriptor = task.getType().getCategory();
+                if (!taskTypeDescriptor.supportsConfigurator()) {
+                    return null;
+                }
+                try {
+                    taskTypeDescriptor.createConfigurator().configureTask(DBWorkbench.getPlatform(), task);
+                } catch (Exception e) {
+                    DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
+                }
             }
         }
 

@@ -86,6 +86,17 @@ public class TaskManagerImpl implements DBTTaskManager {
         return tasks.toArray(new DBTTask[0]);
     }
 
+    @Nullable
+    @Override
+    public DBTTask getTaskConfiguration(@NotNull String id) {
+        for (DBTTask task : tasks) {
+            if (id.equals(task.getId())) {
+                return task;
+            }
+        }
+        return null;
+    }
+
     @NotNull
     @Override
     public DBTTaskType[] getExistingTaskTypes() {

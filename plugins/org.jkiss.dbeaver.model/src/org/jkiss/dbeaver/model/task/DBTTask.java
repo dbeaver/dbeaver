@@ -32,6 +32,9 @@ import java.util.Map;
 public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
 
     @NotNull
+    String getId();
+
+    @NotNull
     DBPProject getProject();
 
     @NotNull

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.task;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
@@ -54,6 +53,11 @@ import java.util.*;
 
 public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.tasks";
+
+    public static final String CREATE_TASK_CMD_ID = "org.jkiss.dbeaver.task.create";
+    public static final String EDIT_TASK_CMD_ID = "org.jkiss.dbeaver.task.edit";
+    public static final String RUN_TASK_CMD_ID = "org.jkiss.dbeaver.task.run";
+
     private Tree taskTree;
     private FilteredTree filteredTree;
     private ViewerColumnController columnController;
@@ -72,16 +76,6 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 return wordMatches(((DBTTask) element).getName());
             }
             return true;
-        }
-    }
-
-    private static class TaskTypeInfo {
-        DBPProject project;
-        DBTTaskType task;
-
-        public TaskTypeInfo(DBPProject project, DBTTaskType task) {
-            this.project = project;
-            this.task = task;
         }
     }
 
@@ -195,7 +189,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         getSite().registerContextMenu(menuMgr, viewer);
         getSite().setSelectionProvider(filteredTree.getViewer());
 
-        viewer.addDoubleClickListener(event -> openCurrentTask());
+        viewer.addDoubleClickListener(event -> ActionUtils.runCommand(RUN_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
         //viewer.addOpenListener(event -> openCurrentTask());
 
         loadTasks();
@@ -205,22 +199,19 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         final MenuManager menuMgr = new MenuManager();
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(manager -> {
-            manager.add(new Action("Run task") {
-                @Override
-                public void run() {
-                    runCurrentTask();
-                }
-            });
-            manager.add(new Action("Open task configuration") {
-                {
-                    setAccelerator(SWT.CR);
-                }
-                @Override
-                public void run() {
-                    openCurrentTask();
-                }
-            });
+            manager.add(ActionUtils.makeCommandContribution(getSite(), RUN_TASK_CMD_ID));
+            manager.add(ActionUtils.makeCommandContribution(getSite(), EDIT_TASK_CMD_ID));
+//            manager.add(new Action("Open task configuration") {
+//                {
+//                    setAccelerator(SWT.CR);
+//                }
+//                @Override
+//                public void run() {
+//                    openCurrentTask();
+//                }
+//            });
             manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
+            manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
             manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, "Delete task", null));
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             manager.add(new Separator());
@@ -231,45 +222,6 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         control.setMenu(menuMgr.createContextMenu(control));
         control.addDisposeListener(e -> menuMgr.dispose());
         return menuMgr;
-    }
-
-    private void editCurrentTask() {
-        DBTTask task = getSelectedTask();
-        if (task != null) {
-            EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(getSite().getShell(), task);
-            dialog.open();
-        }
-    }
-
-    private void runCurrentTask() {
-        DBTTask task = getSelectedTask();
-        if (task == null) {
-            return;
-        }
-
-        try {
-            TaskProcessorUI listener = new TaskProcessorUI(UIUtils.getDefaultRunnableContext(), task);
-            task.getProject().getTaskManager().runTask(task, listener, Collections.emptyMap());
-        } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Task run", "Error running task '" + task.getName() + "'", e);
-        }
-    }
-
-    private void openCurrentTask() {
-        DBTTask task = getSelectedTask();
-        if (task == null) {
-            return;
-        }
-        DBTTaskCategory taskTypeDescriptor = task.getType().getCategory();
-        if (!taskTypeDescriptor.supportsConfigurator()) {
-            return;
-        }
-
-        try {
-            taskTypeDescriptor.createConfigurator().configureTask(DBWorkbench.getPlatform(), task);
-        } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
-        }
     }
 
     @Nullable
