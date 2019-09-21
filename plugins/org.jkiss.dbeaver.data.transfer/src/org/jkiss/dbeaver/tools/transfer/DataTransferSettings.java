@@ -70,6 +70,8 @@ public class DataTransferSettings {
         DataTransferRegistry registry = DataTransferRegistry.getInstance();
 
         if (!ArrayUtils.isEmpty(initProducers) && !ArrayUtils.isEmpty(initConsumers)) {
+            // Both producers and consumers specified
+            // Processor belongs to non-database nodes anyway
             if (initProducers.length != initConsumers.length) {
                 throw new IllegalArgumentException("Producers number must match consumers number");
             }
@@ -78,7 +80,8 @@ public class DataTransferSettings {
                 if (initProducers[i].getDatabaseObject() != null) initObjects.add(initProducers[i].getDatabaseObject());
                 dataPipes.add(new DataTransferPipe(initProducers[i], initConsumers[i]));
             }
-            consumerOptional = false;
+            consumerOptional = initProducers[0] instanceof IDataTransferNodePrimary;
+            producerOptional = initConsumers[0] instanceof IDataTransferNodePrimary;
         } else if (!ArrayUtils.isEmpty(initProducers)) {
             // Make pipes
             for (IDataTransferProducer source : initProducers) {

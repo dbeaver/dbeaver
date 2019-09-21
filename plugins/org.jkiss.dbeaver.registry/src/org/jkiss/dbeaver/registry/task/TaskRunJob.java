@@ -46,7 +46,7 @@ public class TaskRunJob extends AbstractJob {
     private Log taskLog;
 
     protected TaskRunJob(TaskImpl task, Locale locale) {
-        super("Task [" + task.getType().getName() + "] runner - " + task.getLabel());
+        super("Task [" + task.getType().getName() + "] runner - " + task.getName());
         this.task = task;
         this.locale = locale;
     }

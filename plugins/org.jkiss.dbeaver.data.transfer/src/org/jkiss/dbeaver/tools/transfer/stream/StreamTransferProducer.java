@@ -40,7 +40,10 @@ import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -282,12 +285,31 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
         @Override
         public void serializeObject(StreamTransferProducer object, Map<String, Object> state) {
-
+            state.put("file", object.inputFile.getAbsolutePath());
+            if (object.defaultProcessor != null) {
+                state.put("node", object.defaultProcessor.getNode().getId());
+                state.put("processor", object.defaultProcessor.getId());
+            }
         }
 
         @Override
         public StreamTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
-            return null;
+            File inputFile = new File(CommonUtils.toString(state.get("file")));
+            String nodeId = CommonUtils.toString(state.get("node"));
+            String processorId = CommonUtils.toString(state.get("processor"));
+            DataTransferProcessorDescriptor processor = null;
+            if (!CommonUtils.isEmpty(nodeId) && !CommonUtils.isEmpty(processorId)) {
+                DataTransferNodeDescriptor nodeDesc = DataTransferRegistry.getInstance().getNodeById(nodeId);
+                if (nodeDesc == null) {
+                    log.warn("Stream producer node " + nodeId + " not found");
+                } else {
+                    processor = nodeDesc.getProcessor(processorId);
+                    if (processor == null) {
+                        log.warn("Stream processor " + processorId + " not found");
+                    }
+                }
+            }
+            return new StreamTransferProducer(inputFile, processor);
         }
     }
 

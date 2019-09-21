@@ -34,7 +34,7 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -69,7 +69,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         protected boolean isLeafMatch(Viewer viewer, Object element) {
             if (element instanceof DBTTask) {
-                return wordMatches(((DBTTask) element).getLabel());
+                return wordMatches(((DBTTask) element).getName());
             }
             return true;
         }
@@ -102,14 +102,14 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 DBTTask task = (DBTTask) cell.getElement();
                 DBPImage icon = task.getType().getIcon();
                 cell.setImage(DBeaverIcons.getImage(icon != null ? icon : DBIcon.TREE_PACKAGE));
-                cell.setText(task.getLabel());
+                cell.setText(task.getName());
             }
 
             @Override
             public String getToolTipText(Object element) {
                 String description = ((DBTTask) element).getDescription();
                 if (CommonUtils.isEmpty(description)) {
-                    description = ((DBTTask) element).getLabel();
+                    description = ((DBTTask) element).getName();
                 }
                 return description;
             }
@@ -196,6 +196,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         getSite().setSelectionProvider(filteredTree.getViewer());
 
         viewer.addDoubleClickListener(event -> openCurrentTask());
+        //viewer.addOpenListener(event -> openCurrentTask());
 
         loadTasks();
     }
@@ -211,11 +212,15 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 }
             });
             manager.add(new Action("Open task configuration") {
+                {
+                    setAccelerator(SWT.CR);
+                }
                 @Override
                 public void run() {
                     openCurrentTask();
                 }
             });
+            manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
             manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, "Delete task", null));
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             manager.add(new Separator());
@@ -228,17 +233,19 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         return menuMgr;
     }
 
-    private void openCurrentTask() {
-        ISelection selection = filteredTree.getViewer().getSelection();
-        if (!(selection instanceof IStructuredSelection) || selection.isEmpty()) {
-            return;
+    private void editCurrentTask() {
+        DBTTask task = getSelectedTask();
+        if (task != null) {
+            EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(getSite().getShell(), task);
+            dialog.open();
         }
-        Object element = ((IStructuredSelection) selection).getFirstElement();
-        if (!(element instanceof DBTTask)) {
-            return;
-        }
+    }
 
-        DBTTask task = (DBTTask)element;
+    private void openCurrentTask() {
+        DBTTask task = getSelectedTask();
+        if (task == null) {
+            return;
+        }
         DBTTaskCategory taskTypeDescriptor = task.getType().getCategory();
         if (!taskTypeDescriptor.supportsConfigurator()) {
             return;
@@ -246,9 +253,23 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         try {
             taskTypeDescriptor.createConfigurator().configureTask(DBWorkbench.getPlatform(), task);
-        } catch (DBException e) {
+        } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task configuration editor", e);
         }
+    }
+
+    @Nullable
+    private DBTTask getSelectedTask() {
+        ISelection selection = filteredTree.getViewer().getSelection();
+        if (!(selection instanceof IStructuredSelection) || selection.isEmpty()) {
+            return null;
+        }
+        Object element = ((IStructuredSelection) selection).getFirstElement();
+        if (!(element instanceof DBTTask)) {
+            return null;
+        }
+
+        return (DBTTask)element;
     }
 
     @Override

@@ -256,7 +256,7 @@ public class TaskManagerImpl implements DBTTaskManager {
             jsonWriter.name(task.getId());
             jsonWriter.beginObject();
             JSONUtils.field(jsonWriter, "task", task.getType().getId());
-            JSONUtils.field(jsonWriter, "label", task.getLabel());
+            JSONUtils.field(jsonWriter, "label", task.getName());
             JSONUtils.field(jsonWriter, "description", task.getDescription());
             JSONUtils.field(jsonWriter, "createTime", systemDateFormat.format(task.getCreateTime()));
             JSONUtils.field(jsonWriter, "updateTime", systemDateFormat.format(task.getUpdateTime()));

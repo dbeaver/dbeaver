@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -40,16 +41,18 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
  * Stream transfer consumer
  */
 @DBSerializable("databaseTransferConsumer")
-public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor> {
+public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor>, IDataTransferNodePrimary {
 
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
@@ -609,17 +612,43 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         @Override
         public void serializeObject(DatabaseTransferConsumer object, Map<String, Object> state) {
-            if (object.targetObject instanceof DBSEntity) {
-                state.put("entityId", DBUtils.getObjectFullId(object.targetObject));
+            DBSDataContainer dataContainer = object.targetObject;
+            if (dataContainer instanceof DBSEntity) {
+                state.put("type", "entity");
+                if (dataContainer.getDataSource() != null) {
+                    state.put("project", dataContainer.getDataSource().getContainer().getProject().getName());
+                }
+                state.put("entityId", DBUtils.getObjectFullId(dataContainer));
             } else {
-                log.error("Unsupported consumer data container: " + object.targetObject);
+                state.put("type", "unknown");
+                log.error("Unsupported consumer data container: " + dataContainer);
             }
-            // Mappings
         }
 
         @Override
         public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
-            return null;
+            DatabaseTransferConsumer consumer = new DatabaseTransferConsumer();
+            try {
+                runnableContext.run(false, true, monitor -> {
+                    try {
+                        String projectName = CommonUtils.toString(state.get("project"));
+                        DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                        if (project == null) {
+                            project = objectContext.getProject();
+                        }
+                        String id = CommonUtils.toString(state.get("entityId"));
+                        consumer.targetObject = (DBSDataManipulator) DBUtils.findObjectById(monitor, project, id);
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                log.debug("Error deserializing node location", e.getTargetException());
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+
+            return consumer;
         }
     }
 

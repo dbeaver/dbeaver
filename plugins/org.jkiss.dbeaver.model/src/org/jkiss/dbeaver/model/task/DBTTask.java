@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
 import java.util.Date;
@@ -26,16 +28,10 @@ import java.util.Map;
 /**
  * Task configuration
  */
-public interface DBTTask {
+public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
 
     @NotNull
     DBPProject getProject();
-
-    @NotNull
-    String getLabel();
-
-    @NotNull
-    String getDescription();
 
     @NotNull
     Date getCreateTime();
