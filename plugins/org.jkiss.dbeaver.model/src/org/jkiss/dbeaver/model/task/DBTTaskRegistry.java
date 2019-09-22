@@ -31,7 +31,10 @@ public interface DBTTaskRegistry {
     DBTTaskType getTask(String id);
 
     @NotNull
-    DBTTaskCategory[] getTaskTypes();
+    DBTTaskCategory[] getAllCategories();
+
+    @NotNull
+    DBTTaskCategory[] getRootCategories();
 
     void addTaskListener(DBTTaskListener listener);
 

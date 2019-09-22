@@ -60,7 +60,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
 
     public EditTaskConfigurationDialog(Shell parentShell, DBPProject project, DBTTaskType taskDescriptor, Map<String, Object> state)
     {
-        super(parentShell, "Create new task " + taskDescriptor.getName(), DBIcon.TREE_PACKAGE);
+        super(parentShell, "Create new task [" + taskDescriptor.getName() + "]", taskDescriptor.getIcon() == null ? DBIcon.TREE_PACKAGE : taskDescriptor.getIcon());
         this.task = null;
         this.project = project;
         this.taskDescriptor = taskDescriptor;
@@ -69,7 +69,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
 
     public EditTaskConfigurationDialog(Shell parentShell, DBTTask task)
     {
-        super(parentShell, "Edit task " + task.getName(), DBIcon.TREE_PACKAGE);
+        super(parentShell, "Edit task [" + task.getName() + "]", task.getType().getIcon() == null ? DBIcon.TREE_PACKAGE : task.getType().getIcon());
         this.task = task;
         this.project = task.getProject();
         this.taskDescriptor = task.getType();
@@ -94,9 +94,9 @@ public class EditTaskConfigurationDialog extends BaseDialog
             updateButtons();
         };
 
-        UIUtils.createLabelText(formPanel, "Type", taskDescriptor.getName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(formPanel, "Type", taskDescriptor.getCategory().getName() + " / " + taskDescriptor.getName(), SWT.BORDER | SWT.READ_ONLY);
 
-        taskLabelCombo = UIUtils.createLabelCombo(formPanel, "Task", "", SWT.BORDER);
+        taskLabelCombo = UIUtils.createLabelCombo(formPanel, "Name", "", SWT.BORDER);
         ((GridData)taskLabelCombo.getLayoutData()).widthHint = 300;
         if (task != null) {
             taskLabelCombo.setText(task.getName());

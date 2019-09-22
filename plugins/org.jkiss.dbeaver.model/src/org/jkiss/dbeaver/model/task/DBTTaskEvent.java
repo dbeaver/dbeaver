@@ -18,7 +18,9 @@
 package org.jkiss.dbeaver.model.task;
 
 /**
- * DBTTaskEvent
+ * Task event.
+ * Fired whenever task is create/deleted/updated.
+ * Every task run also triggers UPDATE event.
  */
 public class DBTTaskEvent
 {
@@ -50,4 +52,5 @@ public class DBTTaskEvent
     public String toString() {
         return action + " " + task;
     }
+
 }
