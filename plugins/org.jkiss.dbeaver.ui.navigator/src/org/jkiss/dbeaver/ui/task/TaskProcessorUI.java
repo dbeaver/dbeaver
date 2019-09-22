@@ -17,17 +17,18 @@
 package org.jkiss.dbeaver.ui.task;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -104,11 +105,14 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
             }
             if (isShowFinalMessage() && !hasErrors) {
                 // Show message box
-                UIUtils.showMessageBox(
-                    null,
+                DBeaverNotifications.showNotification(
+                    "task",
                     getTaskName(),
                     getTaskType() + " task completed (" + RuntimeUtils.formatExecutionTime(elapsedTime) + ")",
-                    SWT.ICON_INFORMATION);
+                    DBPMessageType.INFORMATION,
+                    null);
+            } else if (error != null) {
+                DBWorkbench.getPlatformUI().showError("Data transfer error", "Data transfer failed", error);
             }
         });
 
