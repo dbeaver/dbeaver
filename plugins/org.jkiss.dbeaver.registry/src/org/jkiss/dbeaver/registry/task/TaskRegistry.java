@@ -45,7 +45,7 @@ public class TaskRegistry implements DBTTaskRegistry
         return instance;
     }
 
-    private final List<TaskCategoryDescriptor> taskCategories = new ArrayList<>();
+    private final Map<String, TaskCategoryDescriptor> taskCategories = new LinkedHashMap<>();
     private final Map<String, TaskTypeDescriptor> taskDescriptors = new LinkedHashMap<>();
     private final List<DBTTaskListener> taskListeners = new ArrayList<>();
 
@@ -56,19 +56,19 @@ public class TaskRegistry implements DBTTaskRegistry
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
                 if ("category".equals(ext.getName())) {
-                    TaskCategoryDescriptor descriptor = new TaskCategoryDescriptor(ext);
-                    taskCategories.add(descriptor);
+                    TaskCategoryDescriptor descriptor = new TaskCategoryDescriptor(this, ext);
+                    taskCategories.put(descriptor.getId(), descriptor);
                 }
             }
             for (IConfigurationElement ext : extElements) {
                 if ("task".equals(ext.getName())) {
                     String typeId = ext.getAttribute("type");
-                    TaskCategoryDescriptor taskType = getTaskType(typeId);
+                    TaskCategoryDescriptor taskType = getTaskCategory(typeId);
                     TaskTypeDescriptor taskDescriptor = new TaskTypeDescriptor(taskType, ext);
                     taskDescriptors.put(taskDescriptor.getId(), taskDescriptor);
                 } else if ("configurator".equals(ext.getName())) {
                     String typeId = ext.getAttribute("type");
-                    TaskCategoryDescriptor taskType = getTaskType(typeId);
+                    TaskCategoryDescriptor taskType = getTaskCategory(typeId);
                     if (taskType == null) {
                         log.debug("");
                     } else {
@@ -94,8 +94,20 @@ public class TaskRegistry implements DBTTaskRegistry
 
     @NotNull
     @Override
-    public DBTTaskCategory[] getTaskTypes() {
-        return taskCategories.toArray(new DBTTaskCategory[0]);
+    public DBTTaskCategory[] getAllCategories() {
+        return taskCategories.values().toArray(new DBTTaskCategory[0]);
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskCategory[] getRootCategories() {
+        List<DBTTaskCategory> result = new ArrayList<>();
+        for (TaskCategoryDescriptor cat : taskCategories.values()) {
+            if (cat.getParent() == null) {
+                result.add(cat);
+            }
+        }
+        return result.toArray(new DBTTaskCategory[0]);
     }
 
     @Override
@@ -125,13 +137,8 @@ public class TaskRegistry implements DBTTaskRegistry
     }
 
     @Nullable
-    private TaskCategoryDescriptor getTaskType(String id) {
-        for (TaskCategoryDescriptor ttd : taskCategories) {
-            if (id.equals(ttd.getId())) {
-                return ttd;
-            }
-        }
-        return null;
+    TaskCategoryDescriptor getTaskCategory(String id) {
+        return taskCategories.get(id);
     }
 
 }

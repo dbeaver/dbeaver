@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 public interface DBTTaskConfigurator {
 
     void configureTask(
-        @NotNull DBPPlatform platform, DBTTask taskConfiguration);
+        @NotNull DBPPlatform platform,
+        @NotNull DBTTask taskConfiguration);
 
 }

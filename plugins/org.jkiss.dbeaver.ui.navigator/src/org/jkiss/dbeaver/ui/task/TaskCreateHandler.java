@@ -19,12 +19,21 @@ package org.jkiss.dbeaver.ui.task;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 public class TaskCreateHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        CreateTaskConfigurationDialog dialog = new CreateTaskConfigurationDialog(
+            HandlerUtil.getActiveShell(event),
+            NavigatorUtils.getSelectedProject()
+        );
+        if (dialog.open() == IDialogConstants.OK_ID) {
 
+        }
         return null;
     }
 

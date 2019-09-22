@@ -31,6 +31,12 @@ public interface DBTTaskCategory {
     @NotNull
     String getId();
 
+    @Nullable
+    DBTTaskCategory getParent();
+
+    @NotNull
+    DBTTaskCategory[] getChildren();
+
     @NotNull
     String getName();
 
@@ -41,7 +47,7 @@ public interface DBTTaskCategory {
     DBPImage getIcon();
 
     @NotNull
-    DBTTaskType[] getTasks();
+    DBTTaskType[] getTaskTypes();
 
     boolean supportsConfigurator();
 

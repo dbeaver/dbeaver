@@ -532,7 +532,7 @@ public class UIUtils {
     public static Label createControlLabel(Composite parent, String label, int hSpan) {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label + ": "); //$NON-NLS-1$
-        GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER /*| GridData.HORIZONTAL_ALIGN_END*/);
+        GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING /*| GridData.HORIZONTAL_ALIGN_END*/);
         gd.horizontalSpan = hSpan;
         textLabel.setLayoutData(gd);
         return textLabel;
@@ -588,7 +588,6 @@ public class UIUtils {
         @Nullable Object layoutData)
     {
         Label controlLabel = createControlLabel(parent, label);
-        ((GridData)controlLabel.getLayoutData()).verticalAlignment = GridData.BEGINNING;
 
         Text text = new Text(parent, style);
         fixReadonlyTextBackground(text);

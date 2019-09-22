@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
-    public void configureTask(@NotNull DBPPlatform platform, DBTTask taskConfiguration) {
+    public void configureTask(@NotNull DBPPlatform platform, @NotNull DBTTask taskConfiguration) {
         DataTransferWizardDialog.openWizard(UIUtils.getActiveWorkbenchWindow(), taskConfiguration);
     }
 

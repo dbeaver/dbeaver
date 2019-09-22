@@ -183,7 +183,7 @@
         <task id="dataExport" name="Data export" description="Data export task" icon="icons/export.png" type="dataTransfer" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </task>
-        <task id="dataImport" name="Data export" description="Data import task" icon="icons/import.png" type="dataTransfer" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
+        <task id="dataImport" name="Data import" description="Data import task" icon="icons/import.png" type="dataTransfer" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
     </extension>

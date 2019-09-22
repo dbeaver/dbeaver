@@ -79,6 +79,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         this.type = type;
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
@@ -156,6 +157,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         return loadRunStatistics().runs.toArray(new DBTTaskRun[0]);
     }
 
+    @NotNull
     @Override
     public File getRunLog(DBTTaskRun run) {
         return new File(getTaskStatsFolder(false), TaskRunImpl.RUN_LOG_PREFIX + run.getId() + "." + TaskRunImpl.RUN_LOG_EXT);
