@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -78,7 +77,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
                 if (!transferData(monitor, transferPipe)) {
                     hasErrors = true;
                 }
-            } catch (DBException e) {
+            } catch (Exception e) {
                 listener.subTaskFinished(e);
                 throw new InvocationTargetException(e);
             }
@@ -88,7 +87,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
         elapsedTime = System.currentTimeMillis() - startTime;
     }
 
-    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe) throws DBException
+    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe) throws Exception
     {
         IDataTransferProducer producer = transferPipe.getProducer();
         IDataTransferConsumer consumer = transferPipe.getConsumer();
@@ -117,7 +116,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
             return true;
         } catch (Exception e) {
             log.error("Error transfering data from " + producer.getObjectName() + " to " + consumer.getObjectName(), e);
-            throw new DBException("Data transfer error", e);
+            throw e;
         } finally {
             monitor.done();
         }
