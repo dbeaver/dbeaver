@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBFetchProgress;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -53,7 +54,6 @@ import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -717,7 +717,7 @@ public class SQLQueryJob extends DataSourceJob
         }
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.subTask("Fetch result set");
-        long rowCount = 0;
+        DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
 
         dataReceiver.fetchStart(session, resultSet, rsOffset, rsMaxRows);
 
@@ -758,18 +758,9 @@ public class SQLQueryJob extends DataSourceJob
             long fetchStartTime = System.currentTimeMillis();
 
             // Fetch all rows
-            while ((!hasLimits() || rowCount < rsMaxRows) && resultSet.nextRow()) {
-                if (monitor.isCanceled()) {
-                    break;
-                }
-                rowCount++;
-
-                if (rowCount > 0 && rowCount % 100 == 0) {
-                    monitor.subTask(rowCount + " rows fetched");
-                    monitor.worked(100);
-                }
-
+            while ((!hasLimits() || !fetchProgress.isMaxRowsFetched(rsMaxRows)) && !fetchProgress.isCanceled() && resultSet.nextRow()) {
                 dataReceiver.fetchRow(session, resultSet);
+                fetchProgress.monitorRowFetch();
             }
             if (updateStatistics) {
                 statistics.addFetchTime(System.currentTimeMillis() - fetchStartTime);
@@ -792,12 +783,12 @@ public class SQLQueryJob extends DataSourceJob
         }
 
         if (result != null) {
-            executeResult.setRowCount(rowCount);
+            executeResult.setRowCount(fetchProgress.getRowCount());
         }
         if (updateStatistics) {
-            statistics.setRowsFetched(rowCount);
+            statistics.setRowsFetched(fetchProgress.getRowCount());
         }
-        monitor.subTask(rowCount + " rows fetched");
+        monitor.subTask(fetchProgress.getRowCount() + " rows fetched");
 
         return true;
     }
