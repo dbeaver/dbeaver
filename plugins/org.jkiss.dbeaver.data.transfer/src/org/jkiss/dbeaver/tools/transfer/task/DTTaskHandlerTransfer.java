@@ -52,9 +52,12 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         // Start consumers
         listener.taskStarted(settings);
 
+        log.debug("Data transfer initiated");
+
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
         try {
             runnableContext.run(true, false, monitor -> {
+                log.debug("Initialize data transfer sources");
                 monitor.beginTask("Initialize pipes", dataPipes.size());
                 try {
                     for (int i = 0; i < dataPipes.size(); i++) {
@@ -93,6 +96,8 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
             listener.subTaskFinished(error);
         }
         listener.taskFinished(settings, error);
+
+        log.debug("Data transfer completed");
     }
 
 }
