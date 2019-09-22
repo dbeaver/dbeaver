@@ -23,6 +23,8 @@ import org.eclipse.jface.action.LegacyActionTools;
 import org.eclipse.jface.action.StatusLineLayoutData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -35,6 +37,7 @@ public class StatusLineContributionItemEx extends ContributionItem {
     private CLabel label;
     private String text = "";
     private String toolTip = "";
+    private Runnable doubleClickListener;
 
     public StatusLineContributionItemEx(String id) {
         super(id);
@@ -51,6 +54,14 @@ public class StatusLineContributionItemEx extends ContributionItem {
         if (toolTip != null) {
             label.setToolTipText(toolTip);
         }
+        if (doubleClickListener != null) {
+            label.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDoubleClick(MouseEvent e) {
+                    doubleClickListener.run();
+                }
+            });
+        }
 
         // compute the size of the label to get the width hint for the contribution
         Point preferredSize = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
@@ -64,6 +75,10 @@ public class StatusLineContributionItemEx extends ContributionItem {
         data = new StatusLineLayoutData();
         data.heightHint = heightHint;
         sep.setLayoutData(data);
+    }
+
+    public void setDoubleClickListener(Runnable doubleClickListener) {
+        this.doubleClickListener = doubleClickListener;
     }
 
     public void setText(String text) {

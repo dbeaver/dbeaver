@@ -42,10 +42,8 @@ import org.jkiss.dbeaver.core.application.actions.EmergentExitAction;
 import org.jkiss.dbeaver.core.application.actions.ResetUISettingsAction;
 import org.jkiss.dbeaver.core.application.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -53,6 +51,7 @@ import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.ui.task.DatabaseTasksView;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
 import java.util.Locale;
@@ -334,17 +333,27 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     @Override
     protected void fillStatusLine(IStatusLineManager statusLine) {
-
         {
             StatusLineContributionItemEx tzItem = new StatusLineContributionItemEx("Time Zone");
             tzItem.setText(TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT));
             tzItem.setToolTip(TimeZone.getDefault().getDisplayName(true, TimeZone.LONG));
+            tzItem.setDoubleClickListener(() -> {
+                UIUtils.showMessageBox(null, "Time zone", "You can change time zone by adding parameter\n" +
+                    "-D" + StandardConstants.ENV_USER_TIMEZONE  + "=<TimeZone>\n" +
+                    "in the end of file '" + DBWorkbench.getPlatform().getApplicationConfiguration().getAbsolutePath() + "'", SWT.ICON_INFORMATION);
+            });
             statusLine.add(tzItem);
         }
         {
             StatusLineContributionItemEx localeItem = new StatusLineContributionItemEx("Locale");
             localeItem.setText(Locale.getDefault().toString());
             localeItem.setToolTip(Locale.getDefault().getDisplayName());
+            localeItem.setDoubleClickListener(() -> {
+                UIUtils.showMessageBox(null, "Locale", "You can change locale by adding parameters\n" +
+                    "-nl\n<language_iso_code>\n" +
+                    "in file '" + DBWorkbench.getPlatform().getApplicationConfiguration().getAbsolutePath() + "'.\n" +
+                    "Or by passing command line parameter -nl <language_iso_code>", SWT.ICON_INFORMATION);
+            });
             statusLine.add(localeItem);
         }
     }
