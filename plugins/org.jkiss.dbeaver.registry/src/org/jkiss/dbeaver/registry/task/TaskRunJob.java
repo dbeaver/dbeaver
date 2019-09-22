@@ -81,21 +81,29 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 taskLog = new Log(getName(), logStream);
                 try {
                     executeTask(new LoggingProgressMonitor(monitor));
+                } catch (Throwable e) {
+                    taskError = e;
+                    taskLog.error("Task fatal error", e);
+                    throw e;
                 } finally {
                     taskLog.flush();
                 }
             } finally {
                 taskRun.setRunDuration(elapsedTime);
                 if (taskError != null) {
-                    taskRun.setErrorMessage(CommonUtils.notEmpty(taskError.getMessage()));
+                    String errorMessage = taskError.getMessage();
+                    if (CommonUtils.isEmpty(errorMessage)) {
+                        errorMessage = taskError.getClass().getName();
+                    }
+                    taskRun.setErrorMessage(errorMessage);
                     StringWriter buf = new StringWriter();
                     taskError.printStackTrace(new PrintWriter(buf, true));
                     taskRun.setErrorStackTrace(buf.toString());
                 }
                 task.addNewRun(taskRun);
             }
-        } catch (Exception e) {
-            taskLog.error("Task fatal error", e);
+        } catch (Throwable e) {
+            taskLog.error("Error running task", e);
             return GeneralUtils.makeExceptionStatus(e);
         }
         return Status.OK_STATUS;

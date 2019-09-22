@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ui.task;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -65,6 +67,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     //private final SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
+    private Color colorError;
 
     public class NamedObjectPatternFilter extends PatternFilter {
         public NamedObjectPatternFilter() {
@@ -81,6 +84,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     @Override
     public void createPartControl(Composite parent) {
+        ColorRegistry colorRegistry = getSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+
+        colorError = colorRegistry.get("org.jkiss.dbeaver.txn.color.reverted.background");
+
         Composite group = UIUtils.createComposite(parent, 1);
 
         filteredTree = new FilteredTree(group, SWT.MULTI | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true);
@@ -90,10 +97,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         columnController = new ViewerColumnController("tasks", filteredTree.getViewer());
-        columnController.addColumn("Name", "Task name", SWT.LEFT, true, true, new ColumnLabelProvider() {
+        columnController.addColumn("Name", "Task name", SWT.LEFT, true, true, new TaskLabelProvider() {
             @Override
-            public void update(ViewerCell cell) {
-                DBTTask task = (DBTTask) cell.getElement();
+            protected void update(ViewerCell cell, DBTTask task) {
                 DBPImage icon = task.getType().getIcon();
                 cell.setImage(DBeaverIcons.getImage(icon != null ? icon : DBIcon.TREE_PACKAGE));
                 cell.setText(task.getName());
@@ -108,16 +114,16 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 return description;
             }
         });
-        columnController.addColumn("Created", "Task create time", SWT.LEFT, true, false, new ColumnLabelProvider() {
+        columnController.addColumn("Created", "Task create time", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            public void update(ViewerCell cell) {
-                cell.setText(dateFormat.format(((DBTTask) cell.getElement()).getCreateTime()));
+            protected void update(ViewerCell cell, DBTTask task) {
+                cell.setText(dateFormat.format(task.getCreateTime()));
             }
         });
-        columnController.addColumn("Last Run", "Task last start time", SWT.LEFT, true, false, new ColumnLabelProvider() {
+        columnController.addColumn("Last Run", "Task last start time", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            public void update(ViewerCell cell) {
-                DBTTaskRun lastRun = ((DBTTask) cell.getElement()).getLastRun();
+            protected void update(ViewerCell cell, DBTTask task) {
+                DBTTaskRun lastRun = task.getLastRun();
                 if (lastRun == null) {
                     cell.setText("N/A");
                 } else {
@@ -125,10 +131,25 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 }
             }
         });
-        columnController.addColumn("Last Duration", "Task last run duration", SWT.LEFT, false, false, new ColumnLabelProvider() {
+        columnController.addColumn("Last Result", "Task last result", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            public void update(ViewerCell cell) {
-                DBTTaskRun lastRun = ((DBTTask) cell.getElement()).getLastRun();
+            protected void update(ViewerCell cell, DBTTask task) {
+                DBTTaskRun lastRun = task.getLastRun();
+                if (lastRun == null) {
+                    cell.setText("N/A");
+                } else {
+                    if (lastRun.isRunSuccess()) {
+                        cell.setText("Success");
+                    } else {
+                        cell.setText(CommonUtils.notEmpty(lastRun.getErrorMessage()));
+                    }
+                }
+            }
+        });
+        columnController.addColumn("Last Duration", "Task last run duration", SWT.LEFT, false, false, new TaskLabelProvider() {
+            @Override
+            protected void update(ViewerCell cell, DBTTask task) {
+                DBTTaskRun lastRun = task.getLastRun();
                 if (lastRun == null) {
                     cell.setText("N/A");
                 } else {
@@ -136,28 +157,28 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 }
             }
         });
-        columnController.addColumn("Description", "Task description", SWT.LEFT, false, false, new ColumnLabelProvider() {
+        columnController.addColumn("Description", "Task description", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
-            public void update(ViewerCell cell) {
-                cell.setText(CommonUtils.notEmpty(((DBTTask) cell.getElement()).getDescription()));
+            protected void update(ViewerCell cell, DBTTask task) {
+                cell.setText(CommonUtils.notEmpty(task.getDescription()));
             }
         });
-        columnController.addColumn("Type", "Task type", SWT.LEFT, true, false, new ColumnLabelProvider() {
+        columnController.addColumn("Type", "Task type", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            public void update(ViewerCell cell) {
-                cell.setText(((DBTTask) cell.getElement()).getType().getName());
+            protected void update(ViewerCell cell, DBTTask task) {
+                cell.setText(task.getType().getName());
             }
         });
-        columnController.addColumn("Category", "Task category", SWT.LEFT, false, false, new ColumnLabelProvider() {
+        columnController.addColumn("Category", "Task category", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
-            public void update(ViewerCell cell) {
-                cell.setText(((DBTTask) cell.getElement()).getType().getCategory().getName());
+            protected void update(ViewerCell cell, DBTTask task) {
+                cell.setText(task.getType().getCategory().getName());
             }
         });
-        columnController.addColumn("Project", "Task container project", SWT.LEFT, true, false, new ColumnLabelProvider() {
+        columnController.addColumn("Project", "Task container project", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            public void update(ViewerCell cell) {
-                cell.setText(((DBTTask) cell.getElement()).getProject().getName());
+            protected void update(ViewerCell cell, DBTTask task) {
+                cell.setText(task.getProject().getName());
             }
         });
         columnController.createColumns(true);
@@ -189,7 +210,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         getSite().registerContextMenu(menuMgr, viewer);
         getSite().setSelectionProvider(filteredTree.getViewer());
 
-        viewer.addDoubleClickListener(event -> ActionUtils.runCommand(RUN_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
+        viewer.addDoubleClickListener(event -> ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
         //viewer.addOpenListener(event -> openCurrentTask());
 
         loadTasks();
@@ -305,6 +326,27 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         filteredTree.getViewer().setInput(allTasks);
         columnController.repackColumns();
+    }
+
+    private class TaskLabelProvider extends ColumnLabelProvider {
+        @Override
+        public final void update(ViewerCell cell) {
+            DBTTask task = (DBTTask) cell.getElement();
+            DBTTaskRun lastRun = task.getLastRun();
+            if (lastRun != null && !lastRun.isRunSuccess()) {
+                cell.setBackground(colorError);
+            }
+            update(cell, task);
+        }
+
+        protected void update(ViewerCell cell, DBTTask task) {
+
+        }
+
+        @Override
+        public Color getBackground(Object element) {
+            return super.getBackground(element);
+        }
     }
 
 }
