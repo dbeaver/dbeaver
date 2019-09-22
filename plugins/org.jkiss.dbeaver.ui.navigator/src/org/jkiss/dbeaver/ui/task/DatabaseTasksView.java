@@ -335,6 +335,8 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             DBTTaskRun lastRun = task.getLastRun();
             if (lastRun != null && !lastRun.isRunSuccess()) {
                 cell.setBackground(colorError);
+            } else {
+                cell.setBackground(null);
             }
             update(cell, task);
         }

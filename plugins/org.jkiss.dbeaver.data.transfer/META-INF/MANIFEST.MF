@@ -19,6 +19,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.resources,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  net.sf.opencsv
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer
