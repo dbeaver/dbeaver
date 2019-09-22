@@ -34,17 +34,24 @@ public class HANASQLDialect extends GenericSQLDialect {
         super("HANA");
     }
 
-    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-        super.initDriverSettings(dataSource, metaData);
-
-        addSQLKeywords(
-                Arrays.asList(
-                        "REPLACE_REGEXPR"));
-    }
-
     @Override
     public String[][] getBlockBoundStrings() {
         return HANA_BEGIN_END_BLOCK;
     }
 
+    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(dataSource, metaData);
+        // TODO: check if obsolete
+        addSQLKeywords(
+                Arrays.asList(
+                        "REPLACE_REGEXPR"));
+    }
+
+    /*
+     * expression evaluation
+     */
+    @Override
+    public String getDualTableName() {
+        return "DUMMY";
+    }
 }
