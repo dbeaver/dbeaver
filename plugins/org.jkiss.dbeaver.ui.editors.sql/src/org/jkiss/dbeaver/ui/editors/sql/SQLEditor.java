@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -2505,7 +2506,7 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         } else {
                             SQLQuery query = (SQLQuery) element;
-                            producers.add(new DatabaseTransferProducer(new SQLQueryDataContainer(job, resultsConsumer, query, i), null));
+                            producers.add(new DatabaseTransferProducer(new SQLQueryDataContainer(SQLEditor.this, query, log), null));
                         }
                     }
 

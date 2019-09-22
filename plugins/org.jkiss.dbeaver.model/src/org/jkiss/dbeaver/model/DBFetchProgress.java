@@ -16,32 +16,9 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
-
-import java.lang.reflect.Array;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.ParseException;
-import java.util.Collection;
-import java.util.Locale;
 
 /**
  * DB value formatting utilities
@@ -85,7 +62,7 @@ public final class DBFetchProgress {
     }
 
     public boolean isMaxRowsFetched(long maxRows) {
-        return rowCount >= maxRows;
+        return maxRows > 0 && rowCount >= maxRows;
     }
 
     public static boolean monitorFetchProgress(long fetchedRows) {

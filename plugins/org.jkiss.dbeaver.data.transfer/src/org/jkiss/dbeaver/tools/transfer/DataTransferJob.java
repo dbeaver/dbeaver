@@ -63,6 +63,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        monitor.beginTask("Perform data transfer", 1);
         hasErrors = false;
         long startTime = System.currentTimeMillis();
         for (; ;) {
@@ -82,6 +83,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
                 throw new InvocationTargetException(e);
             }
         }
+        monitor.done();
         listener.subTaskFinished(null);
         elapsedTime = System.currentTimeMillis() - startTime;
     }

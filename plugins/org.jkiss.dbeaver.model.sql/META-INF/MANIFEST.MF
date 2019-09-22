@@ -10,6 +10,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.model.sql.internal.SQLModelActivator
 Export-Package: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.sql.completion,
+ org.jkiss.dbeaver.model.sql.data,
  org.jkiss.dbeaver.model.sql.format,
  org.jkiss.dbeaver.model.sql.format.external,
  org.jkiss.dbeaver.model.sql.format.tokenized,

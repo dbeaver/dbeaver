@@ -54,15 +54,19 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
 
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
         try {
-            runnableContext.run(false, false, monitor -> {
+            runnableContext.run(true, false, monitor -> {
+                monitor.beginTask("Initialize pipes", dataPipes.size());
                 try {
                     for (int i = 0; i < dataPipes.size(); i++) {
                         DataTransferPipe pipe = dataPipes.get(i);
                         pipe.initPipe(settings, i, dataPipes.size());
                         pipe.getConsumer().startTransfer(monitor);
+                        monitor.worked(1);
                     }
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
                 }
             });
         } catch (InvocationTargetException e) {

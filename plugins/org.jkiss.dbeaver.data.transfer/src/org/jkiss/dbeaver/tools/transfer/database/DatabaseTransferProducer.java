@@ -27,10 +27,13 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
+import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -284,14 +287,18 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             }
                             case "query": {
                                 String dsId = CommonUtils.toString(state.get("dataSource"));
-                                String query = CommonUtils.toString(state.get("query"));
+                                String queryText = CommonUtils.toString(state.get("query"));
                                 DBPDataSourceContainer ds = project.getDataSourceRegistry().getDataSource(dsId);
                                 if (ds == null) {
                                     log.debug("Can't find datasource "+ dsId);
                                     return;
                                 }
-                                //producer.dataContainer = new SQLQueryContainer()
-                                throw new DBException("SQL data containers not supported yet");
+                                if (!ds.isConnected()) {
+                                    ds.connect(monitor, true, true);
+                                }
+                                SQLQuery query = new SQLQuery(ds.getDataSource(), queryText);
+                                producer.dataContainer = new SQLQueryDataContainer(new DataSourceContextProvider(ds), query, log);
+                                //throw new DBException("SQL data containers not supported yet");
                             }
                             default:
                                 log.warn("Unsupported selector type: " + selType);
