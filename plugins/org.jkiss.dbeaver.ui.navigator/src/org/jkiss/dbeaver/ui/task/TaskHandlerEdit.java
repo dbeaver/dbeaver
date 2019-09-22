@@ -23,41 +23,28 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.model.task.DBTTaskCategory;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-public class TaskDeleteHandler extends AbstractHandler {
+public class TaskHandlerEdit extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
-        List<DBTTask> tasksToDelete = new ArrayList<>();
         if (selection instanceof IStructuredSelection) {
-            IStructuredSelection structSelection = (IStructuredSelection)selection;
-            for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
-                Object element = iter.next();
-                if (element instanceof DBTTask) {
-                    tasksToDelete.add((DBTTask) element);
-                }
-            }
-        }
-
-        if (!tasksToDelete.isEmpty()) {
-            if (tasksToDelete.size() == 1) {
-                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), "Delete task", "Are you sure you want to delete task '" + tasksToDelete.get(0).getName() + "'?")) {
+            Object element = ((IStructuredSelection)selection).getFirstElement();
+            if (element instanceof DBTTask) {
+                DBTTask task = (DBTTask) element;
+                DBTTaskCategory taskTypeDescriptor = task.getType().getCategory();
+                if (!taskTypeDescriptor.supportsConfigurator()) {
                     return null;
                 }
-            } else {
-                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), "Delete tasks", "Are you sure you want to delete " + tasksToDelete.size() + " tasks?")) {
-                    return null;
+                try {
+                    taskTypeDescriptor.createConfigurator().configureTask(DBWorkbench.getPlatform(), task);
+                } catch (Exception e) {
+                    DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
                 }
-            }
-            for (DBTTask task : tasksToDelete) {
-                task.getProject().getTaskManager().deleteTaskConfiguration(task);
             }
         }
 

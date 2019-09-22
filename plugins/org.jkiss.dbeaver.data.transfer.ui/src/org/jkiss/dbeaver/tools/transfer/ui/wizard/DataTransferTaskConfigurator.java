@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -29,8 +30,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
-    public void configureTask(@NotNull DBPPlatform platform, @NotNull DBTTask taskConfiguration) {
-        DataTransferWizardDialog.openWizard(UIUtils.getActiveWorkbenchWindow(), taskConfiguration);
+    public boolean configureTask(@NotNull DBPPlatform platform, @NotNull DBTTask taskConfiguration) {
+        return DataTransferWizardDialog.openWizard(
+            UIUtils.getActiveWorkbenchWindow(),
+            taskConfiguration) == IDialogConstants.OK_ID;
     }
 
 }

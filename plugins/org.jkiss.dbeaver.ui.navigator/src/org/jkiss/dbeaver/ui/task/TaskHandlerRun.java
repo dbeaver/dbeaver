@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collections;
 import java.util.Map;
 
-public class TaskRunHandler extends AbstractHandler implements IElementUpdater {
+public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

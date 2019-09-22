@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
@@ -49,7 +50,11 @@ public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizar
 
     protected TaskConfigurationWizardDialog(IWorkbenchWindow window, WIZARD wizard, IStructuredSelection selection) {
         super(window, wizard, selection);
-        setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
+        int shellStyle = SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
+        if (UIUtils.isInDialog()) {
+            shellStyle |= SWT.APPLICATION_MODAL;
+        }
+        setShellStyle(shellStyle);
 
         setHelpAvailable(false);
 

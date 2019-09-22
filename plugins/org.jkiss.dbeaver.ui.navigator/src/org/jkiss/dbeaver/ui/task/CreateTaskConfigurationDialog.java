@@ -26,12 +26,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.task.DBTTaskCategory;
-import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+
+import java.util.LinkedHashMap;
 
 /**
  * Create task dialog
@@ -46,6 +48,11 @@ public class CreateTaskConfigurationDialog extends BaseDialog
     private Text taskLabelText;
     private Text taskDescriptionText;
     private Tree tastCategoryTree;
+
+    private DBTTaskCategory selectedCategory;
+    private DBTTaskType selectedTaskType;
+    private DBTTaskType[] taskTypes;
+
 
     public CreateTaskConfigurationDialog(Shell parentShell, DBPProject project)
     {
@@ -78,16 +85,23 @@ public class CreateTaskConfigurationDialog extends BaseDialog
         gd.widthHint = 200;
         tastCategoryTree.setLayoutData(gd);
         tastCategoryTree.addSelectionListener(new SelectionAdapter() {
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 TreeItem[] selection = tastCategoryTree.getSelection();
                 if (selection.length == 1) {
-                    DBTTaskCategory cat = (DBTTaskCategory) selection[0].getData();
+                    selectedCategory = (DBTTaskCategory) selection[0].getData();
                     taskTypeCombo.removeAll();
-                    for (DBTTaskType type : cat.getTaskTypes()) {
+                    taskTypes = selectedCategory.getTaskTypes();
+                    for (DBTTaskType type : taskTypes) {
                         taskTypeCombo.add(type.getName());
                     }
-                    taskTypeCombo.select(0);
+                    if (taskTypes.length > 0) {
+                        taskTypeCombo.select(0);
+                        selectedTaskType = taskTypes[0];
+                    } else {
+                        selectedTaskType = null;
+                    }
                     updateButtons();
                 }
             }
@@ -96,6 +110,17 @@ public class CreateTaskConfigurationDialog extends BaseDialog
 
         taskTypeCombo = UIUtils.createLabelCombo(formPanel, "Type", SWT.BORDER  | SWT.DROP_DOWN | SWT.READ_ONLY);
         taskTypeCombo.addModifyListener(modifyListener);
+        taskTypeCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (taskTypeCombo.getSelectionIndex() >= 0) {
+                    selectedTaskType = taskTypes[taskTypeCombo.getSelectionIndex()];
+                } else {
+                    selectedTaskType = null;
+                }
+                updateButtons();
+            }
+        });
 
         taskLabelText = UIUtils.createLabelText(formPanel, "Name", "", SWT.BORDER);
         taskLabelText.addModifyListener(modifyListener);
@@ -127,29 +152,24 @@ public class CreateTaskConfigurationDialog extends BaseDialog
     }
 
     private void updateButtons() {
-        boolean isReady = !taskLabelText.getText().isEmpty() && taskTypeCombo.getSelectionIndex() >= 0;
+        boolean isReady = !taskLabelText.getText().isEmpty() && selectedTaskType != null;
         getButton(IDialogConstants.OK_ID).setEnabled(isReady);
     }
 
     @Override
     protected void okPressed() {
-/*
         DBTTaskManager taskManager = project.getTaskManager();
-        if (task == null) {
-            try {
-                task = taskManager.createTaskConfiguration(taskDescriptor, taskLabelText.getText(), taskDescriptionText.getText(), state);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
+
+        try {
+            DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
+            DBTTask task = taskManager.createTaskConfiguration(selectedTaskType, taskLabelText.getText(), taskDescriptionText.getText(), new LinkedHashMap<>());
+            if (!configurator.configureTask(DBWorkbench.getPlatform(), task)) {
+                taskManager.deleteTaskConfiguration(task);
             }
-        } else {
-            TaskImpl impl = (TaskImpl) task;
-            impl.setName(taskLabelText.getText());
-            impl.setDescription(taskDescriptionText.getText());
-            impl.setUpdateTime(new Date());
-            impl.setProperties(state);
-            taskManager.updateTaskConfiguration(task);
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Create task failed", "Error while creating new task", e);
+            return;
         }
-*/
 
         super.okPressed();
     }

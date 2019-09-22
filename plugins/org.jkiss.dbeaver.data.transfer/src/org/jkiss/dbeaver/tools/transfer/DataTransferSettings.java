@@ -119,7 +119,8 @@ public class DataTransferSettings {
             }
             producerOptional = true;
         } else {
-            throw new IllegalArgumentException("Producers or consumers must be specified");
+            consumerOptional = true;
+            producerOptional = true;
         }
 
         if (!ArrayUtils.isEmpty(initConsumers)) {

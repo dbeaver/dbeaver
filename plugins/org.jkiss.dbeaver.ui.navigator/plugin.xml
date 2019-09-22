@@ -768,7 +768,7 @@
         </handler>
 
         <!-- Task view handlers -->
-        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.task.TaskDeleteHandler">
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.task.TaskHandlerDelete">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -776,7 +776,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.file.properties" class="org.jkiss.dbeaver.ui.task.TaskPropertiesHandler">
+        <handler commandId="org.eclipse.ui.file.properties" class="org.jkiss.dbeaver.ui.task.TaskHandlerProperties">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -784,8 +784,8 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.task.run" class="org.jkiss.dbeaver.ui.task.TaskRunHandler"/>
-        <handler commandId="org.jkiss.dbeaver.task.edit" class="org.jkiss.dbeaver.ui.task.TaskEditHandler">
+        <handler commandId="org.jkiss.dbeaver.task.run" class="org.jkiss.dbeaver.ui.task.TaskHandlerRun"/>
+        <handler commandId="org.jkiss.dbeaver.task.edit" class="org.jkiss.dbeaver.ui.task.TaskHandlerEdit">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -793,7 +793,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.task.create" class="org.jkiss.dbeaver.ui.task.TaskCreateHandler"/>
+        <handler commandId="org.jkiss.dbeaver.task.create" class="org.jkiss.dbeaver.ui.task.TaskHandlerCreate"/>
 
     </extension>
 
@@ -830,6 +830,7 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.tasks">
 <!--            <command commandId="org.eclipse.ui.file.properties"/>-->
+            <command commandId="org.jkiss.dbeaver.task.create"/>
             <command commandId="org.eclipse.ui.edit.delete"/>
         </menuContribution>
 
