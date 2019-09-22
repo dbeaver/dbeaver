@@ -150,6 +150,22 @@ public abstract class BasePlatformImpl implements DBPPlatform {
 
     @NotNull
     @Override
+    public File getApplicationConfiguration() {
+        File configPath;
+        try {
+            configPath = RuntimeUtils.getLocalFileFromURL(Platform.getInstallLocation().getURL());
+        } catch (IOException e) {
+            throw new IllegalStateException("Can't detect application installation folder.", e);
+        }
+        File iniFile = new File(configPath, ECLIPSE_CONFIG_FILE);
+        if (!iniFile.exists()) {
+            iniFile = new File(configPath, APP_CONFIG_FILE);
+        }
+        return iniFile;
+    }
+
+    @NotNull
+    @Override
     public OSDescriptor getLocalSystem() {
         return localSystem;
     }
@@ -165,16 +181,7 @@ public abstract class BasePlatformImpl implements DBPPlatform {
             return;
         }
 
-        File configPath;
-        try {
-            configPath = RuntimeUtils.getLocalFileFromURL(Platform.getInstallLocation().getURL());
-        } catch (IOException e) {
-            throw new DBException("Can't detect application installation folder.", e);
-        }
-        File iniFile = new File(configPath, ECLIPSE_CONFIG_FILE);
-        if (!iniFile.exists()) {
-            iniFile = new File(configPath, APP_CONFIG_FILE);
-        }
+        File iniFile = getApplicationConfiguration();
         if (!iniFile.exists()) {
             throw new DBException("Application configuration file (" + iniFile.getAbsolutePath() + ") not found. Default language cannot be changed.");
         }

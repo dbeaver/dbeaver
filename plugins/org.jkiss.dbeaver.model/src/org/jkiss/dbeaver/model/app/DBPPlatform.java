@@ -85,6 +85,9 @@ public interface DBPPlatform
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
     @NotNull
+    File getApplicationConfiguration();
+
+    @NotNull
     File getConfigurationFile(String fileName);
 
     @NotNull
