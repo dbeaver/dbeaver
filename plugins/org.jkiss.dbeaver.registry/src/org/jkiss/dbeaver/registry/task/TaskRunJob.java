@@ -66,8 +66,6 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     protected IStatus run(DBRProgressMonitor monitor) {
         try {
             Date startTime = new Date();
-            File taskStatsFolder = task.getTaskStatsFolder(true);
-            File logFile = new File(taskStatsFolder, TaskRunImpl.RUN_LOG_PREFIX + TaskManagerImpl.systemDateFormat.format(startTime) + "." + TaskRunImpl.RUN_LOG_EXT);
 
             String taskId = TaskManagerImpl.systemDateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
             TaskRunImpl taskRun = new TaskRunImpl(
@@ -76,6 +74,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 System.getProperty(StandardConstants.ENV_USER_NAME),
                 GeneralUtils.getProductTitle(),
                 0, null, null);
+            File logFile = task.getRunLog(taskRun);
 
             try (OutputStream logStream = new FileOutputStream(logFile)) {
                 taskLog = new Log(getName(), logStream);
