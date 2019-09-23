@@ -23,7 +23,6 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -49,17 +49,16 @@ public class CreateTaskConfigurationDialog extends BaseDialog
     private Combo taskTypeCombo;
     private Text taskLabelText;
     private Text taskDescriptionText;
-    private Tree tastCategoryTree;
+    private Tree taskCategoryTree;
 
     private DBTTaskCategory selectedCategory;
     private DBTTaskType selectedTaskType;
     private DBTTaskType[] taskTypes;
 
     private Composite configPanelPlaceholder;
-    private SashForm formSash;
+    private IObjectPropertyConfigurator taskConfigurator;
 
-
-    public CreateTaskConfigurationDialog(Shell parentShell, DBPProject project)
+    CreateTaskConfigurationDialog(Shell parentShell, DBPProject project)
     {
         super(parentShell, "Create new task ", DBIcon.TREE_PACKAGE);
         this.project = project;
@@ -76,28 +75,26 @@ public class CreateTaskConfigurationDialog extends BaseDialog
         Composite composite = super.createDialogArea(parent);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        formSash = new SashForm(composite, SWT.HORIZONTAL);
+        SashForm formSash = new SashForm(composite, SWT.HORIZONTAL);
         formSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite formPanel = UIUtils.createComposite(formSash, 2);
+            Composite formPanel = UIUtils.createControlGroup(formSash, "Task info", 2, GridData.FILL_BOTH, 0);
             formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            ModifyListener modifyListener = e -> {
-                updateButtons();
-            };
+            ModifyListener modifyListener = e -> updateButtons();
 
             UIUtils.createControlLabel(formPanel, "Category");
-            tastCategoryTree = new Tree(formPanel, SWT.BORDER | SWT.SINGLE);
+            taskCategoryTree = new Tree(formPanel, SWT.BORDER | SWT.SINGLE);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 100;
             gd.widthHint = 200;
-            tastCategoryTree.setLayoutData(gd);
-            tastCategoryTree.addSelectionListener(new SelectionAdapter() {
+            taskCategoryTree.setLayoutData(gd);
+            taskCategoryTree.addSelectionListener(new SelectionAdapter() {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    TreeItem[] selection = tastCategoryTree.getSelection();
+                    TreeItem[] selection = taskCategoryTree.getSelection();
                     if (selection.length == 1) {
                         selectedCategory = (DBTTaskCategory) selection[0].getData();
                         taskTypeCombo.removeAll();
@@ -141,23 +138,41 @@ public class CreateTaskConfigurationDialog extends BaseDialog
             UIUtils.asyncExec(() -> taskLabelText.setFocus());
         }
         {
-            configPanelPlaceholder = UIUtils.createComposite(formSash, 1);
-            configPanelPlaceholder.setLayout(new FillLayout());
+            configPanelPlaceholder = UIUtils.createControlGroup(formSash, "Configuration", 1, GridData.FILL_BOTH, 0);
         }
         formSash.setWeights(new int[] { 500, 500 });
-        //formSash.setMaximizedControl(formSash.getChildren()[0]);
 
         return composite;
     }
 
     private void updateTaskTypeSelection() {
         UIUtils.disposeChildControls(configPanelPlaceholder);
+        taskConfigurator = null;
 
         if (selectedCategory != null && selectedCategory.supportsConfigurator()) {
-            //selectedCategory.createConfigurator().configureTask()
+            //selectedCategory.createConfigurator().openTaskConfigDialog()
             //formSash.setMaximizedControl(null);
-        } else {
-            //formSash.setMaximizedControl(formSash.getChildren()[0]);
+            try {
+                DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
+                Object configPage = configurator.createInputConfigurator(UIUtils.getDefaultRunnableContext(), selectedTaskType);
+                if (configPage instanceof IObjectPropertyConfigurator) {
+                    taskConfigurator = (IObjectPropertyConfigurator) configPage;
+                    taskConfigurator.createControl(configPanelPlaceholder);
+                } else if (configPage != null) {
+                    // Something weird was created
+                    UIUtils.disposeChildControls(configPanelPlaceholder);
+                }
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Task configurator error", "Error creating task configuration UI", e);
+            }
+        }
+        if (taskConfigurator == null) {
+            Label emptyLabel = new Label(configPanelPlaceholder, SWT.NONE);
+            emptyLabel.setText("No configuration");
+            GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER);
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            emptyLabel.setLayoutData(gd);
         }
         getShell().layout(true, true);
         updateButtons();
@@ -165,7 +180,7 @@ public class CreateTaskConfigurationDialog extends BaseDialog
 
     private void addTaskCategories(TreeItem parentItem, DBTTaskCategory[] categories) {
         for (DBTTaskCategory cat : categories) {
-            TreeItem item = parentItem == null ? new TreeItem(tastCategoryTree, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
+            TreeItem item = parentItem == null ? new TreeItem(taskCategoryTree, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
             item.setText(cat.getName());
             item.setImage(DBeaverIcons.getImage(cat.getIcon() == null ? DBIcon.TREE_PACKAGE : cat.getIcon()));
             item.setData(cat);
@@ -187,20 +202,20 @@ public class CreateTaskConfigurationDialog extends BaseDialog
 
     @Override
     protected void okPressed() {
+        super.okPressed();
+
         DBTTaskManager taskManager = project.getTaskManager();
 
         try {
             DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
             DBTTask task = taskManager.createTaskConfiguration(selectedTaskType, taskLabelText.getText(), taskDescriptionText.getText(), new LinkedHashMap<>());
-            if (!configurator.configureTask(DBWorkbench.getPlatform(), task)) {
+            if (!configurator.openTaskConfigDialog(task)) {
                 taskManager.deleteTaskConfiguration(task);
             }
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Create task failed", "Error while creating new task", e);
             return;
         }
-
-        super.okPressed();
     }
 
 }

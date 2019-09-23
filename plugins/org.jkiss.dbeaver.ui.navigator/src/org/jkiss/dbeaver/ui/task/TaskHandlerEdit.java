@@ -41,7 +41,7 @@ public class TaskHandlerEdit extends AbstractHandler {
                     return null;
                 }
                 try {
-                    taskTypeDescriptor.createConfigurator().configureTask(DBWorkbench.getPlatform(), task);
+                    taskTypeDescriptor.createConfigurator().openTaskConfigDialog(task);
                 } catch (Exception e) {
                     DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
                 }
