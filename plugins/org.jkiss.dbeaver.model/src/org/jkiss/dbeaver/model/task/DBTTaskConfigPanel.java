@@ -16,27 +16,19 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import java.util.Map;
 
 /**
- * Task configurator.
- * Usually some UI dialog/wizard for task configuration.
+ * DBTTaskConfigPanel
  */
-public interface DBTTaskConfigurator {
+public interface DBTTaskConfigPanel
+{
+    void createControl(Object parent);
 
-    /**
-     * Creates a panel for task input objects configure.
-     *
-     * @param runnableContext runnable context
-     * @param taskType task type
-     * @return null if config panel not supported/disabled. Otherwise IObjectPropertyConfigurator implementation (see UI modules).
-     */
-    DBTTaskConfigPanel createInputConfigurator(
-        DBRRunnableContext runnableContext,
-        @NotNull DBTTaskType taskType);
+    void loadSettings(Map<String, Object> configuration);
 
-    boolean openTaskConfigDialog(
-        @NotNull DBTTask taskConfiguration);
+    void saveSettings(Map<String, Object> configuration);
+
+    boolean isComplete();
 
 }

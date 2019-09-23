@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Parameter binding
@@ -108,7 +108,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         getShell().setText(SQLEditorMessages.dialog_sql_param_title);
         final Composite composite = (Composite)super.createDialogArea(parent);
 
-        SashForm sash = new SashForm(composite, SWT.HORIZONTAL);
+        SashForm sash = new SashForm(composite, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
