@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.task;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.task.DBTTaskRun;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Date;
 
@@ -110,7 +111,7 @@ class TaskRunImpl implements DBTTaskRun {
 
     @Override
     public String toString() {
-        return id;
+        return id + "; " + startUser + "; " + startedBy + "; " + (isRunSuccess() ? "Success" : CommonUtils.notEmpty(errorMessage));
     }
 
 }
