@@ -60,7 +60,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLQueryParameterBindDialog;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
@@ -110,8 +109,6 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean skipConfirmation;
     private int fetchSize;
-    private long readFlags;
-    private boolean ignoreParameters;
 
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
@@ -171,10 +168,6 @@ public class SQLQueryJob extends DataSourceJob
 
     public void setFetchSize(int fetchSize) {
         this.fetchSize = fetchSize;
-    }
-
-    public void setReadFlags(long readFlags) {
-        this.readFlags = readFlags;
     }
 
     @Override
@@ -356,10 +349,6 @@ public class SQLQueryJob extends DataSourceJob
         final SQLQuery originalQuery = sqlQuery;
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
-
-        if (!prepareStatementParameters(sqlQuery)) {
-            return false;
-        }
 
         // Modify query (filters + parameters)
         String queryText = originalQuery.getText();//.trim();
@@ -618,88 +607,6 @@ public class SQLQueryJob extends DataSourceJob
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
 
-    public boolean prepareStatementParameters(SQLQuery sqlStatement) {
-        if (ignoreParameters) {
-            return true;
-        }
-
-        // Bind parameters
-        List<SQLQueryParameter> parameters = sqlStatement.getParameters();
-        if (CommonUtils.isEmpty(parameters)) {
-            return true;
-        }
-
-        if ((readFlags & DBSDataContainer.FLAG_FETCH_SEGMENT) == 0) {
-            // Resolve parameters (only if it is the first fetch)
-            if (!fillStatementParameters(parameters)) {
-                return false;
-            }
-        }
-
-        if (ignoreParameters) {
-            return true;
-        }
-        // Set values for all parameters
-        // Replace parameter tokens with parameter values
-        String query = sqlStatement.getText();
-        for (int i = parameters.size(); i > 0; i--) {
-            SQLQueryParameter parameter = parameters.get(i - 1);
-            String paramValue = parameter.getValue();
-            if (paramValue == null || paramValue.isEmpty()) {
-                paramValue = SQLConstants.NULL_VALUE;
-            }
-            query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
-        }
-        sqlStatement.setText(query);
-        return true;
-    }
-
-    private boolean fillStatementParameters(final List<SQLQueryParameter> parameters)
-    {
-        for (SQLQueryParameter param : parameters) {
-            String paramName = param.getVarName();
-            if (scriptContext.hasVariable(paramName)) {
-                Object varValue = scriptContext.getVariable(paramName);
-                String strValue = varValue == null ? null : varValue.toString();
-                param.setValue(strValue);
-                param.setVariableSet(true);
-            } else {
-                param.setVariableSet(false);
-            }
-        }
-        boolean allSet = true;
-        for (SQLQueryParameter param : parameters) {
-            if (!param.isVariableSet()) {
-                allSet = false;
-            }
-        }
-        if (allSet) {
-            return true;
-        }
-
-        int paramsResult = UITask.run(() -> {
-            SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                partSite.getShell(),
-                parameters);
-            return dialog.open();
-        });
-
-        if (paramsResult == IDialogConstants.OK_ID) {
-            // Save values back to script context
-            for (SQLQueryParameter param : parameters) {
-                if (param.isNamed() && scriptContext.hasVariable(param.getVarName())) {
-                    String strValue = param.getValue();
-                    scriptContext.setVariable(param.getVarName(), strValue);
-                }
-            }
-            return true;
-        } else if (paramsResult == IDialogConstants.IGNORE_ID) {
-            ignoreParameters = true;
-            return true;
-        }
-        return false;
-    }
-
     private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, SQLQueryResult.ExecuteResult executeResult, DBDDataReceiver dataReceiver, boolean updateStatistics)
         throws DBCException
     {
@@ -946,7 +853,4 @@ public class SQLQueryJob extends DataSourceJob
         }.execute();
     }
 
-    public boolean transformQueryWithParameters(SQLQuery query) {
-        return prepareStatementParameters(query);
-    }
 }
