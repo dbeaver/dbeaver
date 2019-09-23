@@ -175,6 +175,17 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 }
             }
         });
+        taskColumnController.addColumn("Last Duration", "Task last run duration", SWT.LEFT, false, false, new TaskLabelProvider() {
+            @Override
+            protected void update(ViewerCell cell, DBTTask task) {
+                DBTTaskRun lastRun = task.getLastRun();
+                if (lastRun == null) {
+                    cell.setText("N/A");
+                } else {
+                    cell.setText(RuntimeUtils.formatExecutionTime(lastRun.getRunDuration()));
+                }
+            }
+        });
         taskColumnController.addColumn("Last Result", "Task last result", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTask task) {
@@ -187,17 +198,6 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     } else {
                         cell.setText(CommonUtils.notEmpty(lastRun.getErrorMessage()));
                     }
-                }
-            }
-        });
-        taskColumnController.addColumn("Last Duration", "Task last run duration", SWT.LEFT, false, false, new TaskLabelProvider() {
-            @Override
-            protected void update(ViewerCell cell, DBTTask task) {
-                DBTTaskRun lastRun = task.getLastRun();
-                if (lastRun == null) {
-                    cell.setText("N/A");
-                } else {
-                    cell.setText(RuntimeUtils.formatExecutionTime(lastRun.getRunDuration()));
                 }
             }
         });

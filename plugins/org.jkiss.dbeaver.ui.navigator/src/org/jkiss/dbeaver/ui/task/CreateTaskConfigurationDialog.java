@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ui.task;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -53,6 +55,9 @@ public class CreateTaskConfigurationDialog extends BaseDialog
     private DBTTaskType selectedTaskType;
     private DBTTaskType[] taskTypes;
 
+    private Composite configPanelPlaceholder;
+    private SashForm formSash;
+
 
     public CreateTaskConfigurationDialog(Shell parentShell, DBPProject project)
     {
@@ -71,67 +76,91 @@ public class CreateTaskConfigurationDialog extends BaseDialog
         Composite composite = super.createDialogArea(parent);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite formPanel = UIUtils.createComposite(composite, 2);
-        formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        formSash = new SashForm(composite, SWT.HORIZONTAL);
+        formSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        ModifyListener modifyListener = e -> {
-            updateButtons();
-        };
+        {
+            Composite formPanel = UIUtils.createComposite(formSash, 2);
+            formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createControlLabel(formPanel, "Category");
-        tastCategoryTree = new Tree(formPanel, SWT.BORDER | SWT.SINGLE);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 100;
-        gd.widthHint = 200;
-        tastCategoryTree.setLayoutData(gd);
-        tastCategoryTree.addSelectionListener(new SelectionAdapter() {
+            ModifyListener modifyListener = e -> {
+                updateButtons();
+            };
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TreeItem[] selection = tastCategoryTree.getSelection();
-                if (selection.length == 1) {
-                    selectedCategory = (DBTTaskCategory) selection[0].getData();
-                    taskTypeCombo.removeAll();
-                    taskTypes = selectedCategory.getTaskTypes();
-                    for (DBTTaskType type : taskTypes) {
-                        taskTypeCombo.add(type.getName());
+            UIUtils.createControlLabel(formPanel, "Category");
+            tastCategoryTree = new Tree(formPanel, SWT.BORDER | SWT.SINGLE);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 100;
+            gd.widthHint = 200;
+            tastCategoryTree.setLayoutData(gd);
+            tastCategoryTree.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    TreeItem[] selection = tastCategoryTree.getSelection();
+                    if (selection.length == 1) {
+                        selectedCategory = (DBTTaskCategory) selection[0].getData();
+                        taskTypeCombo.removeAll();
+                        taskTypes = selectedCategory.getTaskTypes();
+                        for (DBTTaskType type : taskTypes) {
+                            taskTypeCombo.add(type.getName());
+                        }
+                        if (taskTypes.length > 0) {
+                            taskTypeCombo.select(0);
+                            selectedTaskType = taskTypes[0];
+                        } else {
+                            selectedTaskType = null;
+                        }
+                        updateTaskTypeSelection();
                     }
-                    if (taskTypes.length > 0) {
-                        taskTypeCombo.select(0);
-                        selectedTaskType = taskTypes[0];
+                }
+            });
+            addTaskCategories(null, TaskRegistry.getInstance().getRootCategories());
+
+            taskTypeCombo = UIUtils.createLabelCombo(formPanel, "Type", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            taskTypeCombo.addModifyListener(modifyListener);
+            taskTypeCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (taskTypeCombo.getSelectionIndex() >= 0) {
+                        selectedTaskType = taskTypes[taskTypeCombo.getSelectionIndex()];
                     } else {
                         selectedTaskType = null;
                     }
                     updateButtons();
                 }
-            }
-        });
-        addTaskCategories(null, TaskRegistry.getInstance().getRootCategories());
+            });
 
-        taskTypeCombo = UIUtils.createLabelCombo(formPanel, "Type", SWT.BORDER  | SWT.DROP_DOWN | SWT.READ_ONLY);
-        taskTypeCombo.addModifyListener(modifyListener);
-        taskTypeCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (taskTypeCombo.getSelectionIndex() >= 0) {
-                    selectedTaskType = taskTypes[taskTypeCombo.getSelectionIndex()];
-                } else {
-                    selectedTaskType = null;
-                }
-                updateButtons();
-            }
-        });
+            taskLabelText = UIUtils.createLabelText(formPanel, "Name", "", SWT.BORDER);
+            taskLabelText.addModifyListener(modifyListener);
 
-        taskLabelText = UIUtils.createLabelText(formPanel, "Name", "", SWT.BORDER);
-        taskLabelText.addModifyListener(modifyListener);
+            taskDescriptionText = UIUtils.createLabelText(formPanel, "Description", "", SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+            ((GridData) taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 5;
+            taskDescriptionText.addModifyListener(modifyListener);
 
-        taskDescriptionText = UIUtils.createLabelText(formPanel, "Description", "", SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
-        ((GridData)taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 5;
-        taskDescriptionText.addModifyListener(modifyListener);
-
-        UIUtils.asyncExec(() -> taskLabelText.setFocus());
+            UIUtils.asyncExec(() -> taskLabelText.setFocus());
+        }
+        {
+            configPanelPlaceholder = UIUtils.createComposite(formSash, 1);
+            configPanelPlaceholder.setLayout(new FillLayout());
+        }
+        formSash.setWeights(new int[] { 500, 500 });
+        //formSash.setMaximizedControl(formSash.getChildren()[0]);
 
         return composite;
+    }
+
+    private void updateTaskTypeSelection() {
+        UIUtils.disposeChildControls(configPanelPlaceholder);
+
+        if (selectedCategory != null && selectedCategory.supportsConfigurator()) {
+            //selectedCategory.createConfigurator().configureTask()
+            //formSash.setMaximizedControl(null);
+        } else {
+            //formSash.setMaximizedControl(formSash.getChildren()[0]);
+        }
+        getShell().layout(true, true);
+        updateButtons();
     }
 
     private void addTaskCategories(TreeItem parentItem, DBTTaskCategory[] categories) {
