@@ -183,27 +183,14 @@ public class DataTransferSettings {
                 savedProcessor = processorNode.getProcessor(processorId);
             }
         }
-        if (this.isConsumerOptional() && savedConsumer != null) {
+        if (this.consumerOptional && savedConsumer != null) {
             this.selectConsumer(savedConsumer, savedProcessor, false);
         }
-        if (this.isProducerOptional() && savedProducer != null) {
+        if (this.producerOptional && savedProducer != null) {
             this.selectProducer(savedProducer, savedProcessor, false);
         }
 
-        // Load nodes' settings (key is impl class simple name, value is descriptor)
-        Map<String, DataTransferNodeDescriptor> nodeNames = new LinkedHashMap<>();
-        if (producer != null) {
-            nodeNames.put(producer.getNodeClass().getSimpleName(), producer);
-            nodeNames.put(consumer.getNodeClass().getSimpleName(), consumer);
-        }
-        for (Map.Entry<String, DataTransferNodeDescriptor> node : nodeNames.entrySet()) {
-            Map<String, Object> nodeSection = JSONUtils.getObject(config, node.getKey());
-            IDataTransferSettings nodeSettings = this.getNodeSettings(node.getValue());
-            if (nodeSettings != null) {
-                nodeSettings.loadSettings(runnableContext, this, nodeSection);
-            }
-        }
-
+        // Load processor properties
         Map<String, Object> processorsSection = JSONUtils.getObject(config, "processors");
         {
             for (Map.Entry<String, Object> procIter : processorsSection.entrySet()) {
@@ -227,9 +214,23 @@ public class DataTransferSettings {
                         for (String prop : CommonUtils.splitString(propNamesId, ',')) {
                             props.put(prop, procSection.get(prop));
                         }
-                        this.getProcessorPropsHistory().put(nodeProcessor, props);
+                        processorPropsHistory.put(nodeProcessor, props);
                     }
                 }
+            }
+        }
+
+        // Load nodes' settings (key is impl class simple name, value is descriptor)
+        Map<String, DataTransferNodeDescriptor> nodeNames = new LinkedHashMap<>();
+        if (producer != null) {
+            nodeNames.put(producer.getNodeClass().getSimpleName(), producer);
+            nodeNames.put(consumer.getNodeClass().getSimpleName(), consumer);
+        }
+        for (Map.Entry<String, DataTransferNodeDescriptor> node : nodeNames.entrySet()) {
+            Map<String, Object> nodeSection = JSONUtils.getObject(config, node.getKey());
+            IDataTransferSettings nodeSettings = this.getNodeSettings(node.getValue());
+            if (nodeSettings != null) {
+                nodeSettings.loadSettings(runnableContext, this, nodeSection);
             }
         }
     }
