@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 /**
  * Task configurator.
@@ -25,8 +25,18 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
  */
 public interface DBTTaskConfigurator {
 
-    boolean configureTask(
-        @NotNull DBPPlatform platform,
+    /**
+     * Creates a panel for task input objects configure.
+     *
+     * @param runnableContext runnable context
+     * @param taskType task type
+     * @return null if config panel not supported/disabled. Otherwise IObjectPropertyConfigurator implementation (see UI modules).
+     */
+    Object createInputConfigurator(
+        DBRRunnableContext runnableContext,
+        @NotNull DBTTaskType taskType);
+
+    boolean openTaskConfigDialog(
         @NotNull DBTTask taskConfiguration);
 
 }

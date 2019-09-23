@@ -18,11 +18,15 @@
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 
 /**
  * Data transfer task configurator
@@ -30,10 +34,52 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
-    public boolean configureTask(@NotNull DBPPlatform platform, @NotNull DBTTask taskConfiguration) {
+    public Object createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
+        return new ConfigPanel(runnableContext, taskType);
+    }
+
+    @Override
+    public boolean openTaskConfigDialog(@NotNull DBTTask taskConfiguration) {
         return DataTransferWizardDialog.openWizard(
             UIUtils.getActiveWorkbenchWindow(),
             taskConfiguration) == IDialogConstants.OK_ID;
+    }
+
+    private static class ConfigPanel implements IObjectPropertyConfigurator<DBTTask> {
+
+        private DBRRunnableContext runnableContext;
+        private DBTTaskType taskType;
+        private DatabaseObjectsSelectorPanel selectorPanel;
+
+        ConfigPanel(DBRRunnableContext runnableContext, DBTTaskType taskType) {
+            this.runnableContext = runnableContext;
+            this.taskType = taskType;
+        }
+
+        @Override
+        public void createControl(Composite parent) {
+            selectorPanel = new DatabaseObjectsSelectorPanel(parent, runnableContext);
+        }
+
+        @Override
+        public void loadSettings(DBTTask configuration) {
+
+        }
+
+        @Override
+        public void saveSettings(DBTTask configuration) {
+
+        }
+
+        @Override
+        public void resetSettings(DBTTask configuration) {
+
+        }
+
+        @Override
+        public boolean isComplete() {
+            return !selectorPanel.getCheckedNodes().isEmpty();
+        }
     }
 
 }
