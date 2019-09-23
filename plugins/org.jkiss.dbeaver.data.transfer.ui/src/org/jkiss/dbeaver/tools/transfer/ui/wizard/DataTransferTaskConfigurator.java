@@ -18,15 +18,20 @@
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
+
+import java.util.Map;
 
 /**
  * Data transfer task configurator
@@ -34,7 +39,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
-    public Object createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
+    public ConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
         return new ConfigPanel(runnableContext, taskType);
     }
 
@@ -45,7 +50,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             taskConfiguration) == IDialogConstants.OK_ID;
     }
 
-    private static class ConfigPanel implements IObjectPropertyConfigurator<DBTTask> {
+    private static class ConfigPanel implements DBTTaskConfigPanel {
 
         private DBRRunnableContext runnableContext;
         private DBTTaskType taskType;
@@ -57,22 +62,23 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         }
 
         @Override
-        public void createControl(Composite parent) {
-            selectorPanel = new DatabaseObjectsSelectorPanel(parent, runnableContext);
+        public void createControl(Object parent) {
+            Group group = UIUtils.createControlGroup(
+                (Composite) parent,
+                (DTConstants.TASK_EXPORT.equals(taskType.getId()) ? "Export tables" : "Import into"),
+                1,
+                GridData.FILL_BOTH,
+                0);
+            selectorPanel = new DatabaseObjectsSelectorPanel(group, runnableContext);
         }
 
         @Override
-        public void loadSettings(DBTTask configuration) {
+        public void loadSettings(Map<String, Object> configuration) {
 
         }
 
         @Override
-        public void saveSettings(DBTTask configuration) {
-
-        }
-
-        @Override
-        public void resetSettings(DBTTask configuration) {
+        public void saveSettings(Map<String, Object> configuration) {
 
         }
 
