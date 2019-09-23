@@ -385,6 +385,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     break;
                 case TASK_UPDATE:
                     taskViewer.refresh(task);
+                    if (task == getSelectedTask()) {
+                        loadTaskRuns();
+                    }
                     break;
             }
         });

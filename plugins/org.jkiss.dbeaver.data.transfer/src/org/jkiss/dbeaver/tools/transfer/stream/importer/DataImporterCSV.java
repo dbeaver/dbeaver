@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,14 +92,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     }
 
     private HeaderPosition getHeaderPosition(Map<Object, Object> processorProperties) {
-        String header = CommonUtils.toString(processorProperties.get(PROP_HEADER), HeaderPosition.top.name());
-        HeaderPosition headerPosition = HeaderPosition.none;
-        try {
-            headerPosition = HeaderPosition.valueOf(header);
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid header position: " + header);
-        }
-        return headerPosition;
+        return CommonUtils.valueOf(HeaderPosition.class, CommonUtils.toString(processorProperties.get(PROP_HEADER)), HeaderPosition.top);
     }
 
     private CSVReader openCSVReader(Reader reader, Map<Object, Object> processorProperties) {

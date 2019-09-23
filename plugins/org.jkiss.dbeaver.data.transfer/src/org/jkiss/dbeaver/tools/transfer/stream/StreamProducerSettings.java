@@ -225,6 +225,9 @@ public class StreamProducerSettings implements IDataTransferSettings {
     private Map<Object, Object> processorProperties;
     private int maxRows;
 
+    public StreamProducerSettings() {
+    }
+
     public EntityMapping getEntityMapping(DBSEntity entity) {
         String fullName = DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML);
         EntityMapping mapping = this.entityMapping.get(fullName);
@@ -253,6 +256,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
+        setProcessorProperties(dataTransferSettings.getProcessorProperties());
     }
 
     @Override
