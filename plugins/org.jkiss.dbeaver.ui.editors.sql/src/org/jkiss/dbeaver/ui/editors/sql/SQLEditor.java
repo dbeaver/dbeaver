@@ -103,6 +103,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLQueryParameterBindDialog;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
@@ -121,8 +122,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -201,6 +202,8 @@ public class SQLEditor extends SQLEditorBase implements
     private VerticalFolder presentationSwitchFolder;
 
     private final List<SQLEditorListener> listeners = new ArrayList<>();
+
+    private boolean ignoreParameters;
 
     private DisposeListener resultTabDisposeListener = new DisposeListener() {
         @Override
@@ -1577,16 +1580,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         // Transform query parameters
         if (sqlQuery != null) {
-            SQLQueryJob queryJob = new SQLQueryJob(
-                getSite(),
-                "Plan query",
-                getExecutionContext(),
-                null,
-                Collections.emptyList(),
-                this.globalScriptContext,
-                null,
-                null);
-            if (!queryJob.transformQueryWithParameters(sqlQuery)) {
+            if (!transformQueryWithParameters(sqlQuery)) {
                 return null;
             }
         }
@@ -1748,7 +1742,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBRProgressListener connectListener = status -> {
                     if (!status.isOK() || container == null || !container.isConnected()) {
                         DBWorkbench.getPlatformUI().showError(
-                                SQLEditorMessages.editors_sql_error_cant_obtain_session,
+                            SQLEditorMessages.editors_sql_error_cant_obtain_session,
                             null,
                             status);
                         return;
@@ -1765,7 +1759,7 @@ public class SQLEditor extends SQLEditorBase implements
                     viewer.setStatus(ex.getMessage(), DBPMessageType.ERROR);
                 }
                 DBWorkbench.getPlatformUI().showError(
-                        SQLEditorMessages.editors_sql_error_cant_obtain_session,
+                    SQLEditorMessages.editors_sql_error_cant_obtain_session,
                     ex.getMessage());
                 return;
             }
@@ -1778,6 +1772,17 @@ public class SQLEditor extends SQLEditorBase implements
                 SQLEditorMessages.editors_sql_error_cant_execute_query_title,
                 "Query execution was restricted by connection configuration");
             return;
+        }
+
+        ignoreParameters = false;
+
+        SQLScriptContext scriptContext = createScriptContext();
+
+        for (SQLScriptElement element : queries) {
+            if (element instanceof SQLQuery && !prepareStatementParameters(scriptContext, (SQLQuery) element)) {
+                // User canceled
+                return;
+            }
         }
 
         final boolean isSingleQuery = (queries.size() == 1);
@@ -1848,7 +1853,8 @@ public class SQLEditor extends SQLEditorBase implements
                 SQLScriptElement query = queries.get(i);
                 QueryProcessor queryProcessor = (i == 0 && !isSingleQuery ? curQueryProcessor : createQueryProcessor(queries.size() == 1, false));
                 queryProcessor.processQueries(
-                        Collections.singletonList(query),
+                    scriptContext,
+                    Collections.singletonList(query),
                         true,
                         export,
                         getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR), queryListener);
@@ -1885,8 +1891,14 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
-            curQueryProcessor.processQueries(queries, false, export, false, queryListener);
+            curQueryProcessor.processQueries(scriptContext, queries, false, export, false, queryListener);
         }
+    }
+
+    @NotNull
+    private SQLScriptContext createScriptContext() {
+        File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
+        return new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter());
     }
 
     private void setStatus(String status, DBPMessageType messageType)
@@ -1938,6 +1950,94 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         return true;
+    }
+
+    public boolean transformQueryWithParameters(SQLQuery query) {
+        SQLScriptContext scriptContext = createScriptContext();
+        return prepareStatementParameters(scriptContext, query);
+    }
+
+    public boolean prepareStatementParameters(SQLScriptContext scriptContext, SQLQuery sqlStatement) {
+        if (ignoreParameters) {
+            return true;
+        }
+
+        // Bind parameters
+        List<SQLQueryParameter> parameters = sqlStatement.getParameters();
+        if (CommonUtils.isEmpty(parameters)) {
+            return true;
+        }
+
+        // Resolve parameters (only if it is the first fetch)
+        if (!fillStatementParameters(scriptContext, sqlStatement, parameters)) {
+            return false;
+        }
+
+        if (ignoreParameters) {
+            return true;
+        }
+
+        // Set values for all parameters
+        // Replace parameter tokens with parameter values
+        String query = sqlStatement.getText();
+        for (int i = parameters.size(); i > 0; i--) {
+            SQLQueryParameter parameter = parameters.get(i - 1);
+            String paramValue = parameter.getValue();
+            if (paramValue == null || paramValue.isEmpty()) {
+                paramValue = SQLConstants.NULL_VALUE;
+            }
+            query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
+        }
+        sqlStatement.setText(query);
+        sqlStatement.setOriginalText(query);
+        return true;
+    }
+
+    private boolean fillStatementParameters(SQLScriptContext scriptContext, SQLQuery sqlStatement, final List<SQLQueryParameter> parameters)
+    {
+        for (SQLQueryParameter param : parameters) {
+            String paramName = param.getVarName();
+            if (scriptContext.hasVariable(paramName)) {
+                Object varValue = scriptContext.getVariable(paramName);
+                String strValue = varValue == null ? null : varValue.toString();
+                param.setValue(strValue);
+                param.setVariableSet(true);
+            } else {
+                param.setVariableSet(false);
+            }
+        }
+        boolean allSet = true;
+        for (SQLQueryParameter param : parameters) {
+            if (!param.isVariableSet()) {
+                allSet = false;
+            }
+        }
+        if (allSet) {
+            return true;
+        }
+
+        int paramsResult = UITask.run(() -> {
+            SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
+                getSite().getShell(),
+                sqlStatement,
+                parameters);
+            return dialog.open();
+        });
+
+        if (paramsResult == IDialogConstants.OK_ID) {
+            // Save values back to script context
+            for (SQLQueryParameter param : parameters) {
+                if (param.isNamed() && scriptContext.hasVariable(param.getVarName())) {
+                    String strValue = param.getValue();
+                    scriptContext.setVariable(param.getVarName(), strValue);
+                }
+            }
+            return true;
+        } else if (paramsResult == IDialogConstants.IGNORE_ID) {
+            ignoreParameters = true;
+            return true;
+        }
+        return false;
     }
 
     private boolean checkSession(DBRProgressListener onFinish)
@@ -2450,7 +2550,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        void processQueries(final List<SQLScriptElement> queries, final boolean fetchResults, boolean export, boolean closeTabOnError, SQLQueryListener queryListener)
+        void processQueries(SQLScriptContext scriptContext, final List<SQLScriptElement> queries, final boolean fetchResults, boolean export, boolean closeTabOnError, SQLQueryListener queryListener)
         {
             if (queries.isEmpty()) {
                 // Nothing to process
@@ -2480,7 +2580,6 @@ public class SQLEditor extends SQLEditorBase implements
                 if (queryListener != null) {
                     listener.setExtListener(queryListener);
                 }
-                File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
 
                 if (export) {
                     // Use special consumer and data containers
@@ -2491,7 +2590,7 @@ public class SQLEditor extends SQLEditorBase implements
                         executionContext,
                         resultsContainer,
                         queries,
-                        new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter()),
+                        scriptContext,
                         resultsConsumer,
                         listener);
 
@@ -2522,7 +2621,7 @@ public class SQLEditor extends SQLEditorBase implements
                         executionContext,
                         resultsContainer,
                         queries,
-                        new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter()),
+                        scriptContext,
                         this,
                         listener);
 
@@ -2819,7 +2918,6 @@ public class SQLEditor extends SQLEditorBase implements
                     job.setFetchResultSetNumber(-1);
                 }
                 job.setResultSetLimit(firstRow, maxRows);
-                job.setReadFlags(flags);
                 job.setDataFilter(dataFilter);
                 job.setFetchSize(fetchSize);
 

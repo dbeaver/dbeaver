@@ -42,7 +42,9 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -238,6 +240,10 @@ public class SQLQuery implements SQLScriptElement {
     @NotNull
     public String getOriginalText() {
         return originalText;
+    }
+
+    public void setOriginalText(@NotNull String originalText) {
+        this.originalText = originalText;
     }
 
     @NotNull

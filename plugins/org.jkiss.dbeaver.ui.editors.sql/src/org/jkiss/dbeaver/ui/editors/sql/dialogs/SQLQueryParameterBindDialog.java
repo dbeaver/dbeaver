@@ -20,18 +20,20 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
-import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
-import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
+import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,6 +49,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private static final String PARAM_HIDE_IF_SET = "PARAM_HIDE_IF_SET";//$NON-NLS-1$
 
+    private SQLQuery query;
     private List<SQLQueryParameter> parameters;
     private final Map<String, List<SQLQueryParameter>> dupParameters = new HashMap<>();
 
@@ -54,9 +57,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private Button hideIfSetCheck;
     private Table paramTable;
 
-    public SQLQueryParameterBindDialog(Shell shell, List<SQLQueryParameter> parameters)
+    public SQLQueryParameterBindDialog(Shell shell, SQLQuery query, List<SQLQueryParameter> parameters)
     {
         super(shell);
+        this.query = query;
         this.parameters = parameters;
 
         // Restore saved values from registry
