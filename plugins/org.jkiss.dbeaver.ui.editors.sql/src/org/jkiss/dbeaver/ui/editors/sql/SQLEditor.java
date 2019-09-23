@@ -2018,7 +2018,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         int paramsResult = UITask.run(() -> {
             SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                getSite().getShell(),
+                getSite(),
                 sqlStatement,
                 parameters);
             return dialog.open();
