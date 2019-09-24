@@ -35,6 +35,7 @@ public class SQLModelPreferencesInitializer extends AbstractPreferenceInitialize
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, SQLModelPreferences.SQL_FORMAT_FORMATTER, SQLFormatterTokenized.FORMATTER_ID);
+        PrefUtils.setDefaultPreferenceValue(store, SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS, true);
     }
 
 }

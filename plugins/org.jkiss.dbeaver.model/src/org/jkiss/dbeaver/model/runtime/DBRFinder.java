@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.sql;
+package org.jkiss.dbeaver.model.runtime;
 
 /**
- * Preferences constants
+ * Abstract object finder
  */
-public final class SQLModelPreferences {
+@FunctionalInterface
+public interface DBRFinder<RESULT, PARAMETER> {
 
-    public final static String SQL_FORMAT_FORMATTER             = "sql.format.formatter";
-    public static final String SQL_PROPOSAL_INSERT_TABLE_ALIAS  = "sql.proposals.insert.table.alias";
+    RESULT findObject(PARAMETER parameter);
 
 }

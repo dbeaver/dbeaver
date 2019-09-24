@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.completion;
 
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -817,6 +820,28 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         boolean useShortName,
         @Nullable DBPImage objectIcon)
     {
+        String alias = null;
+        if (SQLConstants.KEYWORD_FROM.equals(request.getWordDetector().getPrevKeyWord())) {
+            if (object instanceof DBSEntity && ((DBSEntity) object).getDataSource().getContainer().getPreferenceStore().getBoolean(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS)) {
+                String queryText = request.getActiveQuery().getText();
+                Set<String> aliases = new LinkedHashSet<>();
+                if (request.getActiveQuery() instanceof SQLQuery) {
+                    Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
+                    if (sqlStatement != null) {
+                        TablesNamesFinder namesFinder = new TablesNamesFinder() {
+                            public void visit(Table table) {
+                                if (table.getAlias() != null && table.getAlias().getName() != null) {
+                                    aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
+                                }
+                            }
+                        };
+                        sqlStatement.accept(namesFinder);
+                    }
+                }
+                // It is table name completion after FROM. Auto-generate table alias
+                alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> aliases.contains(s) || queryText.contains(" as " + s));
+            }
+        }
         String objectName = useShortName ?
             object.getName() :
             DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
@@ -849,6 +874,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
         } else {
             replaceString = DBUtils.getObjectShortName(object);
+        }
+        if (!CommonUtils.isEmpty(alias)) {
+            replaceString += " " + convertKeywordCase(request, "as", false) + " " + alias;
         }
         return createCompletionProposal(
             request,
@@ -886,27 +914,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         // If we have quoted string then ignore pref settings
         boolean quotedString = request.getWordDetector().isQuoted(replaceString);
         if (!quotedString) {
-            final int proposalCase = request.getContext().getInsertCase();
-            switch (proposalCase) {
-                case SQLCompletionContext.PROPOSAL_CASE_UPPER:
-                    replaceString = replaceString.toUpperCase();
-                    break;
-                case SQLCompletionContext.PROPOSAL_CASE_LOWER:
-                    replaceString = replaceString.toLowerCase();
-                    break;
-                default:
-                    // Do not convert case if we got it directly from object
-                    if (!isObject) {
-                        SQLDialect dialect = request.getContext().getSyntaxManager().getDialect();
-                        DBPKeywordType keywordType = dialect.getKeywordType(replaceString);
-                        if (keywordType == DBPKeywordType.KEYWORD) {
-                            replaceString = request.getContext().getSyntaxManager().getKeywordCase().transform(replaceString);
-                        } else {
-                            replaceString = dialect.storesUnquotedCase().transform(replaceString);
-                        }
-                    }
-                    break;
-            }
+            replaceString = convertKeywordCase(request, replaceString, isObject);
         }
 
         return request.getContext().createProposal(
@@ -920,6 +928,31 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             proposalType,
             null,
             object);
+    }
+
+    private static String convertKeywordCase(SQLCompletionRequest request, String replaceString, boolean isObject) {
+        final int proposalCase = request.getContext().getInsertCase();
+        switch (proposalCase) {
+            case SQLCompletionContext.PROPOSAL_CASE_UPPER:
+                replaceString = replaceString.toUpperCase();
+                break;
+            case SQLCompletionContext.PROPOSAL_CASE_LOWER:
+                replaceString = replaceString.toLowerCase();
+                break;
+            default:
+                // Do not convert case if we got it directly from object
+                if (!isObject) {
+                    SQLDialect dialect = request.getContext().getSyntaxManager().getDialect();
+                    DBPKeywordType keywordType = dialect.getKeywordType(replaceString);
+                    if (keywordType == DBPKeywordType.KEYWORD) {
+                        replaceString = request.getContext().getSyntaxManager().getKeywordCase().transform(replaceString);
+                    } else {
+                        replaceString = dialect.storesUnquotedCase().transform(replaceString);
+                    }
+                }
+                break;
+        }
+        return replaceString;
     }
 
     protected static SQLCompletionProposalBase createCompletionProposal(

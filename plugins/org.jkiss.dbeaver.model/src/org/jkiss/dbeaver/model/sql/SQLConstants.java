@@ -32,22 +32,22 @@ public class SQLConstants {
     public static final String SL_COMMENT = "--";
 
     public static final String KEYWORD_UPDATE = "UPDATE";
+    public static final String KEYWORD_SELECT = "SELECT";
+    public static final String KEYWORD_FROM = "FROM";
     public static final String KEYWORD_INTO = "INTO";
     public static final String KEYWORD_JOIN = "JOIN";
+    public static final String KEYWORD_ON = "ON";
+    public static final String KEYWORD_AND = "AND";
+    public static final String KEYWORD_OR = "OR";
 
     public static final String[] TABLE_KEYWORDS = {
-        "FROM",
+        KEYWORD_FROM,
         KEYWORD_UPDATE,
         KEYWORD_INTO,
         "TABLE",
         "VIEW",
         KEYWORD_JOIN
     };
-
-    public static final String KEYWORD_SELECT = "SELECT";
-    public static final String KEYWORD_ON = "ON";
-    public static final String KEYWORD_AND = "AND";
-    public static final String KEYWORD_OR = "OR";
 
     public static final String[] COLUMN_KEYWORDS = {
         KEYWORD_SELECT,
@@ -70,7 +70,7 @@ public class SQLConstants {
         "ALL",
         "ALLOCATE",
         "ALTER",
-        "AND",
+        KEYWORD_AND,
         "ANY",
         "ARE",
         "ARRAY",
