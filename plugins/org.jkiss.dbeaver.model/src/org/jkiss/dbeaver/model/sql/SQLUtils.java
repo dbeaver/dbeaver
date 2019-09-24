@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.runtime.DBRFinder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -42,10 +43,7 @@ import org.jkiss.utils.Pair;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -730,7 +728,40 @@ public final class SQLUtils {
         return null;
     }
 
-    @NotNull
+    public static String generateEntityAlias(DBSEntity entity, DBRFinder<Boolean, String> aliasFinder) {
+        String name = entity.getName();
+        if (CommonUtils.isEmpty(name)) {
+            return name;
+        }
+
+        StringBuilder buf = new StringBuilder();
+        boolean prevNonLetter = true;
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (!Character.isLetter(c)) {
+                prevNonLetter = true;
+            } else {
+                if (prevNonLetter) {
+                    buf.append(c);
+                }
+                prevNonLetter = false;
+            }
+        }
+        String alias = buf.toString().toLowerCase(Locale.ENGLISH);
+
+        String result = alias;
+        for (int i = 2; i < 500; i++) {
+            if (aliasFinder.findObject(result)) {
+                result = alias + i;
+            } else {
+                return result;
+            }
+        }
+
+        return alias;
+    }
+
+        @NotNull
     public static String generateCommentLine(DBPDataSource dataSource, String comment)
     {
         String slComment = SQLConstants.ML_COMMENT_END;
