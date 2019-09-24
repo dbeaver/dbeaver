@@ -101,7 +101,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnDataTypeListProvider.class)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 20, listProvider = ColumnDataTypeListProvider.class)
     public OracleDataType getDataType()
     {
         return type;
@@ -126,7 +126,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return super.getTypeName();
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 40)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 40)
     @Override
     public long getMaxLength()
     {
@@ -134,27 +134,27 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 41)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 41)
     public Integer getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 42)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 42)
     public Integer getScale()
     {
         return super.getScale();
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 50)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 50)
     @Override
     public boolean isRequired()
     {
         return super.isRequired();
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 70)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 70)
     @Override
     public String getDefaultValue()
     {
