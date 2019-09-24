@@ -341,6 +341,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     @Override
     public void testConnection(DBCSession session) {
+        // No need to load settings again (#6794)
+/*
         try {
             loadDatabaseSettings(session.getProgressMonitor(), session.getDataSource());
         } catch (InvocationTargetException e) {
@@ -348,6 +350,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         } catch (InterruptedException e) {
             // ignore
         }
+*/
     }
 
 }
