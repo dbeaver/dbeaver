@@ -3,7 +3,7 @@
 
 <plugin>
     <extension point="org.jkiss.dbeaver.dataManager">
-        <streamManager class="org.jkiss.dbeaver.ui.data.BinaryStreamValueManager" id="binary" label="Binary" primaryMime="octet/binary"
+        <streamManager class="org.jkiss.dbeaver.ui.data.BinaryStreamValueManager" id="binary" label="Binary" primaryMime="octet/binary" supportedMime="text,binary,app,application"
                        description="Hex editor" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/binary.png"/>
     </extension>
 
