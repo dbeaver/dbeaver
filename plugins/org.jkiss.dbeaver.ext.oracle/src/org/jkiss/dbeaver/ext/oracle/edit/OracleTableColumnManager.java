@@ -58,6 +58,11 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
+    public boolean canEditObject(OracleTableColumn object) {
+        return true;
+    }
+
+    @Override
     protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
         OracleTableBase table = (OracleTableBase) container;
