@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TableTablespaceListProvider;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableTriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.*;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
@@ -56,7 +55,7 @@ import java.util.Map;
  * @author Denis Forveille
  */
 public class DB2Table extends DB2TableBase
-    implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer {
+    implements DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer {
 
     private static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
@@ -373,25 +372,25 @@ public class DB2Table extends DB2TableBase
         return append;
     }
 
-    @Property(viewable = false, editable = false, order = 101)
+    @Property(viewable = false, editable = false, specific = true, order = 101)
     public String getVolatileMode()
     {
         return volatileMode;
     }
 
-    @Property(viewable = false, editable = false, order = 104)
+    @Property(viewable = false, editable = false, specific = true, order = 104)
     public DB2TableLockSize getLockSize()
     {
         return lockSize;
     }
 
-    @Property(viewable = false, editable = false, order = 105)
+    @Property(viewable = false, editable = false, specific = true, order = 105)
     public DB2TableCompressionMode getCompression()
     {
         return compression;
     }
 
-    @Property(viewable = false, editable = false, order = 106)
+    @Property(viewable = false, editable = false, specific = true, order = 106)
     public DB2TableAccessMode getAccessMode()
     {
         return accessMode;
@@ -409,13 +408,13 @@ public class DB2Table extends DB2TableBase
         return dropRule;
     }
 
-    @Property(viewable = false, editable = false, order = 109)
+    @Property(viewable = false, editable = false, specific = true, order = 109)
     public String getDataCapture()
     {
         return dataCapture;
     }
 
-    @Property(viewable = false, editable = false, order = 110)
+    @Property(viewable = false, editable = false, specific = true, order = 110)
     public DB2TablePartitionMode getPartitionMode()
     {
         return partitionMode;
