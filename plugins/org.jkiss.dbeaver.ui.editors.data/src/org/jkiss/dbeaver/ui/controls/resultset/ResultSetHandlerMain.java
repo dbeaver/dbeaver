@@ -56,7 +56,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizardDialog;
+import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -509,7 +509,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 options.setSelectedColumns(selectedAttributes);
 
                 ResultSetDataContainer dataContainer = new ResultSetDataContainer(rsv, options);
-                DataTransferWizardDialog.openWizard(
+                DataTransferWizard.openWizard(
                     HandlerUtil.getActiveWorkbenchWindow(event),
                     Collections.singletonList(
                         new DatabaseTransferProducer(dataContainer, rsv.getModel().getDataFilter())),

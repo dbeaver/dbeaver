@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.ui.task;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -44,25 +46,37 @@ public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizar
 
     private static final int SAVE_TASK_BTN_ID = 1000;
 
-    protected TaskConfigurationWizardDialog(IWorkbenchWindow window, WIZARD wizard) {
+    public TaskConfigurationWizardDialog(IWorkbenchWindow window, WIZARD wizard) {
         this(window, wizard, null);
     }
 
-    protected TaskConfigurationWizardDialog(IWorkbenchWindow window, WIZARD wizard, IStructuredSelection selection) {
+    public TaskConfigurationWizardDialog(IWorkbenchWindow window, WIZARD wizard, IStructuredSelection selection) {
         super(window, wizard, selection);
+    }
+
+    TaskConfigurationWizardDialog(IWorkbenchWindow window, IStructuredSelection selection) {
+        super(window, new TaskConfigurationWizardWrapper(), selection);
+    }
+
+    @Override
+    public int getShellStyle() {
         int shellStyle = SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
         if (UIUtils.isInDialog()) {
             shellStyle |= SWT.APPLICATION_MODAL;
         }
-        setShellStyle(shellStyle);
+        return shellStyle;
+    }
 
-        setHelpAvailable(false);
-
+    protected WIZARD getTaskWizard() {
+        IWizard wizard = super.getWizard();
+        return wizard instanceof TaskConfigurationWizardWrapper ? ((TaskConfigurationWizardWrapper<WIZARD>) wizard).getTaskWizard() : (WIZARD) wizard;
     }
 
     @Override
-    protected WIZARD getWizard() {
-        return (WIZARD) super.getWizard();
+    protected Control createDialogArea(Composite parent) {
+        setHelpAvailable(false);
+
+        return super.createDialogArea(parent);
     }
 
     @Override
@@ -71,7 +85,7 @@ public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizar
             /*if (!getWizard().isTaskEditor()) */{
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-                Button saveAsTaskButton = createButton(parent, SAVE_TASK_BTN_ID, "Save as task ...", false);
+                Button saveAsTaskButton = createButton(parent, SAVE_TASK_BTN_ID, "Save", false);
                 //saveAsTaskButton.setImage(DBeaverIcons.getImage(UIIcon.SAVE_AS));
 
                 Label spacer = new Label(parent, SWT.NONE);
@@ -102,16 +116,17 @@ public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizar
         super.updateButtons();
         Button saveAsButton = getButton(SAVE_TASK_BTN_ID);
         if (saveAsButton != null) {
-            saveAsButton.setEnabled(getWizard().isTaskEditor() || getWizard().canFinish());
+            saveAsButton.setEnabled(getTaskWizard() != null && getTaskWizard().isTaskEditor() || getWizard().canFinish());
         }
     }
 
     private void saveConfigurationAsTask() {
-        DBTTaskManager taskManager = getWizard().getProject().getTaskManager();
-        DBTTask currentTask = getWizard().getCurrentTask();
+        WIZARD taskWizard = getTaskWizard();
+        DBTTaskManager taskManager = taskWizard.getProject().getTaskManager();
+        DBTTask currentTask = taskWizard.getCurrentTask();
 
         Map<String, Object> state = new LinkedHashMap<>();
-        getWizard().saveTaskState(state);
+        taskWizard.saveTaskState(state);
 
         EditTaskConfigurationDialog dialog;
         if (currentTask != null) {
@@ -119,15 +134,15 @@ public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizar
             currentTask.getProperties().putAll(state);
             dialog = new EditTaskConfigurationDialog(getShell(), currentTask);
         } else {
-            DBTTaskType taskType = taskManager.getRegistry().getTask(getWizard().getTaskTypeId());
+            DBTTaskType taskType = taskManager.getRegistry().getTask(taskWizard.getTaskTypeId());
             if (taskType == null) {
-                DBWorkbench.getPlatformUI().showError("Create task", "Task type " + getWizard().getTaskTypeId() + " not found");
+                DBWorkbench.getPlatformUI().showError("Create task", "Task type " + taskWizard.getTaskTypeId() + " not found");
                 return;
             }
-            dialog = new EditTaskConfigurationDialog(getShell(), getWizard().getProject(), taskType, state);
+            dialog = new EditTaskConfigurationDialog(getShell(), taskWizard.getProject(), taskType, state);
         }
         if (dialog.open() == IDialogConstants.OK_ID) {
-            getWizard().setCurrentTask(dialog.getTask());
+            taskWizard.setCurrentTask(dialog.getTask());
         }
 
     }

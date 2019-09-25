@@ -22,6 +22,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageType;
 import org.jkiss.dbeaver.ui.DialogSettingsMap;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.task.TaskConfigurationWizard;
+import org.jkiss.dbeaver.ui.task.TaskConfigurationWizardDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -51,9 +53,40 @@ import java.util.*;
 public class DataTransferWizard extends TaskConfigurationWizard implements IExportWizard, IImportWizard {
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataTransfer";//$NON-NLS-1$
+
+    public static int openWizard(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @Nullable Collection<IDataTransferProducer> producers,
+        @Nullable Collection<IDataTransferConsumer> consumers)
+    {
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
+        TaskConfigurationWizardDialog<DataTransferWizard> dialog = new TaskConfigurationWizardDialog<>(workbenchWindow, wizard);
+        return dialog.open();
+    }
+
+    public static int openWizard(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @Nullable Collection<IDataTransferProducer> producers,
+        @Nullable Collection<IDataTransferConsumer> consumers,
+        @Nullable IStructuredSelection selection)
+    {
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
+        TaskConfigurationWizardDialog<DataTransferWizard> dialog = new TaskConfigurationWizardDialog<>(workbenchWindow, wizard, selection);
+        return dialog.open();
+    }
+
+    public static int openWizard(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull DBTTask task)
+    {
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), task);
+        TaskConfigurationWizardDialog<DataTransferWizard> dialog = new TaskConfigurationWizardDialog<>(workbenchWindow, wizard, null);
+        return dialog.open();
+    }
+
     //private static final Log log = Log.getLog(DataTransferWizard.class);
 
-    public static class NodePageSettings {
+    static class NodePageSettings {
         DataTransferNodeDescriptor sourceNode;
         DataTransferNodeConfiguratorDescriptor nodeConfigurator;
         IWizardPage[] pages;
@@ -82,13 +115,13 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
                 RS_EXPORT_WIZARD_DIALOG_SETTINGS));
     }
 
-    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
+    private DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
         this(task);
         this.settings = new DataTransferSettings(runnableContext, task);
         loadSettings(runnableContext);
     }
 
-    DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable DBTTask task) {
+    private DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable DBTTask task) {
         this(task);
         this.settings = new DataTransferSettings(runnableContext, producers, consumers, new DialogSettingsMap(getDialogSettings()));
 
@@ -281,7 +314,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         nodeSettings.put(nodeClass, new NodePageSettings(node, configurator, settings.isConsumerOptional(), settings.isProducerOptional()));
     }
 
-    void addWizardPages(DataTransferWizard wizard) {
+    private void addWizardPages(DataTransferWizard wizard) {
         List<IWizardPage> settingPages = new ArrayList<>();
         // Add regular pages
         for (NodePageSettings nodePageSettings : this.nodeSettings.values()) {
@@ -341,7 +374,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         return this.nodeSettings.get(node.getClass());
     }
 
-    public IDataTransferSettings getNodeSettings(IWizardPage page) {
+    private IDataTransferSettings getNodeSettings(IWizardPage page) {
         for (NodePageSettings nodePageSettings : this.nodeSettings.values()) {
             if (page == nodePageSettings.settingsPage) {
                 return settings.getNodeSettings(nodePageSettings.sourceNode);
@@ -383,7 +416,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         }
     }
 
-    Map<String, Object> saveConfiguration(Map<String, Object> config) {
+    private Map<String, Object> saveConfiguration(Map<String, Object> config) {
         config.put("maxJobCount", settings.getMaxJobCount());
         config.put("showFinalMessage", settings.isShowFinalMessage());
         // Save nodes' settings
