@@ -121,6 +121,7 @@
         <command id="org.jkiss.dbeaver.core.invalidate" name="%command.org.jkiss.dbeaver.core.invalidate.name" description="%command.org.jkiss.dbeaver.core.invalidate.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnectProject" name="%command.org.jkiss.dbeaver.core.disconnectProject.name" description="%command.org.jkiss.dbeaver.core.disconnectProject.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnectAll" name="%command.org.jkiss.dbeaver.core.disconnectAll.name" description="%command.org.jkiss.dbeaver.core.disconnectAll.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.disconnectOther" name="%command.org.jkiss.dbeaver.core.disconnectOther.name" description="%command.org.jkiss.dbeaver.core.disconnectOther.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.commit" name="%command.org.jkiss.dbeaver.core.commit.name" description="%command.org.jkiss.dbeaver.core.commit.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.rollback" name="%command.org.jkiss.dbeaver.core.rollback.name" description="%command.org.jkiss.dbeaver.core.rollback.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.autocommit" name="%command.org.jkiss.dbeaver.core.txn.autocommit.name" description="%command.org.jkiss.dbeaver.core.txn.autocommit.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -294,6 +295,16 @@
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.disconnectAll" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectAllHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.disconnectOther" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectOtherHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.disconnectProject" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectProjectHandler">
             <enabledWhen>
                 <with variable="selection">
@@ -468,6 +479,7 @@
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnectAll"/>
+                <command commandId="org.jkiss.dbeaver.core.disconnectOther"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnectProject">
                     <visibleWhen checkEnabled="true"/>
                 </command>
