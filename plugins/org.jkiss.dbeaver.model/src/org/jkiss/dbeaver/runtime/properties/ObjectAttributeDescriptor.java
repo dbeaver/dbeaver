@@ -182,18 +182,19 @@ public abstract class ObjectAttributeDescriptor {
         for (Class<?> objectClass : classList) {
             annoProps.addAll(ObjectAttributeDescriptor.extractAnnotations(source, objectClass, filter, null));
         }
-        Collections.sort(annoProps, ATTRIBUTE_DESCRIPTOR_COMPARATOR);
+        annoProps.sort(ATTRIBUTE_DESCRIPTOR_COMPARATOR);
         return annoProps;
     }
 
     static void extractAnnotations(
-        DBPPropertySource source,
+        @Nullable DBPPropertySource source,
         @Nullable ObjectPropertyGroupDescriptor parent,
         Class<?> theClass,
         List<ObjectPropertyDescriptor> annoProps,
         IPropertyFilter filter,
         @Nullable String locale)
     {
+        Object object = source == null ? null : source.getEditableValue();
         Method[] methods = theClass.getMethods();
         Map<String, Method> passedNames = new HashMap<>();
         for (Method method : methods) {
@@ -220,7 +221,7 @@ public abstract class ObjectAttributeDescriptor {
                 }
                 // Single property
                 ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method, locale);
-                if (filter != null && !filter.select(desc)) {
+                if (filter != null && !filter.select(object, desc)) {
                     continue;
                 }
                 if (prevMethod != null) {

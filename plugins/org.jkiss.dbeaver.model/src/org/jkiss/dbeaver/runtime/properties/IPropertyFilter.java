@@ -25,5 +25,5 @@ public interface IPropertyFilter {
 	/**
 	 * Determines if the given property passes this filter.
 	 */
-	boolean select(DBPPropertyDescriptor toTest);
+	boolean select(Object object, DBPPropertyDescriptor property);
 }

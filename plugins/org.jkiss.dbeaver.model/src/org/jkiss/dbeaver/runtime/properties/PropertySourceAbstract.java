@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -53,6 +53,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<>();
     private Job lazyLoadJob;
     private String locale;
+    private boolean enableFilters = true;
 
     /**
      * constructs property source
@@ -136,7 +137,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     @Override
     public DBPPropertyDescriptor[] getPropertyDescriptors2() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+        return props.toArray(new DBPPropertyDescriptor[0]);
     }
 /*
     public IPropertyDescriptor getPropertyDescriptor(final Object id)
@@ -306,13 +307,17 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         final Object editableValue = getEditableValue();
         if (editableValue != null) {
             IPropertyFilter filter;
-            if (editableValue instanceof DBSObject) {
-                filter = new DataSourcePropertyFilter(((DBSObject) editableValue).getDataSource());
-            } else if (editableValue instanceof DBPContextProvider) {
-                DBCExecutionContext context = ((DBPContextProvider) editableValue).getExecutionContext();
-                filter = context == null ? new DataSourcePropertyFilter() : new DataSourcePropertyFilter(context.getDataSource());
+            if (isEnableFilters()) {
+                if (editableValue instanceof DBSObject) {
+                    filter = new DataSourcePropertyFilter(((DBSObject) editableValue).getDataSource());
+                } else if (editableValue instanceof DBPContextProvider) {
+                    DBCExecutionContext context = ((DBPContextProvider) editableValue).getExecutionContext();
+                    filter = context == null ? new DataSourcePropertyFilter() : new DataSourcePropertyFilter(context.getDataSource());
+                } else {
+                    filter = new DataSourcePropertyFilter();
+                }
             } else {
-                filter = new DataSourcePropertyFilter();
+                filter = null;
             }
             List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter, locale);
             for (final ObjectPropertyDescriptor desc : annoProps) {
@@ -334,6 +339,18 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     public void setLocale(String locale) {
         this.locale = locale;
+    }
+
+    public boolean isEnableFilters() {
+        return enableFilters;
+    }
+
+    public void setEnableFilters(boolean enableFilters) {
+        this.enableFilters = enableFilters;
+    }
+
+    public boolean getEnableFilters() {
+        return enableFilters;
     }
 
     private class PropertyValueLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
