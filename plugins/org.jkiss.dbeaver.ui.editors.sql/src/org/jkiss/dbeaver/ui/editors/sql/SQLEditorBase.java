@@ -32,6 +32,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -163,6 +164,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         setKeyBindingScopes(getKeyBindingContexts());  //$NON-NLS-1$
 
         completionContext = new SQLEditorCompletionContext(this);
+    }
+
+    @Override
+    protected boolean isReadOnly() {
+        IDocumentProvider provider = getDocumentProvider();
+        return provider instanceof IDocumentProviderExtension &&
+            ((IDocumentProviderExtension) provider).isReadOnly(getEditorInput());
     }
 
     public static boolean isBigScript(@Nullable IEditorInput editorInput) {
@@ -601,23 +609,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             }
         }
 
-/*
-        Color fgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_TEXT);
-        Color bgColor = ruleManager.getColor(getDataSource() == null ?
-            SQLConstants.CONFIG_COLOR_DISABLED :
-            SQLConstants.CONFIG_COLOR_BACKGROUND);
-        final StyledText textWidget = getTextViewer().getTextWidget();
-        if (fgColor != null) {
-            textWidget.setForeground(fgColor);
+        final IVerticalRuler verticalRuler = getVerticalRuler();
+
+        if (isReadOnly()) {
+            //Color fgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_TEXT);
+            Color bgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_DISABLED);
+            final StyledText textWidget = getTextViewer().getTextWidget();
+            textWidget.setBackground(bgColor);
+            if (verticalRuler != null && verticalRuler.getControl() != null) {
+                verticalRuler.getControl().setBackground(bgColor);
+            }
         }
-        textWidget.setBackground(bgColor);
-*/
 
         // Update configuration
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
             ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
         }
-        final IVerticalRuler verticalRuler = getVerticalRuler();
         if (verticalRuler != null) {
             verticalRuler.update();
         }
