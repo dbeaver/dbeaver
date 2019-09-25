@@ -74,6 +74,7 @@ public class SQLiteDataSource extends GenericDataSource {
             // Read-only prop
             connectionsProps.put("open_mode", "1");  //1 == readonly
         }
+        connectionsProps.put("enable_load_extension", String.valueOf(true));
         return connectionsProps;
     }
 
