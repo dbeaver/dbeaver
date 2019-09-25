@@ -32,7 +32,6 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -611,15 +610,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         final IVerticalRuler verticalRuler = getVerticalRuler();
 
-        if (isReadOnly()) {
+        /*if (isReadOnly()) {
             //Color fgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_TEXT);
             Color bgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_DISABLED);
-            final StyledText textWidget = getTextViewer().getTextWidget();
-            textWidget.setBackground(bgColor);
-            if (verticalRuler != null && verticalRuler.getControl() != null) {
-                verticalRuler.getControl().setBackground(bgColor);
+            TextViewer textViewer = getTextViewer();
+            if (textViewer != null) {
+                final StyledText textWidget = textViewer.getTextWidget();
+                textWidget.setBackground(bgColor);
+                if (verticalRuler != null && verticalRuler.getControl() != null) {
+                    verticalRuler.getControl().setBackground(bgColor);
+                }
             }
-        }
+        }*/
 
         // Update configuration
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
