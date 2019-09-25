@@ -523,6 +523,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (active) {
             if (curInfo != null) {
                 setInfo(curInfo);
+            } else {
+                setInfo("");
             }
             if (this.ownerPageControl != null) {
                 this.ownerPageControl.setChildControl(this);

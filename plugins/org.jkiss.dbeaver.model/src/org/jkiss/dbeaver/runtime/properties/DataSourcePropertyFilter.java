@@ -19,14 +19,21 @@ package org.jkiss.dbeaver.runtime.properties;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Datasource property filter
  */
 public class DataSourcePropertyFilter implements IPropertyFilter {
+
+    private final static Set<String> readExpPropertiesFor = new LinkedHashSet<>();
 
     private final boolean showExpensive;
 
@@ -48,12 +55,36 @@ public class DataSourcePropertyFilter implements IPropertyFilter {
     }
 
     @Override
-    public boolean select(DBPPropertyDescriptor toTest)
+    public boolean select(Object object, DBPPropertyDescriptor property)
     {
-        if (toTest instanceof ObjectPropertyDescriptor) {
-            ObjectPropertyDescriptor prop = (ObjectPropertyDescriptor)toTest;
-            return !(prop.isExpensive() && !showExpensive);
+        if (property instanceof ObjectPropertyDescriptor) {
+            ObjectPropertyDescriptor prop = (ObjectPropertyDescriptor) property;
+            if (!prop.isExpensive() || showExpensive) {
+                return true;
+            }
+            if (object instanceof DBSObject) {
+                return isExpensivePropertiesReadEnabledFor((DBSObject) object);
+            }
+            return false;
         }
         return false;
+    }
+
+    public static boolean isExpensivePropertiesReadEnabledFor(DBSObject object) {
+        synchronized (readExpPropertiesFor) {
+            String objectFullId = DBUtils.getObjectFullId(object);
+            return readExpPropertiesFor.contains(objectFullId);
+        }
+    }
+
+    public static void readExpensivePropertiesFor(DBSObject object, boolean read) {
+        synchronized (readExpPropertiesFor) {
+            String objectFullId = DBUtils.getObjectFullId(object);
+            if (read) {
+                readExpPropertiesFor.add(objectFullId);
+            } else {
+                readExpPropertiesFor.remove(objectFullId);
+            }
+        }
     }
 }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -30,32 +31,37 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
+import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.ui.editors.*;
-import org.jkiss.dbeaver.ui.editors.entity.*;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.DataSourcePropertyFilter;
+import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
-import org.jkiss.dbeaver.ui.IProgressControlProvider;
-import org.jkiss.dbeaver.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
+import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.entity.*;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.utils.CommonUtils;
@@ -102,6 +108,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         pageControl = new ObjectEditorPageControl(parent, SWT.SHEET, this) {
             @Override
             public void fillCustomActions(IContributionManager contributionManager) {
+                createPropertyRefreshAction(contributionManager);
+
                 super.fillCustomActions(contributionManager);
                 if (propertiesPanel != null && folderComposite == null) {
                     // We have object editor and no folders - contribute default actions
@@ -491,7 +499,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         if (part instanceof IDatabaseEditor) {
             makeDatabaseEditorTabs((IDatabaseEditor)part, tabList);
         }
-        return tabList.toArray(new TabbedFolderInfo[tabList.size()]);
+        return tabList.toArray(new TabbedFolderInfo[0]);
     }
 
     private void makeStandardPropertiesTabs(List<TabbedFolderInfo> tabList)
@@ -657,6 +665,55 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     ((IDatabasePostSaveProcessor) editor).runPostSaveCommands();
                 }
             }
+        }
+    }
+
+    private void createPropertyRefreshAction(IContributionManager contributionManager) {
+        // Contribute "Read expensive props" - but only if object has expensive props
+        DBSObject databaseObject = getDatabaseObject();
+        if (!databaseObject.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_PROPERTIES)) {
+            PropertyCollector collector = new PropertyCollector(databaseObject, false);
+            collector.setEnableFilters(false);
+            collector.collectProperties();
+
+            boolean hasExpensive = false;
+            for (DBPPropertyDescriptor prop : collector.getPropertyDescriptors2()) {
+                if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isExpensive()) {
+                    hasExpensive = true;
+                    break;
+                }
+            }
+
+            if (hasExpensive) {
+                contributionManager.add(new ReadExpensivePropsAction(databaseObject));
+            }
+        }
+    }
+
+    private class ReadExpensivePropsAction extends Action {
+        private final DBSObject databaseObject;
+        ReadExpensivePropsAction(DBSObject databaseObject) {
+            super("Read row count and other expensive properties", AS_CHECK_BOX);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REFRESH));
+            this.databaseObject = databaseObject;
+        }
+
+        @Override
+        public boolean isChecked() {
+            return DataSourcePropertyFilter.isExpensivePropertiesReadEnabledFor(this.databaseObject);
+        }
+
+        @Override
+        public void run() {
+            DataSourcePropertyFilter.readExpensivePropertiesFor(this.databaseObject, !isChecked());
+            DBUtils.fireObjectUpdate(this.databaseObject, true);
+
+            MultiPageEditorPart mainEditor = ((MultiPageEditorSite) getSite()).getMultiPageEditor();
+            if (mainEditor instanceof IRefreshablePart) {
+                ((IRefreshablePart) mainEditor).refreshPart(this, true);
+            }
+            //getRootNode().refreshNode()
+            //DBWorkbench.getPlatform().getNavigatorModel().fireNodeUpdate(source, this, DBNEvent.NodeChange.REFRESH);
         }
     }
 }
