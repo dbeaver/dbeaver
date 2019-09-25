@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizardDialog;
+import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -59,7 +59,7 @@ public abstract class DataTransferHandler extends AbstractHandler {
 
         // Run transfer wizard
         if (!producers.isEmpty() || !consumers.isEmpty()) {
-            DataTransferWizardDialog.openWizard(
+            DataTransferWizard.openWizard(
                 workbenchWindow,
                 producers,
                 consumers);

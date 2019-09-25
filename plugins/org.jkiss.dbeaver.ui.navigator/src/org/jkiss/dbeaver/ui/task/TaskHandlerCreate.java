@@ -20,10 +20,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -33,14 +32,21 @@ public class TaskHandlerCreate extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DBPProject project = NavigatorUtils.getSelectedProject();
+/*
         CreateTaskConfigurationDialog dialog = new CreateTaskConfigurationDialog(
             HandlerUtil.getActiveShell(event),
             project
+        );
+*/
+        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(
+            HandlerUtil.getActiveWorkbenchWindow(event),
+            (IStructuredSelection)null
         );
         if (dialog.open() == IDialogConstants.OK_ID) {
             DBTTaskManager taskManager = project.getTaskManager();
 
             try {
+/*
                 DBTTaskConfigurator configurator = dialog.getSelectedCategory().createConfigurator();
                 DBTTask task = taskManager.createTaskConfiguration(
                     dialog.getSelectedTaskType(),
@@ -50,6 +56,7 @@ public class TaskHandlerCreate extends AbstractHandler {
                 if (!configurator.openTaskConfigDialog(task)) {
                     taskManager.deleteTaskConfiguration(task);
                 }
+*/
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError("Create task failed", "Error while creating new task", e);
             }

@@ -45,7 +45,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
     public boolean openTaskConfigDialog(@NotNull DBTTask taskConfiguration) {
-        return DataTransferWizardDialog.openWizard(
+        return DataTransferWizard.openWizard(
             UIUtils.getActiveWorkbenchWindow(),
             taskConfiguration) == IDialogConstants.OK_ID;
     }
