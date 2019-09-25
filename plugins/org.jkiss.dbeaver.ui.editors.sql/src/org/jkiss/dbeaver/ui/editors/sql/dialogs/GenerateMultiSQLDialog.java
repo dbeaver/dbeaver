@@ -60,7 +60,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
 
     private static final String DIALOG_ID = "GenerateMultiSQLDialog";
 
-    protected final Collection<T> selectedObjects;
+    private final Collection<T> selectedObjects;
     private Table objectsTable;
 
     public GenerateMultiSQLDialog(
@@ -76,7 +76,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             objects);
     }
 
-    public GenerateMultiSQLDialog(
+    private GenerateMultiSQLDialog(
         IWorkbenchPartSite partSite,
         DBCExecutionContext context,
         String title,
@@ -108,7 +108,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             generateObjectCommand(lines, object);
         }
 
-        return lines.toArray(new String[lines.size()]);
+        return lines.toArray(new String[0]);
     }
 
     public List<T> getCheckedObjects() {
@@ -165,7 +165,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             objectsSQL.put(object, lines);
         }
         final DataSourceJob job = new DataSourceJob(jobName, getExecutionContext()) {
-            public Exception objectProcessingError;
+            Exception objectProcessingError;
 
             @Override
             protected IStatus run(final DBRProgressMonitor monitor)
@@ -275,7 +275,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
 
     protected abstract void generateObjectCommand(List<String> sql, T object);
 
-    protected static <T extends DBSObject> DBCExecutionContext getContextFromObjects(@NotNull Collection<T> objects, boolean meta) {
+    private static <T extends DBSObject> DBCExecutionContext getContextFromObjects(@NotNull Collection<T> objects, boolean meta) {
         Iterator<T> iterator = objects.iterator();
         if (iterator.hasNext()) {
             T object = iterator.next();

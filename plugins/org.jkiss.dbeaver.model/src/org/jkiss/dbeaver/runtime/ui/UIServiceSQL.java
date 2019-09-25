@@ -18,12 +18,17 @@
 package org.jkiss.dbeaver.runtime.ui;
 
 import org.eclipse.core.resources.IResource;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRCreator;
+
+import java.util.Map;
 
 /**
  * SQL Service
@@ -36,13 +41,26 @@ public interface UIServiceSQL {
      * @param showSaveButton shows Save button
      * @return IDialogConstants.*_ID
      */
-    int openSQLViewer(@Nullable DBCExecutionContext context, String title, @Nullable DBPImage image, String text, boolean showSaveButton);
+    int openSQLViewer(
+        @Nullable DBCExecutionContext context,
+        String title,
+        @Nullable DBPImage image,
+        String text,
+        boolean showSaveButton);
+
+    int openGeneratedScriptViewer(
+        @Nullable DBCExecutionContext context,
+        String title,
+        @Nullable DBPImage image,
+        @NotNull DBRCreator<String, Map<String, Object>> scriptGenerator,
+        @NotNull DBPPropertyDescriptor[] properties,
+        boolean showSaveButton);
 
     /**
      * @return IEditorPart
      */
     Object openSQLConsole(
-        DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBPDataSourceContainer dataSourceContainer,
         String name,
         String sqlText);
 

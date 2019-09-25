@@ -61,7 +61,6 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.*;
-import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -70,8 +69,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * EntityEditor
@@ -1022,6 +1021,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
         {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
+//                result = serviceSQL.openGeneratedScriptViewer(
+//                    getExecutionContext(),
+//                    allowSave ? UINavigatorMessages.editors_entity_dialog_persist_title : UINavigatorMessages.editors_entity_dialog_preview_title,
+//                    UIIcon.SQL_PREVIEW,
+//                    scriptGenerator,
+//                    props,
+//                    allowSave);
                 result = serviceSQL.openSQLViewer(
                     getExecutionContext(),
                     allowSave ? UINavigatorMessages.editors_entity_dialog_persist_title : UINavigatorMessages.editors_entity_dialog_preview_title,
