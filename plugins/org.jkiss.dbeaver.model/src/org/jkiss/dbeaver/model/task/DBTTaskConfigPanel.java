@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.model.task;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
-import java.util.Map;
-
 /**
  * DBTTaskConfigPanel
  */
@@ -28,9 +26,9 @@ public interface DBTTaskConfigPanel
 {
     void createControl(Object parent, IPropertyChangeListener propertyChangeListener);
 
-    void loadSettings(DBRRunnableContext runnableContext, Map<String, Object> configuration);
+    void loadSettings(DBRRunnableContext runnableContext, DBTTask task);
 
-    void saveSettings(DBRRunnableContext runnableContext, Map<String, Object> configuration);
+    void saveSettings(DBRRunnableContext runnableContext, DBTTask task);
 
     boolean isComplete();
 

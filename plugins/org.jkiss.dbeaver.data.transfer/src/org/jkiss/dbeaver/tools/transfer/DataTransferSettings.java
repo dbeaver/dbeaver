@@ -427,8 +427,17 @@ public class DataTransferSettings {
         this.showFinalMessage = showFinalMessage;
     }
 
+    public static void saveNodesLocation(Map<String, Object> state, Collection<IDataTransferNode> nodes, String nodeType) {
+        if (nodes != null) {
+            List<Map<String, Object>> inputObjects = new ArrayList<>();
+            for (Object inputObject : nodes) {
+                inputObjects.add(JSONUtils.serializeObject(inputObject));
+            }
+            state.put(nodeType, inputObjects);
+        }
+    }
 
-    private static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, DBTTask task, String nodeType, Class<T> nodeClass) {
+    public static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, DBTTask task, String nodeType, Class<T> nodeClass) {
         Map<String, Object> config = task.getProperties();
         List<T> result = new ArrayList<>();
         Object nodeList = config.get(nodeType);
