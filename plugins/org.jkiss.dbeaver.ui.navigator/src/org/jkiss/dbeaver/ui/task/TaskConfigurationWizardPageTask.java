@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -65,6 +66,8 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
     private Map<String, Object> initialProperties = new LinkedHashMap<>();
 
     private TaskImpl task;
+
+    private Map<DBTTaskType, TaskConfigurationWizard> taskWizards = new HashMap<>();
 
     TaskConfigurationWizardPageTask(DBTTask task)
     {
@@ -214,9 +217,9 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
                 DBTTaskConfigPanel configPage = configurator.createInputConfigurator(UIUtils.getDefaultRunnableContext(), selectedTaskType);
                 if (configPage != null) {
                     taskConfigPanel = configPage;
-                    taskConfigPanel.createControl(configPanelPlaceholder, this::updatePageCompletion);
+                    taskConfigPanel.createControl(configPanelPlaceholder, getTaskWizard(), this::updatePageCompletion);
                     if (task != null) {
-                        taskConfigPanel.loadSettings(getWizard().getRunnableContext(), task);
+                        taskConfigPanel.loadSettings();
                         updatePageCompletion();
                     }
                 } else {
@@ -259,19 +262,29 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             (taskConfigPanel == null || taskConfigPanel.isComplete());
     }
 
-    public TaskConfigurationWizard createTaskWizard() throws DBException {
-        DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
+    public TaskConfigurationWizard getTaskWizard() throws DBException {
+        TaskConfigurationWizard realWizard = taskWizards.get(selectedTaskType);
+        if (realWizard == null) {
+            DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
 
-        task = (TaskImpl) selectedProject.getTaskManager().createTaskConfiguration(selectedTaskType, taskName, taskDescription, new LinkedHashMap<>());
-        taskConfigPanel.saveSettings(getWizard().getRunnableContext(), task);
+            if (task == null) {
+                task = (TaskImpl) selectedProject.getTaskManager().createTaskConfiguration(selectedTaskType, taskName, taskDescription, new LinkedHashMap<>());
+            }
+            realWizard = (TaskConfigurationWizard) configurator.createTaskConfigWizard(task);
+            taskConfigPanel.saveSettings();
 
-        return (TaskConfigurationWizard) configurator.createTaskConfigWizard(task);
+            taskWizards.put(selectedTaskType, realWizard);
+        }
+        return realWizard;
     }
 
     public void saveSettings() {
         if (task != null) {
             task.setName(taskLabelText.getText());
             task.setDescription(taskDescriptionText.getText());
+            if (taskConfigPanel != null) {
+                taskConfigPanel.saveSettings();
+            }
             try {
                 task.getProject().getTaskManager().updateTaskConfiguration(task);
             } catch (DBException e) {

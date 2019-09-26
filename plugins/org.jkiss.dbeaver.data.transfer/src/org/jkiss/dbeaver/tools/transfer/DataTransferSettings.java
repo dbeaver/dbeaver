@@ -50,13 +50,12 @@ public class DataTransferSettings {
 
     private final Map<DataTransferNodeDescriptor, IDataTransferSettings> nodeSettings = new HashMap<>();
 
-
     private DataTransferProcessorDescriptor processor;
     private Map<DataTransferProcessorDescriptor, Map<Object, Object>> processorPropsHistory = new HashMap<>();
     private boolean producerProcessor;
 
-    private final IDataTransferProducer[] initProducers;
-    private final @Nullable IDataTransferConsumer[] initConsumers;
+    private IDataTransferProducer[] initProducers;
+    private @Nullable IDataTransferConsumer[] initConsumers;
     private final List<DBSObject> initObjects = new ArrayList<>();
 
     private boolean consumerOptional;
@@ -68,9 +67,15 @@ public class DataTransferSettings {
     private boolean showFinalMessage = true;
 
     public DataTransferSettings(DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, Map<String, Object> configuration) {
+        initializePipes(producers, consumers);
+        loadConfiguration(runnableContext, configuration);
+    }
+
+    private void initializePipes(@Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers) {
         this.initProducers = producers == null ? null : producers.toArray(new IDataTransferProducer[0]);
         this.initConsumers = consumers == null ? null : consumers.toArray(new IDataTransferConsumer[0]);
-        dataPipes = new ArrayList<>();
+        this.dataPipes = new ArrayList<>();
+        this.initObjects.clear();
 
         DataTransferRegistry registry = DataTransferRegistry.getInstance();
 
@@ -131,8 +136,6 @@ public class DataTransferSettings {
                 }
             }
         }
-
-        loadConfiguration(runnableContext, configuration);
     }
 
     public DataTransferSettings(DBRRunnableContext runnableContext, DBTTask task) {
@@ -452,6 +455,29 @@ public class DataTransferSettings {
             }
         }
         return result;
+    }
+
+    public void clearDataPipes() {
+        dataPipes.clear();
+        initObjects.clear();
+        initProducers = new IDataTransferProducer[0];
+        initConsumers = new IDataTransferConsumer[0];
+    }
+
+    public void addDataPipe(IDataTransferProducer producer, IDataTransferConsumer consumer) {
+        List<IDataTransferProducer> producers = null;
+        List<IDataTransferConsumer> consumers = null;
+        if (producer != null) {
+            producers = new ArrayList<>();
+            if (initProducers != null) Collections.addAll(producers, initProducers);
+            producers.add(producer);
+        }
+        if (consumer != null) {
+            consumers = new ArrayList<>();
+            if (initConsumers != null) Collections.addAll(consumers, initConsumers);
+            consumers.add(consumer);
+        }
+        initializePipes(producers, consumers);
     }
 
 }

@@ -42,6 +42,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     private static final int SAVE_TASK_BTN_ID = 1000;
     private TaskConfigurationWizard nestedTaskWizard;
     private boolean taskCreateWizard;
+    private TaskConfigurationWizardPageTask taskEditPage;
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
         this(window, wizard, null);
@@ -53,6 +54,11 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
 
     TaskConfigurationWizardDialog(IWorkbenchWindow window) {
         this(window, new TaskConfigurationWizardStub(), null);
+    }
+
+    @Override
+    protected TaskConfigurationWizard getWizard() {
+        return (TaskConfigurationWizard) super.getWizard();
     }
 
     @Override
@@ -101,28 +107,24 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     @Override
     protected void buttonPressed(int buttonId) {
         if (buttonId == SAVE_TASK_BTN_ID) {
-            saveConfigurationAsTask();
+            getWizard().saveTask();
             return;
-        } else if (buttonId == IDialogConstants.FINISH_ID) {
-            if (taskCreateWizard) {
-                saveConfigurationAsTask();
-            }
         } else if (buttonId == IDialogConstants.NEXT_ID &&
             getWizard() instanceof TaskConfigurationWizardStub &&
             getCurrentPage() instanceof TaskConfigurationWizardPageTask)
         {
             taskCreateWizard = true;
-            TaskConfigurationWizardPageTask createPage = (TaskConfigurationWizardPageTask) getCurrentPage();
+            taskEditPage = (TaskConfigurationWizardPageTask) getCurrentPage();
             if (nestedTaskWizard == null) {
                 // Now we need to create real wizard, initialize it and inject in this dialog
                 try {
-                    nestedTaskWizard = createPage.createTaskWizard();
+                    nestedTaskWizard = taskEditPage.getTaskWizard();
                     nestedTaskWizard.addPages();
                     setWizard(nestedTaskWizard);
 
                 } catch (Exception e) {
                     setErrorMessage("Configuration error: " + e.getMessage());
-                    log.error("Can't create task " + createPage.getSelectedTaskType().getName() + " configuration wizard", e);
+                    log.error("Can't create task " + taskEditPage.getSelectedTaskType().getName() + " configuration wizard", e);
                     return;
                 }
             }
@@ -180,16 +182,9 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     }
 */
 
-    private void saveConfigurationAsTask() {
-        TaskConfigurationWizardPageTask taskPage = getTaskPage();
-        if (taskPage != null) {
-            taskPage.saveSettings();
-        }
-    }
-
-    private TaskConfigurationWizardPageTask getTaskPage() {
-        if (nestedTaskWizard != null) {
-            return (TaskConfigurationWizardPageTask) nestedTaskWizard.getPages()[0];
+    TaskConfigurationWizardPageTask getTaskPage() {
+        if (taskEditPage != null) {
+            return taskEditPage;
         } else {
             IWizardPage[] pages = getWizard().getPages();
             if (pages.length > 0 && pages[0] instanceof TaskConfigurationWizardPageTask) {

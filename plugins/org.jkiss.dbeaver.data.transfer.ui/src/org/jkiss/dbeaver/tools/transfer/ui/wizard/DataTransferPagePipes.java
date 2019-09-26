@@ -146,18 +146,6 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
         }
 
-        if (getWizard().getSettings().isConsumerOptional()) {
-            setTitle(DTMessages.data_transfer_wizard_init_title);
-            setDescription(DTMessages.data_transfer_wizard_init_description);
-
-            loadConsumers();
-        } else {
-            setTitle(DTMessages.data_transfer_wizard_producers_title);
-            setDescription(DTMessages.data_transfer_wizard_producers_description);
-
-            loadProducers();
-        }
-
         nodesTable.getTable().addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -193,23 +181,6 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                 }
             }
         });
-        UIUtils.asyncExec(() -> {
-            UIUtils.packColumns(nodesTable.getTable());
-            UIUtils.maxTableColumnsWidth(nodesTable.getTable());
-        });
-
-        DataTransferNodeDescriptor consumer = getWizard().getSettings().getConsumer();
-        DataTransferNodeDescriptor producer = getWizard().getSettings().getProducer();
-        DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
-        if (consumer != null || producer != null) {
-            Collection<TransferTarget> targets = (Collection<TransferTarget>) nodesTable.getInput();
-            for (TransferTarget target : targets) {
-                if ((target.node == consumer || target.node == producer) && target.processor == processor) {
-                    nodesTable.setSelection(new StructuredSelection(target));
-                    break;
-                }
-            }
-        }
     }
 
     private void createInputsTable(Composite composite) {
@@ -257,12 +228,46 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             columnDesc.setLabelProvider(labelProvider);
             columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
         }
-        inputsTable.setInput(getWizard().getSettings().getSourceObjects());
 
         UIUtils.asyncExec(() -> {
             UIUtils.packColumns(inputsTable.getTable());
             UIUtils.maxTableColumnsWidth(inputsTable.getTable());
         });
+    }
+
+    @Override
+    public void activatePage() {
+        if (getWizard().getSettings().isConsumerOptional()) {
+            setTitle(DTMessages.data_transfer_wizard_init_title);
+            setDescription(DTMessages.data_transfer_wizard_init_description);
+
+            loadConsumers();
+        } else {
+            setTitle(DTMessages.data_transfer_wizard_producers_title);
+            setDescription(DTMessages.data_transfer_wizard_producers_description);
+
+            loadProducers();
+        }
+
+        UIUtils.asyncExec(() -> {
+            UIUtils.packColumns(nodesTable.getTable());
+            UIUtils.maxTableColumnsWidth(nodesTable.getTable());
+        });
+
+        DataTransferNodeDescriptor consumer = getWizard().getSettings().getConsumer();
+        DataTransferNodeDescriptor producer = getWizard().getSettings().getProducer();
+        DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
+        if (consumer != null || producer != null) {
+            Collection<TransferTarget> targets = (Collection<TransferTarget>) nodesTable.getInput();
+            for (TransferTarget target : targets) {
+                if ((target.node == consumer || target.node == producer) && target.processor == processor) {
+                    nodesTable.setSelection(new StructuredSelection(target));
+                    break;
+                }
+            }
+        }
+
+        inputsTable.setInput(getWizard().getSettings().getSourceObjects());
     }
 
     private void loadConsumers()

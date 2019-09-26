@@ -77,6 +77,11 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     }
 
     @Override
+    public TaskConfigurationWizardDialog getContainer() {
+        return (TaskConfigurationWizardDialog) super.getContainer();
+    }
+
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         updateWizardTitle();
         setNeedsProgressMonitor(true);
@@ -86,7 +91,9 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     @Override
     public void addPages() {
         super.addPages();
-        if (getCurrentTask() != null) {
+        // If we are in task edit mode then add special first page.
+        // Do not add it if this is an ew task wizard (because this page is added separately)
+        if (getCurrentTask() != null && getCurrentTask().getProject().getTaskManager().getTaskConfiguration(getCurrentTask().getId()) != null) {
             // Task editor. Add first page
             addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
         }
@@ -107,6 +114,9 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
 
     @Override
     public boolean performFinish() {
+        if (currentTask != null) {
+            saveTask();
+        }
         return true;
     }
 
@@ -114,5 +124,12 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         return true;
     }
 
+    public void saveTask() {
+        TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+        if (taskPage != null) {
+            taskPage.saveSettings();
+        }
+        saveTaskState(getCurrentTask().getProperties());
+    }
 
 }
