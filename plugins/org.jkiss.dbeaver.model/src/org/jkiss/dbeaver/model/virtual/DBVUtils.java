@@ -226,7 +226,10 @@ public abstract class DBVUtils {
                 }
                 hasNulls = true;
             }
-            String valueStr = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.EDIT);
+            if (keyValue instanceof Date) {
+                // Convert dates into string to avoid collisions
+                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.EDIT);
+            }
             String keyLabel;
             if (metaColumns.size() > 1) {
                 StringBuilder keyLabel2 = new StringBuilder();
@@ -241,7 +244,7 @@ public abstract class DBVUtils {
             } else {
                 keyLabel = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
-            values.add(new DBDLabelValuePair(keyLabel, valueStr));
+            values.add(new DBDLabelValuePair(keyLabel, keyValue));
         }
         return values;
     }
