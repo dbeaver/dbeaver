@@ -107,7 +107,10 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
             if (taskCreateWizard) {
                 saveConfigurationAsTask();
             }
-        } else if (buttonId == IDialogConstants.NEXT_ID && getCurrentPage() instanceof TaskConfigurationWizardPageTask) {
+        } else if (buttonId == IDialogConstants.NEXT_ID &&
+            getWizard() instanceof TaskConfigurationWizardStub &&
+            getCurrentPage() instanceof TaskConfigurationWizardPageTask)
+        {
             taskCreateWizard = true;
             TaskConfigurationWizardPageTask createPage = (TaskConfigurationWizardPageTask) getCurrentPage();
             if (nestedTaskWizard == null) {
