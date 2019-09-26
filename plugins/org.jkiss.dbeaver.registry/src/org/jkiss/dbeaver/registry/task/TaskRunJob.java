@@ -74,6 +74,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 System.getProperty(StandardConstants.ENV_USER_NAME),
                 GeneralUtils.getProductTitle(),
                 0, null, null);
+            task.getTaskStatsFolder(true);
             File logFile = task.getRunLog(taskRun);
 
             try (OutputStream logStream = new FileOutputStream(logFile)) {

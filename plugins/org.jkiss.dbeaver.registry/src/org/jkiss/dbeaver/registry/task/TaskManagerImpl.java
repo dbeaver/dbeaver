@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -125,7 +124,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         @NotNull DBTTaskType taskDescriptor,
         @NotNull String label,
         @Nullable String description,
-        @NotNull Map<String, Object> properties) throws DBException
+        @NotNull Map<String, Object> properties)
     {
 /*
         DBTTaskType taskDescriptor = getRegistry().getTask(taskId);
@@ -137,22 +136,26 @@ public class TaskManagerImpl implements DBTTaskManager {
         String id = UUID.randomUUID().toString();
         TaskImpl task = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, createTime);
         task.setProperties(properties);
-        synchronized (tasks) {
-            tasks.add(task);
-        }
-
-        saveConfiguration();
-
-        TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_ADD));
 
         return task;
     }
 
     @Override
     public void updateTaskConfiguration(@NotNull DBTTask task) {
+        boolean newTask = false;
+        synchronized (tasks) {
+            if (!tasks.contains(task)) {
+                tasks.add((TaskImpl) task);
+                newTask = true;
+            }
+        }
+
         saveConfiguration();
 
-        TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_UPDATE));
+        TaskRegistry.getInstance().notifyTaskListeners(
+            new DBTTaskEvent(
+                task,
+                newTask ? DBTTaskEvent.Action.TASK_ADD : DBTTaskEvent.Action.TASK_UPDATE));
     }
 
     @Override

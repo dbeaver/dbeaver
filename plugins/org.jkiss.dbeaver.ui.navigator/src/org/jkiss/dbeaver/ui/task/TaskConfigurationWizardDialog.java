@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.task;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
@@ -42,20 +42,23 @@ import java.util.Map;
 /**
  * Task configuration wizard dialog
  */
-public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizard> extends ActiveWizardDialog {
+public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
 
+    private static final Log log = Log.getLog(TaskConfigurationWizardDialog.class);
     private static final int SAVE_TASK_BTN_ID = 1000;
+    private TaskConfigurationWizard nestedTaskWizard;
+    private boolean taskCreateWizard;
 
-    public TaskConfigurationWizardDialog(IWorkbenchWindow window, WIZARD wizard) {
+    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
         this(window, wizard, null);
     }
 
-    public TaskConfigurationWizardDialog(IWorkbenchWindow window, WIZARD wizard, IStructuredSelection selection) {
+    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard, IStructuredSelection selection) {
         super(window, wizard, selection);
     }
 
-    TaskConfigurationWizardDialog(IWorkbenchWindow window, IStructuredSelection selection) {
-        super(window, new TaskConfigurationWizardWrapper(), selection);
+    TaskConfigurationWizardDialog(IWorkbenchWindow window) {
+        this(window, new TaskConfigurationWizardNew(), null);
     }
 
     @Override
@@ -67,9 +70,8 @@ public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizar
         return shellStyle;
     }
 
-    protected WIZARD getTaskWizard() {
-        IWizard wizard = super.getWizard();
-        return wizard instanceof TaskConfigurationWizardWrapper ? ((TaskConfigurationWizardWrapper<WIZARD>) wizard).getTaskWizard() : (WIZARD) wizard;
+    protected TaskConfigurationWizard getTaskWizard() {
+        return (TaskConfigurationWizard) super.getWizard();
     }
 
     @Override
@@ -107,6 +109,29 @@ public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizar
         if (buttonId == SAVE_TASK_BTN_ID) {
             saveConfigurationAsTask();
             return;
+        } else if (buttonId == IDialogConstants.FINISH_ID) {
+            if (taskCreateWizard) {
+                saveConfigurationAsTask();
+            }
+        } else if (buttonId == IDialogConstants.NEXT_ID && getCurrentPage() instanceof TaskConfigurationCreatePage) {
+            taskCreateWizard = true;
+            TaskConfigurationCreatePage createPage = (TaskConfigurationCreatePage) getCurrentPage();
+            if (nestedTaskWizard == null) {
+                // Now we need to create real wizard, initialize it and inject in this dialog
+                try {
+                    nestedTaskWizard = createPage.createTaskWizard();
+                    nestedTaskWizard.addPages();
+                    setWizard(nestedTaskWizard);
+
+                } catch (Exception e) {
+                    setErrorMessage("Configuration error: " + e.getMessage());
+                    log.error("Can't create task " + createPage.getSelectedTaskType().getName() + " configuration wizard", e);
+                    return;
+                }
+            }
+            // Show first page of new wizard
+            showPage(nestedTaskWizard.getStartingPage());
+            return;
         }
         super.buttonPressed(buttonId);
     }
@@ -120,8 +145,13 @@ public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizar
         }
     }
 
+    @Override
+    protected Control createContents(Composite parent) {
+        return super.createContents(parent);
+    }
+
     private void saveConfigurationAsTask() {
-        WIZARD taskWizard = getTaskWizard();
+        TaskConfigurationWizard taskWizard = getTaskWizard();
         DBTTaskManager taskManager = taskWizard.getProject().getTaskManager();
         DBTTask currentTask = taskWizard.getCurrentTask();
 
@@ -142,7 +172,13 @@ public class TaskConfigurationWizardDialog<WIZARD extends TaskConfigurationWizar
             dialog = new EditTaskConfigurationDialog(getShell(), taskWizard.getProject(), taskType, state);
         }
         if (dialog.open() == IDialogConstants.OK_ID) {
-            taskWizard.setCurrentTask(dialog.getTask());
+            DBTTask task = dialog.getTask();
+            taskWizard.setCurrentTask(task);
+            try {
+                taskManager.updateTaskConfiguration(task);
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Save task", "Error saving task " + task.getName() + "", e);
+            }
         }
 
     }

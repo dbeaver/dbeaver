@@ -20,7 +20,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
@@ -39,9 +38,7 @@ public class TaskHandlerCreate extends AbstractHandler {
         );
 */
         TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(
-            HandlerUtil.getActiveWorkbenchWindow(event),
-            (IStructuredSelection)null
-        );
+            HandlerUtil.getActiveWorkbenchWindow(event));
         if (dialog.open() == IDialogConstants.OK_ID) {
             DBTTaskManager taskManager = project.getTaskManager();
 
@@ -53,7 +50,7 @@ public class TaskHandlerCreate extends AbstractHandler {
                     dialog.getTaskName(),
                     dialog.getTaskDescription(),
                     dialog.getInitialProperties());
-                if (!configurator.openTaskConfigDialog(task)) {
+                if (!configurator.createTaskConfigWizard(task)) {
                     taskManager.deleteTaskConfiguration(task);
                 }
 */

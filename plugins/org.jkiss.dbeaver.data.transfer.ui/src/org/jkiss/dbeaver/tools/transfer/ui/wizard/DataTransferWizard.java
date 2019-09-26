@@ -21,7 +21,6 @@ import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IImportWizard;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -60,7 +59,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         @Nullable Collection<IDataTransferConsumer> consumers)
     {
         DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
-        TaskConfigurationWizardDialog<DataTransferWizard> dialog = new TaskConfigurationWizardDialog<>(workbenchWindow, wizard);
+        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard);
         return dialog.open();
     }
 
@@ -71,7 +70,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         @Nullable IStructuredSelection selection)
     {
         DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
-        TaskConfigurationWizardDialog<DataTransferWizard> dialog = new TaskConfigurationWizardDialog<>(workbenchWindow, wizard, selection);
+        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection);
         return dialog.open();
     }
 
@@ -80,7 +79,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         @NotNull DBTTask task)
     {
         DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), task);
-        TaskConfigurationWizardDialog<DataTransferWizard> dialog = new TaskConfigurationWizardDialog<>(workbenchWindow, wizard, null);
+        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, null);
         return dialog.open();
     }
 
@@ -104,10 +103,9 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     }
 
     private DataTransferSettings settings;
-    private IStructuredSelection currentSelection;
     private Map<Class, NodePageSettings> nodeSettings = new LinkedHashMap<>();
 
-    private DataTransferWizard(@Nullable DBTTask task) {
+    public DataTransferWizard(@Nullable DBTTask task) {
         super(task);
         setDialogSettings(
             UIUtils.getSettingsSection(
@@ -115,7 +113,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
                 RS_EXPORT_WIZARD_DIALOG_SETTINGS));
     }
 
-    private DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
+    public DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
         this(task);
         this.settings = new DataTransferSettings(runnableContext, task);
         loadSettings(runnableContext);
@@ -171,10 +169,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         }
     }
 
-    public IStructuredSelection getCurrentSelection() {
-        return currentSelection;
-    }
-
     public DataTransferSettings getSettings() {
         return settings;
     }
@@ -191,13 +185,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         }
         addWizardPages(this);
         addPage(new DataTransferPageFinal());
-    }
-
-    @Override
-    public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
-        updateWizardTitle();
-        setNeedsProgressMonitor(true);
-        this.currentSelection = currentSelection;
     }
 
     @Override
@@ -406,7 +393,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         state.put("configuration", saveConfiguration(new LinkedHashMap<>()));
     }
 
-    private static void saveNodesLocation(Map<String, Object> state, Collection<IDataTransferNode> nodes, String nodeType) {
+    static void saveNodesLocation(Map<String, Object> state, Collection<IDataTransferNode> nodes, String nodeType) {
         if (nodes != null) {
             List<Map<String, Object>> inputObjects = new ArrayList<>();
             for (Object inputObject : nodes) {

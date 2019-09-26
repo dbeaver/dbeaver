@@ -224,6 +224,8 @@ public class DataTransferSettings {
         Map<String, DataTransferNodeDescriptor> nodeNames = new LinkedHashMap<>();
         if (producer != null) {
             nodeNames.put(producer.getNodeClass().getSimpleName(), producer);
+        }
+        if (consumer != null) {
             nodeNames.put(consumer.getNodeClass().getSimpleName(), consumer);
         }
         for (Map.Entry<String, DataTransferNodeDescriptor> node : nodeNames.entrySet()) {

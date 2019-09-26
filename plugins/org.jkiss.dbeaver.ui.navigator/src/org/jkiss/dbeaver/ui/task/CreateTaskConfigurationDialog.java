@@ -27,6 +27,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskCategory;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
@@ -190,7 +192,9 @@ public class CreateTaskConfigurationDialog extends BaseDialog
                 DBTTaskConfigPanel configPage = configurator.createInputConfigurator(UIUtils.getDefaultRunnableContext(), selectedTaskType);
                 if (configPage != null) {
                     taskConfigPanel = configPage;
-                    taskConfigPanel.createControl(configPanelPlaceholder);
+                    taskConfigPanel.createControl(configPanelPlaceholder, event -> {
+                        updateButtons();
+                    });
                 } else {
                     // Something weird was created
                     UIUtils.disposeChildControls(configPanelPlaceholder);
@@ -243,7 +247,7 @@ public class CreateTaskConfigurationDialog extends BaseDialog
     protected void okPressed() {
         taskName = taskLabelText.getText();
         taskDescription = taskDescriptionText.getText();
-        taskConfigPanel.saveSettings(initialProperties);
+        taskConfigPanel.saveSettings(new MonitorRunnableContext(new VoidProgressMonitor()), initialProperties);
 
         super.okPressed();
     }

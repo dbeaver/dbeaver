@@ -23,16 +23,20 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTaskCategory;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
@@ -43,6 +47,7 @@ import java.util.Map;
  */
 class TaskConfigurationCreatePage extends ActiveWizardPage
 {
+    private final DBPProject selectedProject;
     private Combo taskTypeCombo;
     private Text taskLabelText;
     private Text taskDescriptionText;
@@ -59,12 +64,21 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
     private String taskDescription;
     private Map<String, Object> initialProperties = new LinkedHashMap<>();
 
+    private TaskImpl task;
+
     TaskConfigurationCreatePage()
     {
         super("Create new task");
         setTitle("New task properties");
         setDescription("Set task name, type and input data");
         setPageComplete(false);
+
+        selectedProject = NavigatorUtils.getSelectedProject();
+    }
+
+    @Override
+    public TaskConfigurationWizard getWizard() {
+        return (TaskConfigurationWizard)super.getWizard();
     }
 
     public DBTTaskCategory getSelectedCategory() {
@@ -89,7 +103,7 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
 
     @Override
     public boolean isPageComplete() {
-        return selectedTaskType != null && !CommonUtils.isEmpty(taskName);
+        return selectedTaskType != null && !CommonUtils.isEmpty(taskName) && (taskConfigPanel == null || taskConfigPanel.isComplete());
     }
 
     @Override
@@ -163,6 +177,7 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
             taskLabelText = UIUtils.createLabelText(formPanel, "Name", "", SWT.BORDER);
             taskLabelText.addModifyListener(e -> {
                 taskName = taskLabelText.getText();
+                if (task != null) task.setName(taskName);
                 modifyListener.modifyText(e);
             });
 
@@ -170,6 +185,7 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
             ((GridData) taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 5;
             taskDescriptionText.addModifyListener(e -> {
                 taskDescription = taskDescriptionText.getText();
+                if (task != null) task.setDescription(taskDescription);
                 modifyListener.modifyText(e);
             });
 
@@ -193,7 +209,9 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
                 DBTTaskConfigPanel configPage = configurator.createInputConfigurator(UIUtils.getDefaultRunnableContext(), selectedTaskType);
                 if (configPage != null) {
                     taskConfigPanel = configPage;
-                    taskConfigPanel.createControl(configPanelPlaceholder);
+                    taskConfigPanel.createControl(configPanelPlaceholder, event -> {
+                        updatePageCompletion();
+                    });
                 } else {
                     // Something weird was created
                     UIUtils.disposeChildControls(configPanelPlaceholder);
@@ -225,6 +243,17 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
             addTaskCategories(item, cat.getChildren());
             item.setExpanded(true);
         }
+    }
+
+    public TaskConfigurationWizard createTaskWizard() throws DBException {
+        Map<String, Object> config = new LinkedHashMap<>();
+        taskConfigPanel.saveSettings(getWizard().getRunnableContext(), config);
+
+        DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
+
+        task = (TaskImpl) selectedProject.getTaskManager().createTaskConfiguration(selectedTaskType, taskName, taskDescription, config);
+
+        return (TaskConfigurationWizard) configurator.createTaskConfigWizard(task);
     }
 
 }
