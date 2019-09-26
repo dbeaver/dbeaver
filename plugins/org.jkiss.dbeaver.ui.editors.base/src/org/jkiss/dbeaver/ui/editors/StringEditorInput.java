@@ -61,24 +61,15 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
         this.charset = Charset.forName(charset);
 	}
 
-/*
-	public int hashCode() {
-		return buffer.hashCode();
-	}
+	public boolean isReadOnly() {
+        return readOnly;
+    }
 
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!(obj instanceof StringEditorInput)) {
-			return false;
-		}
-		StringEditorInput other = (StringEditorInput) obj;
-		return buffer.equals(other.buffer);
-	}
-*/
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
 
-	@Override
+    @Override
     public boolean exists() {
 		return true;
 	}

@@ -20,8 +20,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -61,6 +59,18 @@ public abstract class BaseSQLDialog extends BaseDialog {
         super(shell, title, image);
         this.subSite = new SubEditorSite(parentSite);
         this.sqlInput = new StringEditorInput(title, "", true, GeneralUtils.getDefaultFileEncoding());
+    }
+
+    public boolean isReadOnly() {
+        return sqlInput.isReadOnly();
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        sqlInput.setReadOnly(readOnly);
+    }
+
+    public String getText() {
+        return sqlInput.getBuffer().toString();
     }
 
     protected boolean isWordWrap() {
@@ -112,13 +122,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
         }
         sqlViewer.reloadSyntaxRules();
 
-        parent.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                sqlViewer.dispose();
-            }
-        });
+        parent.addDisposeListener(e -> sqlViewer.dispose());
 
         return panel;
     }
@@ -155,6 +159,12 @@ public abstract class BaseSQLDialog extends BaseDialog {
         } else {
             super.buttonPressed(buttonId);
         }
+    }
+
+    @Override
+    protected void okPressed() {
+        sqlInput.setText(sqlViewer.getTextViewer().getDocument().get());
+        super.okPressed();
     }
 
     protected void updateSQL()

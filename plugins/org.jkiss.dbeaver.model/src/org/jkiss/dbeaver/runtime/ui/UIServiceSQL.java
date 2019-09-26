@@ -48,6 +48,12 @@ public interface UIServiceSQL {
         String text,
         boolean showSaveButton);
 
+    String openSQLEditor(
+        @Nullable DBPContextProvider contextProvider,
+        String title,
+        @Nullable DBPImage image,
+        String text);
+
     int openGeneratedScriptViewer(
         @Nullable DBCExecutionContext context,
         String title,

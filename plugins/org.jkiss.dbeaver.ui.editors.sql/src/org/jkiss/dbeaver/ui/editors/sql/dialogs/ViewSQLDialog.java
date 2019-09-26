@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -33,16 +34,16 @@ public class ViewSQLDialog extends BaseSQLDialog {
 
     private static final String DIALOG_ID = "DBeaver.ViewSQLDialog";//$NON-NLS-1$
 
-    private DBCExecutionContext context;
+    private DBPContextProvider contextProvider;
     private String text;
     private boolean showSaveButton = false;
     private boolean enlargeViewPanel = true;
     private boolean wordWrap = false;
 
-    public ViewSQLDialog(final IWorkbenchPartSite parentSite, @Nullable DBCExecutionContext context, String title, @Nullable DBPImage image, String text)
+    public ViewSQLDialog(final IWorkbenchPartSite parentSite, @Nullable DBPContextProvider contextProvider, String title, @Nullable DBPImage image, String text)
     {
         super(parentSite, title, image);
-        this.context = context;
+        this.contextProvider = contextProvider;
         this.text = text;
     }
 
@@ -106,8 +107,13 @@ public class ViewSQLDialog extends BaseSQLDialog {
             createCopyButton(parent);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         } else {
-            createCopyButton(parent);
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
+            if (isReadOnly()) {
+                createCopyButton(parent);
+                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
+            } else {
+                // Standard OK/Cancel
+                super.createButtonsForButtonBar(parent);
+            }
         }
     }
 
@@ -134,6 +140,6 @@ public class ViewSQLDialog extends BaseSQLDialog {
 
     @Override
     protected DBCExecutionContext getExecutionContext() {
-        return context;
+        return contextProvider.getExecutionContext();
     }
 }

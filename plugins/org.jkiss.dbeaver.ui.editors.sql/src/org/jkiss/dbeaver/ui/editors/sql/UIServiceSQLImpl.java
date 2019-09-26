@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -59,13 +60,29 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     public int openSQLViewer(DBCExecutionContext context, String title, DBPImage image, String text, boolean showSaveButton) {
         ViewSQLDialog dialog = new ViewSQLDialog(
             UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
-            context,
+            () -> context,
             title,
             image,
             text
         );
         dialog.setShowSaveButton(showSaveButton);
         return dialog.open();
+    }
+
+    @Override
+    public String openSQLEditor(@Nullable DBPContextProvider contextProvider, String title, @Nullable DBPImage image, String text) {
+        ViewSQLDialog dialog = new ViewSQLDialog(
+            UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
+            contextProvider,
+            title,
+            image,
+            text
+        );
+        dialog.setReadOnly(false);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            return dialog.getText();
+        }
+        return null;
     }
 
     @Override

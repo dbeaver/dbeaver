@@ -629,7 +629,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         private final SQLGenerator<?> sqlGenerator;
 
         GenerateSQLDialog(IWorkbenchPartSite parentSite, DBCExecutionContext context, SQLGenerator<?> sqlGenerator) {
-            super(parentSite, context,
+            super(parentSite, () -> context,
                 "Generated SQL (" + context.getDataSource().getContainer().getName() + ")",
                 null, "");
             this.sqlGenerator = sqlGenerator;

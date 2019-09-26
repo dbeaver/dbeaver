@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Data container for single SQL query.
  * Doesn't support multiple resulsets.
  */
-public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContainer, DBPContextProvider {
+public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContainer, DBPContextProvider, DBPImageProvider {
 
     private DBPContextProvider contextProvider;
     private SQLQuery query;
@@ -215,4 +215,9 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         return query;
     }
 
+    @Nullable
+    @Override
+    public DBPImage getObjectImage() {
+        return DBIcon.TREE_FILE;
+    }
 }
