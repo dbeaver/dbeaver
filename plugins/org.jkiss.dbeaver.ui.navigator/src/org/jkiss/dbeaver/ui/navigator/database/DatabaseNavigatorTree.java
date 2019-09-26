@@ -117,8 +117,20 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
-    INavigatorFilter getNavigatorFilter() {
+    public INavigatorFilter getNavigatorFilter() {
         return navigatorFilter;
+    }
+
+    public void setNavigatorFilter(INavigatorFilter navigatorFilter) {
+        this.navigatorFilter = navigatorFilter;
+        if (treeViewer != null) {
+            treeViewer.addFilter(new ViewerFilter() {
+                @Override
+                public boolean select(Viewer viewer, Object parentElement, Object element) {
+                    return navigatorFilter.select(element);
+                }
+            });
+        }
     }
 
     @Nullable
@@ -134,7 +146,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         if (checkEnabled) {
             CheckboxTreeViewer checkboxTreeViewer = new CheckboxTreeViewer(parent, treeStyle);
             if (navigatorFilter != null) {
-                checkboxTreeViewer.setFilters(new ViewerFilter() {
+                checkboxTreeViewer.addFilter(new ViewerFilter() {
                     @Override
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
                         return navigatorFilter.select(element);

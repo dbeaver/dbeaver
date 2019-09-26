@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 
@@ -93,6 +94,10 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         checkboxTreeManager = new DatabaseObjectsTreeManager(runnableContext, viewer,
             new Class[]{DBSDataContainer.class});
         viewer.addCheckStateListener(event -> onSelectionChange());
+    }
+
+    public void setNavigatorFilter(INavigatorFilter navigatorFilter) {
+        dataSourceTree.setNavigatorFilter(navigatorFilter);
     }
 
     public DBPProject getProject() {

@@ -271,7 +271,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         public DatabaseTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
             DatabaseTransferProducer producer = new DatabaseTransferProducer();
             try {
-                runnableContext.run(false, true, monitor -> {
+                runnableContext.run(true, true, monitor -> {
                     try {
                         String selType = CommonUtils.toString(state.get("type"));
                         String projectName = CommonUtils.toString(state.get("project"));
