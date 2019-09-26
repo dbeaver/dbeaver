@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.task;
 
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -25,9 +28,10 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.Map;
 
-public abstract class TaskConfigurationWizard extends BaseWizard {
+public abstract class TaskConfigurationWizard extends BaseWizard implements IWorkbenchWizard {
 
     private DBTTask currentTask;
+    private IStructuredSelection currentSelection;
 
     protected TaskConfigurationWizard() {
     }
@@ -45,6 +49,10 @@ public abstract class TaskConfigurationWizard extends BaseWizard {
     public abstract String getTaskTypeId();
 
     public abstract void saveTaskState(Map<String, Object> state);
+
+    public IStructuredSelection getCurrentSelection() {
+        return currentSelection;
+    }
 
     public DBTTask getCurrentTask() {
         return currentTask;
@@ -66,6 +74,13 @@ public abstract class TaskConfigurationWizard extends BaseWizard {
             wizTitle += " - [" + currentTask.getName() + "]";
         }
         setWindowTitle(wizTitle);
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
+        updateWizardTitle();
+        setNeedsProgressMonitor(true);
+        this.currentSelection = currentSelection;
     }
 
     @Override

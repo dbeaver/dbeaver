@@ -49,7 +49,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
 {
     private static final String DIALOG_ID = "DBeaver.EditTaskConfigurationDialog";//$NON-NLS-1$
 
-    private DBTTask task;
+    private TaskImpl task;
     private final DBPProject project;
     private final DBTTaskType taskDescriptor;
     private Map<String, Object> state;
@@ -70,7 +70,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
     public EditTaskConfigurationDialog(Shell parentShell, DBTTask task)
     {
         super(parentShell, "Edit task [" + task.getName() + "]", task.getType().getIcon() == null ? DBIcon.TREE_PACKAGE : task.getType().getIcon());
-        this.task = task;
+        this.task = (TaskImpl) task;
         this.project = task.getProject();
         this.taskDescriptor = task.getType();
         this.state = task.getProperties();
@@ -116,7 +116,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
                         task = null;
                         setTitle("Create task " + taskDescriptor.getName());
                     } else {
-                        task = allTasks[selectionIndex - 1];
+                        task = (TaskImpl) allTasks[selectionIndex - 1];
                         taskDescriptionText.setText(CommonUtils.notEmpty(task.getDescription()));
                         setTitle("Edit task " + task.getName());
                     }
@@ -153,19 +153,17 @@ public class EditTaskConfigurationDialog extends BaseDialog
     @Override
     protected void okPressed() {
         DBTTaskManager taskManager = project.getTaskManager();
-        if (task == null) {
-            try {
-                task = taskManager.createTaskConfiguration(taskDescriptor, taskLabelCombo.getText(), taskDescriptionText.getText(), state);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
+        try {
+            if (task == null) {
+                task = (TaskImpl) taskManager.createTaskConfiguration(taskDescriptor, taskLabelCombo.getText(), taskDescriptionText.getText(), state);
             }
-        } else {
-            TaskImpl impl = (TaskImpl) task;
-            impl.setName(taskLabelCombo.getText());
-            impl.setDescription(taskDescriptionText.getText());
-            impl.setUpdateTime(new Date());
-            impl.setProperties(state);
+            task.setName(taskLabelCombo.getText());
+            task.setDescription(taskDescriptionText.getText());
+            task.setUpdateTime(new Date());
+            task.setProperties(state);
             taskManager.updateTaskConfiguration(task);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
         }
 
         super.okPressed();

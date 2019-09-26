@@ -101,7 +101,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         this.label = label;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public String getDescription() {
         return description;

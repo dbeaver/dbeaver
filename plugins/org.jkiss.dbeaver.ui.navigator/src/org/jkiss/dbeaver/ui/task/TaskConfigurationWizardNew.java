@@ -20,31 +20,38 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 
-class TaskConfigurationWizardWrapper<WIZARD extends TaskConfigurationWizard> extends BaseWizard {
+import java.util.Map;
 
-    @Nullable
-    private WIZARD wizard;
+class TaskConfigurationWizardNew extends TaskConfigurationWizard {
 
-    protected TaskConfigurationWizardWrapper() {
-        this.wizard = wizard;
+    protected TaskConfigurationWizardNew() {
+    }
+
+    @Override
+    protected String getDefaultWindowTitle() {
+        return "Create a task";
+    }
+
+    @Override
+    public String getTaskTypeId() {
+        return null;
+    }
+
+    @Override
+    public void saveTaskState(Map<String, Object> state) {
+
     }
 
     @Override
     public void addPages() {
-        if (wizard == null) {
-            addPage(new TaskConfigurationCreatePage());
-            addPage(new TaskConfigurationVoidPage());
-        } else {
-            wizard.setContainer(getContainer());
-            addTaskWizardPages();
-        }
+        addPage(new TaskConfigurationCreatePage());
+        addPage(new TaskConfigurationVoidPage());
     }
 
     private void addTaskWizardPages() {
+/*
         if (wizard == null) {
             return;
         }
@@ -53,6 +60,7 @@ class TaskConfigurationWizardWrapper<WIZARD extends TaskConfigurationWizard> ext
             addPage(page);
             page.setWizard(wizard);
         }
+*/
     }
 
     @Override
@@ -62,19 +70,12 @@ class TaskConfigurationWizardWrapper<WIZARD extends TaskConfigurationWizard> ext
 
     @Override
     public boolean canFinish() {
-        if (wizard != null && wizard.canFinish()) {
-            return true;
-        }
         return false;
     }
 
     @Override
     public boolean performFinish() {
-        return wizard.performFinish();
-    }
-
-    public WIZARD getTaskWizard() {
-        return wizard;
+        return false;//wizard.performFinish();
     }
 
     class TaskConfigurationVoidPage extends ActiveWizardPage

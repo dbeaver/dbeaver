@@ -36,7 +36,7 @@ public interface DBTTaskConfigurator {
         DBRRunnableContext runnableContext,
         @NotNull DBTTaskType taskType);
 
-    boolean openTaskConfigDialog(
+    Object createTaskConfigWizard(
         @NotNull DBTTask taskConfiguration);
 
 }

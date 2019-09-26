@@ -52,9 +52,9 @@ public interface DBTTaskManager {
         @NotNull DBTTaskType task,
         @NotNull String label,
         @Nullable String description,
-        @NotNull Map<String, Object> properties) throws DBException;
+        @NotNull Map<String, Object> properties);
 
-    void updateTaskConfiguration(@NotNull DBTTask task);
+    void updateTaskConfiguration(@NotNull DBTTask task) throws DBException;
 
     void deleteTaskConfiguration(@NotNull DBTTask task);
 
