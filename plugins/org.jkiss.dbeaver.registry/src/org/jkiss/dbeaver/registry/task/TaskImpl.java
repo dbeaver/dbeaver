@@ -35,10 +35,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * TaskImpl
@@ -175,8 +172,9 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(this, DBTTaskEvent.Action.TASK_UPDATE));
     }
 
-    public void setProperties(Map<String, Object> properties) {
-        this.properties = properties;
+    @Override
+    public void setProperties(@NotNull Map<String, Object> properties) {
+        this.properties = new LinkedHashMap<>(properties);
     }
 
     File getTaskStatsFolder(boolean create) {

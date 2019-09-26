@@ -463,7 +463,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         public void run() {
             DBTTask task = getSelectedTask();
             DBTTaskRun taskRun = getSelectedTaskRun();
-            if (task != null && taskRun != null && !taskRun.isRunSuccess()) {
+            if (task != null && taskRun != null) {
                 File runLog = task.getRunLog(taskRun);
                 if (runLog.exists()) {
                     try {

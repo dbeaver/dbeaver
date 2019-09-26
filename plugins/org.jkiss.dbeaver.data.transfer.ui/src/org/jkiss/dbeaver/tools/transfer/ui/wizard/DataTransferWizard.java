@@ -254,6 +254,9 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     public boolean performFinish() {
         // Save settings
         saveSettings();
+
+        super.performFinish();
+
         DTUIActivator.getDefault().saveDialogSettings();
 
         try {

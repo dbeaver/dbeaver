@@ -178,8 +178,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             }
             Map<String, Object> taskConfig = new LinkedHashMap<>();
             DataTransferSettings.saveNodesLocation(taskConfig, nodes, nodeType);
-            task.getProperties().clear();
-            task.getProperties().putAll(taskConfig);
+            task.setProperties(taskConfig);
         }
 
         private void addNode(List<IDataTransferNode> nodes, DBSObject object, boolean isExport) {

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.task;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,16 +29,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskManager;
-import org.jkiss.dbeaver.model.task.DBTTaskType;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Task configuration wizard dialog
@@ -58,7 +52,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     }
 
     TaskConfigurationWizardDialog(IWorkbenchWindow window) {
-        this(window, new TaskConfigurationWizardNew(), null);
+        this(window, new TaskConfigurationWizardStub(), null);
     }
 
     @Override
@@ -113,9 +107,9 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
             if (taskCreateWizard) {
                 saveConfigurationAsTask();
             }
-        } else if (buttonId == IDialogConstants.NEXT_ID && getCurrentPage() instanceof TaskConfigurationCreatePage) {
+        } else if (buttonId == IDialogConstants.NEXT_ID && getCurrentPage() instanceof TaskConfigurationWizardPageTask) {
             taskCreateWizard = true;
-            TaskConfigurationCreatePage createPage = (TaskConfigurationCreatePage) getCurrentPage();
+            TaskConfigurationWizardPageTask createPage = (TaskConfigurationWizardPageTask) getCurrentPage();
             if (nestedTaskWizard == null) {
                 // Now we need to create real wizard, initialize it and inject in this dialog
                 try {
@@ -150,6 +144,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
         return super.createContents(parent);
     }
 
+/*
     private void saveConfigurationAsTask() {
         TaskConfigurationWizard taskWizard = getTaskWizard();
         DBTTaskManager taskManager = taskWizard.getProject().getTaskManager();
@@ -160,8 +155,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
 
         EditTaskConfigurationDialog dialog;
         if (currentTask != null) {
-            currentTask.getProperties().clear();
-            currentTask.getProperties().putAll(state);
+            currentTask.setProperties(state);
             dialog = new EditTaskConfigurationDialog(getShell(), currentTask);
         } else {
             DBTTaskType taskType = taskManager.getRegistry().getTask(taskWizard.getTaskTypeId());
@@ -180,7 +174,26 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
                 DBWorkbench.getPlatformUI().showError("Save task", "Error saving task " + task.getName() + "", e);
             }
         }
+    }
+*/
 
+    private void saveConfigurationAsTask() {
+        TaskConfigurationWizardPageTask taskPage = getTaskPage();
+        if (taskPage != null) {
+            taskPage.saveSettings();
+        }
+    }
+
+    private TaskConfigurationWizardPageTask getTaskPage() {
+        if (nestedTaskWizard != null) {
+            return (TaskConfigurationWizardPageTask) nestedTaskWizard.getPages()[0];
+        } else {
+            IWizardPage[] pages = getWizard().getPages();
+            if (pages.length > 0 && pages[0] instanceof TaskConfigurationWizardPageTask) {
+                return (TaskConfigurationWizardPageTask)pages[0];
+            }
+        }
+        return null;
     }
 
 }
