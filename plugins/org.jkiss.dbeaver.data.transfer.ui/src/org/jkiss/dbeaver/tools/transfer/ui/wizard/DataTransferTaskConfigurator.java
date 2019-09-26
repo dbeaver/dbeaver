@@ -24,9 +24,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
@@ -37,14 +41,18 @@ import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
+import org.jkiss.utils.ArrayUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +60,8 @@ import java.util.Map;
  * Data transfer task configurator
  */
 public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
+
+    private static final Log log = Log.getLog(DataTransferTaskConfigurator.class);
 
     @Override
     public ConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
@@ -109,12 +119,46 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         }
 
         @Override
-        public void loadSettings(DBRRunnableContext runnableContext, Map<String, Object> configuration) {
+        public void loadSettings(DBRRunnableContext runnableContext, DBTTask task) {
+            DataTransferSettings settings = new DataTransferSettings(runnableContext, task);
+            List<DBSObject> selectedObjects = new ArrayList<>();
+            for (IDataTransferNode node : ArrayUtils.safeArray(settings.getInitConsumers())) {
+                if (node instanceof DatabaseTransferConsumer) {
+                    selectedObjects.add(((DatabaseTransferConsumer) node).getTargetObject());
+                }
+            }
+            for (IDataTransferNode node : ArrayUtils.safeArray(settings.getInitProducers())) {
+                if (node instanceof DatabaseTransferProducer) {
+                    selectedObjects.add(((DatabaseTransferProducer) node).getDatabaseObject());
+                }
+            }
 
+            List<DBNNode> selectedNodes = new ArrayList<>();
+            try {
+                runnableContext.run(true, true, monitor -> {
+                    for (DBSObject object : selectedObjects) {
+                        try {
+                            DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, object, false);
+                            if (node != null) {
+                                selectedNodes.add(node);
+                            }
+                        } catch (Exception e) {
+                            log.error("Can't find navigator node for object " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
+                        }
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                log.error("Error resolving navigator nodes", e);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+            if (!selectedNodes.isEmpty()) {
+                selectorPanel.setSelection(selectedNodes);
+            }
         }
 
         @Override
-        public void saveSettings(DBRRunnableContext runnableContext, Map<String, Object> configuration) {
+        public void saveSettings(DBRRunnableContext runnableContext, DBTTask task) {
             List<DBNNode> checkedNodes = selectorPanel.getCheckedNodes();
             List<IDataTransferNode> nodes = new ArrayList<>();
             boolean isExport = taskType.getId().equals(DTConstants.TASK_EXPORT);
@@ -132,7 +176,10 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                     addNode(nodes, object, isExport);
                 }
             }
-            DataTransferWizard.saveNodesLocation(configuration, nodes, nodeType);
+            Map<String, Object> taskConfig = new LinkedHashMap<>();
+            DataTransferSettings.saveNodesLocation(taskConfig, nodes, nodeType);
+            task.getProperties().clear();
+            task.getProperties().putAll(taskConfig);
         }
 
         private void addNode(List<IDataTransferNode> nodes, DBSObject object, boolean isExport) {

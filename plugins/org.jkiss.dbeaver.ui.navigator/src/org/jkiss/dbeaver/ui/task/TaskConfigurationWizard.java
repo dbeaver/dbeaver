@@ -84,6 +84,15 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     }
 
     @Override
+    public void addPages() {
+        super.addPages();
+        if (getCurrentTask() != null) {
+            // Task editor. Add first page
+            addPage(new TaskConfigurationCreatePage(getCurrentTask()));
+        }
+    }
+
+    @Override
     public boolean canFinish() {
         if (currentTask != null) {
             return true;

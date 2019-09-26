@@ -25,7 +25,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -388,19 +387,9 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
                 consumers.add(pipe.getConsumer());
             }
         }
-        saveNodesLocation(state, producers, "producers");
-        saveNodesLocation(state, consumers, "consumers");
+        DataTransferSettings.saveNodesLocation(state, producers, "producers");
+        DataTransferSettings.saveNodesLocation(state, consumers, "consumers");
         state.put("configuration", saveConfiguration(new LinkedHashMap<>()));
-    }
-
-    static void saveNodesLocation(Map<String, Object> state, Collection<IDataTransferNode> nodes, String nodeType) {
-        if (nodes != null) {
-            List<Map<String, Object>> inputObjects = new ArrayList<>();
-            for (Object inputObject : nodes) {
-                inputObjects.add(JSONUtils.serializeObject(inputObject));
-            }
-            state.put(nodeType, inputObjects);
-        }
     }
 
     private Map<String, Object> saveConfiguration(Map<String, Object> config) {
