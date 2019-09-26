@@ -29,9 +29,9 @@ import java.util.Map;
  * We need it because there is no wizard before user select some particular task type.
  * Once he does we "replace" this wizard with real one om wizard dialog.
  */
-class TaskConfigurationWizardNew extends TaskConfigurationWizard {
+class TaskConfigurationWizardStub extends TaskConfigurationWizard {
 
-    protected TaskConfigurationWizardNew() {
+    protected TaskConfigurationWizardStub() {
     }
 
     @Override
@@ -51,7 +51,7 @@ class TaskConfigurationWizardNew extends TaskConfigurationWizard {
 
     @Override
     public void addPages() {
-        addPage(new TaskConfigurationCreatePage(null));
+        addPage(new TaskConfigurationWizardPageTask(null));
         addPage(new TaskConfigurationVoidPage());
     }
 

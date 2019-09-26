@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
@@ -42,8 +43,10 @@ import java.util.Map;
 /**
  * Create task wizard page
  */
-class TaskConfigurationCreatePage extends ActiveWizardPage
+class TaskConfigurationWizardPageTask extends ActiveWizardPage
 {
+    private static final Log log = Log.getLog(TaskConfigurationWizardPageTask.class);
+
     private final DBPProject selectedProject;
     private Combo taskTypeCombo;
     private Text taskLabelText;
@@ -63,7 +66,7 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
 
     private TaskImpl task;
 
-    TaskConfigurationCreatePage(DBTTask task)
+    TaskConfigurationWizardPageTask(DBTTask task)
     {
         super(task == null ? "Create new task" : "Edit task");
         setTitle(task == null ? "New task properties" : "Edit task properties");
@@ -177,13 +180,13 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
                     }
                 });
             } else {
+                UIUtils.createLabelText(formPanel, "Category", task.getType().getCategory().getName(), SWT.BORDER | SWT.READ_ONLY);
                 UIUtils.createLabelText(formPanel, "Type", task.getType().getName(), SWT.BORDER | SWT.READ_ONLY);
             }
 
             taskLabelText = UIUtils.createLabelText(formPanel, "Name", task == null ? "" : CommonUtils.notEmpty(task.getName()), SWT.BORDER);
             taskLabelText.addModifyListener(e -> {
                 taskName = taskLabelText.getText();
-                if (task != null) task.setName(taskName);
                 modifyListener.modifyText(e);
             });
 
@@ -191,7 +194,6 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
             ((GridData) taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 5;
             taskDescriptionText.addModifyListener(e -> {
                 taskDescription = taskDescriptionText.getText();
-                if (task != null) task.setDescription(taskDescription);
                 modifyListener.modifyText(e);
             });
 
@@ -264,6 +266,18 @@ class TaskConfigurationCreatePage extends ActiveWizardPage
         taskConfigPanel.saveSettings(getWizard().getRunnableContext(), task);
 
         return (TaskConfigurationWizard) configurator.createTaskConfigWizard(task);
+    }
+
+    public void saveSettings() {
+        if (task != null) {
+            task.setName(taskLabelText.getText());
+            task.setDescription(taskDescriptionText.getText());
+            try {
+                task.getProject().getTaskManager().updateTaskConfiguration(task);
+            } catch (DBException e) {
+                log.error("Error saving task configuration", e);
+            }
+        }
     }
 
 }

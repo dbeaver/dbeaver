@@ -88,7 +88,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         super.addPages();
         if (getCurrentTask() != null) {
             // Task editor. Add first page
-            addPage(new TaskConfigurationCreatePage(getCurrentTask()));
+            addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
         }
     }
 
@@ -102,6 +102,11 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
                 return false;
             }
         }
+        return true;
+    }
+
+    @Override
+    public boolean performFinish() {
         return true;
     }
 
