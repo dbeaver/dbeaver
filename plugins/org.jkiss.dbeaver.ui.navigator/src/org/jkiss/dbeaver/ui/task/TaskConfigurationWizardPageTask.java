@@ -214,9 +214,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
                 DBTTaskConfigPanel configPage = configurator.createInputConfigurator(UIUtils.getDefaultRunnableContext(), selectedTaskType);
                 if (configPage != null) {
                     taskConfigPanel = configPage;
-                    taskConfigPanel.createControl(configPanelPlaceholder, event -> {
-                        updatePageCompletion();
-                    });
+                    taskConfigPanel.createControl(configPanelPlaceholder, this::updatePageCompletion);
                     if (task != null) {
                         taskConfigPanel.loadSettings(getWizard().getRunnableContext(), task);
                         updatePageCompletion();
