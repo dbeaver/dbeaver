@@ -222,7 +222,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
         @Override
         public void loadSettings() {
-            DataTransferSettings settings = new DataTransferSettings(UIUtils.getDefaultRunnableContext(), dtWizard.getCurrentTask());
+            DataTransferSettings settings = dtWizard.getSettings();
             List<DBSObject> selectedObjects = new ArrayList<>();
             for (IDataTransferNode node : ArrayUtils.safeArray(settings.getInitConsumers())) {
                 if (node instanceof DatabaseTransferConsumer) {
