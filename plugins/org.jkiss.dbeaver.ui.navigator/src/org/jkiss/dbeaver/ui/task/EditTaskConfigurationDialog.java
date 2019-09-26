@@ -58,15 +58,6 @@ public class EditTaskConfigurationDialog extends BaseDialog
     private Text taskDescriptionText;
     private DBTTask[] allTasks;
 
-    public EditTaskConfigurationDialog(Shell parentShell, DBPProject project, DBTTaskType taskDescriptor, Map<String, Object> state)
-    {
-        super(parentShell, "Create new task [" + taskDescriptor.getName() + "]", taskDescriptor.getIcon() == null ? DBIcon.TREE_PACKAGE : taskDescriptor.getIcon());
-        this.task = null;
-        this.project = project;
-        this.taskDescriptor = taskDescriptor;
-        this.state = state;
-    }
-
     public EditTaskConfigurationDialog(Shell parentShell, DBTTask task)
     {
         super(parentShell, "Edit task [" + task.getName() + "]", task.getType().getIcon() == null ? DBIcon.TREE_PACKAGE : task.getType().getIcon());

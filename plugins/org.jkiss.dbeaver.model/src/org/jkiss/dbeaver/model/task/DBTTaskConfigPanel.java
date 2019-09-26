@@ -16,18 +16,17 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-
 /**
- * DBTTaskConfigPanel
+ * DBTTaskConfigPanel.
+ * TODO: move it to UI module and use real classes instead of Object
  */
 public interface DBTTaskConfigPanel
 {
-    void createControl(Object parent, Runnable propertyChangeListener);
+    void createControl(Object parent, Object wizard, Runnable propertyChangeListener);
 
-    void loadSettings(DBRRunnableContext runnableContext, DBTTask task);
+    void loadSettings();
 
-    void saveSettings(DBRRunnableContext runnableContext, DBTTask task);
+    void saveSettings();
 
     boolean isComplete();
 

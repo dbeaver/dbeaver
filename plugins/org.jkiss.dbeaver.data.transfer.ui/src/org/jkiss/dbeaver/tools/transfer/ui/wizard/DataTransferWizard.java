@@ -104,7 +104,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     private DataTransferSettings settings;
     private Map<Class, NodePageSettings> nodeSettings = new LinkedHashMap<>();
 
-    public DataTransferWizard(@Nullable DBTTask task) {
+    private DataTransferWizard(@Nullable DBTTask task) {
         super(task);
         setDialogSettings(
             UIUtils.getSettingsSection(
@@ -125,8 +125,8 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         loadSettings(runnableContext);
     }
 
-    private void loadSettings(@NotNull DBRRunnableContext runnableContext) {
-
+    void loadSettings(@NotNull DBRRunnableContext runnableContext) {
+        nodeSettings.clear();
         {
             // Load node settings
             Collection<DBSObject> objectTypes = settings.getSourceObjects();
@@ -346,11 +346,11 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             for (NodePageSettings ns : this.nodeSettings.values()) {
                 DataTransferPageDescriptor pd = ns.nodeConfigurator == null ? null : ns.nodeConfigurator.getPageDescriptor(page);
                 if (pd != null) {
-                    if (pd.getProducerType() != null && settings.getProducer() != null && !settings.getProducer().getId().equals(pd.getProducerType())) {
+                    if (settings.getProducer() != null && (pd.getProducerType() == null || !settings.getProducer().getId().equals(pd.getProducerType()))) {
                         // Producer doesn't match
                         return false;
                     }
-                    if (pd.getConsumerType() != null && settings.getConsumer() != null && !settings.getConsumer().getId().equals(pd.getConsumerType())) {
+                    if (settings.getConsumer() != null && (pd.getConsumerType() == null || !settings.getConsumer().getId().equals(pd.getConsumerType()))) {
                         // Consumer doesn't match
                         return false;
                     }
