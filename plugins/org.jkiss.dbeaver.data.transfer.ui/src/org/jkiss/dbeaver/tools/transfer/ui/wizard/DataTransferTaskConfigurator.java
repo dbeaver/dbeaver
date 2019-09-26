@@ -19,13 +19,12 @@ package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 
 import java.util.ArrayList;
@@ -83,12 +83,29 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                 GridData.FILL_BOTH,
                 0);
             selectorPanel = new DatabaseObjectsSelectorPanel(group, runnableContext);
-            selectorPanel.addSelectionListener(new ISelectionChangedListener() {
+            selectorPanel.setNavigatorFilter(new DatabaseNavigatorTreeFilter() {
                 @Override
-                public void selectionChanged(SelectionChangedEvent event) {
-                    propertyChangeListener.propertyChange(new PropertyChangeEvent(selectorPanel, "nodes", null, null));
+                public boolean isLeafObject(Object node) {
+                    if (!(node instanceof DBNDatabaseItem)) {
+                        return false;
+                    }
+                    DBSObject object = ((DBNDatabaseItem) node).getObject();
+                    return object instanceof DBSDataContainer || super.isLeafObject(object);
+                }
+
+                @Override
+                public boolean select(Object element) {
+                    if (!(element instanceof DBNDatabaseItem)) {
+                        return true;
+                    }
+                    DBSObject object = ((DBNDatabaseItem) element).getObject();
+                    return object instanceof DBSDataContainer ||
+                        object instanceof DBSObjectContainer;
                 }
             });
+            selectorPanel.addSelectionListener(event ->
+                propertyChangeListener.propertyChange(
+                    new PropertyChangeEvent(selectorPanel, "nodes", null, null)));
         }
 
         @Override
