@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 /**
@@ -24,7 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
  */
 public interface DBTTaskConfigPanel
 {
-    void createControl(Object parent, IPropertyChangeListener propertyChangeListener);
+    void createControl(Object parent, Runnable propertyChangeListener);
 
     void loadSettings(DBRRunnableContext runnableContext, DBTTask task);
 

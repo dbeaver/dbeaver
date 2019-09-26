@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
-import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,11 +25,17 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -38,15 +44,22 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.dialogs.BrowseObjectDialog;
+import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.utils.ArrayUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,15 +87,25 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         private DBRRunnableContext runnableContext;
         private DBTTaskType taskType;
         private Table objectsTable;
+        private DBPProject currentProject;
         //private DatabaseObjectsSelectorPanel selectorPanel;
 
         ConfigPanel(DBRRunnableContext runnableContext, DBTTaskType taskType) {
             this.runnableContext = runnableContext;
             this.taskType = taskType;
+            this.currentProject = NavigatorUtils.getSelectedProject();
         }
 
+        public DBPDataSource getLastDataSource() {
+            int itemCount = objectsTable.getItemCount();
+            DBSObject lastObject = itemCount <= 0 ? null : (DBSObject) objectsTable.getItem(itemCount - 1).getData();
+            return lastObject.getDataSource();
+        }
+        
         @Override
-        public void createControl(Object parent, IPropertyChangeListener propertyChangeListener) {
+        public void createControl(Object parent, Runnable propertyChangeListener) {
+            boolean isExport = isExport();
+
             Group group = UIUtils.createControlGroup(
                 (Composite) parent,
                 (DTConstants.TASK_EXPORT.equals(taskType.getId()) ? "Export tables" : "Import into"),
@@ -95,17 +118,88 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             UIUtils.createTableColumn(objectsTable, SWT.NONE, "Object");
             UIUtils.createTableColumn(objectsTable, SWT.NONE, "Data Source");
 
-            Composite buttonsPanel = UIUtils.createComposite(group, 2);
-            UIUtils.createDialogButton(buttonsPanel, "Add ...", new SelectionAdapter() {
+            Composite buttonsPanel = UIUtils.createComposite(group, isExport ? 3 : 2);
+            UIUtils.createDialogButton(buttonsPanel, "Add Table ...", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    super.widgetSelected(e);
+                    Class<?> tableClass = isExport ? DBSDataContainer.class : DBSDataManipulator.class;
+                    DBNProjectDatabases rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
+                    DBNNode selNode = null;
+                    if (objectsTable.getItemCount() > 0) {
+                        DBPDataSource lastDataSource = getLastDataSource();
+                        if (lastDataSource != null) {
+                            selNode = rootNode.getDataSource(lastDataSource.getContainer().getId());
+                        }
+                    }
+                    List<DBNNode> tables = BrowseObjectDialog.selectObjects(
+                        group.getShell(),
+                        isExport ? "Choose source table(s)" : "Choose target table(s)",
+                        rootNode,
+                        selNode,
+                        new Class[]{DBSObjectContainer.class, tableClass},
+                        new Class[]{tableClass},
+                        null);
+                    if (tables != null) {
+                        for (DBNNode node : tables) {
+                            if (node instanceof DBNDatabaseNode) {
+                                addObjectToTable(((DBNDatabaseNode) node).getObject());
+                            }
+                        }
+                        propertyChangeListener.run();
+                    }
                 }
             });
+            if (isExport) {
+                UIUtils.createDialogButton(buttonsPanel, "Add Query ...", new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DBPDataSource lastDataSource = getLastDataSource();
+                        if (lastDataSource == null) {
+                            SelectDataSourceDialog dsDialog = new SelectDataSourceDialog(group.getShell(), currentProject, null);
+                            if (dsDialog.open() == IDialogConstants.OK_ID) {
+                                DBPDataSourceContainer dataSource = dsDialog.getDataSource();
+                                if (!dataSource.isConnected()) {
+                                    try {
+                                        runnableContext.run(true, true, monitor -> {
+                                            try {
+                                                dataSource.connect(monitor, true, true);
+                                            } catch (DBException ex) {
+                                                throw new InvocationTargetException(ex);
+                                            }
+                                        });
+                                    } catch (InvocationTargetException ex) {
+                                        DBWorkbench.getPlatformUI().showError("Error opening datasource", "Error while opening datasource", ex);
+                                        return;
+                                    } catch (InterruptedException ex) {
+                                        return;
+                                    }
+                                }
+                                lastDataSource = dataSource.getDataSource();
+                            }
+                        }
+
+                        if (lastDataSource != null) {
+                            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+                            if (serviceSQL != null) {
+                                DataSourceContextProvider contextProvider = new DataSourceContextProvider(lastDataSource);
+                                String query = serviceSQL.openSQLEditor(contextProvider, "SQL Query", UIIcon.SQL_SCRIPT, "");
+                                if (query != null) {
+                                    addObjectToTable(new SQLQueryDataContainer(contextProvider, new SQLQuery(lastDataSource, query), log));
+                                    propertyChangeListener.run();
+                                }
+                            }
+                        }
+                    }
+                });
+            }
             Button removeButton = UIUtils.createDialogButton(buttonsPanel, "Remove", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    super.widgetSelected(e);
+                    DBSObject object = (DBSObject) objectsTable.getItem(objectsTable.getSelectionIndex()).getData();
+                    if (UIUtils.confirmAction("Remove object", "Remove object " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "?")) {
+                        objectsTable.remove(objectsTable.getSelectionIndex());
+                        propertyChangeListener.run();
+                    }
                 }
             });
             removeButton.setEnabled(false);
@@ -115,6 +209,10 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                     removeButton.setEnabled(objectsTable.getSelectionIndex() >= 0);
                 }
             });
+        }
+
+        private boolean isExport() {
+            return taskType.getId().equals(DTConstants.TASK_EXPORT);
         }
 
         @Override
@@ -154,7 +252,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         public void saveSettings(DBRRunnableContext runnableContext, DBTTask task) {
             TableItem[] items = objectsTable.getItems();
             List<IDataTransferNode> nodes = new ArrayList<>();
-            boolean isExport = taskType.getId().equals(DTConstants.TASK_EXPORT);
+            boolean isExport = isExport();
             String nodeType = isExport ? "producers" : "consumers";
             for (TableItem item : items) {
                 DBSObject object = (DBSObject) item.getData();
