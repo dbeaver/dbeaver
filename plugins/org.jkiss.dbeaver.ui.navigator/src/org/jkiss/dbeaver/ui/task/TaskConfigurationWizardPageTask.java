@@ -263,6 +263,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
     }
 
     public TaskConfigurationWizard getTaskWizard() throws DBException {
+        if (!(getWizard() instanceof TaskConfigurationWizardStub)) {
+            // We already have it
+            return getWizard();
+        }
         TaskConfigurationWizard realWizard = taskWizards.get(selectedTaskType);
         if (realWizard == null) {
             DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
