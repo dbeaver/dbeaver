@@ -109,8 +109,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -1361,7 +1361,7 @@ public class ResultSetViewer extends Viewer
 
     private boolean checkDoubleLock(Control lockedBy) {
         if (actionsDisabled) {
-            log.debug(new DBCException("Internal error: actions double-lock by [" + lockedBy + "]"));
+            log.debug("Internal error: actions double-lock by [" + lockedBy + "]");
             return true;
         }
         return false;

@@ -581,7 +581,7 @@
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
-                    <file type="jar" path="maven:/nl.knaw.dans.common:dans-dbf-lib:RELEASE" bundle="!drivers.csvjdbc"/>
+                    <file type="jar" path="maven:/nl.knaw.dans.common:dans-dbf-lib:LATEST" bundle="!drivers.csvjdbc"/>
 
                     <file type="jar" path="drivers/csvjdbc/csvjdbc.jar" bundle="drivers.csvjdbc"/>
                     <file type="jar" path="drivers/csvjdbc/dans-dbf-lib.jar" bundle="drivers.csvjdbc"/>
@@ -1512,6 +1512,10 @@
         <repository id="cratedb-maven-repo" name="CrateDB Repository" url="https://dl.bintray.com/crate/crate" order="21">
             <scope group="io.crate"/>
         </repository>
+        <repository id="dans-maven-repo" name="Nuiton Repository" url="http://maven.nuiton.org/nexus/content/groups/releases/" order="22">
+            <scope group="nl.knaw.dans.common"/>
+        </repository>
+
 <!--
         <repository id="s3-maven-qubole-releases" name="Qubole Release Repository on S3" url="http://maven-qubole.s3-website-us-east-1.amazonaws.com/maven/release">
             <scope group="com.qubole"/>

@@ -218,7 +218,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
             final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, monitor);
             boolean longContent = textInput.getContentLength() > LONG_CONTENT_LENGTH;
             if (longContent) {
-                editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
+                UIUtils.asyncExec(() -> {
+                    editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
+                });
             }
             UIUtils.asyncExec(() -> {
 
