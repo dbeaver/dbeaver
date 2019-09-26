@@ -298,7 +298,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 }
                                 SQLQuery query = new SQLQuery(ds.getDataSource(), queryText);
                                 producer.dataContainer = new SQLQueryDataContainer(new DataSourceContextProvider(ds), query, log);
-                                //throw new DBException("SQL data containers not supported yet");
+                                break;
                             }
                             default:
                                 log.warn("Unsupported selector type: " + selType);

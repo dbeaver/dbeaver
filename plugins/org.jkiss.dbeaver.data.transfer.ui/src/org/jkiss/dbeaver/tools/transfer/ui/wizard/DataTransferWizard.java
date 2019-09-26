@@ -333,7 +333,10 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     }
 
     protected boolean isPageValid(IWizardPage page) {
-        return page instanceof DataTransferPageSettings || isPageValid(page, settings.getProducer()) || isPageValid(page, settings.getConsumer());
+        return page instanceof DataTransferPagePipes ||
+            page instanceof DataTransferPageSettings ||
+            isPageValid(page, settings.getProducer()) ||
+            isPageValid(page, settings.getConsumer());
     }
 
     private boolean isPageValid(IWizardPage page, DataTransferNodeDescriptor node) {

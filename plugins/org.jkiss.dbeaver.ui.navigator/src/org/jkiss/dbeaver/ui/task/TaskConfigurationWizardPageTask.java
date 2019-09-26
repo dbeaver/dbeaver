@@ -107,11 +107,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
     }
 
     @Override
-    public boolean isPageComplete() {
-        return selectedTaskType != null && !CommonUtils.isEmpty(taskName) && (taskConfigPanel == null || taskConfigPanel.isComplete());
-    }
-
-    @Override
     public boolean canFlipToNextPage() {
         return isPageComplete();
     }
@@ -257,6 +252,13 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             addTaskCategories(item, cat.getChildren());
             item.setExpanded(true);
         }
+    }
+
+    @Override
+    protected boolean determinePageCompletion() {
+        return selectedTaskType != null &&
+            (task != null || !CommonUtils.isEmpty(taskName)) &&
+            (taskConfigPanel == null || taskConfigPanel.isComplete());
     }
 
     public TaskConfigurationWizard createTaskWizard() throws DBException {
