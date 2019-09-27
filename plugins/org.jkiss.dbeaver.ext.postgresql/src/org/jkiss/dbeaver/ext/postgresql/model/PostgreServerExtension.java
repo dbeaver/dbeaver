@@ -108,5 +108,11 @@ public interface PostgreServerExtension
 
     boolean supportsTeblespaceLocation();
 
+    // Stored procedures support (workarounds for Redshift mostly)
     boolean supportsStoredProcedures();
+
+    String getProceduresSystemTable();
+
+    String getProceduresOidColumn();
+
 }
