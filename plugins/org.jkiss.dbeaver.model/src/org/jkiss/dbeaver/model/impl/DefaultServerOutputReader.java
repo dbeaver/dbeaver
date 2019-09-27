@@ -55,9 +55,12 @@ public class DefaultServerOutputReader implements DBCServerOutputReader
         if (warnings != null && warnings.size() > 0) {
             for (Throwable warning : warnings) {
                 if (warning instanceof SQLException) {
-                    String sqlState = ((SQLException) warning).getSQLState();
-                    if (!CommonUtils.isEmpty(sqlState)) {
-                        output.print(sqlState + ": ");
+                    if (false) {
+                        // Do not print SQL state. It breaks output.
+                        String sqlState = ((SQLException) warning).getSQLState();
+                        if (!CommonUtils.isEmpty(sqlState)) {
+                            output.print(sqlState + ": ");
+                        }
                     }
                 }
                 output.println(warning.getMessage());
