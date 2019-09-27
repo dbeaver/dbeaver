@@ -1602,6 +1602,10 @@ public class UIUtils {
         }
     }
 
+    public static DBRRunnableContext getDialogRunnableContext() {
+        return (fork, cancelable, runnable) -> runInProgressDialog(runnable);
+    }
+
     /**
      * Runs task in Eclipse progress service.
      * NOTE: this call can't be canceled if it will block in IO
