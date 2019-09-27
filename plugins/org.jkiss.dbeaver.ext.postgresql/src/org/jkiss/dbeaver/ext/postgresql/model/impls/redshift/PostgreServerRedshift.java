@@ -75,7 +75,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
                 if (redshiftVersion.getMinor() > minor) {
                     return true;
                 } else if (redshiftVersion.getMinor() == minor) {
-                    return micro >= redshiftVersion.getMicro();
+                    return redshiftVersion.getMicro() >= micro;
                 }
             }
         }
@@ -218,6 +218,16 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     @Override
     public boolean supportsStoredProcedures() {
         return isRedshiftVersionAtLeast(1, 0, 7562);
+    }
+
+    @Override
+    public String getProceduresSystemTable() {
+        return supportsStoredProcedures() ? "pg_proc_info" : super.getProceduresSystemTable();
+    }
+
+    @Override
+    public String getProceduresOidColumn() {
+        return supportsStoredProcedures() ? "prooid" : super.getProceduresOidColumn();
     }
 
     @Override

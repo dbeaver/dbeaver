@@ -872,13 +872,15 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreProcedure object, @Nullable String objectName) throws SQLException {
+            PostgreServerExtension serverType = owner.getDataSource().getServerType();
+            String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT p.oid,p.*," +
+                "SELECT p." + oidColumn + ",p.*," +
                     (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)" : "NULL") + " as arg_defaults,d.description\n" +
-                    "FROM pg_catalog.pg_proc p\n" +
-                    "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p.oid\n" +
+                    "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n" +
+                    "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn + "\n" +
                     "WHERE p.pronamespace=?" +
-                    (object == null ? "" : " AND p.oid=?") +
+                    (object == null ? "" : " AND p." + oidColumn + "=?") +
                     "\nORDER BY p.proname"
             );
             dbStat.setLong(1, owner.getObjectId());

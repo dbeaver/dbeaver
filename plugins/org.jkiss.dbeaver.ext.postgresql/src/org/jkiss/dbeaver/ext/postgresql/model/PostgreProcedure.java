@@ -251,12 +251,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
         if (getDataSource().getServerType().supportsStoredProcedures()) {
             String proKind = JDBCUtils.safeGetString(dbResult, "prokind");
-            try {
-                kind = PostgreProcedureKind.valueOf(proKind);
-            } catch (IllegalArgumentException e) {
-                log.warn("Unsupported procedure kind:" + proKind);
-                kind = PostgreProcedureKind.f;
-            }
+            kind = CommonUtils.valueOf(PostgreProcedureKind.class, proKind, PostgreProcedureKind.f);
         } else {
             if (isAggregate) {
                 kind = PostgreProcedureKind.a;
@@ -459,7 +454,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (isWindow()) {
             decl.append("\tWINDOW").append(lineSeparator);
         }
-        if (procVolatile != null) {
+        if (getProcedureType() == DBSProcedureType.FUNCTION && procVolatile != null) {
             decl.append("\t").append(procVolatile.getCreateClause()).append(lineSeparator);
         }
         if (execCost > 0 && execCost != DEFAULT_COST) {
@@ -486,7 +481,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 }
             }
         }
-        String delimiter = "$" + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
+        String delimiter = "$$";//"$" + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
         decl.append("AS ").append(delimiter).append(" ");
         if (!CommonUtils.isEmpty(functionBody)) {
             decl.append("\t").append(functionBody).append(" ");

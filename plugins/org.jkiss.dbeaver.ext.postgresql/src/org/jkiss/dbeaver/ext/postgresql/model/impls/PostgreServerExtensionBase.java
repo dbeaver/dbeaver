@@ -356,6 +356,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return dataSource.isServerVersionAtLeast(11, 0);
     }
 
+    @Override
+    public String getProceduresSystemTable() {
+        return "pg_proc";
+    }
+
+    @Override
+    public String getProceduresOidColumn() {
+        return "oid";
+    }
+
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
