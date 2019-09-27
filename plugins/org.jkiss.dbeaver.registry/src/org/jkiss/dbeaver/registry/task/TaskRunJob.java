@@ -56,6 +56,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     protected TaskRunJob(TaskImpl task, Locale locale, DBTTaskExecutionListener executionListener) {
         super("Task [" + task.getType().getName() + "] runner - " + task.getName());
+        setUser(true);
+        setSystem(false);
         this.task = task;
         this.locale = locale;
         this.executionListener = new LoggingExecutionListener(executionListener);

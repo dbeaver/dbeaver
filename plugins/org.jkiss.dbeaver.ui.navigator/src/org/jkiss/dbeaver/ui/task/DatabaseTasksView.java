@@ -286,7 +286,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         menuMgr.addMenuListener(manager -> {
             manager.add(ActionUtils.makeCommandContribution(getSite(), RUN_TASK_CMD_ID));
             manager.add(ActionUtils.makeCommandContribution(getSite(), EDIT_TASK_CMD_ID));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
+            //manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
             manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
             manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, "Delete task", null));
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
