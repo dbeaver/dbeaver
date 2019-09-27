@@ -107,4 +107,6 @@ public interface PostgreServerExtension
     boolean supportsTemporalAccessor();
 
     boolean supportsTeblespaceLocation();
+
+    boolean supportsStoredProcedures();
 }

@@ -68,6 +68,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     private DatabaseCache databaseCache;
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
+    private String serverVersion;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -230,6 +231,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         throws DBException
     {
         super.initialize(monitor);
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server version")) {
+            serverVersion = JDBCUtils.queryString(session, "SELECT version()");
+        } catch (Exception e) {
+            log.debug("Error reading PostgreSQL version: " + e.getMessage());
+            serverVersion = "";
+        }
 
         // Read databases
         getDefaultInstance().cacheDataTypes(monitor, true);
@@ -465,6 +473,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             }
         }
         return serverExtension;
+    }
+
+    public String getServerVersion() {
+        return serverVersion;
     }
 
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>
