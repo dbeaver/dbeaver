@@ -175,7 +175,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         } else if (kind == PostgreClass.RelKind.p) {
             return new PostgreTableRegular(schema, dbResult);
         } else {
-            log.warn("Unsupported PostgreClass '" + kind + "'");
+            log.debug("Unsupported PostgreClass '" + kind + "'");
             return null;
         }
     }

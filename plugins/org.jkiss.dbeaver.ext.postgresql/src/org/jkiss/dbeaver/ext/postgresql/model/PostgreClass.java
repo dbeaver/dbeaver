@@ -38,7 +38,7 @@ public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableOb
         public static final RelKind R = new RelKind("R");  // partition
         // Redshift
         public static final RelKind e = new RelKind("e");
-        public static final RelKind s = new RelKind("s");;
+        public static final RelKind s = new RelKind("s");; // special (?? redshift)
 
         private final String code;
 
@@ -56,6 +56,11 @@ public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableOb
             } catch (Throwable e1) {
                 return new RelKind(code);
             }
+        }
+
+        @Override
+        public String toString() {
+            return code;
         }
     }
 
