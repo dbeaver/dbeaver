@@ -76,8 +76,8 @@ public class DataTransferSettings {
         this.initConsumers = consumers == null ? null : consumers.toArray(new IDataTransferConsumer[0]);
         this.dataPipes = new ArrayList<>();
         this.initObjects.clear();
-        this.consumerOptional = true;
-        this.producerOptional = true;
+        this.consumerOptional = false;
+        this.producerOptional = false;
 
         DataTransferRegistry registry = DataTransferRegistry.getInstance();
 
