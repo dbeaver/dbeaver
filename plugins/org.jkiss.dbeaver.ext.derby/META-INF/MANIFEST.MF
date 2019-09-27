@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.derby;singleton:=true
-Bundle-Version: 1.1.102.qualifier
-Bundle-Release-Date: 20190923
+Bundle-Version: 1.1.103.qualifier
+Bundle-Release-Date: 20191007
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
