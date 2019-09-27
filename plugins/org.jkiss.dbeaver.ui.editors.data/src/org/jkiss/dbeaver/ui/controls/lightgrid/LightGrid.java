@@ -4288,6 +4288,9 @@ public abstract class LightGrid extends Canvas {
     @Nullable
     private String getCellToolTip(GridColumn col, int row)
     {
+        if (col == null || row < 0 || row >= rowElements.length) {
+            return null;
+        }
         String toolTip = getCellText(columnElements[col.getIndex()], rowElements[row]);
         if (toolTip == null) {
             return null;
