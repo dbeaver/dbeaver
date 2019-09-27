@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.task;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -23,6 +24,9 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.registry.task.TaskRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -125,11 +129,27 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     }
 
     public void saveTask() {
-        TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
-        if (taskPage != null) {
-            taskPage.saveSettings();
+        DBTTask currentTask = getCurrentTask();
+        if (currentTask == null) {
+            // Create new task
+            DBTTaskType taskType = TaskRegistry.getInstance().getTaskType(getTaskTypeId());
+            if (taskType == null) {
+                DBWorkbench.getPlatformUI().showError("No task type", "Can't find task type " + getTaskTypeId());
+                return;
+            }
+            EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(getContainer().getShell(), getProject(), taskType);
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                setCurrentTask(currentTask = dialog.getTask());
+            } else {
+                return;
+            }
+        } else {
+            TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+            if (taskPage != null) {
+                taskPage.saveSettings();
+            }
         }
-        saveTaskState(getCurrentTask().getProperties());
+        saveTaskState(currentTask.getProperties());
     }
 
 }

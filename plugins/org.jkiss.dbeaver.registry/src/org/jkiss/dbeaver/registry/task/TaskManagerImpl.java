@@ -200,7 +200,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                         Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, "updateTime"));
                         Map<String, Object> state = JSONUtils.getObject(taskJSON, "state");
 
-                        DBTTaskType taskDescriptor = getRegistry().getTask(task);
+                        DBTTaskType taskDescriptor = getRegistry().getTaskType(task);
                         if (taskDescriptor == null) {
                             log.error("Can't find task descriptor " + task);
                             continue;
