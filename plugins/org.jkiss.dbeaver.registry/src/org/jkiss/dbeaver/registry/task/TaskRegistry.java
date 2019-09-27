@@ -82,13 +82,13 @@ public class TaskRegistry implements DBTTaskRegistry
 
     @NotNull
     @Override
-    public DBTTaskType[] getAllTasks() {
+    public DBTTaskType[] getAllTaskTypes() {
         return taskDescriptors.values().toArray(new DBTTaskType[0]);
     }
 
     @Nullable
     @Override
-    public DBTTaskType getTask(String id) {
+    public DBTTaskType getTaskType(String id) {
         return taskDescriptors.get(id);
     }
 

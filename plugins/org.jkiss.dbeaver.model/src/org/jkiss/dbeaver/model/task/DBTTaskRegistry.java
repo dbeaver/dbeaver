@@ -25,10 +25,10 @@ import org.jkiss.code.Nullable;
 public interface DBTTaskRegistry {
 
     @NotNull
-    DBTTaskType[] getAllTasks();
+    DBTTaskType[] getAllTaskTypes();
 
     @Nullable
-    DBTTaskType getTask(String id);
+    DBTTaskType getTaskType(String id);
 
     @NotNull
     DBTTaskCategory[] getAllCategories();
