@@ -16,20 +16,28 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PostgreDataSourceInfo
  */
 class PostgreDataSourceInfo extends JDBCDataSourceInfo {
 
+    private final PostgreDataSource dataSource;
     private final boolean supportsLimits;
 
     public PostgreDataSourceInfo(PostgreDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super(metaData);
-        supportsLimits = dataSource.getServerType().isSupportsLimits();
+        this.dataSource = dataSource;
+        this.supportsLimits = dataSource.getServerType().isSupportsLimits();
+    }
+
+    @Override
+    public String getDatabaseProductVersion() {
+        String serverVersion = dataSource.getServerVersion();
+        return CommonUtils.isEmpty(serverVersion) ? super.getDatabaseProductVersion() : super.getDatabaseProductVersion() + "\n" + serverVersion;
     }
 
     @Override

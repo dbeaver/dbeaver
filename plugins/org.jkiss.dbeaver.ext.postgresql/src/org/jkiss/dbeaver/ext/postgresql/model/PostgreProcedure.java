@@ -249,7 +249,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
         this.config = JDBCUtils.safeGetArray(dbResult, "proconfig");
 
-        if (getDataSource().isServerVersionAtLeast(11, 0)) {
+        if (getDataSource().getServerType().supportsStoredProcedures()) {
             String proKind = JDBCUtils.safeGetString(dbResult, "prokind");
             try {
                 kind = PostgreProcedureKind.valueOf(proKind);

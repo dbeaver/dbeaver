@@ -28,10 +28,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * PostgreServerRedshift
@@ -40,8 +44,42 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
 
     private static final Log log = Log.getLog(PostgreServerRedshift.class);
 
+    private Version redshiftVersion;
+
     public PostgreServerRedshift(PostgreDataSource dataSource) {
         super(dataSource);
+    }
+
+    private boolean isRedshiftVersionAtLeast(int major, int minor, int micro) {
+        if (redshiftVersion == null) {
+            String serverVersion = dataSource.getServerVersion();
+            if (!CommonUtils.isEmpty(serverVersion)) {
+                try {
+                    Matcher matcher = Pattern.compile("Redshift ([0-9\\.]+)").matcher(serverVersion);
+                    if (matcher.find()) {
+                        String versionStr = matcher.group(1);
+                        if (!CommonUtils.isEmpty(versionStr)) {
+                            redshiftVersion = new Version(versionStr);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("Error getting Redshift version", e);
+                    redshiftVersion = new Version(1, 0,0);
+                }
+            }
+        }
+        if (redshiftVersion != null) {
+            if (redshiftVersion.getMajor() > major) {
+                return true;
+            } else if (redshiftVersion.getMajor() == major) {
+                if (redshiftVersion.getMinor() > minor) {
+                    return true;
+                } else if (redshiftVersion.getMinor() == minor) {
+                    return micro >= redshiftVersion.getMicro();
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -175,6 +213,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
             return new RedshiftTableColumn(monitor, (RedshiftTable)table, dbResult);
         }
         return super.createTableColumn(monitor, schema, table, dbResult);
+    }
+
+    @Override
+    public boolean supportsStoredProcedures() {
+        return isRedshiftVersionAtLeast(1, 0, 7562);
     }
 
     @Override

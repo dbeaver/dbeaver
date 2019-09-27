@@ -351,6 +351,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return dataSource.isServerVersionAtLeast(9, 2);
     }
 
+    @Override
+    public boolean supportsStoredProcedures() {
+        return dataSource.isServerVersionAtLeast(11, 0);
+    }
+
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
