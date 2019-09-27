@@ -37,9 +37,9 @@ import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
-import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -211,8 +211,10 @@ public class MetaDataPanel implements IResultSetPanel {
         protected Object getObjectValue(DBDAttributeBinding item) {
             if (item instanceof DBDAttributeBindingMeta) {
                 return item.getMetaAttribute();
-            } else {
+            } else if (item != null) {
                 return item.getAttribute();
+            } else {
+                return null;
             }
         }
 
