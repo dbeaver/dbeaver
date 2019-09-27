@@ -346,11 +346,11 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             for (NodePageSettings ns : this.nodeSettings.values()) {
                 DataTransferPageDescriptor pd = ns.nodeConfigurator == null ? null : ns.nodeConfigurator.getPageDescriptor(page);
                 if (pd != null) {
-                    if (settings.getProducer() != null && (pd.getProducerType() == null || !settings.getProducer().getId().equals(pd.getProducerType()))) {
+                    if (pd.getProducerType() != null && settings.getProducer() != null && !settings.getProducer().getId().equals(pd.getProducerType())) {
                         // Producer doesn't match
                         return false;
                     }
-                    if (settings.getConsumer() != null && (pd.getConsumerType() == null || !settings.getConsumer().getId().equals(pd.getConsumerType()))) {
+                    if (pd.getConsumerType() != null && settings.getConsumer() != null && !settings.getConsumer().getId().equals(pd.getConsumerType())) {
                         // Consumer doesn't match
                         return false;
                     }
