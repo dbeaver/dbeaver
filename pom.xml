@@ -250,9 +250,7 @@
         <!-- eclipse-modern must be enabled by default -->
         <profile>
             <id>eclipse-modern</id>
-            <activation>
-                <property><name>!legacy</name></property>
-            </activation>
+            <activation><property><name>!legacy</name></property></activation>
         </profile>
 
         <!--

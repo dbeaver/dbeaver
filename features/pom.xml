@@ -33,6 +33,7 @@
     <profiles>
         <profile>
             <id>eclipse-modern</id>
+            <activation><property><name>!legacy</name></property></activation>
             <modules>
                 <module>org.jkiss.dbeaver.git.feature</module>
             </modules>
