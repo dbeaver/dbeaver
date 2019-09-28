@@ -240,12 +240,19 @@
         <profile>
             <id>eclipse-oxygen</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <property><name>legacy</name></property>
             </activation>
             <properties>
                 <!-- Use Oxygen repo -->
                 <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
             </properties>
+        </profile>
+        <!-- eclipse-modern must be enabled by default -->
+        <profile>
+            <id>eclipse-modern</id>
+            <activation>
+                <property><name>!legacy</name></property>
+            </activation>
         </profile>
 
         <!--
