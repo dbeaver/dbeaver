@@ -152,7 +152,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
             if (executeInfo.hasError()) {
                 buffer.append(executeInfo.getErrorMessage());
             } else {
-                buffer.append("SUCCESS [").append(executeInfo.getRowCount()).append("]");
+                buffer.append("SUCCESS [").append(executeInfo.getUpdateRowCount()).append("]");
             }
 
         } else if (object instanceof QMMTransactionInfo) {

@@ -73,8 +73,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * QueryLogViewer
@@ -221,11 +221,16 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
                 if (exec.isClosed() && !exec.isFetching()) {
-                    long rowCount = exec.getRowCount();
-                    if (rowCount < 0) {
+                    long updateRowCount = exec.getUpdateRowCount();
+                    long fetchRowCount = exec.getFetchRowCount();
+                    if (updateRowCount < 0 && fetchRowCount <= 0) {
                         return ""; //$NON-NLS-1$
+                    } else if (updateRowCount < 0) {
+                        return String.valueOf(fetchRowCount);
+                    } else if (fetchRowCount <= 0) {
+                        return String.valueOf(updateRowCount);
                     } else {
-                        return String.valueOf(rowCount);
+                        return fetchRowCount + "/" + updateRowCount;
                     }
                 }
             }
