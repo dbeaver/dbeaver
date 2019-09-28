@@ -153,7 +153,7 @@ public class QMMSessionInfo extends QMMObject {
     {
         QMMStatementExecuteInfo execution = getExecution(statement);
         if (execution != null) {
-            if (execution.getRowCount() == -1) {
+            if (execution.getUpdateRowCount() < 0) {
                 execution.close(rows, null);
             }
         }

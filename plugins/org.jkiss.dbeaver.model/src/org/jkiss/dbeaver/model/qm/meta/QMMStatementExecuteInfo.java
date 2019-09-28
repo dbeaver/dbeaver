@@ -30,7 +30,8 @@ public class QMMStatementExecuteInfo extends QMMObject {
     private QMMTransactionSavepointInfo savepoint;
     private String queryString;
 
-    private long rowCount;
+    private long fetchRowCount;
+    private long updateRowCount;
 
     private int errorCode;
     private String errorMessage;
@@ -64,7 +65,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
         super(openTime, closeTime);
         this.statement = stmt;
         this.queryString = queryString;
-        this.rowCount = rowCount;
+        this.fetchRowCount = rowCount;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.fetchBeginTime = fetchBeginTime;
@@ -82,7 +83,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
             // SQL error makes ANY statement transactional (PG specific?)
             this.transactional = true;
         }
-        this.rowCount = rowCount;
+        this.updateRowCount = rowCount;
         super.close();
     }
 
@@ -94,7 +95,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     void endFetch(long rowCount)
     {
         this.fetchEndTime = getTimeStamp();
-        this.rowCount = rowCount;
+        this.fetchRowCount = rowCount;
     }
 
     public QMMStatementInfo getStatement()
@@ -112,9 +113,13 @@ public class QMMStatementExecuteInfo extends QMMObject {
         return queryString;
     }
 
-    public long getRowCount()
+    public long getFetchRowCount() {
+        return fetchRowCount;
+    }
+
+    public long getUpdateRowCount()
     {
-        return rowCount;
+        return updateRowCount;
     }
 
     public int getErrorCode()
@@ -148,7 +153,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     public boolean isTransactional() {
-        return transactional;
+        return transactional || updateRowCount > 0;
     }
 
     public QMMStatementExecuteInfo getPrevious()
