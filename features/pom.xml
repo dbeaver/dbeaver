@@ -27,7 +27,16 @@
         <module>org.jkiss.dbeaver.ext.office.feature</module>
         <module>org.jkiss.dbeaver.ext.ui.svg.feature</module>
         <module>org.jkiss.dbeaver.net.sshj.feature</module>
-        <module>org.jkiss.dbeaver.git.feature</module>
     </modules>
+
+    <!-- Include Git only in modern Eclipse version -->
+    <profiles>
+        <profile>
+            <id>eclipse-modern</id>
+            <modules>
+                <module>org.jkiss.dbeaver.git.feature</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
