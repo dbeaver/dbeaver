@@ -23,10 +23,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPMessageType;
@@ -46,7 +43,7 @@ import org.jkiss.utils.CommonUtils;
 class StatusLabel extends Composite {
 
     private final IResultSetController viewer;
-    private final Text statusText;
+    private final Label statusText;
     //private final Color colorDefault, colorError, colorWarning;
     private DBPMessageType messageType;
     private final ToolItem detailsIcon;
@@ -79,7 +76,7 @@ class StatusLabel extends Composite {
             }
         });
 
-        statusText = new Text(this, SWT.SINGLE | SWT.READ_ONLY);
+        statusText = new Label(this, SWT.NONE);
         if (RuntimeUtils.isPlatformWindows()) {
             statusText.setBackground(null);
         } else {
