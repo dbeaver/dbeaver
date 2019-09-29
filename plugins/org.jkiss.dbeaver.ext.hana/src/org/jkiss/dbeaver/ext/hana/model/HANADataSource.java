@@ -48,7 +48,8 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 public class HANADataSource extends GenericDataSource implements DBCQueryPlanner, IAdaptable {
 
     private static final Log log = Log.getLog(HANADataSource.class);
-    private static final String APPLICATION_NAME_CONNECTION_PROPERTY = "SESSIONVARIABLE:APPLICATION";
+    private static final String PROP_APPLICATION_NAME = "SESSIONVARIABLE:APPLICATION";
+    private static final String PROP_READONLY = "READONLY";
     
 
     private HashMap<String, String> sysViewColumnUnits; 
@@ -105,7 +106,10 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         Map<String, String> props = new HashMap<>();
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
-            props.put(APPLICATION_NAME_CONNECTION_PROPERTY, appName);
+            props.put(PROP_APPLICATION_NAME, appName);
+        }
+        if (getContainer().isConnectionReadOnly()) {
+            props.put(PROP_READONLY, "TRUE");
         }
         return props;
     }

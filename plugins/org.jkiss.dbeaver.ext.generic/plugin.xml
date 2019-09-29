@@ -642,9 +642,9 @@
                 <driver
                     id="sap_hana"
                     category="SAP"
-                    label="HANA"
-                    icon="icons/sap_hana_icon.png"
-                    iconBig="icons/sap_hana_icon_big.png"
+                    label="HANA (Old)"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.hana/icons/sap_hana_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.hana/icons/sap_hana_icon_big.png"
                     class="com.sap.db.jdbc.Driver"
                     sampleURL="jdbc:sap://{host}[:{port}]"
                     defaultPort="30015"

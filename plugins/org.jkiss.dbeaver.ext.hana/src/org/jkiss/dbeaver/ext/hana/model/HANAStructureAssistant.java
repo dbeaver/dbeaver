@@ -101,6 +101,8 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
                     String objectName = dbResult.getString(2);
                     String description = dbResult.getString(3);
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
+                    if (schema == null)
+                        continue; // filtered
 
                     result.add(new AbstractObjectReference(objectName, schema, description, GenericTable.class,
                             RelationalObjectType.TYPE_TABLE) {
@@ -142,6 +144,8 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
                     String objectName = dbResult.getString(2);
                     String description = dbResult.getString(3);
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
+                    if (schema == null)
+                        continue; // filtered
 
                     result.add(new AbstractObjectReference(objectName, schema, description, GenericTable.class,
                             RelationalObjectType.TYPE_VIEW) {
@@ -183,6 +187,8 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
                     String objectName = dbResult.getString(2);
                     String description = null;
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
+                    if (schema == null)
+                        continue; // filtered
 
                     result.add(new AbstractObjectReference(objectName, schema, description, GenericProcedure.class,
                             RelationalObjectType.TYPE_PROCEDURE) {
@@ -225,6 +231,8 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
                     String columnName = dbResult.getString(3);
                     String description = dbResult.getString(4);
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
+                    if (schema == null)
+                        continue; // filtered
 
                     result.add(new AbstractObjectReference(objectName, schema, description, GenericTableColumn.class,
                             RelationalObjectType.TYPE_TABLE_COLUMN) {
@@ -272,6 +280,8 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
                     String columnName = dbResult.getString(3);
                     String description = dbResult.getString(4);
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
+                    if (schema == null)
+                        continue; // filtered
 
                     result.add(new AbstractObjectReference(objectName, schema, description, GenericTableColumn.class,
                             RelationalObjectType.TYPE_TABLE_COLUMN) {
