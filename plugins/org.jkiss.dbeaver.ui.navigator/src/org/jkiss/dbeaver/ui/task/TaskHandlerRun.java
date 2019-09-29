@@ -55,15 +55,19 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
         }
 
         if (task != null) {
-            try {
-                TaskProcessorUI listener = new TaskProcessorUI(UIUtils.getDialogRunnableContext(), task);
-                task.getProject().getTaskManager().runTask(task, listener, Collections.emptyMap());
-            } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Task run", "Error running task '" + task.getName() + "'", e);
-            }
+            runTask(task);
         }
 
         return null;
+    }
+
+    public static void runTask(DBTTask task) {
+        try {
+            TaskProcessorUI listener = new TaskProcessorUI(UIUtils.getDialogRunnableContext(), task);
+            task.getProject().getTaskManager().runTask(task, listener, Collections.emptyMap());
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Task run", "Error running task '" + task.getName() + "'", e);
+        }
     }
 
     @Override
