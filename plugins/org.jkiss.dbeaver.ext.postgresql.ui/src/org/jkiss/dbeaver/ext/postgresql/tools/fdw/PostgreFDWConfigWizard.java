@@ -172,7 +172,9 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
         Map<String, List<DBVEntityForeignKey>> grCache = DBVModel.getGlobalReferenceCache();
         monitor.beginTask("Check external references", grCache.size());
         for (Map.Entry<String, List<DBVEntityForeignKey>> grEntry : grCache.entrySet()) {
-            DBNDataSource refDataSource = navModel.getDataSourceByPath(grEntry.getKey());
+            DBNDataSource refDataSource = navModel.getDataSourceByPath(
+                database.getDataSource().getContainer().getProject(),
+                grEntry.getKey());
             if (refDataSource != null && refDataSource.getDataSourceContainer() == curDataSource) {
                 try {
                     for (DBVEntityForeignKey rfk : grEntry.getValue()) {

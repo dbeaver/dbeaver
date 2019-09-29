@@ -59,9 +59,10 @@ public class DBVModel extends DBVContainer {
 
     // Copy constructor
     public DBVModel(@NotNull DBPDataSourceContainer dataSourceContainer, @NotNull DBVModel source) {
-        super(null, source);
+        super(null, source.getId());
         this.dataSourceContainer = dataSourceContainer;
         this.id = dataSourceContainer.getId();
+        copyFrom(source);
     }
 
     public void dispose() {
@@ -77,6 +78,7 @@ public class DBVModel extends DBVContainer {
         this.id = id;
     }
 
+    @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
     }
@@ -174,7 +176,7 @@ public class DBVModel extends DBVContainer {
     }
 
     public void copyFrom(DBVModel model) {
-        super.copyFrom(model);
+        super.copyFrom(model, this);
     }
 
     private static final Map<String, List<DBVEntityForeignKey>> globalReferenceCache = new HashMap<>();

@@ -49,20 +49,6 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         this.name = name;
     }
 
-    // Copy constructor
-    DBVContainer(DBVContainer parent, DBVContainer source) {
-        this.parent = parent;
-        this.name = source.name;
-        this.description = source.description;
-        for (Map.Entry<String, DBVContainer> ce : source.containers.entrySet()) {
-            this.containers.put(ce.getKey(), new DBVContainer(this, ce.getValue()));
-        }
-        for (Map.Entry<String, DBVEntity> ee : source.entities.entrySet()) {
-            this.entities.put(ee.getKey(), new DBVEntity(this, ee.getValue()));
-        }
-        super.copyFrom(source);
-    }
-
     DBVContainer(DBVContainer parent, String name, Map<String, Object> map) {
         this.parent = parent;
         this.name = name;
@@ -203,22 +189,28 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         return false;
     }
 
-    void copyFrom(DBVContainer container) {
-        this.name = container.name;
+    void copyFrom(DBVContainer container, DBVModel targetModel) {
+        if (container instanceof DBVModel) {
+            this.name = targetModel.getId();
+        } else {
+            this.name = container.name;
+        }
         this.description = container.description;
 
         this.containers.clear();
         for (DBVContainer child : container.getContainers()) {
             DBVContainer myChild = new DBVContainer(this, child.getName());
-            myChild.copyFrom(child);
+            myChild.copyFrom(child, targetModel);
             containers.put(myChild.getName(), myChild);
         }
 
         this.entities.clear();
         for (DBVEntity child : container.getEntities()) {
-            DBVEntity myChild = new DBVEntity(this, child);
+            DBVEntity myChild = new DBVEntity(this, child, targetModel);
             entities.put(myChild.getName(), myChild);
         }
+
+        super.copyFrom(container);
     }
 
     @Override

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
@@ -73,9 +74,11 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private Set<String> searchHistory = new LinkedHashSet<>();
     private Set<String> savedTypeNames = new HashSet<>();
     private List<DBNNode> sourceNodes = new ArrayList<>();
+    private DBPProject currentProject;
 
     public SearchMetadataPage() {
 		super("Database objects search");
+        currentProject = NavigatorUtils.getSelectedProject();
     }
 
 	@Override
@@ -117,7 +120,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
             //gd.heightHint = 300;
             sourceGroup.setLayoutData(gd);
             DBPPlatform platform = DBWorkbench.getPlatform();
-            final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(NavigatorUtils.getSelectedProject());
+            final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(currentProject);
             DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
             dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE);
             gd = new GridData(GridData.FILL_BOTH);
@@ -269,7 +272,10 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 monitor.beginTask("Load database nodes", 1);
                 try {
                     monitor.subTask("Load tree state");
-                    sourceNodes = loadTreeState(new DefaultProgressMonitor(monitor), DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SOURCES));
+                    sourceNodes = loadTreeState(
+                        new DefaultProgressMonitor(monitor),
+                        currentProject,
+                        DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SOURCES));
                 } finally {
                     monitor.done();
                 }

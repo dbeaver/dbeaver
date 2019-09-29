@@ -71,9 +71,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     // Copy constructor
-    public DBVEntity(@NotNull DBVContainer container, @NotNull DBVEntity copy) {
+    public DBVEntity(@NotNull DBVContainer container, @NotNull DBVEntity copy, @NotNull DBVModel targetModel) {
         this.container = container;
-        copyFrom(copy);
+        copyFrom(copy, targetModel);
     }
 
     public synchronized void dispose() {
@@ -85,7 +85,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
     }
 
-    public void copyFrom(@NotNull DBVEntity src) {
+    public void copyFrom(@NotNull DBVEntity src, @NotNull DBVModel targetModel) {
         this.name = src.name;
         this.descriptionColumnNames = src.descriptionColumnNames;
 
@@ -105,8 +105,14 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         this.entityForeignKeys = null;
         if (!CommonUtils.isEmpty(src.entityForeignKeys)) {
             this.entityForeignKeys = new ArrayList<>(src.entityForeignKeys.size());
-            for (DBVEntityForeignKey c : src.entityForeignKeys) {
-                this.entityForeignKeys.add(new DBVEntityForeignKey(this, c));
+            for (DBVEntityForeignKey fk : src.entityForeignKeys) {
+                DBVEntityForeignKey fkCopy = new DBVEntityForeignKey(this, fk, targetModel);
+                if (fkCopy.getRefEntityId() == null) {
+                    fkCopy.dispose();
+                    log.debug("Can't copy virtual foreign key '" + fk.getName() + "' - target entity cannot be resolved");
+                } else {
+                    this.entityForeignKeys.add(fkCopy);
+                }
             }
         }
         if (!CommonUtils.isEmpty(src.entityAttributes)) {

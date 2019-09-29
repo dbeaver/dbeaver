@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.model.virtual;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -94,10 +94,19 @@ public abstract class DBVObject implements DBSObject {
 
 
     public void persistConfiguration() {
-        DBPDataSource dataSource = getDataSource();
+        DBPDataSourceContainer dataSource = getDataSourceContainer();
         if (dataSource != null) {
-            dataSource.getContainer().persistConfiguration();
+            dataSource.persistConfiguration();
         }
     }
 
+    public DBPDataSourceContainer getDataSourceContainer() {
+        DBVContainer parentObject = getParentObject();
+        return parentObject == null ? null : parentObject.getDataSourceContainer();
+    }
+
+    public DBPProject getProject() {
+        DBPDataSourceContainer ds = getDataSourceContainer();
+        return ds == null ? null : ds.getProject();
+    }
 }

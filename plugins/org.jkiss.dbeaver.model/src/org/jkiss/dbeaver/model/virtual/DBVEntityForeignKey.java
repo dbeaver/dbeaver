@@ -54,9 +54,24 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         this.entity = entity;
     }
 
-    public DBVEntityForeignKey(@NotNull DBVEntity entity, DBVEntityForeignKey copy) {
+    // Copy constructor
+    DBVEntityForeignKey(@NotNull DBVEntity entity, DBVEntityForeignKey copy, DBVModel targetModel) {
         this.entity = entity;
-        this.refEntityId = copy.refEntityId;
+
+        // Here is a tricky part
+        // refEntityId may refer to the current (old model owner) datasource
+        // In this case we must fix it and refer to the new model owner.
+        DBPDataSourceContainer copyDS = copy.getAssociatedDataSource();
+        if (copyDS == null) {
+            // Refer connection from other project?
+            this.refEntityId = null;
+        } else if (copyDS == copy.getParentObject().getDataSourceContainer()) {
+            DBPDataSourceContainer newDS = targetModel.getDataSourceContainer();
+            this.refEntityId = copy.refEntityId.replace(copyDS.getId(), newDS.getId());
+        } else {
+            this.refEntityId = copy.refEntityId;
+        }
+
         this.refConstraintId = copy.refConstraintId;
         for (DBVEntityForeignKeyColumn fkc : copy.attributes) {
             this.attributes.add(new DBVEntityForeignKeyColumn(this, fkc));
@@ -230,7 +245,9 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         if (refEntityId == null) {
             return null;
         }
-        DBNDataSource dsNode = DBWorkbench.getPlatform().getNavigatorModel().getDataSourceByPath(refEntityId);
+        DBNDataSource dsNode = DBWorkbench.getPlatform().getNavigatorModel().getDataSourceByPath(
+            getParentObject().getProject(),
+            refEntityId);
         return dsNode == null ? null : dsNode.getDataSourceContainer();
     }
 }
