@@ -20,12 +20,16 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
+
 public class ToggleEditorLayoutHandler extends AbstractHandler {
+    static protected final Log log = Log.getLog(ToggleEditorLayoutHandler.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -39,6 +43,11 @@ public class ToggleEditorLayoutHandler extends AbstractHandler {
                 curOrientation = SQLEditor.ResultSetOrientation.HORIZONTAL;
             }
             editor.getActivePreferenceStore().setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, curOrientation.name());
+            try {
+                editor.getActivePreferenceStore().save();
+            } catch (IOException e) {
+                log.error("Error saving editor preferences", e);
+            }
         }
         return null;
     }
