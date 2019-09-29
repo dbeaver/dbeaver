@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
@@ -80,9 +81,9 @@ public class PrefPageErrorHandle extends TargetPrefPage
         {
             Group timeoutsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_error_handle_group_timeouts_title, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            connectionOpenTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_open_timeout_label, CoreMessages.pref_page_error_handle_connection_open_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
-            connectionCloseTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_close_timeout_label, CoreMessages.pref_page_error_handle_connection_close_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
-            connectionValidateTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_validate_timeout_label, CoreMessages.pref_page_error_handle_connection_validate_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
+            connectionOpenTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_open_timeout_label + UIMessages.label_ms, CoreMessages.pref_page_error_handle_connection_open_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
+            connectionCloseTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_close_timeout_label + UIMessages.label_ms, CoreMessages.pref_page_error_handle_connection_close_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
+            connectionValidateTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_validate_timeout_label + UIMessages.label_ms, CoreMessages.pref_page_error_handle_connection_validate_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
         }
 
         // Misc settings

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -120,7 +121,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
                ResultSetMessages.pref_page_database_resultsets_label_read_metadata_tip, false, 2);
             readQueryReferences = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_read_references,
                 ResultSetMessages.pref_page_database_resultsets_label_read_references_tip, false, 2);
-            queryCancelTimeout = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout, "0");
+            queryCancelTimeout = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout + UIMessages.label_ms, "0");
             queryCancelTimeout.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             queryCancelTimeout.setToolTipText(ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout_tip);
             queryCancelTimeout.setEnabled(false);
