@@ -608,6 +608,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         return null;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DatabaseTransferConsumer &&
+            CommonUtils.equalObjects(targetObject, ((DatabaseTransferConsumer) obj).targetObject);
+
+    }
+
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferConsumer> {
 
         @Override

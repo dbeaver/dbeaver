@@ -230,6 +230,14 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DatabaseTransferProducer &&
+            CommonUtils.equalObjects(dataContainer, ((DatabaseTransferProducer) obj).dataContainer) &&
+            CommonUtils.equalObjects(dataFilter, ((DatabaseTransferProducer) obj).dataFilter);
+
+    }
+
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {
 
         @Override
