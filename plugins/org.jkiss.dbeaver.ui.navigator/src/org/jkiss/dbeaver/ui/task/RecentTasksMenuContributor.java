@@ -16,19 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.task;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceMenuContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class RecentTasksMenuContributor extends DataSourceMenuContributor
@@ -55,15 +56,15 @@ public class RecentTasksMenuContributor extends DataSourceMenuContributor
         });
 
         for (int i = 0; i < tasks.length && i <= MAX_ITEMS; i++) {
-            menuItems.add(ActionUtils.makeCommandContribution(
-                UIUtils.getActiveWorkbenchWindow(),
-                DatabaseTasksView.RUN_TASK_CMD_ID,
-                SWT.PUSH,
-                null,
-                null,
-                null,
-                false,
-                Collections.singletonMap("task", tasks[i].getId())));
+            DBTTask task = tasks[i];
+            DBPImage taskIcon = task.getType().getIcon();
+            if (taskIcon == null) taskIcon = DBIcon.TREE_PACKAGE;
+            menuItems.add(ActionUtils.makeActionContribution(new Action(task.getName(), DBeaverIcons.getImageDescriptor(taskIcon)) {
+                @Override
+                public void run() {
+                    TaskHandlerRun.runTask(task);
+                }
+            }, false));
         }
     }
 
