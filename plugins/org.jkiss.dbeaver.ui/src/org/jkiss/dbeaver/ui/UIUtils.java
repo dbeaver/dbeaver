@@ -532,7 +532,9 @@ public class UIUtils {
     public static Label createControlLabel(Composite parent, String label, int hSpan) {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label + ": "); //$NON-NLS-1$
-        GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING /*| GridData.HORIZONTAL_ALIGN_END*/);
+        // Vert align center. Because height of single line control may differ from label height. This makes form ugly.
+        // For multiline texts we need to set vert align manually.
+        GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER /*| GridData.HORIZONTAL_ALIGN_END*/);
         gd.horizontalSpan = hSpan;
         textLabel.setLayoutData(gd);
         return textLabel;

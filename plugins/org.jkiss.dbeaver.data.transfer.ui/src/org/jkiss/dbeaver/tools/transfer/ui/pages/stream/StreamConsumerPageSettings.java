@@ -21,6 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -74,7 +75,9 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         {
             Composite generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 5, GridData.FILL_HORIZONTAL, 0);
-
+            ((GridLayout)generalSettings.getLayout()).verticalSpacing = 0;
+            ((GridLayout)generalSettings.getLayout()).marginHeight = 0;
+            ((GridLayout)generalSettings.getLayout()).marginWidth = 0;
             {
                 formatProfilesCombo = UIUtils.createLabelCombo(generalSettings, DTMessages.data_transfer_wizard_settings_label_formatting, SWT.DROP_DOWN | SWT.READ_ONLY);
                 GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
@@ -113,7 +116,12 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
                 reloadFormatProfiles();
 
-                lobExtractType = UIUtils.createLabelCombo(generalSettings, DTMessages.data_transfer_wizard_settings_label_binaries, SWT.DROP_DOWN | SWT.READ_ONLY);
+                UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_settings_label_binaries);
+                Composite binariesPanel = UIUtils.createComposite(generalSettings, 4);
+                gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 4;
+                binariesPanel.setLayoutData(gd);
+                lobExtractType = new Combo(binariesPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobExtractType.setItems(
                     DTMessages.data_transfer_wizard_settings_binaries_item_set_to_null,
                     DTMessages.data_transfer_wizard_settings_binaries_item_save_to_file,
@@ -130,8 +138,8 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                     }
                 });
 
-                lobEncodingLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_settings_label_encoding);
-                lobEncodingCombo = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
+                lobEncodingLabel = UIUtils.createControlLabel(binariesPanel, DTMessages.data_transfer_wizard_settings_label_encoding);
+                lobEncodingCombo = new Combo(binariesPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobEncodingCombo.setItems(
                     "Base64", //$NON-NLS-1$
                     "Hex", //$NON-NLS-1$
@@ -148,7 +156,6 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                         }
                     }
                 });
-                UIUtils.createEmptyLabel(generalSettings, 1, 1);
             }
         }
 
