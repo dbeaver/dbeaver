@@ -19,6 +19,12 @@ package org.jkiss.dbeaver.ext.firebird.model.plan;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Describes each item of firebird plan as regular expression. Items are used
+ * for construction of FireBirdPlanTokenMatcher.
+ *
+ * @author tomashorak@post.cz
+ */
 enum FireBirdPlanToken {
 	PLAN("\\GPLAN\\b"), 
 	JOIN("\\GJOIN\\b"), 

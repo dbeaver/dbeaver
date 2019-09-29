@@ -21,6 +21,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
+/**
+ * Firebird plan parser. It interpretes tokens returned by FireBirdPlanTokenMatcher
+ * tokenizer and creates plan node tree. When index is found it's selectivity
+ * is added to index plan node.
+ *
+ * @author tomashorak@post.cz
+ */
 class FireBirdPlanParser {
 
 		private String plan;

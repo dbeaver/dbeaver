@@ -29,6 +29,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
+/**
+ * Build firebird plan tree based on textual plan information returned by getPlan.
+ *
+ * @author tomashorak@post.cz
+ */
 public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
 	
 	private FireBirdDataSource dataSource;

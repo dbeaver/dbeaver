@@ -22,6 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
+/**
+ * Firebird plan token matcher helps to navigate through plan's text.
+ * It can work with whatever's tokens, but is initialized with FireBirdPlan
+ * tokens actually.
+ *
+ * @author tomashorak@post.cz
+ */
 class FireBirdPlanTokenMatcher {
 
 	private List<Matcher> matchers = new ArrayList<>(FireBirdPlanToken.values().length);
