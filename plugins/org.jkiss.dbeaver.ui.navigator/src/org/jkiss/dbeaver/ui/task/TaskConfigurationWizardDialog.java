@@ -140,7 +140,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
         super.updateButtons();
         Button saveAsButton = getButton(SAVE_TASK_BTN_ID);
         if (saveAsButton != null) {
-            saveAsButton.setEnabled(getTaskWizard() != null && getTaskWizard().isTaskEditor() || getWizard().canFinish());
+            saveAsButton.setEnabled((getTaskWizard() != null && getTaskWizard().isCurrentTaskSaved()) || getWizard().canFinish());
         }
     }
 

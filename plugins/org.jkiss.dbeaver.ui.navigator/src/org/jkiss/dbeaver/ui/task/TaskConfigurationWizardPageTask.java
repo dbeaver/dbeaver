@@ -123,7 +123,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             Composite formPanel = UIUtils.createControlGroup(formSash, "Task info", 2, GridData.FILL_BOTH, 0);
             formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            ModifyListener modifyListener = e -> getWizard().getContainer().updateButtons();
+            ModifyListener modifyListener = e -> updatePageCompletion();
 
             if (task == null) {
                 UIUtils.createControlLabel(formPanel, "Category");
@@ -258,7 +258,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
     @Override
     protected boolean determinePageCompletion() {
         return selectedTaskType != null &&
-            (task != null || !CommonUtils.isEmpty(taskName)) &&
+            ((task != null && !CommonUtils.isEmpty(task.getName())) || !CommonUtils.isEmpty(taskName)) &&
             (taskConfigPanel == null || taskConfigPanel.isComplete());
     }
 
@@ -272,7 +272,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
 
             if (task == null) {
-                task = (TaskImpl) selectedProject.getTaskManager().createTaskConfiguration(selectedTaskType, taskName, taskDescription, new LinkedHashMap<>());
+                task = (TaskImpl) selectedProject.getTaskManager().createTaskConfiguration(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, new LinkedHashMap<>());
             }
             realWizard = (TaskConfigurationWizard) configurator.createTaskConfigWizard(task);
             taskConfigPanel.saveSettings();

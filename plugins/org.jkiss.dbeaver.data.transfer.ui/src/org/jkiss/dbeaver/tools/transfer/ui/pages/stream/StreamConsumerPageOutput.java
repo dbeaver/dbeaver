@@ -303,7 +303,10 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     protected boolean determinePageCompletion()
     {
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
-/*
+        if (settings == null) {
+            return false;
+        }
+        /*
         int selectionIndex = encodingCombo.getSelectionIndex();
 
         String encoding = null;
