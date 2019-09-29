@@ -284,7 +284,8 @@ public class DataTransferSettings {
 
     public Map<Object, Object> getProcessorProperties() {
         if (processor == null) {
-            throw new IllegalStateException("No processor selected");
+            log.debug("No processor selected - no properties");
+            return null;
         }
         return processorPropsHistory.get(processor);
     }
