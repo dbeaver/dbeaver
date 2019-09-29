@@ -21,6 +21,11 @@ import java.util.List;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
+/**
+ * Build tree of plan nodes.
+ *
+ * @author tomashorak@post.cz
+ */
 public class FireBirdPlanBuilder {
 	
 	private String plan;

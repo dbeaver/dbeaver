@@ -16,6 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
+/**
+ * Manage raising exception with more context information.
+ *
+ * @author tomashorak@post.cz
+ */
 class FireBirdPlanException extends Exception {
 
 	/**
