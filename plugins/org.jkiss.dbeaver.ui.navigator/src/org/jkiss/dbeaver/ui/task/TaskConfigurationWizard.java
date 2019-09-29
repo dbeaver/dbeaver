@@ -97,22 +97,28 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         super.addPages();
         // If we are in task edit mode then add special first page.
         // Do not add it if this is an ew task wizard (because this page is added separately)
-        if (getCurrentTask() != null && getCurrentTask().getProject().getTaskManager().getTaskConfiguration(getCurrentTask().getId()) != null) {
+        if (isCurrentTaskSaved()) {
             // Task editor. Add first page
             addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
         }
     }
 
+    public boolean isCurrentTaskSaved() {
+        return getCurrentTask() != null && getCurrentTask().getProject().getTaskManager().getTaskConfiguration(getCurrentTask().getId()) != null;
+    }
+
     @Override
     public boolean canFinish() {
-        if (currentTask != null) {
-            return true;
-        }
         for (IWizardPage page : getPages()) {
             if (isPageValid(page) && !page.isPageComplete()) {
                 return false;
             }
         }
+        TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+        if (taskPage != null && !taskPage.isPageComplete()) {
+            return false;
+        }
+
         return true;
     }
 
