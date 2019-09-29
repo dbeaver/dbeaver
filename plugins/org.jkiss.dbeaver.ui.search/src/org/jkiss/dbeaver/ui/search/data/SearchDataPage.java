@@ -37,14 +37,15 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.dbeaver.ui.search.internal.UISearchMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 public class SearchDataPage extends AbstractSearchPage {
 
@@ -286,7 +287,7 @@ public class SearchDataPage extends AbstractSearchPage {
 
     protected List<DBNNode> loadTreeState(DBRProgressMonitor monitor) {
         final String sources = searchStateCache.get(getClass());
-        return loadTreeState(monitor, sources);
+        return loadTreeState(monitor, NavigatorUtils.getSelectedProject(), sources);
     }
 
     private void restoreCheckedNodes() {

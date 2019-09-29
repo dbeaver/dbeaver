@@ -77,7 +77,7 @@ class TransformerSettingsDialog extends BaseDialog {
         this.selector = selector;
 
         this.vEntitySrc = DBVUtils.getVirtualEntity(viewer.getDataContainer(), true);
-        this.vEntity = new DBVEntity(vEntitySrc.getContainer(), vEntitySrc);
+        this.vEntity = new DBVEntity(vEntitySrc.getContainer(), vEntitySrc, vEntitySrc.getModel());
     }
 
     @Override
@@ -325,7 +325,7 @@ class TransformerSettingsDialog extends BaseDialog {
     {
         saveTransformerSettings();
 
-        vEntitySrc.copyFrom(vEntity);
+        vEntitySrc.copyFrom(vEntity, vEntity.getModel());
         vEntitySrc.persistConfiguration();
 
         super.okPressed();

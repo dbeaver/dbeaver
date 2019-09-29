@@ -237,9 +237,10 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Nullable
-    public DBNDataSource getDataSourceByPath(String path) {
+    public DBNDataSource getDataSourceByPath(DBPProject project, String path) {
         String dsId = getNodePath(path).first();
-        for (DBNProject projectNode : getRoot().getProjects()) {
+        DBNProject projectNode = getRoot().getProjectNode(project);
+        if (projectNode != null) {
             DBNDataSource dataSource = projectNode.getDatabases().getDataSource(dsId);
             if (dataSource != null) {
                 return dataSource;
