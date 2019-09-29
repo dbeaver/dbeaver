@@ -5,6 +5,7 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ext.h2gis;singleton:=true
 Bundle-Version: 1.0.1.qualifier
 Bundle-Release-Date: 20191007
 Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.h2
 Bundle-ActivationPolicy: lazy
