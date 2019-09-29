@@ -447,6 +447,11 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         @Override
         public final void update(ViewerCell cell) {
             DBTTaskRun taskRun = (DBTTaskRun) cell.getElement();
+            if (taskRun != null && !taskRun.isRunSuccess()) {
+                cell.setBackground(colorError);
+            } else {
+                cell.setBackground(null);
+            }
             update(cell, taskRun);
         }
 
