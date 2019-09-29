@@ -22,7 +22,7 @@
                     iconBig="icons/h2gis_icon_big.png"
                     category="H2"
                     class="org.h2.Driver"
-                    sampleURL="jdbc:h2:{database}"
+                    sampleURL="jdbc:h2:{file}"
                     webURL="http://www.h2gis.org/"
                     embedded="true"
                     description="H2GIS Embedded"
@@ -64,6 +64,20 @@
 
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="h2gis" class="org.jkiss.dbeaver.ext.h2gis.model.H2GISMetaModel" driverClass="org.h2.Driver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.h2gis.data.H2GISValueHandlerProvider"
+                description="H2GIS data types provider"
+                id="org.jkiss.dbeaver.ext.h2gis.data.H2GISValueHandlerProvider"
+                label="H2GIS data types provider">
+
+            <datasource id="h2gis"/>
+
+            <type name="GEOMETRY"/>
+
+        </provider>
     </extension>
 
 </plugin>
