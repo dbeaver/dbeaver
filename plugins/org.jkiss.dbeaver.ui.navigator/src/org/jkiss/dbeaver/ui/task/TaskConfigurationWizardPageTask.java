@@ -188,7 +188,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
                 modifyListener.modifyText(e);
             });
 
-            taskDescriptionText = UIUtils.createLabelText(formPanel, "Description", task == null ? "" : CommonUtils.notEmpty(task.getDescription()), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+            UIUtils.createControlLabel(formPanel, "Description").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            taskDescriptionText = new Text(formPanel, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+            taskDescriptionText.setText(task == null ? "" : CommonUtils.notEmpty(task.getDescription()));
+            taskDescriptionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             ((GridData) taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 5;
             taskDescriptionText.addModifyListener(e -> {
                 taskDescription = taskDescriptionText.getText();
