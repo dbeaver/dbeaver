@@ -467,19 +467,18 @@ public class DataTransferSettings {
         initConsumers = new IDataTransferConsumer[0];
     }
 
-    public void addDataPipe(IDataTransferProducer producer, IDataTransferConsumer consumer) {
-        List<IDataTransferProducer> producers = null;
-        List<IDataTransferConsumer> consumers = null;
-        if (producer != null) {
-            producers = new ArrayList<>();
-            if (initProducers != null) Collections.addAll(producers, initProducers);
-            producers.add(producer);
+    public void setDataPipes(List<IDataTransferProducer> producers, List<IDataTransferConsumer> consumers) {
+        boolean hasChanges = false;
+        if (producers != null) {
+            hasChanges = initProducers == null || !Arrays.equals(producers.toArray(), initProducers);
         }
-        if (consumer != null) {
-            consumers = new ArrayList<>();
-            if (initConsumers != null) Collections.addAll(consumers, initConsumers);
-            consumers.add(consumer);
+        if (consumers != null && !hasChanges) {
+            hasChanges = initConsumers == null || !Arrays.equals(consumers.toArray(), initConsumers);
         }
+        if (!hasChanges) {
+            return;
+        }
+        clearDataPipes();
         initializePipes(producers, consumers);
     }
 

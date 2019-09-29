@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Data container for single SQL query.
@@ -219,5 +220,11 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
     @Override
     public DBPImage getObjectImage() {
         return DBIcon.TREE_FILE;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SQLQueryDataContainer &&
+            CommonUtils.equalObjects(query, ((SQLQueryDataContainer) obj).query);
     }
 }

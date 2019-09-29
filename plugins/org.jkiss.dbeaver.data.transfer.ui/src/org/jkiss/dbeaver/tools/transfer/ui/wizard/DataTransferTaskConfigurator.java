@@ -46,9 +46,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
-import org.jkiss.dbeaver.tools.transfer.DTConstants;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -258,28 +256,27 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             if (objectsTable == null) {
                 return;
             }
-            TableItem[] items = objectsTable.getItems();
+
             boolean isExport = isExport();
-            dtWizard.getSettings().clearDataPipes();
+            List<IDataTransferProducer> producers = isExport ? new ArrayList<>() : null;
+            List<IDataTransferConsumer> consumers = isExport ? null : new ArrayList<>();
+
+            TableItem[] items = objectsTable.getItems();
+
             for (TableItem item : items) {
                 DBSObject object = (DBSObject) item.getData();
                 if (object instanceof DBSDataContainer) {
-                    addDataPipe(dtWizard.getSettings(), object, isExport);
+                    if (isExport) {
+                        producers.add(new DatabaseTransferProducer((DBSDataContainer) object));
+                    } else {
+                        if (object instanceof DBSDataManipulator) {
+                            consumers.add(new DatabaseTransferConsumer((DBSDataManipulator) object));
+                        }
+                    }
                 }
             }
+            dtWizard.getSettings().setDataPipes(producers, consumers);
             dtWizard.loadSettings(dtWizard.getRunnableContext());
-        }
-
-        private void addDataPipe(DataTransferSettings settings, DBSObject object, boolean isExport) {
-            if (isExport) {
-                if (object instanceof DBSDataContainer) {
-                    settings.addDataPipe(new DatabaseTransferProducer((DBSDataContainer) object), null);
-                }
-            } else {
-                if (object instanceof DBSDataManipulator) {
-                    settings.addDataPipe(null, new DatabaseTransferConsumer((DBSDataManipulator) object));
-                }
-            }
         }
 
         @Override
