@@ -77,11 +77,11 @@ class StatusLabel extends Composite {
         });
 
         statusText = new Label(this, SWT.NONE);
-        if (RuntimeUtils.isPlatformWindows()) {
-            statusText.setBackground(null);
-        } else {
-            statusText.setBackground(parent.getBackground());
-        }
+//        if (RuntimeUtils.isPlatformWindows()) {
+//            statusText.setBackground(null);
+//        } else {
+//            statusText.setBackground(parent.getBackground());
+//        }
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusText.setLayoutData(gd);
         statusText.addTraverseListener(e -> {
