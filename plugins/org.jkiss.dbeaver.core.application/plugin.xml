@@ -138,7 +138,13 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-
+        <handler commandId="org.eclipse.ui.help.aboutAction" class="org.jkiss.dbeaver.core.application.about.AboutBoxHandler">
+            <activeWhen>
+                <with variable="selection">
+                    <test property="org.jkiss.dbeaver.core.global.standalone"/>
+                </with>
+            </activeWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
