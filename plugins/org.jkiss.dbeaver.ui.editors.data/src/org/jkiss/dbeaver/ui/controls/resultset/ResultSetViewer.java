@@ -109,8 +109,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -4564,7 +4564,7 @@ public class ResultSetViewer extends Viewer
         {
             DBVEntity vEntity = model.getVirtualEntity(false);
             DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "vcolumn");
-            if (new EditVirtualAttributePage(getControl().getShell(), ResultSetViewer.this, vAttr).edit()) {
+            if (new EditVirtualAttributePage(ResultSetViewer.this, vAttr).edit(getControl().getShell())) {
                 vAttr.setCustom(true);
                 vEntity.addVirtualAttribute(vAttr);
                 vEntity.persistConfiguration();
@@ -4592,7 +4592,7 @@ public class ResultSetViewer extends Viewer
             }
             DBVEntityAttribute vAttr = ((DBDAttributeBindingCustom)attr).getEntityAttribute();
             DBVEntity vEntity = model.getVirtualEntity(false);
-            if (new EditVirtualAttributePage(getControl().getShell(), ResultSetViewer.this, vAttr).edit()) {
+            if (new EditVirtualAttributePage(ResultSetViewer.this, vAttr).edit(getControl().getShell())) {
                 vEntity.persistConfiguration();
                 refreshMetaData();
             }

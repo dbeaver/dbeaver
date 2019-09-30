@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.utils.CommonUtils;
@@ -38,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Custom virtual attributes edit dialog
  */
-public class EditVirtualColumnsPage extends BaseObjectEditPage {
+public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpContextIdProvider {
 
     private ResultSetViewer viewer;
     private DBVEntity vEntity;
@@ -77,8 +78,8 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "vcolumn");
-                    EditVirtualAttributePage editAttrPage = new EditVirtualAttributePage(parent.getShell(), viewer, vAttr);
-                    if (editAttrPage.edit()) {
+                    EditVirtualAttributePage editAttrPage = new EditVirtualAttributePage(viewer, vAttr);
+                    if (editAttrPage.edit(parent.getShell())) {
                         vAttr.setCustom(true);
                         vEntity.addVirtualAttribute(vAttr);
                         structChanged = true;
@@ -138,8 +139,8 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage {
         }
         TableItem tableItem = selection[0];
         DBVEntityAttribute vAttr = (DBVEntityAttribute) tableItem.getData();
-        EditVirtualAttributePage editAttrPage = new EditVirtualAttributePage(attrTable.getShell(), viewer, vAttr);
-        if (editAttrPage.edit()) {
+        EditVirtualAttributePage editAttrPage = new EditVirtualAttributePage(viewer, vAttr);
+        if (editAttrPage.edit(attrTable.getShell())) {
             tableItem.setText(0, vAttr.getName());
             tableItem.setText(1, vAttr.getTypeName());
             tableItem.setText(2, CommonUtils.notEmpty(vAttr.getExpression()));
@@ -165,4 +166,8 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage {
         }
     }
 
+    @Override
+    public String getHelpContextId() {
+        return "virtual-column-expressions";
+    }
 }
