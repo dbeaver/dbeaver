@@ -27,20 +27,24 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 class EditObjectDialog extends TrayDialog {
 
     private final IDialogPage dialogPage;
 
-    public EditObjectDialog(Shell shell, IDialogPage dialogPage)
-    {
+    public EditObjectDialog(Shell shell, IDialogPage dialogPage) {
         super(shell);
         this.dialogPage = dialogPage;
         if (this.dialogPage instanceof BaseObjectEditPage) {
             ((BaseObjectEditPage) this.dialogPage).setContainer(this);
         }
-        //setHelpAvailable(false);
+        if (dialogPage instanceof IHelpContextIdProvider && ((IHelpContextIdProvider) dialogPage).getHelpContextId() != null) {
+            setHelpAvailable(true);
+        } else {
+            setHelpAvailable(false);
+        }
     }
 
     @Override
@@ -72,6 +76,10 @@ class EditObjectDialog extends TrayDialog {
         group.setLayoutData(gd);
 
         dialogPage.createControl(group);
+
+        if (dialogPage instanceof IHelpContextIdProvider) {
+            UIUtils.setHelp(dialogPage.getControl(), ((IHelpContextIdProvider) dialogPage).getHelpContextId());
+        }
 
         return group;
     }

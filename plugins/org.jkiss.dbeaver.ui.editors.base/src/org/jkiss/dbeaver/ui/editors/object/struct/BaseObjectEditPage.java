@@ -16,15 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
+import org.eclipse.help.IContext;
+import org.eclipse.help.IHelpResource;
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.swt.events.HelpEvent;
-import org.eclipse.swt.events.HelpListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public abstract class BaseObjectEditPage extends DialogPage {
@@ -42,7 +44,36 @@ public abstract class BaseObjectEditPage extends DialogPage {
 
     @Override
     public void performHelp() {
-        super.performHelp();
+        if (this instanceof IHelpContextIdProvider) {
+            IWorkbenchHelpSystem helpSystem = UIUtils.getActiveWorkbenchWindow().getWorkbench().getHelpSystem();
+            if (helpSystem != null) {
+                String helpContextId = ((IHelpContextIdProvider) this).getHelpContextId();
+                IContext helpContext = new IContext() {
+                    @Override
+                    public IHelpResource[] getRelatedTopics() {
+                        return new IHelpResource[] {
+                            new IHelpResource() {
+                                @Override
+                                public String getHref() {
+                                    return helpContextId;
+                                }
+
+                                @Override
+                                public String getLabel() {
+                                    return helpContextId;
+                                }
+                            }
+                        };
+                    }
+
+                    @Override
+                    public String getText() {
+                        return helpContextId;
+                    }
+                };
+                helpSystem.displayHelp(helpContext);
+            }
+        }
     }
 
     @Override

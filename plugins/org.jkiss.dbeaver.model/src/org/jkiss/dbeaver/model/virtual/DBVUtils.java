@@ -388,9 +388,15 @@ public abstract class DBVUtils {
     }
 
     public static Object evaluateDataExpression(DBDAttributeBinding[] allAttributes, Object[] row, JexlExpression expression, String attributeName) {
+        Map<String, Object> nsList = getExpressionNamespaces();
+
         JexlContext context = new JexlContext() {
             @Override
             public Object get(String s) {
+                Object ns = nsList.get(s);
+                if (ns != null) {
+                    return ns;
+                }
                 if (s.equals(attributeName)) {
                     return null;
                 }
@@ -419,8 +425,8 @@ public abstract class DBVUtils {
         }
     }
 
-    public static JexlExpression parseExpression(String expression) {
-        JexlBuilder jexlBuilder = new JexlBuilder();
+    @NotNull
+    private static Map<String, Object> getExpressionNamespaces() {
         Map<String, Object> nsList = new HashMap<>();
 
         for (ExpressionNamespaceDescriptor ns : ExpressionRegistry.getInstance().getExpressionNamespaces()) {
@@ -429,8 +435,15 @@ public abstract class DBVUtils {
                 nsList.put(ns.getId(), implClass);
             }
         }
-        jexlBuilder.namespaces(nsList);
+        return nsList;
+    }
+
+    public static JexlExpression parseExpression(String expression) {
+        Map<String, Object> nsList = getExpressionNamespaces();
+
+        JexlBuilder jexlBuilder = new JexlBuilder();
         jexlBuilder.cache(100);
+        jexlBuilder.namespaces(nsList);
 
         JexlEngine jexlEngine = jexlBuilder.create();
         return jexlEngine.createExpression(expression);

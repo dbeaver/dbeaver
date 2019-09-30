@@ -22,13 +22,17 @@ import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -41,7 +45,7 @@ import java.util.List;
 /**
  * Custom virtual attribute edit dialog
  */
-public class EditVirtualAttributePage extends BaseObjectEditPage {
+public class EditVirtualAttributePage extends BaseObjectEditPage implements IHelpContextIdProvider {
     private final ResultSetViewer viewer;
     private final DBVEntityAttribute vAttr;
     private Text nameText;
@@ -50,7 +54,7 @@ public class EditVirtualAttributePage extends BaseObjectEditPage {
     private Text expressionText;
     private Text previewText;
 
-    public EditVirtualAttributePage(Shell parentShell, ResultSetViewer viewer, DBVEntityAttribute vAttr) {
+    public EditVirtualAttributePage(ResultSetViewer viewer, DBVEntityAttribute vAttr) {
         super("Add virtual column", DBIcon.TREE_COLUMN);
         this.viewer = viewer;
         this.vAttr = vAttr;
@@ -76,7 +80,7 @@ public class EditVirtualAttributePage extends BaseObjectEditPage {
             name = vAttr.getName() + index;
         }
         nameText = UIUtils.createLabelText(panel, "Column Name", name);
-        typeCombo = UIUtils.createLabelCombo(panel, "Type Name", "Colmn type name", SWT.BORDER | SWT.DROP_DOWN);
+        typeCombo = UIUtils.createLabelCombo(panel, "Type Name", "Column type name", SWT.BORDER | SWT.DROP_DOWN);
 
         {
             DBPDataTypeProvider dataTypeProvider = DBUtils.getAdapter(DBPDataTypeProvider.class, dataSource);
@@ -180,4 +184,8 @@ public class EditVirtualAttributePage extends BaseObjectEditPage {
         super.performFinish();
     }
 
+    @Override
+    public String getHelpContextId() {
+        return "virtual-column-expressions";
+    }
 }
