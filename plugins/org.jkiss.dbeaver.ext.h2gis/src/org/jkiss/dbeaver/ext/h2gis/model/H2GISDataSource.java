@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.h2.model.H2DataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,7 +39,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
  * @author Erwan Bocher, CNRS
  * @author Serge Rider (serge@jkiss.org)
  */
-public class H2GISDataSource extends GenericDataSource {
+public class H2GISDataSource extends H2DataSource {
 
     public H2GISDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
             throws DBException {
