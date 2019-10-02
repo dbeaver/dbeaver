@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
@@ -904,7 +905,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (inline) {
             if (controller.isAttributeReadOnly(attr)) {
                 controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only", DBPMessageType.ERROR);
-            }
+            }/* else {
+                controller.setStatus(attr.getName() + " " + attr.getFullTypeName(), DBPMessageType.INFORMATION);
+            }*/
             spreadsheet.cancelInlineEditor();
             activeInlineEditor = null;
 
