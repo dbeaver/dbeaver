@@ -20,10 +20,7 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IToolTipProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Canvas;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -40,6 +37,7 @@ public class AdvancedListItem extends Canvas {
     private final AdvancedList list;
     private final ILabelProvider labelProvider;
     private boolean isHover;
+    final TextLayout textLayout;
 
     public AdvancedListItem(AdvancedList list, Object item, ILabelProvider labelProvider) {
         super(list.getContainer(), SWT.DOUBLE_BUFFERED);
@@ -47,6 +45,8 @@ public class AdvancedListItem extends Canvas {
         this.list = list;
         this.list.addItem(this);
         this.setData(item);
+        this.textLayout = new TextLayout(list.getDisplay());
+        this.textLayout.setText(labelProvider.getText(item));
 
         if (labelProvider instanceof IToolTipProvider) {
             String toolTipText = ((IToolTipProvider) labelProvider).getToolTipText(item);
@@ -150,7 +150,10 @@ public class AdvancedListItem extends Canvas {
         gc.drawImage(icon, 0, 0, iconBounds.width, iconBounds.height,
             imgPosX - e.x, imgPosY, imageSize.x, imageSize.y);
 
-        String text = labelProvider.getText(getData());
+        this.textLayout.setWidth(getSize().x - BORDER_MARGIN * 2);
+        this.textLayout.setAlignment(SWT.CENTER);
+        this.textLayout.draw(gc, BORDER_MARGIN, imageSize.y + BORDER_MARGIN);
+        /*String text = labelProvider.getText(getData());
         String theText = text;
         int divPos = theText.indexOf('(');
         if (divPos != -1 && text.endsWith(")")) {
@@ -161,7 +164,7 @@ public class AdvancedListItem extends Canvas {
             drawItemText(e, itemSize, gc, subTitle, getList().getTextSize().y + 1);
         } else {
             drawItemText(e, itemSize, gc, text, BORDER_MARGIN * 2);
-        }
+        }*/
     }
 
     private void drawItemText(PaintEvent e, Point itemSize, GC gc, String theText, int topIndent) {
@@ -185,7 +188,7 @@ public class AdvancedListItem extends Canvas {
     public Point computeSize(int wHint, int hHint, boolean changed) {
         Point imageSize = getList().getImageSize();
         int itemLength = imageSize.x + BORDER_MARGIN * 4 + getList().getTextSize().y;
-        return new Point(itemLength, itemLength);
+        return new Point(itemLength, itemLength + BORDER_MARGIN * 2);
         //return super.computeSize(wHint, hHint, changed);//getList().getImageSize();
     }
 
