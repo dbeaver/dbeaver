@@ -269,7 +269,7 @@
                     iconBig="icons/h2_icon_big.png"
                     category="H2"
                     class="org.h2.Driver"
-                    sampleURL="jdbc:h2:{database}"
+                    sampleURL="jdbc:h2:{file}"
                     webURL="http://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded"

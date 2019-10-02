@@ -206,56 +206,53 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gl.marginWidth = 0;
             buttonsPanel.setLayout(gl);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            gd.widthHint = 150;
+            //gd.widthHint = 150;
             buttonsPanel.setLayoutData(gd);
 
-            Button browseButton = new Button(buttonsPanel, SWT.PUSH);
-            browseButton.setText(GenericMessages.dialog_connection_browse_button);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            browseButton.setLayoutData(gd);
-            browseButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    if (metaURL.getAvailableProperties().contains(JDBCConstants.PROP_FILE)) {
-                        FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
-                        dialog.setFileName(pathText.getText());
-                        dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
-                        String file = dialog.open();
-                        if (file != null) {
-                            pathText.setText(file);
-                        }
-                    } else {
-                        DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-                        final String curPath = pathText.getText();
-                        File curFolder = new File(curPath);
-                        if (curFolder.exists()) {
-                            if (curFolder.isDirectory()) {
-                                dialog.setFilterPath(curFolder.getAbsolutePath());
-                            } else {
-                                dialog.setFilterPath(curFolder.getParentFile().getAbsolutePath());
+            UIUtils.createDialogButton(
+                buttonsPanel,
+                GenericMessages.dialog_connection_browse_button,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        if (metaURL.getAvailableProperties().contains(JDBCConstants.PROP_FILE)) {
+                            FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
+                            dialog.setFileName(pathText.getText());
+                            dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
+                            String file = dialog.open();
+                            if (file != null) {
+                                pathText.setText(file);
+                            }
+                        } else {
+                            DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
+                            final String curPath = pathText.getText();
+                            File curFolder = new File(curPath);
+                            if (curFolder.exists()) {
+                                if (curFolder.isDirectory()) {
+                                    dialog.setFilterPath(curFolder.getAbsolutePath());
+                                } else {
+                                    dialog.setFilterPath(curFolder.getParentFile().getAbsolutePath());
+                                }
+                            }
+                            dialog.setText(GenericMessages.dialog_connection_db_folder_chooser_text);
+                            dialog.setMessage(GenericMessages.dialog_connection_db_folder_chooser_message);
+                            String folder = dialog.open();
+                            if (folder != null) {
+                                pathText.setText(folder);
                             }
                         }
-                        dialog.setText(GenericMessages.dialog_connection_db_folder_chooser_text);
-                        dialog.setMessage(GenericMessages.dialog_connection_db_folder_chooser_message);
-                        String folder = dialog.open();
-                        if (folder != null) {
-                            pathText.setText(folder);
-                        }
                     }
-                }
-            });
+                });
 
-            createButton = new Button(buttonsPanel, SWT.PUSH);
-            createButton.setText("Create");
-            createButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            createButton = UIUtils.createDialogButton(buttonsPanel, "Create",
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        createEmbeddedDatabase();
+                    }
+                });
             createButton.setEnabled(false);
-            createButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    createEmbeddedDatabase();
-                }
-            });
 
             addControlToGroup(GROUP_PATH, pathLabel);
             addControlToGroup(GROUP_PATH, pathText);
