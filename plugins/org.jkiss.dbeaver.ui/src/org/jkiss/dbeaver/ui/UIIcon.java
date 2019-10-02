@@ -227,6 +227,8 @@ public class UIIcon {
     public static final DBIcon SHOW_MAIN_DETAILS = new DBIcon("misc/show_main_details.png "); //$NON-NLS-1$
     public static final DBIcon HIDE_ALL_DETAILS = new DBIcon("misc/hide_all_details.png"); //$NON-NLS-1$
 
+    public static final DBIcon RUN = new DBIcon("run.png"); //$NON-NLS-1$
+
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }
