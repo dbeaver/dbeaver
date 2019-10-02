@@ -225,7 +225,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 viewer.refresh();
             }
             boolean allSized = isAllSized();
-            if (pack || !allSized) {
+            if (pack && !allSized) {
                 repackColumns();
                 control.addControlListener(new ControlAdapter() {
                     @Override
