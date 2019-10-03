@@ -386,7 +386,9 @@ public class SQLEditor extends SQLEditorBase implements
                 // Datasource was changed or instance was changed (PG)
                 releaseExecutionContext();
                 curDataSource = dataSource;
-                if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION)) {
+                if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
+                    !dataSource.getContainer().getDriver().isEmbedded())
+                {
                     DBSInstance dsInstance = dataSource.getDefaultInstance();
                     if (dsInstance != null) {
                         final OpenContextJob job = new OpenContextJob(dsInstance);
