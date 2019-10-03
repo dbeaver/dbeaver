@@ -262,18 +262,18 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     }
 
     public void loadNode(DBRRunnableContext runnableContext, @Nullable DBSObjectContainer producerContainer) {
-        if (containerNode == null && (producerContainer != null || !CommonUtils.isEmpty(containerNodePath))) {
-            if (producerContainer != null || !CommonUtils.isEmpty(containerNodePath)) {
+        if (containerNode == null && (!CommonUtils.isEmpty(containerNodePath) || producerContainer != null)) {
+            if (!CommonUtils.isEmpty(containerNodePath) || producerContainer != null) {
                 try {
                     runnableContext.run(true, true, monitor -> {
                         try {
                             DBNNode node;
-                            if (producerContainer != null) {
-                                node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(producerContainer);
-                            } else {
+                            if (!CommonUtils.isEmpty(containerNodePath)) {
                                 node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(
                                     monitor,
                                     containerNodePath);
+                            } else {
+                                node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(producerContainer);
                             }
                             if (node instanceof DBNDatabaseNode) {
                                 containerNode = (DBNDatabaseNode) node;
