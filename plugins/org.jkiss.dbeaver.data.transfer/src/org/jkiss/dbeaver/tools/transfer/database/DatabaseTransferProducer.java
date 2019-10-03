@@ -241,7 +241,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {
 
         @Override
-        public void serializeObject(DatabaseTransferProducer object, Map<String, Object> state) {
+        public void serializeObject(DBRProgressMonitor monitor, DatabaseTransferProducer object, Map<String, Object> state) {
             DBSDataContainer dataContainer = object.dataContainer;
             if (dataContainer instanceof IAdaptable) {
                 DBSDataContainer nestedDataContainer = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);

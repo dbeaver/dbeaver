@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
@@ -174,8 +175,8 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         truncateBeforeLoad = CommonUtils.getBoolean(settings.get("truncateBeforeLoad"), truncateBeforeLoad);
         openTableOnFinish = CommonUtils.getBoolean(settings.get("openTableOnFinish"), openTableOnFinish);
 
+        List<DataTransferPipe> dataPipes = dataTransferSettings.getDataPipes();
         {
-            List<DataTransferPipe> dataPipes = dataTransferSettings.getDataPipes();
             if (!dataPipes.isEmpty()) {
                 IDataTransferConsumer consumer = dataPipes.get(0).getConsumer();
                 if (consumer instanceof DatabaseTransferConsumer) {
@@ -190,15 +191,33 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
             checkContainerConnection(runnableContext);
         }
 
+        loadNode(runnableContext, null);
+
         // Load mapping for current objects
         Map<String, Object> mappings = (Map<String, Object>) settings.get("mappings");
         if (mappings != null) {
-            for (DatabaseMappingContainer dmc : dataMappings.values()) {
-                DBSDataContainer sourceDatacontainer = dmc.getSource();
-                if (sourceDatacontainer != null) {
-                    Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(sourceDatacontainer));
-                    if (dmcSettings != null) {
-                        dmc.loadSettings(runnableContext, dmcSettings);
+            if (!dataMappings.isEmpty()) {
+                for (DatabaseMappingContainer dmc : dataMappings.values()) {
+                    DBSDataContainer sourceDatacontainer = dmc.getSource();
+                    if (sourceDatacontainer != null) {
+                        Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(sourceDatacontainer));
+                        if (dmcSettings != null) {
+                            dmc.loadSettings(runnableContext, dmcSettings);
+                        }
+                    }
+                }
+            } else if (!dataPipes.isEmpty()) {
+                for (DataTransferPipe pipe : dataPipes) {
+                    IDataTransferProducer producer = pipe.getProducer();
+                    DBSObject dbObject = producer.getDatabaseObject();
+                    if (dbObject instanceof DBSDataContainer) {
+                        DBSDataContainer sourceDC = (DBSDataContainer)dbObject;
+                        Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(dbObject));
+                        if (dmcSettings != null) {
+                            DatabaseMappingContainer dmc = new DatabaseMappingContainer(this, sourceDC);
+                            dmc.loadSettings(runnableContext, dmcSettings);
+                            dataMappings.put(sourceDC, dmc);
+                        }
                     }
                 }
             }

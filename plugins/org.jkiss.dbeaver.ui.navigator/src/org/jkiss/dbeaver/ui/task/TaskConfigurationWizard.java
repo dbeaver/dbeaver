@@ -23,6 +23,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 public abstract class TaskConfigurationWizard extends BaseWizard implements IWorkbenchWizard {
@@ -52,7 +54,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
 
     public abstract String getTaskTypeId();
 
-    public abstract void saveTaskState(Map<String, Object> state);
+    public abstract void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state);
 
     public IStructuredSelection getCurrentSelection() {
         return currentSelection;
@@ -155,7 +157,20 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
                 taskPage.saveSettings();
             }
         }
-        saveTaskState(currentTask.getProperties());
+        try {
+            DBTTask theTask = currentTask;
+            getRunnableContext().run(true, true, monitor -> {
+                try {
+                    saveTaskState(monitor, theTask.getProperties());
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Tsk save error", "Error saving task configuration", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
     }
 
 }
