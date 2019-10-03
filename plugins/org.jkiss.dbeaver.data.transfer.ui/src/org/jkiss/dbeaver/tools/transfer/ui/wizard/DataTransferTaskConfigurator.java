@@ -235,7 +235,9 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
             if (!selectedObjects.isEmpty()) {
                 for (DBSObject object : selectedObjects) {
-                    addObjectToTable(object);
+                    if (object != null) {
+                        addObjectToTable(object);
+                    }
                 }
             }
             UIUtils.asyncExec(() -> UIUtils.packColumns(objectsTable, true));
