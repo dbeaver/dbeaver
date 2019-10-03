@@ -110,6 +110,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
+        this.accessRestrictions = dataSourceDescriptor.getModifyPermission();
 
         for (FilterInfo filterInfo : filters) {
             filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, true);
