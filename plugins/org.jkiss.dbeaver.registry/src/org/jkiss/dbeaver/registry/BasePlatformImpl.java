@@ -38,11 +38,14 @@ import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
+import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ProxySelector;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -128,6 +131,15 @@ public abstract class BasePlatformImpl implements DBPPlatform {
             this.navigatorModel.dispose();
             //this.navigatorModel = null;
         }
+    }
+
+    protected void installProxySelector() {
+        // Init default network settings
+        ProxySelector defProxySelector = GeneralUtils.adapt(this, ProxySelector.class);
+        if (defProxySelector == null) {
+            defProxySelector = new GlobalProxySelector(ProxySelector.getDefault());
+        }
+        ProxySelector.setDefault(defProxySelector);
     }
 
     @NotNull
