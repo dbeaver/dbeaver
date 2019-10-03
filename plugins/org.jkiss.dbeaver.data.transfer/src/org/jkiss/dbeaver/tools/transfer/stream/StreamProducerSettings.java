@@ -24,11 +24,9 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Stream transfer settings
@@ -109,13 +107,28 @@ public class StreamProducerSettings implements IDataTransferSettings {
             }
             return null;
         }
+
+        Map<String, Object>saveSettings() {
+            if (entity == null || entity.getParentObject() == null) {
+                return null;
+            }
+            Map<String, Object> mappings = new LinkedHashMap<>();
+
+            mappings.put("entityId", DBUtils.getObjectFullId(entity));
+            Map<String, Object> attrConfig = new LinkedHashMap<>();
+            mappings.put("attributes", attrConfig);
+            for (AttributeMapping attr : attributeMappings) {
+                attr.saveSettings(attrConfig);
+            }
+            return mappings;
+        }
     }
 
     public static class AttributeMapping {
 
         private final DBDValueHandler targetValueHandler;
 
-        public static enum MappingType {
+        public enum MappingType {
             NONE("none"),
             IMPORT("import"),
             DEFAULT_VALUE("custom value"),
@@ -215,9 +228,22 @@ public class StreamProducerSettings implements IDataTransferSettings {
             return mappingType == MappingType.IMPORT || mappingType == MappingType.DEFAULT_VALUE;
         }
 
+        void saveSettings(Map<String, Object> config) {
+            Map<String, Object> attrMap = new LinkedHashMap<>();
+            config.put(getSourceAttributeName(), attrMap);
+            attrMap.put("targetName", getTargetAttributeName());
+            attrMap.put("mapping", mappingType.name());
+            if (skip) {
+                attrMap.put("skip", true);
+            }
+            if (!CommonUtils.isEmpty(defaultValue)) {
+                attrMap.put("default", defaultValue);
+            }
+        }
+
         @Override
         public String toString() {
-            return sourceAttributeName + " " + mappingType + " )" + targetAttributeName + ")";
+            return sourceAttributeName + " " + mappingType + " (" + targetAttributeName + ")";
         }
     }
 
@@ -261,6 +287,15 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
     @Override
     public void saveSettings(Map<String, Object> settings) {
+        List<Map<String, Object>> mappings = new ArrayList<>();
+        settings.put("mappings", mappings);
+
+        for (EntityMapping emc : entityMapping.values()) {
+            Map<String, Object> emSettings = emc.saveSettings();
+            if (emSettings != null) {
+                mappings.add(emSettings);
+            }
+        }
     }
 
     @Override

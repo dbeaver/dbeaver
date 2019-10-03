@@ -292,11 +292,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             if (taskConfigPanel != null) {
                 taskConfigPanel.saveSettings();
             }
-            try {
-                task.getProject().getTaskManager().updateTaskConfiguration(task);
-            } catch (DBException e) {
-                log.error("Error saving task configuration", e);
-            }
         }
     }
 

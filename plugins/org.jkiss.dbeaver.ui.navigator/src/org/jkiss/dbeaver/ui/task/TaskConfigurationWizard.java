@@ -162,6 +162,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             getRunnableContext().run(true, true, monitor -> {
                 try {
                     saveTaskState(monitor, theTask.getProperties());
+                    theTask.getProject().getTaskManager().updateTaskConfiguration(theTask);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
