@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -631,6 +633,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 state.put("type", "mappings");
                 state.put("project", targetDS.getProject().getName());
                 state.put("dataSource", targetDS.getId());
+
+                DBSDataContainer dataContainer = object.getTargetObject();
+                if (dataContainer instanceof DBSEntity) {
+                    state.put("entityId", DBUtils.getObjectFullId(dataContainer));
+                }
             } catch (Exception e) {
                 log.error("Error initializing database consumer", e);
             }
@@ -639,20 +646,28 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         @Override
         public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
             DatabaseTransferConsumer consumer = new DatabaseTransferConsumer();
-            /*try {
-                String projectName = CommonUtils.toString(state.get("project"));
-                DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-                if (project == null) {
-                    project = objectContext.getProject();
+
+            String entityId = CommonUtils.toString(state.get("entityId"), null);
+            if (entityId != null) {
+                try {
+                    runnableContext.run(false, true, monitor -> {
+                        try {
+                            String projectName = CommonUtils.toString(state.get("project"));
+                            DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                            if (project == null) {
+                                throw new DBCException("Project '" + projectName + "' not found");
+                            }
+                            consumer.targetObject = (DBSDataManipulator) DBUtils.findObjectById(monitor, project, entityId);
+                        } catch (Exception e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    log.debug("Error deserializing node location", e.getTargetException());
+                } catch (InterruptedException e) {
+                    // Ignore
                 }
-                DatabaseMappingContainer targetMapping = new DatabaseMappingContainer();
-                targetMapping.loadSettings(runnableContext, state);
-                targetMapping.getTarget()
-            } catch (InvocationTargetException e) {
-                log.debug("Error deserializing node location", e.getTargetException());
-            } catch (InterruptedException e) {
-                // Ignore
-            }*/
+            }
 
             return consumer;
         }
