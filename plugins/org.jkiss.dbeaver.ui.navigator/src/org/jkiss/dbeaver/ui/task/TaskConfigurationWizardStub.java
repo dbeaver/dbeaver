@@ -20,6 +20,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 import java.util.Map;
@@ -45,7 +46,7 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard {
     }
 
     @Override
-    public void saveTaskState(Map<String, Object> state) {
+    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
 
     }
 

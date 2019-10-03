@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.runtime.serialize.SerializerRegistry;
@@ -225,7 +226,7 @@ public class JSONUtils {
         json.endObject();
     }
 
-    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(@NotNull OBJECT_TYPE object) {
+    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(DBRProgressMonitor monitor, @NotNull OBJECT_TYPE object) {
         DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
         if (serializer == null) {
             log.error("No serializer found for object " + object.getClass().getName());
@@ -234,7 +235,7 @@ public class JSONUtils {
         Map<String, Object> state = new LinkedHashMap<>();
 
         Map<String, Object> location = new LinkedHashMap<>();
-        serializer.serializeObject(object, location);
+        serializer.serializeObject(monitor, object, location);
         state.put("type", SerializerRegistry.getInstance().getObjectType(object));
         state.put("location", location);
 

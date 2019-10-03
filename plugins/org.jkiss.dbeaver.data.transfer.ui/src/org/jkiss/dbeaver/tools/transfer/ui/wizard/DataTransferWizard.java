@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.ui.task.TaskConfigurationWizardDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class DataTransferWizard extends TaskConfigurationWizard implements IExportWizard, IImportWizard {
@@ -253,7 +255,14 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     @Override
     public boolean performFinish() {
         // Save settings
-        saveSettings();
+        try {
+            getRunnableContext().run(true, true, this::saveSettings);
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't save settings", e.getTargetException());
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
 
         super.performFinish();
 
@@ -285,9 +294,9 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         //wizardContainer.
     }
 
-    private void saveSettings() {
+    private void saveSettings(DBRProgressMonitor monitor) {
         DialogSettingsMap dialogSettings = new DialogSettingsMap(getDialogSettings());
-        saveConfiguration(dialogSettings);
+        saveConfiguration(monitor, dialogSettings);
     }
 
     private void addNodeSettings(DataTransferNodeDescriptor node) {
@@ -382,7 +391,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         return null;
     }
 
-    public void saveTaskState(Map<String, Object> state) {
+    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
         List<IDataTransferNode> producers = new ArrayList<>();
         List<IDataTransferNode> consumers = new ArrayList<>();
         for (DataTransferPipe pipe : settings.getDataPipes()) {
@@ -393,12 +402,12 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
                 consumers.add(pipe.getConsumer());
             }
         }
-        DataTransferSettings.saveNodesLocation(state, producers, "producers");
-        DataTransferSettings.saveNodesLocation(state, consumers, "consumers");
-        state.put("configuration", saveConfiguration(new LinkedHashMap<>()));
+        DataTransferSettings.saveNodesLocation(monitor, state, producers, "producers");
+        DataTransferSettings.saveNodesLocation(monitor, state, consumers, "consumers");
+        state.put("configuration", saveConfiguration(monitor, new LinkedHashMap<>()));
     }
 
-    private Map<String, Object> saveConfiguration(Map<String, Object> config) {
+    private Map<String, Object> saveConfiguration(DBRProgressMonitor monitor, Map<String, Object> config) {
         config.put("maxJobCount", settings.getMaxJobCount());
         config.put("showFinalMessage", settings.isShowFinalMessage());
         // Save nodes' settings

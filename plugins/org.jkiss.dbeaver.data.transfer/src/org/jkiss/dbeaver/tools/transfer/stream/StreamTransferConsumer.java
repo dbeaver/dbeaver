@@ -677,7 +677,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferConsumer> {
 
         @Override
-        public void serializeObject(StreamTransferConsumer object, Map<String, Object> state) {
+        public void serializeObject(DBRProgressMonitor monitor, StreamTransferConsumer object, Map<String, Object> state) {
         }
 
         @Override

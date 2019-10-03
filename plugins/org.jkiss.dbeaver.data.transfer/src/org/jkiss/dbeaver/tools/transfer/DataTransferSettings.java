@@ -433,11 +433,11 @@ public class DataTransferSettings {
         this.showFinalMessage = showFinalMessage;
     }
 
-    public static void saveNodesLocation(Map<String, Object> state, Collection<IDataTransferNode> nodes, String nodeType) {
+    public static void saveNodesLocation(DBRProgressMonitor monitor, Map<String, Object> state, Collection<IDataTransferNode> nodes, String nodeType) {
         if (nodes != null) {
             List<Map<String, Object>> inputObjects = new ArrayList<>();
             for (Object inputObject : nodes) {
-                inputObjects.add(JSONUtils.serializeObject(inputObject));
+                inputObjects.add(JSONUtils.serializeObject(monitor, inputObject));
             }
             state.put(nodeType, inputObjects);
         }

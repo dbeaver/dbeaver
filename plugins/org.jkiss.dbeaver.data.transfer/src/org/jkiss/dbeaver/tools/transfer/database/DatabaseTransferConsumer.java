@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -45,7 +44,6 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -284,7 +282,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void initExporter(DBRProgressMonitor monitor) throws DBCException {
-        DBSObject targetDB = checkTargetContainer();
+        DBSObject targetDB = checkTargetContainer(monitor);
 
         DBPDataSourceContainer dataSourceContainer = targetDB.getDataSource().getContainer();
         if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_IMPORT_DATA)) {
@@ -308,9 +306,15 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    private DBSObject checkTargetContainer() throws DBCException {
-        if (targetObject == null && settings.getContainer() == null) {
-            throw new DBCException("Can't initialize database consumer. No target object and no taregt container");
+    private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBCException {
+        if (targetObject == null) {
+            if (settings.getContainerNode() != null && settings.getContainerNode().getDataSource() == null) {
+                // Init connection
+                settings.getContainerNode().initializeNode(monitor, null);
+            }
+            if (settings.getContainer() == null) {
+                throw new DBCException("Can't initialize database consumer. No target object and no target container");
+            }
         }
         containerMapping = sourceObject == null ? null : settings.getDataMapping(sourceObject);
 
@@ -343,7 +347,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         // Create all necessary database objects
         monitor.beginTask("Create necessary database objects", 1);
         try {
-            DBSObject dbObject = checkTargetContainer();
+            DBSObject dbObject = checkTargetContainer(monitor);
 
             boolean hasNewObjects = false;
             if (containerMapping != null) {
@@ -536,7 +540,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     public DBSDataManipulator getTargetObject() {
-        return targetObject;
+        return targetObject != null ? targetObject : containerMapping == null ? null : containerMapping.getTarget();
     }
 
     @Override
@@ -612,48 +616,43 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public boolean equals(Object obj) {
         return obj instanceof DatabaseTransferConsumer &&
             CommonUtils.equalObjects(targetObject, ((DatabaseTransferConsumer) obj).targetObject);
-
     }
 
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferConsumer> {
 
         @Override
-        public void serializeObject(DatabaseTransferConsumer object, Map<String, Object> state) {
-            DBSDataContainer dataContainer = object.targetObject;
-            if (dataContainer instanceof DBSEntity) {
-                state.put("type", "entity");
-                if (dataContainer.getDataSource() != null) {
-                    state.put("project", dataContainer.getDataSource().getContainer().getProject().getName());
+        public void serializeObject(DBRProgressMonitor monitor, DatabaseTransferConsumer object, Map<String, Object> state) {
+            try {
+                DatabaseMappingContainer targetMapping = object.containerMapping;
+                DBPDataSourceContainer targetDS = object.getDataSourceContainer();
+                if (targetDS == null) {
+                    throw new DBException("Can't get target datasource container");
                 }
-                state.put("entityId", DBUtils.getObjectFullId(dataContainer));
-            } else {
-                state.put("type", "unknown");
-                log.error("Unsupported consumer data container: " + dataContainer);
+                state.put("type", "mappings");
+                state.put("project", targetDS.getProject().getName());
+                state.put("dataSource", targetDS.getId());
+            } catch (Exception e) {
+                log.error("Error initializing database consumer", e);
             }
         }
 
         @Override
         public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
             DatabaseTransferConsumer consumer = new DatabaseTransferConsumer();
-            try {
-                runnableContext.run(false, true, monitor -> {
-                    try {
-                        String projectName = CommonUtils.toString(state.get("project"));
-                        DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-                        if (project == null) {
-                            project = objectContext.getProject();
-                        }
-                        String id = CommonUtils.toString(state.get("entityId"));
-                        consumer.targetObject = (DBSDataManipulator) DBUtils.findObjectById(monitor, project, id);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
+            /*try {
+                String projectName = CommonUtils.toString(state.get("project"));
+                DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                if (project == null) {
+                    project = objectContext.getProject();
+                }
+                DatabaseMappingContainer targetMapping = new DatabaseMappingContainer();
+                targetMapping.loadSettings(runnableContext, state);
+                targetMapping.getTarget()
             } catch (InvocationTargetException e) {
                 log.debug("Error deserializing node location", e.getTargetException());
             } catch (InterruptedException e) {
                 // Ignore
-            }
+            }*/
 
             return consumer;
         }
