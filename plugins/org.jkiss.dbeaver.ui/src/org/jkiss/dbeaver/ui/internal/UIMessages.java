@@ -30,6 +30,7 @@ public class UIMessages extends NLS {
     public static String properties_value;
 
     public static String label_ms;
+    public static String label_sec;
 
     public static String ui_actions_context_search_name;
 

@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -127,7 +128,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
                     CoreMessages.pref_page_ui_general_label_enable_long_operations,
                     CoreMessages.pref_page_ui_general_label_enable_long_operations_tip, false, 2);
 
-            longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, CoreMessages.pref_page_ui_general_label_long_operation_timeout, 0, 0, Integer.MAX_VALUE);
+            longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, CoreMessages.pref_page_ui_general_label_long_operation_timeout + UIMessages.label_sec, 0, 0, Integer.MAX_VALUE);
 
             if (RuntimeUtils.isPlatformMacOS()) {
                 ControlEnableState.disable(agentGroup);

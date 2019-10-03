@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
@@ -125,7 +126,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 updateDefaultAfterExecute = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute, SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute_tip, false, 2);
                 clearOutputBeforeExecute = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute, SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute_tip, false, 2);
 
-                UIUtils.createControlLabel(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_sql_timeout);
+                UIUtils.createControlLabel(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_sql_timeout + UIMessages.label_sec);
                 executeTimeoutText = new Spinner(commonGroup, SWT.BORDER);
                 executeTimeoutText.setSelection(0);
                 executeTimeoutText.setDigits(0);
