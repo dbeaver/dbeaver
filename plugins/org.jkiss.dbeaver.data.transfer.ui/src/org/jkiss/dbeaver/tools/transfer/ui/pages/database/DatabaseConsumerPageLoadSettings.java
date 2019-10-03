@@ -37,7 +37,6 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         super("Data load");
         setTitle("Data load settings");
         setDescription("Configuration of table data load");
-        setPageComplete(false);
     }
 
     @Override

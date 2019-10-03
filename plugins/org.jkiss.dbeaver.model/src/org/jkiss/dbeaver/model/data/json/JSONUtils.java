@@ -305,13 +305,12 @@ public class JSONUtils {
     }
 
     @NotNull
-    public static Collection<Map<String, Object>> getObjectList(@NotNull Map<String, Object> map, @NotNull String name) {
-        List<Map<String, Object>> list = (List<Map<String, Object>> ) map.get(name);
-        if (list == null) {
-            return Collections.emptyList();
-        } else {
-            return list;
+    public static List<Map<String, Object>> getObjectList(@NotNull Map<String, Object> map, @NotNull String name) {
+        Object value = map.get(name);
+        if (value instanceof List) {
+            return  (List<Map<String, Object>>) value;
         }
+        return Collections.emptyList();
     }
 
     @Nullable

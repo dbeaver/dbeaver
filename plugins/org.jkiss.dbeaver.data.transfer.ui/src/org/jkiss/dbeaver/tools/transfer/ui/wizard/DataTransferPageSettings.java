@@ -41,7 +41,6 @@ class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
         super(DTMessages.data_transfer_wizard_settings_name);
         setTitle(DTMessages.data_transfer_wizard_settings_title);
         setDescription(DTMessages.data_transfer_wizard_settings_description);
-        setPageComplete(false);
     }
 
     @Override

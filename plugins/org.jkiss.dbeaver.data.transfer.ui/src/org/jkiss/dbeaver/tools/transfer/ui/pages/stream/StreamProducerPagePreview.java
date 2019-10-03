@@ -38,16 +38,18 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.*;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporter;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -56,10 +58,6 @@ import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +78,6 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         super(DTMessages.data_transfer_wizard_page_preview_name);
         setTitle(DTMessages.data_transfer_wizard_page_preview_title);
         setDescription(DTMessages.data_transfer_wizard_page_preview_description);
-        setPageComplete(false);
     }
 
     private StreamProducerSettings getProducerSettings() {
@@ -275,6 +272,8 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         }
 
         setControl(composite);
+
+        determinePageCompletion();
     }
 
     @Override
@@ -350,20 +349,8 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 DBRProgressMonitor monitor = new DefaultProgressMonitor(mon);
                 monitor.beginTask("Load mappings", 3);
                 try {
-                    monitor.subTask("Load attributes form target object");
-                    for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
-                        if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
-                            continue;
-                        }
-                        entityMapping.getAttributeMapping(attr);
-                    }
+                    getProducerSettings().updateMappingsFromStream(getWizard().getSettings());
                     monitor.worked(1);
-
-                    // Load header and mappings
-                    monitor.subTask("Load attribute mappings");
-                    if (importer instanceof IStreamDataImporter) {
-                        loadStreamMappings((IStreamDataImporter)importer, entity, currentProducer);
-                    }
 
                     UIUtils.syncExec(() -> updateAttributeMappings(entityMapping));
                     monitor.worked(1);
@@ -386,6 +373,8 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         } catch (InterruptedException e) {
             // Ignore
         }
+        determinePageCompletion();
+
         Throwable finalError = error;
         UIUtils.asyncExec(() -> {
             UIUtils.packColumns(mappingsTable, true);
@@ -395,6 +384,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 DBWorkbench.getPlatformUI().showError("Load entity meta", "Can't load entity attributes", finalError);
             }
         });
+
     }
 
     private void refreshPreviewTable(StreamProducerSettings.EntityMapping entityMapping) {
@@ -493,58 +483,6 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
     public DataTransferPipe getCurrentPipe() {
         return pipeList.get(tableList.getSelectionIndex());
-    }
-
-    private void loadStreamMappings(IStreamDataImporter importer, DBSEntity entity, StreamTransferProducer currentProducer) throws DBException {
-        File inputFile = currentProducer.getInputFile();
-
-        final StreamProducerSettings settings = getProducerSettings();
-        final Map<Object, Object> processorProperties = getWizard().getSettings().getProcessorProperties();
-        StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
-
-        List<StreamDataImporterColumnInfo> columnInfos;
-        try (InputStream is = new FileInputStream(inputFile)) {
-            importer.init(new StreamDataImporterSite(settings, entity, processorProperties));
-            columnInfos = importer.readColumnsInfo(is);
-            importer.dispose();
-        } catch (IOException e) {
-            throw new DBException("IO error", e);
-        }
-        entityMapping.setStreamColumns(columnInfos);
-
-        // Map source columns
-        List<StreamProducerSettings.AttributeMapping> attributeMappings = entityMapping.getAttributeMappings();
-        for (StreamDataImporterColumnInfo columnInfo : columnInfos) {
-            boolean mappingFound = false;
-            if (columnInfo.getColumnName() != null) {
-                for (StreamProducerSettings.AttributeMapping attr : attributeMappings) {
-                    if (CommonUtils.equalObjects(attr.getTargetAttributeName(), columnInfo.getColumnName())) {
-                        if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
-                            // Set source name only if it wasn't set
-                            attr.setSourceAttributeName(columnInfo.getColumnName());
-                            attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
-                            attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
-                            attr.setSourceColumn(columnInfo);
-                        }
-                        mappingFound = true;
-                        break;
-                    }
-                }
-            }
-            if (!mappingFound) {
-                if (columnInfo.getColumnIndex() >= 0 && columnInfo.getColumnIndex() < attributeMappings.size()) {
-                    StreamProducerSettings.AttributeMapping attr = attributeMappings.get(columnInfo.getColumnIndex());
-                    if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
-                        if (!CommonUtils.isEmpty(columnInfo.getColumnName())) {
-                            attr.setSourceAttributeName(columnInfo.getColumnName());
-                        }
-                        attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
-                        attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
-                        attr.setSourceColumn(columnInfo);
-                    }
-                }
-            }
-        }
     }
 
     private void loadImportPreview(DBRProgressMonitor monitor, IStreamDataImporter importer, DBSEntity entity, StreamTransferProducer currentProducer) throws DBException {
