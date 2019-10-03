@@ -155,26 +155,32 @@ public class DataTransferSettings {
 
         DataTransferNodeDescriptor savedConsumer = null, savedProducer = null, processorNode = null;
         {
-            if (this.consumer == null) {
+            {
                 String consumerId = CommonUtils.toString(config.get("consumer"));
                 if (!CommonUtils.isEmpty(consumerId)) {
                     DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
                     if (consumerNode != null) {
-                        this.setConsumer(savedConsumer = consumerNode);
+                        savedConsumer = consumerNode;
+                        if (this.consumer == null) {
+                            this.setConsumer(consumerNode);
+                        }
                         if (this.isConsumerOptional()) {
-                            processorNode = savedConsumer;
+                            processorNode = consumerNode;
                         }
                     }
                 }
             }
-            if (this.producer == null) {
+            {
                 String producerId = CommonUtils.toString(config.get("producer"));
                 if (!CommonUtils.isEmpty(producerId)) {
                     DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
                     if (producerNode != null) {
-                        this.setProducer(savedProducer = producerNode);
+                        savedProducer = producerNode;
+                        if (this.producer == null) {
+                            this.setProducer(producerNode);
+                        }
                         if (this.isProducerOptional()) {
-                            processorNode = savedProducer;
+                            processorNode = producerNode;
                         }
                     }
                 }
