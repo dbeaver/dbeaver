@@ -143,10 +143,14 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskColumnController = new ViewerColumnController("tasks", filteredTree.getViewer());
         taskColumnController.addColumn("Name", "Task name", SWT.LEFT, true, true, new TaskLabelProvider() {
             @Override
-            protected void update(ViewerCell cell, DBTTask task) {
+            protected String getCellText(DBTTask task) {
+                return task.getName();
+            }
+
+            @Override
+            protected DBPImage getCellImage(DBTTask task) {
                 DBPImage icon = task.getType().getIcon();
-                cell.setImage(DBeaverIcons.getImage(icon != null ? icon : DBIcon.TREE_PACKAGE));
-                cell.setText(task.getName());
+                return icon != null ? icon : DBIcon.TREE_PACKAGE;
             }
 
             @Override
@@ -160,69 +164,69 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         });
         taskColumnController.addColumn("Created", "Task create time", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            protected void update(ViewerCell cell, DBTTask task) {
-                cell.setText(dateFormat.format(task.getCreateTime()));
+            protected String getCellText(DBTTask task) {
+                return dateFormat.format(task.getCreateTime());
             }
         });
         taskColumnController.addColumn("Last Run", "Task last start time", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            protected void update(ViewerCell cell, DBTTask task) {
+            protected String getCellText(DBTTask task) {
                 DBTTaskRun lastRun = task.getLastRun();
                 if (lastRun == null) {
-                    cell.setText("N/A");
+                    return "N/A";
                 } else {
-                    cell.setText(dateFormat.format(lastRun.getStartTime()));
+                    return dateFormat.format(lastRun.getStartTime());
                 }
             }
         });
         taskColumnController.addColumn("Last Duration", "Task last run duration", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
-            protected void update(ViewerCell cell, DBTTask task) {
+            protected String getCellText(DBTTask task) {
                 DBTTaskRun lastRun = task.getLastRun();
                 if (lastRun == null) {
-                    cell.setText("N/A");
+                    return "N/A";
                 } else {
-                    cell.setText(RuntimeUtils.formatExecutionTime(lastRun.getRunDuration()));
+                    return RuntimeUtils.formatExecutionTime(lastRun.getRunDuration());
                 }
             }
         });
         taskColumnController.addColumn("Last Result", "Task last result", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            protected void update(ViewerCell cell, DBTTask task) {
+            protected String getCellText(DBTTask task) {
                 DBTTaskRun lastRun = task.getLastRun();
                 if (lastRun == null) {
-                    cell.setText("N/A");
+                    return "N/A";
                 } else {
                     if (lastRun.isRunSuccess()) {
-                        cell.setText("Success");
+                        return "Success";
                     } else {
-                        cell.setText(CommonUtils.notEmpty(lastRun.getErrorMessage()));
+                        return CommonUtils.notEmpty(lastRun.getErrorMessage());
                     }
                 }
             }
         });
         taskColumnController.addColumn("Description", "Task description", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
-            protected void update(ViewerCell cell, DBTTask task) {
-                cell.setText(CommonUtils.notEmpty(task.getDescription()));
+            protected String getCellText(DBTTask task) {
+                return CommonUtils.notEmpty(task.getDescription());
             }
         });
         taskColumnController.addColumn("Type", "Task type", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            protected void update(ViewerCell cell, DBTTask task) {
-                cell.setText(task.getType().getName());
+            protected String getCellText(DBTTask task) {
+                return task.getType().getName();
             }
         });
         taskColumnController.addColumn("Category", "Task category", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
-            protected void update(ViewerCell cell, DBTTask task) {
-                cell.setText(task.getType().getCategory().getName());
+            protected String getCellText(DBTTask task) {
+                return task.getType().getCategory().getName();
             }
         });
         taskColumnController.addColumn("Project", "Task container project", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            protected void update(ViewerCell cell, DBTTask task) {
-                cell.setText(task.getProject().getName());
+            protected String getCellText(DBTTask task) {
+                return task.getProject().getName();
             }
         });
         taskColumnController.createColumns(true);
@@ -437,10 +441,23 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             } else {
                 cell.setBackground(null);
             }
-            update(cell, task);
+            cell.setText(getCellText(task));
+            DBPImage cellImage = getCellImage(task);
+            if (cellImage != null) {
+                cell.setImage(DBeaverIcons.getImage(cellImage));
+            }
         }
 
-        protected abstract void update(ViewerCell cell, DBTTask task);
+        protected DBPImage getCellImage(DBTTask task) {
+            return null;
+        }
+
+        protected abstract String getCellText(DBTTask task);
+
+        @Override
+        public String getText(Object element) {
+            return getCellText((DBTTask) element);
+        }
     }
 
     private abstract class TaskRunLabelProvider extends ColumnLabelProvider {
