@@ -64,7 +64,6 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     DataTransferPagePipes() {
         super(DTMessages.data_transfer_wizard_init_name);
-        setPageComplete(false);
     }
 
     @Override
@@ -84,6 +83,8 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         updatePageCompletion();
 
         setControl(composite);
+
+        updatePageCompletion();
     }
 
     private void createNodesTable(Composite composite) {

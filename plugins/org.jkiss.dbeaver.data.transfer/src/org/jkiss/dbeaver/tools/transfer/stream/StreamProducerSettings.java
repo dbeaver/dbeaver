@@ -16,16 +16,31 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -33,19 +48,47 @@ import java.util.*;
  */
 public class StreamProducerSettings implements IDataTransferSettings {
 
+    private static final Log log = Log.getLog(StreamProducerSettings.class);
+
     public static class EntityMapping {
         private String entityName;
         private DBSEntity entity;
         private List<AttributeMapping> attributeMappings = new ArrayList<>();
         private List<StreamDataImporterColumnInfo> streamColumns = new ArrayList<>();
 
-        public EntityMapping(DBSEntity entity) {
+        EntityMapping(DBSEntity entity) {
             this.entity = entity;
             this.entityName = DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML);
         }
 
-        public EntityMapping(String entityName) {
+        EntityMapping(String entityName) {
             this.entityName = entityName;
+        }
+
+        EntityMapping(DBRRunnableContext runnableContext, Map<String, Object> config) throws DBCException, InvocationTargetException, InterruptedException {
+            String projectName = CommonUtils.toString(config.get("project"));
+            DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+            if (project == null) {
+                throw new DBCException("Error loading stream producer mappings - project not found");
+            }
+
+            String entityId = CommonUtils.toString(config.get("entityId"));
+            if (!CommonUtils.isEmpty(entityId)) {
+                runnableContext.run(true, true, monitor -> {
+                    try {
+                        entity = (DBSEntity) DBUtils.findObjectById(monitor, project, entityId);
+
+                        Map<String, Object> attrsConfig = JSONUtils.getObject(config, "attributes");
+                        for (String sourceAttrName : attrsConfig.keySet()) {
+                            Map<String, Object> attrMap = (Map<String, Object>) attrsConfig.get(sourceAttrName);
+                            AttributeMapping am = new AttributeMapping(monitor, EntityMapping.this, sourceAttrName, attrMap);
+                            attributeMappings.add(am);
+                        }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            }
         }
 
         public String getEntityName() {
@@ -114,6 +157,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
             }
             Map<String, Object> mappings = new LinkedHashMap<>();
 
+            mappings.put("project", entity.getDataSource().getContainer().getProject().getName());
             mappings.put("entityId", DBUtils.getObjectFullId(entity));
             Map<String, Object> attrConfig = new LinkedHashMap<>();
             mappings.put("attributes", attrConfig);
@@ -125,8 +169,6 @@ public class StreamProducerSettings implements IDataTransferSettings {
     }
 
     public static class AttributeMapping {
-
-        private final DBDValueHandler targetValueHandler;
 
         public enum MappingType {
             NONE("none"),
@@ -146,6 +188,8 @@ public class StreamProducerSettings implements IDataTransferSettings {
         }
 
         private DBSEntityAttribute targetAttribute;
+        private DBDValueHandler targetValueHandler;
+
         private String targetAttributeName;
         private String sourceAttributeName;
         private int sourceAttributeIndex = -1;
@@ -155,9 +199,22 @@ public class StreamProducerSettings implements IDataTransferSettings {
         private StreamDataImporterColumnInfo sourceColumn;
 
         public AttributeMapping(DBSEntityAttribute attr) {
-            this.targetAttribute = attr;
             this.targetAttributeName = attr.getName();
+            this.targetAttribute = attr;
             this.targetValueHandler = DBUtils.findValueHandler(attr.getDataSource(), attr);
+        }
+
+        AttributeMapping(DBRProgressMonitor monitor, EntityMapping em, String sourceAttrName, Map<String, Object> config) throws DBException {
+            this.targetAttributeName = JSONUtils.getString(config, "targetName");
+            this.sourceAttributeName = sourceAttrName;
+            this.mappingType = CommonUtils.valueOf(MappingType.class, CommonUtils.toString(config.get("mapping")), MappingType.SKIP);
+            this.skip = JSONUtils.getBoolean(config, "skip");
+            this.defaultValue = JSONUtils.getString(config, "default");
+
+            this.targetAttribute = em.entity.getAttribute(monitor, this.targetAttributeName);
+            if (this.targetAttribute != null) {
+                this.targetValueHandler = DBUtils.findValueHandler(this.targetAttribute.getDataSource(), this.targetAttribute);
+            }
         }
 
         public MappingType getMappingType() {
@@ -283,6 +340,92 @@ public class StreamProducerSettings implements IDataTransferSettings {
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
         setProcessorProperties(dataTransferSettings.getProcessorProperties());
+
+        try {
+            for (Map<String, Object> mapping : JSONUtils.getObjectList(settings, "mappings")) {
+                EntityMapping em = new EntityMapping(runnableContext, mapping);
+                DBSEntity entity = em.getEntity();
+                if (entity != null) {
+                    entityMapping.put(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML), em);
+                }
+            }
+            updateMappingsFromStream(dataTransferSettings);
+        } catch (Exception e) {
+            log.error("Error loading stream producer settings", e);
+        }
+    }
+
+    public void updateMappingsFromStream(DataTransferSettings dataTransferSettings) throws DBException {
+        final Map<Object, Object> processorProperties = dataTransferSettings.getProcessorProperties();
+        for (DataTransferPipe pipe : dataTransferSettings.getDataPipes()) {
+            StreamTransferProducer producer = (StreamTransferProducer) pipe.getProducer();
+            if (producer != null && pipe.getConsumer() != null) {
+                DBSObject targetObject = pipe.getConsumer().getDatabaseObject();
+                if (targetObject instanceof DBSEntity) {
+                    DBSEntity entity = (DBSEntity) targetObject;
+
+                    StreamProducerSettings.EntityMapping entityMapping = getEntityMapping(entity);
+
+                    List<StreamDataImporterColumnInfo> columnInfos = null;
+                    File inputFile = producer.getInputFile();
+
+                    IDataTransferProcessor importer = dataTransferSettings.getProcessor().getInstance();
+
+                    if (importer instanceof IStreamDataImporter) {
+                        IStreamDataImporter sdi = (IStreamDataImporter)importer;
+                        try (InputStream is = new FileInputStream(inputFile)) {
+                            sdi.init(new StreamDataImporterSite(this, entity, processorProperties));
+                            try {
+                                columnInfos = sdi.readColumnsInfo(is);
+                            } finally {
+                                sdi.dispose();
+                            }
+                        } catch (IOException e) {
+                            throw new DBException("IO error", e);
+                        }
+                    }
+                    entityMapping.setStreamColumns(columnInfos);
+
+                    // Map source columns
+                    if (columnInfos != null) {
+                        List<StreamProducerSettings.AttributeMapping> attributeMappings = entityMapping.getAttributeMappings();
+                        for (StreamDataImporterColumnInfo columnInfo : columnInfos) {
+                            boolean mappingFound = false;
+                            if (columnInfo.getColumnName() != null) {
+                                for (StreamProducerSettings.AttributeMapping attr : attributeMappings) {
+                                    if (CommonUtils.equalObjects(attr.getTargetAttributeName(), columnInfo.getColumnName())) {
+                                        if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE || attr.getSourceAttributeIndex() < 0) {
+                                            // Set source name only if it wasn't set
+                                            attr.setSourceAttributeName(columnInfo.getColumnName());
+                                            attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
+                                            if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
+                                                attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
+                                            }
+                                            attr.setSourceColumn(columnInfo);
+                                        }
+                                        mappingFound = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!mappingFound) {
+                                if (columnInfo.getColumnIndex() >= 0 && columnInfo.getColumnIndex() < attributeMappings.size()) {
+                                    StreamProducerSettings.AttributeMapping attr = attributeMappings.get(columnInfo.getColumnIndex());
+                                    if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
+                                        if (!CommonUtils.isEmpty(columnInfo.getColumnName())) {
+                                            attr.setSourceAttributeName(columnInfo.getColumnName());
+                                        }
+                                        attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
+                                        attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
+                                        attr.setSourceColumn(columnInfo);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override

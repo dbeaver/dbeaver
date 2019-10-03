@@ -74,7 +74,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
         super(task == null ? "Create new task" : "Edit task");
         setTitle(task == null ? "New task properties" : "Edit task properties");
         setDescription("Set task name, type and input data");
-        setPageComplete(false);
 
         this.task = (TaskImpl) task;
         if (this.task != null) {
