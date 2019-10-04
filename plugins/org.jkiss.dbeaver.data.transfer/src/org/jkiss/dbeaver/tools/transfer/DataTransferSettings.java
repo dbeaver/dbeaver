@@ -157,26 +157,34 @@ public class DataTransferSettings {
         {
             // Restore consumer/producer from saved configuration
             // Do this only if consumer/producer weren't set explicitly
-            if (this.consumer == null) {
+            {
                 String consumerId = CommonUtils.toString(config.get("consumer"));
                 if (!CommonUtils.isEmpty(consumerId)) {
                     DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
                     if (consumerNode != null) {
-                        savedConsumer = consumerNode;
-                        this.setConsumer(consumerNode);
+                        if (this.consumer == null){
+                            savedConsumer = consumerNode;
+                            this.setConsumer(consumerNode);
+                        } else {
+                            savedConsumer = this.consumer;
+                        }
                         if (this.isConsumerOptional()) {
                             processorNode = consumerNode;
                         }
                     }
                 }
             }
-            if (this.producer == null) {
+            {
                 String producerId = CommonUtils.toString(config.get("producer"));
                 if (!CommonUtils.isEmpty(producerId)) {
                     DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
                     if (producerNode != null) {
-                        savedProducer = producerNode;
-                        this.setProducer(producerNode);
+                        if (this.producer == null) {
+                            savedProducer = producerNode;
+                            this.setProducer(producerNode);
+                        } else {
+                            savedProducer = this.producer;
+                        }
                         if (this.isProducerOptional()) {
                             processorNode = producerNode;
                         }
