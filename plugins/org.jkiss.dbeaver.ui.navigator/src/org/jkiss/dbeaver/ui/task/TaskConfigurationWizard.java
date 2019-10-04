@@ -77,7 +77,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     protected void updateWizardTitle() {
         String wizTitle = getDefaultWindowTitle();
         if (isTaskEditor()) {
-            TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+            TaskConfigurationWizardPageTask taskPage = getContainer() == null ? null : getContainer().getTaskPage();
             wizTitle += " - [" + (taskPage == null ? currentTask.getName() : taskPage.getTaskName()) + "]";
         }
         setWindowTitle(wizTitle);
