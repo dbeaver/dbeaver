@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.task;
 
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyListener;
@@ -23,6 +25,8 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -250,7 +254,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
         for (DBTTaskCategory cat : categories) {
             TreeItem item = parentItem == null ? new TreeItem(taskCategoryTree, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
             item.setText(cat.getName());
-            item.setImage(DBeaverIcons.getImage(cat.getIcon() == null ? DBIcon.TREE_PACKAGE : cat.getIcon()));
+            item.setImage(DBeaverIcons.getImage(cat.getIcon() == null ? DBIcon.TREE_TASK : cat.getIcon()));
             item.setData(cat);
             addTaskCategories(item, cat.getChildren());
             item.setExpanded(true);
@@ -277,6 +281,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
                 task = (TaskImpl) selectedProject.getTaskManager().createTaskConfiguration(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, new LinkedHashMap<>());
             }
             realWizard = (TaskConfigurationWizard) configurator.createTaskConfigWizard(task);
+            IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+            IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();
+            ISelection selection = activePart == null || activePart.getSite() == null || activePart.getSite().getSelectionProvider() == null ?
+                null : activePart.getSite().getSelectionProvider().getSelection();
+            realWizard.setContainer(getContainer());
+            realWizard.init(workbenchWindow.getWorkbench(), selection instanceof IStructuredSelection ? (IStructuredSelection) selection : null);
             taskConfigPanel.saveSettings();
 
             taskWizards.put(selectedTaskType, realWizard);

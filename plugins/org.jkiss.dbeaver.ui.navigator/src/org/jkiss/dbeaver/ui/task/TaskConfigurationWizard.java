@@ -77,7 +77,8 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     protected void updateWizardTitle() {
         String wizTitle = getDefaultWindowTitle();
         if (isTaskEditor()) {
-            wizTitle += " - [" + currentTask.getName() + "]";
+            TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+            wizTitle += " - [" + (taskPage == null ? currentTask.getName() : taskPage.getTaskName()) + "]";
         }
         setWindowTitle(wizTitle);
     }
@@ -92,6 +93,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         updateWizardTitle();
         setNeedsProgressMonitor(true);
         this.currentSelection = currentSelection;
+        getContainer().addPageChangedListener(event -> updateWizardTitle());
     }
 
     @Override

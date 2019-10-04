@@ -58,7 +58,7 @@ public class RecentTasksMenuContributor extends DataSourceMenuContributor
         for (int i = 0; i < tasks.length && i <= MAX_ITEMS; i++) {
             DBTTask task = tasks[i];
             DBPImage taskIcon = task.getType().getIcon();
-            if (taskIcon == null) taskIcon = DBIcon.TREE_PACKAGE;
+            if (taskIcon == null) taskIcon = DBIcon.TREE_TASK;
             menuItems.add(ActionUtils.makeActionContribution(new Action(task.getName(), DBeaverIcons.getImageDescriptor(taskIcon)) {
                 @Override
                 public void run() {

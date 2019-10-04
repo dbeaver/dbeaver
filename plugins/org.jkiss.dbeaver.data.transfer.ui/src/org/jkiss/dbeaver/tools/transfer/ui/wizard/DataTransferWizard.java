@@ -170,6 +170,8 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
                 addNodeSettings(node);
             }
         }
+
+        updateWizardTitle();
     }
 
     @Override
