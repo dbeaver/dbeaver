@@ -77,7 +77,7 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
             DBTTask task = NavigatorUtils.getSelectedProject().getTaskManager().getTaskConfiguration(taskId);
             if (task != null) {
                 DBPImage taskIcon = task.getType().getIcon();
-                if (taskIcon == null) taskIcon = DBIcon.TREE_PACKAGE;
+                if (taskIcon == null) taskIcon = DBIcon.TREE_TASK;
                 element.setIcon(DBeaverIcons.getImageDescriptor(taskIcon));
                 element.setText(task.getName());
             }

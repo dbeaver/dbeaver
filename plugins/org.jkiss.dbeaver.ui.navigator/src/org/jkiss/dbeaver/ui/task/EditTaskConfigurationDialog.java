@@ -64,7 +64,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
     {
         super(parentShell,
             "Edit task [" + task.getName() + "]",
-            task.getType().getIcon() == null ? DBIcon.TREE_PACKAGE : task.getType().getIcon());
+            task.getType().getIcon() == null ? DBIcon.TREE_TASK: task.getType().getIcon());
         this.task = (TaskImpl) task;
         this.project = task.getProject();
         this.taskType = task.getType();
@@ -73,7 +73,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
 
     public EditTaskConfigurationDialog(Shell parentShell, @NotNull DBPProject project, @NotNull DBTTaskType taskType)
     {
-        super(parentShell, "Create task", DBIcon.TREE_PACKAGE);
+        super(parentShell, "Create task", DBIcon.TREE_TASK);
         this.task = null;
         this.project = project;
         this.taskType = taskType;

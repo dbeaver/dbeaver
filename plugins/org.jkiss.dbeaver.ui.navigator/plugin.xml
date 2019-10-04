@@ -66,7 +66,7 @@
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.task.DatabaseTasksView"
             allowMultiple="false"
-            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/package.png"
+            icon="icons/task_list.png"
             name="%view.tasks.title"/>
     </extension>
 
@@ -312,6 +312,7 @@
         <image commandId="org.jkiss.dbeaver.ui.tools.select.schema" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/schema.png"/>
 
         <image commandId="org.jkiss.dbeaver.task.run" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/run.png"/>
+        <image commandId="org.jkiss.dbeaver.task.create" icon="icons/task_create.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -845,14 +846,14 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
             <separator name="tasks" visible="true"/>
-            <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/package.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
+            <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
             </command>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.menu.tasks">
             <command commandId="org.jkiss.dbeaver.task.create"/>
-            <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/package.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
+            <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
             </command>
             <separator name="tasks" visible="true"/>

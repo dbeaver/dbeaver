@@ -150,7 +150,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             @Override
             protected DBPImage getCellImage(DBTTask task) {
                 DBPImage icon = task.getType().getIcon();
-                return icon != null ? icon : DBIcon.TREE_PACKAGE;
+                return icon != null ? icon : DBIcon.TREE_TASK;
             }
 
             @Override
