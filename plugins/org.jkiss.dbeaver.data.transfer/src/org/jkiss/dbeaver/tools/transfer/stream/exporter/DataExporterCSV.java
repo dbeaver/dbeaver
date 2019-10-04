@@ -129,7 +129,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
             String colLabel = column.getLabel();
             String colName = column.getName();
             if (CommonUtils.equalObjects(colLabel, colName)) {
-                colName = DBUtils.getObjectFullName(column, DBPEvaluationContext.UI);
+                colName = column.getParentObject() == null ? column.getName() : DBUtils.getObjectFullName(column, DBPEvaluationContext.UI);
             } else if (!CommonUtils.isEmpty(colLabel)) {
                 // Label has higher priority
                 colName = colLabel;
