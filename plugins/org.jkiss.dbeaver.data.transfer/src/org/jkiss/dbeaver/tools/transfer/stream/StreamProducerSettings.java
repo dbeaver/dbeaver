@@ -369,22 +369,24 @@ public class StreamProducerSettings implements IDataTransferSettings {
                     List<StreamDataImporterColumnInfo> columnInfos = null;
                     File inputFile = producer.getInputFile();
 
-                    IDataTransferProcessor importer = dataTransferSettings.getProcessor().getInstance();
+                    if (inputFile != null && inputFile.exists()) {
+                        IDataTransferProcessor importer = dataTransferSettings.getProcessor().getInstance();
 
-                    if (importer instanceof IStreamDataImporter) {
-                        IStreamDataImporter sdi = (IStreamDataImporter)importer;
-                        try (InputStream is = new FileInputStream(inputFile)) {
-                            sdi.init(new StreamDataImporterSite(this, entity, processorProperties));
-                            try {
-                                columnInfos = sdi.readColumnsInfo(is);
-                            } finally {
-                                sdi.dispose();
+                        if (importer instanceof IStreamDataImporter) {
+                            IStreamDataImporter sdi = (IStreamDataImporter) importer;
+                            try (InputStream is = new FileInputStream(inputFile)) {
+                                sdi.init(new StreamDataImporterSite(this, entity, processorProperties));
+                                try {
+                                    columnInfos = sdi.readColumnsInfo(is);
+                                } finally {
+                                    sdi.dispose();
+                                }
+                            } catch (IOException e) {
+                                throw new DBException("IO error", e);
                             }
-                        } catch (IOException e) {
-                            throw new DBException("IO error", e);
                         }
+                        entityMapping.setStreamColumns(columnInfos);
                     }
-                    entityMapping.setStreamColumns(columnInfos);
 
                     // Map source columns
                     if (columnInfos != null) {
