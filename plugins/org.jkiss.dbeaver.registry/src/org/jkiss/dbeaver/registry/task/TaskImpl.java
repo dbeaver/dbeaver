@@ -130,6 +130,10 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         return type;
     }
 
+    public void setType(DBTTaskType type) {
+        this.type = type;
+    }
+
     @NotNull
     @Override
     public Map<String, Object> getProperties() {

@@ -288,6 +288,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
         if (task != null) {
             task.setName(taskLabelText.getText());
             task.setDescription(taskDescriptionText.getText());
+            task.setType(selectedTaskType);
             if (taskConfigPanel != null) {
                 taskConfigPanel.saveSettings();
             }
