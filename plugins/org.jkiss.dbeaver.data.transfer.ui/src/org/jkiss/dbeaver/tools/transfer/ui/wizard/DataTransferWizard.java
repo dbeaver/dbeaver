@@ -128,33 +128,44 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     }
 
     void loadSettings(@NotNull DBRRunnableContext runnableContext) {
-        nodeSettings.clear();
-        {
-            // Load node settings
-            Collection<DBSObject> objectTypes = settings.getSourceObjects();
-            List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
-            DataTransferRegistry registry = DataTransferRegistry.getInstance();
-            if (ArrayUtils.isEmpty(settings.getInitProducers())) {
-                nodes.addAll(registry.getAvailableProducers(objectTypes));
-            } else {
-                for (IDataTransferProducer source : settings.getInitProducers()) {
-                    DataTransferNodeDescriptor node = registry.getNodeByType(source.getClass());
-                    if (node != null && !nodes.contains(node)) {
-                        nodes.add(node);
-                    }
+        // Load node settings
+        Collection<DBSObject> objectTypes = settings.getSourceObjects();
+        List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
+        DataTransferRegistry registry = DataTransferRegistry.getInstance();
+        if (ArrayUtils.isEmpty(settings.getInitProducers())) {
+            nodes.addAll(registry.getAvailableProducers(objectTypes));
+        } else {
+            for (IDataTransferProducer source : settings.getInitProducers()) {
+                DataTransferNodeDescriptor node = registry.getNodeByType(source.getClass());
+                if (node != null && !nodes.contains(node)) {
+                    nodes.add(node);
                 }
             }
-            if (ArrayUtils.isEmpty(settings.getInitConsumers())) {
-                nodes.addAll(registry.getAvailableConsumers(objectTypes));
-            } else {
-                for (IDataTransferConsumer target : settings.getInitConsumers()) {
-                    DataTransferNodeDescriptor node = registry.getNodeByType(target.getClass());
-                    if (node != null && !nodes.contains(node)) {
-                        nodes.add(node);
-                    }
+        }
+        if (ArrayUtils.isEmpty(settings.getInitConsumers())) {
+            nodes.addAll(registry.getAvailableConsumers(objectTypes));
+        } else {
+            for (IDataTransferConsumer target : settings.getInitConsumers()) {
+                DataTransferNodeDescriptor node = registry.getNodeByType(target.getClass());
+                if (node != null && !nodes.contains(node)) {
+                    nodes.add(node);
                 }
             }
+        }
 
+        boolean settingsChanged = nodeSettings.size() != nodes.size();
+        if (!settingsChanged) {
+            List<NodePageSettings> nsList = new ArrayList<>(nodeSettings.values());
+            for (int i = 0; i < nodeSettings.size(); i++) {
+                if (nsList.get(i).sourceNode != nodes.get(i)) {
+                    settingsChanged = true;
+                    break;
+                }
+            }
+        }
+
+        if (settingsChanged) {
+            nodeSettings.clear();
             for (DataTransferNodeDescriptor node : nodes) {
                 addNodeSettings(node);
             }
