@@ -94,6 +94,12 @@ public class DataTransferSettings {
             }
             consumerOptional = initProducers[0] instanceof IDataTransferNodePrimary;
             producerOptional = initConsumers[0] instanceof IDataTransferNodePrimary;
+            if (producerOptional && consumerOptional) {
+                // Both producer and consumer set are primary
+                // This may happen when task was saved for db-> settings
+                // Leave only optional consumer then
+                producerOptional = false;
+            }
         } else if (!ArrayUtils.isEmpty(initProducers)) {
             // Make pipes
             for (IDataTransferProducer source : initProducers) {
