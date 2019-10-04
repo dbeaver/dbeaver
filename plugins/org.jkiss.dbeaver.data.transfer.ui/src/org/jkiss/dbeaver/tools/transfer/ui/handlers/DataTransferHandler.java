@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -59,10 +60,14 @@ public abstract class DataTransferHandler extends AbstractHandler {
 
         // Run transfer wizard
         if (!producers.isEmpty() || !consumers.isEmpty()) {
-            DataTransferWizard.openWizard(
-                workbenchWindow,
-                producers,
-                consumers);
+            try {
+                DataTransferWizard.openWizard(
+                    workbenchWindow,
+                    producers,
+                    consumers);
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Data transfer error", "Error opening data transfer wizard", e);
+            }
         }
 
         return null;

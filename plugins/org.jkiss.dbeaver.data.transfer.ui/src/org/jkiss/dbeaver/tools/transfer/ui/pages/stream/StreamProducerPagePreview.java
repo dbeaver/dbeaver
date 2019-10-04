@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
@@ -347,8 +348,18 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 IDataTransferProcessor importer = processor.getInstance();
 
                 DBRProgressMonitor monitor = new DefaultProgressMonitor(mon);
-                monitor.beginTask("Load mappings", 3);
+                monitor.beginTask("Load mappings", 4);
                 try {
+                    monitor.subTask("Load attributes form target object");
+                    for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
+                        if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
+                            continue;
+                        }
+                        entityMapping.getAttributeMapping(attr);
+                    }
+                    monitor.worked(1);
+
+                    monitor.subTask("Update mappings from stream");
                     getProducerSettings().updateMappingsFromStream(getWizard().getSettings());
                     monitor.worked(1);
 

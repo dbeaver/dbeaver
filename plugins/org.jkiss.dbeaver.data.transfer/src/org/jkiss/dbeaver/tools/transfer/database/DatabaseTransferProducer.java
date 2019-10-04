@@ -85,7 +85,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     @Override
     public String getObjectName() {
-        return DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
+        return dataContainer == null ? null : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
     }
 
     @Override
