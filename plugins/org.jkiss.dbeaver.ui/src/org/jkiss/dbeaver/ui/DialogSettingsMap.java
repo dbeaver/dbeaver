@@ -40,7 +40,14 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
     @NotNull
     @Override
     public Set<Entry<String, Object>> entrySet() {
-        return new LinkedHashSet<>();
+        Set<Entry<String, Object>> sectionSet = new LinkedHashSet<>();
+        IDialogSettings[] sections = settings.getSections();
+        if (sections != null) {
+            for (IDialogSettings section : sections) {
+                sectionSet.add(new SimpleEntry<>(section.getName(), new DialogSettingsMap(section)));
+            }
+        }
+        return sectionSet;
     }
 
     @Override
@@ -90,4 +97,13 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
         return settingsMap;
     }
 
+    @Override
+    public int hashCode() {
+        return settings.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof DialogSettingsMap && settings.equals(((DialogSettingsMap) o).settings);
+    }
 }

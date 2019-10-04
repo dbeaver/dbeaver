@@ -450,7 +450,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         // Save processors' properties
         Map<String, Object> processorsSection = new LinkedHashMap<>();
 
-        config.put("processors", processorsSection);
         for (DataTransferProcessorDescriptor procDescriptor : settings.getProcessorPropsHistory().keySet()) {
 
             Map<String, Object> procSettings = new LinkedHashMap<>();
@@ -468,6 +467,8 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             }
             processorsSection.put(procDescriptor.getFullId(), procSettings);
         }
+        config.put("processors", processorsSection);
+
         return config;
     }
 
