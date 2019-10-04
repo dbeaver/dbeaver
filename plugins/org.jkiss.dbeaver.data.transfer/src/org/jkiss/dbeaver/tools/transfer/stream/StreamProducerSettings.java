@@ -199,7 +199,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
         private StreamDataImporterColumnInfo sourceColumn;
 
         public AttributeMapping(DBSEntityAttribute attr) {
-            this.targetAttributeName = attr.getName();
+            this.sourceAttributeName = this.targetAttributeName = attr.getName();
             this.targetAttribute = attr;
             this.targetValueHandler = DBUtils.findValueHandler(attr.getDataSource(), attr);
         }
@@ -395,7 +395,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
                             boolean mappingFound = false;
                             if (columnInfo.getColumnName() != null) {
                                 for (StreamProducerSettings.AttributeMapping attr : attributeMappings) {
-                                    if (CommonUtils.equalObjects(attr.getTargetAttributeName(), columnInfo.getColumnName())) {
+                                    if (CommonUtils.equalObjects(attr.getSourceAttributeName(), columnInfo.getColumnName())) {
                                         if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE || attr.getSourceAttributeIndex() < 0) {
                                             // Set source name only if it wasn't set
                                             attr.setSourceAttributeName(columnInfo.getColumnName());
