@@ -269,6 +269,8 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         }
 
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
+
+        updatePageCompletion();
     }
 
     private void loadConsumers()
@@ -311,7 +313,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     @Override
     protected boolean determinePageCompletion() {
-        return getWizard().getSettings().getConsumer() != null;
+        return getWizard().getSettings().getConsumer() != null && getWizard().getSettings().getProducer() != null;
     }
 
 }
