@@ -74,11 +74,13 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     private Table previewTable;
 
     private DBSObject currentObject;
+    private boolean activated;
 
     public StreamProducerPagePreview() {
         super(DTMessages.data_transfer_wizard_page_preview_name);
         setTitle(DTMessages.data_transfer_wizard_page_preview_title);
         setDescription(DTMessages.data_transfer_wizard_page_preview_description);
+        setPageComplete(false);
     }
 
     private StreamProducerSettings getProducerSettings() {
@@ -279,6 +281,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
     @Override
     public void activatePage() {
+        activated = true;
         tableList.removeAll();
         pipeList.clear();
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
@@ -554,8 +557,15 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     @Override
     protected boolean determinePageCompletion()
     {
+        if (!activated) {
+            return false;
+        }
         final StreamProducerSettings settings = getProducerSettings();
-        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
+        List<DataTransferPipe> dataPipes = getWizard().getSettings().getDataPipes();
+        if (dataPipes.isEmpty()) {
+            return false;
+        }
+        for (DataTransferPipe pipe : dataPipes) {
             DBSObject databaseObject = pipe.getConsumer().getDatabaseObject();
             if (!(databaseObject instanceof DBSEntity)) {
                 return false;
