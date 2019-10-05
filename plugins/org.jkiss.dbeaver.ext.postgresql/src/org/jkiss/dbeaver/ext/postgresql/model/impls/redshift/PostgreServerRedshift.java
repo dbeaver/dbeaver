@@ -158,7 +158,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean isSupportsLimits() {
+    public boolean supportsResultSetLimits() {
         return true;
     }
 

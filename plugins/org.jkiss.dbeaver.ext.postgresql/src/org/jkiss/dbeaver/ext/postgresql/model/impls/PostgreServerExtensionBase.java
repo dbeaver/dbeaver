@@ -47,6 +47,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsTransactions() {
+        return true;
+    }
+
+    @Override
     public boolean supportsOids() {
         return true;
     }
@@ -132,7 +137,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public boolean isSupportsLimits() {
+    public boolean supportsResultSetLimits() {
         return true;
     }
 

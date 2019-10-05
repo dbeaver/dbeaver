@@ -44,14 +44,20 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.SocketException;
 import java.sql.*;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * JDBC data source
@@ -368,7 +374,7 @@ public abstract class JDBCDataSource
             try {
                 dataSourceInfo = createDataSourceInfo(monitor, metaData);
             } catch (Throwable e) {
-                log.error("Error obtaining database info");
+                log.error("Error obtaining database info", e);
             }
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC meta data", ex, this);
