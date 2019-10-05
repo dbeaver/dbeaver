@@ -95,7 +95,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions_end">
             <command commandId="org.jkiss.dbeaver.ext.oracle.code.compile">
                 <visibleWhen checkEnabled="true"/>
             </command>

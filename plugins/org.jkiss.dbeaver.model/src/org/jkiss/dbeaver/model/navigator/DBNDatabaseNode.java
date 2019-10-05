@@ -41,7 +41,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -480,15 +479,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         if (valueObject == null) {
             return false;
         }
-        final String propertyName = meta.getPropertyName();
-        final PropertyValueReader valueReader = new PropertyValueReader(monitor, propertyName, valueObject);
+        final PropertyValueReader valueReader = new PropertyValueReader(monitor, meta, valueObject);
         DBExecUtils.tryExecuteRecover(monitor, getDataSource(), valueReader);
         final Object propertyValue = valueReader.propertyValue;
         if (propertyValue == null) {
             return false;
         }
         if (!(propertyValue instanceof Collection<?>)) {
-            log.warn("Bad property '" + propertyName + "' value: " + propertyValue.getClass().getName()); //$NON-NLS-1$ //$NON-NLS-2$
+            log.warn("Bad property '" + meta.getPropertyName() + "' value: " + propertyValue.getClass().getName()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
 
@@ -776,8 +774,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         if (valueObject == null) {
             return null;
         }
-        String propertyName = childMeta.getPropertyName();
-        Method getter = findPropertyReadMethod(valueObject.getClass(), propertyName);
+        Method getter = childMeta.getPropertyReadMethod(valueObject.getClass());
         if (getter == null) {
             return null;
         }
@@ -796,14 +793,15 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     ////////////////////////////////////////////////////////////////////////////////////
     // Reflection utils
 
-    private static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName)
+    private static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, DBXTreeItem meta)
         throws DBException {
         // Read property using reflection
-        if (object == null) {
+        if (object == null || meta == null) {
             return null;
         }
+        String propertyName = meta.getPropertyName();
         try {
-            Method getter = findPropertyReadMethod(object.getClass(), propertyName);
+            Method getter = meta.getPropertyReadMethod(object.getClass());
             if (getter == null) {
                 log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
                 return null;
@@ -830,47 +828,22 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
     }
 
-    private static Method findPropertyReadMethod(Class<?> clazz, String propertyName) {
-        String methodName = BeanUtils.propertyNameToMethodName(propertyName);
-        return findPropertyGetter(clazz, "get" + methodName, "is" + methodName);
-    }
-
-    private static Method findPropertyGetter(Class<?> clazz, String getName, String isName) {
-        Method[] methods = clazz.getDeclaredMethods();
-
-        for (Method method : methods) {
-            if ((!Modifier.isPublic(method.getModifiers())) ||
-                (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) ||
-                (method.getReturnType().equals(void.class)))
-            {
-                // skip
-            } else if (method.getName().equals(getName) || (method.getName().equals(isName) && method.getReturnType().equals(boolean.class))) {
-                // If it matches the get name, it's the right method
-                Class<?>[] parameterTypes = method.getParameterTypes();
-                if (parameterTypes.length == 0 || (parameterTypes.length == 1 && parameterTypes[0] == DBRProgressMonitor.class)) {
-                    return method;
-                }
-            }
-        }
-        return clazz == Object.class ? null : findPropertyGetter(clazz.getSuperclass(), getName, isName);
-    }
-
     private static class PropertyValueReader implements DBRRunnableParametrized<DBRProgressMonitor> {
         private final DBRProgressMonitor monitor;
-        private final String propertyName;
+        private final DBXTreeItem meta;
         private final Object valueObject;
         private Object propertyValue;
 
-        PropertyValueReader(DBRProgressMonitor monitor, String propertyName, Object valueObject) {
+        PropertyValueReader(DBRProgressMonitor monitor, DBXTreeItem meta, Object valueObject) {
             this.monitor = monitor;
-            this.propertyName = propertyName;
+            this.meta = meta;
             this.valueObject = valueObject;
         }
 
         @Override
         public void run(DBRProgressMonitor param) throws InvocationTargetException, InterruptedException {
             try {
-                propertyValue = extractPropertyValue(monitor, valueObject, propertyName);
+                propertyValue = extractPropertyValue(monitor, valueObject, meta);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
