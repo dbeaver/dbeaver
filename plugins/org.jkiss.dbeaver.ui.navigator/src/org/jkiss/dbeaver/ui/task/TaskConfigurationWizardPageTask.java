@@ -81,8 +81,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
 
         this.task = (TaskImpl) task;
         if (this.task != null) {
-            selectedTaskType = this.task.getType();
-            selectedCategory = selectedTaskType.getCategory();
+            this.taskName = this.task.getName();
+            this.taskDescription = this.task.getDescription();
+            this.selectedTaskType = this.task.getType();
+            this.selectedCategory = selectedTaskType.getCategory();
         }
         this.selectedProject = NavigatorUtils.getSelectedProject();
     }
