@@ -17,13 +17,19 @@
 package org.jkiss.dbeaver.model.navigator.meta;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPTermProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPTermProvider;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * DBXTreeItem
@@ -35,6 +41,20 @@ public class DBXTreeItem extends DBXTreeNode
     private String path;
     private String propertyName;
     private boolean optional;
+
+    private Map<Class<?>, Method> propertyGettersCache = new IdentityHashMap<>();
+
+    private static final Method NULL_GETTER;
+
+    static {
+        Method dummyMethod;
+        try {
+            dummyMethod = Object.class.getMethod("hashCode");
+        } catch (NoSuchMethodException e) {
+            dummyMethod = null;
+        }
+        NULL_GETTER = dummyMethod;
+    }
 
     public DBXTreeItem(
         AbstractDescriptor source,
@@ -144,6 +164,43 @@ public class DBXTreeItem extends DBXTreeNode
     @Override
     public String toString() {
         return "Item " + label;
+    }
+
+    public synchronized Method getPropertyReadMethod(Class<?> objectClass) {
+        Method getter = propertyGettersCache.get(objectClass);
+        if (getter == null) {
+            getter = findPropertyReadMethod(objectClass, propertyName);
+            if (getter == null) {
+                getter = NULL_GETTER;
+            }
+            propertyGettersCache.put(objectClass, getter);
+        }
+        return getter == NULL_GETTER ? null : getter;
+    }
+
+    private static Method findPropertyReadMethod(Class<?> clazz, String propertyName) {
+        String methodName = BeanUtils.propertyNameToMethodName(propertyName);
+        return findPropertyGetter(clazz, "get" + methodName, "is" + methodName);
+    }
+
+    private static Method findPropertyGetter(Class<?> clazz, String getName, String isName) {
+        Method[] methods = clazz.getDeclaredMethods();
+
+        for (Method method : methods) {
+            if ((!Modifier.isPublic(method.getModifiers())) ||
+                (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) ||
+                (method.getReturnType().equals(void.class)))
+            {
+                // skip
+            } else if (method.getName().equals(getName) || (method.getName().equals(isName) && method.getReturnType().equals(boolean.class))) {
+                // If it matches the get name, it's the right method
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                if (parameterTypes.length == 0 || (parameterTypes.length == 1 && parameterTypes[0] == DBRProgressMonitor.class)) {
+                    return method;
+                }
+            }
+        }
+        return clazz == Object.class ? null : findPropertyGetter(clazz.getSuperclass(), getName, isName);
     }
 
 }

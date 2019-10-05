@@ -264,10 +264,7 @@ public class ObjectPropertyTester extends PropertyTester
             if (objectMaker == null) {
                 return false;
             }
-            if (!objectMaker.canCreateObject(container.getValueObject())) {
-                return false;
-            }
-            return true;
+            return objectMaker.canCreateObject(container.getValueObject());
         }
         if (DBNUtils.isReadOnly(node)) {
             return false;
