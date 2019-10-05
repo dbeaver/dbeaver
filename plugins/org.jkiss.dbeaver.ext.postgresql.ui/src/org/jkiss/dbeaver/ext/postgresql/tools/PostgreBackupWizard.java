@@ -25,8 +25,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -136,14 +134,14 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
             for (PostgreTableBase table : arg.getTables()) {
                 cmd.add("-t");
                 // Use explicit quotes in case of quoted identifiers (#5950)
-                cmd.add(escapeCLIIdentifier(table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
+                cmd.add(escapeCLIIdentifier(table.getSchema().getName() + "." + table.getName()));
             }
         }
         if (!CommonUtils.isEmpty(arg.getSchemas())) {
             for (PostgreSchema schema : arg.getSchemas()) {
                 cmd.add("-n");
                 // Use explicit quotes in case of quoted identifiers (#5950)
-                cmd.add(escapeCLIIdentifier(DBUtils.getQuotedIdentifier(schema)));
+                cmd.add(escapeCLIIdentifier(schema.getName()));
             }
         }
     }
