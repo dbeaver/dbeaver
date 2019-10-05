@@ -26,12 +26,10 @@ import org.jkiss.utils.CommonUtils;
 class PostgreDataSourceInfo extends JDBCDataSourceInfo {
 
     private final PostgreDataSource dataSource;
-    private final boolean supportsLimits;
 
     public PostgreDataSourceInfo(PostgreDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super(metaData);
         this.dataSource = dataSource;
-        this.supportsLimits = dataSource.getServerType().isSupportsLimits();
     }
 
     @Override
@@ -48,7 +46,12 @@ class PostgreDataSourceInfo extends JDBCDataSourceInfo {
     @Override
     public boolean supportsResultSetLimit() {
         // ??? Disable maxRows for data transfer - it turns cursors off ?
-        return supportsLimits;
+        return dataSource.getServerType().supportsResultSetLimits();
+    }
+
+    @Override
+    public boolean supportsTransactions() {
+        return dataSource.getServerType().supportsTransactions();
     }
 
     @Override

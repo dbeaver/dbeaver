@@ -159,20 +159,21 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         }
 
         supportedIsolations = new ArrayList<>();
-        try {
-            for (JDBCTransactionIsolation txi : JDBCTransactionIsolation.values()) {
-                if (metaData.supportsTransactionIsolationLevel(txi.getCode())) {
-                    supportedIsolations.add(txi);
+        if (supportsTransactions) {
+            try {
+                for (JDBCTransactionIsolation txi : JDBCTransactionIsolation.values()) {
+                    if (metaData.supportsTransactionIsolationLevel(txi.getCode())) {
+                        supportedIsolations.add(txi);
+                    }
                 }
+            } catch (Throwable e) {
+                log.debug(e.getMessage());
             }
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            supportsTransactions = true;
+            if (!supportedIsolations.contains(JDBCTransactionIsolation.NONE)) {
+                supportedIsolations.add(0, JDBCTransactionIsolation.NONE);
+            }
+            addCustomTransactionIsolationLevels(supportedIsolations);
         }
-        if (!supportedIsolations.contains(JDBCTransactionIsolation.NONE)) {
-            supportedIsolations.add(0, JDBCTransactionIsolation.NONE);
-        }
-        addCustomTransactionIsolationLevels(supportedIsolations);
 
         supportsScroll = true;
     }
