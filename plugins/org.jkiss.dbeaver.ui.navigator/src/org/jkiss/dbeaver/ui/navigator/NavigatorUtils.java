@@ -57,8 +57,8 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Navigator utils
@@ -242,7 +242,7 @@ public class NavigatorUtils {
 
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
-        control.addDisposeListener(e -> menuMgr.dispose());
+
         return menuMgr;
     }
 
