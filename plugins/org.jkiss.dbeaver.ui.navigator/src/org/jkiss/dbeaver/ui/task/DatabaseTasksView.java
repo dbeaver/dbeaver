@@ -300,7 +300,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         Control control = viewer.getControl();
         control.setMenu(menuMgr.createContextMenu(control));
-        control.addDisposeListener(e -> menuMgr.dispose());
+
         return menuMgr;
     }
 
@@ -310,7 +310,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         menuMgr.addMenuListener(manager -> {
             DBTTask task = getSelectedTask();
             DBTTaskRun taskRun = getSelectedTaskRun();
-            if (task != null && taskRun != null && !taskRun.isRunSuccess()) {
+            if (task != null && taskRun != null) {
                 manager.add(new ViewRunLogAction());
             }
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
@@ -320,7 +320,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         Control control = viewer.getControl();
         control.setMenu(menuMgr.createContextMenu(control));
-        control.addDisposeListener(e -> menuMgr.dispose());
+
         return menuMgr;
     }
 

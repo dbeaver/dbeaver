@@ -20,7 +20,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
@@ -49,7 +48,10 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -69,6 +71,7 @@ import java.util.Map;
 public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
 
     private static final Log log = Log.getLog(NavigatorHandlerObjectCreateNew.class);
+    public static final Separator DUMMY_CONTRIBUTION_ITEM = new Separator();
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -212,17 +215,20 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             }
         } else {
             Class<?> nodeItemClass = node.getObject().getClass();
-            DBPImage nodeIcon = node.getNodeIconDefault();
-            if (node instanceof DBNDataSource) {
-                nodeIcon = UIIcon.SQL_NEW_CONNECTION;
-            }
+            DBNNode parentNode = node.getParentNode();
             if (isCreateSupported(
-                node.getParentNode() instanceof DBNDatabaseNode ? (DBNDatabaseNode) node.getParentNode() : null,
+                parentNode instanceof DBNDatabaseNode ? (DBNDatabaseNode) parentNode : null,
                 nodeItemClass))
             {
-                createActions.add(
-                    makeCreateContributionItem(
-                        site, nodeItemClass.getName(), node.getNodeType(), nodeIcon, false));
+                if (site == null) {
+                    createActions.add(DUMMY_CONTRIBUTION_ITEM);
+                } else {
+                    DBPImage nodeIcon = node instanceof DBNDataSource ?
+                        UIIcon.SQL_NEW_CONNECTION : node.getNodeIconDefault();
+                    createActions.add(
+                        makeCreateContributionItem(
+                            site, nodeItemClass.getName(), node.getNodeType(), nodeIcon, false));
+                }
             }
 
             if (!node.getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
@@ -281,7 +287,8 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     private static IContributionItem makeCommandContributionItem(@Nullable IWorkbenchPartSite site, String commandId)
     {
         if (site == null) {
-            return new ActionContributionItem(new EmptyAction(commandId));
+            // Dummy item. We need only count
+            return DUMMY_CONTRIBUTION_ITEM;
         } else {
             return ActionUtils.makeCommandContribution(site, commandId);
         }
@@ -291,7 +298,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         @Nullable IWorkbenchPartSite site, String objectType, String objectTypeName, DBPImage objectIcon, boolean isFolder)
     {
         if (site == null) {
-            return new ActionContributionItem(new EmptyAction(objectType));
+            return DUMMY_CONTRIBUTION_ITEM;
         }
         CommandContributionItemParameter params = new CommandContributionItemParameter(
             site,
