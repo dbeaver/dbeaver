@@ -32,6 +32,8 @@ public interface PostgreServerExtension
 {
     String getServerTypeName();
 
+    boolean supportsTransactions();
+
     boolean supportsOids();
 
     boolean supportsIndexes();
@@ -66,7 +68,7 @@ public interface PostgreServerExtension
 
     boolean supportsAggregates();
 
-    boolean isSupportsLimits();
+    boolean supportsResultSetLimits();
 
     boolean supportsClientInfo();
 
@@ -74,9 +76,27 @@ public interface PostgreServerExtension
 
     boolean supportFunctionDefRead();
 
-    String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
+    boolean supportsExplainPlan();
+
+    boolean supportsExplainPlanXML();
+
+    boolean supportsExplainPlanVerbose();
+
+    boolean supportsDatabaseDescription();
+
+    boolean supportsTemporalAccessor();
+
+    boolean supportsTeblespaceLocation();
 
     boolean supportsTemplates();
+
+    // Stored procedures support (workarounds for Redshift mostly)
+    boolean supportsStoredProcedures();
+    String getProceduresSystemTable();
+    String getProceduresOidColumn();
+
+    // Table DDL extraction
+    String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
 
     // Custom schema cache.
     JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> createSchemaCache(PostgreDatabase database);
@@ -95,24 +115,5 @@ public interface PostgreServerExtension
     void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
 
     List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException;
-
-    boolean supportsExplainPlan();
-
-    boolean supportsExplainPlanXML();
-
-    boolean supportsExplainPlanVerbose();
-
-    boolean supportsDatabaseDescription();
-
-    boolean supportsTemporalAccessor();
-
-    boolean supportsTeblespaceLocation();
-
-    // Stored procedures support (workarounds for Redshift mostly)
-    boolean supportsStoredProcedures();
-
-    String getProceduresSystemTable();
-
-    String getProceduresOidColumn();
 
 }
