@@ -851,6 +851,10 @@
             </command>
         </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <menu id="org.jkiss.dbeaver.menu.tasks" label="%menu.database.tasks.label"/>
+        </menuContribution>
+
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.menu.tasks">
             <command commandId="org.jkiss.dbeaver.task.create"/>
             <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
