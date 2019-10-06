@@ -102,7 +102,7 @@ public class SQLPlanTreeViewer extends Viewer
         planTree.getControl().addPaintListener(e -> {
             String message = null;
             if (query == null) {
-                message = "No connection or data source doesn't support execution plan";
+                message = null;//"No connection or data source doesn't support execution plan";
             } else if (CommonUtils.isEmpty(sqlText.getText())) {
                 message = "Select a query and run " + ActionUtils.findCommandDescription(
                     SQLEditorCommands.CMD_EXPLAIN_PLAN,

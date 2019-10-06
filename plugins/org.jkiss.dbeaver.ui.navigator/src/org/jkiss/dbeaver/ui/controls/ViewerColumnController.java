@@ -333,9 +333,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 column.addControlListener(new ControlAdapter() {
                     @Override
                     public void controlResized(ControlEvent e) {
-                        columnInfo.width = column.getWidth();
-                        if (getRowCount() > 0) {
-                            saveColumnConfig();
+                        /*if (!isInitializing && !isPacking)*/ {
+                            columnInfo.width = column.getWidth();
+                            if (getRowCount() > 0) {
+                                saveColumnConfig();
+                            }
                         }
                     }
 
