@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -28,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 /**
  * GenericSchema
  */
-public class GenericSchema extends GenericObjectContainer implements DBSSchema
+public class GenericSchema extends GenericObjectContainer implements DBSSchema, DBPSystemObject
 {
     @Nullable
     private GenericCatalog catalog;
@@ -88,5 +89,10 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema
         throws DBException
     {
         return GenericTable.class;
+    }
+
+    @Override
+    public boolean isSystem() {
+        return getDataSource().getMetaModel().isSystemSchema(this);
     }
 }
