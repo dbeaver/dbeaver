@@ -253,15 +253,21 @@ public class HANAMetaModel extends GenericMetaModel
     public String getAutoIncrementClause(GenericTableColumn column) {
         return "GENERATED ALWAYS AS IDENTITY";
     }
-    
+
+    @Override
+    public boolean isSystemSchema(GenericSchema schema) {
+        String schemaName = schema.getName();
+        return schemaName.startsWith("_SYS_") ||
+            schemaName.startsWith("SAP_") ||
+            schemaName.startsWith("HANA_");
+    }
+
     @Override
     public boolean isSystemTable(GenericTableBase table) {
         // empty schemas are still shown, so hiding everything in system schemas looks strange
         //if (table.getSchema().getName().startsWith("_SYS_"))
         //    return true;
-        if (table.getName().startsWith("_SYS_"))
-            return true;
-        return false;
+        return table.getName().startsWith("_SYS_");
     }
     
     @Override

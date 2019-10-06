@@ -103,6 +103,10 @@ public class GenericMetaModel {
     //////////////////////////////////////////////////////
     // Schema load
 
+    public boolean isSystemSchema(GenericSchema schema) {
+        return false;
+    }
+
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog)
         throws DBException
     {
