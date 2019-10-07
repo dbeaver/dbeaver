@@ -140,7 +140,10 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
         super.updateButtons();
         Button saveAsButton = getButton(SAVE_TASK_BTN_ID);
         if (saveAsButton != null) {
-            saveAsButton.setEnabled((getTaskWizard() != null && getTaskWizard().isCurrentTaskSaved()) || getWizard().canFinish());
+            // TODO: we should be able to save/run task immediately if it was saved before.
+            // TODO: There is a bug in DT wizard which doesn't let to do it (producers/consumers are initialized only on the last page).
+            // TODO: init transfer for all deserialized producers/consumers
+            saveAsButton.setEnabled(/*(getTaskWizard() != null && getTaskWizard().isCurrentTaskSaved()) || */getWizard().canFinish());
         }
     }
 
