@@ -326,14 +326,16 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 colItem = column;
                 column.setText(columnInfo.name);
                 column.setMoveable(true);
-                column.setWidth(columnInfo.width);
+                if (columnInfo.width > 0) {
+                    column.setWidth(columnInfo.width);
+                }
                 if (!CommonUtils.isEmpty(columnInfo.description)) {
                     column.setToolTipText(columnInfo.description);
                 }
                 column.addControlListener(new ControlAdapter() {
                     @Override
                     public void controlResized(ControlEvent e) {
-                        /*if (!isInitializing && !isPacking)*/ {
+                        if (!isInitializing && !isPacking) {
                             columnInfo.width = column.getWidth();
                             if (getRowCount() > 0) {
                                 saveColumnConfig();
