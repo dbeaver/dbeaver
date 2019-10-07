@@ -259,9 +259,18 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                 return;
             }
 
+            DataTransferSettings settings = dtWizard.getSettings();
             boolean isExport = isExport();
             List<IDataTransferProducer> producers = isExport ? new ArrayList<>() : null;
             List<IDataTransferConsumer> consumers = isExport ? null : new ArrayList<>();
+/*
+            if (producers == null && settings.getInitProducers() != null) {
+                producers = Arrays.asList(settings.getInitProducers());
+            }
+            if (consumers == null && settings.getInitConsumers() != null) {
+                consumers = Arrays.asList(settings.getInitConsumers());
+            }
+*/
 
             TableItem[] items = objectsTable.getItems();
 
@@ -277,7 +286,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                     }
                 }
             }
-            dtWizard.getSettings().setDataPipes(producers, consumers);
+            settings.setDataPipes(producers, consumers);
             dtWizard.loadSettings(dtWizard.getRunnableContext());
         }
 
