@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 /**
  * Tool wizard dialog
@@ -69,10 +68,6 @@ public class ToolWizardDialog extends ActiveWizardDialog
         }
 
         super.createButtonsForButtonBar(parent);
-        Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        cancelButton.setText(IDialogConstants.CLOSE_LABEL);
-        Button finishButton = getButton(IDialogConstants.FINISH_ID);
-        finishButton.setText(UIMessages.button_start);
     }
 
     @Override

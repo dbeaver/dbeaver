@@ -17,15 +17,12 @@
 
 package org.jkiss.utils;
 
-import org.jkiss.code.NotNull;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -178,6 +175,18 @@ public final class IOUtils {
             readStreamToBuffer(is, buffer);
         }
         return buffer;
+    }
+
+    public static void writeFileFromBuffer(File file, byte[] buffer) throws IOException {
+        try (OutputStream os = new FileOutputStream(file)) {
+            os.write(buffer);
+        }
+    }
+
+    public static void writeFileFromString(File file, String str) throws IOException {
+        try (Writer os = new FileWriter(file)) {
+            os.write(str);
+        }
     }
 
     public static int readStreamToBuffer(
