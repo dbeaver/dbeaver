@@ -25,6 +25,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
@@ -39,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -211,4 +215,56 @@ public class DBExecUtils {
             }
         }
     }
+
+    public static void executeScript(DBRProgressMonitor monitor, DBCExecutionContext executionContext, String jobName, List<DBEPersistAction> persistActions) {
+        boolean ignoreErrors = false;
+        monitor.beginTask(jobName, persistActions.size());
+        try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
+            for (DBEPersistAction action : persistActions) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                monitor.subTask(action.getTitle());
+                try {
+                    if (action instanceof SQLDatabasePersistActionComment) {
+                        continue;
+                    }
+                    String script = action.getScript();
+                    if (!CommonUtils.isEmpty(script)) {
+                        try (final Statement statement = ((JDBCSession) session).getOriginal().createStatement()) {
+                            statement.execute(script);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("Error executing query", e);
+                    if (ignoreErrors) {
+                        continue;
+                    }
+                    boolean keepRunning = true;
+                    switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(jobName, e, true)) {
+                        case STOP:
+                            keepRunning = false;
+                            break;
+                        case RETRY:
+                            // just make it again
+                            continue;
+                        case IGNORE:
+                            // Just do nothing
+                            break;
+                        case IGNORE_ALL:
+                            ignoreErrors = true;
+                            break;
+                    }
+                    if (!keepRunning) {
+                        break;
+                    }
+                } finally {
+                    monitor.worked(1);
+                }
+            }
+        } finally {
+            monitor.done();
+        }
+    }
+
 }
