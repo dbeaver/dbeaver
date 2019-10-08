@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
@@ -184,4 +185,92 @@ public final class DBStructUtils {
         cyclicTables.addAll(realTables);
     }
 
+    public static String mapTargetDataType(DBPDataSource targetDataSource, DBSTypedObject typedObject) {
+        String typeName = typedObject.getTypeName();
+        String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
+        DBPDataKind dataKind = typedObject.getDataKind();
+        if (targetDataSource instanceof DBPDataTypeProvider) {
+            DBPDataTypeProvider dataTypeProvider = (DBPDataTypeProvider) targetDataSource;
+            DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
+            if (dataType == null && typeNameLower.equals("double")) {
+                dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
+                if (dataType != null) {
+                    typeName = dataType.getTypeName();
+                }
+            }
+            if (dataType != null && !DBPDataKind.canConsume(dataKind, dataType.getDataKind())) {
+                // Type mismatch
+                dataType = null;
+            }
+            if (dataType == null) {
+                // Type not supported by target database
+                // Let's try to find something similar
+                Map<String, DBSDataType> possibleTypes = new HashMap<>();
+                for (DBSDataType type : dataTypeProvider.getLocalDataTypes()) {
+                    if (type.getDataKind() == dataKind) {
+                        possibleTypes.put(type.getTypeName().toLowerCase(Locale.ENGLISH), type);
+                    }
+                }
+                DBSDataType targetType = null;
+                if (!possibleTypes.isEmpty()) {
+                    // Try to get any partial match
+                    targetType = possibleTypes.get(typeNameLower);
+                    if (targetType == null && dataKind == DBPDataKind.NUMERIC) {
+                        // Try to find appropriate type with the same scale/precision
+                        for (DBSDataType type : possibleTypes.values()) {
+                            if (CommonUtils.equalObjects(type.getScale(), typedObject.getScale()) &&
+                                CommonUtils.equalObjects(type.getPrecision(), typedObject.getPrecision()))
+                            {
+                                targetType = type;
+                                break;
+                            }
+                        }
+                        if (targetType == null) {
+                            if (typeNameLower.contains("float")) {
+                                for (String psn : possibleTypes.keySet()) {
+                                    if (psn.contains("float")) {
+                                        targetType = possibleTypes.get(psn);
+                                        break;
+                                    }
+                                }
+                            } else if (typeNameLower.contains("double")) {
+                                for (String psn : possibleTypes.keySet()) {
+                                    if (psn.contains("double")) {
+                                        targetType = possibleTypes.get(psn);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (targetType == null) {
+                    typeName = DBUtils.getDefaultDataTypeName(targetDataSource, dataKind);
+                    typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
+                    if (!possibleTypes.isEmpty()) {
+                        targetType = possibleTypes.get(typeNameLower);
+                    }
+                }
+                if (targetType == null && !possibleTypes.isEmpty()) {
+                    targetType = possibleTypes.values().iterator().next();
+                }
+                if (targetType != null) {
+                    typeName = targetType.getTypeName();
+                }
+            }
+            if (dataType != null) {
+                dataKind = dataType.getDataKind();
+            }
+        }
+
+        // Get type modifiers from target datasource
+        if (targetDataSource instanceof SQLDataSource) {
+            SQLDialect dialect = ((SQLDataSource) targetDataSource).getSQLDialect();
+            String modifiers = dialect.getColumnTypeModifiers(targetDataSource, typedObject, typeName, dataKind);
+            if (modifiers != null) {
+                typeName += modifiers;
+            }
+        }
+        return typeName;
+    }
 }

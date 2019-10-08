@@ -23,13 +23,9 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -196,71 +192,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         // Current solution looks like hack
         String typeName = source.getTypeName();
         DBPDataKind dataKind = source.getDataKind();
-        if (targetDataSource instanceof DBPDataTypeProvider) {
-            DBPDataTypeProvider dataTypeProvider = (DBPDataTypeProvider) targetDataSource;
-            DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
-            if (dataType == null && typeName.equals("DOUBLE")) {
-                dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
-                if (dataType != null) {
-                    typeName = dataType.getTypeName();
-                }
-            }
-            if (dataType != null && !DBPDataKind.canConsume(dataKind, dataType.getDataKind())) {
-                // Type mismatch
-                dataType = null;
-            }
-            if (dataType == null) {
-                // Type not supported by target database
-                // Let's try to find something similar
-                List<DBSDataType> possibleTypes = new ArrayList<>();
-                for (DBSDataType type : dataTypeProvider.getLocalDataTypes()) {
-                    if (type.getDataKind() == dataKind) {
-                        possibleTypes.add(type);
-                    }
-                }
-                DBSDataType targetType = null;
-                if (!possibleTypes.isEmpty()) {
-                    // Try to get any partial match
-                    for (DBSDataType type : possibleTypes) {
-                        if (type.getName().equalsIgnoreCase(typeName)) {
-                            targetType = type;
-                            break;
-                        }
-                    }
-                }
-                if (targetType == null) {
-                    typeName = DBUtils.getDefaultDataTypeName(targetDataSource, dataKind);
-                    if (!possibleTypes.isEmpty()) {
-                        for (DBSDataType type : possibleTypes) {
-                            if (type.getName().equalsIgnoreCase(typeName)) {
-                                targetType = type;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (targetType == null && !possibleTypes.isEmpty()) {
-                    targetType = possibleTypes.get(0);
-                }
-                if (targetType != null) {
-                    typeName = targetType.getTypeName();
-                }
-            }
-            if (dataType != null) {
-                dataKind = dataType.getDataKind();
-            }
-        }
-
-        // Get type modifiers from target datasource
-        if (source != null && targetDataSource instanceof SQLDataSource) {
-            SQLDialect dialect = ((SQLDataSource) targetDataSource).getSQLDialect();
-            String modifiers = dialect.getColumnTypeModifiers(targetDataSource, source, typeName, dataKind);
-            if (modifiers != null) {
-                typeName += modifiers;
-            }
-        }
-
-        return typeName;
+        return DBStructUtils.mapTargetDataType(targetDataSource, source);
     }
 
     public void setTargetType(String targetType)
