@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 /**
  * Tool wizard dialog
@@ -46,6 +47,7 @@ public class ToolWizardDialog extends ActiveWizardDialog
         super(window, wizard);
         setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
         setHelpAvailable(false);
+        setFinishButtonLabel(UIMessages.button_start);
     }
 
     @Override

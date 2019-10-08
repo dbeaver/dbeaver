@@ -50,6 +50,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard, IStructuredSelection selection) {
         super(window, wizard, selection);
+        setFinishButtonLabel(UIMessages.button_start);
     }
 
     TaskConfigurationWizardDialog(IWorkbenchWindow window) {
@@ -98,10 +99,6 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
         }
 
         super.createButtonsForButtonBar(parent);
-        Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        cancelButton.setText(IDialogConstants.CLOSE_LABEL);
-        Button finishButton = getButton(IDialogConstants.FINISH_ID);
-        finishButton.setText(UIMessages.button_start);
     }
 
     @Override
