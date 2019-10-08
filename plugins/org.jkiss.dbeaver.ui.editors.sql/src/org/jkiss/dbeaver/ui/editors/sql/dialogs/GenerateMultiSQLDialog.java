@@ -293,7 +293,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                 txnManager.commit(session);
             }
         } catch (Throwable e) {
-            log.error("Error commiting transactions", e);
+            log.error("Error committing transactions", e);
         }
     }
 }

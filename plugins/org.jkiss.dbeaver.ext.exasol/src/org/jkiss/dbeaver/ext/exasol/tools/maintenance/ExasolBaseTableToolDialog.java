@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.GenerateMultiSQLDialog;
@@ -67,32 +66,28 @@ public abstract class ExasolBaseTableToolDialog
 		super(partSite, title, objects, true);
 	}
 	
-    protected int getNumberExtraResultingColumns()
+    private int getNumberExtraResultingColumns()
     {
         return 0;
     }
     
-    protected String replaceVars(String input, final ExasolTableBase table) 
+    protected String replaceVars(String input, final ExasolTableBase table)
     {
-        String outString = GeneralUtils.replaceVariables(input, new IVariableResolver() {
-            @Override
-            public String get(String name) {
-                switch (name) {
-                    case VARIABLE_TABLE:
-                    	return table.getName();
-                    case VARIABLE_SCHEMA:
-                        return table.getContainer().getName();
-                    case VARIABLE_DATE:
-                    	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    	Calendar cal = Calendar.getInstance();
-                    	return dateFormat.format(cal.getTime());
-                 	default:
-                        System.getProperty(name);
-                }
-                return null;
+        return GeneralUtils.replaceVariables(input, name -> {
+            switch (name) {
+                case VARIABLE_TABLE:
+                    return table.getName();
+                case VARIABLE_SCHEMA:
+                    return table.getContainer().getName();
+                case VARIABLE_DATE:
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    Calendar cal = Calendar.getInstance();
+                    return dateFormat.format(cal.getTime());
+                 default:
+                    System.getProperty(name);
             }
+            return null;
         });
-        return outString;
 
     }
     
@@ -184,19 +179,14 @@ public abstract class ExasolBaseTableToolDialog
             objectsSQL.put(object, lines);
         }
         final DataSourceJob job = new DataSourceJob(jobName, getExecutionContext()) {
-            public Exception objectProcessingError;
+            Exception objectProcessingError;
 
             @SuppressWarnings("rawtypes")
 			@Override
             protected IStatus run(final DBRProgressMonitor monitor)
             {
                 final DataSourceJob curJob = this;
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        scriptListener.beginScriptProcessing(curJob, objects);
-                    }
-                });
+                UIUtils.asyncExec(() -> scriptListener.beginScriptProcessing(curJob, objects));
                 monitor.beginTask(jobName, objects.size());
                 try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
                     for (int i = 0; i < objects.size(); i++) {
@@ -207,12 +197,7 @@ public abstract class ExasolBaseTableToolDialog
                         final ExasolTableBase object = objects.get(i);
                         monitor.subTask("Process " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
                         objectProcessingError = null;
-                        UIUtils.asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                scriptListener.beginObjectProcessing(object, objectNumber);
-                            }
-                        });
+                        UIUtils.asyncExec(() -> scriptListener.beginObjectProcessing(object, objectNumber));
                         try {
                             final List<String> lines = objectsSQL.get(object);
                             for (String line : lines) {
@@ -226,15 +211,12 @@ public abstract class ExasolBaseTableToolDialog
                                 	resultSet.addRow((Object[]) resultSetData );
                                 	
                                     // Run in sync because we need result set
-                                    UIUtils.syncExec(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                                try {
-													scriptListener.processObjectResults(object, null, resultSet);
-												} catch (DBCException e) {
-													objectProcessingError = e;
-												}
-                                        }
+                                    UIUtils.syncExec(() -> {
+                                            try {
+                                                scriptListener.processObjectResults(object, null, resultSet);
+                                            } catch (DBCException e) {
+                                                objectProcessingError = e;
+                                            }
                                     });
                                     if (objectProcessingError != null) {
                                         break;
@@ -244,23 +226,13 @@ public abstract class ExasolBaseTableToolDialog
                         } catch (Exception e) {
                             objectProcessingError = e;
                         } finally {
-                            UIUtils.asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    scriptListener.endObjectProcessing(object, objectProcessingError);
-                                }
-                            });
+                            UIUtils.asyncExec(() -> scriptListener.endObjectProcessing(object, objectProcessingError));
                         }
                         monitor.worked(1);
                     }
                 } finally {
                     monitor.done();
-                    UIUtils.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            scriptListener.endScriptProcessing();
-                        }
-                    });
+                    UIUtils.asyncExec(scriptListener::endScriptProcessing);
                 }
                 return Status.OK_STATUS;
             }

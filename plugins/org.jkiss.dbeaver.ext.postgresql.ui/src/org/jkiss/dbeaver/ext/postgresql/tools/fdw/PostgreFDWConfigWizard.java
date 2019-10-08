@@ -19,20 +19,27 @@ package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignTableManager;
+import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.fdw.FDWConfigDescriptor;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVContainer;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
@@ -40,7 +47,10 @@ import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
+import org.jkiss.dbeaver.ui.editors.SimpleCommandContext;
+import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
@@ -221,7 +231,31 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
 
     @Override
     public boolean performFinish() {
-        return false;
+        try {
+            getRunnableContext().run(true, true, monitor -> {
+                try {
+                    installFDW(monitor);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Error generating FDW", "Error during FDW script execution", e.getTargetException());
+                return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void installFDW(DBRProgressMonitor monitor) throws DBException {
+        monitor.beginTask("Generate FDW script", 2);
+        monitor.subTask("Read actions");
+        List<DBEPersistAction> actions = generateScript(monitor);
+        monitor.subTask("Execute script");
+        DBCExecutionContext context = DBUtils.getDefaultContext(getDatabase(), false);
+        DBExecUtils.executeScript(monitor, context, "Install FDW", actions);
     }
 
     @Nullable
@@ -229,4 +263,84 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
     public DBCExecutionContext getExecutionContext() {
         return DBUtils.getDefaultContext(database, true);
     }
+
+
+    List<DBEPersistAction> generateScript(DBRProgressMonitor monitor) throws DBException {
+        PostgreDatabase database = getDatabase();
+        PostgreDataSource curDataSource = database.getDataSource();
+        List<DBEPersistAction> actions = new ArrayList<>();
+
+        PostgreFDWConfigWizard.FDWInfo selectedFDW = getSelectedFDW();
+        PropertySourceCustom propertySource = getFdwPropertySource();
+        Map<Object, Object> propValues = propertySource.getPropertiesWithDefaults();
+
+        String serverId = getFdwServerId();
+
+        actions.add(new SQLDatabasePersistActionComment(curDataSource, "CREATE EXTENSION " + selectedFDW.getId()));
+        {
+            StringBuilder script = new StringBuilder();
+            script.append("CREATE SERVER ").append(serverId)
+                .append("\n\tFOREIGN DATA WRAPPER ").append(selectedFDW.getId())
+                .append("\n\tOPTIONS(");
+            boolean firstProp = true;
+            for (Map.Entry<Object, Object> pe : propValues.entrySet()) {
+                String propName = CommonUtils.toString(pe.getKey());
+                String propValue = CommonUtils.toString(pe.getValue());
+                if (CommonUtils.isEmpty(propName) || CommonUtils.isEmpty(propValue)) {
+                    continue;
+                }
+                if (!firstProp) script.append(", ");
+                script.append(propName).append(" '").append(propValue).append("'");
+                firstProp = false;
+            }
+            script
+                .append(")");
+            actions.add(new SQLDatabasePersistAction("Create extension", script.toString()));
+        }
+
+        actions.add(new SQLDatabasePersistAction("CREATE USER MAPPING FOR CURRENT_USER SERVER " + serverId));
+
+        // Now tables
+        DBECommandContext commandContext = new SimpleCommandContext(getExecutionContext(), false);
+
+        try {
+            PostgreFDWConfigWizard.FDWInfo fdwInfo = getSelectedFDW();
+            Map<String, Object> options = new HashMap<>();
+            options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
+            PostgreForeignTableManager tableManager = new PostgreForeignTableManager();
+            PostgreTableColumnManager columnManager = new PostgreTableColumnManager();
+
+            for (DBNDatabaseNode tableNode : getSelectedEntities()) {
+                DBSEntity entity = (DBSEntity) tableNode.getObject();
+
+                PostgreTableForeign pgTable = (PostgreTableForeign) tableManager.createNewObject(monitor, commandContext, getSelectedSchema(), null, options);
+                if (pgTable == null) {
+                    log.error("Internal error while creating new table");
+                    continue;
+                }
+                pgTable.setName(entity.getName());
+                pgTable.setForeignServerName(serverId);
+                pgTable.setForeignOptions(new String[0]);
+
+                for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
+                    PostgreTableColumn newColumn = columnManager.createNewObject(monitor, commandContext, pgTable, null, options);
+                    assert newColumn != null;
+                    newColumn.setName(attr.getName());
+                    String defTypeName = database.getDefaultDataTypeName(attr.getDataKind());
+                    PostgreDataType dataType = database.getDataType(monitor, defTypeName);
+                    newColumn.setDataType(dataType);
+                }
+
+                DBEPersistAction[] tableDDL = tableManager.getTableDDL(monitor, pgTable, options);
+                Collections.addAll(actions, tableDDL);
+            }
+        } finally {
+            commandContext.resetChanges(true);
+        }
+
+        //CREATE SERVER clickhouse_svr FOREIGN DATA WRAPPER clickhousedb_fdw OPTIONS(dbname 'default', driver '/usr/local/lib/odbc/libclickhouseodbc.so', host '46.101.202.143');
+        return actions;
+    }
+
+
 }
