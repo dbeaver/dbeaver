@@ -18,11 +18,11 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Locale;
@@ -30,7 +30,7 @@ import java.util.Locale;
 /**
  * SystemVariablesResolver
  */
-public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
+public class SystemVariablesResolver implements IVariableResolver {
 
     public static SystemVariablesResolver INSTANCE = new SystemVariablesResolver();
 

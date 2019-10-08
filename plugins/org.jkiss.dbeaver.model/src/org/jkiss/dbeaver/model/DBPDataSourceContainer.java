@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 
 import java.util.Collection;
 import java.util.Date;
@@ -202,7 +202,11 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     Date getConnectTime();
 
-    GeneralUtils.IVariableResolver getVariablesResolver();
+    /**
+     * Make variable resolver for datasource properties.
+     * @param actualConfig if true then actual connection config will be used (e.g. with preprocessed host/port values).
+     */
+    IVariableResolver getVariablesResolver(boolean actualConfig);
 
     DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry);
 

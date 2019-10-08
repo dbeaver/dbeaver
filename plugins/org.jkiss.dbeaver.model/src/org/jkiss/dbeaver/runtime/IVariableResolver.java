@@ -14,25 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.eval;
-
-import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.runtime.IVariableResolver;
-import org.jkiss.utils.CommonUtils;
+package org.jkiss.dbeaver.runtime;
 
 /**
- * ScriptVariablesResolver
+ * Resolves variable value
  */
-public class ScriptVariablesResolver implements IVariableResolver {
+@FunctionalInterface
+public interface IVariableResolver {
 
-    private final SQLScriptContext scriptContext;
+    String get(String name);
 
-    public ScriptVariablesResolver(SQLScriptContext scriptContext) {
-        this.scriptContext = scriptContext;
-    }
-
-    @Override
-    public String get(String name) {
-        return CommonUtils.toString(scriptContext.getVariable(name));
-    }
 }

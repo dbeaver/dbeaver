@@ -196,7 +196,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getFullQualifiedName(@NotNull DBPDataSource dataSource, @NotNull DBPNamedObject ... path)
+    public static String getFullQualifiedName(@Nullable DBPDataSource dataSource, @NotNull DBPNamedObject ... path)
     {
         StringBuilder name = new StringBuilder(20 * path.length);
         if (!(dataSource instanceof SQLDataSource)) {
@@ -1812,7 +1812,7 @@ public final class DBUtils {
     public static String getClientApplicationName(DBPDataSourceContainer container, String purpose) {
         if (container.getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
             String appName = container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
-            return GeneralUtils.replaceVariables(appName, container.getVariablesResolver());
+            return GeneralUtils.replaceVariables(appName, container.getVariablesResolver(false));
         }
         final String productTitle = GeneralUtils.getProductTitle();
         return purpose == null ? productTitle : productTitle + " - " + purpose;

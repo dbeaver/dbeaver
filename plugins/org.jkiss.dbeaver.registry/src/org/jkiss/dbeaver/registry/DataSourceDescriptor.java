@@ -53,9 +53,9 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
@@ -946,7 +946,7 @@ public class DataSourceDescriptor
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
-            final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver());
+            final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 
             monitor.subTask("Execute process " + processDescriptor.getName());
             DBWorkbench.getPlatformUI().executeProcess(processDescriptor);
@@ -1421,22 +1421,23 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public GeneralUtils.IVariableResolver getVariablesResolver() {
+    public IVariableResolver getVariablesResolver(boolean actualConfig) {
         return name -> {
-            String propValue = getActualConnectionConfiguration().getProperties().get(name);
+            DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
+            String propValue = configuration.getProperties().get(name);
             if (propValue != null) {
                 return propValue;
             }
 
             name = name.toLowerCase(Locale.ENGLISH);
             switch (name) {
-                case DBPConnectionConfiguration.VARIABLE_HOST: return getActualConnectionConfiguration().getHostName();
-                case DBPConnectionConfiguration.VARIABLE_PORT: return getActualConnectionConfiguration().getHostPort();
-                case DBPConnectionConfiguration.VARIABLE_SERVER: return getActualConnectionConfiguration().getServerName();
-                case DBPConnectionConfiguration.VARIABLE_DATABASE: return getActualConnectionConfiguration().getDatabaseName();
-                case DBPConnectionConfiguration.VARIABLE_USER: return getActualConnectionConfiguration().getUserName();
-                case DBPConnectionConfiguration.VARIABLE_PASSWORD: return getActualConnectionConfiguration().getUserPassword();
-                case DBPConnectionConfiguration.VARIABLE_URL: return getActualConnectionConfiguration().getUrl();
+                case DBPConnectionConfiguration.VARIABLE_HOST: return configuration.getHostName();
+                case DBPConnectionConfiguration.VARIABLE_PORT: return configuration.getHostPort();
+                case DBPConnectionConfiguration.VARIABLE_SERVER: return configuration.getServerName();
+                case DBPConnectionConfiguration.VARIABLE_DATABASE: return configuration.getDatabaseName();
+                case DBPConnectionConfiguration.VARIABLE_USER: return configuration.getUserName();
+                case DBPConnectionConfiguration.VARIABLE_PASSWORD: return configuration.getUserPassword();
+                case DBPConnectionConfiguration.VARIABLE_URL: return configuration.getUrl();
                 default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };
