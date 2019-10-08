@@ -94,7 +94,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
       out.write("<body><table>");
 
         out.write("<tr>");
-        writeTextCell(name, true);
+        writeTableTitle(name, columns.length);
         out.write("</tr>");
         out.write("<tr>");
         for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
@@ -152,6 +152,20 @@ public class DataExporterHTML extends StreamExporterAbstract {
     @Override
     public void exportFooter(DBRProgressMonitor monitor) {
         getWriter().write("</table></body></html>");
+    }
+
+    private void writeTableTitle(String value, int columns)
+    {
+        PrintWriter out = getWriter();
+        out.write(String.format("<th colspan=\"%d\">", columns));
+        if (value == null) {
+            out.write("&nbsp;");
+        }
+        else {
+            value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
+            out.write(value);
+        }
+        out.write("</th>");
     }
 
     private void writeTextCell(String value, boolean header)
