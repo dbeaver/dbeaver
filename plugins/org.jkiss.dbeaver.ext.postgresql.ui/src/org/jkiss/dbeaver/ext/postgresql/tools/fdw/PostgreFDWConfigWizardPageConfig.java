@@ -157,7 +157,7 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
             PostgreFDWConfigWizard.FDWInfo selectedFDW = getWizard().getSelectedFDW();
 
             PropertySourceCustom propertySource = getWizard().getFdwPropertySource();
-            propertySource.setDefValueResolver(targetDataSource.getVariablesResolver());
+            propertySource.setDefValueResolver(targetDataSource.getVariablesResolver(false));
             propertySource.removeAll();
             if (selectedFDW != null && selectedFDW.fdwDescriptor != null) {
                 propertySource.addProperties(selectedFDW.fdwDescriptor.getProperties());

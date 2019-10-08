@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -43,7 +44,7 @@ public class DBRProcessDescriptor
         this(command, null);
     }
 
-    public DBRProcessDescriptor(final DBRShellCommand command, final GeneralUtils.IVariableResolver variablesResolver)
+    public DBRProcessDescriptor(final DBRShellCommand command, final IVariableResolver variablesResolver)
     {
         this.command = command;
         String commandLine = variablesResolver == null ?

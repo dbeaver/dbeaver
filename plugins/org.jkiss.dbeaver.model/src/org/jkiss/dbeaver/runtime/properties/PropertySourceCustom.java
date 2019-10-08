@@ -20,6 +20,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,7 +36,7 @@ public class PropertySourceCustom implements DBPPropertySource {
     private Map<Object, Object> originalValues = new TreeMap<>();
     private Map<Object, Object> propValues = new TreeMap<>();
     private Map<Object,Object> defaultValues = new TreeMap<>();
-    private GeneralUtils.IVariableResolver defValueResolver = null;
+    private IVariableResolver defValueResolver = null;
 
     public PropertySourceCustom()
     {
@@ -53,7 +54,7 @@ public class PropertySourceCustom implements DBPPropertySource {
         setValues(values);
     }
 
-    public void setDefValueResolver(GeneralUtils.IVariableResolver defValueResolver) {
+    public void setDefValueResolver(IVariableResolver defValueResolver) {
         this.defValueResolver = defValueResolver;
     }
 

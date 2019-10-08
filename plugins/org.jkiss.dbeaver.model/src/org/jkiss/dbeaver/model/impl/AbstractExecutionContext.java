@@ -18,9 +18,8 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -91,7 +90,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
             try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries")) {
                 for (String query : initQueries) {
                     // Replace variables
-                    query = GeneralUtils.replaceVariables(query, getDataSource().getContainer().getVariablesResolver());
+                    query = GeneralUtils.replaceVariables(query, getDataSource().getContainer().getVariablesResolver(true));
                     try {
                         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.SCRIPT, query, false, false, false)) {
                             dbStat.executeStatement();

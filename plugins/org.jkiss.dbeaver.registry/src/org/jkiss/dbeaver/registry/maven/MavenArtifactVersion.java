@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -59,7 +60,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private final List<MavenProfile> profiles = new ArrayList<>();
     private final List<MavenRepository> repositories = new ArrayList<>();
 
-    private GeneralUtils.IVariableResolver propertyResolver = new GeneralUtils.IVariableResolver() {
+    private IVariableResolver propertyResolver = new IVariableResolver() {
         @Override
         public String get(String name) {
             switch (name) {
