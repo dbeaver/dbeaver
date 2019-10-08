@@ -28,7 +28,6 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -42,7 +41,7 @@ public class ActiveWizardDialog extends WizardDialog
     private Set<String> resizedShells = new HashSet<>();
     private boolean adaptContainerSizeToPages = false;
 
-    private String finishButtonLabel = UIMessages.button_start;
+    private String finishButtonLabel = IDialogConstants.FINISH_LABEL;
     private String cancelButtonLabel = IDialogConstants.CLOSE_LABEL;
 
     public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard)
