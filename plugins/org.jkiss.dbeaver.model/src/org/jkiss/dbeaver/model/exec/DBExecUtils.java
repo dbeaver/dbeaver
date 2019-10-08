@@ -231,7 +231,7 @@ public class DBExecUtils {
                     }
                     String script = action.getScript();
                     if (!CommonUtils.isEmpty(script)) {
-                        try (final Statement statement = ((JDBCSession) session).getOriginal().createStatement()) {
+                        try (final Statement statement = ((JDBCSession) session).createStatement()) {
                             statement.execute(script);
                         }
                     }

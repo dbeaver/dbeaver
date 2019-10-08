@@ -38,8 +38,10 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.virtual.DBVContainer;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
@@ -326,8 +328,9 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
                     PostgreTableColumn newColumn = columnManager.createNewObject(monitor, commandContext, pgTable, null, options);
                     assert newColumn != null;
                     newColumn.setName(attr.getName());
-                    String defTypeName = database.getDefaultDataTypeName(attr.getDataKind());
-                    PostgreDataType dataType = database.getDataType(monitor, defTypeName);
+                    String defTypeName = DBStructUtils.mapTargetDataType(database.getDataSource(), attr);
+                    String plainTargetTypeName = SQLUtils.stripColumnTypeModifiers(defTypeName);
+                    PostgreDataType dataType = database.getDataType(monitor, plainTargetTypeName);
                     newColumn.setDataType(dataType);
                 }
 
