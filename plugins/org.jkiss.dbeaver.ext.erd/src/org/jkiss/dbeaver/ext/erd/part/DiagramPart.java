@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.ConnectionLayer;
+import org.eclipse.draw2d.FanRouter;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.ShortestPathConnectionRouter;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
@@ -38,9 +41,10 @@ import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.layout.GraphLayoutAuto;
-import org.jkiss.dbeaver.ext.erd.model.*;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -139,6 +143,7 @@ public class DiagramPart extends PropertyAwarePart {
         return figure;
     }
 
+    @NotNull
     public EntityDiagram getDiagram()
     {
         return (EntityDiagram) getModel();

@@ -64,10 +64,10 @@ import java.util.List;
  */
 public class EditForeignKeyPage extends BaseObjectEditPage {
 
-    public static final String CONTAINER_LOGICAL_FK = "container.logical-fk";
+    private static final String CONTAINER_LOGICAL_FK = "container.logical-fk";
     private static final Log log = Log.getLog(EditForeignKeyPage.class);
 
-    public static final FKType FK_TYPE_PHYSICAL = new FKType("Physical", true);
+    private static final FKType FK_TYPE_PHYSICAL = new FKType("Physical", true);
     public static final FKType FK_TYPE_LOGICAL = new FKType("Logical", false);
 
     private DBSForeignKeyModifyRule[] supportedModifyRules;
@@ -95,6 +95,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     private FKType[] allowedKeyTypes = new FKType[] {  FK_TYPE_PHYSICAL };
     private FKType preferredKeyType = FK_TYPE_PHYSICAL;
     private FKType selectedKeyType = FK_TYPE_PHYSICAL;
+
+    private List<DBSEntityAttribute> sourceAttributes;
+    private List<DBSEntityAttribute> refAttributes;
 
     private final List<Control> physicalKeyComponents = new ArrayList<>();
 
@@ -156,9 +159,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         ownerTableNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(realEntity);
                         if (ownerTableNode == null) {
                             try {
-                                UIUtils.runInProgressDialog(monitor -> {
-                                    ownerTableNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, realEntity, true);
-                                });
+                                UIUtils.runInProgressDialog(monitor ->
+                                    ownerTableNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(
+                                        monitor, realEntity, true));
                             } catch (InvocationTargetException e) {
                                 setErrorMessage(e.getTargetException().getMessage());
                                 log.error(e.getTargetException());
@@ -181,21 +184,21 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         return enableCustomKeys;
     }
 
-    public void setEnableCustomKeys(boolean enableCustomKeys) {
+    private void setEnableCustomKeys(boolean enableCustomKeys) {
         this.enableCustomKeys = enableCustomKeys;
     }
 
-    public void setAllowedKeyTypes(FKType[] allowedKeyTypes) {
+    private void setAllowedKeyTypes(FKType[] allowedKeyTypes) {
         this.allowedKeyTypes = allowedKeyTypes;
         setPreferredKeyType(allowedKeyTypes[0]);
     }
 
-    public void setPreferredKeyType(FKType preferredKeyType) {
+    private void setPreferredKeyType(FKType preferredKeyType) {
         this.preferredKeyType = preferredKeyType;
         this.selectedKeyType = preferredKeyType;
     }
 
-    public void setRefTable(DBSEntity curRefTable) {
+    private void setRefTable(DBSEntity curRefTable) {
         this.curRefTable = curRefTable;
     }
 
@@ -396,6 +399,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             return;
         }
         DBVEntity vRefEntity = DBVUtils.getVirtualEntity(curRefTable, true);
+        assert vRefEntity != null;
         DBVEntityConstraint constraint = vRefEntity.getBestIdentifier();
 
         EditConstraintPage page = new EditConstraintPage(
@@ -640,18 +644,22 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         final Collection<? extends DBSEntityConstraint> constraints = DBVUtils.getAllConstraints(monitor, refTable);
                         if (!CommonUtils.isEmpty(constraints)) {
                             for (DBSEntityConstraint constraint : constraints) {
-                                if (constraint.getConstraintType().isUnique()) {
-                                    curConstraints.add(constraint);
+                                if (constraint.getConstraintType().isUnique() && constraint instanceof DBSEntityReferrer) {
+                                    if (isValidRefConstraint(monitor, (DBSEntityReferrer) constraint)) {
+                                        curConstraints.add(constraint);
+                                    }
                                 }
                             }
                         }
 
                         if (refTable instanceof DBSTable) {
                             // Get indexes
-                            final Collection<? extends DBSTableIndex> indexes = ((DBSTable)refTable).getIndexes(monitor);
+                            final Collection<? extends DBSTableIndex> indexes = ((DBSTable) refTable).getIndexes(monitor);
                             if (!CommonUtils.isEmpty(indexes)) {
                                 for (DBSTableIndex constraint : indexes) {
-                                    if (constraint.isUnique() && isConstraintIndex(monitor, curConstraints, constraint)) {
+                                    if (constraint.isUnique() &&
+                                        isConstraintIndex(monitor, curConstraints, constraint) &&
+                                        isValidRefConstraint(monitor, constraint)) {
                                         curConstraints.add(constraint);
                                     }
                                 }
@@ -661,7 +669,22 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         throw new InvocationTargetException(e);
                     }
                 });
+                if (CommonUtils.isEmpty(curConstraints) && enableCustomKeys && !CommonUtils.isEmpty(refAttributes)) {
+                    // We have ref attrs specified - create virtual unique key automatically
+                    DBVEntity vRefEntity = DBVUtils.getVirtualEntity(curRefTable, true);
+                    assert vRefEntity != null;
+                    DBVEntityConstraint vUniqueKey = new DBVEntityConstraint(
+                        vRefEntity,
+                        DBSEntityConstraintType.VIRTUAL_KEY,
+                        vRefEntity.getName() + "_VK");
+                    for (DBSEntityAttribute refAttr : refAttributes) {
+                        vUniqueKey.addAttribute(refAttr.getName());
+                    }
+                    vRefEntity.addConstraint(vUniqueKey, true);
+                    curConstraints.add(vUniqueKey);
+                }
             }
+
             for (DBSEntityConstraint constraint : curConstraints) {
                 uniqueKeyCombo.add(constraint.getName() + " (" + constraint.getConstraintType().getLocalizedName() + ")");
             }
@@ -721,6 +744,18 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
         }
         return false;
+    }
+
+    private boolean isValidRefConstraint(DBRProgressMonitor monitor, DBSEntityReferrer constraint) throws DBException {
+        if (!CommonUtils.isEmpty(refAttributes)) {
+            // Constraint must include ref attributes
+            for (DBSEntityAttribute refAttr : refAttributes) {
+                if (DBUtils.getConstraintAttribute(monitor, constraint, refAttr) == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private void handleUniqueKeySelect()
@@ -947,13 +982,27 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         this.supportsCustomName = supportsCustomName;
     }
 
-    @Nullable
-    public static DBVEntityForeignKey createVirtualForeignKey(@NotNull DBVEntity vEntity) {
-        return createVirtualForeignKey(vEntity, null, new FKType[] {FK_TYPE_LOGICAL});
+    private void setSourceAttributes(Collection<? extends DBSEntityAttribute> srcAttributes) {
+        this.sourceAttributes = CommonUtils.isEmpty(srcAttributes) ? null : new ArrayList<>(srcAttributes);
+    }
+
+    private void setReferenceAttributes(Collection<? extends DBSEntityAttribute> refAttributes) {
+        this.refAttributes = CommonUtils.isEmpty(refAttributes) ? null : new ArrayList<>(refAttributes);
     }
 
     @Nullable
-    public static DBVEntityForeignKey createVirtualForeignKey(@NotNull DBVEntity vEntity, @Nullable DBSEntity refEntity, @Nullable FKType[] allowedKeyTypes) {
+    public static DBVEntityForeignKey createVirtualForeignKey(@NotNull DBVEntity vEntity) {
+        return createVirtualForeignKey(vEntity, null, new FKType[] {FK_TYPE_LOGICAL}, null, null);
+    }
+
+    @Nullable
+    public static DBVEntityForeignKey createVirtualForeignKey(
+        @NotNull DBVEntity vEntity,
+        @Nullable DBSEntity refEntity,
+        @Nullable FKType[] allowedKeyTypes,
+        @Nullable Collection<? extends DBSEntityAttribute> srcAttributes,
+        @Nullable Collection<? extends DBSEntityAttribute> refAttributes)
+    {
         DBVEntityForeignKey virtualFK = new DBVEntityForeignKey(vEntity);
         EditForeignKeyPage editDialog = new EditForeignKeyPage(
             "Define virtual foreign keys",
@@ -965,6 +1014,12 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
         if (refEntity != null) {
             editDialog.setRefTable(refEntity);
+        }
+        if (srcAttributes != null) {
+            editDialog.setSourceAttributes(srcAttributes);
+        }
+        if (refAttributes != null) {
+            editDialog.setReferenceAttributes(refAttributes);
         }
         if (!editDialog.edit()) {
             return null;

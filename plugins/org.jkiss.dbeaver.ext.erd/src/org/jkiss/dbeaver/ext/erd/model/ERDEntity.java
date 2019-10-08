@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -192,8 +191,8 @@ public class ERDEntity extends ERDElement<DBSEntity> {
                 }
             }
 
-        } catch (DBException e) {
-            log.warn("Can't load table '" + getObject().getName() + "' foreign keys", e);
+        } catch (Throwable e) {
+            log.error("Can't load table '" + getObject().getName() + "' foreign keys", e);
         }
     }
 

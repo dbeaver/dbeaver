@@ -88,13 +88,14 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBSEntityConstraint getReferencedConstraint() {
         try {
             return getRealReferenceConstraint(new VoidProgressMonitor());
         } catch (DBException e) {
-            throw new IllegalStateException(e);
+            log.error(e);
+            return null;
         }
     }
 
