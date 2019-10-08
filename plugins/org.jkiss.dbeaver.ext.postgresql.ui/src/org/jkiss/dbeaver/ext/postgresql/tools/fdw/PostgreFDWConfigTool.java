@@ -21,7 +21,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
@@ -46,6 +45,7 @@ public class PostgreFDWConfigTool implements IUserInterfaceTool
             ToolWizardDialog dialog = new ToolWizardDialog(
                 window,
                 new PostgreFDWConfigWizard(database));
+            dialog.setFinishButtonLabel("Install");
             dialog.open();
         }
     }
