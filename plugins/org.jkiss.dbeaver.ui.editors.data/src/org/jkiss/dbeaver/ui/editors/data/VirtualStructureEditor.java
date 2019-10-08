@@ -110,7 +110,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 }
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Foreign keys", "Error loading virtual unique keys", e);
+            log.error("Error loading virtual unique keys", e);
         }
         UIUtils.packColumns(ukTable, true);
 
@@ -120,7 +120,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 createForeignKeyItem(fkTable, fk);
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Foreign keys", "Error loading virtual foreign keys", e);
+            log.error("Error loading virtual foreign keys", e);
         }
         UIUtils.packColumns(fkTable, true);
 
@@ -130,7 +130,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 createForeignKeyItem(refTable, fk);
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Foreign keys", "Error loading virtual foreign keys", e);
+            log.error("Error loading virtual foreign keys", e);
         }
         UIUtils.packColumns(refTable, true);
     }
@@ -375,19 +375,20 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         TableItem item = new TableItem(fkTable, SWT.NONE);
         //item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
         DBSEntityConstraint refConstraint = fk.getReferencedConstraint();
-        DBSEntity refEntity = refConstraint.getParentObject();
+        DBSEntity refEntity = refConstraint == null ? null : refConstraint.getParentObject();
 
         item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
-        item.setText(0, DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI));
+        item.setText(0, refEntity == null ? "?" : DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI));
 
         String ownAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getAttributeName)
             .collect(Collectors.joining(","));
         String refAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getRefAttributeName)
             .collect(Collectors.joining(","));
         item.setText(1, "(" + ownAttrNames + ") -> (" + refAttrNames + ")");
-
-        item.setImage(2, DBeaverIcons.getImage(refEntity.getDataSource().getContainer().getDriver().getIcon()));
-        item.setText(2, refEntity.getDataSource().getContainer().getName());
+        if (refEntity != null) {
+            item.setImage(2, DBeaverIcons.getImage(refEntity.getDataSource().getContainer().getDriver().getIcon()));
+            item.setText(2, refEntity.getDataSource().getContainer().getName());
+        }
 
         item.setData(fk);
     }

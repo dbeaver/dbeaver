@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -144,5 +145,16 @@ public class ERDUtils
             }
         }
         return null;
+    }
+
+    public static <T> List<T> getObjectsFromERD(List<? extends ERDObject<T>> erdObjects) {
+        List<T> result = null;
+        if (erdObjects != null) {
+            result = new ArrayList<>();
+            for (ERDObject<T> erdObject : erdObjects) {
+                result.add(erdObject.getObject());
+            }
+        }
+        return result;
     }
 }
