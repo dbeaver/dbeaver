@@ -22,12 +22,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignTableManager;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -111,14 +108,18 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
     private void generateScript() {
         StringBuilder script = new StringBuilder();
         try {
-            getWizard().getRunnableContext().run(false, true, monitor -> {
+            getWizard().getRunnableContext().run(true, true, monitor -> {
                 try {
+                    monitor.beginTask("Generate FDW script", 2);
+                    monitor.subTask("Read actions");
                     List<DBEPersistAction> actions = generateScript(monitor);
+                    monitor.subTask("Generate script");
                     script.append(
                         SQLUtils.generateScript(
                             getWizard().getDatabase().getDataSource(),
                             actions.toArray(new DBEPersistAction[0]),
                             false));
+                    monitor.done();
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
