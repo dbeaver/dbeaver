@@ -863,10 +863,10 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getDefaultDataTypeName(@NotNull DBPDataSource dataSource, DBPDataKind dataKind)
+    public static String getDefaultDataTypeName(@NotNull DBSObject objectContainer, DBPDataKind dataKind)
     {
-        if (dataSource instanceof DBPDataTypeProvider) {
-            return ((DBPDataTypeProvider) dataSource).getDefaultDataTypeName(dataKind);
+        if (objectContainer instanceof DBPDataTypeProvider) {
+            return ((DBPDataTypeProvider) objectContainer).getDefaultDataTypeName(dataKind);
         } else {
             // Unsupported data kind
             return "?";
@@ -1303,15 +1303,7 @@ public final class DBUtils {
 
     public static void fireObjectUpdate(@NotNull DBSObject object)
     {
-        fireObjectUpdate(object, null);
-    }
-
-    public static void fireObjectUpdate(DBSObject object, @Nullable Object data)
-    {
-        final DBPDataSourceContainer container = getContainer(object);
-        if (container != null) {
-            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object, data));
-        }
+        fireObjectUpdate(object, null, null);
     }
 
     public static void fireObjectUpdate(DBSObject object, boolean enabled)
@@ -1320,6 +1312,21 @@ public final class DBUtils {
         if (container != null) {
             container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object, enabled));
         }
+    }
+
+    public static void fireObjectUpdate(DBSObject object, @Nullable Map<String, Object> options, @Nullable Object data)
+    {
+        final DBPDataSourceContainer container = getContainer(object);
+        if (container != null) {
+            DBPEvent event = new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object, data);
+            event.setOptions(options);
+            container.fireEvent(event);
+        }
+    }
+
+    public static void fireObjectUpdate(DBSObject object, @Nullable Object data)
+    {
+        fireObjectUpdate(object, null, data);
     }
 
     public static void fireObjectAdd(DBSObject object, Map<String, Object> options)

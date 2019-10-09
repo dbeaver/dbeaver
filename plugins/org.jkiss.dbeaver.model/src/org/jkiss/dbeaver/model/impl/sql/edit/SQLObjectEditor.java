@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -384,7 +385,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public void redoCommand(ObjectRenameCommand command) {
             if (command.getObject() instanceof DBPNamedObject2) {
                 ((DBPNamedObject2) command.getObject()).setName(command.newName);
-                DBUtils.fireObjectUpdate(command.getObject());
+
+                Map<String, Object> options = new LinkedHashMap<>();
+                options.put(DBEObjectRenamer.PROP_OLD_NAME, command.getOldName());
+                options.put(DBEObjectRenamer.PROP_NEW_NAME, command.getNewName());
+
+                DBUtils.fireObjectUpdate(command.getObject(), options, null);
             }
         }
 

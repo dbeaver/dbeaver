@@ -325,12 +325,21 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
                 pgTable.setForeignOptions(new String[0]);
 
                 for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
+                    // Cache data types
+                    PostgreSchema catalogSchema = database.getCatalogSchema(monitor);
+                    if (catalogSchema != null) {
+                        catalogSchema.getDataTypes(monitor);
+                    }
+                    String defTypeName = DBStructUtils.mapTargetDataType(database, attr);
+                    String plainTargetTypeName = SQLUtils.stripColumnTypeModifiers(defTypeName);
+                    PostgreDataType dataType = database.getDataType(monitor, plainTargetTypeName);
+                    if (dataType == null) {
+                        log.error("Data type '" + plainTargetTypeName + "' not found. Skip column mapping.");
+                        continue;
+                    }
                     PostgreTableColumn newColumn = columnManager.createNewObject(monitor, commandContext, pgTable, null, options);
                     assert newColumn != null;
                     newColumn.setName(attr.getName());
-                    String defTypeName = DBStructUtils.mapTargetDataType(database.getDataSource(), attr);
-                    String plainTargetTypeName = SQLUtils.stripColumnTypeModifiers(defTypeName);
-                    PostgreDataType dataType = database.getDataType(monitor, plainTargetTypeName);
                     newColumn.setDataType(dataType);
                 }
 

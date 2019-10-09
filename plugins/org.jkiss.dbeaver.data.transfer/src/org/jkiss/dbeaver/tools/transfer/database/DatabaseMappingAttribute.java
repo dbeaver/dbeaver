@@ -188,10 +188,6 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             return targetType;
         }
 
-        // TODO: make some smart data type matcher
-        // Current solution looks like hack
-        String typeName = source.getTypeName();
-        DBPDataKind dataKind = source.getDataKind();
         return DBStructUtils.mapTargetDataType(targetDataSource, source);
     }
 

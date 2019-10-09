@@ -109,6 +109,10 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         return refEntityId;
     }
 
+    public void setRefEntityId(String refEntityId) {
+        this.refEntityId = refEntityId;
+    }
+
     public String getRefConstraintId() {
         return refConstraintId;
     }
@@ -168,7 +172,8 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
 
     @Override
     public DBSEntity getAssociatedEntity() {
-        return getReferencedConstraint().getParentObject();
+        DBSEntityConstraint refC = getReferencedConstraint();
+        return refC == null ? null : refC.getParentObject();
     }
 
     @Override

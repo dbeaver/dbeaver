@@ -781,11 +781,16 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             if (curConstraint instanceof DBSEntityReferrer) {
                 // Read column nodes with void monitor because we already cached them above
                 for (DBSEntityAttributeRef pkColumn : ((DBSEntityReferrer)curConstraint).getAttributeReferences(monitor)) {
-                    FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getAttribute());
+                    DBSEntityAttribute pkAttribute = pkColumn.getAttribute();
+                    if (pkAttribute == null) {
+                        log.debug("Constraint " + curConstraint.getName() + " column attribute not found");
+                        continue;
+                    }
+                    FKColumnInfo fkColumnInfo = new FKColumnInfo(pkAttribute);
                     // Try to find matched column in own table
                     if (!CommonUtils.isEmpty(ownColumns)) {
                         for (DBSEntityAttribute ownColumn : ownColumns) {
-                            if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && curEntity != pkColumn.getAttribute().getParentObject()) {
+                            if (ownColumn.getName().equals(pkAttribute.getName()) && curEntity != pkAttribute.getParentObject()) {
                                 fkColumnInfo.ownColumn = ownColumn;
                                 break;
                             }
@@ -799,9 +804,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                         item.setImage(0, getColumnIcon(fkColumnInfo.ownColumn));
                         item.setText(1, fkColumnInfo.ownColumn.getFullTypeName());
                     }
-                    item.setText(2, pkColumn.getAttribute().getName());
-                    item.setImage(2, getColumnIcon(pkColumn.getAttribute()));
-                    item.setText(3, pkColumn.getAttribute().getFullTypeName());
+                    item.setText(2, pkAttribute.getName());
+                    item.setImage(2, getColumnIcon(pkAttribute));
+                    item.setText(3, pkAttribute.getFullTypeName());
                     item.setData(fkColumnInfo);
                 }
             } else if (enableCustomKeys && curRefTable != null) {
