@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
@@ -72,12 +73,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
     private volatile boolean saveInProgress = false;
 
+    private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
+
     public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project) {
         this.platform = platform;
         this.project = project;
 
         loadDataSources(false);
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
+
+        addDataSourceListener(modelChangeListener);
     }
 
     /**
@@ -91,10 +96,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 dataSources.add(new DataSourceDescriptor(ds, this));
             }
         }
+
+        addDataSourceListener(modelChangeListener);
     }
 
     @Override
     public void dispose() {
+        removeDataSourceListener(modelChangeListener);
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, false);
         synchronized (dataSourceListeners) {
             if (!this.dataSourceListeners.isEmpty()) {

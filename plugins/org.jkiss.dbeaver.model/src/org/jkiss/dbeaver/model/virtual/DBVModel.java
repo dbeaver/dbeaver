@@ -20,14 +20,14 @@ import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -52,16 +52,14 @@ public class DBVModel extends DBVContainer {
     }
 
     public DBVModel(@NotNull DBPDataSourceContainer dataSourceContainer) {
-        super(null, "model");
+        super(null, dataSourceContainer.getId());
         this.dataSourceContainer = dataSourceContainer;
         this.id = dataSourceContainer.getId();
     }
 
     // Copy constructor
     public DBVModel(@NotNull DBPDataSourceContainer dataSourceContainer, @NotNull DBVModel source) {
-        super(null, source.getId());
-        this.dataSourceContainer = dataSourceContainer;
-        this.id = dataSourceContainer.getId();
+        this(dataSourceContainer);
         copyFrom(source);
     }
 
@@ -214,6 +212,21 @@ public class DBVModel extends DBVContainer {
         }
     }
 
+    private static void renameEntityInCache(String newRefEntityId, String oldName, String newName) {
+        String oldRefEntityId = newRefEntityId.replace("/" + newName, "/" + oldName);
+        synchronized (globalReferenceCache) {
+            List<DBVEntityForeignKey> fkList = globalReferenceCache.get(oldRefEntityId);
+            if (fkList != null) {
+                globalReferenceCache.remove(oldRefEntityId);
+                globalReferenceCache.put(newRefEntityId, fkList);
+                for (DBVEntityForeignKey fk : fkList) {
+                    fk.setRefEntityId(newRefEntityId);
+                    fk.getEntity().persistConfiguration();
+                }
+            }
+        }
+    }
+
     public static void checkGlobalCacheIsEmpty() {
         synchronized (globalReferenceCache) {
             if (!globalReferenceCache.isEmpty()) {
@@ -222,4 +235,27 @@ public class DBVModel extends DBVContainer {
         }
     }
 
+    public static class ModelChangeListener implements DBPEventListener {
+        @Override
+        public void handleDataSourceEvent(DBPEvent event) {
+            DBSObject object = event.getObject();
+            if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && object instanceof DBSEntity) {
+                // Handle table renames
+                Map<String, Object> options = event.getOptions();
+                if (options != null) {
+                    String oldName = (String)options.get(DBEObjectRenamer.PROP_OLD_NAME);
+                    String newName = (String)options.get(DBEObjectRenamer.PROP_NEW_NAME);
+                    if (oldName != null && newName != null) {
+                        DBNDatabaseNode objectNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(object);
+                        if (objectNode != null) {
+                            String objectNodePath = objectNode.getNodeItemPath();
+                            renameEntityInCache(objectNodePath, oldName, newName);
+                            System.out.println("Handle rename " + oldName + " into " + newName);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
 }

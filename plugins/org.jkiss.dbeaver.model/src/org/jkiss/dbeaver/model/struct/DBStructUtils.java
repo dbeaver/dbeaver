@@ -185,12 +185,12 @@ public final class DBStructUtils {
         cyclicTables.addAll(realTables);
     }
 
-    public static String mapTargetDataType(DBPDataSource targetDataSource, DBSTypedObject typedObject) {
+    public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject typedObject) {
         String typeName = typedObject.getTypeName();
         String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
         DBPDataKind dataKind = typedObject.getDataKind();
-        if (targetDataSource instanceof DBPDataTypeProvider) {
-            DBPDataTypeProvider dataTypeProvider = (DBPDataTypeProvider) targetDataSource;
+        if (objectContainer instanceof DBPDataTypeProvider) {
+            DBPDataTypeProvider dataTypeProvider = (DBPDataTypeProvider) objectContainer;
             DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
             if (dataType == null && typeNameLower.equals("double")) {
                 dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
@@ -245,7 +245,7 @@ public final class DBStructUtils {
                     }
                 }
                 if (targetType == null) {
-                    typeName = DBUtils.getDefaultDataTypeName(targetDataSource, dataKind);
+                    typeName = DBUtils.getDefaultDataTypeName(objectContainer, dataKind);
                     typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
                     if (!possibleTypes.isEmpty()) {
                         targetType = possibleTypes.get(typeNameLower);
@@ -264,9 +264,9 @@ public final class DBStructUtils {
         }
 
         // Get type modifiers from target datasource
-        if (targetDataSource instanceof SQLDataSource) {
-            SQLDialect dialect = ((SQLDataSource) targetDataSource).getSQLDialect();
-            String modifiers = dialect.getColumnTypeModifiers(targetDataSource, typedObject, typeName, dataKind);
+        if (objectContainer instanceof SQLDataSource) {
+            SQLDialect dialect = ((SQLDataSource) objectContainer).getSQLDialect();
+            String modifiers = dialect.getColumnTypeModifiers((SQLDataSource)objectContainer, typedObject, typeName, dataKind);
             if (modifiers != null) {
                 typeName += modifiers;
             }

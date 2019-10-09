@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface DBEObjectRenamer<OBJECT_TYPE extends DBSObject> extends DBEObjectManager<OBJECT_TYPE> {
 
+    String PROP_OLD_NAME = "oldName";
+    String PROP_NEW_NAME = "newName";
+
     /**
      * Describes object
      *
