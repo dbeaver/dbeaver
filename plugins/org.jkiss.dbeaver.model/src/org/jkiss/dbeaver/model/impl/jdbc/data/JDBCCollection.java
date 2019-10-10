@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.AbstractDatabaseList;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCArrayImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
@@ -48,7 +49,7 @@ import java.util.StringTokenizer;
 /**
  * Array holder
  */
-public class JDBCCollection implements DBDCollection, DBDValueCloneable {
+public class JDBCCollection extends AbstractDatabaseList implements DBDValueCloneable {
 
     private static final Log log = Log.getLog(JDBCCollection.class);
 
@@ -431,6 +432,19 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             }
         }
         return new JDBCCollectionString(dataType, valueHandler, value);
+    }
+
+    //////////////////////////////////////////
+    // List implementation
+
+    @Override
+    public int size() {
+        return getItemCount();
+    }
+
+    @Override
+    public Object get(int index) {
+        return getItem(index);
     }
 
 }
