@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
+import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -44,8 +46,9 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
+import java.io.StringWriter;
 import java.util.*;
+import java.util.List;
 
 /**
  * Parameter binding
@@ -58,6 +61,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private static final Log log = Log.getLog(SQLQueryParameterBindDialog.class);
 
     private IWorkbenchPartSite site;
+    private SQLScriptContext queryContext;
     private SQLQuery query;
     private List<SQLQueryParameter> parameters;
     private final Map<String, List<SQLQueryParameter>> dupParameters = new HashMap<>();
@@ -65,11 +69,14 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
     private Button hideIfSetCheck;
     private Table paramTable;
+    private Object queryPreviewPanel;
 
     public SQLQueryParameterBindDialog(IWorkbenchPartSite site, SQLQuery query, List<SQLQueryParameter> parameters)
     {
         super(site.getShell());
         this.site = site;
+        StringWriter dummyWriter = new StringWriter();
+        this.queryContext = new SQLScriptContext(null, new DataSourceContextProvider(query.getDataSource()), null, dummyWriter);
         this.query = query;
         this.parameters = parameters;
 
@@ -80,6 +87,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 SQLQueryParameterRegistry.ParameterInfo paramInfo = registry.getParameter(param.getName());
                 if (paramInfo != null) {
                     param.setValue(paramInfo.value);
+                    param.setVariableSet(!CommonUtils.isEmpty(paramInfo.value));
+                    queryContext.setVariable(paramInfo.name, paramInfo.value);
                 }
             }
         }
@@ -166,6 +175,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     item.setText(2, newValue);
 
                     param.setValue(newValue);
+                    param.setVariableSet(!CommonUtils.isEmpty(newValue));
                     if (param.isNamed()) {
                         final List<SQLQueryParameter> dups = dupParameters.get(param.getName());
                         if (dups != null) {
@@ -173,11 +183,14 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                                 dup.setValue(newValue);
                             }
                         }
+                        queryContext.setVariable(param.getVarName(), param.getValue());
                     }
 
                     savedParamValues.put(
                         param.getName().toUpperCase(Locale.ENGLISH),
                         new SQLQueryParameterRegistry.ParameterInfo(param.getName(), newValue));
+
+                    updateQueryPreview();
                 }
             };
 
@@ -193,7 +206,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             queryComposite.setLayout(new FillLayout());
 
             try {
-                DBWorkbench.getService(UIServiceSQL.class).createSQLPanel(
+                queryPreviewPanel = DBWorkbench.getService(UIServiceSQL.class).createSQLPanel(
                     site,
                     queryComposite,
                     new DataSourceContextProvider(query.getDataSource()),
@@ -219,6 +232,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         });
 
         updateStatus(GeneralUtils.makeInfoStatus(SQLEditorMessages.dialog_sql_param_hint));
+
+        updateQueryPreview();
+
         return composite;
     }
 
@@ -241,6 +257,21 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             item.setText(0, String.valueOf(param.getOrdinalPosition() + 1));
             item.setText(1, param.getVarName());
             item.setText(2, CommonUtils.notEmpty(param.getValue()));
+        }
+    }
+
+    private void updateQueryPreview() {
+        SQLQuery queryCopy = new SQLQuery(query.getDataSource(), query.getText(), query);
+        List<SQLQueryParameter> setParams = new ArrayList<>(this.parameters);
+        setParams.removeIf(parameter -> !parameter.isVariableSet());
+        SQLUtils.fillQueryParameters(queryCopy, setParams);
+
+        if (!CommonUtils.equalObjects(query.getText(), queryCopy.getText())) {
+            UIUtils.asyncExec(() -> {
+                DBWorkbench.getService(UIServiceSQL.class).setSQLPanelText(
+                    queryPreviewPanel,
+                    queryCopy.getText());
+            });
         }
     }
 
