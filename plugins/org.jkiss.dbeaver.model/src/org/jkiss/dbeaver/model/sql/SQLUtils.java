@@ -1090,4 +1090,20 @@ public final class SQLUtils {
         }
         return type;
     }
+
+    public static void fillQueryParameters(SQLQuery sqlStatement, List<SQLQueryParameter> parameters) {
+        // Set values for all parameters
+        // Replace parameter tokens with parameter values
+        String query = sqlStatement.getText();
+        for (int i = parameters.size(); i > 0; i--) {
+            SQLQueryParameter parameter = parameters.get(i - 1);
+            String paramValue = parameter.getValue();
+            if (paramValue == null || paramValue.isEmpty()) {
+                paramValue = SQLConstants.NULL_VALUE;
+            }
+            query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
+        }
+        sqlStatement.setText(query);
+        sqlStatement.setOriginalText(query);
+    }
 }
