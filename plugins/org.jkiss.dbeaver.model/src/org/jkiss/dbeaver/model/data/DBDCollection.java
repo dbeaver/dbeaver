@@ -20,13 +20,15 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
+import java.util.List;
+
 /**
  * Collection of items.
  * Item index is zero-based.
  *
  * @author Serge Rider
  */
-public interface DBDCollection extends DBDComplexValue {
+public interface DBDCollection extends DBDComplexValue, List {
 
     @NotNull
     DBSDataType getComponentType();
