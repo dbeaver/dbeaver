@@ -88,7 +88,7 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         if (oldQuery) {
             return "EXPLAIN " + (verbose ? "VERBOSE " : "") + query;
         } else {
-            return "EXPLAIN (FORMAT XML, ANALYSE) " + query;
+            return "EXPLAIN (FORMAT XML) " + query;
         }
     }
 

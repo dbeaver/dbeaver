@@ -149,7 +149,6 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
         return rows;
     }
 
-    @Property(order = 22, viewable = true)
     public String getTotalTime() {
         return attributes.get(ATTR_ACTUAL_TOTAL_TIME);
     }
