@@ -267,7 +267,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         setParams.removeIf(parameter -> !parameter.isVariableSet());
         SQLUtils.fillQueryParameters(queryCopy, setParams);
 
-        if (!CommonUtils.equalObjects(query.getText(), queryCopy.getText())) {
+        {
             UIUtils.asyncExec(() -> {
                 DBWorkbench.getService(UIServiceSQL.class).setSQLPanelText(
                     queryPreviewPanel,
