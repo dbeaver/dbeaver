@@ -675,7 +675,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                     IOUtils.makeFileBackup(plainConfigFile);
 
                     if (localDataSources.isEmpty()) {
-                        configFile.delete(true, false, monitor.getNestedMonitor());
+                        if (configFile.exists()) {
+                            configFile.delete(true, false, monitor.getNestedMonitor());
+                        }
                     } else {
                         DataSourceSerializer serializer;
                         if (project.getFormat() == ProjectMetadata.ProjectFormat.LEGACY) {
@@ -683,6 +685,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                         } else {
                             serializer = new DataSourceSerializerModern(this);
                         }
+                        project.getMetadataFolder(true);
                         serializer.saveDataSources(
                             monitor,
                             origin,
