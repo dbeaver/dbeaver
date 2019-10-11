@@ -70,6 +70,8 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
      */
     void removeObject(@NotNull OBJECT object, boolean resetFullCache);
 
+    void renameObject(@NotNull OBJECT object, @NotNull String oldName, @NotNull String newName);
+
     /**
      * Clears all cache
      */

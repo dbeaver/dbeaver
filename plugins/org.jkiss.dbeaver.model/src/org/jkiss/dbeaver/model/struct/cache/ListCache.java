@@ -77,6 +77,11 @@ public class ListCache<OWNER extends DBSObject, OBJECT extends DBSObject>
         objectList.remove(object);
     }
 
+    @Override
+    public void renameObject(@NotNull OBJECT object, @NotNull String oldName, @NotNull String newName) {
+        // do nothing - we don't cache names
+    }
+
     public boolean isFullyCached()
     {
         return true;

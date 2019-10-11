@@ -386,6 +386,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             if (command.getObject() instanceof DBPNamedObject2) {
                 ((DBPNamedObject2) command.getObject()).setName(command.newName);
 
+                // Update cache
+                DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = getObjectsCache(command.getObject());
+                if (cache != null) {
+                    cache.renameObject(command.getObject(), command.getOldName(), command.getNewName());
+                }
+
                 Map<String, Object> options = new LinkedHashMap<>();
                 options.put(DBEObjectRenamer.PROP_OLD_NAME, command.getOldName());
                 options.put(DBEObjectRenamer.PROP_NEW_NAME, command.getNewName());
@@ -398,6 +404,13 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public void undoCommand(ObjectRenameCommand command) {
             if (command.getObject() instanceof DBPNamedObject2) {
                 ((DBPNamedObject2) command.getObject()).setName(command.oldName);
+
+                // Update cache
+                DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = getObjectsCache(command.getObject());
+                if (cache != null) {
+                    cache.renameObject(command.getObject(), command.getNewName(), command.getOldName());
+                }
+
                 DBUtils.fireObjectUpdate(command.getObject());
             }
         }

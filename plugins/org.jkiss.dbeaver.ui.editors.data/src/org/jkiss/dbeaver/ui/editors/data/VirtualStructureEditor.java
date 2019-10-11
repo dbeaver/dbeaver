@@ -117,7 +117,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         fkTable.removeAll();
         try {
             for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
-                createForeignKeyItem(fkTable, fk);
+                createForeignKeyItem(fkTable, fk, false);
             }
         } catch (Exception e) {
             log.error("Error loading virtual foreign keys", e);
@@ -127,7 +127,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         refTable.removeAll();
         try {
             for (DBVEntityForeignKey fk : DBVUtils.getVirtualReferences(entity)) {
-                createForeignKeyItem(refTable, fk);
+                createForeignKeyItem(refTable, fk, true);
             }
         } catch (Exception e) {
             log.error("Error loading virtual foreign keys", e);
@@ -318,7 +318,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityForeignKey virtualFK = EditForeignKeyPage.createVirtualForeignKey(vEntity);
                     if (virtualFK != null) {
-                        createForeignKeyItem(fkTable, virtualFK);
+                        createForeignKeyItem(fkTable, virtualFK, true);
                     }
                 }
             });
@@ -367,15 +367,20 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                 }
-            });
+            }).setEnabled(false);
         }
     }
 
-    private void createForeignKeyItem(Table fkTable, DBVEntityForeignKey fk) {
+    private void createForeignKeyItem(Table fkTable, DBVEntityForeignKey fk, boolean ref) {
         TableItem item = new TableItem(fkTable, SWT.NONE);
         //item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
-        DBSEntityConstraint refConstraint = fk.getReferencedConstraint();
-        DBSEntity refEntity = refConstraint == null ? null : refConstraint.getParentObject();
+        DBSEntity refEntity;
+        if (ref) {
+            refEntity = fk.getEntity();
+        } else {
+            DBSEntityConstraint refConstraint = fk.getReferencedConstraint();
+            refEntity = refConstraint == null ? null : refConstraint.getParentObject();
+        }
 
         item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
         item.setText(0, refEntity == null ? "?" : DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI));
