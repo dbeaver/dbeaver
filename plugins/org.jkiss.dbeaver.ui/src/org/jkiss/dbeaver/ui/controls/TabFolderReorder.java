@@ -146,15 +146,18 @@ public class TabFolderReorder
             Control dragControl = dragItem.getControl();
             String dragText = dragItem.getText();
             Image dragImage = dragItem.getImage();
+            String dragToolTip = dragItem.getToolTipText();
             Object dragData = dragItem.getData();
 
             dragItem.setText(item.getText());
             dragItem.setImage(item.getImage());
+            dragItem.setToolTipText(item.getToolTipText());
             dragItem.setData(item.getData());
             dragItem.setControl(item.getControl());
 
             item.setText(dragText);
             item.setImage(dragImage);
+            item.setToolTipText(dragToolTip);
             item.setData(dragData);
             item.setControl(dragControl);
 
