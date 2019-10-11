@@ -272,7 +272,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         String fileName = curFile == null ? null : curFile.getName();
 
         final IDocument document = getDocument();
-        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[]{"*.sql", "*.txt", "*", "*.*"}, fileName);
+        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save as file", new String[]{"*.sql", "*.txt", "*", "*.*"}, fileName);
         if (document == null || saveFile == null) {
             return;
         }
