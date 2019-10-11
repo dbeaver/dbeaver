@@ -21,12 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,15 +51,21 @@ public class SQLScriptContext {
     @NotNull
     private final PrintWriter outputWriter;
 
+    private SQLParametersProvider parametersProvider;
+    private boolean ignoreParameters;
+
     public SQLScriptContext(
-            @Nullable SQLScriptContext parentContext,
-            @NotNull DBPContextProvider contextProvider,
-            @Nullable File sourceFile,
-            @NotNull Writer outputWriter) {
+        @Nullable SQLScriptContext parentContext,
+        @NotNull DBPContextProvider contextProvider,
+        @Nullable File sourceFile,
+        @NotNull Writer outputWriter,
+        @Nullable SQLParametersProvider parametersProvider)
+    {
         this.parentContext = parentContext;
         this.contextProvider = contextProvider;
         this.sourceFile = sourceFile;
         this.outputWriter = new PrintWriter(outputWriter);
+        this.parametersProvider = parametersProvider;
     }
 
     @NotNull
@@ -125,6 +133,14 @@ public class SQLScriptContext {
         statementPragmas = null;
     }
 
+    public boolean isIgnoreParameters() {
+        return ignoreParameters;
+    }
+
+    public void setIgnoreParameters(boolean ignoreParameters) {
+        this.ignoreParameters = ignoreParameters;
+    }
+
     public void copyFrom(SQLScriptContext context) {
         this.variables.clear();
         this.variables.putAll(context.variables);
@@ -135,4 +151,30 @@ public class SQLScriptContext {
         this.pragmas.clear();
         this.pragmas.putAll(context.pragmas);
     }
+
+    public boolean fillQueryParameters(SQLQuery query) {
+        if (ignoreParameters || parametersProvider == null) {
+            return true;
+        }
+
+        // Bind parameters
+        List<SQLQueryParameter> parameters = query.getParameters();
+        if (CommonUtils.isEmpty(parameters)) {
+            return true;
+        }
+
+        // Resolve parameters (only if it is the first fetch)
+        Boolean paramsResult = parametersProvider.prepareStatementParameters(this, query, parameters);
+        if (paramsResult == null) {
+            ignoreParameters = true;
+            return true;
+        } else if (!paramsResult) {
+            return false;
+        }
+
+        SQLUtils.fillQueryParameters(query, parameters);
+
+        return true;
+    }
+
 }
