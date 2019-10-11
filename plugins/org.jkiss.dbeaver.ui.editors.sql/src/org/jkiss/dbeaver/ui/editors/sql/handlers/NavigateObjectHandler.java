@@ -94,7 +94,7 @@ public class NavigateObjectHandler extends AbstractHandler {
 
             SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(
                 editor.getSyntaxManager().getStructSeparator(),
-                editor.getSyntaxManager().getQuoteStrings());
+                editor.getSyntaxManager().getIdentifierQuoteStrings());
             SQLIdentifierDetector.WordRegion wordRegion = wordDetector.detectIdentifier(document, new Region(selection.getOffset(), selection.getLength()));
             if (!wordRegion.isEmpty()) {
                 element.setText("Open '" + wordRegion.word + "'");

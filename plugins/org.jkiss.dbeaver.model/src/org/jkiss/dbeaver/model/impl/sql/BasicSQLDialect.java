@@ -21,9 +21,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
-import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLStateType;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -59,7 +61,8 @@ public class BasicSQLDialect implements SQLDialect {
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
     };
-    public static final String[][] DEFAULT_QUOTE_STRINGS = {{"\"", "\""}};
+    public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
+    public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
@@ -88,7 +91,13 @@ public class BasicSQLDialect implements SQLDialect {
     @Nullable
     @Override
     public String[][] getIdentifierQuoteStrings() {
-        return DEFAULT_QUOTE_STRINGS;
+        return DEFAULT_IDENTIFIER_QUOTES;
+    }
+
+    @NotNull
+    @Override
+    public String[][] getStringQuoteStrings() {
+        return DEFAULT_STRING_QUOTES;
     }
 
     @NotNull

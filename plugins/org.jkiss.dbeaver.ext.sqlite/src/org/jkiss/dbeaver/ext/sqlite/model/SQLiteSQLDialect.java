@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 public class SQLiteSQLDialect extends GenericSQLDialect {
 
@@ -33,7 +32,7 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     }
 
     public String[][] getIdentifierQuoteStrings() {
-        return BasicSQLDialect.DEFAULT_QUOTE_STRINGS;
+        return BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
     }
 
     @Override

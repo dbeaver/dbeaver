@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -42,6 +43,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
         super("FireBird");
     }
 
+    @NotNull
     @Override
     public String[] getDDLKeywords() {
         return DDL_KEYWORDS;

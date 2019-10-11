@@ -21,12 +21,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * SQLSyntaxManager.
@@ -41,7 +44,8 @@ public class SQLSyntaxManager {
     @NotNull
     private DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
     @Nullable
-    private String[][] quoteStrings;
+    private String[][] identifierQuoteStrings;
+    private String[][] stringQuoteStrings;
     private char structSeparator;
     private boolean parametersEnabled;
     private boolean anonymousParametersEnabled;
@@ -93,9 +97,12 @@ public class SQLSyntaxManager {
     }
 
     @Nullable
-    public String[][] getQuoteStrings()
-    {
-        return quoteStrings;
+    public String[][] getIdentifierQuoteStrings() {
+        return identifierQuoteStrings;
+    }
+
+    public String[][] getStringQuoteStrings() {
+        return stringQuoteStrings;
     }
 
     public char getEscapeChar() {
@@ -135,7 +142,8 @@ public class SQLSyntaxManager {
         this.statementDelimiters = new String[0];
         this.sqlDialect = dialect;
         this.preferenceStore = preferenceStore;
-        this.quoteStrings = sqlDialect.getIdentifierQuoteStrings();
+        this.identifierQuoteStrings = sqlDialect.getIdentifierQuoteStrings();
+        this.stringQuoteStrings = sqlDialect.getStringQuoteStrings();
         this.structSeparator = sqlDialect.getStructSeparator();
         this.catalogSeparator = sqlDialect.getCatalogSeparator();
         this.escapeChar = dialect.getStringEscapeCharacter();

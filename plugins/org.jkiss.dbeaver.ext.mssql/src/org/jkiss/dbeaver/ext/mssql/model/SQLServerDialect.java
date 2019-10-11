@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -71,6 +72,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
 
     }
 
+    @NotNull
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;

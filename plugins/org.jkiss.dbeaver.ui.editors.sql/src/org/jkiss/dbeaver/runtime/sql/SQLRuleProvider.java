@@ -28,8 +28,10 @@ import java.util.List;
 public interface SQLRuleProvider {
 
     enum RulePosition {
+        PARTITION,
         INITIAL,
         CONTROL,
+        QUOTES,
         KEYWORDS
     }
 

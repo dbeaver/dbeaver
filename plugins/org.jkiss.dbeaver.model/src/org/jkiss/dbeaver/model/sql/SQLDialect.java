@@ -70,6 +70,14 @@ public interface SQLDialect {
     String[][] getIdentifierQuoteStrings();
 
     /**
+     * Retrieves strings used to quote SQL strings.
+     *
+     * @return the array of string pairs
+     */
+    @NotNull
+    String[][] getStringQuoteStrings();
+
+    /**
      * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
      * @return the list of execute keywords.
      */

@@ -78,6 +78,7 @@ class MySQLDialect extends JDBCSQLDialect {
         return MYSQL_QUOTE_STRINGS;
     }
 
+    @NotNull
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;

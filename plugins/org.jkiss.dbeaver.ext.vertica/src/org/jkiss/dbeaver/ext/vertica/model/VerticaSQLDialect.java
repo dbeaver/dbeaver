@@ -32,6 +32,6 @@ public class VerticaSQLDialect extends GenericSQLDialect {
     }
 
     public String[][] getIdentifierQuoteStrings() {
-        return BasicSQLDialect.DEFAULT_QUOTE_STRINGS;
+        return BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
     }
 }
