@@ -116,7 +116,7 @@ class ViewerColumnRegistry {
     }
 
     private class ConfigSaver extends AbstractJob {
-        protected ConfigSaver() {
+        ConfigSaver() {
             super("Columns configuration save");
         }
 

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -74,6 +75,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private volatile boolean saveInProgress = false;
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
+    private volatile ConfigSaver configSaver;
 
     public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project) {
         this.platform = platform;
@@ -473,7 +475,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Override
     public void flushConfig() {
-        this.saveDataSources();
+        // Use async config saver to avoid too frequent configuration re-save during some massive configuration update
+        if (configSaver == null) {
+            configSaver = new ConfigSaver();
+            configSaver.schedule(100);
+        }
     }
 
     @Override
@@ -843,6 +849,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             } finally {
                 monitor.done();
             }
+        }
+    }
+
+    private class ConfigSaver extends AbstractJob {
+        ConfigSaver() {
+            super("Datasource configuration save");
+        }
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            synchronized (DataSourceRegistry.this) {
+                //log.debug("Save column config " + System.currentTimeMillis());
+                saveDataSources();
+            }
+            return Status.OK_STATUS;
         }
     }
 
