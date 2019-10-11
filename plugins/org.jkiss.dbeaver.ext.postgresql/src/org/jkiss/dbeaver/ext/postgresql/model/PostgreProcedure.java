@@ -602,7 +602,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 final PostgreDataType dataType = param.getParameterType();
                 final PostgreSchema typeContainer = dataType.getParentObject();
                 if (typeContainer == null ||
-                    typeContainer == schema ||
+                    typeContainer.isPublicSchema() ||
                     typeContainer.isCatalogSchema())
                 {
                     paramsSignature.append(DBUtils.getQuotedIdentifier(dataType));

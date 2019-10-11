@@ -36,7 +36,7 @@
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
 
-		<driver
+		        <driver
                     id="h2gis_server"
                     label="H2GIS Server"
                     icon="icons/h2gis_icon.png"

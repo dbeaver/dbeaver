@@ -533,6 +533,17 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         return schemaCache.getCachedObject(PostgreConstants.CATALOG_SCHEMA_NAME);
     }
 
+    @Nullable
+    PostgreSchema getActiveSchema() {
+        String schemaName = getActiveSchemaName();
+        return schemaName == null ? null : schemaCache.getCachedObject(schemaName);
+    }
+
+    @Nullable
+    PostgreSchema getPublicSchema() {
+        return schemaCache.getCachedObject(PostgreConstants.PUBLIC_SCHEMA_NAME);
+    }
+
     void cacheDataTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
         if (dataTypeCache.isEmpty() || forceRefresh) {
             dataTypeCache.clear();
