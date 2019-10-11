@@ -350,6 +350,11 @@ public class SQLQueryJob extends DataSourceJob
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
 
+        if (!scriptContext.fillQueryParameters((SQLQuery) element)) {
+            // User canceled
+            return false;
+        }
+
         // Modify query (filters + parameters)
         String queryText = originalQuery.getText();//.trim();
         if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {

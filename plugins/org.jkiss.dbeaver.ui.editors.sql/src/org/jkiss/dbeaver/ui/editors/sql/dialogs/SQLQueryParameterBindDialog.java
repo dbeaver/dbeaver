@@ -47,8 +47,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringWriter;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Parameter binding
@@ -77,7 +77,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
         this.site = site;
         StringWriter dummyWriter = new StringWriter();
-        this.queryContext = new SQLScriptContext(null, new DataSourceContextProvider(query.getDataSource()), null, dummyWriter);
+        this.queryContext = new SQLScriptContext(null, new DataSourceContextProvider(query.getDataSource()), null, dummyWriter, null);
         this.query = query;
         this.parameters = parameters;
 
