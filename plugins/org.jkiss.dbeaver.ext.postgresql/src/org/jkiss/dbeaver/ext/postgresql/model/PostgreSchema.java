@@ -349,6 +349,10 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
         return name;
     }
 
+    public boolean isPublicSchema() {
+        return PostgreConstants.PUBLIC_SCHEMA_NAME.equals(name);
+    }
+
     public boolean isCatalogSchema() {
         return PostgreConstants.CATALOG_SCHEMA_NAME.equals(name);
     }
