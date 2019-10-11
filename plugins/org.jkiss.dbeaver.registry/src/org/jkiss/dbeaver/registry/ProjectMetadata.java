@@ -151,8 +151,6 @@ public class ProjectMetadata implements DBPProject {
             format = ProjectFormat.MODERN;
         }
 
-        getMetadataFolder(true);
-
         // Check project structure and migrate
         checkAndUpdateProjectStructure();
     }
@@ -369,6 +367,7 @@ public class ProjectMetadata implements DBPProject {
                 // Nothing to save and metadata file doesn't exist
                 return;
             }
+            getMetadataFolder(true);
             try {
                 IOUtils.makeFileBackup(mdFile);
 
