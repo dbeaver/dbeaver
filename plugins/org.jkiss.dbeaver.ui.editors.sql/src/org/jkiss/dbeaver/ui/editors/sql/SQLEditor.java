@@ -89,10 +89,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.CustomSashForm;
-import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
-import org.jkiss.dbeaver.ui.controls.VerticalButton;
-import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -874,6 +871,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT);
         CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        new TabFolderReorder(resultTabs);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
         resultTabs.addSelectionListener(new SelectionAdapter() {
             @Override
