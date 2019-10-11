@@ -19,7 +19,8 @@ package org.jkiss.dbeaver.ext.exasol.model.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.model.*;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolDataType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -62,7 +63,7 @@ public final class ExasolDataTypeCache
 	}
 	
 	@Override
-	public void removeObject(ExasolDataType object, boolean resetFullCache) {
+	public void removeObject(@NotNull ExasolDataType object, boolean resetFullCache) {
 		super.removeObject(object, resetFullCache);
 		dataTypeMap.remove(object.getExasolTypeId());
 	}

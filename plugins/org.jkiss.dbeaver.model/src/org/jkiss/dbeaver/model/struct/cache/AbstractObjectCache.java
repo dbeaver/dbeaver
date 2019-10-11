@@ -134,6 +134,21 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         }
     }
 
+    @Override
+    public void renameObject(@NotNull OBJECT object, @NotNull String oldName, @NotNull String newName) {
+        synchronized (this) {
+            if (this.objectMap != null) {
+                if (!caseSensitive) {
+                    oldName = oldName.toUpperCase(Locale.ENGLISH);
+                    newName = newName.toUpperCase(Locale.ENGLISH);
+                }
+                if (this.objectMap.remove(oldName) == object) {
+                    this.objectMap.put(newName, object);
+                }
+            }
+        }
+    }
+
     @Nullable
     public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, OWNER owner, String name, Class<SUB_TYPE> type)
         throws DBException

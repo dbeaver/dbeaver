@@ -202,9 +202,13 @@ public class ExasolDataSource extends JDBCDataSource
 				}
 				
 				@Override
-				public void removeObject(ExasolPriorityGroup object, boolean resetFullCache) {
+				public void removeObject(@NotNull ExasolPriorityGroup object, boolean resetFullCache) {
 				}
-				
+
+				@Override
+				public void renameObject(@NotNull ExasolPriorityGroup object, @NotNull String oldName, @NotNull String newName) {
+				}
+
 				@Override
 				public boolean isFullyCached() {
 					return true;
@@ -246,7 +250,7 @@ public class ExasolDataSource extends JDBCDataSource
 				}
 				
 				@Override
-				public void cacheObject(ExasolPriorityGroup object) {
+				public void cacheObject(@NotNull ExasolPriorityGroup object) {
 					
 				}
 			};
