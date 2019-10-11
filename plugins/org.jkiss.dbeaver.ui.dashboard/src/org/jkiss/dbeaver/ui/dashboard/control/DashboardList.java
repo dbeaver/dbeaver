@@ -21,9 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -300,6 +298,10 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                     event.doit = false;
                 } else {
                     Rectangle columnBounds = selectedItem.getBounds();
+                    if (dragImage != null) {
+                        dragImage.dispose();
+                        dragImage = null;
+                    }
                     GC gc = new GC(DashboardList.this);
                     dragImage = new Image(Display.getCurrent(), columnBounds.width, columnBounds.height);
                     gc.copyArea(

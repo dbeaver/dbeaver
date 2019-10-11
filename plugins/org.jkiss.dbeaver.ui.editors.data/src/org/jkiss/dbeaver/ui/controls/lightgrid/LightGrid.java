@@ -4482,6 +4482,10 @@ public abstract class LightGrid extends Canvas {
                         event.doit = false;
                         return;
                     }
+                    if (dragImage != null) {
+                        dragImage.dispose();
+                        dragImage = null;
+                    }
                     GC gc = new GC(LightGrid.this);
                     dragImage = new Image(Display.getCurrent(), columnBounds.width, columnBounds.height);
                     gc.copyArea(
