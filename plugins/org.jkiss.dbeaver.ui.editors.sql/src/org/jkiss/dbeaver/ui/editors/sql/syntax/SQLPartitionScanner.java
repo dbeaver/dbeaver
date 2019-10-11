@@ -24,6 +24,9 @@ import org.eclipse.jface.text.rules.*;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -38,7 +41,7 @@ import java.util.List;
  */
 public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
-    // Syntax higlight
+    // Syntax highlight
     private final List<IPredicateRule> rules = new ArrayList<>();
     private final IToken commentToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT);
     private final IToken multilineCommentToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT);
@@ -105,20 +108,32 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
     private void initRules(SQLDialect dialect)
     {
-        boolean hasSingleQuoteRule = false, hasDoubleQuoteRule = false;
-        String[][] quoteStrings = dialect.getIdentifierQuoteStrings();
-        if (quoteStrings != null) {
-            for (String[] quoteString : quoteStrings) {
+        SQLRuleProvider ruleProvider = GeneralUtils.adapt(dialect, SQLRuleProvider.class);
+        if (ruleProvider != null) {
+            List<IRule> partRules = new ArrayList<>();
+            ruleProvider.extendRules(partRules, SQLRuleProvider.RulePosition.PARTITION);
+            for (IRule pr : partRules) {
+                if (pr instanceof IPredicateRule) {
+                    rules.add((IPredicateRule) pr);
+                }
+            }
+        }
+
+        boolean hasDoubleQuoteRule = false;
+        String[][] identifierQuoteStrings = dialect.getIdentifierQuoteStrings();
+        String[][] stringQuoteStrings = dialect.getStringQuoteStrings();
+        if (identifierQuoteStrings != null) {
+            for (String[] quoteString : identifierQuoteStrings) {
                 rules.add(new MultiLineRule(quoteString[0], quoteString[1], sqlQuotedToken, dialect.getStringEscapeCharacter()));
-                if (quoteString[0].equals(SQLConstants.STR_QUOTE_SINGLE) && quoteString[0].equals(quoteString[1])) {
-                    hasSingleQuoteRule = true;
-                } else if (quoteString[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteString[0].equals(quoteString[1])) {
+                if (quoteString[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteString[0].equals(quoteString[1])) {
                     hasDoubleQuoteRule = true;
                 }
             }
         }
-        if (!hasSingleQuoteRule) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, dialect.getStringEscapeCharacter()));
+        if (!ArrayUtils.isEmpty(stringQuoteStrings)) {
+            for (String[] quotes : stringQuoteStrings) {
+                rules.add(new MultiLineRule(quotes[0], quotes[1], sqlStringToken, dialect.getStringEscapeCharacter()));
+            }
         }
         if (!hasDoubleQuoteRule) {
             rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, dialect.getStringEscapeCharacter()));

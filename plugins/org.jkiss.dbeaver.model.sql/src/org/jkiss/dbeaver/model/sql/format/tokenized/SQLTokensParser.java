@@ -45,7 +45,7 @@ class SQLTokensParser {
         this.configuration = configuration;
         this.structSeparator = configuration.getSyntaxManager().getStructSeparator();
         this.catalogSeparator = configuration.getSyntaxManager().getCatalogSeparator();
-        this.quoteStrings = configuration.getSyntaxManager().getQuoteStrings();
+        this.quoteStrings = configuration.getSyntaxManager().getIdentifierQuoteStrings();
         this.singleLineComments = configuration.getSyntaxManager().getDialect().getSingleLineComments();
         this.singleLineCommentStart = new char[this.singleLineComments.length];
         for (int i = 0; i < singleLineComments.length; i++) {

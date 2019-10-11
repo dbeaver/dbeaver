@@ -97,7 +97,7 @@ public final class DBUtils {
     @NotNull
     public static String getUnQuotedIdentifier(@NotNull String str, String[][] quoteStrings) {
         if (ArrayUtils.isEmpty(quoteStrings)) {
-            quoteStrings = BasicSQLDialect.DEFAULT_QUOTE_STRINGS;
+            quoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
         }
         for (int i = 0; i < quoteStrings.length; i++) {
             str = getUnQuotedIdentifier(str, quoteStrings[i][0], quoteStrings[i][1]);

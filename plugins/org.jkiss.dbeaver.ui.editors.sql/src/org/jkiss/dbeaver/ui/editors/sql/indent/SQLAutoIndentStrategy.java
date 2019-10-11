@@ -76,7 +76,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             final boolean lineDelimiter = isLineDelimiter(document, command.text);
             try {
                 boolean isPrevLetter = command.offset > 0 && Character.isJavaIdentifierPart(document.getChar(command.offset - 1));
-                boolean isQuote = isQuoteString(command.text);
+                boolean isQuote = isIdentifierQuoteString(command.text);
                 if (command.offset > 1 && isPrevLetter && !isQuote &&
                     (lineDelimiter || (command.text.length() == 1 && !Character.isJavaIdentifierPart(command.text.charAt(0)))) &&
                     syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO))
@@ -92,8 +92,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         }
     }
 
-    private boolean isQuoteString(String str) {
-        String[][] quoteStrings = syntaxManager.getQuoteStrings();
+    private boolean isIdentifierQuoteString(String str) {
+        String[][] quoteStrings = syntaxManager.getIdentifierQuoteStrings();
         if (quoteStrings != null) {
             for (String[] qs : quoteStrings) {
                 if (str.equals(SQLConstants.STR_QUOTE_SINGLE) || str.equals(qs[0]) || str.equals(qs[1])) {

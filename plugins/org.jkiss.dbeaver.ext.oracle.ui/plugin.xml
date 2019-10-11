@@ -304,4 +304,10 @@
         </tools>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" class="org.jkiss.dbeaver.ext.oracle.ui.internal.OracleDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.runtime.sql.SQLRuleProvider"/>
+        </factory>
+    </extension>
+
 </plugin>

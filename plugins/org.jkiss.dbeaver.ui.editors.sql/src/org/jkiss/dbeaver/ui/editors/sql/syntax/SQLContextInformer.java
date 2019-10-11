@@ -122,7 +122,7 @@ public class SQLContextInformer
         String tableName = wordRegion.word;
         boolean caseSensitive = false;
         if (wordDetector.isQuoted(tableName)) {
-            tableName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getQuoteStrings());
+            tableName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getIdentifierQuoteStrings());
             caseSensitive = true;
         }
         String[] containerNames = null;
@@ -134,17 +134,17 @@ public class SQLContextInformer
                 containerNames = ArrayUtils.remove(String.class, parts, parts.length - 1);
                 for (int i = 0; i < containerNames.length; i++) {
                     if (wordDetector.isQuoted(containerNames[i])) {
-                        containerNames[i] = DBUtils.getUnQuotedIdentifier(containerNames[i], syntaxManager.getQuoteStrings());
+                        containerNames[i] = DBUtils.getUnQuotedIdentifier(containerNames[i], syntaxManager.getIdentifierQuoteStrings());
                     }
                     containerNames[i] = DBObjectNameCaseTransformer.transformName(editor.getDataSource(), containerNames[i]);
                 }
                 if (wordDetector.isQuoted(tableName)) {
-                    tableName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getQuoteStrings());
+                    tableName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getIdentifierQuoteStrings());
                 }
             } else {
                 // Full name could be quoted
                 if (wordDetector.isQuoted(fullName)) {
-                    String unquotedName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getQuoteStrings());
+                    String unquotedName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getIdentifierQuoteStrings());
                     if (unquotedName.equals(tableName)) {
                         caseSensitive = true;
                     }

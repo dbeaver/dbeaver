@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLWordDetector;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -41,7 +42,6 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.*;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
-import org.jkiss.dbeaver.model.sql.parser.SQLWordDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -183,13 +183,13 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
+        if (ruleProvider != null) {
+            ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.CONTROL);
+        }
+
         if (!minimalRules) {
             final SQLControlToken controlToken = new SQLControlToken(
                     new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, keywordStyle));
-
-            if (ruleProvider != null) {
-                ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.CONTROL);
-            }
 
             String commandPrefix = syntaxManager.getControlCommandPrefix();
 
@@ -208,24 +208,29 @@ public class SQLRuleManager extends RuleBasedScanner {
         if (!minimalRules) {
             // Add rules for delimited identifiers and string literals.
             char escapeChar = syntaxManager.getEscapeChar();
-            String[][] quoteStrings = syntaxManager.getQuoteStrings();
-            boolean hasSingleQuoteRule = false, hasDoubleQuoteRule = false;
-            if (!ArrayUtils.isEmpty(quoteStrings)) {
-                for (int i = 0; i < quoteStrings.length; i++) {
-                    rules.add(new SingleLineRule(quoteStrings[i][0], quoteStrings[i][1], quotedToken, escapeChar));
-                    if (quoteStrings[i][0].equals(SQLConstants.STR_QUOTE_SINGLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
-                        hasSingleQuoteRule = true;
-                    } else if (quoteStrings[i][1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
+            String[][] identifierQuoteStrings = syntaxManager.getIdentifierQuoteStrings();
+            String[][] stringQuoteStrings = syntaxManager.getIdentifierQuoteStrings();
+
+            boolean hasDoubleQuoteRule = false;
+            if (!ArrayUtils.isEmpty(identifierQuoteStrings)) {
+                for (String[] quotes : identifierQuoteStrings) {
+                    rules.add(new SingleLineRule(quotes[0], quotes[1], quotedToken, escapeChar));
+                    if (quotes[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quotes[0].equals(quotes[1])) {
                         hasDoubleQuoteRule = true;
                     }
                 }
             }
-            if (!hasSingleQuoteRule) {
-                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, escapeChar));
+            if (!ArrayUtils.isEmpty(stringQuoteStrings)) {
+                for (String[] quotes : stringQuoteStrings) {
+                    rules.add(new MultiLineRule(quotes[0], quotes[1], stringToken, escapeChar));
+                }
             }
             if (!hasDoubleQuoteRule) {
                 rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar));
             }
+        }
+        if (ruleProvider != null) {
+            ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.QUOTES);
         }
 
         // Add rules for multi-line comments
@@ -277,10 +282,11 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
+        if (ruleProvider != null) {
+            ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.KEYWORDS);
+        }
+
         if (!minimalRules) {
-            if (ruleProvider != null) {
-                ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.KEYWORDS);
-            }
 
             // Add word rule for keywords, types, and constants.
             SQLWordRule wordRule = new SQLWordRule(delimRule, otherToken);
