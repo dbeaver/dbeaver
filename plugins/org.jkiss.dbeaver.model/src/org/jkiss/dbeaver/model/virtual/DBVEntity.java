@@ -696,4 +696,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         throw new IllegalStateException("Root container must be model");
     }
 
+    void handleRename(String oldName, String newName) {
+        this.name = newName;
+        this.container.renameEntity(this, oldName, newName);
+    }
 }

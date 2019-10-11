@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
@@ -48,6 +49,8 @@ import java.util.*;
  * @author Serge Rider
  */
 public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer {
+    private static final Log log = Log.getLog(EntityDiagram.class);
+
     public static class NodeVisualInfo {
         public Rectangle initBounds;
         public boolean transparent;
@@ -309,7 +312,11 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
             if (monitor.isCanceled()) {
                 break;
             }
-            table= DBVUtils.getRealEntity(monitor, table);
+            try {
+                table = DBVUtils.getRealEntity(monitor, table);
+            } catch (DBException e) {
+                log.error("Error resolving real entity for " + table.getName());
+            }
             if (entityMap.containsKey(table)) {
                 continue;
             }

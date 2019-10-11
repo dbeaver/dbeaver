@@ -113,6 +113,11 @@ public class DBVModel extends DBVContainer {
      * @return entity virtual entity
      */
     public DBVEntity findEntity(DBSEntity entity, boolean createNew) {
+        return findEntity(entity, entity.getName(), createNew);
+    }
+
+    // Pass explicit entity name - it is needed to handle entity rename (we will use old entity name here)
+    DBVEntity findEntity(DBSEntity entity, String entityName, boolean createNew) {
         DBSObject[] path = DBUtils.getObjectPath(entity, false);
         if (path.length == 0) {
             log.warn("Empty entity path");
@@ -130,7 +135,7 @@ public class DBVModel extends DBVContainer {
                 return null;
             }
         }
-        return container.getEntity(entity.getName(), createNew);
+        return container.getEntity(entityName, createNew);
     }
 
     public DBVObject findObject(DBSObject source, boolean create) {
@@ -212,7 +217,7 @@ public class DBVModel extends DBVContainer {
         }
     }
 
-    private static void renameEntityInCache(String newRefEntityId, String oldName, String newName) {
+    private static void renameEntityInGlobalCache(String newRefEntityId, String oldName, String newName) {
         String oldRefEntityId = newRefEntityId.replace("/" + newName, "/" + oldName);
         synchronized (globalReferenceCache) {
             List<DBVEntityForeignKey> fkList = globalReferenceCache.get(oldRefEntityId);
@@ -246,16 +251,28 @@ public class DBVModel extends DBVContainer {
                     String oldName = (String)options.get(DBEObjectRenamer.PROP_OLD_NAME);
                     String newName = (String)options.get(DBEObjectRenamer.PROP_NEW_NAME);
                     if (oldName != null && newName != null) {
-                        DBNDatabaseNode objectNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(object);
-                        if (objectNode != null) {
-                            String objectNodePath = objectNode.getNodeItemPath();
-                            renameEntityInCache(objectNodePath, oldName, newName);
-                            System.out.println("Handle rename " + oldName + " into " + newName);
-                        }
+                        handleEntityRename((DBSEntity) object, oldName, newName);
                     }
                 }
             }
         }
 
+    }
+
+    private static void handleEntityRename(DBSEntity object, String oldName, String newName) {
+        DBNDatabaseNode objectNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(object);
+        if (objectNode != null) {
+            String objectNodePath = objectNode.getNodeItemPath();
+            renameEntityInGlobalCache(objectNodePath, oldName, newName);
+        }
+        if (object.getDataSource() != null) {
+            DBVModel vModel = object.getDataSource().getContainer().getVirtualModel();
+
+            DBVEntity vEntity = vModel.findEntity(object, oldName, false);
+            if (vEntity != null) {
+                vEntity.handleRename(oldName, newName);
+                vEntity.persistConfiguration();
+            }
+        }
     }
 }

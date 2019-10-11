@@ -233,8 +233,15 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         // do nothing
     }
 
+    void renameEntity(DBVEntity entity, String oldName, String newName) {
+        if (entities.remove(oldName) != null) {
+            entities.put(newName, entity);
+        }
+    }
+
     @Override
     public String toString() {
         return name;
     }
+
 }
