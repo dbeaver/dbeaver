@@ -123,7 +123,7 @@
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="%tree.partitions.node.tip" virtual="true" visibleIf="object.dataSource.serverType.supportsPartitions() &amp;&amp; !object.isPartition()">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="%tree.partitions.node.tip" virtual="true" visibleIf="object.dataSource.serverType.supportsPartitions()">
                                         <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition" virtual="true" recursive="../..">
                                         </items>
                                     </folder>
