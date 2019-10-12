@@ -108,7 +108,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     }
 
     public boolean isCurrentTaskSaved() {
-        return getCurrentTask() != null && getCurrentTask().getProject().getTaskManager().getTaskConfiguration(getCurrentTask().getId()) != null;
+        return getCurrentTask() != null && getCurrentTask().getProject().getTaskManager().getTaskById(getCurrentTask().getId()) != null;
     }
 
     @Override

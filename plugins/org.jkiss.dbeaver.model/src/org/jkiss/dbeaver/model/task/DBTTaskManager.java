@@ -36,16 +36,19 @@ public interface DBTTaskManager {
     DBPProject getProject();
 
     @NotNull
-    DBTTask[] getTaskConfigurations();
+    DBTTask[] getAllTasks();
 
     @Nullable
-    DBTTask getTaskConfiguration(@NotNull String id);
+    DBTTask getTaskById(@NotNull String id);
+
+    @Nullable
+    DBTTask getTaskByName(@NotNull String name);
+
+    @NotNull
+    DBTTask[] getAllTaskByType(DBTTaskType task);
 
     @NotNull
     DBTTaskType[] getExistingTaskTypes();
-
-    @NotNull
-    DBTTask[] getTaskConfigurations(DBTTaskType task);
 
     @NotNull
     DBTTask createTaskConfiguration(

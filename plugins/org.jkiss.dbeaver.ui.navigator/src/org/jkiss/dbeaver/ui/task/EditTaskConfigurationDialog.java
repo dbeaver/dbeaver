@@ -107,7 +107,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
         } else {
             taskLabelCombo.add("");
             DBTTaskManager taskManager = project.getTaskManager();
-            allTasks = taskManager.getTaskConfigurations(taskType);
+            allTasks = taskManager.getAllTaskByType(taskType);
             for (DBTTask tc : allTasks) {
                 taskLabelCombo.add(tc.getName());
             }

@@ -57,7 +57,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
         });
 
         // Add bundle load logger
-        {
+        if (!Log.isQuietMode()) {
             context.registerService(EventHook.class, (event, contexts) -> {
                 String message = null;
                 Bundle bundle = event.getBundle();

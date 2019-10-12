@@ -162,11 +162,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
                 log.debug("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
                 return IApplication.EXIT_OK;
             }
-
-            // Custom parameters
-            if (DBeaverCommandLine.handleCustomParameters()) {
-                return IApplication.EXIT_OK;
-            }
         }
 
         // Lock the workspace
@@ -190,30 +185,12 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             e.printStackTrace();
         }
 
-        // Set display name at the very beginning (#609)
-        // This doesn't initialize display - just sets default title
-        Display.setAppName(GeneralUtils.getProductName());
-
-        // Create display
-        getDisplay();
-
-        try {
-            // look and see if there's a splash shell we can parent off of
-            Shell shell = WorkbenchPlugin.getSplashShell(display);
-            if (shell != null) {
-                // should should set the icon and message for this shell to be the
-                // same as the chooser dialog - this will be the guy that lives in
-                // the task bar and without these calls you'd have the default icon
-                // with no message.
-                shell.setText(ChooseWorkspaceDialog.getWindowTitle());
-                shell.setImages(Window.getDefaultImages());
-            }
-        } catch (Throwable e) {
-            e.printStackTrace(System.err);
-            System.err.println("Error updating splash shell");
+        // Custom parameters
+        if (DBeaverCommandLine.handleCustomParameters()) {
+            return IApplication.EXIT_OK;
         }
 
-        Log.addListener((message, t) -> DBeaverSplashHandler.showMessage(CommonUtils.toString(message)));
+        updateSplashHandler();
 
         final Runtime runtime = Runtime.getRuntime();
 
@@ -284,6 +261,31 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         }
     }
 
+    private void updateSplashHandler() {
+        if (ArrayUtils.contains(Platform.getApplicationArgs(), "-nosplash")) {
+            return;
+        }
+        try {
+            getDisplay();
+
+            // look and see if there's a splash shell we can parent off of
+            Shell shell = WorkbenchPlugin.getSplashShell(display);
+            if (shell != null) {
+                // should set the icon and message for this shell to be the
+                // same as the chooser dialog - this will be the guy that lives in
+                // the task bar and without these calls you'd have the default icon
+                // with no message.
+                shell.setText(ChooseWorkspaceDialog.getWindowTitle());
+                shell.setImages(Window.getDefaultImages());
+            }
+        } catch (Throwable e) {
+            e.printStackTrace(System.err);
+            System.err.println("Error updating splash shell");
+        }
+
+        Log.addListener((message, t) -> DBeaverSplashHandler.showMessage(CommonUtils.toString(message)));
+    }
+
     protected IInstanceController createInstanceController() {
         return new DBeaverInstanceServer();
     }
@@ -312,6 +314,10 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     private Display getDisplay() {
         if (display == null) {
             log.debug("Create display");
+            // Set display name at the very beginning (#609)
+            // This doesn't initialize display - just sets default title
+            Display.setAppName(GeneralUtils.getProductName());
+
             display = Display.getCurrent();
             if (display == null) {
                 display = PlatformUI.createDisplay();
