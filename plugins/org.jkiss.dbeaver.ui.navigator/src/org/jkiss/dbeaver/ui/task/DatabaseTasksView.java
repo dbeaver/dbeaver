@@ -403,7 +403,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         List<DBPProject> projectsWithTasks = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             DBTTaskManager taskManager = project.getTaskManager();
-            DBTTask[] tasks = taskManager.getTaskConfigurations();
+            DBTTask[] tasks = taskManager.getAllTasks();
             if (tasks.length == 0) {
                 continue;
             }

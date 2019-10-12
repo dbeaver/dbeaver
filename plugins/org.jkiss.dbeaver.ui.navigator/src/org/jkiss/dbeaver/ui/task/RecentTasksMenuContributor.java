@@ -45,7 +45,7 @@ public class RecentTasksMenuContributor extends DataSourceMenuContributor
         if (project == null) {
             return;
         }
-        DBTTask[] tasks = project.getTaskManager().getTaskConfigurations();
+        DBTTask[] tasks = project.getTaskManager().getAllTasks();
         Arrays.sort(tasks, (o1, o2) -> {
             DBTTaskRun lr1 = o1.getLastRun();
             DBTTaskRun lr2 = o1.getLastRun();

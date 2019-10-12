@@ -18,6 +18,7 @@ package org.jkiss.dbeaver;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -45,13 +46,20 @@ public class Log
         } catch (Throwable e) {
             eclipseLog = null;
         }
+
+        quietMode = ArrayUtils.contains(Platform.getApplicationArgs(), "-q");
     }
 
     private final String name;
     private PrintStream logWriter;
+    private static boolean quietMode;
 
     public static Log getLog(Class<?> forClass) {
         return new Log(forClass.getName());
+    }
+
+    public static boolean isQuietMode() {
+        return quietMode;
     }
 
     public void log(IStatus status) {
@@ -158,7 +166,10 @@ public class Log
     }
 
     private void debugMessage(Object message, Throwable t) {
-        PrintStream debugWriter = logWriter != null ? logWriter : System.err;
+        PrintStream debugWriter = logWriter != null ? logWriter : (quietMode ? null : System.err);
+        if (debugWriter == null) {
+            return;
+        }
         synchronized (Log.class) {
             debugWriter.print(sdf.format(new Date()) + " - "); //$NON-NLS-1$
             debugWriter.println(message);

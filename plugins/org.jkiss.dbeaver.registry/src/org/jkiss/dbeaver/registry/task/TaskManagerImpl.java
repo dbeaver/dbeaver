@@ -81,15 +81,26 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public DBTTask[] getTaskConfigurations() {
+    public DBTTask[] getAllTasks() {
         return tasks.toArray(new DBTTask[0]);
     }
 
     @Nullable
     @Override
-    public DBTTask getTaskConfiguration(@NotNull String id) {
+    public DBTTask getTaskById(@NotNull String id) {
         for (DBTTask task : tasks) {
             if (id.equals(task.getId())) {
+                return task;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public DBTTask getTaskByName(@NotNull String name) {
+        for (DBTTask task : tasks) {
+            if (name.equals(task.getName())) {
                 return task;
             }
         }
@@ -108,7 +119,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public DBTTask[] getTaskConfigurations(DBTTaskType task) {
+    public DBTTask[] getAllTaskByType(DBTTaskType task) {
         List<DBTTask> result = new ArrayList<>();
         for (DBTTask tc : tasks) {
             if (tc.getType() == task) {

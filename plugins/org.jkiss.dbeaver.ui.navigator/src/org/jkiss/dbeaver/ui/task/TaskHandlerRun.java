@@ -43,7 +43,7 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
         String taskId = event.getParameter("task");
         DBTTask task = null;
         if (!CommonUtils.isEmpty(taskId)) {
-            task = NavigatorUtils.getSelectedProject().getTaskManager().getTaskConfiguration(taskId);
+            task = NavigatorUtils.getSelectedProject().getTaskManager().getTaskById(taskId);
         } else {
             final ISelection selection = HandlerUtil.getCurrentSelection(event);
             if (selection instanceof IStructuredSelection) {
@@ -74,7 +74,7 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
     public void updateElement(UIElement element, Map parameters) {
         String taskId = CommonUtils.toString(parameters.get("task"));
         if (!CommonUtils.isEmpty(taskId)) {
-            DBTTask task = NavigatorUtils.getSelectedProject().getTaskManager().getTaskConfiguration(taskId);
+            DBTTask task = NavigatorUtils.getSelectedProject().getTaskManager().getTaskById(taskId);
             if (task != null) {
                 DBPImage taskIcon = task.getType().getIcon();
                 if (taskIcon == null) taskIcon = DBIcon.TREE_TASK;
