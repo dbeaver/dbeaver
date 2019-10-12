@@ -130,13 +130,13 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
                 }
             }
         }
+        if (!hasDoubleQuoteRule) {
+            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, dialect.getStringEscapeCharacter()));
+        }
         if (!ArrayUtils.isEmpty(stringQuoteStrings)) {
             for (String[] quotes : stringQuoteStrings) {
                 rules.add(new MultiLineRule(quotes[0], quotes[1], sqlStringToken, dialect.getStringEscapeCharacter()));
             }
-        }
-        if (!hasDoubleQuoteRule) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, dialect.getStringEscapeCharacter()));
         }
 
         // Add special case word rule.

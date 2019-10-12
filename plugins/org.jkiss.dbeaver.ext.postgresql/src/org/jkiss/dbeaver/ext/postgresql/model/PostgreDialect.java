@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -25,7 +24,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.ArrayUtils;
 
@@ -42,6 +40,13 @@ public class PostgreDialect extends JDBCSQLDialect {
             "SHOW", "SET"
         }
     );
+    private static final String[][] PG_STRING_QUOTES = {
+        {"'", "'"},
+        // Simple dollar quotes are string delimiters.
+        // Dollar quotes with tags are block toggles.
+        // See PostgreDollarQuoteRule for another dollar quotes processing
+        {"$$", "$$"}
+    };
 
     //region KeyWords
 
@@ -722,15 +727,10 @@ public class PostgreDialect extends JDBCSQLDialect {
         return SQLDialect.USAGE_ALL;
     }
 
+    @NotNull
     @Override
     public String[] getParametersPrefixes() {
         return new String[] { "$" };
-    }
-
-    @Nullable
-    @Override
-    public String getBlockToggleString() {
-        return "$" + SQLConstants.KEYWORD_PATTERN_CHARS + "$";
     }
 
     @NotNull
@@ -743,6 +743,12 @@ public class PostgreDialect extends JDBCSQLDialect {
     public String[][] getBlockBoundStrings() {
         // PostgreSQL-specific blocks ($$) should be used everywhere
         return null;//super.getBlockBoundStrings();
+    }
+
+    @NotNull
+    @Override
+    public String[][] getStringQuoteStrings() {
+        return PG_STRING_QUOTES;
     }
 
     @Override

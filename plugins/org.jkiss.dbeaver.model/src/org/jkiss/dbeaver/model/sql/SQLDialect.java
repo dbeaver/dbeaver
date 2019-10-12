@@ -192,14 +192,6 @@ public interface SQLDialect {
     String[] getBlockHeaderStrings();
 
     /**
-     * Script block toggle string.
-     * Begins and ends SQL blocks.
-     * @return block toggle string or null (not supported)
-     */
-    @Nullable
-    String getBlockToggleString();
-
-    /**
      * Retrieves whether a catalog appears at the start of a fully qualified
      * table name.  If not, the catalog appears at the end.
      *
@@ -219,7 +211,7 @@ public interface SQLDialect {
     /**
      * Checks that specified character is a valid identifier part. Non-valid characters should be quoted in queries.
      * @param c character
-     * @param quoted
+     * @param quoted is identifier quoted
      * @return true or false
      */
     boolean validIdentifierPart(char c, boolean quoted);

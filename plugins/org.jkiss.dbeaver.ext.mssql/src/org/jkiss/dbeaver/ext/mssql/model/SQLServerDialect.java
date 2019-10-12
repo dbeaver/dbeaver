@@ -60,6 +60,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public String getScriptDelimiter() {
         return "GO";
@@ -78,6 +79,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
         return EXEC_KEYWORDS;
     }
 
+    @NotNull
     @Override
     public String[] getParametersPrefixes() {
         return super.getParametersPrefixes();
@@ -104,6 +106,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
         return TSQL_BEGIN_END_BLOCK;
     }
 
+    @NotNull
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
         if (SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver())) {
@@ -117,7 +120,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
     }
 
     @Override
-    public String getColumnTypeModifiers(DBPDataSource dataSource, DBSTypedObject column, String typeName, DBPDataKind dataKind) {
+    public String getColumnTypeModifiers(DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         if (dataKind == DBPDataKind.DATETIME) {
             if (SQLServerConstants.TYPE_DATETIME2.equalsIgnoreCase(typeName)) {
                 Integer scale = column.getScale();

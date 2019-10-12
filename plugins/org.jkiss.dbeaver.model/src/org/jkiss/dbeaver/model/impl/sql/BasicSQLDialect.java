@@ -220,7 +220,7 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public int getKeywordNextLineIndent(String word) {
+    public int getKeywordNextLineIndent(@NotNull String word) {
         Integer indent = keywordsIndent.get(word.toUpperCase(Locale.ENGLISH));
         return indent == null ? 0 : indent;
     }
@@ -257,6 +257,7 @@ public class BasicSQLDialect implements SQLDialect {
         return SQLConstants.STRUCT_SEPARATOR;
     }
 
+    @NotNull
     @Override
     public String[] getParametersPrefixes() {
         return new String[0];//{String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX)};
@@ -293,12 +294,6 @@ public class BasicSQLDialect implements SQLDialect {
     @Nullable
     @Override
     public String[] getBlockHeaderStrings() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public String getBlockToggleString() {
         return null;
     }
 
