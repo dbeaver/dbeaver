@@ -149,6 +149,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         return dualTable;
     }
 
+    @NotNull
     @Override
     public String getSearchStringEscape() {
         if (useSearchStringEscape) {

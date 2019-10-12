@@ -271,4 +271,10 @@
         </tools>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" class="org.jkiss.dbeaver.ext.postgresql.ui.sql.PostgreDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.runtime.sql.SQLRuleProvider"/>
+        </factory>
+    </extension>
+
 </plugin>

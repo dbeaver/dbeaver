@@ -164,8 +164,6 @@ public class SQLRuleManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
         final SQLBlockEndToken blockEndToken = new SQLBlockEndToken(
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
-        final SQLBlockToggleToken blockToggleToken = new SQLBlockToggleToken(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, keywordStyle));
 
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<>();
@@ -258,27 +256,6 @@ public class SQLRuleManager extends RuleBasedScanner {
                     new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, keywordStyle));
 
                 rules.add(new SQLDelimiterSetRule(delimRedefine, setDelimiterToken, delimRule));
-            }
-        }
-
-        if (!minimalRules) {
-            final String blockToggleString = dialect.getBlockToggleString();
-            if (!CommonUtils.isEmpty(blockToggleString)) {
-                int divPos = blockToggleString.indexOf(SQLConstants.KEYWORD_PATTERN_CHARS);
-                if (divPos != -1) {
-                    String prefix = blockToggleString.substring(0, divPos);
-                    String postfix = blockToggleString.substring(divPos + SQLConstants.KEYWORD_PATTERN_CHARS.length());
-                    WordPatternRule blockToggleRule = new WordPatternRule(
-                        new WordDetectorAdapter(new SQLWordDetector()),
-                        prefix,
-                        postfix,
-                        blockToggleToken);
-                    rules.add(blockToggleRule);
-                } else {
-                    WordRule blockToggleRule = new WordRule(getWordOrSymbolDetector(blockToggleString), Token.UNDEFINED, true);
-                    blockToggleRule.addWord(blockToggleString, blockToggleToken);
-                    rules.add(blockToggleRule);
-                }
             }
         }
 

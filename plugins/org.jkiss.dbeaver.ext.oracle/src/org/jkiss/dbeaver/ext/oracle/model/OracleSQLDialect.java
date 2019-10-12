@@ -399,6 +399,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
         return preferenceStore == null || preferenceStore.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
     }
 
+    @NotNull
     @Override
     public String getScriptDelimiter() {
         return super.getScriptDelimiter();
