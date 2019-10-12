@@ -129,6 +129,9 @@ public class DBeaverCore extends BasePlatformImpl {
         if (isClosing) {
             return true;
         }
+        if (!PlatformUI.isWorkbenchRunning()) {
+            return false;
+        }
         IWorkbench workbench = PlatformUI.getWorkbench();
         return workbench == null || workbench.isClosing();
     }
