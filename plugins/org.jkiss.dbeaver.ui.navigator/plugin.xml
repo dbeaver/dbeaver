@@ -852,7 +852,7 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
-            <menu id="org.jkiss.dbeaver.menu.tasks" label="%menu.database.tasks.label"/>
+            <menu id="org.jkiss.dbeaver.menu.tasks" label="%menu.database.tasks.label"  icon="icons/task_list.png"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.menu.tasks">
