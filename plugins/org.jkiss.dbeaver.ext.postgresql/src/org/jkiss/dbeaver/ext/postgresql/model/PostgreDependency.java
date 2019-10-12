@@ -177,7 +177,7 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
             String queryObjId = dependents ? "objid" : "refobjid";
             String condObjId = dependents ? "refobjid" : "objid";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT DISTINCT dep.deptype, dep.classid, dep." + queryObjId + ", cl.relkind, attr.attname,ad.adbin, ad.adsrc,\n" +
+                "SELECT DISTINCT dep.deptype, dep.classid, dep." + queryObjId + ", cl.relkind, attr.attname,pg_get_expr(ad.adbin, ad.adrelid) adefval,\n" +
                     "    CASE WHEN cl.relkind IS NOT NULL THEN cl.relkind || COALESCE(dep.objsubid::text, '')\n" +
                     "        WHEN tg.oid IS NOT NULL THEN 'T'::text\n" +
                     "        WHEN ty.oid IS NOT NULL THEN 'y'::text\n" +
@@ -227,7 +227,7 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
                         } else if (!CommonUtils.isEmpty(tableName)) {
                             objName += " ON " + tableName;
                         }
-                        String objDesc = JDBCUtils.safeGetString(dbResult, "adsrc");
+                        String objDesc = JDBCUtils.safeGetString(dbResult, "adefval");
                         PostgreDependency dependency = new PostgreDependency(
                             object.getDatabase(),
                             JDBCUtils.safeGetLong(dbResult, queryObjId),
