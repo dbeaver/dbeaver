@@ -88,7 +88,9 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
             /*if (!getWizard().isTaskEditor()) */{
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-                Button saveAsTaskButton = createButton(parent, SAVE_TASK_BTN_ID, "Save", false);
+                Button saveAsTaskButton = createButton(parent, SAVE_TASK_BTN_ID,
+                    getWizard().isTaskEditor() ? "Save Task" : "New Task",
+                    false);
                 //saveAsTaskButton.setImage(DBeaverIcons.getImage(UIIcon.SAVE_AS));
 
                 Label spacer = new Label(parent, SWT.NONE);
