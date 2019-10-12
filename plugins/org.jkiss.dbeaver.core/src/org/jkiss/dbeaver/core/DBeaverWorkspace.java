@@ -20,11 +20,6 @@ import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.SecurityUtils;
-
-import java.util.Properties;
 
 /**
  * DBeaver workspace.
@@ -35,24 +30,12 @@ import java.util.Properties;
  */
 public class DBeaverWorkspace extends BaseWorkspaceImpl {
 
-    private static final String WORKSPACE_ID = "workspace-id";
-
     private String workspaceId;
 
     DBeaverWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
         super(platform, eclipseWorkspace);
 
-        // Check workspace ID
-        Properties workspaceInfo = BaseWorkspaceImpl.readWorkspaceInfo(GeneralUtils.getMetadataFolder());
-        workspaceId = workspaceInfo.getProperty(WORKSPACE_ID);
-        if (CommonUtils.isEmpty(workspaceId)) {
-            // Generate new UUID
-            workspaceId = "D" + Long.toString(
-                Math.abs(SecurityUtils.generateRandomLong()),
-                36).toUpperCase();
-            workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
-            BaseWorkspaceImpl.writeWorkspaceInfo(GeneralUtils.getMetadataFolder(), workspaceInfo);
-        }
+        workspaceId = readWorkspaceId();
     }
 
     @NotNull

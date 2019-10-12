@@ -66,7 +66,9 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                         message = "> Start " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                     }
                 } else if (event.getType() == BundleEvent.STOPPING) {
-                    message = "< Stop " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
+                    if (bundle.getState() != BundleEvent.STOPPING && bundle.getState() != BundleEvent.UNINSTALLED) {
+                        message = "< Stop " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
+                    }
                 }
                 if (message != null) {
                     log.debug(message);

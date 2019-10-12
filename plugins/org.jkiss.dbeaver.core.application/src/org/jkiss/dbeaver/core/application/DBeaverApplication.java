@@ -164,7 +164,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             }
 
             // Custom parameters
-            DBeaverCommandLine.handleCustomParameters();
+            if (DBeaverCommandLine.handleCustomParameters()) {
+                return IApplication.EXIT_OK;
+            }
         }
 
         // Lock the workspace

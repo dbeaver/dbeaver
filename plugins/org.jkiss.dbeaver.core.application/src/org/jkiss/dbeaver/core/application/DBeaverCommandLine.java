@@ -250,20 +250,27 @@ public class DBeaverCommandLine
         return false;
     }
 
-    public static void handleCustomParameters() {
+    public static boolean handleCustomParameters() {
         CommandLine commandLine = getCommandLine();
         if (commandLine == null) {
-            return;
+            return false;
         }
+        boolean exit = false;
         for (ParameterDescriptor param : customParameters.values()) {
-            if (!param.exitAfterExecute) {
-
-            }
             if (commandLine.hasOption(param.name)) {
-                param.handler.handleParameter(
-                    param.name,
-                    param.hasArg ? commandLine.getOptionValue(param.name) : null);
+                try {
+                    param.handler.handleParameter(
+                        param.name,
+                        param.hasArg ? commandLine.getOptionValue(param.name) : null);
+                } catch (Exception e) {
+                    log.error("Error evaluating parameter '" + param.name + "'", e);
+                }
+                if (param.exitAfterExecute) {
+                    exit = true;
+                }
             }
         }
+
+        return exit;
     }
 }
