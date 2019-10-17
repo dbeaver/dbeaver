@@ -188,7 +188,7 @@ public abstract class JDBCDataSource
             throw ex;
         }
         catch (Throwable e) {
-            throw new DBCConnectException("Unexpected driver error occurred while connecting to database", e);
+            throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
     }
 

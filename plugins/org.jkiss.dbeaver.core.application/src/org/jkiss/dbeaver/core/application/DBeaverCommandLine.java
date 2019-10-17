@@ -32,6 +32,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -84,19 +85,13 @@ public class DBeaverCommandLine
         .addOption("registryMultiLanguage", false, "Multi-language mode")
         ;
 
-    public interface ParameterHandler {
-
-        void handleParameter(String name, String value);
-
-    }
-
     private static class ParameterDescriptor {
         String name;
         String longName;
         String description;
         boolean hasArg;
         boolean exitAfterExecute;
-        ParameterHandler handler;
+        CommandLineParameterHandler handler;
 
         public ParameterDescriptor(IConfigurationElement config) throws Exception {
             this.name = config.getAttribute("name");
@@ -106,7 +101,7 @@ public class DBeaverCommandLine
             this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
             Bundle cBundle = Platform.getBundle(config.getContributor().getName());
             Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
-            handler = (ParameterHandler) implClass.newInstance();
+            handler = (CommandLineParameterHandler) implClass.newInstance();
         }
     }
 
@@ -132,6 +127,15 @@ public class DBeaverCommandLine
         }
     }
 
+    public static List<CommandLineParameterHandler> getRemoteParameterHandlers(CommandLine commandLine) {
+        List<CommandLineParameterHandler> handlers = new ArrayList<>();
+        for (ParameterDescriptor param : customParameters.values()) {
+            if (commandLine.hasOption(param.name) && !(param.handler instanceof Remote)) {
+                handlers.add(param.handler);
+            }
+        }
+        return handlers;
+    }
     /**
      * @return true if called should exit after CLI processing
      */
@@ -168,7 +172,7 @@ public class DBeaverCommandLine
                 if (!ArrayUtils.isEmpty(fileArgs)) {
                     Collections.addAll(fileNames, fileArgs);
                 }
-                controller.openExternalFiles(fileNames.toArray(new String[fileNames.size()]));
+                controller.openExternalFiles(fileNames.toArray(new String[0]));
                 exitAfterExecute = true;
             }
         }
@@ -213,8 +217,7 @@ public class DBeaverCommandLine
     /**
      * @return true if application should terminate after this call
      */
-    static boolean handleCommandLine(String instanceLoc) {
-        CommandLine commandLine = getCommandLine();
+    static boolean handleCommandLine(CommandLine commandLine, String instanceLoc) {
         if (commandLine == null || (ArrayUtils.isEmpty(commandLine.getArgs()) && ArrayUtils.isEmpty(commandLine.getOptions()))) {
             return false;
         }
@@ -252,14 +255,13 @@ public class DBeaverCommandLine
         return false;
     }
 
-    public static boolean handleCustomParameters() {
-        CommandLine commandLine = getCommandLine();
+    public static boolean handleCustomParameters(CommandLine commandLine) {
         if (commandLine == null) {
             return false;
         }
         boolean exit = false;
         for (ParameterDescriptor param : customParameters.values()) {
-            if (commandLine.hasOption(param.name)) {
+            if (commandLine.hasOption(param.name) && !(param.handler instanceof Remote)) {
                 try {
                     param.handler.handleParameter(
                         param.name,

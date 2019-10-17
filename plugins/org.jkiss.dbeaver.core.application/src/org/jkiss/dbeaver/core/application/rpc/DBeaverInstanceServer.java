@@ -17,10 +17,13 @@
 
 package org.jkiss.dbeaver.core.application.rpc;
 
+import org.apache.commons.cli.CommandLine;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.application.CommandLineParameterHandler;
+import org.jkiss.dbeaver.core.application.DBeaverCommandLine;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -154,15 +157,19 @@ public class DBeaverInstanceServer implements IInstanceController {
         }
     }
 
-    public static IInstanceController startInstanceServer(IInstanceController server) {
+    public static IInstanceController startInstanceServer(CommandLine commandLine, IInstanceController server) {
         try {
             portNumber = IOUtils.findFreePort(20000, 65000);
 
             log.debug("Starting RMI server at " + portNumber);
-            IInstanceController stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
-
             registry = LocateRegistry.createRegistry(portNumber);
-            registry.bind(CONTROLLER_ID, stub);
+            {
+                IInstanceController stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
+                registry.bind(CONTROLLER_ID, stub);
+            }
+            for (CommandLineParameterHandler remoteHandler : DBeaverCommandLine.getRemoteParameterHandlers(commandLine)) {
+
+            }
 
             File rmiFile = new File(GeneralUtils.getMetadataFolder(), RMI_PROP_FILE);
             Properties props = new Properties();
