@@ -48,8 +48,6 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.ContentEncrypter;
-import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
-import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -62,8 +60,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
 {
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
-
-    private static PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
     private static Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
@@ -892,7 +888,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         {
             try {
                 if (secureStorage.useSecurePreferences()) {
-                    ISecurePreferences prefNode = dataSource.getSecurePreferences();
+                    ISecurePreferences prefNode = dataSource == null ? registry.getProject().getSecurePreferences() : dataSource.getSecurePreferences();
                     if (subNode != null) {
                         for (String nodeName : subNode.split("/")) {
                             prefNode = prefNode.node(nodeName);
@@ -925,19 +921,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
 
         return creds;
-    }
-
-    @Nullable
-    private static String decryptPassword(String encPassword) {
-        if (!CommonUtils.isEmpty(encPassword)) {
-            try {
-                encPassword = ENCRYPTOR.decrypt(encPassword);
-            } catch (Throwable e) {
-                // could not decrypt - use as is
-                encPassword = null;
-            }
-        }
-        return encPassword;
     }
 
 }
