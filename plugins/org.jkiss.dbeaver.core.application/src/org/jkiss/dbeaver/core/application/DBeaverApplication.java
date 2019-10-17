@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.core.application;
 
+import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -152,13 +153,13 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         instance = this;
 
         Location instanceLoc = Platform.getInstanceLocation();
-
+        CommandLine commandLine = DBeaverCommandLine.getCommandLine();
         {
             String defaultHomePath = WORKSPACE_DIR_CURRENT;
             if (instanceLoc.isSet()) {
                 defaultHomePath = instanceLoc.getURL().getFile();
             }
-            if (DBeaverCommandLine.handleCommandLine(defaultHomePath)) {
+            if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
                 log.debug("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
                 return IApplication.EXIT_OK;
             }
@@ -186,7 +187,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         }
 
         // Custom parameters
-        if (DBeaverCommandLine.handleCustomParameters()) {
+        if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
             return IApplication.EXIT_OK;
         }
 
@@ -213,7 +214,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         initializeApplication();
 
         // Run instance server
-        instanceServer = DBeaverInstanceServer.startInstanceServer(createInstanceController());
+        instanceServer = DBeaverInstanceServer.startInstanceServer(commandLine, createInstanceController());
 
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(
