@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.runtime.TasksJob;
 
@@ -40,26 +41,34 @@ public class NavigatorHandlerSetActiveObject extends NavigatorHandlerObjectBase 
             IStructuredSelection structSelection = (IStructuredSelection) selection;
             Object element = structSelection.getFirstElement();
             if (element instanceof DBNDatabaseNode) {
-                final DBNDatabaseNode databaseNode = (DBNDatabaseNode)element;
-                final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                    DBSObjectSelector.class, databaseNode.getObject());
-                if (activeContainer != null) {
-                    TasksJob.runTask("Select active object", monitor -> {
-                        try {
-                            DBExecUtils.tryExecuteRecover(monitor, databaseNode.getDataSource(), param -> {
-                                try {
-                                    activeContainer.setDefaultObject(monitor, databaseNode.getObject());
-                                } catch (DBException e) {
-                                    throw new InvocationTargetException(e);
-                                }
-                            });
-                        } catch (Exception e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    });
-                }
+                markObjectAsActive((DBNDatabaseNode) element);
             }
         }
         return null;
+    }
+
+    private void markObjectAsActive(final DBNDatabaseNode databaseNode) {
+        DBNNode parentNode = databaseNode.getParentNode();
+
+        if (parentNode instanceof DBNDatabaseNode)
+            markObjectAsActive((DBNDatabaseNode) parentNode);
+
+        final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
+                DBSObjectSelector.class, databaseNode.getObject());
+        if (activeContainer != null) {
+            TasksJob.runTask("Select active object", monitor -> {
+                try {
+                    DBExecUtils.tryExecuteRecover(monitor, databaseNode.getDataSource(), param -> {
+                        try {
+                            activeContainer.setDefaultObject(monitor, databaseNode.getObject());
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    });
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        }
     }
 }
