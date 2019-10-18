@@ -478,8 +478,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         // Use async config saver to avoid too frequent configuration re-save during some massive configuration update
         if (configSaver == null) {
             configSaver = new ConfigSaver();
-            configSaver.schedule(100);
         }
+        configSaver.schedule(100);
     }
 
     @Override
@@ -782,16 +782,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
                     if (!CommonUtils.isEmpty(userName)) {
                         prefNode.put(RegistryConstants.ATTR_USER, userName, true);
-                        return true;
                     } else {
                         prefNode.remove(RegistryConstants.ATTR_USER);
                     }
                     if (!CommonUtils.isEmpty(password)) {
                         prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
-                        return true;
                     } else {
                         prefNode.remove(RegistryConstants.ATTR_PASSWORD);
                     }
+                    return true;
                 }
             } catch (Throwable e) {
                 log.error("Can't save password in secure storage", e);
