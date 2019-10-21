@@ -860,6 +860,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable String subNode,
         @Nullable String userName,
         @Nullable String password) {
+        assert dataSource != null|| profile != null;
         boolean saved = DataSourceRegistry.saveCredentialsInSecuredStorage(
             registry.getProject(), dataSource, subNode, userName, password);
         if (!saved) {

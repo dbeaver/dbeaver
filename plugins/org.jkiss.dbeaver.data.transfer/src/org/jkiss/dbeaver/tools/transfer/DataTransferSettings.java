@@ -496,8 +496,17 @@ public class DataTransferSettings {
         if (!hasChanges) {
             return;
         }
+        DataTransferProcessorDescriptor savedProcessor = this.processor;
+
         clearDataPipes();
         initializePipes(producers, consumers);
+
+        if (this.consumerOptional && this.consumer != null) {
+            this.selectConsumer(this.consumer, savedProcessor, false);
+        }
+        if (this.producerOptional && this.producer != null) {
+            this.selectProducer(this.producer, savedProcessor, false);
+        }
     }
 
 }
