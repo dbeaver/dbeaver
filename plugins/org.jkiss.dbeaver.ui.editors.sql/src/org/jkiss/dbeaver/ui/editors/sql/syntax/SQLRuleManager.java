@@ -207,7 +207,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             // Add rules for delimited identifiers and string literals.
             char escapeChar = syntaxManager.getEscapeChar();
             String[][] identifierQuoteStrings = syntaxManager.getIdentifierQuoteStrings();
-            String[][] stringQuoteStrings = syntaxManager.getIdentifierQuoteStrings();
+            String[][] stringQuoteStrings = syntaxManager.getStringQuoteStrings();
 
             boolean hasDoubleQuoteRule = false;
             if (!ArrayUtils.isEmpty(identifierQuoteStrings)) {
