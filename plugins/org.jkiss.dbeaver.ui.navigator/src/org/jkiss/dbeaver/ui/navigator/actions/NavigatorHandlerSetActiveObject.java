@@ -24,6 +24,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
@@ -50,8 +51,8 @@ public class NavigatorHandlerSetActiveObject extends NavigatorHandlerObjectBase 
     private void markObjectAsActive(final DBNDatabaseNode databaseNode) {
         DBNNode parentNode = databaseNode.getParentNode();
 
-        if (parentNode instanceof DBNDatabaseNode)
-            markObjectAsActive((DBNDatabaseNode) parentNode);
+        if (parentNode instanceof DBNDatabaseItem)
+            markObjectAsActive((DBNDatabaseItem) parentNode);
 
         final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
                 DBSObjectSelector.class, databaseNode.getObject());
