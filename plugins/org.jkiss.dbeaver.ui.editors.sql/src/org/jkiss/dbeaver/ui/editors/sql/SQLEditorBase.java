@@ -77,6 +77,9 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -1084,8 +1087,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             statementStart = tokenOffset + tokenLength;
                             continue;
                         }
-                        String queryText = document.get(statementStart, tokenOffset - statementStart);
-                        queryText = SQLUtils.fixLineFeeds(queryText);
+
+                        String queryText = SQLUtils.fixLineFeeds(processFileInclusions(
+                                document.get(statementStart, tokenOffset - statementStart)));
 
                         if (isDelimiter && (keepDelimiters ||
                             (hasBlocks && dialect.isDelimiterAfterQuery()) ||
@@ -1112,6 +1116,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     } catch (BadLocationException ex) {
                         log.warn("Can't extract query", ex); //$NON-NLS-1$
                         return null;
+                    } catch (IOException ex) {
+                        log.warn("Can't read file", ex); //$NON-NLS-1$
+                        return null;
                     }
                 }
                 if (isDelimiter) {
@@ -1133,6 +1140,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
             }
         }
+    }
+
+    private String processFileInclusions(String queryText) throws IOException {
+        if (!queryText.contains("!@")) return queryText;
+
+        int startOfFileInclusion = queryText.indexOf("!@");
+        int endOfFileInclusion = queryText.indexOf(";", startOfFileInclusion);
+        endOfFileInclusion = endOfFileInclusion == -1 ? queryText.length() - 1 : endOfFileInclusion;
+        int fileNameLength = endOfFileInclusion - startOfFileInclusion  + 1;
+
+
+        String filePlaceholder = queryText.substring(startOfFileInclusion, fileNameLength);
+        String fileUri = filePlaceholder.substring(2);
+        String externalSql = '\n' + String.join("\n", Files.readAllLines(Paths.get(fileUri)));
+        if (!externalSql.endsWith(";")) externalSql += ';';
+        return queryText.replace(filePlaceholder, externalSql + '\n');
     }
 
     private static int countLineFeeds(final IDocument document, final int offset, final int length) {
