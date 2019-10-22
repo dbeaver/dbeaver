@@ -56,9 +56,9 @@ class PostgreDollarQuoteRule implements IRule {
             for (int i = 0; i < charsRead; i++) {
                 scanner.unread();
             }
-        } else {
-            scanner.unread();
         }
+        scanner.unread();
+
         return Token.UNDEFINED;
     }
 
