@@ -51,7 +51,7 @@ class PostgreDollarQuoteRule implements IRule {
                     }
                     return blockToken;
                 }
-            } while (Character.isLetter(c));
+            } while (Character.isLetter(c) || c == '_');
 
             for (int i = 0; i < charsRead; i++) {
                 scanner.unread();
