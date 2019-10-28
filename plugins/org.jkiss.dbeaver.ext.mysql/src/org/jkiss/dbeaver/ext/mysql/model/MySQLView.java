@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -216,7 +217,11 @@ public class MySQLView extends MySQLTableBase implements DBSView
                             int divPos = definition.indexOf(" VIEW `");
                             if (divPos != -1) {
                                 additionalInfo.algorithm = parseAlgorithm(definition.substring(0, divPos));
-                                definition = "CREATE OR REPLACE " + definition.substring(divPos);
+                                String params = "";
+                                if (!CommonUtils.isEmpty(additionalInfo.algorithm)) {
+                                    params += " ALGORITHM=" + additionalInfo.algorithm + " ";
+                                }
+                                definition = "CREATE OR REPLACE " + params + definition.substring(divPos);
                             }
                         }
                         additionalInfo.setDefinition(
