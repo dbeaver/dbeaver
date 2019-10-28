@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -247,7 +248,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                     try {
                                         DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(object);
                                         if (objectNode != null) {
-                                            objectNode.refreshNode(monitor, GenerateMultiSQLDialog.this);
+                                            objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
                                         }
                                     } catch (Exception e) {
                                         log.error("Error refreshing object '" + object.getName() + "'", e);
