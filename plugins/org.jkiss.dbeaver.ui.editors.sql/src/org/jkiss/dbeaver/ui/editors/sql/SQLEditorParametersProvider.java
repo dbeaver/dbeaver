@@ -81,7 +81,7 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
             return true;
         } else if (paramsResult == IDialogConstants.IGNORE_ID) {
             scriptContext.setIgnoreParameters(true);
-            return true;
+            return null;
         }
         return false;
     }
