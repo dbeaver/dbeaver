@@ -55,14 +55,17 @@ public class NumberDataFormatter implements DBDDataFormatter {
         if (minIntDigits != null) {
             numberFormat.setMinimumIntegerDigits(CommonUtils.toInt(minIntDigits));
         }
-        if (type != null /*&& type.getPrecision() != null && type.getPrecision() > 8*/) {
-            // Before #6914 we set fraction digits limit only for double precision, see (fix of #6111)
-            // By some reason float numers weren't formatted incorrectly if we set fraction limits.
-            // Then there were series of other number format fixes and now it is not reproducible.
-            // So let's set fraction digits props always and see how it will go.
+        if (type != null && type.getScale() != null) {
+            int typeScale = type.getScale();
+            // #6111 + #6914.
+            // Here is a trick. We can't set max digiter bigger than scale (otherwise long numbers are corrupted)
             Object maxFractDigits = properties.get(NumberFormatSample.PROP_MAX_FRACT_DIGITS);
             if (maxFractDigits != null) {
-                numberFormat.setMaximumFractionDigits(CommonUtils.toInt(maxFractDigits));
+                int maxFD = CommonUtils.toInt(maxFractDigits);
+                if (typeScale > 0 && maxFD > typeScale) {
+                    maxFD = typeScale;
+                }
+                numberFormat.setMaximumFractionDigits(maxFD);
             }
             Object minFractDigits = properties.get(NumberFormatSample.PROP_MIN_FRACT_DIGITS);
             if (minFractDigits != null) {
