@@ -876,7 +876,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             replaceString = DBUtils.getObjectShortName(object);
         }
         if (!CommonUtils.isEmpty(alias)) {
-            replaceString += " " + convertKeywordCase(request, "as", false) + " " + alias;
+            replaceString += " " + /*convertKeywordCase(request, "as", false) + " " + */alias;
         }
         return createCompletionProposal(
             request,
