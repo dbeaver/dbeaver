@@ -293,7 +293,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     GridPos curPos = spreadsheet.getCursorPosition();
                     GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, curRow.getVisualNumber()));
                     if (newCell != null) {
-                        spreadsheet.setCursor(newCell, false);
+                        spreadsheet.setCursor(newCell, false, true);
                     }
                 }
                 break;
@@ -329,7 +329,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         GridCell cell = controller.isRecordMode() ?
             new GridCell(curRow, this.curAttribute) :
             new GridCell(this.curAttribute, curRow);
-        this.spreadsheet.setCursor(cell, false);
+        this.spreadsheet.setCursor(cell, false, true);
         //this.spreadsheet.showColumn(this.curAttribute);
     }
 
@@ -381,7 +381,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 new GridCell(curRow, this.curAttribute) :
                 new GridCell(this.curAttribute, curRow);
             //spreadsheet.selectCell(cell);
-            spreadsheet.setCursor(cell, false);
+            spreadsheet.setCursor(cell, false, false);
         }
         spreadsheet.getHorizontalScrollBarProxy().setSelection(viewState.hScrollSelection);
     }
@@ -782,9 +782,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.columnOrder = recordMode ? SWT.DEFAULT : SWT.NONE;
         if (oldRow != null && oldAttribute != null) {
             if (!recordMode) {
-                spreadsheet.setCursor(new GridCell(oldAttribute, oldRow), false);
+                spreadsheet.setCursor(new GridCell(oldAttribute, oldRow), false, true);
             } else {
-                spreadsheet.setCursor(new GridCell(oldRow, oldAttribute), false);
+                spreadsheet.setCursor(new GridCell(oldRow, oldAttribute), false, true);
             }
         }
         spreadsheet.layout(true, true);
