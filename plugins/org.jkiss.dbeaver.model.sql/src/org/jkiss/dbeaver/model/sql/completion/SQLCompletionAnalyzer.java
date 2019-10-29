@@ -637,7 +637,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
         }
 
-        return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, true, request.getWordDetector());
+        return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, !request.isSimpleMode(), request.getWordDetector());
     }
 
     private String getTableAliasPattern(String alias, String tableNamePattern) {
