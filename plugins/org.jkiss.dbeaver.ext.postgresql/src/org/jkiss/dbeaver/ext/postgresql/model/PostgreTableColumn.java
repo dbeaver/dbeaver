@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -25,18 +26,21 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
  * PostgreTableColumn
  */
-public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePrivilegeOwner, PostgreScriptObject, GisAttribute
-{
+public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePrivilegeOwner, PostgreScriptObject, GisAttribute, JDBCColumnKeyType {
     private static final Log log = Log.getLog(PostgreTableColumn.class);
 
     public PostgreTableColumn(DBRProgressMonitor monitor, PostgreTableBase table, PostgreTableColumn source) throws DBException {
@@ -140,6 +144,37 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
 
+    }
+
+    @Nullable
+    @Override
+    protected JDBCColumnKeyType getKeyType() {
+        return this;
+    }
+
+    @Override
+    public boolean isInUniqueKey() {
+        final List<PostgreTableConstraintBase> cCache = getTable().getSchema().getConstraintCache().getCachedObjects(getTable());
+        if (!CommonUtils.isEmpty(cCache)) {
+            for (PostgreTableConstraintBase key : cCache) {
+                if (key instanceof PostgreTableConstraint && key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                    List<PostgreTableConstraintColumn> cColumns = ((PostgreTableConstraint) key).getColumns();
+                    if (!CommonUtils.isEmpty(cColumns)) {
+                        for (PostgreTableConstraintColumn cCol : cColumns) {
+                            if (cCol.getAttribute() == this) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isInReferenceKey() {
+        return false;
     }
 
 }

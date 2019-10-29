@@ -58,6 +58,10 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
         return columns;
     }
 
+    public List<PostgreTableConstraintColumn> getColumns() {
+        return columns;
+    }
+
     public void addColumn(PostgreTableConstraintColumn column) {
         this.columns.add(column);
     }
