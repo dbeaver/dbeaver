@@ -90,7 +90,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         super(preferenceStore);
         this.editor = editor;
         this.ruleManager = editor.getRuleManager();
-        this.completionProcessor = new SQLCompletionProcessor(editor);
         this.hyperlinkDetector = new SQLHyperlinkDetector(editor, editor.getSyntaxManager());
     }
 
@@ -153,10 +152,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
         // Set content assist processors for various content types.
-        if (completionProcessor != null) {
-            assistant.addContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
-            assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+        if (completionProcessor == null) {
+            this.completionProcessor = new SQLCompletionProcessor(editor);
         }
+        assistant.addContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
+        assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
 
         // Configure how content assist information will appear.
         assistant.enableAutoActivation(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
@@ -190,9 +190,13 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                     break;
             }
         };
+
+        ((SQLCompletionProcessor)completionProcessor).initAssistant(assistant);
+
         configStore.addPropertyChangeListener(prefListener);
         editor.getTextViewer().getControl().addDisposeListener(
             e -> configStore.removePropertyChangeListener(prefListener));
+
         return assistant;
 
     }
