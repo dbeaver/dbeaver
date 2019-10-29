@@ -2635,8 +2635,6 @@ public class SQLEditor extends SQLEditorBase implements
 
     public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, SQLQueryContainer {
 
-        private static final String DATA_PINNED = "results.tab.pinned";
-
         private final QueryProcessor queryProcessor;
         private final ResultSetViewer viewer;
         private final int resultSetNumber;
@@ -2732,7 +2730,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         boolean isPinned() {
             CTabItem tabItem = getTabItem();
-            return tabItem != null && !tabItem.isDisposed() && CommonUtils.toBoolean(tabItem.getData(DATA_PINNED));
+            return tabItem != null && !tabItem.isDisposed() && !tabItem.getShowClose();
         }
 
         void setPinned(boolean pinned) {
@@ -2740,7 +2738,6 @@ public class SQLEditor extends SQLEditorBase implements
             if (tabItem != null) {
                 tabItem.setShowClose(!pinned);
                 tabItem.setImage(pinned ? IMG_DATA_GRID_LOCKED : IMG_DATA_GRID);
-                tabItem.setData(DATA_PINNED, pinned);
             }
         }
 
