@@ -76,7 +76,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
@@ -354,14 +353,28 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         spreadsheet.scrollHorizontally(scrollCount);
     }
 
+    /////////////////////////////////////////////////
+    // State
+
+    private static class ViewState {
+        DBDAttributeBinding focusedAttribute;
+        int hScrollSelection;
+
+        ViewState(DBDAttributeBinding focusedAttribute, int hScrollSelection) {
+            this.focusedAttribute = focusedAttribute;
+            this.hScrollSelection = hScrollSelection;
+        }
+    }
+
     @Override
     public Object saveState() {
-        return curAttribute;
+        return new ViewState(curAttribute, spreadsheet.getHorizontalScrollBarProxy().getSelection());
     }
 
     @Override
     public void restoreState(Object state) {
-        this.curAttribute = controller.getModel().getAttributeBinding((DBDAttributeBinding) state);
+        ViewState viewState = (ViewState) state;
+        this.curAttribute = controller.getModel().getAttributeBinding(viewState.focusedAttribute);
         ResultSetRow curRow = controller.getCurrentRow();
         if (curRow != null && this.curAttribute != null) {
             GridCell cell = controller.isRecordMode() ?
@@ -370,6 +383,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             //spreadsheet.selectCell(cell);
             spreadsheet.setCursor(cell, false);
         }
+        spreadsheet.getHorizontalScrollBarProxy().setSelection(viewState.hScrollSelection);
     }
 
     private void updateGridCursor(GridCell cell)
