@@ -43,6 +43,11 @@ class DataTransferWizardExecutor extends TaskProcessorUI {
     }
 
     @Override
+    protected boolean isShowFinalMessage() {
+        return settings.isShowFinalMessage();
+    }
+
+    @Override
     protected void runTask() throws DBException {
         DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
         handlerTransfer.executeWithSettings(this, Locale.getDefault(), log, this, settings);
