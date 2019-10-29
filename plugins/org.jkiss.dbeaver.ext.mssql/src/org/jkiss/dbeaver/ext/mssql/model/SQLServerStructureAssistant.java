@@ -72,8 +72,8 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         return new DBSObjectType[] {
-            SQLServerObjectType.U,
-            SQLServerObjectType.V,
+            RelationalObjectType.TYPE_TABLE,
+            RelationalObjectType.TYPE_VIEW,
             SQLServerObjectType.SN,
             RelationalObjectType.TYPE_PROCEDURE,
         };
