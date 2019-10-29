@@ -74,7 +74,6 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
         error = null;
         final ProgressLoaderVisualizer<Object> visualizer = new ProgressLoaderVisualizer<>(this, progressControl);
         DBRProgressMonitor progressMonitor = visualizer.overwriteMonitor(monitor);
-        DBCExecutionPurpose purpose = dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER;
 
         new PumpVisualizer(visualizer).schedule(PROGRESS_VISUALIZE_PERIOD * 2);
 
@@ -87,6 +86,8 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
             }
             offset = 0;
         }
+
+        DBCExecutionPurpose purpose = dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER;
 
         try (DBCSession session = getExecutionContext().openSession(
             progressMonitor,
@@ -147,7 +148,11 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
 
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
-            visualizer.visualizeLoading();
+            if (!controller.getDataReceiver().isDataReceivePaused()) {
+                visualizer.visualizeLoading();
+            } else {
+                visualizer.resetStartTime();
+            }
             if (!visualizer.isCompleted()) {
                 schedule(PROGRESS_VISUALIZE_PERIOD);
             }
