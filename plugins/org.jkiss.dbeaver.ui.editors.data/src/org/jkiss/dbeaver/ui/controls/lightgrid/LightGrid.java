@@ -3820,6 +3820,10 @@ public abstract class LightGrid extends Canvas {
      */
     private void updateToolTipText(@Nullable String text)
     {
+        if (text != null) {
+            // Escape ampersands (#7101)
+            text = text.replace("&", "&&");
+        }
         ToolTipHandler curHandler = this.toolTipHandler;
         if (!CommonUtils.equalObjects(prevToolTip, text)) {
             // New tooltip
