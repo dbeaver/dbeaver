@@ -167,10 +167,12 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         setMaxLength(50L);
         setOrdinalPosition(-1);
         this.dataType = tableBase.getDataSource().getDataTypeCache().getCachedObject("VARCHAR");
-        this.dataTypeSchema = dataType.getSchema();
-        setTypeName(dataType.getFullyQualifiedName(DBPEvaluationContext.DML));
-        setValueType(dataType.getTypeID());
-        setRequired(true);
+        if (dataType != null) {
+            this.dataTypeSchema = dataType.getSchema();
+            setTypeName(dataType.getFullyQualifiedName(DBPEvaluationContext.DML));
+            setValueType(dataType.getTypeID());
+        }
+        setRequired(false);
     }
 
     // -----------------
