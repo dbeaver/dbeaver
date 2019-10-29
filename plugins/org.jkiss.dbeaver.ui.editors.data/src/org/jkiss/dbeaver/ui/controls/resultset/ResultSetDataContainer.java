@@ -172,8 +172,8 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
             }
         }
         filtered.sort((o1, o2) -> {
-            DBDAttributeConstraint c1 = dataFilter.getConstraint(o1.getName());
-            DBDAttributeConstraint c2 = dataFilter.getConstraint(o2.getName());
+            DBDAttributeConstraint c1 = dataFilter.getConstraint(o1, true);
+            DBDAttributeConstraint c2 = dataFilter.getConstraint(o2, true);
             return c1 == null || c2 == null ? 0 : c1.getVisualPosition() - c2.getVisualPosition();
         });
         return filtered.toArray(new DBDAttributeBinding[0]);
