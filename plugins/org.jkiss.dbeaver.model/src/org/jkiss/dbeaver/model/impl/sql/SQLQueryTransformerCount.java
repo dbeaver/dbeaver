@@ -56,8 +56,27 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     }
 
     private SQLQuery wrapSourceQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
+        String queryText = null;
+        try {
+            // Remove orderings (#4652)
+            Statement statement = CCJSqlParserUtil.parse(query.getText());
+            if (statement instanceof Select) {
+                SelectBody selectBody = ((Select) statement).getSelectBody();
+                if (selectBody instanceof PlainSelect) {
+                    if (!CommonUtils.isEmpty(((PlainSelect) selectBody).getOrderByElements())) {
+                        ((PlainSelect) selectBody).setOrderByElements(null);
+                        queryText = statement.toString();
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            log.debug("Error parsing query for COUNT transformation: " + e.getMessage());
+        }
         // Trim query delimiters (#2541)
-        String srcQuery = SQLUtils.trimQueryStatement(syntaxManager, query.getText(), true);
+        if (queryText == null) {
+            queryText = query.getText();
+        }
+        String srcQuery = SQLUtils.trimQueryStatement(syntaxManager, queryText, true);
         String countQuery = COUNT_WRAP_PREFIX + srcQuery + COUNT_WRAP_POSTFIX;
         return new SQLQuery(dataSource, countQuery, query, false);
     }
