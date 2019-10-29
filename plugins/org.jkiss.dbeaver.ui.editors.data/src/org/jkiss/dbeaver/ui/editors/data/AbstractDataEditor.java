@@ -36,10 +36,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.entity.IEntityDataEditor;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.editors.entity.IEntityDataEditor;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.Collections;
@@ -74,12 +74,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
         if (!loaded && !isSuspendDataQuery()) {
             if (isReadyToRun()) {
                 resultSetView.setStatus(getDataQueryMessage());
-                DBDDataFilter dataFilter = getEditorDataFilter();
-                if (dataFilter == null) {
-                    resultSetView.refresh();
-                } else {
-                    resultSetView.refreshWithFilter(dataFilter);
-                }
+                refreshWithFilters();
                 loaded = true;
             }
         }
@@ -249,7 +244,16 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     @Override
     public void refreshPart(Object source, boolean force) {
         if (force && resultSetView != null && resultSetView.hasData() && !resultSetView.isRefreshInProgress()) {
+            refreshWithFilters();
+        }
+    }
+
+    private void refreshWithFilters() {
+        DBDDataFilter dataFilter = getEditorDataFilter();
+        if (dataFilter == null) {
             resultSetView.refresh();
+        } else {
+            resultSetView.refreshWithFilter(dataFilter);
         }
     }
 
