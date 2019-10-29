@@ -214,7 +214,6 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             }
             diagram.setLayoutManualAllowed(true);
             diagram.setNeedsAutoLayout(!hasPersistedState);
-
         }
 
         return diagram;
