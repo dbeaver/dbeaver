@@ -18,13 +18,13 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -32,43 +32,45 @@ import java.util.List;
  */
 public enum SQLServerObjectType implements DBSObjectType {
 
-	AF ("AF", null, "Aggregate function (CLR)"),
-	C ("C", SQLServerTableCheckConstraint.class, "CHECK constraint"),
-	D ("D", null, "DEFAULT (constraint or stand-alone)"),
-	F ("F", SQLServerTableForeignKey.class, "FOREIGN KEY constraint"),
-	FN ("FN", SQLServerProcedure.class, "SQL scalar function"),
-	FS ("FS", SQLServerProcedure.class, "Assembly (CLR) scalar-function"),
-	FT ("FT", SQLServerProcedure.class, "Assembly (CLR) table-valued function"),
-	IF ("IF", SQLServerProcedure.class, "SQL inline table-valued function"),
-	IT ("IT", SQLServerTable.class, "Internal table"),
-	P ("P", SQLServerProcedure.class, "SQL Stored Procedure"),
-	PC ("PC", SQLServerProcedure.class, "Assembly (CLR) stored-procedure"),
-	PG ("PG", null, "Plan guide"),
-	PK ("PK", SQLServerTableUniqueKey.class, "PRIMARY KEY constraint"),
-	R ("R", null, "Rule (old-style, stand-alone)"),
-	RF ("RF", null, "Replication-filter-procedure"),
-	S ("S", SQLServerTable.class, "System base table"),
-	SN ("SN", SQLServerSynonym.class, "Synonym"),
-	SQ ("SQ", null, "Service queue"),
-	TA ("TA", null, "Assembly (CLR) DML trigger"),
-	TF ("TF", SQLServerProcedure.class, "SQL table-valued-function"),
-	TR ("TR", SQLServerTableTrigger.class, "SQL DML trigger"),
-	TT ("TT", null, "Table type"),
-	U ("U", SQLServerTable.class, "Table (user-defined)"),
-	UQ ("UQ", SQLServerTableUniqueKey.class, "UNIQUE constraint"),
-	V ("V", SQLServerView.class, "View"),
-	X ("X", SQLServerProcedure.class, "Extended stored procedure");
+	AF ("AF", null, DBIcon.TREE_FUNCTION, "Aggregate function (CLR)"),
+	C ("C", SQLServerTableCheckConstraint.class, DBIcon.TREE_CONSTRAINT, "CHECK constraint"),
+	D ("D", null, DBIcon.TREE_CONSTRAINT, "DEFAULT (constraint or stand-alone)"),
+	F ("F", SQLServerTableForeignKey.class, DBIcon.TREE_CONSTRAINT, "FOREIGN KEY constraint"),
+	FN ("FN", SQLServerProcedure.class, DBIcon.TREE_FUNCTION, "SQL scalar function"),
+	FS ("FS", SQLServerProcedure.class, DBIcon.TREE_FUNCTION, "Assembly (CLR) scalar-function"),
+	FT ("FT", SQLServerProcedure.class, DBIcon.TREE_FUNCTION, "Assembly (CLR) table-valued function"),
+	IF ("IF", SQLServerProcedure.class, DBIcon.TREE_FUNCTION, "SQL inline table-valued function"),
+	IT ("IT", SQLServerTable.class, DBIcon.TREE_TABLE_SYSTEM, "Internal table"),
+	P ("P", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "SQL Stored Procedure"),
+	PC ("PC", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "Assembly (CLR) stored-procedure"),
+	PG ("PG", null, null, "Plan guide"),
+	PK ("PK", SQLServerTableUniqueKey.class, DBIcon.TREE_UNIQUE_KEY, "PRIMARY KEY constraint"),
+	R ("R", null, null, "Rule (old-style, stand-alone)"),
+	RF ("RF", null, DBIcon.TREE_PROCEDURE, "Replication-filter-procedure"),
+	S ("S", SQLServerTable.class, DBIcon.TREE_TABLE, "System base table"),
+	SN ("SN", SQLServerSynonym.class, DBIcon.TREE_SYNONYM, "Synonym"),
+	SQ ("SQ", null, null, "Service queue"),
+	TA ("TA", null, DBIcon.TREE_TRIGGER, "Assembly (CLR) DML trigger"),
+	TF ("TF", SQLServerProcedure.class, DBIcon.TREE_FUNCTION, "SQL table-valued-function"),
+	TR ("TR", SQLServerTableTrigger.class, DBIcon.TREE_TRIGGER, "SQL DML trigger"),
+	TT ("TT", null, DBIcon.TREE_DATA_TYPE, "Table type"),
+	U ("U", SQLServerTable.class, DBIcon.TREE_TABLE, "Table (user-defined)"),
+	UQ ("UQ", SQLServerTableUniqueKey.class, DBIcon.TREE_CONSTRAINT, "UNIQUE constraint"),
+	V ("V", SQLServerView.class, DBIcon.TREE_VIEW, "View"),
+	X ("X", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "Extended stored procedure");
 
 
     private final String type;
     private final String description;
     private final Class<? extends DBSObject> theClass;
+    private final DBPImage icon;
 
     private static final Log log = Log.getLog(SQLServerObjectType.class);
 
-    SQLServerObjectType(String type, Class<? extends DBSObject> theClass, String description) {
+    SQLServerObjectType(String type, Class<? extends DBSObject> theClass, DBPImage icon, String description) {
         this.type = type;
         this.theClass = theClass;
+        this.icon = icon;
         this.description = description;
     }
 
@@ -84,7 +86,7 @@ public enum SQLServerObjectType implements DBSObjectType {
 
     @Override
     public DBPImage getImage() {
-        return null;
+        return icon;
     }
 
     @Override
