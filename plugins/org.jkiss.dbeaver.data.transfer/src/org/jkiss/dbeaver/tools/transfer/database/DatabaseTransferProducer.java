@@ -305,7 +305,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                     ds.connect(monitor, true, true);
                                 }
                                 SQLQuery query = new SQLQuery(ds.getDataSource(), queryText);
-                                producer.dataContainer = new SQLQueryDataContainer(new DataSourceContextProvider(ds), query, log);
+                                producer.dataContainer = new SQLQueryDataContainer(new DataSourceContextProvider(ds), query, null, log);
                                 break;
                             }
                             default:
