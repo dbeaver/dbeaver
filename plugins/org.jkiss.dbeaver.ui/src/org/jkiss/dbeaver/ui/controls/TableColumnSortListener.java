@@ -77,7 +77,7 @@ public class TableColumnSortListener implements Listener {
     public void handleEvent(Event e) {
         final Collator collator = Collator.getInstance(Locale.getDefault());
         TableColumn column = (TableColumn) e.widget;
-        if (prevColumn == column) {
+        if (prevColumn == column && e.doit) {
             // Set reverse order
             sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
         }

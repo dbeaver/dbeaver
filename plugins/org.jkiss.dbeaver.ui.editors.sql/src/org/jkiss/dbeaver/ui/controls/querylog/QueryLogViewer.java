@@ -73,8 +73,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * QueryLogViewer
@@ -1186,7 +1186,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private class EvenHistoryReadVisualizer extends ProgressLoaderVisualizer<List<QMMetaEvent>> {
-        public EvenHistoryReadVisualizer(EventHistoryReadService loadingService) {
+        EvenHistoryReadVisualizer(EventHistoryReadService loadingService) {
             super(loadingService, logTable);
         }
 
@@ -1204,6 +1204,20 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 if (result != null) {
                     updateMetaInfo(result);
                 }
+                // Apply sort (if any)
+                TableColumn sortColumn = logTable.getSortColumn();
+                if (sortColumn != null) {
+                    Listener[] sortListeners = sortColumn.getListeners(SWT.Selection);
+                    if (sortListeners != null) {
+                        for (Listener listener : sortListeners) {
+                            Event event = new Event();
+                            event.widget = sortColumn;
+                            event.doit = false; // Disable sort toggle
+                            listener.handleEvent(event);
+                        }
+                    }
+                }
+
             } finally {
                 reloadInProgress = false;
             }
