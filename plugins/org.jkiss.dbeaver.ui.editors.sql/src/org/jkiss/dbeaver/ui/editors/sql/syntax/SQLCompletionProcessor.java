@@ -81,6 +81,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         this.editor = editor;
     }
 
+    public void initAssistant(SQLContentAssistant contentAssistant) {
+        contentAssistant.addCompletionListener(new CompletionListener());
+    }
+
     @Override
     public ICompletionProposal[] computeCompletionProposals(
         ITextViewer viewer,
@@ -234,6 +238,29 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     public IContextInformationValidator getContextInformationValidator()
     {
         return VALIDATOR;
+    }
+
+    private static class CompletionListener implements ICompletionListener, ICompletionListenerExtension {
+
+        @Override
+        public void assistSessionStarted(ContentAssistEvent event) {
+
+        }
+
+        @Override
+        public void assistSessionEnded(ContentAssistEvent event) {
+            simpleMode = false;
+        }
+
+        @Override
+        public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {
+
+        }
+
+        @Override
+        public void assistSessionRestarted(ContentAssistEvent event) {
+            simpleMode = true;
+        }
     }
 
     /**
