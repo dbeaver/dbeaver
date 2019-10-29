@@ -1153,6 +1153,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         final SQLDialect sqlDialect = getSQLDialect();
         boolean supportParamsInDDL = getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
         boolean execQuery = false;
+        boolean ddlQuery = false;
         List<SQLQueryParameter> parameters = null;
         ruleManager.setRange(document, queryOffset, queryLength);
 
@@ -1179,9 +1180,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         String tokenText = document.get(tokenOffset, tokenLength);
                         if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
                             // DDL doesn't support parameters
-                            return null;
+                            ddlQuery = true;
+                        } else {
+                            execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
                         }
-                        execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
                     } catch (BadLocationException e) {
                         log.warn(e);
                     }
@@ -1191,6 +1193,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             if (tokenType == SQLToken.T_PARAMETER && tokenLength > 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
+                    if (ddlQuery) {
+                        continue;
+                    }
                     if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
                         // Skip ? parameters for stored procedures (they have special meaning? [DB2])
                         continue;
