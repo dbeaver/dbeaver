@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +62,9 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             SQLServerObjectType.V,
             SQLServerObjectType.SN,
             SQLServerObjectType.P,
+            SQLServerObjectType.FN,
+            SQLServerObjectType.FT,
+            SQLServerObjectType.FS,
             SQLServerObjectType.X,
             };
     }
@@ -73,7 +75,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             SQLServerObjectType.U,
             SQLServerObjectType.V,
             SQLServerObjectType.SN,
-            SQLServerObjectType.P,
+            RelationalObjectType.TYPE_PROCEDURE,
         };
     }
 
@@ -85,7 +87,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             SQLServerObjectType.U,
             SQLServerObjectType.IT,
             SQLServerObjectType.V,
-            SQLServerObjectType.P,
+            RelationalObjectType.TYPE_PROCEDURE,
         };
     }
 
