@@ -81,7 +81,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public static final String ID = "org.jkiss.dbeaver.ui.editors.entity.EntityEditor"; //$NON-NLS-1$
 
     // fired when editor is initialized with a database object (e.g. after lazy loading, navigation or history browsing).
-    public static final int PROP_OBJECT_INIT = 0x212;
+    private static final int PROP_OBJECT_INIT = 0x212;
     
     private static final Log log = Log.getLog(EntityEditor.class);
 
@@ -318,6 +318,15 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return true;
         }
         boolean isNewObject = getDatabaseObject() == null || !getDatabaseObject().isPersisted();
+        if (!isNewObject) {
+            // Check for any new nested objects
+            for (DBECommand cmd : commandContext.getFinalCommands()) {
+                if (cmd.getObject() instanceof DBSObject && !((DBSObject) cmd.getObject()).isPersisted()) {
+                    isNewObject = true;
+                    break;
+                }
+            }
+        }
         try {
             DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
                 try {
@@ -344,10 +353,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // So we'll get actual data from database
             final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
             try {
+                boolean doRefresh = isNewObject;
                 UIUtils.runInProgressService(monitor1 -> {
                     try {
                         treeNode.refreshNode(monitor1,
-                            isNewObject ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
+                            doRefresh ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }

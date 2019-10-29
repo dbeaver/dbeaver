@@ -710,7 +710,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.relname,a.*,ad.oid as attr_id,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
+                "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
                 "\nFROM pg_catalog.pg_attribute a" +
                 "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
