@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -60,7 +59,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Nullable
     private PostgreAttributeIdentity identity;
     private boolean isLocal;
-    private long objectId;
     private long collationId;
     private Object acl;
 
@@ -106,10 +104,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return getTable().getDatabase();
     }
 
-    @Property(viewable = false, order = 26)
     @Override
     public long getObjectId() {
-        return objectId;
+        return getOrdinalPosition();
     }
 
     private void loadInfo(DBRProgressMonitor monitor, JDBCResultSet dbResult)
@@ -120,7 +117,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setName(JDBCUtils.safeGetString(dbResult, "attname"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
-        objectId = JDBCUtils.safeGetLong(dbResult, "attr_id");
         final long typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
         dataType = getTable().getDatabase().getDataType(monitor, typeId);
         if (dataType == null) {
