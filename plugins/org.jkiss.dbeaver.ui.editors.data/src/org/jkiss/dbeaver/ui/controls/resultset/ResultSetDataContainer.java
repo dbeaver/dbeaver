@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.data.DBDAttributeFilter;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -233,10 +232,10 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
                 }
                 curRow = model.getRow(0);
             } else {
-                if (curRow.getRowNumber() >= model.getRowCount() - 1) {
+                if (curRow.getVisualNumber() >= model.getRowCount() - 1) {
                     return false;
                 }
-                curRow = model.getRow(curRow.getRowNumber() + 1);
+                curRow = model.getRow(curRow.getVisualNumber() + 1);
             }
             return true;
         }
