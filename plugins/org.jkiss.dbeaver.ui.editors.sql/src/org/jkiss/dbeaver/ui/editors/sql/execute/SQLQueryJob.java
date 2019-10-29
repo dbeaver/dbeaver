@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.DBDDataReceiverInteractive;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -347,13 +348,24 @@ public class SQLQueryJob extends DataSourceJob
         final DBPDataSource dataSource = executionContext.getDataSource();
 
         final SQLQuery originalQuery = sqlQuery;
+
+        DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
+        try {
+            if (dataReceiver instanceof DBDDataReceiverInteractive) {
+                ((DBDDataReceiverInteractive) dataReceiver).setDataReceivePaused(true);
+            }
+            if (!scriptContext.fillQueryParameters((SQLQuery) element)) {
+                // User canceled
+                return false;
+            }
+        } finally {
+            if (dataReceiver instanceof DBDDataReceiverInteractive) {
+                ((DBDDataReceiverInteractive) dataReceiver).setDataReceivePaused(false);
+            }
+        }
+
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
-
-        if (!scriptContext.fillQueryParameters((SQLQuery) element)) {
-            // User canceled
-            return false;
-        }
 
         // Modify query (filters + parameters)
         String queryText = originalQuery.getText();//.trim();

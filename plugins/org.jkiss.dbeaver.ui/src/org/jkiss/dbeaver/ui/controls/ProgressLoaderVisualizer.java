@@ -79,13 +79,17 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
             @Override
             public void subTask(String name) {
                 if (loadStartTime == 0) {
-                    loadStartTime = System.currentTimeMillis();
+                    resetStartTime();
                 }
                 progressMessage = name;
                 super.subTask(name);
             }
         };
         return progressMonitor;
+    }
+
+    public void resetStartTime() {
+        this.loadStartTime = System.currentTimeMillis();
     }
 
     @Override

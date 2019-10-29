@@ -28,7 +28,7 @@ abstract class ResultSetJobAbstract extends DataSourceJob implements DBCExecutio
     protected final DBSDataContainer dataContainer;
     protected final ResultSetViewer controller;
 
-    protected ResultSetJobAbstract(String name, DBSDataContainer dataContainer, ResultSetViewer controller, DBCExecutionContext executionContext) {
+    ResultSetJobAbstract(String name, DBSDataContainer dataContainer, ResultSetViewer controller, DBCExecutionContext executionContext) {
         super(name, executionContext);
         this.dataContainer = dataContainer;
         this.controller = controller;
@@ -43,7 +43,7 @@ abstract class ResultSetJobAbstract extends DataSourceJob implements DBCExecutio
 
     @NotNull
     @Override
-    public Object getExecutionController() {
+    public IResultSetController getExecutionController() {
         return controller;
     }
 

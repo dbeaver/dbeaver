@@ -1104,6 +1104,6 @@ public final class SQLUtils {
             query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
         }
         sqlStatement.setText(query);
-        sqlStatement.setOriginalText(query);
+        //sqlStatement.setOriginalText(query);
     }
 }
