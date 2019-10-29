@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
@@ -743,6 +744,17 @@ public class PostgreDialect extends JDBCSQLDialect {
     public String[][] getBlockBoundStrings() {
         // PostgreSQL-specific blocks ($$) should be used everywhere
         return null;//super.getBlockBoundStrings();
+    }
+
+    @NotNull
+    @Override
+    public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
+        if (value.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+            // TODO: we need to add value handlers for all PG data types.
+            // For now we use workaround: re[eresent objects as strings
+            return '\'' + escapeString(strValue) + '\'';
+        }
+        return super.escapeScriptValue(attribute, value, strValue);
     }
 
     @NotNull
