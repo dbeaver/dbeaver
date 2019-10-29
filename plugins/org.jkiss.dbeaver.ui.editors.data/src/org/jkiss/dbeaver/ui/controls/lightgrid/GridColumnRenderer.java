@@ -24,8 +24,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -41,8 +41,8 @@ class GridColumnRenderer extends AbstractRenderer
     public static final int IMAGE_SPACING = 3;
 
     public static final Image IMAGE_ASTERISK = DBeaverIcons.getImage(UIIcon.SORT_UNKNOWN);
-    public static final Image IMAGE_DESC = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
-    public static final Image IMAGE_ASC = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
+    public static final Image IMAGE_DESC = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
+    public static final Image IMAGE_ASC = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
     public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.FILTER_SMALL);
 
     public static final int SORT_WIDTH = IMAGE_DESC.getBounds().width;
