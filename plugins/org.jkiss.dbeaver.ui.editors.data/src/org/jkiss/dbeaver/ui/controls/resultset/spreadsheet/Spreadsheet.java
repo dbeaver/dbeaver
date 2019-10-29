@@ -193,12 +193,12 @@ public class Spreadsheet extends LightGrid implements Listener {
 
         GridCell newCell = posToCell(newPos);
         if (newCell != null) {
-            setCursor(newCell, keepSelection);
+            setCursor(newCell, keepSelection, true);
         }
         return true;
     }
 
-    public void setCursor(@NotNull GridCell cell, boolean keepSelection)
+    void setCursor(@NotNull GridCell cell, boolean keepSelection, boolean showColumn)
     {
         Event selectionEvent = new Event();
         // Move row
@@ -212,7 +212,9 @@ public class Spreadsheet extends LightGrid implements Listener {
         // Move column
         if (pos.col >= 0) {
             super.setFocusColumn(pos.col);
-            super.showColumn(pos.col);
+            if (showColumn) {
+                super.showColumn(pos.col);
+            }
         }
 
         if (!keepSelection) {
