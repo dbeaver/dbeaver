@@ -181,7 +181,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                                 DataSourceContextProvider contextProvider = new DataSourceContextProvider(lastDataSource);
                                 String query = serviceSQL.openSQLEditor(contextProvider, "SQL Query", UIIcon.SQL_SCRIPT, "");
                                 if (query != null) {
-                                    addObjectToTable(new SQLQueryDataContainer(contextProvider, new SQLQuery(lastDataSource, query), log));
+                                    addObjectToTable(new SQLQueryDataContainer(contextProvider, new SQLQuery(lastDataSource, query), null, log));
                                     updateSettings(propertyChangeListener);
                                 }
                             }

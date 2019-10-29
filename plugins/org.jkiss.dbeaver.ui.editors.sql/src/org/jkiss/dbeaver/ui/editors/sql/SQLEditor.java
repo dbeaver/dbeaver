@@ -118,8 +118,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2516,7 +2516,8 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         } else {
                             SQLQuery query = (SQLQuery) element;
-                            producers.add(new DatabaseTransferProducer(new SQLQueryDataContainer(SQLEditor.this, query, log), null));
+                            SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(SQLEditor.this, query, scriptContext, log);
+                            producers.add(new DatabaseTransferProducer(dataContainer, null));
                         }
                     }
 

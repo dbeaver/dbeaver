@@ -37,11 +37,13 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
 
     private DBPContextProvider contextProvider;
     private SQLQuery query;
+    private SQLScriptContext scriptContext;
     private Log log;
 
-    public SQLQueryDataContainer(DBPContextProvider contextProvider, SQLQuery query, Log log) {
+    public SQLQueryDataContainer(DBPContextProvider contextProvider, SQLQuery query, SQLScriptContext scriptContext, Log log) {
         this.contextProvider = contextProvider;
         this.query = query;
+        this.scriptContext = scriptContext;
         this.log = log;
     }
 
@@ -70,6 +72,13 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
             sqlQuery = new SQLQuery(dataSource, filteredQueryText, sqlQuery);
         } else {
             sqlQuery = new SQLQuery(dataSource, queryText, sqlQuery);
+        }
+
+        if (scriptContext != null) {
+            if (!scriptContext.fillQueryParameters(sqlQuery)) {
+                // User canceled
+                return statistics;
+            }
         }
 
         final SQLQueryResult curResult = new SQLQueryResult(sqlQuery);
