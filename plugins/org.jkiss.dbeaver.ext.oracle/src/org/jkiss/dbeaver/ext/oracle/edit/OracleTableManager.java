@@ -83,12 +83,20 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command, Map<String, Object> options) throws DBException {
+        OracleTable table = command.getObject();
         if (command.getProperty("comment") != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
-                "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getComment())));
+                "COMMENT ON TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    " IS " + SQLUtils.quoteString(table, table.getComment())));
+        }
+
+        // Column comments
+        for (OracleTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+            if (!CommonUtils.isEmpty(column.getDescription())) {
+                OracleTableColumnManager.addColumnCommentAction(actions, column);
+            }
         }
     }
 

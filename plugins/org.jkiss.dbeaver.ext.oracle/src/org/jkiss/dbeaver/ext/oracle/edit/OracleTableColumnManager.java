@@ -80,6 +80,14 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        super.addObjectCreateActions(monitor, actions, command, options);
+        if (command.getProperty("comment") != null) {
+            addColumnCommentAction(actions, command.getObject());
+        }
+    }
+
+    @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final OracleTableColumn column = command.getObject();
@@ -91,11 +99,15 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
                 " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
         }
         if (hasComment) {
-            actionList.add(new SQLDatabasePersistAction(
-                "Comment column",
-                "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                    " IS '" + column.getComment(new VoidProgressMonitor()) + "'"));
+            addColumnCommentAction(actionList, column);
         }
+    }
+
+    static void addColumnCommentAction(List<DBEPersistAction> actionList, OracleTableColumn column) {
+        actionList.add(new SQLDatabasePersistAction(
+            "Comment column",
+            "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
+                " IS '" + column.getComment(new VoidProgressMonitor()) + "'"));
     }
 
     @Override
