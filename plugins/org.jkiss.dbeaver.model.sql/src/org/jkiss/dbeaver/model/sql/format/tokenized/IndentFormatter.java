@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -19,12 +20,15 @@ class IndentFormatter {
 
     private final SQLFormatterConfiguration formatterCfg;
     private final boolean isCompact;
+    private final SQLDialect dialect;
     private List<String> statementDelimiters = new LinkedList<>();
     private String delimiterRedefiner;
     private int indent = 0;
     private int bracketsDepth = 0;
     private boolean encounterBetween = false;
     private List<Boolean> functionBracket = new ArrayList<>();
+    private final String[] blockHeaderStrings;
+
     private static final String[] JOIN_BEGIN = {"LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "JOIN"};
 
     IndentFormatter(SQLFormatterConfiguration formatterCfg, boolean isCompact) {
@@ -37,6 +41,8 @@ class IndentFormatter {
             statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
         }
         this.isCompact = isCompact;
+        dialect = formatterCfg.getSyntaxManager().getDialect();
+        blockHeaderStrings = dialect.getBlockHeaderStrings();
     }
 
     private int formatSymbol(String tokenString, List<Integer> bracketIndent, List<FormatterToken> argList, Integer index, FormatterToken prev) {
@@ -93,7 +99,16 @@ class IndentFormatter {
             }
             result += insertReturnAndIndent(argList, index + 1, indent);
         } else {
-            switch (tokenString) {
+            if (blockHeaderStrings != null && ArrayUtils.contains(blockHeaderStrings, tokenString) || SQLUtils.isBlockStartKeyword(dialect, tokenString)) {
+                if (index > 0) {
+                    result += insertReturnAndIndent(argList, index, indent - 1);
+                }
+                indent++;
+                result += insertReturnAndIndent(argList, index + 1, indent);
+            } else if (SQLUtils.isBlockEndKeyword(dialect, tokenString)) {
+                indent--;
+                result += insertReturnAndIndent(argList, index, indent - 1);
+            } else switch (tokenString) {
                 case "CREATE":
                     if (!isCompact) {
                         int nextIndex = getNextKeyword(argList, index);
@@ -136,7 +151,6 @@ class IndentFormatter {
                         result += insertReturnAndIndent(argList, index + 1, indent);
                     }
                     break;
-                case "BEGIN":
                 case "FROM":
                 case "WHERE":
                 case "START WITH":
@@ -147,11 +161,6 @@ class IndentFormatter {
                     result += insertReturnAndIndent(argList, index, indent - 1);
                     if (!isCompact) {
                         result += insertReturnAndIndent(argList, index + 1, indent);
-                    }
-                    break;
-                case "DECLARE":  //$NON-NLS-1$
-                    if (index > 0) {
-                        result += insertReturnAndIndent(argList, index, indent - 1);
                     }
                     break;
                 case "LEFT":
@@ -169,7 +178,6 @@ class IndentFormatter {
                     }
                     break;
                 case "VALUES":  //$NON-NLS-1$
-                case "END":  //$NON-NLS-1$
                 case "LIMIT":  //$NON-NLS-1$
                     indent--;
                     result += insertReturnAndIndent(argList, index, indent);
