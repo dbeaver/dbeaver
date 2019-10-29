@@ -299,8 +299,6 @@ public class SQLFormatterTokenized implements SQLFormatter {
         return null;
     }
 
-
-
     private static  boolean isEmbeddedToken(FormatterToken token) {
         switch (token.getString()) {
             case ":":
@@ -312,6 +310,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
             case "#":
             case "-":
             case "'":
+            case "%":
             case "\"":
             case "`":
                 return true;
@@ -319,9 +318,5 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 return false;
         }
     }
-
-
-
-
 
 }
