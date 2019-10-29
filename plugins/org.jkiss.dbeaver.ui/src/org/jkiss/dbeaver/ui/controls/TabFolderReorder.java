@@ -147,18 +147,21 @@ public class TabFolderReorder
             String dragText = dragItem.getText();
             Image dragImage = dragItem.getImage();
             String dragToolTip = dragItem.getToolTipText();
+            boolean dragShowClose = dragItem.getShowClose();
             Object dragData = dragItem.getData();
 
             dragItem.setText(item.getText());
             dragItem.setImage(item.getImage());
             dragItem.setToolTipText(item.getToolTipText());
             dragItem.setData(item.getData());
+            dragItem.setShowClose(item.getShowClose());
             dragItem.setControl(item.getControl());
 
             item.setText(dragText);
             item.setImage(dragImage);
             item.setToolTipText(dragToolTip);
             item.setData(dragData);
+            item.setShowClose(dragShowClose);
             item.setControl(dragControl);
 
             folder.setSelection(item);
