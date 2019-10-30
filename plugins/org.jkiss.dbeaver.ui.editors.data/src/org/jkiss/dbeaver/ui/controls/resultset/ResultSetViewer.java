@@ -1724,16 +1724,18 @@ public class ResultSetViewer extends Viewer
     }
 
     private Object savePresentationState() {
+        Object[] state = new Object[1];
         if (activePresentation instanceof IStatefulControl) {
-            return ((IStatefulControl) activePresentation).saveState();
-        } else {
-            return null;
+            UIUtils.syncExec(() ->
+                state[0] =  ((IStatefulControl) activePresentation).saveState());
         }
+        return state[0];
     }
 
     private boolean restorePresentationState(Object state) {
         if (activePresentation instanceof IStatefulControl) {
-            ((IStatefulControl) activePresentation).restoreState(state);
+            UIUtils.syncExec(() ->
+                ((IStatefulControl) activePresentation).restoreState(state));
             return true;
         }
         return false;
