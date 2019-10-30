@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data manipulator.
@@ -45,7 +46,7 @@ public interface DBSDataManipulator extends DBSDataContainer {
         @NotNull
         DBCStatistics execute(@NotNull DBCSession session) throws DBCException;
 
-        void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions) throws DBCException;
+        void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException;
 
         void close();
     }

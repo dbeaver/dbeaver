@@ -2013,4 +2013,9 @@ public final class DBUtils {
         return table  instanceof DBSView || table instanceof DBSTable && ((DBSTable) table).isView();
     }
 
+    public static String getEntityScriptName(DBSEntity entity, Map<String, Object> options) {
+        return CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) && entity instanceof DBPQualifiedObject ?
+            ((DBPQualifiedObject)entity).getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(entity);
+    }
+
 }

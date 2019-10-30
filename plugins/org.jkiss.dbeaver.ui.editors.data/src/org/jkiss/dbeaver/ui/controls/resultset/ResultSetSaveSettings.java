@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 public class ResultSetSaveSettings {
     private boolean deleteCascade;
     private boolean deepCascade;
+    private boolean useFullyQualifiedNames = true;
 
     public boolean isDeleteCascade() {
         return deleteCascade;
@@ -37,5 +38,13 @@ public class ResultSetSaveSettings {
 
     public void setDeepCascade(boolean deepCascade) {
         this.deepCascade = deepCascade;
+    }
+
+    public boolean isUseFullyQualifiedNames() {
+        return useFullyQualifiedNames;
+    }
+
+    public void setUseFullyQualifiedNames(boolean useFullyQualifiedNames) {
+        this.useFullyQualifiedNames = useFullyQualifiedNames;
     }
 }

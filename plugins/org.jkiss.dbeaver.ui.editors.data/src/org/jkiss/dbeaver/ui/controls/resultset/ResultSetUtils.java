@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -389,6 +388,7 @@ public class ResultSetUtils
 
     public static boolean equalAttributes(DBCAttributeMetaData attr1, DBCAttributeMetaData attr2) {
         return
+            attr1 != null && attr2 != null &&
             SQLUtils.compareAliases(attr1.getLabel(), attr2.getLabel()) &&
             SQLUtils.compareAliases(attr1.getName(), attr2.getName()) &&
             CommonUtils.equalObjects(attr1.getEntityMetaData(), attr2.getEntityMetaData()) &&

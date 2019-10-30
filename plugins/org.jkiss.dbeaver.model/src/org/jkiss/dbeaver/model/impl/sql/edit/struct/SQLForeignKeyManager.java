@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -113,9 +112,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         final DBSEntityConstraint refConstraint = foreignKey.getReferencedConstraint();
 
         final String refTableName =
-            refConstraint == null ? "<?>" :
-                (CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
-                DBUtils.getObjectFullName(refConstraint.getParentObject(), DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(refConstraint.getParentObject()));
+            refConstraint == null ? "<?>" : DBUtils.getEntityScriptName(refConstraint.getParentObject(), options);
 
         decl.append(") REFERENCES ").append(refTableName).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         if (refConstraint instanceof DBSEntityReferrer) {
