@@ -16,16 +16,21 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model.generic;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDialect;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -51,13 +56,13 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Map<String, String> connectionsProps = new HashMap<>();
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // App name
             connectionsProps.put(
                 SQLServerUtils.isDriverJtds(driver) ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
-                CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), purpose), 64));
+                CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 64));
         }
         return connectionsProps;
     }
@@ -73,8 +78,9 @@ public class SQLServerGenericDataSource extends GenericDataSource {
         return super.getDataSourceFeature(featureId);
     }
 
+    @NotNull
     @Override
-    public DBPDataKind resolveDataKind(String typeName, int valueType) {
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
         if (valueType == Types.VARCHAR) {
             // Workaround for jTDS driver (#3555)
             switch (typeName) {
@@ -96,7 +102,7 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     // Windows authentication
 
     @Override
-    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
@@ -105,7 +111,7 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     }
 
     @Override
-    protected String getConnectionUserPassword(DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {

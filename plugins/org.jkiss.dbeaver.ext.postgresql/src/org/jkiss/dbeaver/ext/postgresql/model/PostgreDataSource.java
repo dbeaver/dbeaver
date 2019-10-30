@@ -88,7 +88,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    protected void initializeRemoteInstance(DBRProgressMonitor monitor) throws DBException {
+    protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
         if (CommonUtils.isEmpty(activeDatabaseName)) {
             activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
@@ -146,7 +146,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
     {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(PostgreConstants.HANDLER_SSL);
@@ -337,38 +337,39 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     // Connections
 
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose) throws DBCException {
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
         final DBPConnectionConfiguration conConfig = getContainer().getActualConnectionConfiguration();
 
+        JDBCRemoteInstance instance = context == null ? null : context.getOwnerInstance();
         Connection pgConnection;
-        if (remoteInstance != null) {
-            log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
+        if (instance != null) {
+            log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
-        if (remoteInstance instanceof PostgreDatabase &&
-            remoteInstance.getName() != null &&
-            !CommonUtils.equalObjects(remoteInstance.getName(), conConfig.getDatabaseName()))
+        if (instance instanceof PostgreDatabase &&
+            instance.getName() != null &&
+            !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName()))
         {
             // If database was changed then use new name for connection
             final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
             try {
                 // Patch URL with new database name
-                conConfig.setDatabaseName(remoteInstance.getName());
+                conConfig.setDatabaseName(instance.getName());
                 conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
 
-                pgConnection = super.openConnection(monitor, remoteInstance, purpose);
+                pgConnection = super.openConnection(monitor, context, purpose);
             }
             finally {
                 conConfig.setDatabaseName(originalConfig.getDatabaseName());
                 conConfig.setUrl(originalConfig.getUrl());
             }
         } else {
-            pgConnection = super.openConnection(monitor, remoteInstance, purpose);
+            pgConnection = super.openConnection(monitor, context, purpose);
         }
 
         if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info. Not supported by Redshift?
             try {
-                pgConnection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, DBUtils.getClientApplicationName(getContainer(), purpose));
+                pgConnection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, DBUtils.getClientApplicationName(getContainer(), context, purpose));
             } catch (Throwable e) {
                 // just ignore
                 log.debug(e);

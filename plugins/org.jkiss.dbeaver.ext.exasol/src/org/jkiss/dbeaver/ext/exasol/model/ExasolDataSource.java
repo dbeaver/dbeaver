@@ -215,7 +215,7 @@ public class ExasolDataSource extends JDBCDataSource
 				}
 				
 				@Override
-				public ExasolPriorityGroup getObject(DBRProgressMonitor monitor, ExasolDataSource owner, String name) {
+				public ExasolPriorityGroup getObject(@NotNull DBRProgressMonitor monitor, @NotNull ExasolDataSource owner, @NotNull String name) {
 					return getCachedObject(name);
 				}
 				
@@ -317,10 +317,10 @@ public class ExasolDataSource extends JDBCDataSource
     }
     
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, String purpose,
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose,
                                                     DBPConnectionConfiguration connectionInfo) throws DBCException {
     	
-    	Properties props =  super.getAllConnectionProperties(monitor, purpose, connectionInfo);
+    	Properties props =  super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
     	
     	if (addMetaProps == null)
     		addMetaProps = new Properties();
@@ -444,7 +444,7 @@ public class ExasolDataSource extends JDBCDataSource
 
 	@Override
 	protected Map<String, String> getInternalConnectionProperties(
-        DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
+		DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
 	{
 		Map<String, String> props = new HashMap<>();
 		props.putAll(ExasolDataSourceProvider.getConnectionsProps());
