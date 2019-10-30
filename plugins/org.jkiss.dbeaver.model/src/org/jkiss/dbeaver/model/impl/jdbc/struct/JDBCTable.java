@@ -47,6 +47,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JDBC abstract table implementation
@@ -312,12 +313,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
             @NotNull
             @Override
-            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues) throws DBCException {
+            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
                 // Make query
+                String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
                 StringBuilder query = new StringBuilder(200);
                 query
                     .append(useUpsert(session) ? "UPSERT" : "INSERT")
-                    .append(" INTO ").append(getFullyQualifiedName(DBPEvaluationContext.DML)).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
+                    .append(" INTO ").append(tableName).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
                 allNulls = true;
                 for (int i = 0; i < attributes.length; i++) {
@@ -401,7 +403,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new ExecuteBatchImpl(attributes, keysReceiver, false) {
             @NotNull
             @Override
-            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues) throws DBCException {
+            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
                 String tableAlias = null;
                 SQLDialect dialect = ((SQLDataSource) session.getDataSource()).getSQLDialect();
                 if (dialect.supportsAliasInUpdate()) {
@@ -409,7 +411,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 }
                 // Make query
                 StringBuilder query = new StringBuilder();
-                query.append("UPDATE ").append(getFullyQualifiedName(DBPEvaluationContext.DML));
+                String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
+                query.append("UPDATE ").append(tableName);
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
@@ -477,7 +480,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new ExecuteBatchImpl(keyAttributes, null, false) {
             @NotNull
             @Override
-            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues) throws DBCException {
+            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
                 String tableAlias = null;
                 SQLDialect dialect = ((SQLDataSource) session.getDataSource()).getSQLDialect();
                 if (dialect.supportsAliasInUpdate()) {
@@ -486,7 +489,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
                 // Make query
                 StringBuilder query = new StringBuilder();
-                query.append("DELETE FROM ").append(getFullyQualifiedName(DBPEvaluationContext.DML));
+                String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
+                query.append("DELETE FROM ").append(tableName);
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }

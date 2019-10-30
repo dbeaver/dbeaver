@@ -24,10 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPMessageType;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -163,7 +160,7 @@ class ResultSetPersister {
             prepareStatements(monitor, settings);
         }
 
-        return execute(monitor, generateScript, listener);
+        return execute(monitor, generateScript, settings, listener);
     }
 
     private void prepareStatements(@NotNull DBRProgressMonitor monitor, ResultSetSaveSettings settings) throws DBException {
@@ -401,13 +398,13 @@ class ResultSetPersister {
         }
     }
 
-    private boolean execute(@Nullable DBRProgressMonitor monitor, boolean generateScript, @Nullable final DataUpdateListener listener)
+    private boolean execute(@Nullable DBRProgressMonitor monitor, boolean generateScript, @NotNull ResultSetSaveSettings settings, @Nullable final DataUpdateListener listener)
         throws DBException {
         DBCExecutionContext executionContext = viewer.getContainer().getExecutionContext();
         if (executionContext == null) {
             throw new DBCException("No execution context");
         }
-        DataUpdaterJob job = new DataUpdaterJob(generateScript, listener, executionContext);
+        DataUpdaterJob job = new DataUpdaterJob(generateScript, settings, listener, executionContext);
         if (monitor == null) {
             job.schedule();
             return true;
@@ -515,15 +512,17 @@ class ResultSetPersister {
 
     private class DataUpdaterJob extends DataSourceJob {
         private final boolean generateScript;
+        private final ResultSetSaveSettings settings;
         private final DataUpdateListener listener;
         private boolean autocommit;
         private DBCStatistics updateStats, insertStats, deleteStats;
         private DBCSavepoint savepoint;
         private Throwable error;
 
-        protected DataUpdaterJob(boolean generateScript, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext) {
+        protected DataUpdaterJob(boolean generateScript, @NotNull ResultSetSaveSettings settings, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext) {
             super(ResultSetMessages.controls_resultset_viewer_job_update, executionContext);
             this.generateScript = generateScript;
+            this.settings = settings;
             this.listener = listener;
         }
 
@@ -598,6 +597,9 @@ class ResultSetPersister {
         }
 
         private Throwable executeStatements(DBCSession session) {
+            Map<String, Object> options = new LinkedHashMap<>();
+            options.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, settings.isUseFullyQualifiedNames());
+
             DBRProgressMonitor monitor = session.getProgressMonitor();
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
             if (!generateScript && txnManager != null) {
@@ -631,7 +633,7 @@ class ResultSetPersister {
                             new ExecutionSource(dataContainer))) {
                             batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                             if (generateScript) {
-                                batch.generatePersistActions(session, script);
+                                batch.generatePersistActions(session, script, options);
                             } else {
                                 deleteStats.accumulate(batch.execute(session));
                             }
@@ -654,7 +656,7 @@ class ResultSetPersister {
                             new ExecutionSource(dataContainer))) {
                             batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                             if (generateScript) {
-                                batch.generatePersistActions(session, script);
+                                batch.generatePersistActions(session, script, options);
                             } else {
                                 insertStats.accumulate(batch.execute(session));
                             }
@@ -687,7 +689,7 @@ class ResultSetPersister {
                             // Execute
                             batch.add(attributes);
                             if (generateScript) {
-                                batch.generatePersistActions(session, script);
+                                batch.generatePersistActions(session, script, options);
                             } else {
                                 updateStats.accumulate(batch.execute(session));
                             }
@@ -864,7 +866,7 @@ class ResultSetPersister {
             }
             for (int i = 0; i < curAttributes.length; i++) {
                 if (!ResultSetUtils.equalAttributes(curAttributes[i].getMetaAttribute(), attributes.get(i))) {
-                    log.debug("Attribute '" + curAttributes[i].getMetaAttribute().getName() + "' doesn't match '" + attributes.get(i).getName() + "'");
+                    log.debug("Attribute '" + curAttributes[i].getMetaAttribute() + "' doesn't match '" + attributes.get(i).getName() + "'");
                     return;
                 }
             }

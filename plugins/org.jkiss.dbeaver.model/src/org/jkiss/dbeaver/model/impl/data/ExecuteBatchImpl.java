@@ -32,9 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Execute batch.
@@ -76,24 +74,25 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     @Override
     public DBCStatistics execute(@NotNull DBCSession session) throws DBCException
     {
-        return processBatch(session, null);
+        return processBatch(session, null, Collections.emptyMap());
     }
 
     @NotNull
     @Override
-    public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions) throws DBCException {
-        processBatch(session, actions);
+    public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException {
+        processBatch(session, actions, options);
     }
 
     /**
      * Execute batch OR generate batch script.
      * @param session    session
      * @param actions    script actions. If not null then no execution will be done
+     * @param options
      * @return execution statistics
      * @throws DBCException
      */
     @NotNull
-    private DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions) throws DBCException
+    private DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException
     {
         //session.getProgressMonitor().subTask("Save batch (" + values.size() + ")");
         DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
@@ -149,7 +148,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     }
                 }
                 if (statement == null || !reuse) {
-                    statement = prepareStatement(session, handlers, rowValues);
+                    statement = prepareStatement(session, handlers, rowValues, options);
                     statistics.setQueryText(statement.getQueryString());
                     statistics.addStatementsCount();
                 }
@@ -325,7 +324,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     }
 
     @NotNull
-    protected abstract DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues) throws DBCException;
+    protected abstract DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException;
 
     protected abstract void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException;
 
