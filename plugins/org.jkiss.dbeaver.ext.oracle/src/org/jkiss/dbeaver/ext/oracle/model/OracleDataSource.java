@@ -32,7 +32,10 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -130,7 +133,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose) throws DBCException {
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
 /*
         // Set tns admin directory
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
@@ -146,21 +149,21 @@ public class OracleDataSource extends JDBCDataSource
 */
 
         try {
-            return super.openConnection(monitor, remoteInstance, purpose);
+            return super.openConnection(monitor, context, purpose);
         } catch (DBCException e) {
             if (e.getErrorCode() == OracleConstants.EC_PASSWORD_EXPIRED) {
                 // Here we could try to ask for expired password change
                 // This is supported  for thin driver since Oracle 12.2
-                if (changeExpiredPassword(monitor, purpose)) {
+                if (changeExpiredPassword(monitor, context, purpose)) {
                     // Retry
-                    return openConnection(monitor, remoteInstance, purpose);
+                    return openConnection(monitor, context, purpose);
                 }
             }
             throw e;
         }
     }
 
-    private boolean changeExpiredPassword(DBRProgressMonitor monitor, String purpose) {
+    private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
         // Ref: https://stackoverflow.com/questions/21733300/oracle-password-expiry-and-grace-period-handling-using-java-oracle-jdbc
 
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
@@ -174,7 +177,7 @@ public class OracleDataSource extends JDBCDataSource
             if (passwordInfo.getNewPassword() == null) {
                 throw new DBException("You can't set empty password");
             }
-            Properties connectProps = getAllConnectionProperties(monitor, purpose, connectionInfo);
+            Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
             connectProps.setProperty("oracle.jdbc.newPassword", passwordInfo.getNewPassword());
 
             final String url = getConnectionURL(connectionInfo);
@@ -283,11 +286,11 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Map<String, String> connectionsProps = new HashMap<>();
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Program name
-            String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
+            String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
             appName = appName.replace('(', '_').replace(')', '_'); // Replace brackets - Oracle don't like them
             connectionsProps.put("v$session.program", CommonUtils.truncateString(appName, 48));
         }

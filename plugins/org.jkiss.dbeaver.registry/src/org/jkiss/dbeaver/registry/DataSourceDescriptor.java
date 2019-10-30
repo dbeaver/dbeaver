@@ -77,23 +77,6 @@ public class DataSourceDescriptor
 {
     private static final Log log = Log.getLog(DataSourceDescriptor.class);
 
-    public static final String[] CONNECT_PATTERNS = new String[] {
-        DBPConnectionConfiguration.VARIABLE_HOST,
-        DBPConnectionConfiguration.VARIABLE_PORT,
-        DBPConnectionConfiguration.VARIABLE_SERVER,
-        DBPConnectionConfiguration.VARIABLE_DATABASE,
-        DBPConnectionConfiguration.VARIABLE_USER,
-        DBPConnectionConfiguration.VARIABLE_PASSWORD,
-        DBPConnectionConfiguration.VARIABLE_URL,
-
-        SystemVariablesResolver.VAR_WORKSPACE,
-        SystemVariablesResolver.VAR_HOME,
-        SystemVariablesResolver.VAR_DBEAVER_HOME,
-        SystemVariablesResolver.VAR_APP_NAME,
-        SystemVariablesResolver.VAR_APP_VERSION,
-        SystemVariablesResolver.VAR_LOCAL_IP
-    };
-
     public static final String[][] CONNECT_VARIABLES = new String[][]{
         {DBPConnectionConfiguration.VARIABLE_HOST, "target host"},
         {DBPConnectionConfiguration.VARIABLE_PORT, "target port"},

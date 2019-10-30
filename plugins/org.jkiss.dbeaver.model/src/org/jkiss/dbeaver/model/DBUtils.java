@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -1816,10 +1817,20 @@ public final class DBUtils {
         });
     }
 
-    public static String getClientApplicationName(DBPDataSourceContainer container, String purpose) {
+    public static String getClientApplicationName(DBPDataSourceContainer container, DBCExecutionContext context, String purpose) {
         if (container.getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
             String appName = container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
-            return GeneralUtils.replaceVariables(appName, container.getVariablesResolver(false));
+            IVariableResolver cVarResolver = container.getVariablesResolver(false);
+            return GeneralUtils.replaceVariables(appName, name -> {
+                switch (name) {
+                    case DBConstants.VAR_CONTEXT_NAME:
+                        return context == null ? null : context.getContextName();
+                    case DBConstants.VAR_CONTEXT_ID:
+                        return context == null ? null : String.valueOf(context.getContextId());
+                    default:
+                        return cVarResolver.get(name);
+                }
+            });
         }
         final String productTitle = GeneralUtils.getProductTitle();
         return purpose == null ? productTitle : productTitle + " - " + purpose;

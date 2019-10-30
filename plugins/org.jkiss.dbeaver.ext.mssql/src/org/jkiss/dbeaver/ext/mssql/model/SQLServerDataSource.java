@@ -98,20 +98,21 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         return serverVersion;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return this;
     }
 
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
-        Properties properties = super.getAllConnectionProperties(monitor, purpose, connectionInfo);
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+        Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
 
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // App name
             properties.put(
                 SQLServerUtils.isDriverJtds(getContainer().getDriver()) ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
-                CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), purpose), 64));
+                CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 64));
         }
 
         fillConnectionProperties(connectionInfo, properties);
@@ -124,7 +125,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         super.initializeContextState(monitor, context, setActiveObject);
         if (setActiveObject ) {
             SQLServerDatabase defaultObject = getDefaultObject();
@@ -146,7 +147,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    public void initialize(DBRProgressMonitor monitor) throws DBException {
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
 
         this.dataTypeCache.getAllObjects(monitor, this);
@@ -168,8 +169,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     //////////////////////////////////////////////////////////////////
     // Data types
 
+    @NotNull
     @Override
-    public DBPDataKind resolveDataKind(String typeName, int valueType) {
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
         return getLocalDataType(valueType).getDataKind();
     }
 
@@ -178,7 +180,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         return dataTypeCache.getCachedObjects();
     }
 
-    public SQLServerDataType getSystemDataType(int systemTypeId) {
+    SQLServerDataType getSystemDataType(int systemTypeId) {
         for (SQLServerDataType dt : dataTypeCache.getCachedObjects()) {
             if (dt.getObjectId() == systemTypeId) {
                 return dt;
@@ -205,7 +207,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    public String getDefaultDataTypeName(DBPDataKind dataKind) {
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
             case BOOLEAN: return "bit";
             case NUMERIC: return "int";
@@ -230,7 +232,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     // Windows authentication
 
     @Override
-    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
@@ -239,7 +241,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    protected String getConnectionUserPassword(DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {

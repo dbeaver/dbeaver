@@ -24,15 +24,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
 /**
  * PrefPageConnections
@@ -40,6 +39,26 @@ import org.jkiss.dbeaver.core.CoreMessages;
 public class PrefPageConnections extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections"; //$NON-NLS-1$
+
+    private static final String[] ALLOWED_VARIABLES = new String[] {
+        DBPConnectionConfiguration.VARIABLE_HOST,
+        DBPConnectionConfiguration.VARIABLE_PORT,
+        DBPConnectionConfiguration.VARIABLE_SERVER,
+        DBPConnectionConfiguration.VARIABLE_DATABASE,
+        DBPConnectionConfiguration.VARIABLE_USER,
+        DBPConnectionConfiguration.VARIABLE_PASSWORD,
+        DBPConnectionConfiguration.VARIABLE_URL,
+
+        DBConstants.VAR_CONTEXT_NAME,
+        DBConstants.VAR_CONTEXT_ID,
+
+        SystemVariablesResolver.VAR_WORKSPACE,
+        SystemVariablesResolver.VAR_HOME,
+        SystemVariablesResolver.VAR_DBEAVER_HOME,
+        SystemVariablesResolver.VAR_APP_NAME,
+        SystemVariablesResolver.VAR_APP_VERSION,
+        SystemVariablesResolver.VAR_LOCAL_IP,
+    };
 
     private Button disableClientApplicationNameCheck;
     private Button overrideClientApplicationNameCheck;
@@ -97,8 +116,8 @@ public class PrefPageConnections extends TargetPrefPage
             UIUtils.installContentProposal(
                 clientApplicationNameText,
                 new TextContentAdapter(),
-                new SimpleContentProposalProvider(DataSourceDescriptor.CONNECT_PATTERNS));
-            UIUtils.setContentProposalToolTip(clientApplicationNameText, CoreMessages.pref_page_connections_application_name_text, DataSourceDescriptor.CONNECT_PATTERNS); 
+                new SimpleContentProposalProvider(ALLOWED_VARIABLES));
+            UIUtils.setContentProposalToolTip(clientApplicationNameText, CoreMessages.pref_page_connections_application_name_text, ALLOWED_VARIABLES);
         }
 
         {

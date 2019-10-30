@@ -120,17 +120,17 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose) throws DBCException {
-        Connection jdbcConnection = super.openConnection(monitor, remoteInstance, purpose);
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
+        Connection jdbcConnection = super.openConnection(monitor, context, purpose);
 
         if (isPopulateClientAppName() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-            populateClientAppName(purpose, jdbcConnection);
+            populateClientAppName(context, purpose, jdbcConnection);
         }
 
         return jdbcConnection;
     }
 
-    private void populateClientAppName(@NotNull String purpose, Connection jdbcConnection) {
+    private void populateClientAppName(JDBCExecutionContext context, @NotNull String purpose, Connection jdbcConnection) {
         // Provide client info
         // "ApplicationName" property seems to be pretty standard
         boolean wasPopulated = false;
@@ -142,7 +142,7 @@ public class GenericDataSource extends JDBCDataSource
                         final String name = JDBCUtils.safeGetString(ciList, "NAME");
                         int maxLength = JDBCUtils.safeGetInt(ciList, "MAX_LEN");
                         if (JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY.equals(name)) {
-                            String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
+                            String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
                             if (maxLength <= 0) {
                                 maxLength = 48;
                             }
@@ -159,7 +159,7 @@ public class GenericDataSource extends JDBCDataSource
             log.debug("Error reading and setting client application name: " + e.getMessage());
         }
         if (!wasPopulated) {
-            String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
+            String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
             try {
                 jdbcConnection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, appName);
             } catch (Throwable e) {

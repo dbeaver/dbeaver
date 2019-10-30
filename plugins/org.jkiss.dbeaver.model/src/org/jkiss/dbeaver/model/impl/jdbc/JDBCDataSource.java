@@ -111,7 +111,7 @@ public abstract class JDBCDataSource
         this.defaultRemoteInstance = new JDBCRemoteInstance<>(monitor, this, true);
     }
 
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose)
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose)
         throws DBCException
     {
         // It MUST be a JDBC driver
@@ -125,7 +125,7 @@ public abstract class JDBCDataSource
         }
 
         DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
-        Properties connectProps = getAllConnectionProperties(monitor, purpose, connectionInfo);
+        Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
 
         // Obtain connection
         try {
@@ -206,13 +206,13 @@ public abstract class JDBCDataSource
         }
     }
 
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         // Set properties
         Properties connectProps = new Properties();
 
         {
             // Use properties defined by datasource itself
-            Map<String,String> internalProps = getInternalConnectionProperties(monitor, getContainer().getDriver(), purpose, connectionInfo);
+            Map<String,String> internalProps = getInternalConnectionProperties(monitor, getContainer().getDriver(), context, purpose, connectionInfo);
             if (internalProps != null) {
                 connectProps.putAll(internalProps);
             }
@@ -625,7 +625,7 @@ public abstract class JDBCDataSource
      * @return predefined connection properties
      */
     @Nullable
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo)
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo)
         throws DBCException
     {
         return null;

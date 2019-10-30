@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -42,8 +38,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HANADataSource extends GenericDataSource implements DBCQueryPlanner, IAdaptable {
 
@@ -102,10 +103,10 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     } 
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Map<String, String> props = new HashMap<>();
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-            String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
+            String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
             props.put(PROP_APPLICATION_NAME, appName);
         }
         if (getContainer().isConnectionReadOnly()) {

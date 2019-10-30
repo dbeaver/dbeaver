@@ -67,6 +67,9 @@ public class DBConstants {
     public static final String PARAM_OBJECT_DEFINITION_TEXT = "objectDefinitionText"; //NON-NLS-1
     public static final String PARAM_EXTENDED_DEFINITION_TEXT = "extendedDefinitionText"; //NON-NLS-1
 
+    public static final String VAR_CONTEXT_NAME = "context.name";
+    public static final String VAR_CONTEXT_ID = "context.id";
+
     // Internal properties prefix. This is a legacy properties marker (used to divide driver properties from provider properties)
     // Left for backward compatibility. Do not use it for new provider property names
     public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
