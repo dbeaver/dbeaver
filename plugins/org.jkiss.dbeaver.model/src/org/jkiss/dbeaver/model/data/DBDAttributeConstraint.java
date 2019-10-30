@@ -131,8 +131,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     public boolean matches(DBSAttributeBase attr, boolean matchByName) {
         return attribute == attr ||
-            (attribute instanceof DBDAttributeBinding && ((DBDAttributeBinding) attribute).matches(attr, matchByName)) ||
-            (matchByName && attributeName.equals(attr.getName()));
+            (attribute instanceof DBDAttributeBinding && ((DBDAttributeBinding) attribute).matches(attr, matchByName));
     }
 
 }
