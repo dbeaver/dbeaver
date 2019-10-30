@@ -10,7 +10,7 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
 
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
-        if (!isTipsEnabled()) {
+        if (!isTipsEnabled() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
         ShowTipOfTheDayHandler.showTipOfTheDay(window);
