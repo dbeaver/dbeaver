@@ -777,9 +777,9 @@
             <command commandId="org.jkiss.dbeaver.core.procedure.execute">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection">
+            <!--<command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection">
                 <visibleWhen checkEnabled="true"/>
-            </command>
+            </command>-->
             <command commandId="org.jkiss.dbeaver.core.sql.editor.forSelection">
                 <visibleWhen checkEnabled="true"/>
             </command>
