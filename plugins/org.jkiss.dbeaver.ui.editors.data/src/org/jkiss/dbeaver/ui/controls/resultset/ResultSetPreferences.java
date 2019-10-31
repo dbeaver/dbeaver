@@ -49,6 +49,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_SHOW_ATTR_FILTERS = "resultset.show.attFilters"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ATTR_ORDERING = "resultset.show.attOrdering"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_DESCRIPTION = "resultset.show.columnDescription"; //$NON-NLS-1$
+    public static final String RESULT_SET_USE_SMOOTH_SCROLLING = "resultset.hScroll.smooth"; //$NON-NLS-1$
     public static final String RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES = "resultset.calc.columnWidthByValues"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_CONNECTION_NAME = "resultset.show.connectionName"; //$NON-NLS-1$
     public static final String RESULT_SET_COLORIZE_DATA_TYPES = "resultset.show.colorizeDataTypes"; //$NON-NLS-1$

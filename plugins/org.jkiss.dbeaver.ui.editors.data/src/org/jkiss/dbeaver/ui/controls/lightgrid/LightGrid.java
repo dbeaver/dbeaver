@@ -1548,7 +1548,7 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
         this.rowHeaderVisible = show;
-        setColumnScrolling(true);
+        //setColumnScrolling(true);
 
         redraw();
     }
@@ -3960,12 +3960,12 @@ public abstract class LightGrid extends Canvas {
      * @param columnScrolling true to horizontally scroll by column, false to
      *                        scroll by pixel
      */
-    private void setColumnScrolling(boolean columnScrolling)
+    public void setColumnScrolling(boolean columnScrolling)
     {
         checkWidget();
-        if (rowHeaderVisible && !columnScrolling) {
-            return;
-        }
+//        if (rowHeaderVisible && !columnScrolling) {
+//            return;
+//        }
 
         this.columnScrolling = columnScrolling;
         scrollValuesObsolete = true;

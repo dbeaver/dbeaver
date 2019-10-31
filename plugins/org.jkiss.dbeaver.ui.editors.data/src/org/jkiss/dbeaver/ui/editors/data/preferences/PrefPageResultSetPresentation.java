@@ -54,11 +54,12 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
     private Button gridShowOddRows;
     private Button colorizeDataTypes;
-    private Spinner gridRowBatchSize;
-    private Button gridShowCellIcons;
+    private Text gridRowBatchSize;
+    //private Button gridShowCellIcons;
     private Button gridShowAttrFilters;
     private Button gridShowAttrOrder;
     private Button gridShowAttrIcons;
+    private Button useSmoothScrolling;
     private Combo gridDoubleClickBehavior;
 
     private Spinner textTabSize;
@@ -131,12 +132,13 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             gridShowOddRows = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
             colorizeDataTypes = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
-            gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_row_batch_size, 1, 1, Short.MAX_VALUE);
+            gridRowBatchSize = UIUtils.createLabelText(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
             gridRowBatchSize.setToolTipText(ResultSetMessages.pref_page_database_resultsets_label_row_batch_size_tip);
-            gridShowCellIcons = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
+            //gridShowCellIcons = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
             gridShowAttrIcons = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_icons, ResultSetMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
             gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
             gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
+            useSmoothScrolling = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_use_smooth_scrolling, ResultSetMessages.pref_page_database_resultsets_label_use_smooth_scrolling_tip, false, 2);
             gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
             gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_none, Spreadsheet.DoubleClickBehavior.NONE.ordinal());
             gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
@@ -168,11 +170,13 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             rightJustifyDateTime.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME));
             transformComplexTypes.setSelection(store.getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES));
 
-            gridRowBatchSize.setSelection(store.getInt(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE));
-            gridShowCellIcons.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS));
+            gridRowBatchSize.setText(store.getString(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE));
+            //gridShowCellIcons.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS));
             gridShowAttrIcons.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS));
             gridShowAttrFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS));
             gridShowAttrOrder.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING));
+            useSmoothScrolling.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
+
             gridDoubleClickBehavior.select(
                 CommonUtils.valueOf(
                     Spreadsheet.DoubleClickBehavior.class,
@@ -205,11 +209,12 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, rightJustifyNumbers.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME, rightJustifyDateTime.getSelection());
             store.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, transformComplexTypes.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE, gridRowBatchSize.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS, gridShowCellIcons.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE, CommonUtils.toInt(gridRowBatchSize.getText()));
+            //store.setValue(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS, gridShowCellIcons.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS, gridShowAttrIcons.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS, gridShowAttrFilters.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING, gridShowAttrOrder.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING, useSmoothScrolling.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(
                 Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
@@ -240,10 +245,12 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
 
         store.setToDefault(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS);
+        //store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING);
+
         store.setToDefault(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK);
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
