@@ -29,16 +29,17 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.registry.ToolDescriptor;
 import org.jkiss.dbeaver.tools.registry.ToolGroupDescriptor;
 import org.jkiss.dbeaver.tools.registry.ToolsRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.common.ExecuteToolHandler;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.task.DatabaseTasksView;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -87,6 +88,12 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                     menuItems.add(new ActionContributionItem(new OpenToolsEditorAction(activePage, dataSource, ec)));
                 }
             }
+        }
+
+        // Tasks management
+        {
+            menuItems.add(new Separator());
+            menuItems.add(ActionUtils.makeCommandContribution(activePart.getSite(), DatabaseTasksView.CREATE_TASK_CMD_ID));
         }
     }
 
