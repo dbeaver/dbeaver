@@ -58,8 +58,8 @@ public class ToolWizardDialog extends ActiveWizardDialog
             if (nativeClientRequired) {
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-                Button configButton = createButton(parent, CLIENT_CONFIG_ID, "  Client configuration ...  ", false);
-                configButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                Button configButton = createButton(parent, CLIENT_CONFIG_ID, "Client ...", false);
+                //configButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
                 Label spacer = new Label(parent, SWT.NONE);
                 spacer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
