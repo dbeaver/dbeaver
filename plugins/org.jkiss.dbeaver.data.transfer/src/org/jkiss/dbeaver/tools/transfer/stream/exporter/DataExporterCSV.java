@@ -46,6 +46,7 @@ import java.util.Map;
 public class DataExporterCSV extends StreamExporterAbstract {
 
     private static final String PROP_DELIMITER = "delimiter";
+    private static final String PROP_ROW_DELIMITER = "rowDelimiter";
     private static final String PROP_HEADER = "header";
     private static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
@@ -61,6 +62,9 @@ public class DataExporterCSV extends StreamExporterAbstract {
         bottom,
         both
     }
+
+    private static final String ROW_DELIMITER_DEFAULT = "default";
+
     private String delimiter;
     private char quoteChar = '"';
     private boolean useQuotes = true;
@@ -78,6 +82,10 @@ public class DataExporterCSV extends StreamExporterAbstract {
         super.init(site);
         Map<Object, Object> properties = site.getProperties();
         this.delimiter = StreamTransferUtils.getDelimiterString(properties, PROP_DELIMITER);
+        this.rowDelimiter = StreamTransferUtils.getDelimiterString(properties, PROP_ROW_DELIMITER);
+        if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.delimiter)) {
+            this.rowDelimiter = GeneralUtils.getDefaultLineSeparator();
+        }
         Object quoteProp = properties.get(PROP_QUOTE_CHAR);
         String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();
         if (!CommonUtils.isEmpty(quoteStr)) {
@@ -91,7 +99,6 @@ public class DataExporterCSV extends StreamExporterAbstract {
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = quoteChar != ' ';
         quoteAlways = CommonUtils.toBoolean(properties.get(PROP_QUOTE_ALWAYS));
-        rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         try {
             headerPosition = HeaderPosition.valueOf(String.valueOf(properties.get(PROP_HEADER)));
         } catch (Exception e) {
