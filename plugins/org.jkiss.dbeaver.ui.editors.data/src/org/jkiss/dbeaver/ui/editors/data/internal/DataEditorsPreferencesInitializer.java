@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitializer {
@@ -84,6 +86,9 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES, false);
+
+        // Override default editor page
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE, DatabaseDataEditor.class.getName());
     }
 
 }

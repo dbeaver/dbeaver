@@ -148,6 +148,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
         String defEditorPage = store.getString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE);
         List<EntityEditorDescriptor> entityEditors = getAvailableEditorPages();
+        defaultEditorPageCombo.removeAll();
         defaultEditorPageCombo.add("");
         for (EntityEditorDescriptor eed : entityEditors) {
             defaultEditorPageCombo.add(eed.getName());
