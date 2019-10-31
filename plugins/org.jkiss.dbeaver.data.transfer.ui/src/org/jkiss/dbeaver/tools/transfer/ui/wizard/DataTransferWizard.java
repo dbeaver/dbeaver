@@ -259,21 +259,17 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
 
     @Override
     public boolean performCancel() {
-        // Save settings anyway?
-        //saveSettings();
+        // Save settings if we have task
+        if (getCurrentTask() != null && !saveSettings()) {
+            return false;
+        }
 
         return super.performCancel();
     }
 
     @Override
     public boolean performFinish() {
-        // Save settings
-        try {
-            getRunnableContext().run(true, true, this::saveSettings);
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't save settings", e.getTargetException());
-            return false;
-        } catch (InterruptedException e) {
+        if (!saveSettings()) {
             return false;
         }
 
@@ -301,15 +297,28 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         return true;
     }
 
-    @Override
-    public void setContainer(IWizardContainer wizardContainer) {
-        super.setContainer(wizardContainer);
-        //wizardContainer.
+    private boolean saveSettings() {
+        // Save settings
+        try {
+            getRunnableContext().run(true, true, this::saveSettings);
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't save settings", e.getTargetException());
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
+        return true;
     }
 
     private void saveSettings(DBRProgressMonitor monitor) {
         DialogSettingsMap dialogSettings = new DialogSettingsMap(getDialogSettings());
         saveConfiguration(monitor, dialogSettings);
+    }
+
+    @Override
+    public void setContainer(IWizardContainer wizardContainer) {
+        super.setContainer(wizardContainer);
+        //wizardContainer.
     }
 
     private void addNodeSettings(DataTransferNodeDescriptor node) {
