@@ -373,6 +373,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public void restoreState(Object state) {
+        if (state == null) {
+            return;
+        }
         ViewState viewState = (ViewState) state;
         this.curAttribute = controller.getModel().getAttributeBinding(viewState.focusedAttribute);
         ResultSetRow curRow = controller.getCurrentRow();
