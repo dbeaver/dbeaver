@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -35,8 +34,6 @@ import java.util.List;
  */
 public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DBSInstance
 {
-    private static final Log log = Log.getLog(JDBCRemoteInstance.class);
-
     @NotNull
     protected final DATASOURCE dataSource;
     @Nullable
@@ -119,30 +116,47 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
     @Override
     public JDBCExecutionContext[] getAllContexts() {
         synchronized (allContexts) {
-            return allContexts.toArray(new JDBCExecutionContext[allContexts.size()]);
+            return allContexts.toArray(new JDBCExecutionContext[0]);
         }
     }
 
+    @NotNull
     @Override
     public JDBCExecutionContext getDefaultContext(boolean meta) {
         if (metaContext != null && meta) {
             return this.metaContext;
         }
+        if (executionContext == null) {
+            throw new IllegalStateException("No execution context within database instance");
+        }
         return executionContext;
     }
 
     @Override
-    public void shutdown(DBRProgressMonitor monitor)
+    public void shutdown(DBRProgressMonitor monitor) {
+        shutdown(monitor, false);
+    }
+
+    /**
+     * Closes all instance contexts
+     * @param monitor  progress monitor
+     * @param keepMeta do not close meta context
+     */
+    public void shutdown(DBRProgressMonitor monitor, boolean keepMeta)
     {
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
+        List<JDBCExecutionContext> ctxCopy;
         synchronized (allContexts) {
-            List<JDBCExecutionContext> ctxCopy = new ArrayList<>(allContexts);
-            for (JDBCExecutionContext context : ctxCopy) {
-                monitor.subTask("Close context '" + context.getContextName() + "'");
-                context.close();
-                monitor.worked(1);
+            ctxCopy = new ArrayList<>(allContexts);
+        }
+        for (JDBCExecutionContext context : ctxCopy) {
+            if (keepMeta && context == metaContext) {
+                continue;
             }
+            monitor.subTask("Close context '" + context.getContextName() + "'");
+            context.close();
+            monitor.worked(1);
         }
     }
 
@@ -154,6 +168,12 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
 
     boolean removeContext(JDBCExecutionContext context) {
         synchronized (allContexts) {
+            if (context == executionContext) {
+                executionContext = null;
+            }
+            if (context == metaContext) {
+                metaContext = null;
+            }
             return allContexts.remove(context);
         }
     }
