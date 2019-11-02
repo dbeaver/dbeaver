@@ -113,6 +113,9 @@ public enum SQLServerObjectType implements DBSObjectType {
             return schema.getChild(monitor, objectName);
         } else if (SQLServerProcedure.class.isAssignableFrom(theClass)) {
             return schema.getProcedure(monitor, objectName);
+        } else if (SQLServerSynonym.class.isAssignableFrom(theClass)) {
+            SQLServerSynonym synonym = schema.getSynonym(monitor, objectName);
+            return synonym;
         } else {
             log.debug("Unsupported object for SQL Server search: " + name());
             return null;

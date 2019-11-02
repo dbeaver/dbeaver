@@ -690,6 +690,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return synonymCache.getAllObjects(monitor, this);
     }
 
+    public SQLServerSynonym getSynonym(DBRProgressMonitor monitor, String name) throws DBException {
+        return synonymCache.getObject(monitor, this, name);
+    }
+
     static class SynonymCache extends JDBCObjectCache<SQLServerSchema, SQLServerSynonym> {
 
         @NotNull
