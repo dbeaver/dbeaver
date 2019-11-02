@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,6 +40,11 @@ public class SQLServerDialect extends JDBCSQLDialect {
         /*{
             "BEGIN^TRANSACTION", "END"
         }*/
+    };
+
+    public static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
+        "TOP",
+        "SYNONYM",
     };
 
     public static final String[][] SQLSERVER_QUOTE_STRINGS = {
@@ -56,7 +62,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
-        addSQLKeyword("TOP");
+        super.addSQLKeywords(Arrays.asList(SQLSERVER_EXTRA_KEYWORDS));
         this.dataSource = dataSource;
     }
 
