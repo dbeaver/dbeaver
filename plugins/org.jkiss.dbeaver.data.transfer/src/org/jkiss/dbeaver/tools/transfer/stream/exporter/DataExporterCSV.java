@@ -83,7 +83,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
         Map<Object, Object> properties = site.getProperties();
         this.delimiter = StreamTransferUtils.getDelimiterString(properties, PROP_DELIMITER);
         this.rowDelimiter = StreamTransferUtils.getDelimiterString(properties, PROP_ROW_DELIMITER);
-        if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.delimiter)) {
+        if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.rowDelimiter.trim())) {
             this.rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         }
         Object quoteProp = properties.get(PROP_QUOTE_CHAR);
