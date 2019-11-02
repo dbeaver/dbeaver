@@ -316,16 +316,24 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             return;
         }
 
-        activeDatabaseName = object.getName();
+        PostgreDatabase oldActiveInstance = getDefaultInstance();
 
-        getDefaultInstance().initializeMetaContext(monitor);
-        getDefaultInstance().cacheDataTypes(monitor, false);
+        PostgreDatabase newActiveInstance = (PostgreDatabase) object;
+        newActiveInstance.initializeMetaContext(monitor);
+        newActiveInstance.cacheDataTypes(monitor, false);
+
+        activeDatabaseName = newActiveInstance.getName();
 
         // Notify UI
         if (oldDatabase != null) {
             DBUtils.fireObjectSelect(oldDatabase, false);
         }
         DBUtils.fireObjectSelect(newDatabase, true);
+
+        if (oldActiveInstance != newActiveInstance) {
+            // Close all database connections but meta (we need it to browse metadata like navigator tree)
+            oldActiveInstance.shutdown(monitor, true);
+        }
     }
 
     @Override

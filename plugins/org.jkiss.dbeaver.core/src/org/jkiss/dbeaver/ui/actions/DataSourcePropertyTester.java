@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
@@ -51,6 +53,10 @@ public class DataSourcePropertyTester extends PropertyTester
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         try {
+            // Get root datasource node (we don't want to
+            while (receiver instanceof DBNDatabaseNode && !(receiver instanceof DBNDataSource)) {
+                receiver = ((DBNDatabaseNode) receiver).getParentNode();
+            }
             if (!(receiver instanceof DBPContextProvider)) {
                 return false;
             }

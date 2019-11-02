@@ -165,9 +165,16 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 }
             } else if (object instanceof QMMSessionInfo) {
                 String containerName = ((QMMSessionInfo) object).getContainerName();
+                String instanceId = ((QMMSessionInfo) object).getInstanceId();
+                String contextName = ((QMMSessionInfo) object).getContextName();
+                String containerFullName = containerName;
+                if (!CommonUtils.equalObjects(containerName, instanceId)) {
+                    containerFullName += " <" + instanceId + ">";
+                }
+                //containerFullName += " {" + contextName + "}";
                 switch (event.getAction()) {
-                    case BEGIN: return SQLEditorMessages.controls_querylog_connected_to + containerName + "\""; //$NON-NLS-1$
-                    case END:   return SQLEditorMessages.controls_querylog_disconnected_from + containerName + "\""; //$NON-NLS-1$
+                    case BEGIN: return SQLEditorMessages.controls_querylog_connected_to + containerFullName + "\""; //$NON-NLS-1$
+                    case END:   return SQLEditorMessages.controls_querylog_disconnected_from + containerFullName + "\""; //$NON-NLS-1$
                     default:    return "?"; //$NON-NLS-1$
                 }
             }
