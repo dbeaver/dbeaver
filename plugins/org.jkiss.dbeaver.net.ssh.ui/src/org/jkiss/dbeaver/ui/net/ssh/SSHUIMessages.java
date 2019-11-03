@@ -35,8 +35,14 @@ public class SSHUIMessages extends NLS {
 	public static String model_ssh_configurator_label_private_key;
 	public static String model_ssh_configurator_label_user_name;
 	public static String model_ssh_configurator_label_implementation;
+	public static String model_ssh_configurator_label_local_host;
+	public static String model_ssh_configurator_label_local_host_description;
 	public static String model_ssh_configurator_label_local_port;
 	public static String model_ssh_configurator_label_local_port_description;
+	public static String model_ssh_configurator_label_remote_host;
+	public static String model_ssh_configurator_label_remote_host_description;
+	public static String model_ssh_configurator_label_remote_port;
+	public static String model_ssh_configurator_label_remote_port_description;
     public static String model_ssh_configurator_label_keep_alive;
 	public static String model_ssh_configurator_label_tunnel_timeout;
 	public static String model_ssh_configurator_button_test_tunnel;
