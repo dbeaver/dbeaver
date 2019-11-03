@@ -40,7 +40,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     private transient volatile Session session;
 
     @Override
-    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException {
+    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, String sshLocalHost, int sshLocalPort, String sshRemoteHost, int sshRemotePort) throws DBException, IOException {
         try {
             if (jsch == null) {
                 jsch = new JSch();
@@ -72,7 +72,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             log.debug("Connect to tunnel host");
             session.connect(connectTimeout);
             try {
-                session.setPortForwardingL(localPort, dbHost, dbPort);
+                session.setPortForwardingL(sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
             } catch (JSchException e) {
                 closeTunnel(monitor);
                 throw e;
