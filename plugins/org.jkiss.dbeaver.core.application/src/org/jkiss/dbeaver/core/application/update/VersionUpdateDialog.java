@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.core.application.update;
 
-import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -138,7 +137,10 @@ public class VersionUpdateDialog extends Dialog {
             notesText.setLayoutData(gd);
 
             final Label hintLabel = new Label(propGroup, SWT.NONE);
-            hintLabel.setText(NLS.bind(CoreMessages.dialog_version_update_press_more_info_, newVersion.getPlainVersion()));
+            hintLabel.setText(NLS.bind(
+                CoreMessages.dialog_version_update_press_more_info_,
+                CoreMessages.dialog_version_update_button_more_info,
+                newVersion.getPlainVersion()));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             hintLabel.setLayoutData(gd);
