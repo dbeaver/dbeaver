@@ -293,7 +293,7 @@ public class SearchDataPage extends AbstractSearchPage {
     private void restoreCheckedNodes() {
         final List<DBNNode> checkedNodes = new ArrayList<>();
         try {
-            container.getRunnableContext().run(true, true, monitor -> {
+            container.getRunnableContext().run(false, true, monitor -> {
                 monitor.beginTask("Load database nodes", 1);
                 try {
                     monitor.subTask("Load tree state");
