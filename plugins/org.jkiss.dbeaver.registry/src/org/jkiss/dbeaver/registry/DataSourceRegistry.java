@@ -538,15 +538,25 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return SecurePreferencesFactory.getDefault().node("dbeaver").node("datasources");
     }
 
+    /**
+     * @return true if there is at least one project which was initialized.
+     */
+    public static boolean isProjectsInitialized() {
+        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+            if (project.isRegistryLoaded()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     public static List<DBPDataSourceContainer> getAllDataSources() {
         List<DBPDataSourceContainer> result = new ArrayList<>();
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         for (DBPProject project : workspace.getProjects()) {
-            if (project.isOpen()) {
-                DBPDataSourceRegistry registry = project.getDataSourceRegistry();
-                if (registry != null) {
-                    result.addAll(registry.getDataSources());
-                }
+            if (project.isOpen() && project.isRegistryLoaded()) {
+                result.addAll(project.getDataSourceRegistry().getDataSources());
             }
         }
         return result;

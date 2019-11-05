@@ -66,10 +66,10 @@ public class ProjectMetadata implements DBPProject {
     private final DBPWorkspace workspace;
     private final IProject project;
 
-    private ProjectFormat format = ProjectFormat.UNKNOWN;
+    private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DataSourceRegistry dataSourceRegistry;
     private volatile TaskManagerImpl taskManager;
-    private Map<String, Map<String, Object>> resourceProperties;
+    private volatile Map<String, Map<String, Object>> resourceProperties;
     private final Object metadataSync = new Object();
 
     public ProjectMetadata(DBPWorkspace workspace, IProject project) {
@@ -155,21 +155,19 @@ public class ProjectMetadata implements DBPProject {
         checkAndUpdateProjectStructure();
     }
 
+    @Override
+    public boolean isRegistryLoaded() {
+        return dataSourceRegistry != null;
+    }
+
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         ensureOpen();
-        if (dataSourceRegistry == null) {
-            DataSourceRegistry registry = new DataSourceRegistry(workspace.getPlatform(), this);
-            boolean loaded = false;
-            synchronized (metadataSync) {
-                if (dataSourceRegistry == null) {
-                    dataSourceRegistry = registry;
-                    loaded = true;
-                }
-            }
-            if (!loaded) {
-                registry.dispose();
+        synchronized (metadataSync) {
+            if (dataSourceRegistry == null) {
+System.out.println("LOAD REGISTRY " + getName());
+                dataSourceRegistry = new DataSourceRegistry(workspace.getPlatform(), this);
             }
         }
         return dataSourceRegistry;

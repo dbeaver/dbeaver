@@ -1872,7 +1872,7 @@ public final class DBUtils {
     public static List<DBPDataSourceRegistry> getAllRegistries() {
         List<DBPDataSourceRegistry> result = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-            if (project.isOpen()) {
+            if (project.isOpen() && project.isRegistryLoaded()) {
                 DBPDataSourceRegistry registry = project.getDataSourceRegistry();
                 if (registry != null) {
                     result.add(registry);

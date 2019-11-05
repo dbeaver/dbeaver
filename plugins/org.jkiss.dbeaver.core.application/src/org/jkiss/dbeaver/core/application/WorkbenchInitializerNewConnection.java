@@ -25,7 +25,10 @@ import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 public class WorkbenchInitializerNewConnection implements IWorkbenchWindowInitializer {
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
-        if (!DataSourceRegistry.getAllDataSources().isEmpty()) {
+        // Check for initialized projects
+        // In case of advanced security (and master password) workbench initializer can be called earlier
+        // than project registries load.
+        if (!DataSourceRegistry.isProjectsInitialized() || !DataSourceRegistry.getAllDataSources().isEmpty()) {
             return;
         }
         CreateConnectionDialog dialog = new CreateConnectionDialog(window, new NewConnectionWizard());

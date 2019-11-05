@@ -53,6 +53,8 @@ public interface DBPProject extends DBPObject
 
     void ensureOpen();
 
+    boolean isRegistryLoaded();
+
     @NotNull
     DBPDataSourceRegistry getDataSourceRegistry();
 
