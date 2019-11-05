@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -34,6 +35,8 @@ import java.util.List;
  */
 public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DBSInstance
 {
+    private static final Log log = Log.getLog(JDBCRemoteInstance.class);
+
     @NotNull
     protected final DATASOURCE dataSource;
     @Nullable
@@ -120,14 +123,15 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public JDBCExecutionContext getDefaultContext(boolean meta) {
         if (metaContext != null && meta) {
             return this.metaContext;
         }
         if (executionContext == null) {
-            throw new IllegalStateException("No execution context within database instance");
+            log.debug("No execution context within database instance");
+            return null;
         }
         return executionContext;
     }
