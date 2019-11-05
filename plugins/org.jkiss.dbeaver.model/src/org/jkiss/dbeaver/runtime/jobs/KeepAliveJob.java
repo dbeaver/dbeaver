@@ -61,12 +61,10 @@ public class KeepAliveJob extends AbstractJob
         }
         final DBPWorkspace workspace = platform.getWorkspace();
         for (DBPProject project : workspace.getProjects()) {
-            if (project.isOpen()) {
+            if (project.isOpen() && project.isRegistryLoaded()) {
                 DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
-                if (dataSourceRegistry != null) {
-                    for (DBPDataSourceContainer ds : dataSourceRegistry.getDataSources()) {
-                        checkDataSourceAlive(ds);
-                    }
+                for (DBPDataSourceContainer ds : dataSourceRegistry.getDataSources()) {
+                    checkDataSourceAlive(ds);
                 }
             }
         }

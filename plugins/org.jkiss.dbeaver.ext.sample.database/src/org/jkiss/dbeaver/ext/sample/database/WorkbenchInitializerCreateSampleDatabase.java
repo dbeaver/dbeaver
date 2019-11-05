@@ -59,7 +59,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             return;
         }
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (activeProject == null) {
+        if (activeProject == null || !activeProject.isRegistryLoaded()) {
             // No active project
             return;
         }
