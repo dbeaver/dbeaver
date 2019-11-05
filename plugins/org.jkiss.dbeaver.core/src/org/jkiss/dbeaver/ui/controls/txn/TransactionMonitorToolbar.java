@@ -23,7 +23,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -34,6 +36,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
@@ -44,10 +47,10 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
+import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
-import org.jkiss.dbeaver.ui.AbstractPartListener;
 
 /**
  * DataSource Toolbar
@@ -55,10 +58,11 @@ import org.jkiss.dbeaver.ui.AbstractPartListener;
 public class TransactionMonitorToolbar {
 
     private static final int MONITOR_UPDATE_DELAY = 250;
+    private static final Log log = Log.getLog(TransactionMonitorToolbar.class);
 
     private IWorkbenchWindow workbenchWindow;
 
-    TransactionMonitorToolbar(IWorkbenchWindow workbenchWindow) {
+    private TransactionMonitorToolbar(IWorkbenchWindow workbenchWindow) {
         this.workbenchWindow = workbenchWindow;
     }
 
@@ -97,7 +101,11 @@ public class TransactionMonitorToolbar {
 
         @Override
         protected IStatus run(final IProgressMonitor monitor) {
-            monitorPanel.updateTransactionsInfo(new DefaultProgressMonitor(monitor));
+            try {
+                monitorPanel.updateTransactionsInfo(new DefaultProgressMonitor(monitor));
+            } catch (Throwable e) {
+                log.debug("Error updating transaction info: " + e.getMessage());
+            }
             return Status.OK_STATUS;
         }
     }
