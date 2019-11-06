@@ -204,7 +204,9 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         inputsTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         inputsTable.getTable().setLinesVisible(true);
+        inputsTable.getTable().setHeaderVisible(true);
         inputsTable.setContentProvider(new ListContentProvider());
+        UIUtils.createTableContextMenu(inputsTable.getTable(), null);
         DBNModel nModel = DBWorkbench.getPlatform().getNavigatorModel();
         CellLabelProvider labelProvider = new CellLabelProvider() {
             @Override

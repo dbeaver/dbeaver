@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
@@ -129,18 +128,13 @@ class GenericFilterValueEdit {
     }
 
     void addContextMenu(Action[] actions) {
-        MenuManager menuMgr = new MenuManager();
-        menuMgr.addMenuListener(manager -> {
-            UIUtils.fillDefaultTableContextMenu(manager, tableViewer.getTable());
-            manager.add(new Separator());
-
+        UIUtils.createTableContextMenu(tableViewer.getTable(), menu -> {
             for (Action act : actions) {
-                manager.add(act);
+                menu.add(act);
             }
+            menu.add(new Separator());
+            return true;
         });
-        menuMgr.setRemoveAllWhenShown(true);
-        tableViewer.getTable().setMenu(menuMgr.createContextMenu(tableViewer.getTable()));
-        tableViewer.getTable().addDisposeListener(e -> menuMgr.dispose());
     }
 
     Collection<DBDLabelValuePair> getMultiValues() {
