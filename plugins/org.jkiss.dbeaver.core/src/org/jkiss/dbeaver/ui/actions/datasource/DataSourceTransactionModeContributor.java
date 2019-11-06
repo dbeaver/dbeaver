@@ -59,7 +59,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         }
         final DBPDataSourceInfo dsInfo = dataSource.getInfo();
 
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultInstance().getDefaultContext(false));
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(dataSource, false));
         if (txnManager != null) {
             menuItems.add(ActionUtils.makeCommandContribution(
                 window,

@@ -123,9 +123,8 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
         }
     }
 
-    @Nullable
     @Override
-    public JDBCExecutionContext getDefaultContext(boolean meta) {
+    public JDBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
         if (metaContext != null && meta) {
             return this.metaContext;
         }

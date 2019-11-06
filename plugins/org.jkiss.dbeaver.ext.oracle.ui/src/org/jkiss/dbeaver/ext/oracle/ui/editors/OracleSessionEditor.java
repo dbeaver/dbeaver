@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSession;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
@@ -63,7 +64,7 @@ public class OracleSessionEditor extends AbstractSessionEditor
 
     @Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
-        return new SessionManagerViewer<OracleServerSession>(this, parent, new OracleServerSessionManager(getExecutionContext())) {
+        return new SessionManagerViewer<OracleServerSession>(this, parent, new OracleServerSessionManager((OracleDataSource) executionContext.getDataSource())) {
             private boolean showBackground;
             private boolean showInactive;
 

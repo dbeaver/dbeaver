@@ -211,12 +211,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         if (!checkOk) {
             Boolean prevAutocommit = autoCommit;
             Integer txnLevel = transactionIsolationLevel;
-            boolean addNewContext = false;
             if (closeOnFailure) {
-                close();
-                addNewContext = true;
+                closeContext(false);
             }
-            connect(monitor, prevAutocommit, txnLevel, true, addNewContext);
+            connect(monitor, prevAutocommit, txnLevel, true, false);
 
             return InvalidateResult.RECONNECTED;
         }
@@ -225,6 +223,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
     @Override
     public void close()
+    {
+        closeContext(true);
+    }
+
+    private void closeContext(boolean removeContext)
     {
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
@@ -236,8 +239,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             super.closeContext();
         }
 
-        // Remove self from context list
-        this.instance.removeContext(this);
+        if (removeContext) {
+            // Remove self from context list
+            this.instance.removeContext(this);
+        }
     }
 
     //////////////////////////////////////////////////////////////

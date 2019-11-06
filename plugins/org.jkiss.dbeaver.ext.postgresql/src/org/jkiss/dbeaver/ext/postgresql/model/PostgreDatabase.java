@@ -152,7 +152,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
-        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+        try (JDBCSession session = getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
                 "\nFROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, name);
@@ -164,6 +164,8 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
             }
         } catch (SQLException e) {
             throw new DBCException(e, getDataSource());
+        } catch (DBException e) {
+            e.printStackTrace();
         }
     }
 
@@ -197,7 +199,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
             initializeMainContext(monitor);
             initializeMetaContext(monitor);
 
-            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.UTIL, "Detect default schema/user")) {
+            try (JDBCSession session = getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.UTIL, "Detect default schema/user")) {
                 determineDefaultObjects(session);
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
@@ -252,6 +254,11 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     @Override
     public String getDescription() {
         return null;
+    }
+
+    @Override
+    public JDBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
+        return super.getDefaultContext(monitor, meta);
     }
 
     @Property(viewable = true, multiline = true, order = 100)

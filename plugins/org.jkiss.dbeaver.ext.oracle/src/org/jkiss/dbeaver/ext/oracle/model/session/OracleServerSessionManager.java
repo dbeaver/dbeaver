@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.admin.sessions.*;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -45,17 +45,17 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     public static final String OPTION_SHOW_BACKGROUND = "showBackground";
     public static final String OPTION_SHOW_INACTIVE = "showInactive";
 
-    private final DBCExecutionContext executionContext;
+    private final OracleDataSource dataSource;
 
-    public OracleServerSessionManager(DBCExecutionContext executionContext)
+    public OracleServerSessionManager(OracleDataSource dataSource)
     {
-        this.executionContext = executionContext;
+        this.dataSource = dataSource;
     }
 
     @Override
     public DBPDataSource getDataSource()
     {
-        return executionContext.getDataSource();
+        return dataSource;
     }
 
     @Override

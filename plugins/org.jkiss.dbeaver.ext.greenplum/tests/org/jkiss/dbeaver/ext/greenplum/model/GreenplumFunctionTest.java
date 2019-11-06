@@ -65,7 +65,7 @@ public class GreenplumFunctionTest {
         Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(mockDatabase);
 
         Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
-        Mockito.when(mockDatabase.getDefaultContext(true)).thenReturn(mockContext);
+        Mockito.when(mockDatabase.getDefaultContext(mockMonitor, true)).thenReturn(mockContext);
 
         Mockito.when(mockResults.getString("proname")).thenReturn("sampleFunction");
         postgreLanguage = new PostgreLanguage(mockDatabase, mockResults);

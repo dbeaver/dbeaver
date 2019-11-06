@@ -63,7 +63,7 @@ public class InvalidateJob extends DataSourceJob
     public InvalidateJob(
         DBPDataSource dataSource)
     {
-        super("Invalidate " + dataSource.getContainer().getName(), dataSource.getDefaultInstance().getDefaultContext(false));
+        super("Invalidate " + dataSource.getContainer().getName(), DBUtils.getDefaultContext(dataSource.getDefaultInstance(), false));
     }
 
     public List<ContextInvalidateResult> getInvalidateResults() {

@@ -1609,7 +1609,7 @@ public final class DBUtils {
     @SuppressWarnings("unchecked")
     @NotNull
     public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) {
-        return (T) dataSource.getDefaultInstance().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, task);
+        return (T) dataSource.getDefaultInstance().getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.META, task);
     }
 
     @SuppressWarnings("unchecked")
@@ -1866,7 +1866,7 @@ public final class DBUtils {
             return null;
         }
         DBSInstance instance = getObjectOwnerInstance(object);
-        return instance == null ? null : instance.getDefaultContext(meta);
+        return instance == null ? null : instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
 
     public static List<DBPDataSourceRegistry> getAllRegistries() {

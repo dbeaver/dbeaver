@@ -29,10 +29,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
@@ -128,7 +128,7 @@ public class DashboardListViewer extends StructuredViewer implements IDataSource
         if (useSeparateConnection && isolatedContext != null) {
             return isolatedContext;
         }
-        return dataSourceContainer.getDataSource().getDefaultInstance().getDefaultContext(true);
+        return DBUtils.getDefaultContext(dataSourceContainer.getDataSource().getDefaultInstance(), true);
     }
 
     @Override
@@ -221,8 +221,7 @@ public class DashboardListViewer extends StructuredViewer implements IDataSource
         if (dataSource == null) {
             return;
         }
-        DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
-        new DataSourceJob("Open connection for dashboard", defaultContext) {
+        new AbstractJob("Open connection for dashboard") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 DBSInstance instance = DBUtils.getObjectOwnerInstance(dataSource);
