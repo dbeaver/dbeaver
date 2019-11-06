@@ -1,7 +1,6 @@
 package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.ext.greenplum.model.GreenplumDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -68,7 +67,7 @@ public class GreenplumTableTest {
         Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(mockDatabase);
 
         Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
-        Mockito.when(mockDatabase.getDefaultContext(true)).thenReturn(mockContext);
+        Mockito.when(mockDatabase.getDefaultContext(mockMonitor, true)).thenReturn(mockContext);
 
         Mockito.when(mockResults.getString("relname")).thenReturn(exampleTableName);
         Mockito.when(mockResults.getString("relpersistence")).thenReturn("x");

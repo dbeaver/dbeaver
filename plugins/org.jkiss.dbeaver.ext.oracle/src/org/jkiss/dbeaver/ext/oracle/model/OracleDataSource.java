@@ -553,7 +553,7 @@ public class OracleDataSource extends JDBCDataSource
         } else if (adapter == DBCServerOutputReader.class) {
             return adapter.cast(outputReader);
         } else if (adapter == DBAServerSessionManager.class) {
-            return adapter.cast(new OracleServerSessionManager(getDefaultInstance().getDefaultContext(false)));
+            return adapter.cast(new OracleServerSessionManager(this));
         } else if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new OracleQueryPlanner(this));
         }

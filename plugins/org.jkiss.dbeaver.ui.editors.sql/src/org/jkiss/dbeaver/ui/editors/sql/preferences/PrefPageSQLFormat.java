@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
@@ -174,7 +175,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
                     if (container != null) {
                         final DBPDataSource dataSource = container.getDataSource();
                         if (dataSource != null) {
-                            return dataSource.getDefaultInstance().getDefaultContext(false);
+                            return DBUtils.getDefaultContext(dataSource.getDefaultInstance(), false);
                         }
                     }
                     return null;

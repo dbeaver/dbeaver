@@ -61,11 +61,11 @@ import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
-import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
+import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -139,7 +139,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 sqlViewer = new SQLEditorBase() {
                     @Override
                     public DBCExecutionContext getExecutionContext() {
-                        return sessionManager.getDataSource().getDefaultInstance().getDefaultContext(false);
+                        return DBUtils.getDefaultContext(sessionManager.getDataSource(), false);
                     }
 
                     @Override

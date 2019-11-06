@@ -680,7 +680,7 @@ public abstract class JDBCDataSource
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
-            return adapter.cast(getDefaultInstance().getDefaultContext(false));
+            return adapter.cast(DBUtils.getDefaultContext(getDefaultInstance(), false));
         }
         return null;
     }

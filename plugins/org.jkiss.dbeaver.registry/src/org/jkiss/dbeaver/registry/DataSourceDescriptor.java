@@ -412,7 +412,7 @@ public class DataSourceDescriptor
         if (dataSource != null) {
             DBSInstance defaultInstance = dataSource.getDefaultInstance();
             if (defaultInstance != null) {
-                DBCTransactionManager txnManager = DBUtils.getTransactionManager(defaultInstance.getDefaultContext(false));
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(defaultInstance, false));
                 if (txnManager != null) {
                     try {
                         return txnManager.getTransactionIsolation();
@@ -439,7 +439,7 @@ public class DataSourceDescriptor
             connectionInfo.getBootstrap().setDefaultTransactionIsolation(isolationLevel.getCode());
             if (dataSource != null) {
                 TasksJob.runTask("Set transactions isolation level", monitor -> {
-                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultInstance().getDefaultContext(false));
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(dataSource.getDefaultInstance(), false));
                     if (txnManager != null) {
                         try {
                             if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {

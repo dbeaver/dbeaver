@@ -18,11 +18,8 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.Collection;
 
 /**
  * Data Source instance.
@@ -35,11 +32,13 @@ public interface DBSInstance extends DBSObject
 {
     /**
      * Default execution context
+     *
+     * @param monitor
      * @param meta request for metadata operations context
      * @return default data source execution context.
      */
     @NotNull
-    DBCExecutionContext getDefaultContext(boolean meta);
+    DBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta);
 
     /**
      * All opened execution contexts

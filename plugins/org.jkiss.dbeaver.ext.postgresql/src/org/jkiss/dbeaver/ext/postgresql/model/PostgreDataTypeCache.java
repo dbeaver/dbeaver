@@ -150,7 +150,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @NotNull
     static PostgreDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, long oid) throws SQLException, DBException {
         // Initially cache only base types (everything but composite and arrays)
-        try (JDBCSession session = database.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by OID")) {
+        try (JDBCSession session = database.getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by OID")) {
             try (final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.oid,t.*,c.relkind FROM pg_catalog.pg_type t" +
                     "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
@@ -177,7 +177,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @NotNull
     static PostgreDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, String name) throws SQLException, DBException {
         // Initially cache only base types (everything but composite and arrays)
-        try (JDBCSession session = database.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by name")) {
+        try (JDBCSession session = database.getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by name")) {
             try (final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.oid,t.* FROM pg_catalog.pg_type t" +
                     "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
