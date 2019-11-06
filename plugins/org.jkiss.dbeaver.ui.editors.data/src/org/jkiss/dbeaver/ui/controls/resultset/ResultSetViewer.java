@@ -110,8 +110,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -3471,7 +3471,7 @@ public class ResultSetViewer extends Viewer
                             setNewState(dataContainer, useDataFilter);
                         }
 
-                        final boolean metadataChanged = model.isMetadataChanged();
+                        final boolean metadataChanged = !scroll && model.isMetadataChanged();
                         if (error != null) {
                             String errorMessage = error.getMessage();
                             setStatus(errorMessage, DBPMessageType.ERROR);
