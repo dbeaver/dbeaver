@@ -384,7 +384,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 new GridCell(curRow, this.curAttribute) :
                 new GridCell(this.curAttribute, curRow);
             //spreadsheet.selectCell(cell);
-            spreadsheet.setCursor(cell, false, false);
+            //spreadsheet.setCursor(cell, false, false);
         }
         spreadsheet.getHorizontalScrollBarProxy().setSelection(viewState.hScrollSelection);
     }
