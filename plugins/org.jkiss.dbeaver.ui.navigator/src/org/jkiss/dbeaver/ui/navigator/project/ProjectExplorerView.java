@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.SimpleDateFormat;
@@ -226,7 +227,11 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     }
 
     public void configureView() {
-        columnController.configureColumns();
+        //columnController.configureColumns();
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (activeProject != null) {
+            UIUtils.showPreferencesFor(getSite().getShell(), activeProject.getEclipseProject(), PrefPageProjectResourceSettings.PAGE_ID);
+        }
     }
 
 }
