@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.commands.ActionHandler;
@@ -1442,6 +1439,22 @@ public class UIUtils {
     public static boolean launchProgram(String path)
     {
         return Program.launch(path);
+    }
+
+
+    public static void createTableContextMenu(@NotNull final Table table, @Nullable DBRCreator<Boolean, IContributionManager> menuCreator) {
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.addMenuListener(manager -> {
+            if (menuCreator != null) {
+                if (!menuCreator.createObject(menuMgr)) {
+                    return;
+                }
+            }
+            UIUtils.fillDefaultTableContextMenu(manager, table);
+        });
+        menuMgr.setRemoveAllWhenShown(true);
+        table.setMenu(menuMgr.createContextMenu(table));
+        table.addDisposeListener(e -> menuMgr.dispose());
     }
 
     public static void fillDefaultTableContextMenu(IContributionManager menu, final Table table) {

@@ -111,9 +111,10 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                 0);
             objectsTable = new Table(group, SWT.BORDER | SWT.SINGLE);
             objectsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-            //objectEditor.setHeaderVisible(true);
+            objectsTable.setHeaderVisible(true);
             UIUtils.createTableColumn(objectsTable, SWT.NONE, "Object");
             UIUtils.createTableColumn(objectsTable, SWT.NONE, "Data Source");
+            UIUtils.createTableContextMenu(objectsTable, null);
 
             Composite buttonsPanel = UIUtils.createComposite(group, isExport ? 3 : 2);
             UIUtils.createDialogButton(buttonsPanel, "Add Table ...", new SelectionAdapter() {
