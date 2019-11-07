@@ -31,6 +31,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.jkiss.code.NotNull;
@@ -40,8 +41,8 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -370,9 +371,8 @@ public class ProjectMetadata implements DBPProject {
                 // Nothing to save and metadata file doesn't exist
                 return;
             }
-            getMetadataFolder(true);
             try {
-                IOUtils.makeFileBackup(mdFile);
+                ContentUtils.makeFileBackup(getMetadataFolder(true).getFile(new Path(METADATA_STORAGE_FILE)));
 
                 try (Writer mdWriter = new OutputStreamWriter(new FileOutputStream(mdFile), StandardCharsets.UTF_8)) {
                     try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {

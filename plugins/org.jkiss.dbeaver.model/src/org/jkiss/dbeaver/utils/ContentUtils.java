@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.utils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,6 +43,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -484,6 +487,32 @@ public class ContentUtils {
             } catch (CoreException e) {
                 throw new DBException("Can't create folder '" + folder.getFullPath() + "'", e);
             }
+        }
+    }
+
+    public static void makeFileBackup(IFile file) throws IOException {
+        if (!file.exists()) {
+            return;
+        }
+        String backupFileName = file.getName() + ".bak";
+        if (!backupFileName.startsWith(".")) {
+            backupFileName = "." + backupFileName;
+        }
+        IFile backupFile = file.getParent().getFile(new Path(backupFileName));
+        if (backupFile.exists()) {
+            Date backupTime = new Date(backupFile.getModificationStamp());
+            if (CommonUtils.isSameDay(backupTime, new Date())) {
+                return;
+            }
+        }
+        try (InputStream fis = file.getContents()) {
+            if (!backupFile.exists()) {
+                backupFile.create(fis, IResource.HIDDEN | IResource.TEAM_PRIVATE, new NullProgressMonitor());
+            } else {
+                backupFile.setContents(fis, IResource.HIDDEN | IResource.TEAM_PRIVATE, new NullProgressMonitor());
+            }
+        } catch (CoreException e) {
+            throw new IOException("Error creating backup copy of " + file.getFullPath(), e);
         }
     }
 }
