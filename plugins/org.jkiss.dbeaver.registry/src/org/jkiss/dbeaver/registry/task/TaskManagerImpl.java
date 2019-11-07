@@ -31,8 +31,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.ProjectMetadata;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -239,7 +239,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         IFile configFile = getConfigFile(true);
         try {
             if (configFile.exists()) {
-                IOUtils.makeFileBackup(configFile.getLocation().toFile());
+                ContentUtils.makeFileBackup(configFile);
             }
             if (tasks.isEmpty()) {
                 configFile.delete(true, false, monitor);
