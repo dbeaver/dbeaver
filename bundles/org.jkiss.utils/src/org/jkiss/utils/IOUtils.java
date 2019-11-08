@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Date;
 
 /**
  * Some IO helper functions
@@ -272,25 +271,4 @@ public final class IOUtils {
         return result.toString();
     }
 
-    public static void makeFileBackup(File file) throws IOException {
-        if (!file.exists()) {
-            return;
-        }
-        String backupFileName = file.getName() + ".bak";
-        if (!backupFileName.startsWith(".")) {
-            backupFileName = "." + backupFileName;
-        }
-        File backupFile = new File(file.getParent(), backupFileName);
-        if (backupFile.exists()) {
-            Date backupTime = new Date(backupFile.lastModified());
-            if (CommonUtils.isSameDay(backupTime, new Date())) {
-                return;
-            }
-        }
-        try (FileInputStream fis = new FileInputStream(file)) {
-            try (FileOutputStream fos = new FileOutputStream(backupFile)) {
-                fastCopy(fis, fos);
-            }
-        }
-    }
 }

@@ -39,12 +39,11 @@ import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -681,8 +680,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                     }
                 }
                 try {
-                    File plainConfigFile = configFile.getLocation().toFile();
-                    IOUtils.makeFileBackup(plainConfigFile);
+                    ContentUtils.makeFileBackup(configFile);
 
                     if (localDataSources.isEmpty()) {
                         if (configFile.exists()) {
