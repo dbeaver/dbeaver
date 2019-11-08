@@ -52,7 +52,10 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Copy results in external format
@@ -156,6 +159,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     DBDDataFilter dataFilter = resultSet.getModel().getDataFilter();
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);
                     DatabaseProducerSettings producerSettings = new DatabaseProducerSettings();
+                    producerSettings.setOpenNewConnections(false);
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
                     producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));

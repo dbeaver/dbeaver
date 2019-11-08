@@ -154,7 +154,7 @@ public class SQLSemanticProcessor {
         Expression orderExpr;
         String attrName = DBUtils.getQuotedIdentifier(dataSource, co.getAttributeName());
         if (forceNumeric || attrName.isEmpty()) {
-            orderExpr = new LongValue(co.getOrderPosition() + 1);
+            orderExpr = new LongValue(co.getOrderPosition());
         } else if (CommonUtils.isJavaIdentifier(attrName)) {
             // Use column table only if there are multiple source tables (joins)
             Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);

@@ -255,60 +255,66 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         ResultSetRow curRow = controller.getCurrentRow();
         ResultSetModel model = controller.getModel();
 
-        switch (position) {
-            case FIRST:
-                if (recordMode) {
-                    if (model.getRowCount() > 0) {
-                        controller.setCurrentRow(model.getRow(0));
-                    } else {
-                        controller.setCurrentRow(null);
-                    }
-                } else {
-                    spreadsheet.shiftCursor(0, -spreadsheet.getItemCount(), false);
-                }
-                break;
-            case PREVIOUS:
-                if (recordMode && curRow != null && curRow.getVisualNumber() > 0) {
-                    controller.setCurrentRow(model.getRow(curRow.getVisualNumber() - 1));
-                } else {
-                    spreadsheet.shiftCursor(0, -1, false);
-                }
-                break;
-            case NEXT:
-                if (recordMode && curRow != null && curRow.getVisualNumber() < model.getRowCount() - 1) {
-                    controller.setCurrentRow(model.getRow(curRow.getVisualNumber() + 1));
-                } else {
-                    spreadsheet.shiftCursor(0, 1, false);
-                }
-                break;
-            case LAST:
-                if (recordMode && model.getRowCount() > 0) {
-                    controller.setCurrentRow(model.getRow(model.getRowCount() - 1));
-                } else {
-                    spreadsheet.shiftCursor(0, spreadsheet.getItemCount(), false);
-                }
-                break;
-            case CURRENT:
-                if (curRow != null) {
-                    GridPos curPos = spreadsheet.getCursorPosition();
-                    GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, curRow.getVisualNumber()));
-                    if (newCell != null) {
-                        spreadsheet.setCursor(newCell, false, true);
-                    }
-                }
-                break;
-        }
-        if (controller.isRecordMode()) {
-            // Update focus cell
-            restoreState(curAttribute);
-        }
-        // Update controls
-        controller.updateEditControls();
-        controller.updateStatusMessage();
+        spreadsheet.setRedraw(false);
+        try {
+            int hScrollPos = spreadsheet.getHorizontalScrollBarProxy().getSelection();
 
-        if (recordMode) {
-            // Refresh meta if we are in record mode
-            refreshData(true, false, true);
+            switch (position) {
+                case FIRST:
+                    if (recordMode) {
+                        if (model.getRowCount() > 0) {
+                            controller.setCurrentRow(model.getRow(0));
+                        } else {
+                            controller.setCurrentRow(null);
+                        }
+                    } else {
+                        spreadsheet.shiftCursor(0, -spreadsheet.getItemCount(), false);
+                    }
+                    break;
+                case PREVIOUS:
+                    if (recordMode && curRow != null && curRow.getVisualNumber() > 0) {
+                        controller.setCurrentRow(model.getRow(curRow.getVisualNumber() - 1));
+                    } else {
+                        spreadsheet.shiftCursor(0, -1, false);
+                    }
+                    break;
+                case NEXT:
+                    if (recordMode && curRow != null && curRow.getVisualNumber() < model.getRowCount() - 1) {
+                        controller.setCurrentRow(model.getRow(curRow.getVisualNumber() + 1));
+                    } else {
+                        spreadsheet.shiftCursor(0, 1, false);
+                    }
+                    break;
+                case LAST:
+                    if (recordMode && model.getRowCount() > 0) {
+                        controller.setCurrentRow(model.getRow(model.getRowCount() - 1));
+                    } else {
+                        spreadsheet.shiftCursor(0, spreadsheet.getItemCount(), false);
+                    }
+                    break;
+                case CURRENT:
+                    if (curRow != null) {
+                        GridPos curPos = spreadsheet.getCursorPosition();
+                        GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, curRow.getVisualNumber()));
+                        if (newCell != null) {
+                            spreadsheet.setCursor(newCell, false, true);
+                        }
+                    }
+                    break;
+            }
+
+            spreadsheet.getHorizontalScrollBarProxy().setSelection(hScrollPos);
+
+            // Update controls
+            controller.updateEditControls();
+            controller.updateStatusMessage();
+
+            if (recordMode) {
+                // Refresh meta if we are in record mode
+                refreshData(true, false, true);
+            }
+        } finally {
+            spreadsheet.setRedraw(true);
         }
     }
 
@@ -378,14 +384,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
         ViewState viewState = (ViewState) state;
         this.curAttribute = controller.getModel().getAttributeBinding(viewState.focusedAttribute);
-        ResultSetRow curRow = controller.getCurrentRow();
+        /*ResultSetRow curRow = controller.getCurrentRow();
         if (curRow != null && this.curAttribute != null) {
             GridCell cell = controller.isRecordMode() ?
                 new GridCell(curRow, this.curAttribute) :
                 new GridCell(this.curAttribute, curRow);
             //spreadsheet.selectCell(cell);
-            //spreadsheet.setCursor(cell, false, false);
-        }
+            spreadsheet.setCursor(cell, false, false);
+        }*/
         spreadsheet.getHorizontalScrollBarProxy().setSelection(viewState.hScrollSelection);
     }
 

@@ -262,6 +262,19 @@ public class DBDDataFilter {
             CommonUtils.equalObjects(this.where, source.where);
     }
 
+    public boolean equalVisibility(DBDDataFilter dataFilter) {
+        if (dataFilter.constraints.size() != constraints.size()) {
+            return false;
+        }
+        for (int i = 0; i < dataFilter.constraints.size(); i++) {
+            if (!constraints.get(i).equalVisibility(dataFilter.constraints.get(i))) {
+                return false;
+            }
+
+        }
+        return true;
+    }
+
     public boolean hasNameDuplicates(String name) {
         int count = 0;
         for (DBDAttributeConstraint c : constraints) {
@@ -275,4 +288,5 @@ public class DBDDataFilter {
     public void serialize(Map<String, Object> state) {
 
     }
+
 }
