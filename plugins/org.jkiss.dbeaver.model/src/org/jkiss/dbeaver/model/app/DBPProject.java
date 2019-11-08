@@ -64,6 +64,10 @@ public interface DBPProject extends DBPObject
     @NotNull
     ISecurePreferences getSecurePreferences();
 
+    Object getProjectProperty(String propName);
+
+    void setProjectProperty(String propName, Object propValue);
+
     Object getResourceProperty(IResource resource, String propName);
 
     void setResourceProperty(IResource resource, String propName, Object propValue);

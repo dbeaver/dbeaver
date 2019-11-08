@@ -51,6 +51,7 @@ import java.util.*;
 public class ProjectMetadata implements DBPProject {
     private static final Log log = Log.getLog(ProjectMetadata.class);
 
+    public static final String SETTINGS_STORAGE_FILE = "project-settings.json";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
 
     public enum ProjectFormat {
@@ -70,6 +71,7 @@ public class ProjectMetadata implements DBPProject {
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DataSourceRegistry dataSourceRegistry;
     private volatile TaskManagerImpl taskManager;
+    private volatile Map<String, Object> properties;
     private volatile Map<String, Map<String, Object>> resourceProperties;
     private final Object metadataSync = new Object();
 
@@ -191,6 +193,58 @@ public class ProjectMetadata implements DBPProject {
     @Override
     public ISecurePreferences getSecurePreferences() {
         return SecurePreferencesFactory.getDefault().node("dbeaver").node("projects").node(getName());
+    }
+
+    @Override
+    public Object getProjectProperty(String propName) {
+        synchronized (this) {
+            loadProperties();
+            return properties.get(propName);
+        }
+    }
+
+    @Override
+    public void setProjectProperty(String propName, Object propValue) {
+        synchronized (this) {
+            loadProperties();
+            if (propValue == null) {
+                properties.remove(propName);
+            } else {
+                properties.put(propName, propValue);
+            }
+            saveProperties();
+        }
+    }
+
+    private void loadProperties() {
+        if (properties != null) {
+            return;
+        }
+
+        synchronized (metadataSync) {
+            File settingsFile = new File(getMetadataPath(), SETTINGS_STORAGE_FILE);
+            if (settingsFile.exists() && settingsFile.length() > 0) {
+                // Parse metadata
+                try (Reader settingsReader = new InputStreamReader(new FileInputStream(settingsFile), StandardCharsets.UTF_8)) {
+                    properties = METADATA_GSON.fromJson(settingsReader, Map.class);
+                } catch (Throwable e) {
+                    log.error("Error reading project '" + getName() + "' setting from "  + settingsFile.getAbsolutePath(), e);
+                }
+            }
+            if (properties == null) {
+                properties = new LinkedHashMap<>();
+            }
+        }
+    }
+
+    private void saveProperties() {
+        File settingsFile = new File(getMetadataPath(), SETTINGS_STORAGE_FILE);
+        String settingsString = METADATA_GSON.toJson(properties);
+        try (Writer settingsReader = new OutputStreamWriter(new FileOutputStream(settingsFile), StandardCharsets.UTF_8)) {
+            settingsReader.write(settingsString);
+        } catch (Throwable e) {
+            log.error("Error writing project '" + getName() + "' setting to "  + settingsFile.getAbsolutePath(), e);
+        }
     }
 
     @Override
