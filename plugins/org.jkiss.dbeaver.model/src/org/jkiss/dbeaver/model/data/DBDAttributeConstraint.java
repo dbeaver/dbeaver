@@ -134,4 +134,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
             (attribute instanceof DBDAttributeBinding && ((DBDAttributeBinding) attribute).matches(attr, matchByName));
     }
 
+    public boolean equalVisibility(DBDAttributeConstraint constraint) {
+        return isVisible() == constraint.isVisible() && getVisualPosition() == constraint.getVisualPosition();
+    }
 }

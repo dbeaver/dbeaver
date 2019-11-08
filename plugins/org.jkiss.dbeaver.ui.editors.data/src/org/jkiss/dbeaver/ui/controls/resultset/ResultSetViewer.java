@@ -110,8 +110,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -3516,9 +3516,10 @@ public class ResultSetViewer extends Viewer
 
                         if (!scroll) {
                             if (dataFilter != null) {
+                                boolean visibilityChanged = !model.getDataFilter().equalVisibility(dataFilter);
                                 model.updateDataFilter(dataFilter, true);
                                 // New data filter may have different columns visibility
-                                redrawData(true, false);
+                                redrawData(visibilityChanged, false);
                             }
                         }
                         if (getStatistics() == null || !getStatistics().isEmpty()) {
