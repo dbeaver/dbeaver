@@ -54,7 +54,7 @@ public class GITCommitHandler extends GITAbstractHandler implements IElementUpda
     public void updateElement(UIElement element, Map parameters) {
         IProject project = GitUIUtils.extractActiveProject(element.getServiceLocator());
         if (project != null) {
-            element.setText("Commit '" + project.getName() + "' changes to Git");
+            //element.setText("Commit '" + project.getName() + "' changes to Git");
         }
     }
 
