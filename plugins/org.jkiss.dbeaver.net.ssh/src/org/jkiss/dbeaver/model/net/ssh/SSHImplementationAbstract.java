@@ -55,9 +55,9 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         int sshPortNum = configuration.getIntProperty(SSHConstants.PROP_PORT);
         int aliveInterval = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL);
         int connectTimeout = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
-        String sshLocalHost = configuration.getProperty(SSHConstants.PROP_LOCAL_HOST).toString();
+        String sshLocalHost = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_LOCAL_HOST));
         int sshLocalPort = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
-        String sshRemoteHost = configuration.getProperty(SSHConstants.PROP_REMOTE_HOST).toString();
+        String sshRemoteHost = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_REMOTE_HOST));
         int sshRemotePort = configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT);
         //String aliveCount = properties.get(SSHConstants.PROP_ALIVE_COUNT);
         if (CommonUtils.isEmpty(sshHost)) {
