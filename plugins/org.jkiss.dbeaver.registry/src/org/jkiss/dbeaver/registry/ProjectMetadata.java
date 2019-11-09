@@ -48,10 +48,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class ProjectMetadata implements DBPProject {
+
     private static final Log log = Log.getLog(ProjectMetadata.class);
 
     public static final String SETTINGS_STORAGE_FILE = "project-settings.json";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
+    public static final String PROP_PROJECT_ID = "id";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
@@ -73,6 +75,7 @@ public class ProjectMetadata implements DBPProject {
     private volatile Map<String, Object> properties;
     private volatile Map<String, Map<String, Object>> resourceProperties;
     private DBASecureStorage secureStorage;
+    private UUID projectID;
     private final Object metadataSync = new Object();
 
     public ProjectMetadata(DBPWorkspace workspace, IProject project) {
@@ -90,6 +93,20 @@ public class ProjectMetadata implements DBPProject {
     @Override
     public String getName() {
         return project.getName();
+    }
+
+    @Override
+    public UUID getProjectID() {
+        if (projectID == null) {
+            String idStr = CommonUtils.toString(this.getProjectProperty(PROP_PROJECT_ID), null);
+            if (CommonUtils.isEmpty(idStr)) {
+                projectID = UUID.randomUUID();
+                this.setProjectProperty(PROP_PROJECT_ID, projectID.toString());
+            } else {
+                projectID = UUID.fromString(idStr);
+            }
+        }
+        return projectID;
     }
 
     @NotNull
@@ -251,8 +268,8 @@ public class ProjectMetadata implements DBPProject {
     private void saveProperties() {
         File settingsFile = new File(getMetadataPath(), SETTINGS_STORAGE_FILE);
         String settingsString = METADATA_GSON.toJson(properties);
-        try (Writer settingsReader = new OutputStreamWriter(new FileOutputStream(settingsFile), StandardCharsets.UTF_8)) {
-            settingsReader.write(settingsString);
+        try (Writer settingsWriter = new OutputStreamWriter(new FileOutputStream(settingsFile), StandardCharsets.UTF_8)) {
+            settingsWriter.write(settingsString);
         } catch (Throwable e) {
             log.error("Error writing project '" + getName() + "' setting to "  + settingsFile.getAbsolutePath(), e);
         }

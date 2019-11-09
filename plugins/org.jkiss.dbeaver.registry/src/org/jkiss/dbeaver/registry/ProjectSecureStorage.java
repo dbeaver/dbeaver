@@ -26,8 +26,8 @@ import javax.crypto.SecretKey;
 public class ProjectSecureStorage implements DBASecureStorage {
     private static final Log log = Log.getLog(ProjectSecureStorage.class);
 
-    private final DBPProject project;
-    private final DBASecureStorage globalStorage;
+    protected final DBPProject project;
+    protected final DBASecureStorage globalStorage;
 
     public ProjectSecureStorage(DBPProject project) {
         this.project = project;
