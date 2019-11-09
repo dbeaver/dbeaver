@@ -251,7 +251,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         try {
             // Serialize and encrypt
             String jsonString = SECURE_GSON.toJson(secureProperties, Map.class);
-            ContentEncrypter encrypter = new ContentEncrypter(registry.getPlatform().getApplication().getSecureStorage().getLocalSecretKey());
+            ContentEncrypter encrypter = new ContentEncrypter(registry.getProject().getSecureStorage().getLocalSecretKey());
             byte[] credData = encrypter.encrypt(jsonString);
 
             // Save to file
@@ -288,7 +288,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 } catch (Exception e) {
                     log.error("Error reading secure credentials file", e);
                 }
-                ContentEncrypter encrypter = new ContentEncrypter(registry.getPlatform().getApplication().getSecureStorage().getLocalSecretKey());
+                ContentEncrypter encrypter = new ContentEncrypter(registry.getProject().getSecureStorage().getLocalSecretKey());
                 try {
                     String credJson = encrypter.decrypt(credBuffer.toByteArray());
                     Map<String, Map<String, Map<String, String>>> res =
@@ -885,11 +885,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable String subNode)
     {
         String[] creds = new String[2];
-        final DBASecureStorage secureStorage = DBWorkbench.getPlatform().getSecureStorage();
+        final DBASecureStorage secureStorage = dataSource == null ? DBWorkbench.getPlatform().getSecureStorage() : dataSource.getProject().getSecureStorage();
         {
             try {
                 if (secureStorage.useSecurePreferences()) {
-                    ISecurePreferences prefNode = dataSource == null ? registry.getProject().getSecurePreferences() : dataSource.getSecurePreferences();
+                    ISecurePreferences prefNode = dataSource == null ? secureStorage.getSecurePreferences() : dataSource.getSecurePreferences();
                     if (subNode != null) {
                         for (String nodeName : subNode.split("/")) {
                             prefNode = prefNode.node(nodeName);

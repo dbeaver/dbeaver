@@ -40,9 +40,9 @@ import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.update.VersionUpdateDialog;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
-import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -60,7 +60,7 @@ import java.util.Properties;
 /**
  * This class controls all aspects of the application's execution
  */
-public class DBeaverApplication implements IApplication, DBPApplication {
+public class DBeaverApplication extends BaseApplicationImpl {
 
     private static final Log log = Log.getLog(DBeaverApplication.class);
 

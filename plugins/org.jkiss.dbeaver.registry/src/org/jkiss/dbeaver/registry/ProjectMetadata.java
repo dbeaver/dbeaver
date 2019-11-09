@@ -32,10 +32,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -73,6 +72,7 @@ public class ProjectMetadata implements DBPProject {
     private volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
     private volatile Map<String, Map<String, Object>> resourceProperties;
+    private DBASecureStorage secureStorage;
     private final Object metadataSync = new Object();
 
     public ProjectMetadata(DBPWorkspace workspace, IProject project) {
@@ -189,11 +189,22 @@ public class ProjectMetadata implements DBPProject {
         return taskManager;
     }
 
+    ////////////////////////////////////////////////////////
+    // Secure storage
+
     @NotNull
     @Override
-    public ISecurePreferences getSecurePreferences() {
-        return SecurePreferencesFactory.getDefault().node("dbeaver").node("projects").node(getName());
+    public DBASecureStorage getSecureStorage() {
+        synchronized (metadataSync) {
+            if (this.secureStorage == null) {
+                this.secureStorage = workspace.getPlatform().getApplication().getProjectSecureStorage(this);
+            }
+        }
+        return secureStorage;
     }
+
+    ////////////////////////////////////////////////////////
+    // Properties
 
     @Override
     public Object getProjectProperty(String propName) {

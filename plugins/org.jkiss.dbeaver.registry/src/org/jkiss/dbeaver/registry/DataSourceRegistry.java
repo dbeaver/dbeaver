@@ -20,7 +20,6 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -534,7 +533,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     @NotNull
     public ISecurePreferences getSecurePreferences() {
-        return SecurePreferencesFactory.getDefault().node("dbeaver").node("datasources");
+        return platform.getApplication().getSecureStorage().getSecurePreferences().node("datasources");
     }
 
     /**
@@ -757,10 +756,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    static boolean isUseSecuredPrefStorage() {
-        return DBWorkbench.getPlatform().getSecureStorage().useSecurePreferences();
-    }
-
     /**
      * Save secure config in protected storage.
      * @return true on success (if protected storage is available and configured)
@@ -772,11 +767,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         @Nullable String userName,
         @Nullable String password)
     {
-        final DBASecureStorage secureStorage = DBWorkbench.getPlatform().getSecureStorage();
+        final DBASecureStorage secureStorage = project.getSecureStorage();
         {
             try {
                 ISecurePreferences prefNode = dataSource == null ?
-                    project.getSecurePreferences() :
+                    project.getSecureStorage().getSecurePreferences() :
                     dataSource.getSecurePreferences();
                 if (!secureStorage.useSecurePreferences()) {
                     prefNode.removeNode();

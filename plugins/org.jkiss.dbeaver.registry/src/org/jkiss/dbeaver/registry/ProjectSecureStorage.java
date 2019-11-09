@@ -14,37 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.app;
+package org.jkiss.dbeaver.registry;
 
 import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
-/**
- * DefaultSecureStorage
- */
-public class DefaultSecureStorage implements DBASecureStorage {
+public class ProjectSecureStorage implements DBASecureStorage {
+    private static final Log log = Log.getLog(ProjectSecureStorage.class);
 
-    private static final byte[] LOCAL_KEY_CACHE = new byte[] { -70, -69, 74, -97, 119, 74, -72, 83, -55, 108, 45, 101, 61, -2, 84, 74 };
-    
-    public static DefaultSecureStorage INSTANCE = new DefaultSecureStorage();
+    private final DBPProject project;
+    private final DBASecureStorage globalStorage;
+
+    public ProjectSecureStorage(DBPProject project) {
+        this.project = project;
+        globalStorage = project.getWorkspace().getPlatform().getApplication().getSecureStorage();
+    }
 
     @Override
     public boolean useSecurePreferences() {
-        return false;
+        return globalStorage.useSecurePreferences();
     }
 
     @Override
     public ISecurePreferences getSecurePreferences() {
-        return SecurePreferencesFactory.getDefault().node("dbeaver");
+        return project.getWorkspace().getPlatform().getApplication().getSecureStorage().getSecurePreferences().node("projects").node(project.getName());
     }
 
     @Override
     public SecretKey getLocalSecretKey() {
-        return new SecretKeySpec(LOCAL_KEY_CACHE, "AES");
+        return globalStorage.getLocalSecretKey();
     }
 
 }

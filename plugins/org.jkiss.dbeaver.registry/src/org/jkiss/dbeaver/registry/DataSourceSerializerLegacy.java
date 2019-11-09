@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
@@ -754,7 +753,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
 
         private String[] readSecuredCredentials(Attributes xmlAttrs, DataSourceDescriptor dataSource, String subNode) {
             String[] creds = new String[2];
-            final DBASecureStorage secureStorage = DBWorkbench.getPlatform().getSecureStorage();
+            final DBASecureStorage secureStorage = dataSource.getProject().getSecureStorage();
             {
                 try {
                     if (secureStorage.useSecurePreferences()) {
