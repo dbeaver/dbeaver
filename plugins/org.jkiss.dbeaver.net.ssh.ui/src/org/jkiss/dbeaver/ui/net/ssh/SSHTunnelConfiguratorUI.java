@@ -60,7 +60,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Button savePasswordCheckbox;
     private Label privateKeyLabel;
     private Combo tunnelImplCombo;
+    private Text localHostText;
     private Spinner localPortSpinner;
+    private Text remoteHostText;
+    private Spinner remotePortSpinner;
     private Spinner keepAliveText;
     private Spinner tunnelTimeout;
 
@@ -111,8 +114,14 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
                 tunnelImplCombo.add(it.getLabel());
             }
+            localHostText = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
             localPortSpinner = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_local_port, 0, StandardConstants.MIN_PORT_VALUE, StandardConstants.MAX_PORT_VALUE);
             localPortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_port_description);
+            remoteHostText = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
+            remotePortSpinner = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_remote_port, 0, StandardConstants.MIN_PORT_VALUE, StandardConstants.MAX_PORT_VALUE);
+            remotePortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_port_description);
             keepAliveText = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
             tunnelTimeout = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, SSHConstants.DEFAULT_CONNECT_TIMEOUT, 0, 300000);
         }
@@ -214,9 +223,16 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             }
         }
 
+        localHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_LOCAL_HOST)));
         int lpValue = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
         if (lpValue != 0) {
             localPortSpinner.setSelection(lpValue);
+        }
+
+        remoteHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_REMOTE_HOST)));
+        int rpValue = configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT);
+        if (rpValue != 0) {
+            remotePortSpinner.setSelection(rpValue);
         }
 
         int kaValue = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL);
@@ -254,11 +270,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 break;
             }
         }
+
+        configuration.setProperty(SSHConstants.PROP_LOCAL_HOST, localHostText.getText());
         int localPort = localPortSpinner.getSelection();
         if (localPort <= 0) {
             configuration.setProperty(SSHConstants.PROP_LOCAL_PORT, null);
         } else {
             configuration.setProperty(SSHConstants.PROP_LOCAL_PORT, localPort);
+        }
+
+        configuration.setProperty(SSHConstants.PROP_REMOTE_HOST, remoteHostText.getText());
+        int remotePort = remotePortSpinner.getSelection();
+        if (remotePort <= 0) {
+            configuration.setProperty(SSHConstants.PROP_REMOTE_PORT, null);
+        } else {
+            configuration.setProperty(SSHConstants.PROP_REMOTE_PORT, remotePort);
         }
 
         int kaInterval = keepAliveText.getSelection();
