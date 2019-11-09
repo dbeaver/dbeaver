@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
 import java.io.File;
+import java.util.UUID;
 
 /**
  * DBPWorkspace
@@ -38,6 +39,8 @@ public interface DBPProject extends DBPObject
 
     @NotNull
     String getName();
+
+    UUID getProjectID();
 
     @NotNull
     File getAbsolutePath();

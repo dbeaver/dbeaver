@@ -151,9 +151,6 @@ public class DBeaverCore extends BasePlatformImpl {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Core...");
 
-        // Validate that UI was initialized
-        DBeaverUI.getInstance();
-
         if (getPreferenceStore().getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
             // Register BC security provider
             SecurityProviderUtils.registerSecurityProvider();
