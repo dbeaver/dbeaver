@@ -35,7 +35,6 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
     private static final Log log = Log.getLog(SSHImplementationAbstract.class);
 
     // Saved config - used for tunnel invalidate
-    private transient int savedLocalPort = 0;
     protected transient DBWHandlerConfiguration savedConfiguration;
     protected transient DBPConnectionConfiguration savedConnectionInfo;
 
@@ -50,14 +49,16 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
                 throw new DBException("Database port not specified and no default port number for driver '" + configuration.getDriver().getName() + "'");
             }
         }
-        String dbHost = connectionInfo.getHostName();
 
         String sshAuthType = configuration.getStringProperty(SSHConstants.PROP_AUTH_TYPE);
         String sshHost = configuration.getStringProperty(SSHConstants.PROP_HOST);
         int sshPortNum = configuration.getIntProperty(SSHConstants.PROP_PORT);
-        int sshLocalPort = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
         int aliveInterval = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL);
         int connectTimeout = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
+        String sshLocalHost = configuration.getProperty(SSHConstants.PROP_LOCAL_HOST).toString();
+        int sshLocalPort = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
+        String sshRemoteHost = configuration.getProperty(SSHConstants.PROP_REMOTE_HOST).toString();
+        int sshRemotePort = configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT);
         //String aliveCount = properties.get(SSHConstants.PROP_ALIVE_COUNT);
         if (CommonUtils.isEmpty(sshHost)) {
             throw new DBException("SSH host not specified");
@@ -68,6 +69,19 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (CommonUtils.isEmpty(configuration.getUserName())) {
             throw new DBException("SSH user not specified");
         }
+        if (CommonUtils.isEmpty(sshLocalHost)) {
+            sshLocalHost = SSHConstants.LOCALHOST_NAME;
+        }
+        if (sshLocalPort == 0 && platform != null) {
+            sshLocalPort = SSHUtils.findFreePort(platform);
+        }
+        if (CommonUtils.isEmpty(sshRemoteHost)) {
+            sshRemoteHost = sshLocalHost;
+        }
+        if (sshRemotePort == 0 && configuration.getDriver() != null) {
+            sshRemotePort = Integer.parseInt(configuration.getDriver().getDefaultPort());
+        }
+
         SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
         if (sshAuthType != null) {
             authType = SSHConstants.AuthType.valueOf(sshAuthType); 
@@ -88,32 +102,15 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         }
 
         monitor.subTask("Initiating tunnel at '" + sshHost + "'");
-        int dbPort;
-        try {
-            dbPort = Integer.parseInt(dbPortString);
-        } catch (NumberFormatException e) {
-            throw new DBException("Bad database port number: " + dbPortString);
-        }
-        int localPort = savedLocalPort;
-        if (localPort == 0 && platform != null) {
-            localPort = SSHUtils.findFreePort(platform);
-        }
-        if (sshLocalPort != 0) {
-            if (sshLocalPort > 0) {
-                localPort = sshLocalPort;
-            }
-        }
 
-        setupTunnel(monitor, configuration, dbHost, sshHost, aliveInterval, sshPortNum, privKeyFile, connectTimeout, dbPort, localPort);
-        savedLocalPort = localPort;
+        setupTunnel(monitor, configuration, sshHost, aliveInterval, sshPortNum, privKeyFile, connectTimeout, sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
         savedConfiguration = configuration;
         savedConnectionInfo = connectionInfo;
 
         connectionInfo = new DBPConnectionConfiguration(connectionInfo);
-        String newPortValue = String.valueOf(localPort);
-        // Replace database host/port and URL - let's use localhost
-        connectionInfo.setHostName(SSHConstants.LOCALHOST_NAME);
-        connectionInfo.setHostPort(newPortValue);
+        // Replace database host/port and URL
+        connectionInfo.setHostName(sshLocalHost);
+        connectionInfo.setHostPort(Integer.toString(sshLocalPort));
         if (configuration.getDriver() != null) {
             // Driver can be null in case of orphan tunnel config (e.g. in network profile)
             String newURL = configuration.getDriver().getDataSourceProvider().getConnectionURL(
@@ -127,13 +124,14 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
     protected abstract void setupTunnel(
         DBRProgressMonitor monitor,
         DBWHandlerConfiguration configuration,
-        String dbHost,
         String sshHost,
         int aliveInterval,
         int sshPortNum,
         File privKeyFile,
         int connectTimeout,
-        int dbPort,
-        int localPort) throws DBException, IOException;
+        String sshLocalHost,
+        int sshLocalPort,
+        String sshRemoteHost,
+        int sshRemotePort) throws DBException, IOException;
 
 }

@@ -47,7 +47,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     private transient LocalPortListener portListener;
 
     @Override
-    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException {
+    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, String sshLocalHost, int sshLocalPort, String sshRemoteHost, int sshRemotePort) throws DBException, IOException {
         try {
             Config clientConfig = new DefaultConfig();
             clientConfig.setLoggerFactory(LoggerFactory.DEFAULT);
@@ -80,7 +80,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             log.debug("Instantiate SSH tunnel");
 
             final LocalPortForwarder.Parameters params
-                = new LocalPortForwarder.Parameters(SSHConstants.LOCALHOST_NAME, localPort, dbHost, dbPort);
+                = new LocalPortForwarder.Parameters(sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
             portListener = new LocalPortListener(params);
             portListener.start();
             RuntimeUtils.pause(100);

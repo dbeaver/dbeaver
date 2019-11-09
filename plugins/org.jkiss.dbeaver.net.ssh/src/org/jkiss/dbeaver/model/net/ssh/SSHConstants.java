@@ -34,7 +34,10 @@ public class SSHConstants {
     public static final String PROP_ALIVE_COUNT = "aliveCount";
     public static final String PROP_CONNECT_TIMEOUT = "sshConnectTimeout";
 
+    public static final String PROP_LOCAL_HOST = "localHost";
     public static final String PROP_LOCAL_PORT = "localPort";
+    public static final String PROP_REMOTE_HOST = "remoteHost";
+    public static final String PROP_REMOTE_PORT = "remotePort";
     //private static final int CONNECT_TIMEOUT = 10000;
 
     public enum AuthType {
