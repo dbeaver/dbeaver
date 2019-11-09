@@ -28,7 +28,6 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -212,7 +211,7 @@ public class EditConnectionWizard extends ConnectionWizard
 
         // Check locked datasources
         if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
-            if (DBeaverCore.getInstance().getSecureStorage().useSecurePreferences() && !isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
+            if (dataSource.getProject().getSecureStorage().useSecurePreferences() && !isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
                 if (!checkLockPassword()) {
                     return false;
                 }

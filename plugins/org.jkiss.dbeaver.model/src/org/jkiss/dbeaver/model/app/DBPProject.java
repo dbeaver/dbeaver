@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.app;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
@@ -62,7 +61,7 @@ public interface DBPProject extends DBPObject
     DBTTaskManager getTaskManager();
 
     @NotNull
-    ISecurePreferences getSecurePreferences();
+    DBASecureStorage getSecureStorage();
 
     Object getProjectProperty(String propName);
 
