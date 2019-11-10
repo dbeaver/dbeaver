@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersistor;
@@ -74,6 +75,6 @@ public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
     {
         super.createPartControl(parent);
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_NAVIGATOR);
-        restoreState();
+        UIExecutionQueue.queueExec(this::restoreState);
     }
 }

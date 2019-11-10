@@ -118,8 +118,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -739,7 +739,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         getSite().setSelectionProvider(new DynamicSelectionProvider());
 
-        createResultTabs();
+        UIExecutionQueue.queueExec(this::createResultTabs);
 
         setAction(ITextEditorActionConstants.SHOW_INFORMATION, null);
         //toolTipAction.setEnabled(false);
@@ -759,7 +759,7 @@ public class SQLEditor extends SQLEditorBase implements
         updateExecutionContext(null);
 
         // Update controls
-        UIUtils.asyncExec(this::onDataSourceChange);
+        UIExecutionQueue.queueExec(this::onDataSourceChange);
     }
 
     private void createControlsBar(Composite sqlEditorPanel) {
@@ -1412,9 +1412,6 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     protected void doSetInput(IEditorInput editorInput)
     {
-        DBPDataSourceContainer oldDataSource = getDataSourceContainer();
-        DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(editorInput);
-
         // Check for file existence
         try {
             if (editorInput instanceof IFileEditorInput) {
@@ -1438,12 +1435,17 @@ public class SQLEditor extends SQLEditorBase implements
         }
         syntaxLoaded = false;
 
-        if (oldDataSource != newDataSource) {
-            this.dataSourceContainer = null;
-            updateDataSourceContainer();
-        } else {
-            reloadSyntaxRules();
-        }
+        UIExecutionQueue.queueExec(() -> {
+            DBPDataSourceContainer oldDataSource = getDataSourceContainer();
+            DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(getEditorInput());
+
+            if (oldDataSource != newDataSource) {
+                this.dataSourceContainer = null;
+                updateDataSourceContainer();
+            } else {
+                reloadSyntaxRules();
+            }
+        });
 
         setPartName(getEditorName());
         if (isNonPersistentEditor()) {
