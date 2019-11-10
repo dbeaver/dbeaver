@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 
@@ -91,13 +92,13 @@ public class ProgressEditorPart extends EditorPart {
     private void createProgressPane(final Composite parent) {
         progressCanvas = new Canvas(parent, SWT.NONE);
         progressCanvas.addPaintListener(e ->
-            e.gc.drawText("Opening editor '" + getEditorInput().getDatabaseObject().getName() + "'...", 5, 5, true));
+            e.gc.drawText("Opening editor '" + getEditorInput().getName() + "'...", 5, 5, true));
 
         InitNodeService loadingService = new InitNodeService();
         LoadingJob<IDatabaseEditorInput> loadJob = LoadingJob.createService(
             loadingService,
             new InitNodeVisualizer(loadingService));
-        loadJob.schedule();
+        UIExecutionQueue.queueExec(loadJob::schedule);
     }
 
     private void initEntityEditor(IDatabaseEditorInput result) {
