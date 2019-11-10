@@ -69,17 +69,14 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (CommonUtils.isEmpty(configuration.getUserName())) {
             throw new DBException("SSH user not specified");
         }
-        if (CommonUtils.isEmpty(sshLocalHost)) {
-            sshLocalHost = SSHConstants.LOCALHOST_NAME;
-        }
         if (sshLocalPort == 0 && platform != null) {
             sshLocalPort = SSHUtils.findFreePort(platform);
         }
         if (CommonUtils.isEmpty(sshRemoteHost)) {
-            sshRemoteHost = sshLocalHost;
+            sshRemoteHost = connectionInfo.getHostName();
         }
         if (sshRemotePort == 0 && configuration.getDriver() != null) {
-            sshRemotePort = Integer.parseInt(configuration.getDriver().getDefaultPort());
+            sshRemotePort = CommonUtils.toInt(connectionInfo.getHostPort());
         }
 
         SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
@@ -109,7 +106,11 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
 
         connectionInfo = new DBPConnectionConfiguration(connectionInfo);
         // Replace database host/port and URL
-        connectionInfo.setHostName(sshLocalHost);
+        if (CommonUtils.isEmpty(sshLocalHost)) {
+            connectionInfo.setHostName(SSHConstants.LOCALHOST_NAME);
+        } else {
+            connectionInfo.setHostName(sshLocalHost);
+        }
         connectionInfo.setHostPort(Integer.toString(sshLocalPort));
         if (configuration.getDriver() != null) {
             // Driver can be null in case of orphan tunnel config (e.g. in network profile)

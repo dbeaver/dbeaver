@@ -72,7 +72,11 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             log.debug("Connect to tunnel host");
             session.connect(connectTimeout);
             try {
-                session.setPortForwardingL(sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
+                if (CommonUtils.isEmpty(sshLocalHost)) {
+                    session.setPortForwardingL(sshLocalPort, sshRemoteHost, sshRemotePort);
+                } else {
+                    session.setPortForwardingL(sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
+                }
             } catch (JSchException e) {
                 closeTunnel(monitor);
                 throw e;
