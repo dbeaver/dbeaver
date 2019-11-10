@@ -30,8 +30,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.snowflake.SnowflakeUIActivator;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeUIActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
@@ -167,7 +167,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            createSavePasswordButton(addrGroup, 2);
+            createPasswordControls(addrGroup, passwordText, 2);
 
             UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_role);
 

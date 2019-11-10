@@ -192,7 +192,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(1, false));
 
-            createSavePasswordButton(secureGroup);
+            createPasswordControls(secureGroup, passwordText);
             trustServerCertificate = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_trust_server_certificate, SQLServerUIMessages.dialog_setting_trust_server_certificate_tip, true, 2);
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }

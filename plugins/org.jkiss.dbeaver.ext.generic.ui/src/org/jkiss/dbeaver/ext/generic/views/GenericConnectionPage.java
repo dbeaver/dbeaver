@@ -282,7 +282,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            createSavePasswordButton(settingsGroup, 2);
+            createPasswordControls(settingsGroup, passwordText, 2);
 
             addControlToGroup(GROUP_LOGIN, userNameLabel);
             addControlToGroup(GROUP_LOGIN, userNameText);

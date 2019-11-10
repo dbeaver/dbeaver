@@ -162,7 +162,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            createSavePasswordButton(passPH);
+            createPasswordControls(passPH, passwordText);
         }
 
         createDriverPanel(control);

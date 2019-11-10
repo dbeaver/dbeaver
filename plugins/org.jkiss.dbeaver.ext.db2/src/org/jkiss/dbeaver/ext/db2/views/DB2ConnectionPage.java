@@ -134,7 +134,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            createSavePasswordButton(passPH);
+            createPasswordControls(passPH, passwordText);
         }
 
         createDriverPanel(control);

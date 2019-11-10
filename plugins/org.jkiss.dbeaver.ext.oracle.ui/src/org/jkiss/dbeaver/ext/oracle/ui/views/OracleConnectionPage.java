@@ -304,7 +304,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             }
         });
 
-        createSavePasswordButton(parent, 4);
+        createPasswordControls(parent, passwordText, 4);
 
         parent.setTabList(new Control[]{userNameText, passwordText, userRoleCombo, osAuthCheck});
     }

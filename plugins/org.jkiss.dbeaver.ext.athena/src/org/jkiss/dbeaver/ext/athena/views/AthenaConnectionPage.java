@@ -96,7 +96,7 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
             secretAccessKeyText.setToolTipText(AthenaMessages.label_access_key_id);
             secretAccessKeyText.addModifyListener(textListener);
 
-            createSavePasswordButton(addrGroup, 2);
+            createPasswordControls(addrGroup, secretAccessKeyText, 2);
         }
 
 
