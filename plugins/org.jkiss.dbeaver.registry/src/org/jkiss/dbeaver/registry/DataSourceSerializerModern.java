@@ -299,7 +299,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 } catch (Exception e) {
                     log.error("Error decrypting secure credentials", e);
                 }
-
             }
         }
 

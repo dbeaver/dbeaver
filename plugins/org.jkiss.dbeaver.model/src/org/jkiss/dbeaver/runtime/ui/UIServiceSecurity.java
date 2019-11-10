@@ -25,7 +25,7 @@ import org.jkiss.code.Nullable;
  */
 public interface UIServiceSecurity {
 
-    String askForPassword(@NotNull String title, @Nullable String defPassword, boolean emptyPasswordAllowed);
+    String askForPassword(@NotNull String title, String message, @Nullable String defPassword, boolean emptyPasswordAllowed);
 
     String askForNewPassword(@NotNull String title, @Nullable String defPassword);
 
