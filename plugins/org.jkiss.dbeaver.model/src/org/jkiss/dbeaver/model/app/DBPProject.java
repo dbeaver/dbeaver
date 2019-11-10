@@ -34,6 +34,8 @@ public interface DBPProject extends DBPObject
 {
     String METADATA_FOLDER = ".dbeaver";
 
+    String PROP_SECURE_PROJECT = "secureProject";
+
     @NotNull
     DBPWorkspace getWorkspace();
 

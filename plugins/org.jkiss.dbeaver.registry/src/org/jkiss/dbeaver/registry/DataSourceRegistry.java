@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -645,9 +644,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         if (!fromFile.exists()) {
             return;
         }
-        try (InputStream is = fromFile.getContents(true)) {
+
+        try {
             DataSourceSerializer serializer = modern ? new DataSourceSerializerModern(this) : new DataSourceSerializerLegacy(this);
-            serializer.parseDataSources(is, origin, refresh, parseResults);
+            serializer.parseDataSources(fromFile, origin, refresh, parseResults);
             updateProjectNature();
         } catch (Exception ex) {
             log.error("Error loading datasource config from " + fromFile.getFullPath(), ex);

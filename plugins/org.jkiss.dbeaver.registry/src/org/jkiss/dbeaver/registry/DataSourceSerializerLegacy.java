@@ -134,14 +134,14 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(InputStream is, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults)
+    public void parseDataSources(IFile configFile, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults)
         throws DBException, IOException
     {
-        SAXReader parser = new SAXReader(is);
         try {
+            SAXReader parser = new SAXReader(configFile.getContents());
             final DataSourcesParser dsp = new DataSourcesParser(registry, origin, refresh, parseResults);
             parser.parse(dsp);
-        } catch (XMLException ex) {
+        } catch (Exception ex) {
             throw new DBException("Datasource config parse error", ex);
         }
     }
