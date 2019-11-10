@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.utils.CommonUtils;
@@ -75,13 +76,15 @@ public class DatabaseBrowserView extends NavigatorViewBase {
 
         String secondaryId = getViewSite().getSecondaryId();
         if (!CommonUtils.isEmpty(secondaryId)) {
-            try {
-                DBNNode node = getNodeFromSecondaryId(secondaryId);
-                setPartName(node.getNodeName());
-                setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
-            } catch (DBException e) {
-                // ignore
-            }
+            UIExecutionQueue.queueExec(() -> {
+                try {
+                    DBNNode node = getNodeFromSecondaryId(secondaryId);
+                    setPartName(node.getNodeName());
+                    setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
+                } catch (DBException e) {
+                    // ignore
+                }
+            });
         }
     }
 

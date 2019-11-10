@@ -1766,6 +1766,18 @@ public class UIUtils {
         return shell;
     }
 
+    public static void centerShell(Shell parent, Shell shell) {
+        if (parent == null || shell == null) {
+            return;
+        }
+        Point size = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        final Rectangle parentBounds = parent.getBounds();
+        final int x = parentBounds.x + (parentBounds.width - size.x) / 2;
+        final int y = parentBounds.y + (parentBounds.height - size.y) / 2;
+
+        shell.setLocation(x, y);
+    }
+
     public static Image getShardImage(String id) {
         return PlatformUI.getWorkbench().getSharedImages().getImage(id);
     }
