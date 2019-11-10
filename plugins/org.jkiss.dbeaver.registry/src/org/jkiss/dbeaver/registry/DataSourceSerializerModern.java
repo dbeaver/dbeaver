@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -225,16 +226,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
             log.error("IO error while saving datasources json", e);
         }
 
-        InputStream ifs = new ByteArrayInputStream(dsConfigBuffer.toByteArray());
+        String jsonString = new String(dsConfigBuffer.toByteArray(), StandardCharsets.UTF_8);
+        boolean encryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
+        saveConfigFile(monitor.getNestedMonitor(), configFile, jsonString, encryptProject);
         try {
-            if (!configFile.exists()) {
-                configFile.create(ifs, true, monitor.getNestedMonitor());
-                configFile.setHidden(true);
-            } else {
-                configFile.setContents(ifs, true, false, monitor.getNestedMonitor());
-            }
+            configFile.setHidden(true);
         } catch (CoreException e) {
-            throw new IOException("Error saving configuration to a file " + configFile.getFullPath(), e);
+            log.debug(e);
         }
 
         {
@@ -245,30 +243,58 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
     }
 
-    private void saveSecureCredentialsFile(IProgressMonitor monitor, IFolder parent, DataSourceOrigin origin) {
+    private String loadConfigFile(IFile file, boolean decrypt) throws IOException {
+        ByteArrayOutputStream credBuffer = new ByteArrayOutputStream();
+        try (InputStream crdStream = file.getContents()) {
+            IOUtils.copyStream(crdStream, credBuffer);
+        } catch (Exception e) {
+            log.error("Error reading secure credentials file", e);
+        }
+        if (!decrypt) {
+            return new String(credBuffer.toByteArray(), StandardCharsets.UTF_8);
+        } else {
+            ContentEncrypter encrypter = new ContentEncrypter(registry.getProject().getSecureStorage().getLocalSecretKey());
+            try {
+                return encrypter.decrypt(credBuffer.toByteArray());
+            } catch (Exception e) {
+                throw new IOException("Error decrypting encrypted file", e);
+            }
+        }
+    }
 
+    private void saveConfigFile(IProgressMonitor monitor, IFile configFile, String contents, boolean encrypt) {
+        try {
+            byte[] binaryContents;
+            if (encrypt) {
+                // Serialize and encrypt
+                ContentEncrypter encrypter = new ContentEncrypter(registry.getProject().getSecureStorage().getLocalSecretKey());
+                binaryContents = encrypter.encrypt(contents);
+            } else {
+                binaryContents = contents.getBytes(StandardCharsets.UTF_8);
+            }
+
+            // Save result to file
+            InputStream ifs = new ByteArrayInputStream(binaryContents);
+
+            if (!configFile.exists()) {
+                configFile.create(ifs, IResource.FORCE | IResource.HIDDEN | IResource.TEAM_PRIVATE, monitor);
+            } else {
+                configFile.setContents(ifs, true, false, monitor);
+            }
+        } catch (Exception e) {
+            log.error("Error saving configuration file " + configFile.getLocation().toFile().getAbsolutePath(), e);
+        }
+    }
+
+    private void saveSecureCredentialsFile(IProgressMonitor monitor, IFolder parent, DataSourceOrigin origin) {
         IFile credFile = parent.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
         try {
-            // Serialize and encrypt
-            String jsonString = SECURE_GSON.toJson(secureProperties, Map.class);
-            ContentEncrypter encrypter = new ContentEncrypter(registry.getProject().getSecureStorage().getLocalSecretKey());
-            byte[] credData = encrypter.encrypt(jsonString);
-
-            // Save to file
-
             if (secureProperties.isEmpty()) {
                 credFile.delete(true, false, monitor);
             } else {
-                // Encrypt whole file
-
-                // Save result to file
-                InputStream ifs = new ByteArrayInputStream(credData);
-
-                if (!credFile.exists()) {
-                    credFile.create(ifs, IResource.FORCE | IResource.HIDDEN | IResource.TEAM_PRIVATE, monitor);
-                } else {
-                    credFile.setContents(ifs, true, false, monitor);
-                }
+                // Serialize and encrypt
+                String jsonString = SECURE_GSON.toJson(secureProperties, Map.class);
+                saveConfigFile(monitor, credFile, jsonString, true);
             }
         } catch (Exception e) {
             log.error("Error saving secure credentials", e);
@@ -276,25 +302,17 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(InputStream is, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) throws IOException {
+    public void parseDataSources(IFile configFile, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) throws IOException {
         // Read secured creds file
         IFolder mdFolder = registry.getProject().getMetadataFolder(false);
         if (mdFolder.exists()) {
             IFile credFile = mdFolder.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
             if (credFile.exists()) {
-                ByteArrayOutputStream credBuffer = new ByteArrayOutputStream();
-                try (InputStream crdStream = credFile.getContents()) {
-                    IOUtils.copyStream(crdStream, credBuffer);
-                } catch (Exception e) {
-                    log.error("Error reading secure credentials file", e);
-                }
-                ContentEncrypter encrypter = new ContentEncrypter(registry.getProject().getSecureStorage().getLocalSecretKey());
                 try {
-                    String credJson = encrypter.decrypt(credBuffer.toByteArray());
-                    Map<String, Map<String, Map<String, String>>> res =
-                        CONFIG_GSON.fromJson(
-                            credJson,
-                            new TypeToken<Map<String, Map<String, Map<String, String>>>>(){}.getType());
+                    String credJson = loadConfigFile(credFile, true);
+                    Map<String, Map<String, Map<String, String>>> res = CONFIG_GSON.fromJson(
+                        credJson,
+                        new TypeToken<Map<String, Map<String, Map<String, String>>>>(){}.getType());
                     secureProperties.putAll(res);
                 } catch (Exception e) {
                     log.error("Error decrypting secure credentials", e);
@@ -302,8 +320,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
         }
 
-        try (Reader configReader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-            Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
+        boolean decryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
+        String configJson = loadConfigFile(configFile, decryptProject);
+        {
+            Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, new StringReader(configJson));
 
             // Folders
             for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, "folders")) {
