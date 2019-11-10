@@ -25,8 +25,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.mysql.ui.MySQLUIActivator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.ui.MySQLUIActivator;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -131,7 +131,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
-        createSavePasswordButton(passPH);
+        createPasswordControls(passPH, passwordText);
 
         UIUtils.createHorizontalLine(addrGroup, 2, 10);
 

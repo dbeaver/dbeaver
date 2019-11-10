@@ -130,7 +130,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
-        createSavePasswordButton(addrGroup, 2);
+        createPasswordControls(addrGroup, passwordText, 2);
 
         {
             Composite buttonsGroup = new Composite(addrGroup, SWT.NONE);

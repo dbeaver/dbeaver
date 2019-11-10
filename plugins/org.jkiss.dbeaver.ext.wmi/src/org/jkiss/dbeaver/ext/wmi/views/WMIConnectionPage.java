@@ -140,7 +140,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            createSavePasswordButton(addrGroup, 2);
+            createPasswordControls(addrGroup, passwordText, 2);
         }
 
         setControl(addrGroup);

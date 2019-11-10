@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.ui;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
 
 /**
  * Security UI Service
@@ -31,4 +32,5 @@ public interface UIServiceSecurity {
 
     String askForPasswordChange(@NotNull String title, @NotNull String currentPassword);
 
+    boolean validatePassword(DBASecureStorage secureStorage, String title, String message);
 }

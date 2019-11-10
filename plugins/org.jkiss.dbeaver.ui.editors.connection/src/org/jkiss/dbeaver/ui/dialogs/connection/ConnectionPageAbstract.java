@@ -24,19 +24,15 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
-import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -220,20 +216,51 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     }
 
-    protected void createSavePasswordButton(Composite parent) {
-        createSavePasswordButton(parent, 1);
+    protected void createPasswordControls(Composite parent, Text passwordText) {
+        createPasswordControls(parent, passwordText, 1);
     }
 
-    protected void createSavePasswordButton(Composite parent, int hSpan) {
-        DataSourceDescriptor dataSource = (DataSourceDescriptor)getSite().getActiveDataSource();
-        savePasswordCheck = UIUtils.createCheckbox(parent,
-            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
-            dataSource == null || dataSource.isSavePassword());
+    protected void createPasswordControls(Composite parent, Text passwordText, int hSpan) {
+        // We don't support password preview in standard project secure storage (as we need password encryption)
+        UIServiceSecurity serviceSecurity = DBWorkbench.getService(UIServiceSecurity.class);
+        boolean supportsPasswordView = serviceSecurity != null;
+
+        Composite panel = UIUtils.createComposite(parent, supportsPasswordView ? 2 : 1);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         if (hSpan > 1) {
             gd.horizontalSpan = hSpan;
         }
-        savePasswordCheck.setLayoutData(gd);
+        panel.setLayoutData(gd);
+
+        if (supportsPasswordView) {
+            ToolBar toolBar = new ToolBar(panel, SWT.HORIZONTAL);
+            ToolItem showPasswordLabel = new ToolItem(toolBar, SWT.NONE);
+            showPasswordLabel.setToolTipText("Show password on screen");
+            showPasswordLabel.setImage(DBeaverIcons.getImage(UIIcon.SHOW_ALL_DETAILS));
+            showPasswordLabel.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showPasswordText(serviceSecurity, passwordText);
+                }
+            });
+        }
+
+        DataSourceDescriptor dataSource = (DataSourceDescriptor)getSite().getActiveDataSource();
+        savePasswordCheck = UIUtils.createCheckbox(panel,
+            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
+            dataSource == null || dataSource.isSavePassword());
+        savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally);
+        //savePasswordCheck.setLayoutData(gd);
+    }
+
+    private void showPasswordText(UIServiceSecurity serviceSecurity, Text passwordText) {
+        if (passwordText.getEchoChar() == '\0') {
+            passwordText.setEchoChar('*');
+            return;
+        }
+        if (serviceSecurity.validatePassword(site.getProject().getSecureStorage(), "Enter project password", "Enter project master password to unlock connection password view")) {
+            passwordText.setEchoChar('\0');
+        }
     }
 
 }

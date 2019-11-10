@@ -34,6 +34,14 @@ public class ProjectSecureStorage implements DBASecureStorage {
         globalStorage = project.getWorkspace().getPlatform().getApplication().getSecureStorage();
     }
 
+    public DBPProject getProject() {
+        return project;
+    }
+
+    public DBASecureStorage getGlobalStorage() {
+        return globalStorage;
+    }
+
     @Override
     public boolean useSecurePreferences() {
         return globalStorage.useSecurePreferences();
