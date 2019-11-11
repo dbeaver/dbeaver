@@ -111,9 +111,9 @@ class IndentFormatter {
             } else switch (tokenString) {
                 case "CREATE":
                     if (!isCompact) {
-                        int nextIndex = getNextKeyword(argList, index);
+                        int nextIndex = getNextKeywordIndex(argList, index);
                         if (nextIndex > 0 && "OR".equals(argList.get(nextIndex).getString().toUpperCase(Locale.ENGLISH))) {
-                            nextIndex = getNextKeyword(argList, nextIndex);
+                            nextIndex = getNextKeywordIndex(argList, nextIndex);
                             if (nextIndex > 0 && "REPLACE".equals(argList.get(nextIndex).getString().toUpperCase(Locale.ENGLISH))) {
                                 insertReturnAndIndent(argList, nextIndex + 1, indent);
                                 break;
@@ -147,8 +147,10 @@ class IndentFormatter {
                 case "CASE":  //$NON-NLS-1$
                     if (!isCompact) {
                         result += insertReturnAndIndent(argList, index - 1, indent);
-                        //indent++;
-                        //result += insertReturnAndIndent(argList, index + 1, indent);
+                        if (!"WHEN".equals(getNextKeyword(argList, index))) {
+                            indent++;
+                            result += insertReturnAndIndent(argList, index + 1, indent);
+                        }
                     }
                     break;
                 case "FROM":
@@ -418,7 +420,7 @@ class IndentFormatter {
         return null;
     }
 
-    private static int getNextKeyword(List<FormatterToken> argList, int index) {
+    private static int getNextKeywordIndex(List<FormatterToken> argList, int index) {
         for (int i = index + 1; i < argList.size(); i++) {
             if (argList.get(i).getType() == TokenType.KEYWORD) {
                 return i;
@@ -426,4 +428,13 @@ class IndentFormatter {
         }
         return -1;
     }
+
+    private static String getNextKeyword(List<FormatterToken> argList, int index) {
+        int ki = getNextKeywordIndex(argList, index);
+        if (ki < 0) {
+            return null;
+        }
+        return argList.get(ki).getString();
+    }
+
 }
