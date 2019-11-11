@@ -469,7 +469,7 @@ public class ResultSetModel {
         return metadataDynamic;
     }
 
-    boolean isMetadataChanged() {
+    public boolean isMetadataChanged() {
         return metadataChanged;
     }
 

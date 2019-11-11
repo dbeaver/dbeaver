@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -70,13 +70,11 @@ public class GroupingPanel implements IResultSetPanel {
         IResultSetController groupingViewer = this.resultsContainer.getResultSetController();
 
         IResultSetListener ownerListener = new ResultSetListenerAdapter() {
-            String prevQueryText = null;
             @Override
             public void handleResultSetLoad() {
                 // Here we can refresh grouping (makes sense if source query was modified with some conditions)
                 // Or just clear it (if brand new query was executed)
-                String queryText = presentation.getController().getDataContainer().getName();
-                if (prevQueryText != null && !CommonUtils.equalObjects(prevQueryText, queryText)) {
+                if (presentation.getController().getModel().isMetadataChanged()) {
                     resultsContainer.clearGrouping();
                 } else {
                     try {
@@ -85,7 +83,6 @@ public class GroupingPanel implements IResultSetPanel {
                         DBWorkbench.getPlatformUI().showError("Grouping error", "Can't refresh grouping query", e);
                     }
                 }
-                prevQueryText = queryText;
             }
         };
 
