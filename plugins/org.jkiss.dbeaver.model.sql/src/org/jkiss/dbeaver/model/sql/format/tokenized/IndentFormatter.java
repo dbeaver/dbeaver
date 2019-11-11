@@ -147,8 +147,8 @@ class IndentFormatter {
                 case "CASE":  //$NON-NLS-1$
                     if (!isCompact) {
                         result += insertReturnAndIndent(argList, index - 1, indent);
-                        indent++;
-                        result += insertReturnAndIndent(argList, index + 1, indent);
+                        //indent++;
+                        //result += insertReturnAndIndent(argList, index + 1, indent);
                     }
                     break;
                 case "FROM":
@@ -187,6 +187,9 @@ class IndentFormatter {
                         break;
                     }
                 case "WHEN":
+                    if ("CASE".equals(getPrevKeyword(argList, index))) {
+                        break;
+                    }
                 case "ELSE":  //$NON-NLS-1$
                     result += insertReturnAndIndent(argList, index, indent);
                     break;
