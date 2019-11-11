@@ -35,6 +35,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
     private static final Log log = Log.getLog(SSHImplementationAbstract.class);
 
     // Saved config - used for tunnel invalidate
+    private transient int savedLocalPort = 0;
+
     protected transient DBWHandlerConfiguration savedConfiguration;
     protected transient DBPConnectionConfiguration savedConnectionInfo;
 
@@ -69,8 +71,12 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (CommonUtils.isEmpty(configuration.getUserName())) {
             throw new DBException("SSH user not specified");
         }
-        if (sshLocalPort == 0 && platform != null) {
-            sshLocalPort = SSHUtils.findFreePort(platform);
+        if (sshLocalPort == 0) {
+            if (savedLocalPort != 0) {
+                sshLocalPort = savedLocalPort;
+            } else if (platform != null) {
+                sshLocalPort = SSHUtils.findFreePort(platform);
+            }
         }
         if (CommonUtils.isEmpty(sshRemoteHost)) {
             sshRemoteHost = connectionInfo.getHostName();
@@ -101,6 +107,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         monitor.subTask("Initiating tunnel at '" + sshHost + "'");
 
         setupTunnel(monitor, configuration, sshHost, aliveInterval, sshPortNum, privKeyFile, connectTimeout, sshLocalHost, sshLocalPort, sshRemoteHost, sshRemotePort);
+        savedLocalPort = sshLocalPort;
         savedConfiguration = configuration;
         savedConnectionInfo = connectionInfo;
 
