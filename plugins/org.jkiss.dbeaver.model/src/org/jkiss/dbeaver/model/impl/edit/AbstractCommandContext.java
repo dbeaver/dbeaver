@@ -688,6 +688,18 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             }
         }
 
+        // Move rename commands in the head (#7512)
+        for (CommandQueue queue : commandQueues) {
+            int headIndex = 0;
+            for (CommandInfo cmd : new ArrayList<>(queue.commands)) {
+                if (cmd.mergedBy == null && cmd.command instanceof DBECommandRename) {
+                    queue.commands.remove(cmd);
+                    queue.commands.add(headIndex++, cmd);
+                }
+            }
+        }
+
+
         return commandQueues;
     }
 

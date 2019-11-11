@@ -338,7 +338,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
     }
 
-    protected class ObjectRenameCommand extends DBECommandAbstract<OBJECT_TYPE> {
+    protected class ObjectRenameCommand extends DBECommandAbstract<OBJECT_TYPE> implements DBECommandRename {
         private String oldName;
         private String newName;
 
