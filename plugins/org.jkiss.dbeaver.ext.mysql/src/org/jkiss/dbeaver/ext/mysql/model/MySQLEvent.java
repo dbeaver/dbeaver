@@ -249,7 +249,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         DateFormat dateFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE EVENT ").append(DBUtils.getQuotedIdentifier(this)).append("\n")
-            .append("ON SCHEDULE EVERY ").append(intervalValue = "1").append(" ").append(intervalField = "DAY").append("\n");
+            .append("ON SCHEDULE EVERY ").append(intervalValue).append(" ").append(intervalField).append("\n");
         if (starts != null) {
             sql.append("STARTS '").append(dateFormat.format(starts)).append("'\n");
         }
