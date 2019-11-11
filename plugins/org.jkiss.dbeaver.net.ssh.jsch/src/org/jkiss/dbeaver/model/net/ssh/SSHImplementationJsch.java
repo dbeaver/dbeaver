@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -125,7 +126,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
         if (!isAlive) {
             closeTunnel(monitor);
-            initTunnel(monitor, null, savedConfiguration, savedConnectionInfo);
+            initTunnel(monitor, DBWorkbench.getPlatform(), savedConfiguration, savedConnectionInfo);
         }
     }
 
