@@ -238,7 +238,12 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
 
         dataContainer.setGroupingQuery(sql.toString());
-        DBDDataFilter dataFilter = new DBDDataFilter();
+        DBDDataFilter dataFilter;
+        if (presentation.getController().getModel().isMetadataChanged()) {
+            dataFilter = new DBDDataFilter();
+        } else {
+            dataFilter = new DBDDataFilter(groupingViewer.getModel().getDataFilter());
+        }
 
         String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING);
         if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
