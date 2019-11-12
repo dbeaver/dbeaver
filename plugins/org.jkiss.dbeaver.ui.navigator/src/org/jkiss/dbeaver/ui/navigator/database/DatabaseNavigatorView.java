@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -86,7 +87,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     {
         super.createPartControl(parent);
         UIUtils.setHelp(parent, IHelpContextIds.CTX_DATABASE_NAVIGATOR);
-        restoreState();
+        UIExecutionQueue.queueExec(this::restoreState);
     }
 
     @Override
