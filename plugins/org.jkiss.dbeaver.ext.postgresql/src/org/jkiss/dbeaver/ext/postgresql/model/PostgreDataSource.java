@@ -441,7 +441,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             final List<PostgreDatabase> allDatabases = databaseCache.getCachedObjects();
             if (allDatabases.isEmpty()) {
                 // Looks like we are not connected or in connection process right now - no instance then
-                throw new IllegalStateException("No databases fond on the server");
+                throw new IllegalStateException("No databases found on the server");
             }
             defDatabase = allDatabases.get(0);
         }
