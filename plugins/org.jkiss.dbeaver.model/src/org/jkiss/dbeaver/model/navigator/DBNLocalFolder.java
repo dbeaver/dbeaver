@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,7 +36,7 @@ import java.util.List;
 /**
  * DBNLocalFolder
  */
-public class DBNLocalFolder extends DBNNode implements DBNContainer
+public class DBNLocalFolder extends DBNNode implements DBNContainer, DBPContextProvider
 {
     private DBPDataSourceFolder folder;
 
@@ -268,4 +269,15 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return folder.getFolderPath();
     }
 
+	@Override
+	public DBCExecutionContext getExecutionContext() {
+		List<DBNDataSource> dss = getDataSources();
+		for (DBNDataSource ds : dss) {
+			if (ds!=null) {
+				// if there is at least one datasource (able to disconnect), return context for it
+		        return DBUtils.getDefaultContext(ds.getDataSourceContainer(), true);
+			}
+		}
+		return null;
+	}
 }

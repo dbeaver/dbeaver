@@ -745,6 +745,14 @@
                         </iterate>
                     </with>
                 </visibleWhen>
+                <visibleWhen>
+                	<with variable="selection">
+                        <count value="1"/>
+                    	<iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNLocalFolder"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
             </command>
 
         </menuContribution>
