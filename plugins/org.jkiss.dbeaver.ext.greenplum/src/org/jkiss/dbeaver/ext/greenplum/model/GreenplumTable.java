@@ -24,7 +24,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -134,7 +137,7 @@ public class GreenplumTable extends PostgreTableRegular {
             try (JDBCStatement dbStat = session.createStatement()) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT policytype FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
                     if (dbResult.next()) {
-                        return JDBCUtils.safeGetString(dbResult, 1).equals("r");
+                        return CommonUtils.equalObjects(JDBCUtils.safeGetString(dbResult, 1), "r");
                     } else {
                         return false;
                     }
