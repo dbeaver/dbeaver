@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.LazyLabelProvider;
-import org.jkiss.dbeaver.ui.ProgramInfo;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
@@ -66,18 +63,23 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     @Override
     public void createPartControl(Composite parent) {
         super.createPartControl(parent);
-        final TreeViewer viewer = getNavigatorViewer();
-        viewer.getTree().setHeaderVisible(true);
-        createColumns(viewer);
+
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
 
+        final TreeViewer viewer = getNavigatorViewer();
         viewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
                 return !(element instanceof DBNProjectDatabases);
             }
         });
-        updateTitle();
+
+        viewer.getTree().setHeaderVisible(true);
+
+        UIExecutionQueue.queueExec(() -> {
+            createColumns(viewer);
+            updateTitle();
+        });
     }
 
     private void createColumns(final TreeViewer viewer) {
