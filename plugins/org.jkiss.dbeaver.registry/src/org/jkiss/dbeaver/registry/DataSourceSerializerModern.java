@@ -73,6 +73,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         .create();
 
     private boolean passwordReadCanceled = false;
+    private boolean passwordWriteCanceled = false;
 
     private final DataSourceRegistry registry;
     // Secure props.
@@ -882,9 +883,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable String userName,
         @Nullable String password) {
         assert dataSource != null|| profile != null;
-        boolean saved = DataSourceRegistry.saveCredentialsInSecuredStorage(
+        boolean saved = !passwordWriteCanceled&& DataSourceRegistry.saveCredentialsInSecuredStorage(
             registry.getProject(), dataSource, subNode, userName, password);
         if (!saved) {
+            passwordWriteCanceled = true;
+
             String topNodeId = profile != null ? "profile:" + profile.getProfileName() : dataSource.getId();
             if (subNode == null) subNode = NODE_CONNECTION;
 

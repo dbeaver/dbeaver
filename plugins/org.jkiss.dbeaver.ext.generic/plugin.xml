@@ -1087,8 +1087,8 @@
                     categories="sql">
                 </driver>
 
-                <!-- KDB -->
-                <driver
+                <!-- KDB - removed as it doesn't work anyway -->
+                <!--<driver
                         id="kdb_jdbc"
                         label="KDB+"
                         icon="icons/kx_icon.png"
@@ -1100,7 +1100,7 @@
                         webURL="https://code.kx.com/q/interfaces/jdbc-client-for-kdb/"
                         categories="timeseries">
                     <file type="jar" path="https://github.com/KxSystems/kdb/raw/master/c/jdbc.jar"/>
-                </driver>
+                </driver>-->
 
                 <!-- Qubole
                 <driver
