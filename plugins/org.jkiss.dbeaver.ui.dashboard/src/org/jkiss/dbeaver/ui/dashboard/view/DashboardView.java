@@ -23,6 +23,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
@@ -39,7 +40,6 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
 
     private DashboardListViewer dashboardListViewer;
     private DashboardViewConfiguration configuration;
-    private int viewNumber;
     private DBPDataSourceContainer dataSourceContainer;
 
     public DashboardView() {
@@ -52,6 +52,10 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
 
     @Override
     public void createPartControl(Composite parent) {
+        UIExecutionQueue.queueExec(() -> createDashboardControls(parent));
+    }
+
+    private void createDashboardControls(Composite parent) {
         try {
             String secondaryId = getViewSite().getSecondaryId();
             if (CommonUtils.isEmpty(secondaryId)) {
@@ -59,7 +63,7 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
             }
             int divPos = secondaryId.lastIndexOf(':');
             String dataSourceId = divPos == -1 ? secondaryId : secondaryId.substring(0, divPos);
-            viewNumber = divPos == -1 ? 0 : CommonUtils.toInt(secondaryId.substring(divPos + 1));
+            int viewNumber = divPos == -1 ? 0 : CommonUtils.toInt(secondaryId.substring(divPos + 1));
 
             dataSourceContainer = DBUtils.findDataSource(dataSourceId);
             if (dataSourceContainer == null) {
@@ -75,6 +79,8 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
             dashboardListViewer.createDashboardsFromConfiguration();
 
             getSite().setSelectionProvider(dashboardListViewer);
+
+            parent.layout(true, true);
 
             updateStatus();
         } catch (Throwable e) {
