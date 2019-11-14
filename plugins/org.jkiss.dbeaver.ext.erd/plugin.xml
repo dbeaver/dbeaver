@@ -39,7 +39,7 @@
             position="additions_end"
             icon="icons/erd.png">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer" forceCheck="true" if="context.isEntityContainer(object)"/>
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntity" forceCheck="true"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" forceCheck="true"/>
         </editor>
     </extension>
 
