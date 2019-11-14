@@ -119,11 +119,21 @@ public class GreenplumTable extends PostgreTableRegular {
     private int[] readDistributedColumns(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table distributed columns")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT attrnums FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
-                    if (dbResult.next()) {
-                        return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
-                    } else {
-                        return null;
+                if (((GreenplumDataSource)getDataSource()).isGreenplumVersionAtLeast(session.getProgressMonitor(), 6, 0)) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT distkey FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
+                        if (dbResult.next()) {
+                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
+                        } else {
+                            return null;
+                        }
+                    }
+                } else {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT attrnums FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
+                        if (dbResult.next()) {
+                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
+                        } else {
+                            return null;
+                        }
                     }
                 }
             }
