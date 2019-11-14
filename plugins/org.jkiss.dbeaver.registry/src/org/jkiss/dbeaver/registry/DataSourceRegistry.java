@@ -577,7 +577,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 if (refresh) {
                     metadataFolder.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
                 }
-                for (IResource res : metadataFolder.members(IContainer.INCLUDE_HIDDEN)) {
+                for (IResource res : metadataFolder.members(IContainer.INCLUDE_HIDDEN | IContainer.INCLUDE_TEAM_PRIVATE_MEMBERS)) {
                     if (res instanceof IFile && res.exists() &&
                         res.getName().startsWith(MODERN_CONFIG_FILE_PREFIX) && res.getName().endsWith(MODERN_CONFIG_FILE_EXT)) {
                         loadDataSources((IFile) res, refresh, true, parseResults);
