@@ -228,7 +228,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
         String jsonString = new String(dsConfigBuffer.toByteArray(), StandardCharsets.UTF_8);
         boolean encryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
-        saveConfigFile(monitor.getNestedMonitor(), configFile, jsonString, encryptProject);
+        saveConfigFile(monitor.getNestedMonitor(), configFile, jsonString, false, encryptProject);
         try {
             configFile.setHidden(true);
         } catch (CoreException e) {
@@ -262,7 +262,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
     }
 
-    private void saveConfigFile(IProgressMonitor monitor, IFile configFile, String contents, boolean encrypt) {
+    private void saveConfigFile(IProgressMonitor monitor, IFile configFile, String contents, boolean teamPrivate, boolean encrypt) {
         try {
             byte[] binaryContents;
             if (encrypt) {
@@ -277,7 +277,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
             InputStream ifs = new ByteArrayInputStream(binaryContents);
 
             if (!configFile.exists()) {
-                configFile.create(ifs, IResource.FORCE | IResource.HIDDEN | IResource.TEAM_PRIVATE, monitor);
+                int updateFlags = IResource.FORCE | IResource.HIDDEN;
+                if (teamPrivate) updateFlags |= IResource.TEAM_PRIVATE;
+                configFile.create(ifs, updateFlags, monitor);
             } else {
                 configFile.setContents(ifs, true, false, monitor);
             }
@@ -294,7 +296,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             } else {
                 // Serialize and encrypt
                 String jsonString = SECURE_GSON.toJson(secureProperties, Map.class);
-                saveConfigFile(monitor, credFile, jsonString, true);
+                saveConfigFile(monitor, credFile, jsonString, true, true);
             }
         } catch (Exception e) {
             log.error("Error saving secure credentials", e);
