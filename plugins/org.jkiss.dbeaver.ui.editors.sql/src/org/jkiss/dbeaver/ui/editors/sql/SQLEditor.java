@@ -118,8 +118,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -739,7 +739,12 @@ public class SQLEditor extends SQLEditorBase implements
 
         getSite().setSelectionProvider(new DynamicSelectionProvider());
 
-        UIExecutionQueue.queueExec(this::createResultTabs);
+        DBPProject project = getProject();
+        if (project != null && project.isRegistryLoaded()) {
+            createResultTabs();
+        } else {
+            UIExecutionQueue.queueExec(this::createResultTabs);
+        }
 
         setAction(ITextEditorActionConstants.SHOW_INFORMATION, null);
         //toolTipAction.setEnabled(false);

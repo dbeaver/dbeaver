@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Locale;
 
 /**
  * FireBirdDataSource
@@ -179,8 +180,9 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public boolean isSystemTable(GenericTableBase table) {
-        final String tableName = table.getName();
-        return tableName.contains("$");    // [JDBC: Firebird]
+        String tableName = table.getName();
+        tableName = tableName.toUpperCase(Locale.ENGLISH);
+        return tableName.startsWith("RDB$") || tableName.startsWith("MON$");    // [JDBC: Firebird]
     }
 
     @Override
