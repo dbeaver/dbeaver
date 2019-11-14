@@ -169,7 +169,6 @@
         <editor
             id="db-logical-structure"
             class="org.jkiss.dbeaver.ui.editors.data.VirtualStructureEditor"
-            objectType="org.jkiss.dbeaver.model.struct.DBSEntity"
             main="false"
             label="%editor.virtual-structure.name"
             description="%editor.virtual-structure.description"
@@ -177,6 +176,7 @@
             type="folder"
             embeddable="false"
             icon="#association">
+            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable"/>
         </editor>
     </extension>
 
