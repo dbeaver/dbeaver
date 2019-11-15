@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import java.util.Iterator;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -27,26 +25,28 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 
+import java.util.Iterator;
+
 public class FolderDisconnectHandler extends AbstractHandler {
 
-	@Override
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection treeSelection = (IStructuredSelection) selection;
             @SuppressWarnings("rawtypes")
-			Iterator it = treeSelection.iterator();
+            Iterator it = treeSelection.iterator();
             while (it.hasNext()) {
                 Object el = it.next();
                 if (el instanceof DBNLocalFolder) {
-    		        DBNLocalFolder localFolder = (DBNLocalFolder) el;
-    		        localFolder.getNestedDataSources().forEach(ds -> {
-    		            final DBPDataSourceContainer dataSourceContainer = ds.getObject();
-    		            if (ds!=null && ds.getObject().isConnected()) {
-    		            	DataSourceHandler.disconnectDataSource(dataSourceContainer, null);
-    		            }
-    		        });
+                    DBNLocalFolder localFolder = (DBNLocalFolder) el;
+                    localFolder.getNestedDataSources().forEach(ds -> {
+                        final DBPDataSourceContainer dataSourceContainer = ds.getObject();
+                        if (ds != null && ds.getObject().isConnected()) {
+                            DataSourceHandler.disconnectDataSource(dataSourceContainer, null);
+                        }
+                    });
                 }
             }
         }

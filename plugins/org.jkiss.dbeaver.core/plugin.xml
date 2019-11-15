@@ -237,16 +237,14 @@
         </definition>
 
         <definition id="org.jkiss.dbeaver.core.folder.connected">
-        	<or>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNLocalFolder">
-				            <test property="org.jkiss.dbeaver.core.folder.connected" value="true"/>
-                        </adapt>
-                    </iterate>
-                </with>
-			</or>
+            <with variable="selection">
+                <count value="+"/>
+                <iterate operator="and">
+                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNLocalFolder">
+                        <test property="org.jkiss.dbeaver.core.folder.connected" value="true"/>
+                    </adapt>
+                </iterate>
+            </with>
         </definition>
 
         <definition id="org.jkiss.dbeaver.core.datasource.disconnected">
