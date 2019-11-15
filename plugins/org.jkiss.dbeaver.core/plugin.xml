@@ -771,14 +771,7 @@
                 </visibleWhen>
             </command>
             <command commandId="org.jkiss.dbeaver.folder.disconnect">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNLocalFolder"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
 
         </menuContribution>
