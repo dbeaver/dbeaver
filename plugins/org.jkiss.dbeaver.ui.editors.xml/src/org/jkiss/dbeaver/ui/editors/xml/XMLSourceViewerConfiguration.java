@@ -35,6 +35,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.text.NonRuleBasedDamagerRepairer;
 
 public class XMLSourceViewerConfiguration extends SourceViewerConfiguration {
     static final RGB COLOR_XML_COMMENT = new RGB(128, 0, 0);
