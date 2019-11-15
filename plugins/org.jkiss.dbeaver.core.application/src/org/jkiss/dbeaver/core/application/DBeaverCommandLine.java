@@ -91,6 +91,7 @@ public class DBeaverCommandLine
         String description;
         boolean hasArg;
         boolean exitAfterExecute;
+        boolean reuseWorkspace;
         CommandLineParameterHandler handler;
 
         public ParameterDescriptor(IConfigurationElement config) throws Exception {
@@ -99,6 +100,7 @@ public class DBeaverCommandLine
             this.description = config.getAttribute("description");
             this.hasArg = CommonUtils.toBoolean(config.getAttribute("hasArg"));
             this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
+            this.reuseWorkspace = CommonUtils.toBoolean(config.getAttribute("reuseWorkspace"));
             Bundle cBundle = Platform.getBundle(config.getContributor().getName());
             Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
             handler = (CommandLineParameterHandler) implClass.newInstance();
@@ -202,6 +204,16 @@ public class DBeaverCommandLine
             }
         }
 
+        // Reuse workspace if custom parameters are specified
+        for (ParameterDescriptor param : customParameters.values()) {
+            if (param.reuseWorkspace && commandLine.hasOption(param.name)) {
+                if (DBeaverApplication.instance != null) {
+                    DBeaverApplication.instance.reuseWorkspace = true;
+                }
+                break;
+            }
+        }
+
         return exitAfterExecute;
     }
 
@@ -261,7 +273,7 @@ public class DBeaverCommandLine
         }
         boolean exit = false;
         for (ParameterDescriptor param : customParameters.values()) {
-            if (commandLine.hasOption(param.name) && !(param.handler instanceof Remote)) {
+            if (commandLine.hasOption(param.name)) {
                 try {
                     param.handler.handleParameter(
                         param.name,

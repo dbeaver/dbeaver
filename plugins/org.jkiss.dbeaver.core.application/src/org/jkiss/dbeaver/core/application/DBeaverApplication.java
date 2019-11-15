@@ -87,6 +87,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
 
     static DBeaverApplication instance;
     boolean reuseWorkspace = false;
+    private boolean primaryInstance = true;
 
     private IInstanceController instanceServer;
 
@@ -196,8 +197,6 @@ public class DBeaverApplication extends BaseApplicationImpl {
         final Runtime runtime = Runtime.getRuntime();
 
         // Init Core plugin and mark it as standalone version
-
-        DBeaverCore.setApplication(this);
 
         initDebugWriter();
 
@@ -364,6 +363,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
                     if (reuseWorkspace) {
                         instanceLoc.set(defaultHomeURL, false);
                         keepTrying = false;
+                        primaryInstance = false;
                     } else {
                         // Can't lock specified path
                         int msgResult = showMessageBox(
@@ -379,6 +379,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
                             case SWT.IGNORE:
                                 instanceLoc.set(defaultHomeURL, false);
                                 keepTrying = false;
+                                primaryInstance = false;
                                 break;
                             case SWT.RETRY:
                                 break;
@@ -493,6 +494,11 @@ public class DBeaverApplication extends BaseApplicationImpl {
     @Override
     public boolean isStandalone() {
         return true;
+    }
+
+    @Override
+    public boolean isPrimaryInstance() {
+        return primaryInstance;
     }
 
     @NotNull
