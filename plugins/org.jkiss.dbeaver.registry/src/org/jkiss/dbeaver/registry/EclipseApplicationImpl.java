@@ -14,20 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.registry;
 
+import org.eclipse.equinox.app.IApplication;
+import org.eclipse.equinox.app.IApplicationContext;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
-import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 
 /**
- * EclipseApplication
+ * EclipseApplicationImpl
  */
-class EclipseApplication extends BaseApplicationImpl {
+class EclipseApplicationImpl implements IApplication, DBPApplication {
 
     @Override
     public boolean isStandalone() {
+        return false;
+    }
+
+    @Override
+    public boolean isPrimaryInstance() {
         return false;
     }
 
@@ -37,9 +45,15 @@ class EclipseApplication extends BaseApplicationImpl {
         return DefaultSecureStorage.INSTANCE;
     }
 
+    @NotNull
+    @Override
+    public DBASecureStorage getProjectSecureStorage(DBPProject project) {
+        return new ProjectSecureStorage(project);
+    }
+
     @Override
     public String getInfoDetails() {
-        return null;
+        return "Eclipse";
     }
 
     @Override
@@ -47,4 +61,13 @@ class EclipseApplication extends BaseApplicationImpl {
         return "DBeaver";
     }
 
+    @Override
+    public Object start(IApplicationContext context) throws Exception {
+        return null;
+    }
+
+    @Override
+    public void stop() {
+
+    }
 }

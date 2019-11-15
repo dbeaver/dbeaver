@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -29,11 +30,31 @@ import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
  */
 public abstract class BaseApplicationImpl implements IApplication, DBPApplication {
 
+    private static final Log log = Log.getLog(BaseApplicationImpl.class);
+
+    private static DBPApplication INSTANCE;
+
     protected BaseApplicationImpl() {
+        if (INSTANCE != null && !(INSTANCE instanceof EclipseApplicationImpl)) {
+            log.error("Multiple application instances created: " + INSTANCE.getClass().getName() + ", " + this.getClass().getName());
+        }
+        INSTANCE = this;
+    }
+
+    public static DBPApplication getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new EclipseApplicationImpl();
+        }
+        return INSTANCE;
     }
 
     @Override
     public boolean isStandalone() {
+        return true;
+    }
+
+    @Override
+    public boolean isPrimaryInstance() {
         return true;
     }
 
