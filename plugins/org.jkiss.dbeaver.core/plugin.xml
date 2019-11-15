@@ -554,7 +554,7 @@
                 <command commandId="org.jkiss.dbeaver.core.disconnect">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
-                <separator name="sql-tools" visible="true"/>
+                <separator name="sql_tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
@@ -664,7 +664,7 @@
 
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions">
-            <separator name="sql-tools" visible="true"/>
+            <separator name="sql_tools" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
                 <visibleWhen>
@@ -713,7 +713,6 @@
                 <command commandId="org.jkiss.dbeaver.core.object.filter.add.include">
                     <visibleWhen checkEnabled="true"/>
                 </command>
-                <separator name="filter_config" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.object.filter.config">
                     <visibleWhen checkEnabled="true"/>
                 </command>

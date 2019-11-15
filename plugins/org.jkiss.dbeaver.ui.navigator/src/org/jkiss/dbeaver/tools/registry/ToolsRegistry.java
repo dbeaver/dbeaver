@@ -20,13 +20,11 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ToolsRegistry
 {
@@ -104,6 +102,24 @@ public class ToolsRegistry
             }
         }
         return result;
+    }
+
+    public boolean hasTools(IStructuredSelection selection) {
+        boolean singleObject = selection.size() == 1;
+        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+            DBSObject selectedObject = DBUtils.getFromObject(iter.next());
+            if (selectedObject != null) {
+                for (ToolDescriptor descriptor : tools) {
+                    if (descriptor.isSingleton() && !singleObject) {
+                        continue;
+                    }
+                    if (descriptor.appliesTo(selectedObject)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 }

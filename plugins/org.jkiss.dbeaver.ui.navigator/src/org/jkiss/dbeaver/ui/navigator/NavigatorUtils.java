@@ -131,12 +131,7 @@ public class NavigatorUtils {
 
     public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer)
     {
-        addContextMenu(workbenchSite, viewer, null);
-    }
-
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener)
-    {
-        MenuManager menuMgr = createContextMenu(workbenchSite, viewer, menuListener);
+        MenuManager menuMgr = createContextMenu(workbenchSite, viewer, null);
         if (workbenchSite instanceof IWorkbenchPartSite) {
             ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, viewer);
         } else if (workbenchSite instanceof IPageSite) {
