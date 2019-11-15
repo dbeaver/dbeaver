@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -64,6 +65,6 @@ public interface DBTTaskManager {
     @NotNull
     File getStatisticsFolder();
 
-    void runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) throws DBException;
+    Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) throws DBException;
 
 }

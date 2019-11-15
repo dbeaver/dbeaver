@@ -22,6 +22,7 @@ import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -186,8 +187,10 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     @Override
-    public void runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) {
-        new TaskRunJob((TaskImpl) task, Locale.getDefault(), listener).schedule();
+    public Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) {
+        TaskRunJob runJob = new TaskRunJob((TaskImpl) task, Locale.getDefault(), listener);
+        runJob.schedule();
+        return runJob;
     }
 
     private void loadConfiguration() {
