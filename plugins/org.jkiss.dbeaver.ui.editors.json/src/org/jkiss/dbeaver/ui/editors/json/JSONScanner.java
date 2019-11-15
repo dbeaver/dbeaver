@@ -54,8 +54,8 @@ public class JSONScanner extends RuleBasedScanner {
         List<IRule> rules = new LinkedList<>();
 
         rules.add(new NumberRule(value));
-        rules.add(new MultiLineRule(":\"", "\"", value, '\\'));  //$NON-NLS-1$//$NON-NLS-2$
-        rules.add(new MultiLineRule(": \"", "\"", value, '\\'));  //$NON-NLS-1$//$NON-NLS-2$
+//        rules.add(new MultiLineRule(":\"", "\"", value, '\\'));  //$NON-NLS-1$//$NON-NLS-2$
+//        rules.add(new MultiLineRule(": \"", "\"", value, '\\'));  //$NON-NLS-1$//$NON-NLS-2$
         rules.add(new MultiLineRule("\"", "\"", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
         WordRule wordRule = new WordRule(new WordDetector(), defaultText);
         wordRule.addWord("null", value);
@@ -64,9 +64,7 @@ public class JSONScanner extends RuleBasedScanner {
         rules.add(wordRule);
         rules.add(new WhitespaceRule(new WhitespaceDetector()));
 
-        IRule[] result = new IRule[rules.size()];
-        rules.toArray(result);
-        setRules(result);
+        setRules(rules.toArray(new IRule[0]));
     }
 
     public static class WhitespaceDetector implements IWhitespaceDetector {

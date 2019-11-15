@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.json;
 
 
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.formatter.ContentFormatter;
@@ -27,6 +28,9 @@ import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.text.NonRuleBasedDamagerRepairer;
 
 /**
  * JSONSourceViewerConfiguration
@@ -43,24 +47,36 @@ public class JSONSourceViewerConfiguration extends SourceViewerConfiguration {
     }
 
     @Override
+    public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
+        return new String[]{
+            IDocument.DEFAULT_CONTENT_TYPE,
+            JSONPartitionScanner.JSON_STRING};
+    }
+
+    @Override
+    public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
+        return JSONPartitionScanner.JSON_PARTITIONING;
+    }
+
+
+    @Override
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
+        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
+
         PresentationReconciler reconciler = new PresentationReconciler();
         reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
         DefaultDamagerRepairer dr = new DefaultDamagerRepairer(jsonScanner);
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
-        return reconciler;
 
-/*
         NonRuleBasedDamagerRepairer ndr =
             new NonRuleBasedDamagerRepairer(
                 new TextAttribute(
-                    colorManager.getColor(COLOR_XML_COMMENT)));
-        reconciler.setDamager(ndr, XMLPartitionScanner.XML_COMMENT);
-        reconciler.setRepairer(ndr, XMLPartitionScanner.XML_COMMENT);
+                    colorRegistry.get(SQLConstants.CONFIG_COLOR_STRING)));
+        reconciler.setDamager(ndr, JSONPartitionScanner.JSON_STRING);
+        reconciler.setRepairer(ndr, JSONPartitionScanner.JSON_STRING);
         return reconciler;
-*/
     }
 
     @Override
