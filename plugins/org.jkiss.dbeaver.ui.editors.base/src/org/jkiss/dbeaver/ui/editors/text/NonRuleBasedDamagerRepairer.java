@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.xml;
+package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.presentation.IPresentationDamager;
