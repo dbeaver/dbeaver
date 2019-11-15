@@ -73,6 +73,12 @@
             properties="driverId,driverClass,connected"
             type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
         <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.FolderPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.FolderPropertyTester"
+            namespace="org.jkiss.dbeaver.core.folder"
+            properties="connected"
+            type="org.jkiss.dbeaver.model.navigator.DBNLocalFolder"/>
+        <propertyTester
             class="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
             id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
             namespace="org.jkiss.dbeaver.runtime.process"
@@ -118,6 +124,7 @@
 
         <command id="org.jkiss.dbeaver.core.connect" name="%command.org.jkiss.dbeaver.core.connect.name" description="%command.org.jkiss.dbeaver.core.connect.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.folder.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.invalidate" name="%command.org.jkiss.dbeaver.core.invalidate.name" description="%command.org.jkiss.dbeaver.core.invalidate.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnectProject" name="%command.org.jkiss.dbeaver.core.disconnectProject.name" description="%command.org.jkiss.dbeaver.core.disconnectProject.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnectAll" name="%command.org.jkiss.dbeaver.core.disconnectAll.name" description="%command.org.jkiss.dbeaver.core.disconnectAll.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -151,6 +158,7 @@
         <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.invalidate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/reconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.png"/>
+        <image commandId="org.jkiss.dbeaver.folder.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.commit" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/commit.png"/>
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/rollback.png"/>
         <image commandId="org.jkiss.dbeaver.core.txn.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/txn_log.png"/>
@@ -228,6 +236,19 @@
             </or>
         </definition>
 
+        <definition id="org.jkiss.dbeaver.core.folder.connected">
+        	<or>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNLocalFolder">
+				            <test property="org.jkiss.dbeaver.core.folder.connected" value="true"/>
+                        </adapt>
+                    </iterate>
+                </with>
+			</or>
+        </definition>
+
         <definition id="org.jkiss.dbeaver.core.datasource.disconnected">
             <or>
                 <with variable="selection">
@@ -293,6 +314,9 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.disconnect" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.folder.disconnect" class="org.jkiss.dbeaver.ui.actions.datasource.FolderDisconnectHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.folder.connected"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.disconnectAll" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectAllHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.disconnectOther" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectOtherHandler">
@@ -745,6 +769,9 @@
                         </iterate>
                     </with>
                 </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.folder.disconnect">
+                <visibleWhen checkEnabled="true"/>
             </command>
 
         </menuContribution>
