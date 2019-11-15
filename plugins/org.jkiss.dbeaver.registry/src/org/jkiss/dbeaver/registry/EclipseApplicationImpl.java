@@ -39,6 +39,11 @@ class EclipseApplicationImpl implements IApplication, DBPApplication {
         return false;
     }
 
+    @Override
+    public boolean isHeadlessMode() {
+        return false;
+    }
+
     @NotNull
     @Override
     public DBASecureStorage getSecureStorage() {

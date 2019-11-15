@@ -88,6 +88,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
     static DBeaverApplication instance;
     boolean reuseWorkspace = false;
     private boolean primaryInstance = true;
+    private boolean headlessMode = false;
 
     private IInstanceController instanceServer;
 
@@ -188,8 +189,13 @@ public class DBeaverApplication extends BaseApplicationImpl {
         }
 
         // Custom parameters
-        if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
-            return IApplication.EXIT_OK;
+        try {
+            headlessMode = true;
+            if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
+                return IApplication.EXIT_OK;
+            }
+        } finally {
+            headlessMode = false;
         }
 
         updateSplashHandler();
@@ -499,6 +505,11 @@ public class DBeaverApplication extends BaseApplicationImpl {
     @Override
     public boolean isPrimaryInstance() {
         return primaryInstance;
+    }
+
+    @Override
+    public boolean isHeadlessMode() {
+        return headlessMode;
     }
 
     @NotNull

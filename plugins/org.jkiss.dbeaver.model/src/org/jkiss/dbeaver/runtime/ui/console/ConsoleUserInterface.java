@@ -17,27 +17,26 @@
 package org.jkiss.dbeaver.runtime.ui.console;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
@@ -128,12 +127,12 @@ public class ConsoleUserInterface implements DBPPlatformUI {
 
     @Override
     public void openEntityEditor(@NotNull DBSObject object) {
-        throw new IllegalStateException("Editors not supported in console mode");
+        // do nothing
     }
 
     @Override
     public void openEntityEditor(@NotNull DBNNode selectedNode, String defaultPageId) {
-        throw new IllegalStateException("Editors not supported in console mode");
+        // do nothing
     }
 
     @Override
@@ -163,7 +162,20 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
-        throw new IllegalStateException("Loading jobs not supported in console mode");
+        return new AbstractJob(loadingService.getServiceName()) {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    RESULT result = loadingService.evaluate(monitor);
+                    visualizer.completeLoading(result);
+                    return Status.OK_STATUS;
+                } catch (InvocationTargetException e) {
+                    return GeneralUtils.makeExceptionStatus(e.getTargetException());
+                } catch (InterruptedException e) {
+                    return Status.CANCEL_STATUS;
+                }
+            }
+        };
     }
 
     @Override

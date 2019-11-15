@@ -24,12 +24,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class ServiceRegistry
-{
+public class ServiceRegistry {
     private static final Log log = Log.getLog(ServiceRegistry.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.service"; //$NON-NLS-1$
@@ -40,48 +42,55 @@ public class ServiceRegistry
 
         private final ObjectType type;
         private final ObjectType impl;
+        private final boolean headless;
         private Object instance;
 
         ServiceDescriptor(IConfigurationElement config) {
             super(config);
             type = new ObjectType(config.getAttribute("name"));
             impl = new ObjectType(config.getAttribute("class"));
+            headless = CommonUtils.toBoolean(config.getAttribute("headless"));
         }
     }
 
-    public synchronized static ServiceRegistry getInstance()
-    {
+    public synchronized static ServiceRegistry getInstance() {
         if (instance == null) {
             instance = new ServiceRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
-    private final Map<String, ServiceDescriptor> services = new HashMap<>();
+    private final Map<String, List<ServiceDescriptor>> services = new HashMap<>();
 
-    private ServiceRegistry(IExtensionRegistry registry)
-    {
+    private ServiceRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             ServiceDescriptor service = new ServiceDescriptor(ext);
-            services.put(service.type.getImplName(), service);
+            List<ServiceDescriptor> descriptors = services.computeIfAbsent(service.type.getImplName(), s -> new ArrayList<>());
+            descriptors.add(service);
         }
     }
 
     @Nullable
     public <T> T getService(@NotNull Class<T> serviceType) {
-        ServiceDescriptor descriptor = services.get(serviceType.getName());
-        if (descriptor != null) {
-            if (descriptor.instance == null) {
-                try {
-                    descriptor.instance = descriptor.impl.createInstance(Object.class);
-                } catch (DBException e) {
-                    log.debug("Error creating service '" + serviceType.getName() + "'", e);
+        List<ServiceDescriptor> descriptors = services.get(serviceType.getName());
+        if (!CommonUtils.isEmpty(descriptors)) {
+            boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
+            for (ServiceDescriptor descriptor : descriptors) {
+                if (descriptors.size() > 1 && headlessMode != descriptor.headless) {
+                    continue;
                 }
+                if (descriptor.instance == null) {
+                    try {
+                        descriptor.instance = descriptor.impl.createInstance(Object.class);
+                    } catch (DBException e) {
+                        log.debug("Error creating service '" + serviceType.getName() + "'", e);
+                    }
+                }
+                return (T) descriptor.instance;
             }
-            return (T) descriptor.instance;
         }
         return null;
     }
-    
+
 }
