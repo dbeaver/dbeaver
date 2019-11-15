@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.registry.ToolsRegistry;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * ToolsPropertyTester
@@ -52,7 +51,7 @@ public class ToolsPropertyTester extends PropertyTester
         switch (property) {
             case PROP_HAS_TOOLS: {
                 DBSObject object = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBSObject.class);
-                return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
+                return object != null && ToolsRegistry.getInstance().hasTools(structuredSelection);
             }
         }
         return false;
