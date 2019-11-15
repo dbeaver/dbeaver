@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -295,12 +296,18 @@ public class EditVirtualEntityDialog extends BaseDialog {
     }
 
     private void createForeignKeyItem(Table fkTable, DBVEntityForeignKey fk) {
+        DBSEntityConstraint referencedConstraint = fk.getReferencedConstraint();
+        if (referencedConstraint == null) {
+            log.debug("No reference constraint for FK " + fk.getName());
+            return;
+        }
+
         TableItem item = new TableItem(fkTable, SWT.NONE);
         //item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
-        DBSEntity refEntity = fk.getReferencedConstraint().getParentObject();
+        DBSEntity refEntity = referencedConstraint.getParentObject();
 
         item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
-        if (fk.getReferencedConstraint() != null) {
+        if (referencedConstraint != null) {
             item.setText(0, DBUtils.getObjectFullName(refEntity, DBPEvaluationContext.UI));
         }
         String ownAttrNames = fk.getAttributes().stream().map(DBVEntityForeignKeyColumn::getAttributeName)
