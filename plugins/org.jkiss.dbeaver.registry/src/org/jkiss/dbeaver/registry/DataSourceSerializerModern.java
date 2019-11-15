@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.ContentEncrypter;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -292,6 +293,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private void saveSecureCredentialsFile(IProgressMonitor monitor, IFolder parent, DataSourceOrigin origin) {
         IFile credFile = parent.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
         try {
+            ContentUtils.makeFileBackup(credFile);
             if (secureProperties.isEmpty()) {
                 credFile.delete(true, false, monitor);
             } else {
