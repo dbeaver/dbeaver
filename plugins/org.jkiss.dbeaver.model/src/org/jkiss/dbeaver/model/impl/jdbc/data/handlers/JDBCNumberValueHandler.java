@@ -99,11 +99,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         switch (type.getTypeID()) {
             case Types.DOUBLE:
             case Types.REAL:
+            case Types.FLOAT:
+                // Always read as double to avoid precision loose (#7214)
                 value = resultSet.getDouble(index);
                 break;
-            case Types.FLOAT:
-                value = resultSet.getFloat(index);
-                break;
+                //value = resultSet.getFloat(index);
+                //break;
             case Types.INTEGER:
                 try {
                     // Read value with maximum precision. Some drivers reports INTEGER but means long [JDBC:SQLite]
