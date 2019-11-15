@@ -33,6 +33,11 @@ public interface DBPApplication
      */
     boolean isPrimaryInstance();
 
+    /**
+     * Headless mode - console interface or server-side mode
+     */
+    boolean isHeadlessMode();
+
     @NotNull
     DBASecureStorage getSecureStorage();
 

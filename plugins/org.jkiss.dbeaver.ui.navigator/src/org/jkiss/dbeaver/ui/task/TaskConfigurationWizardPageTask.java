@@ -193,10 +193,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
                 modifyListener.modifyText(e);
             });
 
-            if (!CommonUtils.isEmpty(task.getId())) {
-                UIUtils.createLabelText(formPanel, "ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);
-            }
-
             UIUtils.createControlLabel(formPanel, "Description").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             taskDescriptionText = new Text(formPanel, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
             taskDescriptionText.setText(task == null ? "" : CommonUtils.notEmpty(task.getDescription()));
@@ -206,6 +202,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
                 taskDescription = taskDescriptionText.getText();
                 modifyListener.modifyText(e);
             });
+
+            if (!CommonUtils.isEmpty(task.getId())) {
+                UIUtils.createLabelText(formPanel, "ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);
+            }
 
             UIUtils.asyncExec(() -> taskLabelText.setFocus());
         }

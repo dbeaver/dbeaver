@@ -257,10 +257,26 @@ public class DBNModel implements IResourceChangeListener {
     public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
         final NodePath nodePath = getNodePath(path);
         if (nodePath.type == DBNNode.NodePathType.database) {
+            boolean hasLazyProjects = false;
             for (DBNProject projectNode : getRoot().getProjects()) {
+                if (!projectNode.getProject().isRegistryLoaded()) {
+                    hasLazyProjects = true;
+                    continue;
+                }
                 DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
                 if (curNode != null) {
                     return findNodeByPath(monitor, nodePath, curNode, 1);
+                }
+            }
+            if (hasLazyProjects) {
+                // No try to search in uninitialized proejcts
+                for (DBNProject projectNode : getRoot().getProjects()) {
+                    if (!projectNode.getProject().isRegistryLoaded()) {
+                        DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
+                        if (curNode != null) {
+                            return findNodeByPath(monitor, nodePath, curNode, 1);
+                        }
+                    }
                 }
             }
         } else {

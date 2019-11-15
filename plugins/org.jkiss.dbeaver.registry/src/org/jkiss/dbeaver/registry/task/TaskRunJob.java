@@ -132,13 +132,13 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         @Override
         public void beginTask(String name, int totalWork) {
             super.beginTask(name, totalWork);
-            taskLog.debug(">> " + name);
+            taskLog.debug("" + name);
         }
 
         @Override
         public void subTask(String name) {
             super.subTask(name);
-            taskLog.debug(">>> " + name);
+            taskLog.debug("\t" + name);
         }
     }
 

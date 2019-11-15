@@ -33,6 +33,7 @@ public class DBWorkbench {
     private static final Log log = Log.getLog(DBWorkbench.class);
 
     private static final DBWorkbench instance = new DBWorkbench();
+    private static final ConsoleUserInterface CONSOLE_USER_INTERFACE = new ConsoleUserInterface();
 
     private static volatile DBPPlatform platformInstance = null;
     private static volatile DBPPlatformUI platformUIInstance = null;
@@ -55,11 +56,14 @@ public class DBWorkbench {
         if (platformUIInstance == null) {
             synchronized (DBWorkbench.class) {
                 if (platformUIInstance == null) {
+                    if (getPlatform().getApplication().isHeadlessMode()) {
+                        return CONSOLE_USER_INTERFACE;
+                    }
                     platformUIInstance = GeneralUtils.adapt(instance, DBPPlatformUI.class);
                     if (platformUIInstance == null) {
                         // Use console UI
                         log.debug("No platform UI installed. Use console interface.");
-                        platformUIInstance = new ConsoleUserInterface();
+                        platformUIInstance = CONSOLE_USER_INTERFACE;
                     }
                 }
             }

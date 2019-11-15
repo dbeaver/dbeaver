@@ -58,6 +58,11 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
         return true;
     }
 
+    @Override
+    public boolean isHeadlessMode() {
+        return false;
+    }
+
     @NotNull
     @Override
     public DBASecureStorage getSecureStorage() {
