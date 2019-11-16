@@ -823,23 +823,26 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         String alias = null;
         if (SQLConstants.KEYWORD_FROM.equals(request.getWordDetector().getPrevKeyWord())) {
             if (object instanceof DBSEntity && ((DBSEntity) object).getDataSource().getContainer().getPreferenceStore().getBoolean(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS)) {
-                String queryText = request.getActiveQuery().getText();
-                Set<String> aliases = new LinkedHashSet<>();
-                if (request.getActiveQuery() instanceof SQLQuery) {
-                    Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
-                    if (sqlStatement != null) {
-                        TablesNamesFinder namesFinder = new TablesNamesFinder() {
-                            public void visit(Table table) {
-                                if (table.getAlias() != null && table.getAlias().getName() != null) {
-                                    aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
+                SQLDialect dialect = SQLUtils.getDialectFromObject(object);
+                if (dialect.supportsAliasInSelect()) {
+                    String queryText = request.getActiveQuery().getText();
+                    Set<String> aliases = new LinkedHashSet<>();
+                    if (request.getActiveQuery() instanceof SQLQuery) {
+                        Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
+                        if (sqlStatement != null) {
+                            TablesNamesFinder namesFinder = new TablesNamesFinder() {
+                                public void visit(Table table) {
+                                    if (table.getAlias() != null && table.getAlias().getName() != null) {
+                                        aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
+                                    }
                                 }
-                            }
-                        };
-                        sqlStatement.accept(namesFinder);
+                            };
+                            sqlStatement.accept(namesFinder);
+                        }
                     }
+                    // It is table name completion after FROM. Auto-generate table alias
+                    alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> aliases.contains(s) || queryText.contains(" as " + s));
                 }
-                // It is table name completion after FROM. Auto-generate table alias
-                alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> aliases.contains(s) || queryText.contains(" as " + s));
             }
         }
         String objectName = useShortName ?

@@ -64,6 +64,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     }
 
     @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
+
+    @Override
     public boolean validIdentifierPart(char c, boolean quoted) {
         return super.validIdentifierPart(c, quoted) || c == '$';
     }
