@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.tools.registry.ToolsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -93,6 +91,9 @@ public class ObjectPropertyTester extends PropertyTester
                 return canCreateObject(node, false);
             }
             case PROP_CAN_PASTE: {
+                // We cannot interact with clipboard in property testers (#6489).
+                // It breaks context menu (and maybe something else) omn some OSes.
+/*
                 Clipboard clipboard = new Clipboard(display);
                 try {
                     if (clipboard.getContents(TreeNodeTransfer.getInstance()) == null) {
@@ -101,6 +102,7 @@ public class ObjectPropertyTester extends PropertyTester
                 } finally {
                     clipboard.dispose();
                 }
+*/
                 if (node instanceof DBNResource) {
                     return property.equals(PROP_CAN_PASTE);
                 }
