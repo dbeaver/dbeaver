@@ -31,6 +31,11 @@ public class VerticaSQLDialect extends GenericSQLDialect {
         super.initDriverSettings(dataSource, metaData);
     }
 
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
+
     public String[][] getIdentifierQuoteStrings() {
         return BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
     }

@@ -36,4 +36,9 @@ public class TeradataSQLDialect extends GenericSQLDialect {
             ));
     }
 
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
+
 }

@@ -73,4 +73,9 @@ public class HSQLDialect extends GenericSQLDialect {
                 ));
     }
 
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
+
 }
