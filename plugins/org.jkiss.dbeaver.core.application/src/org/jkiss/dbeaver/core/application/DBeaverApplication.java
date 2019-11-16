@@ -563,10 +563,29 @@ public class DBeaverApplication extends BaseApplicationImpl {
         }
 
         @Override
+        public void write(@NotNull byte[] b) throws IOException {
+            debugWriter.write(b);
+            stdOut.write(b);
+        }
+
+        @Override
+        public void write(@NotNull byte[] b, int off, int len) throws IOException {
+            debugWriter.write(b, off, len);
+            stdOut.write(b, off, len);
+        }
+
+        @Override
         public void write(int b) throws IOException {
             debugWriter.write(b);
             stdOut.write(b);
         }
+
+        @Override
+        public void flush() throws IOException {
+            debugWriter.flush();
+            stdOut.flush();
+        }
+
     }
 
 }
