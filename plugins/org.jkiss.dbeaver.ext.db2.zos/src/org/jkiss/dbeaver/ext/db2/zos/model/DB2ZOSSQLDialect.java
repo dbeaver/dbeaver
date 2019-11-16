@@ -34,4 +34,9 @@ public class DB2ZOSSQLDialect extends GenericSQLDialect {
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
     }
+
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
 }

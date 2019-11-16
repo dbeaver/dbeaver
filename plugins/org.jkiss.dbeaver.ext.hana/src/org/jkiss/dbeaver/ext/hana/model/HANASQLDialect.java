@@ -47,6 +47,11 @@ public class HANASQLDialect extends GenericSQLDialect {
                         "REPLACE_REGEXPR"));
     }
 
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
+
     /*
      * expression evaluation
      */
