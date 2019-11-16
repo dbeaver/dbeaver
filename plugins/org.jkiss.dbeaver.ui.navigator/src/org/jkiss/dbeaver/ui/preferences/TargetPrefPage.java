@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     static final Log log = Log.getLog(TargetPrefPage.class);
 
+    private IAdaptable element;
     private DBPDataSourceContainer dataSourceContainer;
     private DBNDataSource containerNode;
 
@@ -96,12 +97,13 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
 
     @Override
     public IAdaptable getElement() {
-        return containerNode;
+        return element;
     }
 
     @Override
     public void setElement(IAdaptable element) {
-        if (element == null) {
+        this.element = element;
+        if (this.element == null) {
             return;
         }
         dataSourceContainer = element instanceof DBPDataSourceContainer ? (DBPDataSourceContainer)element : null;
