@@ -110,8 +110,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -1948,6 +1948,7 @@ public class ResultSetViewer extends Viewer
         this.rejectChanges();
         this.getModel().resetOrdering();
         this.getActivePresentation().refreshData(false, false, true);
+        this.updateFiltersText();
     }
 
 
