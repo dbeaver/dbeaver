@@ -32,6 +32,7 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -50,6 +51,8 @@ import java.util.Collection;
 import java.util.Map;
 
 public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCreateBase {
+
+    static final Log log = Log.getLog(NavigatorHandlerObjectCreateCopy.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -79,10 +82,12 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                             }
                         }
                     } else {
-                        DBWorkbench.getPlatformUI().showError("Paste error", "Unsupported clipboard format. File or folder were expected.");
+                        log.debug("Paste error: unsupported clipboard format. File or folder were expected.");
+                        Display.getCurrent().beep();
                     }
                 } else {
-                    DBWorkbench.getPlatformUI().showError("Paste error", "Clipboard contains data in unsupported format");
+                    log.debug("Paste error: clipboard contains data in unsupported format");
+                    Display.getCurrent().beep();
                 }
             } finally {
                 clipboard.dispose();
