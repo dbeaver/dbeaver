@@ -189,8 +189,9 @@ public class JSONUtils {
                 json.value(value.toString());
             } else if (value instanceof Map) {
                 serializeMap(json, (Map<String, ?>) value);
+            } else if (value instanceof Collection) {
+                serializeCollection(json, (Collection<?>) value);
             } else {
-                log.error("Unsupport collection type: " + value.getClass().getName());
                 json.value(value.toString());
             }
         }
