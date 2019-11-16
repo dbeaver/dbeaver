@@ -169,8 +169,13 @@ public abstract class AbstractDescriptor {
                 return false;
             }
             if (expression != null) {
-                Object result = expression.evaluate(makeContext(object, context));
-                return Boolean.TRUE.equals(result);
+                try {
+                    Object result = expression.evaluate(makeContext(object, context));
+                    return Boolean.TRUE.equals(result);
+                } catch (Exception e) {
+                    log.debug("Error evaluating expression '" + expression + "'", e);
+                    return false;
+                }
             }
             return true;
         }
