@@ -125,6 +125,12 @@ public class TaskRegistry implements DBTTaskRegistry
     }
 
     @Override
+    public DBTSchedulerDescriptor getActiveScheduler() {
+        // TODO: support active scheduler configuration
+        return schedulers.isEmpty() ? null : schedulers.get(0);
+    }
+
+    @Override
     public void addTaskListener(DBTTaskListener listener) {
         synchronized (taskListeners) {
             taskListeners.add(listener);
