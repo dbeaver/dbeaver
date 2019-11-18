@@ -38,11 +38,11 @@ public interface DBTScheduler {
     @Nullable
     DBTScheduleDetails getScheduledTask(@NotNull DBTTask task);
 
-    void scheduleTask(@NotNull DBTTask task);
+    void addTaskSchedule(@NotNull DBTTask task);
 
     void openTaskSettings(@NotNull DBTTask task);
 
-    void cancelTaskSchedule(@NotNull DBTTask task);
+    void removeTaskSchedule(@NotNull DBTTask task);
 
     void openSchedulerSettings();
 
