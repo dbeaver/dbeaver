@@ -16,16 +16,14 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import java.util.Date;
-
 /**
  * Scheduled task details
  */
 public interface DBTScheduleDetails {
 
-    String getTaskID();
+    String getTaskId();
 
-    Date getNextRunTime();
+    String getNextRunInfo();
 
     String getStatus();
 
