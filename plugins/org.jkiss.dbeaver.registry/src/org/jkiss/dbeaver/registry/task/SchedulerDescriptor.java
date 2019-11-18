@@ -58,4 +58,9 @@ public class SchedulerDescriptor extends AbstractContextDescriptor implements DB
         }
         return instance;
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

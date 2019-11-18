@@ -828,6 +828,7 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.tasks">
 <!--            <command commandId="org.eclipse.ui.file.properties"/>-->
+            <command commandId="org.jkiss.dbeaver.task.run"/>
             <command commandId="org.jkiss.dbeaver.task.create"/>
             <command commandId="org.eclipse.ui.edit.delete"/>
         </menuContribution>
