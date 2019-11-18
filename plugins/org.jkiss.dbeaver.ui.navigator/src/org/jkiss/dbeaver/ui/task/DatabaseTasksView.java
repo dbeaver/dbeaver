@@ -162,7 +162,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 return description;
             }
         });
-        taskColumnController.addColumn("Created", "Task create time", SWT.LEFT, true, false, new TaskLabelProvider() {
+        taskColumnController.addColumn("Created", "Task create time", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(DBTTask task) {
                 return dateFormat.format(task.getCreateTime());
