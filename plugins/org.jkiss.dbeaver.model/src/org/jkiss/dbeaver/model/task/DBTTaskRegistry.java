@@ -36,6 +36,9 @@ public interface DBTTaskRegistry {
     @NotNull
     DBTTaskCategory[] getRootCategories();
 
+    @NotNull
+    DBTSchedulerDescriptor[] getAllSchedulers();
+
     void addTaskListener(DBTTaskListener listener);
 
     void removeTaskListener(DBTTaskListener listener);
