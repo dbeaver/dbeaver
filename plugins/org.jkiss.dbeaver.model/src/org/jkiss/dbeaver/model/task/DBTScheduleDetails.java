@@ -16,34 +16,17 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-
-import java.util.List;
+import java.util.Date;
 
 /**
- * Scheduler
+ * Scheduled task details
  */
-public interface DBTScheduler {
+public interface DBTScheduleDetails {
 
-    enum SettingsType {
-        SIMPLE,
-        WIZARD,
-        ADVANCED
-    }
+    String getTaskID();
 
-    @NotNull
-    List<DBTScheduleDetails> getAllScheduledTasks();
+    Date getNextRunTime();
 
-    @Nullable
-    DBTScheduleDetails getScheduledTask(@NotNull DBTTask task);
-
-    void scheduleTask(@NotNull DBTTask task);
-
-    void openTaskSettings(@NotNull DBTTask task);
-
-    void cancelTaskSchedule(@NotNull DBTTask task);
-
-    void openSchedulerSettings();
+    String getStatus();
 
 }
