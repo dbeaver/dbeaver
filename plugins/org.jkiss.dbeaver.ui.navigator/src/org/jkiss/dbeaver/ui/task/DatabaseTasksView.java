@@ -38,7 +38,6 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -209,24 +208,19 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 }
             }
         });
-        DBTSchedulerDescriptor activeScheduler = TaskRegistry.getInstance().getActiveScheduler();
-        if (activeScheduler != null) {
-            try {
-                DBTScheduler schedulerInstance = activeScheduler.getInstance();
-                taskColumnController.addColumn("Next Run", "Task next scheduled run", SWT.LEFT, true, false, new TaskLabelProvider() {
-                    @Override
-                    protected String getCellText(DBTTask task) {
-                        DBTScheduleDetails scheduledTask = schedulerInstance.getScheduledTask(task);
-                        if (scheduledTask == null) {
-                            return "N/A";
-                        } else {
-                            return scheduledTask.getNextRunInfo();
-                        }
+        DBTScheduler schedulerInstance = TaskRegistry.getInstance().getActiveSchedulerInstance();
+        if (schedulerInstance != null) {
+            taskColumnController.addColumn("Next Run", "Task next scheduled run", SWT.LEFT, true, false, new TaskLabelProvider() {
+                @Override
+                protected String getCellText(DBTTask task) {
+                    DBTScheduleDetails scheduledTask = schedulerInstance.getScheduledTask(task);
+                    if (scheduledTask == null) {
+                        return "N/A";
+                    } else {
+                        return scheduledTask.getNextRunInfo();
                     }
-                });
-            } catch (DBException e) {
-                log.error(e);
-            }
+                }
+            });
         }
         taskColumnController.addColumn("Description", "Task description", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override

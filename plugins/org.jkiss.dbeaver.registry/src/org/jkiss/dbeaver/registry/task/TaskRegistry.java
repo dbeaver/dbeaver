@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.task.*;
 
@@ -128,6 +129,18 @@ public class TaskRegistry implements DBTTaskRegistry
     public DBTSchedulerDescriptor getActiveScheduler() {
         // TODO: support active scheduler configuration
         return schedulers.isEmpty() ? null : schedulers.get(0);
+    }
+
+    public DBTScheduler getActiveSchedulerInstance() {
+        DBTSchedulerDescriptor activeScheduler = getActiveScheduler();
+        if (activeScheduler != null) {
+            try {
+                return activeScheduler.getInstance();
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+        return null;
     }
 
     @Override
