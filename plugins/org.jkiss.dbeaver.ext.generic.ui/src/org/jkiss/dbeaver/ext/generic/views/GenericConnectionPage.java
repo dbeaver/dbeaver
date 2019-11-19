@@ -289,6 +289,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             addControlToGroup(GROUP_LOGIN, emptyLabel);
             addControlToGroup(GROUP_LOGIN, passwordLabel);
             addControlToGroup(GROUP_LOGIN, passwordText);
+            addControlToGroup(GROUP_LOGIN, userManagementToolbar);
             addControlToGroup(GROUP_LOGIN, savePasswordCheck);
         }
 

@@ -46,6 +46,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     // Driver name
     protected Text driverText;
     protected Button savePasswordCheck;
+    protected ToolBar userManagementToolbar;
 
     public IDataSourceConnectionEditorSite getSite() {
         return site;
@@ -233,8 +234,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         panel.setLayoutData(gd);
 
         if (supportsPasswordView) {
-            ToolBar toolBar = new ToolBar(panel, SWT.HORIZONTAL);
-            ToolItem showPasswordLabel = new ToolItem(toolBar, SWT.NONE);
+            userManagementToolbar = new ToolBar(panel, SWT.HORIZONTAL);
+            ToolItem showPasswordLabel = new ToolItem(userManagementToolbar, SWT.NONE);
             showPasswordLabel.setToolTipText("Show password on screen");
             showPasswordLabel.setImage(DBeaverIcons.getImage(UIIcon.SHOW_ALL_DETAILS));
             showPasswordLabel.addSelectionListener(new SelectionAdapter() {
