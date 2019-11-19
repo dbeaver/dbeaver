@@ -16,15 +16,18 @@
  */
 package org.jkiss.dbeaver.ui.task;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.task.DBTScheduler;
-import org.jkiss.dbeaver.model.task.DBTTask;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.handlers.HandlerUtil;
 
-public class TaskHandlerScheduleEdit extends TaskHandlerScheduleBase {
+public class TaskHandlerRefresh extends AbstractHandler {
 
     @Override
-    protected void execute(DBTTask task, DBTScheduler scheduler) throws DBCException {
-        scheduler.openTaskSettings(task);
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        DatabaseTasksView view = (DatabaseTasksView) HandlerUtil.getActivePart(event);
+        view.refresh();
+        return null;
     }
 
 }

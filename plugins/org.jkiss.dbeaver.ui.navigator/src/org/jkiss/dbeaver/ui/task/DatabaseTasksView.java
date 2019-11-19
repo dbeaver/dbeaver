@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -55,6 +56,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -213,12 +215,12 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 }
             }
         });
-        DBTScheduler schedulerInstance = TaskRegistry.getInstance().getActiveSchedulerInstance();
-        if (schedulerInstance != null) {
+        DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
+        if (scheduler != null) {
             taskColumnController.addColumn("Next Run", "Task next scheduled run", SWT.LEFT, true, false, new TaskLabelProvider() {
                 @Override
                 protected String getCellText(DBTTask task) {
-                    DBTScheduleDetails scheduledTask = schedulerInstance.getScheduledTask(task);
+                    DBTScheduleDetails scheduledTask = scheduler.getScheduledTask(task);
                     if (scheduledTask == null) {
                         return "N/A";
                     } else {
@@ -325,6 +327,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), TASK_SCHEDULE_CREATE_CMD_ID));
                 schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), TASK_SCHEDULE_EDIT_CMD_ID));
                 schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), TASK_SCHEDULE_REMOVE_CMD_ID));
+                schedulerMenu.add(new Separator());
+                schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_REFRESH, "Refresh scheduled tasks", null));
+
                 manager.add(schedulerMenu);
                 manager.add(new Separator());
             }
@@ -430,6 +435,11 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         });
     }
 
+    public void refresh() {
+        refreshScheduledTasks();
+        taskViewer.refresh(true);
+    }
+
     private void loadTasks() {
         allTasks.clear();
 
@@ -445,8 +455,29 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         }
         allTasks.sort(Comparator.comparing(DBTTask::getCreateTime));
 
+        refreshScheduledTasks();
+
         taskViewer.setInput(allTasks);
         taskColumnController.repackColumns();
+    }
+
+    private void refreshScheduledTasks() {
+        DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
+        if (scheduler != null) {
+            try {
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        scheduler.refreshScheduledTasks(monitor);
+                    } catch (DBCException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError("Scheduled tasks", "Error reading scheduled tasks", e);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
     }
 
     private void loadTaskRuns() {
