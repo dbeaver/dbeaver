@@ -1869,10 +1869,12 @@ public final class DBUtils {
         return instance == null ? null : instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
 
-    public static List<DBPDataSourceRegistry> getAllRegistries() {
+    public static List<DBPDataSourceRegistry> getAllRegistries(boolean forceLoad) {
         List<DBPDataSourceRegistry> result = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-            if (project.isOpen() && project.isRegistryLoaded()) {
+            if (forceLoad || (project.isOpen() && project.isRegistryLoaded())) {
+                project.ensureOpen();
+
                 DBPDataSourceRegistry registry = project.getDataSourceRegistry();
                 if (registry != null) {
                     result.add(registry);
