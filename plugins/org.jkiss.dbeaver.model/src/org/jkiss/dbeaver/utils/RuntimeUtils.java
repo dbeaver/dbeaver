@@ -241,13 +241,20 @@ public class RuntimeUtils {
             String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
             Process p = Runtime.getRuntime().exec(cmd);
             try {
+                StringBuilder out = new StringBuilder();
                 try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                    String line;
-                    if ((line = input.readLine()) != null) {
-                        return line;
+                    for (;;) {
+                        String line = input.readLine();
+                        if (line == null) {
+                            break;
+                        }
+                        if (out.length() > 0) {
+                            out.append("\n");
+                        }
+                        out.append(line);
                     }
                 }
-                return null;
+                return out.length() == 0 ? null: out.toString();
             } finally {
                 p.destroy();
             }

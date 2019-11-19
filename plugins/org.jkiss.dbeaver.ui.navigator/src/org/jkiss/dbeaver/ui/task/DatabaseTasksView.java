@@ -38,11 +38,11 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -468,7 +468,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 UIUtils.runInProgressService(monitor -> {
                     try {
                         scheduler.refreshScheduledTasks(monitor);
-                    } catch (DBCException e) {
+                    } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
                 });
