@@ -67,7 +67,12 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     public static final String CREATE_TASK_CMD_ID = "org.jkiss.dbeaver.task.create";
     public static final String EDIT_TASK_CMD_ID = "org.jkiss.dbeaver.task.edit";
     public static final String RUN_TASK_CMD_ID = "org.jkiss.dbeaver.task.run";
-    public static final ArrayList<Object> EMPTY_TASK_RUN_LIST = new ArrayList<>();
+
+    private static final String TASK_SCHEDULE_CREATE_CMD_ID = "org.jkiss.dbeaver.task.scheduler.create";
+    private static final String TASK_SCHEDULE_EDIT_CMD_ID = "org.jkiss.dbeaver.task.scheduler.edit";
+    private static final String TASK_SCHEDULE_REMOVE_CMD_ID = "org.jkiss.dbeaver.task.scheduler.remove";
+
+    private static final ArrayList<Object> EMPTY_TASK_RUN_LIST = new ArrayList<>();
 
     private TreeViewer taskViewer;
     private ViewerColumnController taskColumnController;
@@ -85,7 +90,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         @Override
         public Object[] getElements(Object inputElement) {
-            return ((Collection)inputElement).toArray();
+            return ((Collection) inputElement).toArray();
         }
 
         @Override
@@ -130,7 +135,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         createTaskTree(sashForm);
         createTaskRunTable(sashForm);
 
-        sashForm.setWeights(new int[] { 700, 300 });
+        sashForm.setWeights(new int[]{700, 300});
 
         loadTasks();
     }
@@ -312,6 +317,17 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, "Delete task", null));
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             manager.add(new Separator());
+            DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
+            if (scheduler != null) {
+                MenuManager schedulerMenu = new MenuManager("Scheduler");
+                schedulerMenu.setImageDescriptor(ActionUtils.findCommandImage(TASK_SCHEDULE_CREATE_CMD_ID));
+
+                schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), TASK_SCHEDULE_CREATE_CMD_ID));
+                schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), TASK_SCHEDULE_EDIT_CMD_ID));
+                schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), TASK_SCHEDULE_REMOVE_CMD_ID));
+                manager.add(schedulerMenu);
+                manager.add(new Separator());
+            }
             taskColumnController.fillConfigMenu(manager);
         });
 
@@ -348,7 +364,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             return null;
         }
         Object element = ((IStructuredSelection) selection).getFirstElement();
-        return element instanceof DBTTask ? (DBTTask)element : null;
+        return element instanceof DBTTask ? (DBTTask) element : null;
     }
 
     @Nullable
@@ -358,7 +374,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             return null;
         }
         Object element = ((IStructuredSelection) selection).getFirstElement();
-        return element instanceof DBTTaskRun ? (DBTTaskRun)element : null;
+        return element instanceof DBTTaskRun ? (DBTTaskRun) element : null;
     }
 
     @Override
