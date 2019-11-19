@@ -282,6 +282,10 @@
         </command>
         <command id="org.jkiss.dbeaver.task.edit" name="%command.org.jkiss.dbeaver.task.edit.name" description="%command.org.jkiss.dbeaver.task.edit.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.task.create" name="%command.org.jkiss.dbeaver.task.create.name" description="%command.org.jkiss.dbeaver.task.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+
+        <command id="org.jkiss.dbeaver.task.scheduler.create" name="%command.org.jkiss.dbeaver.task.scheduler.create.name" description="%command.org.jkiss.dbeaver.task.scheduler.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.task.scheduler.edit" name="%command.org.jkiss.dbeaver.task.scheduler.edit.name" description="%command.org.jkiss.dbeaver.task.scheduler.edit.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.task.scheduler.remove" name="%command.org.jkiss.dbeaver.task.scheduler.remove.name" description="%command.org.jkiss.dbeaver.task.scheduler.remove.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -313,6 +317,8 @@
 
         <image commandId="org.jkiss.dbeaver.task.run" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/run.png"/>
         <image commandId="org.jkiss.dbeaver.task.create" icon="icons/task_create.png"/>
+
+        <image commandId="org.jkiss.dbeaver.task.schedule.create" icon="icons/scheduler.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -828,6 +834,7 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.tasks">
 <!--            <command commandId="org.eclipse.ui.file.properties"/>-->
+            <command commandId="org.jkiss.dbeaver.task.run"/>
             <command commandId="org.jkiss.dbeaver.task.create"/>
             <command commandId="org.eclipse.ui.edit.delete"/>
         </menuContribution>

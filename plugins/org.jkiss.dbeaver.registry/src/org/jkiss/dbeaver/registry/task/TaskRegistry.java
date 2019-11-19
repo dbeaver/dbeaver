@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.task.*;
 
@@ -31,7 +32,7 @@ import java.util.Map;
 
 public class TaskRegistry implements DBTTaskRegistry
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.task"; //$NON-NLS-1$
+    public static final String TASK_EXTENSION_ID = "org.jkiss.dbeaver.task"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(TaskRegistry.class);
 
@@ -48,12 +49,13 @@ public class TaskRegistry implements DBTTaskRegistry
     private final Map<String, TaskCategoryDescriptor> taskCategories = new LinkedHashMap<>();
     private final Map<String, TaskTypeDescriptor> taskDescriptors = new LinkedHashMap<>();
     private final List<DBTTaskListener> taskListeners = new ArrayList<>();
+    private final List<SchedulerDescriptor> schedulers = new ArrayList<>();
 
     private TaskRegistry(IExtensionRegistry registry)
     {
         // Load data taskDescriptors from external plugins
         {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(TASK_EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
                 if ("category".equals(ext.getName())) {
                     TaskCategoryDescriptor descriptor = new TaskCategoryDescriptor(this, ext);
@@ -75,6 +77,13 @@ public class TaskRegistry implements DBTTaskRegistry
                         TaskConfiguratorDescriptor configDescriptor = new TaskConfiguratorDescriptor(taskType, ext);
                         taskType.setConfigurator(configDescriptor);
                     }
+                }
+            }
+
+            for (IConfigurationElement ext : extElements) {
+                if ("scheduler".equals(ext.getName())) {
+                    SchedulerDescriptor descriptor = new SchedulerDescriptor(ext);
+                    schedulers.add(descriptor);
                 }
             }
         }
@@ -108,6 +117,30 @@ public class TaskRegistry implements DBTTaskRegistry
             }
         }
         return result.toArray(new DBTTaskCategory[0]);
+    }
+
+    @NotNull
+    @Override
+    public DBTSchedulerDescriptor[] getAllSchedulers() {
+        return schedulers.toArray(new DBTSchedulerDescriptor[0]);
+    }
+
+    @Override
+    public DBTSchedulerDescriptor getActiveScheduler() {
+        // TODO: support active scheduler configuration
+        return schedulers.isEmpty() ? null : schedulers.get(0);
+    }
+
+    public DBTScheduler getActiveSchedulerInstance() {
+        DBTSchedulerDescriptor activeScheduler = getActiveScheduler();
+        if (activeScheduler != null) {
+            try {
+                return activeScheduler.getInstance();
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+        return null;
     }
 
     @Override

@@ -43,6 +43,7 @@ import java.util.*;
 public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescription {
 
     private static final Log log = Log.getLog(TaskImpl.class);
+
     private static final String META_FILE_NAME = "meta.json";
 
     private static final int MAX_RUNS_IN_STATS = 100;
