@@ -140,6 +140,14 @@
             namespace="org.jkiss.dbeaver.ui.editors.folder"
             properties="canNavigate"
             type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
+
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.task.TaskPropertyTester"
+            id="org.jkiss.dbeaver.ui.task.TaskPropertyTester"
+            namespace="org.jkiss.dbeaver.task"
+            properties="scheduled"
+            type="org.jkiss.dbeaver.model.task.DBTTask"/>
+
     </extension>
 
     <extension point="org.eclipse.ui.editors">
@@ -318,7 +326,7 @@
         <image commandId="org.jkiss.dbeaver.task.run" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/run.png"/>
         <image commandId="org.jkiss.dbeaver.task.create" icon="icons/task_create.png"/>
 
-        <image commandId="org.jkiss.dbeaver.task.schedule.create" icon="icons/scheduler.png"/>
+        <image commandId="org.jkiss.dbeaver.task.scheduler.create" icon="icons/scheduler.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -798,6 +806,49 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.task.create" class="org.jkiss.dbeaver.ui.task.TaskHandlerCreate"/>
+
+        <handler commandId="org.jkiss.dbeaver.task.scheduler.create" class="org.jkiss.dbeaver.ui.task.TaskHandlerScheduleCreate">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                            <test property="org.jkiss.dbeaver.task.scheduled" value="false"/>
+                        </and>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.task.scheduler.edit" class="org.jkiss.dbeaver.ui.task.TaskHandlerScheduleEdit">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                            <test property="org.jkiss.dbeaver.task.scheduled" value="true"/>
+                        </and>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.task.scheduler.remove" class="org.jkiss.dbeaver.ui.task.TaskHandlerScheduleRemove">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                            <test property="org.jkiss.dbeaver.task.scheduled" value="true"/>
+                        </and>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
 
     </extension>
 
