@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.task;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.task.DBTScheduler;
 import org.jkiss.dbeaver.model.task.DBTTask;
 
 public class TaskHandlerScheduleRemove extends TaskHandlerScheduleBase {
 
     @Override
-    protected void execute(DBTTask task, DBTScheduler scheduler) throws DBCException {
+    protected void execute(DBTTask task, DBTScheduler scheduler) throws DBException {
         scheduler.removeTaskSchedule(task);
     }
 

@@ -21,7 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.task.DBTScheduler;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
@@ -36,13 +36,13 @@ public abstract class TaskHandlerScheduleBase extends AbstractHandler {
         if (task != null && scheduler != null) {
             try {
                 execute(task, scheduler);
-            } catch (DBCException e) {
+            } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Scheduler rrror", "Scheduler error", e);
             }
         }
         return null;
     }
 
-    protected abstract void execute(DBTTask task, DBTScheduler scheduler) throws DBCException;
+    protected abstract void execute(DBTTask task, DBTScheduler scheduler) throws DBException;
 
 }

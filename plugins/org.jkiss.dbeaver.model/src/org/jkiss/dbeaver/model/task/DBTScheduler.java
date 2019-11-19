@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -40,13 +40,13 @@ public interface DBTScheduler {
     @Nullable
     DBTScheduleDetails getScheduledTask(@NotNull DBTTask task);
 
-    void addTaskSchedule(@NotNull DBTTask task) throws DBCException;
+    void addTaskSchedule(@NotNull DBTTask task) throws DBException;
 
-    void openTaskSettings(@NotNull DBTTask task) throws DBCException;
+    void openTaskSettings(@NotNull DBTTask task) throws DBException;
 
-    void removeTaskSchedule(@NotNull DBTTask task) throws DBCException;
+    void removeTaskSchedule(@NotNull DBTTask task) throws DBException;
 
-    void openSchedulerSettings() throws DBCException;
+    void openSchedulerSettings() throws DBException;
 
-    void refreshScheduledTasks(DBRProgressMonitor monitor) throws DBCException;
+    void refreshScheduledTasks(DBRProgressMonitor monitor) throws DBException;
 }
