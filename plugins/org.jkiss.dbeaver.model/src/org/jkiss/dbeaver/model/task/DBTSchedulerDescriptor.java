@@ -16,33 +16,17 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * Task registry
+ * Scheduler descriptor
  */
-public interface DBTTaskRegistry {
+public interface DBTSchedulerDescriptor {
 
-    @NotNull
-    DBTTaskType[] getAllTaskTypes();
+    String getName();
 
-    @Nullable
-    DBTTaskType getTaskType(String id);
+    String getDescription();
 
-    @NotNull
-    DBTTaskCategory[] getAllCategories();
-
-    @NotNull
-    DBTTaskCategory[] getRootCategories();
-
-    @NotNull
-    DBTSchedulerDescriptor[] getAllSchedulers();
-
-    DBTSchedulerDescriptor getActiveScheduler();
-
-    void addTaskListener(DBTTaskListener listener);
-
-    void removeTaskListener(DBTTaskListener listener);
+    DBTScheduler getInstance() throws DBException;
 
 }
