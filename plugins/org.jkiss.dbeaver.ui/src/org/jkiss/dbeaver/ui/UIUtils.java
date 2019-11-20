@@ -695,6 +695,16 @@ public class UIUtils {
         return button;
     }
 
+    public static Button createCheckbox(Composite parent, boolean checked)
+    {
+        final Button button = new Button(parent, SWT.CHECK);
+        if (checked) {
+            button.setSelection(true);
+        }
+
+        return button;
+    }
+
     public static Combo createLabelCombo(Composite parent, String label, int style)
     {
         return createLabelCombo(parent, label, null, style);

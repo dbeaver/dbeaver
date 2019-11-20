@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.*;
+import com.jcraft.jsch.agentproxy.AgentProxy;
+
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -62,4 +64,7 @@ class SSHUtils {
         return false;
     }
 
+    public static void doAgentSign(AgentProxy agentProxy, byte [] data) {
+    	
+    }
 }
