@@ -130,7 +130,7 @@ public class CommonUtils {
 
     public static String toCamelCase(String str) {
         if (isEmpty(str)) {
-            return null;
+            return str;
         }
 
         final StringBuilder ret = new StringBuilder(str.length());
