@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.task;
+package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.task.DBTScheduler;
-import org.jkiss.dbeaver.model.task.DBTTask;
+/**
+ * Scheduled task details
+ */
+public interface DBTTaskScheduleInfo {
 
-public class TaskHandlerScheduleEdit extends TaskHandlerScheduleBase {
+    String getTaskId();
 
-    @Override
-    protected void execute(DBTTask task, DBTScheduler scheduler) throws DBException {
-        scheduler.openTaskSettings(task);
-    }
+    String getNextRunInfo();
+
+    String getStatus();
 
 }

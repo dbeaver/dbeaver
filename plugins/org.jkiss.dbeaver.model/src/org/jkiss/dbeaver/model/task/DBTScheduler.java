@@ -28,25 +28,16 @@ import java.util.List;
  */
 public interface DBTScheduler {
 
-    enum SettingsType {
-        SIMPLE,
-        WIZARD,
-        ADVANCED
-    }
-
     @NotNull
-    List<DBTScheduleDetails> getAllScheduledTasks();
+    List<DBTTaskScheduleInfo> getAllScheduledTasks();
 
     @Nullable
-    DBTScheduleDetails getScheduledTask(@NotNull DBTTask task);
+    DBTTaskScheduleInfo getScheduledTaskInfo(@NotNull DBTTask task);
 
-    void addTaskSchedule(@NotNull DBTTask task) throws DBException;
+    void addTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
 
-    void openTaskSettings(@NotNull DBTTask task) throws DBException;
+    void removeTaskSchedule(@NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
 
-    void removeTaskSchedule(@NotNull DBTTask task) throws DBException;
+    void refreshScheduledTasks(@NotNull DBRProgressMonitor monitor) throws DBException;
 
-    void openSchedulerSettings() throws DBException;
-
-    void refreshScheduledTasks(DBRProgressMonitor monitor) throws DBException;
 }
