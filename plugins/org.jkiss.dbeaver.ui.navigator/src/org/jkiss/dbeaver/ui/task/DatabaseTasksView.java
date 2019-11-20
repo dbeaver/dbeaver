@@ -65,14 +65,11 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private static final Log log = Log.getLog(DatabaseTasksView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.tasks";
+    public static final String TASKS_VIEW_MENU_ID = VIEW_ID + ".menu";
 
     public static final String CREATE_TASK_CMD_ID = "org.jkiss.dbeaver.task.create";
     public static final String EDIT_TASK_CMD_ID = "org.jkiss.dbeaver.task.edit";
     public static final String RUN_TASK_CMD_ID = "org.jkiss.dbeaver.task.run";
-
-    private static final String TASK_SCHEDULE_CREATE_CMD_ID = "org.jkiss.dbeaver.task.scheduler.create";
-    private static final String TASK_SCHEDULE_EDIT_CMD_ID = "org.jkiss.dbeaver.task.scheduler.edit";
-    private static final String TASK_SCHEDULE_REMOVE_CMD_ID = "org.jkiss.dbeaver.task.scheduler.remove";
 
     private static final ArrayList<Object> EMPTY_TASK_RUN_LIST = new ArrayList<>();
 
@@ -220,7 +217,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             taskColumnController.addColumn("Next Run", "Task next scheduled run", SWT.LEFT, true, false, new TaskLabelProvider() {
                 @Override
                 protected String getCellText(DBTTask task) {
-                    DBTScheduleDetails scheduledTask = scheduler.getScheduledTask(task);
+                    DBTTaskScheduleInfo scheduledTask = scheduler.getScheduledTaskInfo(task);
                     if (scheduledTask == null) {
                         return "N/A";
                     } else {
@@ -258,7 +255,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskViewer.setContentProvider(new TreeListContentProvider());
 
         MenuManager menuMgr = createTaskContextMenu(taskViewer);
-        getSite().registerContextMenu(menuMgr, taskViewer);
+        getSite().registerContextMenu(TASKS_VIEW_MENU_ID, menuMgr, taskViewer);
         getSite().setSelectionProvider(filteredTree.getViewer());
 
         taskViewer.addDoubleClickListener(event -> ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
@@ -317,22 +314,8 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             //manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
             manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
             manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, "Delete task", null));
-            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             manager.add(new Separator());
-            DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
-            if (scheduler != null) {
-                MenuManager schedulerMenu = new MenuManager("Scheduler");
-                schedulerMenu.setImageDescriptor(ActionUtils.findCommandImage(TASK_SCHEDULE_CREATE_CMD_ID));
-
-                schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), TASK_SCHEDULE_CREATE_CMD_ID));
-                schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), TASK_SCHEDULE_EDIT_CMD_ID));
-                schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), TASK_SCHEDULE_REMOVE_CMD_ID));
-                schedulerMenu.add(new Separator());
-                schedulerMenu.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_REFRESH, "Refresh scheduled tasks", null));
-
-                manager.add(schedulerMenu);
-                manager.add(new Separator());
-            }
+            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             taskColumnController.fillConfigMenu(manager);
         });
 

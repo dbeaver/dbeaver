@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * FolderEditorPropertyTester
+ * TaskPropertyTester
  */
 public class TaskPropertyTester extends PropertyTester
 {
@@ -47,7 +47,7 @@ public class TaskPropertyTester extends PropertyTester
         switch (property) {
             case PROP_SCHEDULED:
                 DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
-                return (scheduler != null && scheduler.getScheduledTask(task) != null) == CommonUtils.getBoolean(expectedValue, true);
+                return (scheduler != null && scheduler.getScheduledTaskInfo(task) != null) == CommonUtils.getBoolean(expectedValue, true);
         }
 
         return false;
