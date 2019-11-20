@@ -29,6 +29,9 @@ import java.util.List;
 public interface DBTScheduler {
 
     @NotNull
+    String getSchedulerName();
+
+    @NotNull
     List<DBTTaskScheduleInfo> getAllScheduledTasks();
 
     @Nullable

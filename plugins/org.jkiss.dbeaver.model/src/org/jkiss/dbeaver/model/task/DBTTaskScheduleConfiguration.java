@@ -16,7 +16,8 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Scheduled task configration
@@ -40,16 +41,16 @@ public class DBTTaskScheduleConfiguration {
 
     public Frequency frequency;
 
-    public LocalDateTime startTime;
-    public LocalDateTime endTime;
+    public Date startTime;
+    public Date endTime;
 
     // Refines the schedule type to allow finer control over schedule recurrence
-    public short recurrence;
+    public int recurrence;
 
     // Specifies day(s) of the week (for WEEKLY) or days of the month (for MONTHLY)
-    public short[] days;
+    public List<Short> days;
     // Specifies month(s) of the year
-    public short[] months;
+    public List<Short> months;
 
     // Repetition interval in minutes
     public int repetitionInterval;
