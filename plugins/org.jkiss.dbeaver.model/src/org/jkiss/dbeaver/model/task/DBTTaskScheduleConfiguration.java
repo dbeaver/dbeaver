@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
  */
 public class DBTTaskScheduleConfiguration {
 
-    enum Frequency {
+    public enum Frequency {
         MINUTELY,
         HOURLY,
         DAILY,
