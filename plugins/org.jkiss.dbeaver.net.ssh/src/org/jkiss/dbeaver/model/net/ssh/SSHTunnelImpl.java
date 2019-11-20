@@ -111,7 +111,9 @@ public class SSHTunnelImpl implements DBWTunnel {
             if (privKeyPath != null && SSHUtils.isKeyEncrypted(privKeyPath)) {
                 return AuthCredentials.PASSWORD;
             }
-
+            return AuthCredentials.NONE;
+        }
+        if (authType == SSHConstants.AuthType.AGENT) {
             return AuthCredentials.NONE;
         }
         return AuthCredentials.CREDENTIALS;

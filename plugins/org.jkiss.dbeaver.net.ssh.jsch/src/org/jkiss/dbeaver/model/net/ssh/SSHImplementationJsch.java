@@ -16,19 +16,27 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import com.jcraft.jsch.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.jsch.ui.UserInfoPrompter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.SSHConstants.AuthType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import com.jcraft.jsch.IdentityRepository;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Logger;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
 
 /**
  * SSH tunnel
@@ -47,26 +55,36 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                 jsch = new JSch();
                 JSch.setLogger(new LoggerProxy());
             }
-            if (privKeyFile != null) {
+
+            AuthType authType = AuthType.valueOf(configuration.getProperty(SSHConstants.PROP_AUTH_TYPE).toString());
+
+            if (authType == AuthType.PUBLIC_KEY) {
                 if (!CommonUtils.isEmpty(configuration.getPassword())) {
                     jsch.addIdentity(privKeyFile.getAbsolutePath(), configuration.getPassword());
                 } else {
                     jsch.addIdentity(privKeyFile.getAbsolutePath());
                 }
+            } else if (authType == AuthType.AGENT) {
+                log.debug("Creating identityRepository");
+                IdentityRepository identityRepository = new DBeaverIdentityRepository(this, getAgentData());
+                jsch.setIdentityRepository(identityRepository);
             }
 
             log.debug("Instantiate SSH tunnel");
             session = jsch.getSession(configuration.getUserName(), sshHost, sshPortNum);
             session.setConfig("StrictHostKeyChecking", "no");
-            //session.setConfig("PreferredAuthentications", "password,publickey,keyboard-interactive");
-            session.setConfig("PreferredAuthentications",
-                    privKeyFile != null ? "publickey,keyboard-interactive,password" : "password,keyboard-interactive");
+
+            if (authType == AuthType.PASSWORD) {
+                session.setConfig("PreferredAuthentications", "keyboard-interactive,password");
+                // Use Eclipse standard prompter
+                UserInfoCustom ui = new UserInfoCustom(configuration);
+
+                session.setUserInfo(ui);
+            } else {
+                session.setConfig("PreferredAuthentications", "publickey, keyboard-interactive");
+            }
             session.setConfig("ConnectTimeout", String.valueOf(connectTimeout));
 
-            // Use Eclipse standard prompter
-            UserInfoCustom ui = new UserInfoCustom(configuration);
-
-            session.setUserInfo(ui);
             if (aliveInterval != 0) {
                 session.setServerAliveInterval(aliveInterval);
             }

@@ -42,6 +42,7 @@ public class SSHConstants {
 
     public enum AuthType {
         PASSWORD,
-        PUBLIC_KEY
+        PUBLIC_KEY,
+        AGENT
     }
 }

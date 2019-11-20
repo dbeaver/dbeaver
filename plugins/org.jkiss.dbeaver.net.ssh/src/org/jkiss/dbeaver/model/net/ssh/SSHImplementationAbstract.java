@@ -16,6 +16,12 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -24,8 +30,12 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.io.IOException;
+import com.jcraft.jsch.agentproxy.AgentProxy;
+import com.jcraft.jsch.agentproxy.Identity;
+import com.jcraft.jsch.agentproxy.USocketFactory;
+import com.jcraft.jsch.agentproxy.connector.PageantConnector;
+import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
+import com.jcraft.jsch.agentproxy.usocket.NCUSocketFactory;
 
 /**
  * SSH tunnel
@@ -39,12 +49,13 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
 
     protected transient DBWHandlerConfiguration savedConfiguration;
     protected transient DBPConnectionConfiguration savedConnectionInfo;
+    protected AgentProxy agentProxy = null;
 
     @Override
     public DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
-        String dbPortString = connectionInfo.getHostPort();
+    	String dbPortString = connectionInfo.getHostPort();
         if (CommonUtils.isEmpty(dbPortString)) {
             dbPortString = configuration.getDriver().getDefaultPort();
             if (CommonUtils.isEmpty(dbPortString)) {
@@ -100,6 +111,24 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
                 throw new DBException("Private key file '" + privKeyFile.getAbsolutePath() + "' doesn't exist");
             }
         }
+        if (authType == SSHConstants.AuthType.AGENT) {
+            try {
+                agentProxy = new AgentProxy(new PageantConnector());
+                log.debug("SSH: Connected to pagent");
+            } catch (Exception e) {
+                log.error("Cannot connect pagent, will try ssh-agent: "+e.getMessage());
+            }
+            if (agentProxy==null) {
+                try {
+                    USocketFactory udsf = new NCUSocketFactory();
+                    agentProxy = new AgentProxy(new SSHAgentConnector(udsf));
+                    log.debug("Connected to ssh-agent");
+                } catch (Exception e) {
+                    throw new DBException("ssh-agent connection exception: ", e);
+                }
+            }
+        }
+
         if (connectTimeout == 0){
             connectTimeout = SSHConstants.DEFAULT_CONNECT_TIMEOUT;
         }
@@ -129,6 +158,21 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         return connectionInfo;
     }
 
+    public byte [] agentSign(byte [] blob, byte [] data) {
+        return agentProxy.sign(blob, data);
+    }
+
+    protected List<SSHAgentIdentity> getAgentData() {
+        Identity [] identities = agentProxy.getIdentities();
+        List<SSHAgentIdentity> result = Arrays.asList(identities).stream().map(i -> {
+            SSHAgentIdentity id = new SSHAgentIdentity();
+            id.setBlob(i.getBlob());
+            id.setComment(i.getComment());
+            return id;
+        }).collect(Collectors.toList());
+        return result;
+    }
+
     protected abstract void setupTunnel(
         DBRProgressMonitor monitor,
         DBWHandlerConfiguration configuration,
@@ -140,6 +184,6 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         String sshLocalHost,
         int sshLocalPort,
         String sshRemoteHost,
-        int sshRemotePort) throws DBException, IOException;
-
+        int sshRemotePort
+    ) throws DBException, IOException;
 }
