@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.jcraft.jsch.agentproxy.AgentProxy;
+import com.jcraft.jsch.agentproxy.Identity;
+import com.jcraft.jsch.agentproxy.USocketFactory;
+import com.jcraft.jsch.agentproxy.connector.PageantConnector;
+import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
+import com.jcraft.jsch.agentproxy.usocket.NCUSocketFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -30,12 +30,11 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import com.jcraft.jsch.agentproxy.AgentProxy;
-import com.jcraft.jsch.agentproxy.Identity;
-import com.jcraft.jsch.agentproxy.USocketFactory;
-import com.jcraft.jsch.agentproxy.connector.PageantConnector;
-import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
-import com.jcraft.jsch.agentproxy.usocket.NCUSocketFactory;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * SSH tunnel
@@ -114,18 +113,21 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (authType == SSHConstants.AuthType.AGENT) {
             try {
                 agentProxy = new AgentProxy(new PageantConnector());
-                log.debug("SSH: Connected to pagent");
+                log.debug("SSH: Connected with pageant");
             } catch (Exception e) {
-                log.error("Cannot connect pagent, will try ssh-agent: "+e.getMessage());
+                log.debug("pageant connect exception", e);
             }
             if (agentProxy==null) {
                 try {
                     USocketFactory udsf = new NCUSocketFactory();
                     agentProxy = new AgentProxy(new SSHAgentConnector(udsf));
-                    log.debug("Connected to ssh-agent");
+                    log.debug("SSH: Connected with ssh-agent");
                 } catch (Exception e) {
-                    throw new DBException("ssh-agent connection exception: ", e);
+                    log.debug("ssh-agent connection exception", e);
                 }
+            }
+            if (agentProxy==null) {
+                throw new DBException("Unable to initialize SSH agent");
             }
         }
 
