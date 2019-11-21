@@ -16,14 +16,18 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import com.jcraft.jsch.*;
+import java.util.List;
+
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.IOUtils;
 
-import java.util.List;
+import com.jcraft.jsch.Identity;
+import com.jcraft.jsch.IdentityRepository;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 
 /**
  * SSH utils
@@ -61,5 +65,4 @@ class SSHUtils {
         }
         return false;
     }
-
 }

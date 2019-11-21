@@ -57,6 +57,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private TextWithOpen privateKeyText;
     private Label pwdLabel;
     private Text passwordText;
+    private Label savePasswordLabel;
     private Button savePasswordCheckbox;
     private Label privateKeyLabel;
     private Combo tunnelImplCombo;
@@ -89,6 +90,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             authMethodCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             authMethodCombo.add(SSHUIMessages.model_ssh_configurator_combo_password);
             authMethodCombo.add(SSHUIMessages.model_ssh_configurator_combo_pub_key);
+            authMethodCombo.add(SSHUIMessages.model_ssh_configurator_combo_agent);
 
             privateKeyLabel = UIUtils.createControlLabel(settingsGroup, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -101,10 +103,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
             {
                 pwdLabel = UIUtils.createControlLabel(settingsGroup, SSHUIMessages.model_ssh_configurator_label_password);
-
                 passwordText = new Text(settingsGroup, SWT.BORDER | SWT.PASSWORD);
                 passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                savePasswordCheckbox = UIUtils.createLabelCheckbox(settingsGroup, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
+
+                savePasswordLabel = UIUtils.createControlLabel(settingsGroup, SSHUIMessages.model_ssh_configurator_checkbox_save_pass);
+                savePasswordCheckbox = UIUtils.createCheckbox(settingsGroup, false);
             }
         }
 
@@ -153,7 +156,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                updatePrivateKeyVisibility();
+                updateAuthMethodVisibility();
             }
         });
 
@@ -216,7 +219,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         if (!CommonUtils.isEmpty(authTypeName)) {
             authType = SSHConstants.AuthType.valueOf(authTypeName);
         }
-        authMethodCombo.select(authType == SSHConstants.AuthType.PASSWORD ? 0 : 1);
+        if (SSHConstants.AuthType.PASSWORD.equals(authType)) {
+            authMethodCombo.select(0);
+        } else if (SSHConstants.AuthType.PUBLIC_KEY.equals(authType)) {
+            authMethodCombo.select(1);
+        } else {
+            authMethodCombo.select(2);
+        }
         privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_KEY_PATH)));
         passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
         savePasswordCheckbox.setSelection(configuration.isSavePassword());
@@ -254,7 +263,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         if (timeoutValue != 0) {
             tunnelTimeout.setSelection(timeoutValue);
         }
-        updatePrivateKeyVisibility();
+        updateAuthMethodVisibility();
 
         savedConfiguration = new DBWHandlerConfiguration(configuration);
     }
@@ -264,10 +273,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     {
         configuration.setProperty(SSHConstants.PROP_HOST, hostText.getText());
         configuration.setProperty(SSHConstants.PROP_PORT, portText.getSelection());
-        configuration.setProperty(SSHConstants.PROP_AUTH_TYPE,
-            authMethodCombo.getSelectionIndex() == 0 ?
-                SSHConstants.AuthType.PASSWORD.name() :
-                SSHConstants.AuthType.PUBLIC_KEY.name());
+        switch (authMethodCombo.getSelectionIndex()) {
+            case 0: configuration.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PASSWORD.name()); break;
+            case 1: configuration.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY.name()); break;
+            case 2: configuration.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.AGENT.name()); break;
+        }
         configuration.setProperty(SSHConstants.PROP_KEY_PATH, privateKeyText.getText());
         configuration.setUserName(userNameText.getText());
         configuration.setPassword(passwordText.getText());
@@ -314,14 +324,25 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
     }
 
-    private void updatePrivateKeyVisibility()
+    private void updateAuthMethodVisibility()
     {
         boolean isPassword = authMethodCombo.getSelectionIndex() == 0;
+        boolean isPublicKey = authMethodCombo.getSelectionIndex() == 1;
+        boolean isAgent = authMethodCombo.getSelectionIndex() == 2;
 
-        ((GridData)privateKeyLabel.getLayoutData()).exclude = isPassword;
-        privateKeyLabel.setVisible(!isPassword);
-        ((GridData)privateKeyText.getLayoutData()).exclude = isPassword;
-        privateKeyText.setVisible(!isPassword);
+        if (isPublicKey) { // privateKeyLabel, privateKeyText, pwdLabel, passwordText, savePasswordCheckbox
+            showPrivateKeyField(true);
+            showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_passphrase);
+            showSavePasswordCheckbox(true);
+        } else if (isAgent) {
+            showPrivateKeyField(false);
+            showPasswordField(false, null);
+            showSavePasswordCheckbox(false);
+        } else if (isPassword) {
+            showPrivateKeyField(false);
+            showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_password);
+            showSavePasswordCheckbox(true);
+        }
 
 //        pwdControlGroup.setVisible(isPassword);
 //        ((GridData)pwdControlGroup.getLayoutData()).exclude = !isPassword;
@@ -331,14 +352,37 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 //        if (!isPassword) {
 //            savePasswordCheckbox.setSelection(true);
 //        }
-        pwdLabel.setText(isPassword ? SSHUIMessages.model_ssh_configurator_label_password : SSHUIMessages.model_ssh_configurator_label_passphrase);
+//        pwdLabel.setText(isPassword ? SSHUIMessages.model_ssh_configurator_label_password : SSHUIMessages.model_ssh_configurator_label_passphrase);
 
         UIUtils.asyncExec(() -> hostText.getParent().getParent().layout(true, true));
     }
 
+    private void showSavePasswordCheckbox(boolean show) {
+//        ((GridData)savePasswordLabel.getLayoutData()).exclude = !show;
+        savePasswordLabel.setVisible(show);
+//        ((GridData)savePasswordCheckbox.getLayoutData()).exclude = !show;
+        savePasswordCheckbox.setVisible(show);
+    }
+
+    private void showPasswordField(boolean show, String pwdLabelText) {
+        ((GridData)pwdLabel.getLayoutData()).exclude = !show;
+        pwdLabel.setVisible(show);
+        ((GridData)passwordText.getLayoutData()).exclude = !show;
+        passwordText.setVisible(show);
+        if (show)
+            pwdLabel.setText(pwdLabelText);
+    }
+
+    private void showPrivateKeyField(boolean show) {
+        ((GridData)privateKeyLabel.getLayoutData()).exclude = !show;
+        privateKeyLabel.setVisible(show);
+
+        ((GridData)privateKeyText.getLayoutData()).exclude = !show;
+        privateKeyText.setVisible(show);
+    }
+
     @Override
-    public boolean isComplete()
-    {
+    public boolean isComplete() {
         return false;
     }
 }
