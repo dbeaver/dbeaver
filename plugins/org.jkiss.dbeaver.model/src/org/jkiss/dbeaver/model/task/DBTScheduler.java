@@ -37,10 +37,15 @@ public interface DBTScheduler {
     @Nullable
     DBTTaskScheduleInfo getScheduledTaskInfo(@NotNull DBTTask task);
 
-    void addTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
+    @Nullable
+    DBTTaskScheduleConfiguration getScheduledTaskConfiguration(@NotNull DBTTask task) throws DBException;
+
+    void setTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
 
     void removeTaskSchedule(@NotNull DBTTask task, DBTTaskScheduleInfo scheduleInfo) throws DBException;
 
     void refreshScheduledTasks(@NotNull DBRProgressMonitor monitor) throws DBException;
+
+    void openSchedulerSettings() throws DBException;
 
 }
