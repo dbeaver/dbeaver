@@ -63,8 +63,4 @@ class SSHUtils {
         }
         return false;
     }
-
-    public static void doAgentSign(AgentProxy agentProxy, byte [] data) {
-    	
-    }
 }

@@ -24,7 +24,7 @@ public class DBeaverIdentityRepository implements IdentityRepository {
         for (SSHAgentIdentity identity : identities) {
             byte [] blob = identity.getBlob();
             byte [] comment = identity.getComment();
-            com.jcraft.jsch.Identity id = new com.jcraft.jsch.Identity(){
+            com.jcraft.jsch.Identity id = new com.jcraft.jsch.Identity() {
                 String algname = new String((new Buffer(blob)).getString());
                 public boolean setPassphrase(byte[] passphrase) throws JSchException {
                 	return true;
@@ -37,7 +37,7 @@ public class DBeaverIdentityRepository implements IdentityRepository {
                 public String getAlgName() { return algname; }
                 public String getName() { return new String(comment); }
                 public boolean isEncrypted() { return false; }
-                public void clear() { }
+                public void clear() { /* NO NEED TO IMPLEMENT */ }
             };
             result.addElement(id);
         }
@@ -57,6 +57,7 @@ public class DBeaverIdentityRepository implements IdentityRepository {
 
     @Override
     public void removeAll() {
+        /* NO NEED TO IMPLEMENT */
     }
 
     @Override

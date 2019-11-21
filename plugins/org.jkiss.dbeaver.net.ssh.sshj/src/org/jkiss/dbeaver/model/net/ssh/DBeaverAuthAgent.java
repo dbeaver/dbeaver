@@ -11,13 +11,11 @@ public class DBeaverAuthAgent extends AbstractAuthMethod {
 
     private final SSHAgentIdentity identity;
     private final String algorithm;
-    private final String comment;
     private final SSHImplementationAbstract impl;
 
     public DBeaverAuthAgent(SSHImplementationAbstract impl, SSHAgentIdentity identity) throws Buffer.BufferException {
         super("publickey");
         this.identity = identity;
-        this.comment = new String(identity.getComment());
         this.algorithm = (new Buffer.PlainBuffer(identity.getBlob())).readString();
         this.impl = impl;
     }
