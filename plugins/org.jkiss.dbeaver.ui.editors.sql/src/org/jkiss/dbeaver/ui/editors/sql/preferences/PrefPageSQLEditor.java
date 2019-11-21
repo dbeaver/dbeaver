@@ -25,6 +25,7 @@ import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -77,8 +78,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(SQLPreferenceConstants.FOLDING_ENABLED) ||
             store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR) ||
 
-            store.contains(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR) ||
-            store.contains(SQLPreferenceConstants.RESULT_SET_ORIENTATION)
+            store.contains(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR)
         ;
     }
 
@@ -158,7 +158,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csMarkOccurrencesForSelection.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
 
             closeTabOnErrorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR));
-            SQLEditor.ResultSetOrientation orientation = SQLEditor.ResultSetOrientation.valueOf(store.getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
+            SQLEditor.ResultSetOrientation orientation = SQLEditor.ResultSetOrientation.valueOf(
+                DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
             resultsOrientationCombo.setText(orientation.getLabel());
         } catch (Exception e) {
             log.warn(e);
@@ -184,7 +185,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             String orientationLabel = resultsOrientationCombo.getText();
             for (SQLEditor.ResultSetOrientation orientation : SQLEditor.ResultSetOrientation.values()) {
                 if (orientationLabel.equals(orientation.getLabel())) {
-                    store.setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, orientation.name());
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, orientation.name());
                     break;
                 }
             }
@@ -209,7 +210,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
 
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
-        store.setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
+        DBWorkbench.getPlatform().getPreferenceStore().setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
     }
 
     @Override

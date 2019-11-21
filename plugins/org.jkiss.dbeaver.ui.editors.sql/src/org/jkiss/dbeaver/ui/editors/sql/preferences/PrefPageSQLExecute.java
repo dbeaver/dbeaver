@@ -100,7 +100,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
             store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
             store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.BEEP_ON_QUERY_END) ||
             store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
             store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
         ;

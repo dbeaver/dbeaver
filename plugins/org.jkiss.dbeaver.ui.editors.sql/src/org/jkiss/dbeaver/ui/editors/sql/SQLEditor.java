@@ -118,8 +118,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1319,7 +1319,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void updateResultSetOrientation() {
         try {
-            resultSetOrientation = ResultSetOrientation.valueOf(getActivePreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
+            resultSetOrientation = ResultSetOrientation.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
         } catch (IllegalArgumentException e) {
             resultSetOrientation = ResultSetOrientation.HORIZONTAL;
         }
@@ -2371,7 +2371,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (!(activeEditor instanceof SQLEditorBase)) {
                 return new IContributionItem[0];
             }
-            final DBPPreferenceStore preferenceStore = ((SQLEditorBase) activeEditor).getActivePreferenceStore();
+            final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             String curPresentation = preferenceStore.getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
             ResultSetOrientation[] orientations = ResultSetOrientation.values();
             List<IContributionItem> items = new ArrayList<>(orientations.length);
@@ -3185,7 +3185,7 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
             // Beep
-            if (dataSourceContainer != null && !scriptMode && dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)) {
+            if (dataSourceContainer != null && !scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)) {
                 Display.getCurrent().beep();
             }
             // Notify agent
