@@ -842,6 +842,7 @@
             <command commandId="org.jkiss.dbeaver.task.run"/>
             <command commandId="org.jkiss.dbeaver.task.create"/>
             <command commandId="org.eclipse.ui.edit.delete"/>
+            <separator name="additions" visible="true"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
