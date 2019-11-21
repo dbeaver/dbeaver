@@ -20,8 +20,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -100,7 +98,8 @@ public class EditTaskConfigurationDialog extends BaseDialog
 
         UIUtils.createLabelText(formPanel, "Type", taskType.getCategory().getName() + " / " + taskType.getName(), SWT.BORDER | SWT.READ_ONLY);
 
-        taskLabelCombo = UIUtils.createLabelCombo(formPanel, "Name", "", SWT.BORDER);
+        boolean taskSaved = task != null && !CommonUtils.isEmpty(task.getId());
+        taskLabelCombo = UIUtils.createLabelCombo(formPanel, "Name", "", SWT.BORDER | (taskSaved ? SWT.READ_ONLY : SWT.NONE));
         ((GridData)taskLabelCombo.getLayoutData()).widthHint = 300;
         if (task != null) {
             taskLabelCombo.setText(task.getName());
@@ -112,6 +111,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
                 taskLabelCombo.add(tc.getName());
             }
 
+/*
             taskLabelCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -126,9 +126,13 @@ public class EditTaskConfigurationDialog extends BaseDialog
                     }
                 }
             });
+*/
         }
 
         taskLabelCombo.addModifyListener(modifyListener);
+        if (taskSaved) {
+            taskLabelCombo.setEnabled(false);
+        }
 
 //        if (!CommonUtils.isEmpty(task.getId())) {
 //            UIUtils.createLabelText(formPanel, "ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);

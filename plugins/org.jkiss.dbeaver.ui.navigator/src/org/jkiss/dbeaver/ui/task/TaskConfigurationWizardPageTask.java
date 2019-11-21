@@ -121,6 +121,8 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
 
     @Override
     public void createControl(Composite parent) {
+        boolean taskSaved = task != null && !CommonUtils.isEmpty(task.getId());
+
         SashForm formSash = new SashForm(parent, SWT.HORIZONTAL);
         formSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -188,6 +190,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             }
 
             taskLabelText = UIUtils.createLabelText(formPanel, "Name", task == null ? "" : CommonUtils.notEmpty(task.getName()), SWT.BORDER);
+            if (taskSaved) {
+                taskLabelText.setEditable(false);
+                //taskLabelText.setEnabled(false);
+            }
             taskLabelText.addModifyListener(e -> {
                 taskName = taskLabelText.getText();
                 modifyListener.modifyText(e);
@@ -207,7 +213,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
 //                UIUtils.createLabelText(formPanel, "ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);
 //            }
 
-            UIUtils.asyncExec(() -> taskLabelText.setFocus());
+            UIUtils.asyncExec(() -> (taskSaved ? taskDescriptionText : taskLabelText).setFocus());
         }
         {
             configPanelPlaceholder = UIUtils.createComposite(formSash, 1);
