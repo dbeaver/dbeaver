@@ -23,7 +23,6 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -39,9 +38,7 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
 
     private static final Log log = Log.getLog(TaskConfigurationWizardDialog.class);
-    private static final int SAVE_TASK_BTN_ID = 1000;
     private TaskConfigurationWizard nestedTaskWizard;
-    private boolean taskCreateWizard;
     private TaskConfigurationWizardPageTask taskEditPage;
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
@@ -85,19 +82,14 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         {
-            /*if (!getWizard().isTaskEditor()) */{
-                parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-                Button saveAsTaskButton = createButton(parent, SAVE_TASK_BTN_ID,
-                    getWizard().isTaskEditor() ? "Save Task" : "New Task",
-                    false);
-                //saveAsTaskButton.setImage(DBeaverIcons.getImage(UIIcon.SAVE_AS));
+            //createTaskSaveButtons(parent, 1);
 
-                Label spacer = new Label(parent, SWT.NONE);
-                spacer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            Label spacer = new Label(parent, SWT.NONE);
+            spacer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-                ((GridLayout) parent.getLayout()).numColumns += 1;
-            }
+            ((GridLayout) parent.getLayout()).numColumns += 1;
         }
 
         super.createButtonsForButtonBar(parent);
@@ -105,14 +97,10 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
 
     @Override
     protected void buttonPressed(int buttonId) {
-        if (buttonId == SAVE_TASK_BTN_ID) {
-            getWizard().saveTask();
-            return;
-        } else if (buttonId == IDialogConstants.NEXT_ID &&
+        if (buttonId == IDialogConstants.NEXT_ID &&
             getWizard() instanceof TaskConfigurationWizardStub &&
             getCurrentPage() instanceof TaskConfigurationWizardPageTask)
         {
-            taskCreateWizard = true;
             taskEditPage = (TaskConfigurationWizardPageTask) getCurrentPage();
             if (nestedTaskWizard == null) {
                 // Now we need to create real wizard, initialize it and inject in this dialog
@@ -137,52 +125,13 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     @Override
     public void updateButtons() {
         super.updateButtons();
-        Button saveAsButton = getButton(SAVE_TASK_BTN_ID);
-        if (saveAsButton != null) {
-            // TODO: we should be able to save/run task immediately if it was saved before.
-            // TODO: There is a bug in DT wizard which doesn't let to do it (producers/consumers are initialized only on the last page).
-            // TODO: init transfer for all deserialized producers/consumers
-            saveAsButton.setEnabled(/*(getTaskWizard() != null && getTaskWizard().isCurrentTaskSaved()) || */getWizard().canFinish());
-        }
+        //updateSaveTaskButtons();
     }
 
     @Override
     protected Control createContents(Composite parent) {
         return super.createContents(parent);
     }
-
-/*
-    private void saveConfigurationAsTask() {
-        TaskConfigurationWizard taskWizard = getTaskWizard();
-        DBTTaskManager taskManager = taskWizard.getProject().getTaskManager();
-        DBTTask currentTask = taskWizard.getCurrentTask();
-
-        Map<String, Object> state = new LinkedHashMap<>();
-        taskWizard.saveTaskState(state);
-
-        EditTaskConfigurationDialog dialog;
-        if (currentTask != null) {
-            currentTask.setProperties(state);
-            dialog = new EditTaskConfigurationDialog(getShell(), currentTask);
-        } else {
-            DBTTaskType taskType = taskManager.getRegistry().getTask(taskWizard.getTaskTypeId());
-            if (taskType == null) {
-                DBWorkbench.getPlatformUI().showError("Create task", "Task type " + taskWizard.getTaskTypeId() + " not found");
-                return;
-            }
-            dialog = new EditTaskConfigurationDialog(getShell(), taskWizard.getProject(), taskType, state);
-        }
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            DBTTask task = dialog.getTask();
-            taskWizard.setCurrentTask(task);
-            try {
-                taskManager.updateTaskConfiguration(task);
-            } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Save task", "Error saving task " + task.getName() + "", e);
-            }
-        }
-    }
-*/
 
     TaskConfigurationWizardPageTask getTaskPage() {
         if (taskEditPage != null) {

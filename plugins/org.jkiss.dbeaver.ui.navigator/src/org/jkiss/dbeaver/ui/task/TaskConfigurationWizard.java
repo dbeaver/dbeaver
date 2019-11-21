@@ -19,8 +19,17 @@ package org.jkiss.dbeaver.ui.task;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,6 +37,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -38,6 +48,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
 
     private DBTTask currentTask;
     private IStructuredSelection currentSelection;
+    private Button saveAsTaskButton;
 
     protected TaskConfigurationWizard() {
     }
@@ -173,6 +184,45 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             DBWorkbench.getPlatformUI().showError("Tsk save error", "Error saving task configuration", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
+        }
+    }
+
+
+    public void createTaskSaveButtons(Composite parent, int hSpan) {
+        Composite panel = new Composite(parent, SWT.NONE);
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = hSpan;
+            panel.setLayoutData(gd);
+            //((GridLayout) parent.getLayout()).numColumns++;
+        }
+        panel.setLayout(new GridLayout(3, false));
+        saveAsTaskButton = UIUtils.createDialogButton(panel, isTaskEditor() ? "Update configuration in task" : "Save configuration as task", new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                saveTask();
+            }
+        });
+        //((GridData)UIUtils.createEmptyLabel(panel, 1, 1).getLayoutData()).grabExcessHorizontalSpace = true;
+        Link tasksLink = UIUtils.createLink(panel, "<a>Open Tasks view</a>", new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    UIUtils.getActiveWorkbenchWindow().getActivePage().showView(DatabaseTasksView.VIEW_ID);
+                } catch (PartInitException e1) {
+                    DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
+                }
+            }
+        });
+        tasksLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+    }
+
+    public void updateSaveTaskButtons() {
+        if (saveAsTaskButton != null) {
+            // TODO: we should be able to save/run task immediately if it was saved before.
+            // TODO: There is a bug in DT wizard which doesn't let to do it (producers/consumers are initialized only on the last page).
+            // TODO: init transfer for all deserialized producers/consumers
+            saveAsTaskButton.setEnabled(/*(getTaskWizard() != null && getTaskWizard().isCurrentTaskSaved()) || */canFinish());
         }
     }
 

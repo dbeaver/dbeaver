@@ -97,6 +97,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             targetSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
+        getWizard().createTaskSaveButtons(composite, 1);
+
         setControl(composite);
     }
 
@@ -189,6 +191,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             column.setWidth(tableWidth / columns.length - 1);
         }
         updatePageCompletion();
+        getWizard().updateSaveTaskButtons();
     }
 
     @Override

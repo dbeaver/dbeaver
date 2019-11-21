@@ -130,9 +130,9 @@ public class EditTaskConfigurationDialog extends BaseDialog
 
         taskLabelCombo.addModifyListener(modifyListener);
 
-        if (!CommonUtils.isEmpty(task.getId())) {
-            UIUtils.createLabelText(formPanel, "ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);
-        }
+//        if (!CommonUtils.isEmpty(task.getId())) {
+//            UIUtils.createLabelText(formPanel, "ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);
+//        }
 
         taskDescriptionText = UIUtils.createLabelText(formPanel, "Description", task == null ? "" : CommonUtils.notEmpty(task.getDescription()), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
         ((GridData)taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 5;
