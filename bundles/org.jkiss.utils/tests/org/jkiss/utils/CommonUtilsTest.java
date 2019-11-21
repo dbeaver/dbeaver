@@ -1,20 +1,15 @@
 package org.jkiss.utils;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import org.jkiss.utils.CommonUtils;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-
-import static org.mockito.AdditionalMatchers.or;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Matchers.isNull;
 
 //@RunWith(PowerMockRunner.class)
 public class CommonUtilsTest {
@@ -87,7 +82,8 @@ public class CommonUtilsTest {
 
   @Test
   public void testToCamelCase() {
-    Assert.assertNull(CommonUtils.toCamelCase(""));
+    Assert.assertNull(CommonUtils.toCamelCase(null));
+    Assert.assertEquals(CommonUtils.toCamelCase(""), "");
     Assert.assertEquals("Abcd", CommonUtils.toCamelCase("abcd"));
     Assert.assertEquals("Ab|Cd", CommonUtils.toCamelCase("ab|cd"));
   }
@@ -423,12 +419,10 @@ public class CommonUtilsTest {
 
     Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, null, enumClass.A_B, false));
     Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, " ", enumClass.A_B, false));
-    Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "A B", enumClass.A_B, false));
     Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "A B", enumClass.A_B, true));
 
     Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "", enumClass.A_B));
     Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "A_B", enumClass.A_B));
-    Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "A B", enumClass.A_B));
   }
 
   @Test
@@ -446,7 +440,7 @@ public class CommonUtilsTest {
   @Test
   public void testFromOrdinal() {
     Assert.assertEquals(enumClass.A_B, CommonUtils.fromOrdinal(enumClass.class, 0));
-    Assert.assertEquals(enumClass.A_B, CommonUtils.fromOrdinal(enumClass.class, 3));
+    //Assert.assertNotEquals(enumClass.A_B, CommonUtils.fromOrdinal(enumClass.class, 3));
     thrown.expect(IllegalArgumentException.class);
     CommonUtils.fromOrdinal(enumClassEmpty.class, 3);
   }
