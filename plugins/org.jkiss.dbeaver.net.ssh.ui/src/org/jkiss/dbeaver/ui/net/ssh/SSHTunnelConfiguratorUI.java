@@ -107,7 +107,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
                 savePasswordLabel = UIUtils.createControlLabel(settingsGroup, SSHUIMessages.model_ssh_configurator_checkbox_save_pass);
+                savePasswordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 savePasswordCheckbox = UIUtils.createCheckbox(settingsGroup, false);
+                savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             }
         }
 
@@ -358,9 +360,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     }
 
     private void showSavePasswordCheckbox(boolean show) {
-//        ((GridData)savePasswordLabel.getLayoutData()).exclude = !show;
+        ((GridData)savePasswordLabel.getLayoutData()).exclude = !show;
         savePasswordLabel.setVisible(show);
-//        ((GridData)savePasswordCheckbox.getLayoutData()).exclude = !show;
+        ((GridData)savePasswordCheckbox.getLayoutData()).exclude = !show;
         savePasswordCheckbox.setVisible(show);
     }
 
