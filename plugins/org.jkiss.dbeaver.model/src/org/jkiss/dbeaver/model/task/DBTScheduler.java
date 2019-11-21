@@ -39,7 +39,7 @@ public interface DBTScheduler {
 
     void addTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
 
-    void removeTaskSchedule(@NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
+    void removeTaskSchedule(@NotNull DBTTask task, DBTTaskScheduleInfo scheduleInfo) throws DBException;
 
     void refreshScheduledTasks(@NotNull DBRProgressMonitor monitor) throws DBException;
 
