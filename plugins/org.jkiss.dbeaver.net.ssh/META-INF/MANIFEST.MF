@@ -15,8 +15,7 @@ Bundle-ClassPath: .,
  ./lib/jsch.agentproxy.usocket-jna-0.0.9.jar,
  ./lib/jsch.agentproxy.sshagent-0.0.9.jar,
  ./lib/jsch.agentproxy.usocket-nc-0.0.9.jar,
- ./lib/jsch.agentproxy.pageant-0.0.9.jar,
- ./lib/jna-5.5.0.jar
+ ./lib/jsch.agentproxy.pageant-0.0.9.jar
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.eclipse.core.expressions,
