@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -35,14 +36,14 @@ public class ToggleEditorLayoutHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
-            String curPresentationName = editor.getActivePreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
+            String curPresentationName = DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
             SQLEditor.ResultSetOrientation curOrientation = CommonUtils.valueOf(SQLEditor.ResultSetOrientation.class, curPresentationName, SQLEditor.ResultSetOrientation.HORIZONTAL);
             if (curOrientation == SQLEditor.ResultSetOrientation.HORIZONTAL) {
                 curOrientation = SQLEditor.ResultSetOrientation.VERTICAL;
             } else {
                 curOrientation = SQLEditor.ResultSetOrientation.HORIZONTAL;
             }
-            editor.getActivePreferenceStore().setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, curOrientation.name());
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, curOrientation.name());
             try {
                 editor.getActivePreferenceStore().save();
             } catch (IOException e) {
