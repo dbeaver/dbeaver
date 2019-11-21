@@ -34,6 +34,9 @@ public class DBTTaskScheduleConfiguration {
         EVENT
     }
 
+    public static final int DAYS_LAST = 32;
+    public static final int ALL_DAYS = 33;
+
     public String taskName;
     public String taskDescription;
 

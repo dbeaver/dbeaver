@@ -31,10 +31,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -242,18 +239,14 @@ public class RuntimeUtils {
             Process p = Runtime.getRuntime().exec(cmd);
             try {
                 StringBuilder out = new StringBuilder();
-                try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                    for (;;) {
-                        String line = input.readLine();
-                        if (line == null) {
-                            break;
-                        }
-                        if (out.length() > 0) {
-                            out.append("\n");
-                        }
-                        out.append(line);
-                    }
+                readStringToBuffer(p.getInputStream(), out);
+
+                if (out.length() == 0) {
+                    StringBuilder err = new StringBuilder();
+                    readStringToBuffer(p.getErrorStream(), err);
+                    return err.toString();
                 }
+
                 return out.length() == 0 ? null: out.toString();
             } finally {
                 p.destroy();
@@ -261,6 +254,21 @@ public class RuntimeUtils {
         }
         catch (Exception ex) {
             throw new DBException("Error executing process " + binPath, ex);
+        }
+    }
+
+    private static void readStringToBuffer(InputStream is, StringBuilder out) throws IOException {
+        try (BufferedReader input = new BufferedReader(new InputStreamReader(is))) {
+            for (;;) {
+                String line = input.readLine();
+                if (line == null) {
+                    break;
+                }
+                if (out.length() > 0) {
+                    out.append("\n");
+                }
+                out.append(line);
+            }
         }
     }
 
