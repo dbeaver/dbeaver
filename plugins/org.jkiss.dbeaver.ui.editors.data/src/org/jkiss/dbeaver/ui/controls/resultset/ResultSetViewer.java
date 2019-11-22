@@ -453,7 +453,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         if (resultSetSize != null && !resultSetSize.isDisposed()) {
-            resultSetSize.setEnabled(!model.getVisibleAttributes().isEmpty());
+            resultSetSize.setEnabled(getDataContainer() != null);
         }
 
         this.viewerPanel.setRedraw(false);
