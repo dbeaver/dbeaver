@@ -42,7 +42,7 @@ public class ActiveWizardDialog extends WizardDialog
     private boolean adaptContainerSizeToPages = false;
 
     private String finishButtonLabel = IDialogConstants.FINISH_LABEL;
-    private String cancelButtonLabel = IDialogConstants.CLOSE_LABEL;
+    private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
 
     public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
