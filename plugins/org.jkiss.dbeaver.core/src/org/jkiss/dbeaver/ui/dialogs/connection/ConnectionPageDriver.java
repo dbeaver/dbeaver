@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -68,6 +69,25 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
         setControl(placeholder);
 
+        Composite controlsGroup = UIUtils.createComposite(placeholder, 2);
+        controlsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        {
+            // Spacer
+            new Label(controlsGroup, SWT.NONE).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+        if (false) {
+            // Sorter
+            Composite orderGroup = UIUtils.createComposite(controlsGroup, 2);
+            orderGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            UIUtils.createControlLabel(orderGroup, "Sort by");
+
+            final Combo orderCombo = new Combo(orderGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+            orderCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            orderCombo.add("Rating");
+            orderCombo.add("Name");
+        }
+
         connectionProject = wizard.getSelectedProject();
         final List<DBPProject> projects = DBeaverCore.getInstance().getWorkspace().getProjects();
         if (projects.size() == 1) {
@@ -76,7 +96,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
             }
         } else if (projects.size() > 1) {
 
-            Composite projectGroup = UIUtils.createComposite(placeholder, 2);
+            Composite projectGroup = UIUtils.createComposite(controlsGroup, 2);
             projectGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             UIUtils.createControlLabel(projectGroup, CoreMessages.dialog_connection_driver_project);
 

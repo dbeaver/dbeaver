@@ -64,10 +64,15 @@ public class DriverTabbedViewer extends StructuredViewer {
 
     public DriverTabbedViewer(Composite parent, int style) {
 
+        dataSources = DataSourceRegistry.getAllDataSources();
+
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
         allDrivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+
+        List<DBPDriver> ratedDrivers = new ArrayList<>(allDrivers);
+        DriverUtils.sortDriversByRating(dataSources, ratedDrivers);
+
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 12);
-        dataSources = DataSourceRegistry.getAllDataSources();
 
         folderComposite = new TabbedFolderComposite(parent, style) {
             @Override
@@ -86,7 +91,7 @@ public class DriverTabbedViewer extends StructuredViewer {
         folders.add(
             new TabbedFolderInfo(
                 "all", "All", DBIcon.TREE_DATABASE, "All drivers", false,
-                new DriverListFolder(allDrivers)));
+                new DriverListFolder(ratedDrivers)));
         folders.add(
             new TabbedFolderInfo(
                 "popular", "Popular", DBIcon.TREE_DATABASE, "Popular and recently used drivers", false,
