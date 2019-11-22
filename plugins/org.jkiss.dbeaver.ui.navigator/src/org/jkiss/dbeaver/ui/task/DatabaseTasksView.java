@@ -219,7 +219,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 protected String getCellText(DBTTask task) {
                     DBTTaskScheduleInfo scheduledTask = scheduler.getScheduledTaskInfo(task);
                     if (scheduledTask == null) {
-                        return "N/A";
+                        return "";
                     } else {
                         return scheduledTask.getNextRunInfo();
                     }
