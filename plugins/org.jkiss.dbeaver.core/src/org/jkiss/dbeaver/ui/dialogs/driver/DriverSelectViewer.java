@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -65,6 +66,7 @@ public class DriverSelectViewer extends Viewer {
 
     private static final String PROP_SELECTOR_VIEW_TYPE = "driver.selector.view.mode"; //$NON-NLS-1$
     private ToolItem switchItem;
+    private Comparator<DBPDriver> driverComparator;
 
     private enum SelectorViewType {
         tree,
@@ -138,6 +140,13 @@ public class DriverSelectViewer extends Viewer {
         createSelectorControl();
 
         refreshJob = createRefreshJob();
+
+        driverComparator = new Comparator<DBPDriver>() {
+            @Override
+            public int compare(DBPDriver o1, DBPDriver o2) {
+                return 0;
+            }
+        };
     }
 
     private Control getSelectorControl() {
