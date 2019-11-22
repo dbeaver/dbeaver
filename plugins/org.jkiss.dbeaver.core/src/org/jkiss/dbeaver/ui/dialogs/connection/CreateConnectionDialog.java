@@ -17,8 +17,12 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -42,10 +46,18 @@ public class CreateConnectionDialog extends ActiveWizardDialog
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        super.createButtonsForButtonBar(parent);
+        parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
         testButton = createButton(parent, TEST_BUTTON_ID, CoreMessages.dialog_connection_button_test, false);
         testButton.setEnabled(false);
         testButton.moveAbove(getButton(IDialogConstants.BACK_ID));
+
+        Label spacer = new Label(parent, SWT.NONE);
+        spacer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        ((GridLayout)parent.getLayout()).numColumns++;
+        ((GridLayout)parent.getLayout()).makeColumnsEqualWidth = false;
+
+        super.createButtonsForButtonBar(parent);
     }
 
     @Override
