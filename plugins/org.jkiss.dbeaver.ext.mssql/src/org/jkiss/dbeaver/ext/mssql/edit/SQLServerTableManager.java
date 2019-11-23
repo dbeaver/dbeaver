@@ -53,11 +53,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     {
         SQLServerSchema schema = (SQLServerSchema) container;
         SQLServerTable table = new SQLServerTable(schema);
-        try {
-            setTableName(monitor, schema, table);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        setNewObjectName(monitor, schema, table);
         return table; //$NON-NLS-1$
     }
 

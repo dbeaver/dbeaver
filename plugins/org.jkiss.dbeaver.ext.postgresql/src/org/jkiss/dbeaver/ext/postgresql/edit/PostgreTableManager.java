@@ -91,7 +91,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         PostgreSchema schema = (PostgreSchema)container;
         final PostgreTableBase table = schema.getDataSource().getServerType().createNewRelation(monitor, schema, PostgreClass.RelKind.r, copyFrom);
         if (CommonUtils.isEmpty(table.getName())) {
-            setTableName(monitor, schema, table);
+            setNewObjectName(monitor, schema, table);
         } else {
             table.setName(getNewChildName(monitor, schema, table.getName()));
         }

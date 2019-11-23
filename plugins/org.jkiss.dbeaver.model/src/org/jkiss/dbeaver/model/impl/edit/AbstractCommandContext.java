@@ -90,7 +90,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             Map<String, Object> validateOptions = new HashMap<>();
             for (CommandQueue queue : getCommandQueues()) {
                 for (CommandInfo cmd : queue.commands) {
-                    cmd.command.validateCommand(validateOptions);
+                    cmd.command.validateCommand(monitor, validateOptions);
                 }
             }
             useAutoCommit = CommonUtils.getOption(validateOptions, OPTION_AVOID_TRANSACTIONS);

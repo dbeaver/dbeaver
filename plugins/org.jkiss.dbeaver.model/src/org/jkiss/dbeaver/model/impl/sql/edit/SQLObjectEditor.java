@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.*;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.ProxyPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -152,6 +154,42 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     protected abstract void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options);
 
     //////////////////////////////////////////////////
+    // Name generator
+
+    protected void setNewObjectName(DBRProgressMonitor monitor, CONTAINER_TYPE container, OBJECT_TYPE table) {
+        if (table instanceof DBPNamedObject2) {
+            try {
+                ((DBPNamedObject2)table).setName(getNewChildName(monitor, container));
+            } catch (DBException e) {
+                log.error("Error settings object name", e);
+            }
+        }
+    }
+
+    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container) throws DBException {
+        return getNewChildName(monitor, container, getBaseObjectName());
+    }
+
+    protected String getBaseObjectName() {
+        return "NewObject";
+    }
+
+    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container, String baseName) {
+        try {
+            for (int i = 0; ; i++) {
+                String tableName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
+                DBSObject child = container instanceof DBSObjectContainer ? ((DBSObjectContainer)container).getChild(monitor, tableName) : null;
+                if (child == null) {
+                    return tableName;
+                }
+            }
+        } catch (DBException e) {
+            log.error("Error generating child object name", e);
+            return baseName;
+        }
+    }
+
+    //////////////////////////////////////////////////
     // Properties
 
     protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, CONTAINER_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options) {
@@ -258,7 +296,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public void validateCommand(Map<String, Object> options) throws DBException {
+        public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
             validateObjectProperties(this, options);
         }
 
@@ -284,6 +322,20 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         @Override
         public Map<String, Object> getOptions() {
             return options;
+        }
+
+        @Override
+        public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+            OBJECT_TYPE newObject = getObject();
+            if (!newObject.isPersisted()) {
+                DBSObjectCache<? extends DBSObject, OBJECT_TYPE> objectsCache = getObjectsCache(newObject);
+                if (objectsCache != null) {
+                    OBJECT_TYPE cachedObject = DBUtils.findObject(objectsCache.getCachedObjects(), newObject.getName());
+                    if (cachedObject != null && cachedObject != newObject) {
+                        throw new DBException("Object '" + newObject.getName() + "' already exists");
+                    }
+                }
+            }
         }
 
         @Override

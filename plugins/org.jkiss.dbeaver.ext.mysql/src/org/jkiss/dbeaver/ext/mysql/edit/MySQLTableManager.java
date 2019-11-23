@@ -72,7 +72,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
             table.setName(getNewChildName(monitor, catalog, ((DBSEntity) copyFrom).getName()));
         } else if (copyFrom == null) {
             table = new MySQLTable(catalog);
-            setTableName(monitor, catalog, table);
+            setNewObjectName(monitor, catalog, table);
 
             final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
             additionalInfo.setEngine(catalog.getDataSource().getDefaultEngine());

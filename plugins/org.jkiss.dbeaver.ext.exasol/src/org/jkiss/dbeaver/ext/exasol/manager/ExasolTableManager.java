@@ -80,11 +80,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     public ExasolTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object exasolSchema,
                                             Object copyFrom, Map<String, Object> options) {
         ExasolTable table = new ExasolTable((ExasolSchema) exasolSchema, NEW_TABLE_NAME);
-        try {
-            setTableName(monitor, (ExasolSchema) exasolSchema, table);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        setNewObjectName(monitor, (ExasolSchema) exasolSchema, table);
         return table;
     }
 

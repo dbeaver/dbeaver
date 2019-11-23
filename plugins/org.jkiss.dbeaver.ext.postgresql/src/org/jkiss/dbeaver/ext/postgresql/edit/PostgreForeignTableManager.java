@@ -36,7 +36,7 @@ public class PostgreForeignTableManager extends PostgreTableManager {
         PostgreSchema schema = (PostgreSchema)container;
         final PostgreTableForeign table = (PostgreTableForeign) schema.getDataSource().getServerType().createNewRelation(monitor, schema, PostgreClass.RelKind.f, copyFrom);
         if (CommonUtils.isEmpty(table.getName())) {
-            setTableName(monitor, schema, table);
+            setNewObjectName(monitor, schema, table);
         } else {
             table.setName(getNewChildName(monitor, schema, table.getName()));
         }
