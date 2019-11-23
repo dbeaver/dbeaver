@@ -130,7 +130,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundNull;
-    private final Map<DBPDataKind, Color> dataTypesForegrounds = new HashMap<>();
+    private final Map<DBPDataKind, Color> dataTypesForegrounds = new IdentityHashMap<>();
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
     private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;

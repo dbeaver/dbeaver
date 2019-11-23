@@ -110,8 +110,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -4412,6 +4412,7 @@ public class ResultSetViewer extends Viewer
             DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
             boolean curValue = preferenceStore.getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
             preferenceStore.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, !curValue);
+            dataSource.getContainer().persistConfiguration();
             refreshData(null);
         }
 
@@ -4442,6 +4443,7 @@ public class ResultSetViewer extends Viewer
             boolean curValue = dsStore.getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
             // Set local setting to default
             dsStore.setValue(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES, !curValue);
+            dataSource.getContainer().persistConfiguration();
             refreshData(null);
         }
 
