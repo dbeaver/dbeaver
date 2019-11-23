@@ -596,9 +596,9 @@ public class SQLQueryJob extends DataSourceJob
             // Multiple statements - show script statistics
             fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Fetch time", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Total time", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Execute time (ms)", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Fetch time (ms)", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Total time (ms)", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(
                 statistics.getStatementsCount(),
