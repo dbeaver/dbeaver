@@ -90,11 +90,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
                                          Object copyFrom, Map<String, Object> options)
     {
         DB2Table table = new DB2Table((DB2Schema) db2Schema, NEW_TABLE_NAME);
-        try {
-            setTableName(monitor, (DB2Schema) db2Schema, table);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        setNewObjectName(monitor, (DB2Schema) db2Schema, table);
         return table;
     }
 

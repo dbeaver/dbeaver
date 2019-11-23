@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -67,9 +68,16 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     }
 
     @Override
+    protected String getBaseObjectName() {
+        return SQLTableManager.BASE_VIEW_NAME;
+    }
+
+    @Override
     protected OracleView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        OracleView newView = new OracleView((OracleSchema) container, "NEW_VIEW"); //$NON-NLS-1$
+        OracleSchema schema = (OracleSchema) container;
+        OracleView newView = new OracleView(schema, "NEW_VIEW"); //$NON-NLS-1$
+        setNewObjectName(monitor, schema, newView);
         newView.setViewText("CREATE OR REPLACE VIEW " + newView.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\nSELECT");
         return newView;
     }

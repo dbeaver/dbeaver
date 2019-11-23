@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -70,9 +71,8 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     @Override
     protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        String tableName = "NewView";
-
         GenericStructContainer structContainer = (GenericStructContainer) container;
+        String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
         GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableImpl(structContainer, tableName,
                 GenericConstants.TABLE_TYPE_VIEW,
                 null);

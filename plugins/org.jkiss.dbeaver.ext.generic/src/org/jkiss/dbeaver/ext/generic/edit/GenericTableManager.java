@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -84,12 +83,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
                 isView = true;
             }
         }
-        String tableName = "";
-        try {
-            tableName = getNewChildName(monitor, structContainer, isView ? BASE_VIEW_NAME : BASE_TABLE_NAME);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        String tableName = getNewChildName(monitor, structContainer, isView ? BASE_VIEW_NAME : BASE_TABLE_NAME);
         return structContainer.getDataSource().getMetaModel().createTableImpl(structContainer, tableName,
             isView ? GenericConstants.TABLE_TYPE_VIEW : GenericConstants.TABLE_TYPE_TABLE,
             null);

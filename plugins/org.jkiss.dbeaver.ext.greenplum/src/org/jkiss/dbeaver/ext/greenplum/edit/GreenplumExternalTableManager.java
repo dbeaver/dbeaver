@@ -46,11 +46,7 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
                                                           Object container,
                                                           Object copyFrom, Map<String, Object> options) {
         GreenplumExternalTable externalTable = new GreenplumExternalTable((PostgreSchema) container);
-        try {
-            setTableName(monitor, (PostgreSchema) container, externalTable);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        setNewObjectName(monitor, (PostgreSchema) container, externalTable);
 
         return externalTable;
     }

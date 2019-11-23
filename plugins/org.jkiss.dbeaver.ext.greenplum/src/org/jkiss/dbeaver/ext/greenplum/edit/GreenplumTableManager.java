@@ -21,7 +21,6 @@
 package org.jkiss.dbeaver.ext.greenplum.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
@@ -50,11 +49,7 @@ public class GreenplumTableManager extends PostgreTableManager {
                                                   Object container,
                                                   Object copyFrom, Map<String, Object> options) {
         GreenplumTable greenplumTable = new GreenplumTable((PostgreSchema) container);
-        try {
-            setTableName(monitor, (PostgreSchema) container, greenplumTable);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        setNewObjectName(monitor, (PostgreSchema) container, greenplumTable);
 
         return greenplumTable;
     }

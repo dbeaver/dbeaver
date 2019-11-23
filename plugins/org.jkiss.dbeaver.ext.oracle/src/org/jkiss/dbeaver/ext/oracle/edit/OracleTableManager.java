@@ -63,11 +63,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         OracleSchema schema = (OracleSchema) container;
 
         OracleTable table = new OracleTable(schema, "");
-        try {
-            setTableName(monitor, schema, table);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        setNewObjectName(monitor, schema, table);
         return table; //$NON-NLS-1$
     }
 

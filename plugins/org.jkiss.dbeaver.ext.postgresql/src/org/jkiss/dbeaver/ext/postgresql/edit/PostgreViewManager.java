@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
@@ -65,16 +66,16 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     @Override
+    protected String getBaseObjectName() {
+        return SQLTableManager.BASE_VIEW_NAME;
+    }
+
+    @Override
     protected PostgreViewBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
         PostgreSchema schema = (PostgreSchema) container;
         PostgreView newView = new PostgreView(schema);
-        try {
-            newView.setName(getNewChildName(monitor, schema, "new_view"));
-        } catch (DBException e) {
-            // Never be here
-            log.error(e);
-        }
+        setNewObjectName(monitor, schema, newView);
         return newView;
     }
 

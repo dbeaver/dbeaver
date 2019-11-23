@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -58,15 +59,15 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     }
 
     @Override
+    protected String getBaseObjectName() {
+        return SQLTableManager.BASE_VIEW_NAME;
+    }
+
+    @Override
     protected SQLServerView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
         SQLServerView newView = new SQLServerView((SQLServerSchema) container);
-        try {
-            newView.setName(getNewChildName(monitor, (SQLServerSchema) container, "new_view"));
-        } catch (DBException e) {
-            // Never be here
-            log.error(e);
-        }
+        setNewObjectName(monitor, (SQLServerSchema) container, newView);
         return newView;
     }
 

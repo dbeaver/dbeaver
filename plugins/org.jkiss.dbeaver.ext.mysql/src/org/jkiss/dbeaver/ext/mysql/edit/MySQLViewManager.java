@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -63,15 +64,16 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
+    protected String getBaseObjectName() {
+        return SQLTableManager.BASE_VIEW_NAME;
+    }
+
+    @Override
     protected MySQLView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        MySQLView newView = new MySQLView((MySQLCatalog) container);
-        try {
-            newView.setName(getNewChildName(monitor, (MySQLCatalog) container, "new_view"));
-        } catch (DBException e) {
-            // Never be here
-            log.error(e);
-        }
+        MySQLCatalog catalog = (MySQLCatalog) container;
+        MySQLView newView = new MySQLView(catalog);
+        setNewObjectName(monitor, catalog, newView);
         return newView;
     }
 

@@ -38,9 +38,10 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
      * Validates command.
      * If command is fine then just returns, otherwise throws an exception
      * @throws DBException contains information about invalid command state
+     * @param monitor
      * @param options
      */
-    void validateCommand(Map<String, Object> options) throws DBException;
+    void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException;
 
     void updateModel();
 

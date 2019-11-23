@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -59,7 +59,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     @Override
-    public void validateCommand(Map<String, Object> options) throws DBException
+    public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         String passValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD));
         String confirmValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD_CONFIRM));

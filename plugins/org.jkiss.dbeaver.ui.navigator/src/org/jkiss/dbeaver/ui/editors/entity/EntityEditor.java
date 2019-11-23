@@ -69,8 +69,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * EntityEditor
@@ -473,7 +473,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 for (DBECommand command : commands) {
                     monitor.subTask(command.getTitle());
                     try {
-                        command.validateCommand(validateOptions);
+                        command.validateCommand(monitor, validateOptions);
                     } catch (final DBException e) {
                         throw new InvocationTargetException(e);
                     }
