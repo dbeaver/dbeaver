@@ -18,12 +18,10 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -48,8 +46,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     extends SQLStructEditor<OBJECT_TYPE, CONTAINER_TYPE>
 {
 
-    protected static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
-    protected static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
+    public static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
+    public static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource)
@@ -171,24 +169,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
     }
 
-    protected void setTableName(DBRProgressMonitor monitor, CONTAINER_TYPE container, OBJECT_TYPE table) throws DBException {
-        if (table instanceof DBPNamedObject2) {
-            ((DBPNamedObject2)table).setName(getNewChildName(monitor, container));
-        }
-    }
-
-    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container) throws DBException {
-        return getNewChildName(monitor, container, BASE_TABLE_NAME);
-    }
-
-    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container, String baseName) throws DBException {
-        for (int i = 0; ; i++) {
-            String tableName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
-            DBSObject child = container.getChild(monitor, tableName);
-            if (child == null) {
-                return tableName;
-            }
-        }
+    protected String getBaseObjectName() {
+        return BASE_TABLE_NAME;
     }
 
     public DBEPersistAction[] getTableDDL(DBRProgressMonitor monitor, OBJECT_TYPE table, Map<String, Object> options) throws DBException
