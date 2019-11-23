@@ -1187,6 +1187,7 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.dataformat.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.qm.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.binary" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.binary.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.data" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.data.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.content" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.content.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.erd" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.erd.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.sql.label"/>
