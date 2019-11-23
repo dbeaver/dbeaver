@@ -46,6 +46,8 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
         dateFormat = new ExtendedDateFormat(
             pattern,
             locale);
+        // We shouldn't use lanient formatter (#7244)
+        dateFormat.setLenient(false);
         buffer = new StringBuffer();
         position = new FieldPosition(0);
         // DateTimeFormatter pattern for nanoseconds is "n" but old "f" (ExtendedDateFormat)
