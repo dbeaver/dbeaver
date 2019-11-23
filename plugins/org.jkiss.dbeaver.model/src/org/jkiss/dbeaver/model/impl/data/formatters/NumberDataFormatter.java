@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
@@ -34,6 +35,8 @@ import java.util.Map;
 public class NumberDataFormatter implements DBDDataFormatter {
 
     public static final int MAX_DEFAULT_FRACTIONS_DIGITS = 16;
+
+    private static final Log log = Log.getLog(NumberDataFormatter.class);
 
     private DecimalFormat numberFormat;
     private StringBuffer buffer;
@@ -111,16 +114,16 @@ public class NumberDataFormatter implements DBDDataFormatter {
         try {
             synchronized (this) {
                 buffer.setLength(0);
-                if (value instanceof BigDecimal && numberFormat.getRoundingMode() == RoundingMode.UNNECESSARY) {
-                    // BigDecimals can't be formatted without rounding (#6698)
-                    numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
-                    try {
-                        return numberFormat.format(value, buffer, position).toString();
-                    } finally {
-                        numberFormat.setRoundingMode(RoundingMode.UNNECESSARY);
+                try {
+                    return numberFormat.format(value, buffer, position).toString();
+                } catch (ArithmeticException e) {
+                    if (numberFormat.getRoundingMode() == RoundingMode.UNNECESSARY) {
+                        // This type can't use UNNECESSARY rounding. Let's set default one
+                        log.debug("Disabling UNNECESSARY rounding for numbers (" + e.getMessage() + ")");
+                        numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
                     }
+                    return numberFormat.format(value, buffer, position).toString();
                 }
-                return numberFormat.format(value, buffer, position).toString();
             }
         } catch (Exception e) {
             return value.toString();
