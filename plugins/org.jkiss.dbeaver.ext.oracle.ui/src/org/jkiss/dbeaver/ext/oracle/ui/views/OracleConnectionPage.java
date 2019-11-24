@@ -311,7 +311,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
     private void createClientHomeGroup(Composite bottomControls)
     {
-        oraHomeSelector = new ClientHomesSelector(bottomControls, SWT.NONE, OracleUIMessages.dialog_connection_ora_home) {
+        oraHomeSelector = new ClientHomesSelector(bottomControls, OracleUIMessages.dialog_connection_ora_home) {
             @Override
             protected void handleHomeChange()
             {

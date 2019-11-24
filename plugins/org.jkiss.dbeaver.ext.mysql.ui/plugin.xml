@@ -223,4 +223,8 @@
         <propertyConfigurator class="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLSSLConfigurator"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.task">
+        <configurator type="mysql" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
+    </extension>
+
 </plugin>

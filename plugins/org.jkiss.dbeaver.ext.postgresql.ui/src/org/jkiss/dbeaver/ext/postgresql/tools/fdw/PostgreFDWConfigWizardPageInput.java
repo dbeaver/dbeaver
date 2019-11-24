@@ -66,15 +66,16 @@ class PostgreFDWConfigWizardPageInput extends ActiveWizardPage<PostgreFDWConfigW
 
             selectorPanel = new DatabaseObjectsSelectorPanel(
                 databasesGroup,
+                true,
                 getWizard().getRunnableContext()) {
 
                 @Override
-                protected boolean isObjectVisible(DBSObject obj) {
-                    return super.isObjectVisible(obj);
+                protected boolean isDatabaseObjectVisible(DBSObject obj) {
+                    return super.isDatabaseObjectVisible(obj);
                 }
 
                 @Override
-                protected void onSelectionChange() {
+                protected void onSelectionChange(Object element) {
                     updateState();
                 }
 

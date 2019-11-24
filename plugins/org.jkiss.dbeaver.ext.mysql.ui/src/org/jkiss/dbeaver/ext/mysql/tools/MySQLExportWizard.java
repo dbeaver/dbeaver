@@ -29,13 +29,14 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
+import org.jkiss.dbeaver.model.impl.preferences.PropertiesPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractImportExportWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -55,7 +56,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         NORMAL
     }
 
-    DumpMethod method;
+    DumpMethod method = DumpMethod.NORMAL;
     boolean noCreateStatements;
     boolean addDropStatements = true;
     boolean disableKeys = true;
@@ -74,10 +75,17 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
 
     public MySQLExportWizard(Collection<DBSObject> objects) {
         super(objects, MySQLUIMessages.tools_db_export_wizard_task_name);
-        this.method = DumpMethod.NORMAL;
-        this.outputFolder = new File(DialogUtils.getCurDialogFolder()); //$NON-NLS-1$ //$NON-NLS-2$
 
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        loadSettings(store);
+    }
+
+    public MySQLExportWizard(DBTTask task) {
+        super(new ArrayList<>(), MySQLUIMessages.tools_db_export_wizard_task_name);
+        loadSettings(new PropertiesPreferenceStore(task.getProperties()));
+    }
+
+    private void loadSettings(DBPPreferenceStore store) {
         this.outputFilePattern = store.getString("MySQL.export.outputFilePattern");
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
             this.outputFilePattern = "dump-${database}-${timestamp}.sql";
@@ -100,7 +108,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
 
     @Override
     public String getTaskTypeId() {
-        return "mysqlDatabaseBackup";
+        return MySQLTasks.TASK_DATABASE_BACKUP;
     }
 
     @Override

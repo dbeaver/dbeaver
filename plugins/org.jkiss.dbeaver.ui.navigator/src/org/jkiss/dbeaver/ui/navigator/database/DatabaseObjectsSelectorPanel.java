@@ -42,7 +42,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
     private DatabaseObjectsTreeManager checkboxTreeManager;
     private DBRRunnableContext runnableContext;
 
-    public DatabaseObjectsSelectorPanel(Composite parent, DBRRunnableContext runnableContext) {
+    public DatabaseObjectsSelectorPanel(Composite parent, boolean multiSelector, DBRRunnableContext runnableContext) {
         super(parent, SWT.NONE);
         if (parent.getLayout() instanceof GridLayout) {
             setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -57,12 +57,11 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         project = NavigatorUtils.getSelectedProject();
         final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(project);
         DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
-        dataSourceTree = new DatabaseNavigatorTree(this, rootNode, SWT.SINGLE | SWT.CHECK | SWT.BORDER);
+        dataSourceTree = new DatabaseNavigatorTree(this, rootNode, SWT.SINGLE | SWT.BORDER | (multiSelector ? SWT.CHECK : SWT.NONE));
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         dataSourceTree.setLayoutData(gd);
-        final CheckboxTreeViewer viewer = (CheckboxTreeViewer) dataSourceTree.getViewer();
-        viewer.addFilter(new ViewerFilter() {
+        dataSourceTree.getViewer().addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
                 if (element instanceof TreeNodeSpecial) {
@@ -71,10 +70,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
                 if (element instanceof DBNNode) {
                     if (element instanceof DBNDatabaseFolder) {
                         DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
-                        Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
-                        return folderItemsClass != null &&
-                            (DBSObjectContainer.class.isAssignableFrom(folderItemsClass) ||
-                                DBSEntity.class.isAssignableFrom(folderItemsClass));
+                        return isDatabaseFolderVisible(folder);
                     }
                     if (element instanceof DBNProjectDatabases) {
                         return true;
@@ -85,15 +81,22 @@ public class DatabaseObjectsSelectorPanel extends Composite {
                         return isDataSourceVisible((DBNDataSource)element);
                     }
                     if (element instanceof DBSWrapper) {
-                        return isObjectVisible(((DBSWrapper) element).getObject());
+                        return isDatabaseObjectVisible(((DBSWrapper) element).getObject());
                     }
                 }
                 return false;
             }
         });
-        checkboxTreeManager = new DatabaseObjectsTreeManager(runnableContext, viewer,
-            new Class[]{DBSDataContainer.class});
-        viewer.addCheckStateListener(event -> onSelectionChange());
+        if (multiSelector) {
+            final CheckboxTreeViewer viewer = (CheckboxTreeViewer) dataSourceTree.getViewer();
+
+            checkboxTreeManager = new DatabaseObjectsTreeManager(runnableContext, viewer,
+                new Class[]{DBSDataContainer.class});
+            viewer.addCheckStateListener(event -> onSelectionChange(event.getElement()));
+        } else {
+            dataSourceTree.getViewer().addSelectionChangedListener(event -> onSelectionChange(
+                ((IStructuredSelection)event.getSelection()).getFirstElement()));
+        }
     }
 
     public void setNavigatorFilter(INavigatorFilter navigatorFilter) {
@@ -146,7 +149,14 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         return result;
     }
 
-    protected boolean isObjectVisible(DBSObject obj) {
+    protected boolean isDatabaseFolderVisible(DBNDatabaseFolder folder) {
+        Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
+        return folderItemsClass != null &&
+            (DBSObjectContainer.class.isAssignableFrom(folderItemsClass) ||
+                DBSEntity.class.isAssignableFrom(folderItemsClass));
+    }
+
+    protected boolean isDatabaseObjectVisible(DBSObject obj) {
         return obj instanceof DBSObjectContainer || obj instanceof DBSDataContainer && obj instanceof DBSEntity;
     }
 
@@ -158,7 +168,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         return true;
     }
 
-    protected void onSelectionChange() {
+    protected void onSelectionChange(Object element) {
 
     }
 

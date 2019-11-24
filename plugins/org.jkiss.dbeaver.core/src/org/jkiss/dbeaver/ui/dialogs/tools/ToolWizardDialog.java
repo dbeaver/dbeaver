@@ -106,7 +106,7 @@ public class ToolWizardDialog extends TaskConfigurationWizardDialog
         protected Composite createDialogArea(Composite parent) {
             Composite dialogArea = super.createDialogArea(parent);
 
-            homesSelector = new ClientHomesSelector(dialogArea, SWT.NONE, "Native client");
+            homesSelector = new ClientHomesSelector(dialogArea, "Native client");
             homesSelector.populateHomes(dataSource.getDriver(), dataSource.getConnectionConfiguration().getClientHomeId(), true);
             homesSelector.getPanel().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 

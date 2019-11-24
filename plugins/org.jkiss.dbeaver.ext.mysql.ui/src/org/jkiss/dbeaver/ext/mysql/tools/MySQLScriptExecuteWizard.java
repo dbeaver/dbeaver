@@ -24,15 +24,13 @@ import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog, MySQLCatalog> {
 
@@ -42,24 +40,26 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
         Debug
     }
 
-    private LogLevel logLevel;
-    private boolean noBeep;
+    private LogLevel logLevel = LogLevel.Normal;
+    private boolean noBeep = true;
 
     private boolean isImport;
-    private MySQLScriptExecuteWizardPageSettings mainPage;
+    private MySQLScriptExecuteWizardPageSettings mainPage = new MySQLScriptExecuteWizardPageSettings(this);
 
     public MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport)
     {
         super(Collections.singleton(catalog), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
         this.isImport = isImport;
-        this.logLevel = LogLevel.Normal;
-        this.noBeep = true;
-        this.mainPage = new MySQLScriptExecuteWizardPageSettings(this);
+    }
+
+    public MySQLScriptExecuteWizard(DBTTask task, boolean isImport) {
+        super(new ArrayList<>(), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
+        this.isImport = isImport;
     }
 
     @Override
     public String getTaskTypeId() {
-        return "mysqlScriptExecute";
+        return MySQLTasks.TASK_SCRIPT_EXECUTE;
     }
 
     @Override
