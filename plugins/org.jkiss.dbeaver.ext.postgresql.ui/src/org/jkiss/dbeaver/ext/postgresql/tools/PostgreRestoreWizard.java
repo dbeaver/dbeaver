@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRestoreInfo> implements IExportWizard {
 
@@ -43,6 +44,17 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     PostgreRestoreWizard(PostgreDatabase database) {
         super(Collections.singletonList(database), PostgreMessages.wizard_restore_title);
         restoreInfo = new PostgreDatabaseRestoreInfo(database);
+    }
+
+
+    @Override
+    public String getTaskTypeId() {
+        return "postgresDatabaseRestore";
+    }
+
+    @Override
+    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
+        // TODO: implement
     }
 
     @Override

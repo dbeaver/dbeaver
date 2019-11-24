@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.task.TaskConfigurationWizard;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -55,7 +55,7 @@ import java.util.List;
  * Abstract wizard
  */
 public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
-        extends Wizard implements DBRRunnableWithProgress {
+        extends TaskConfigurationWizard implements DBRRunnableWithProgress {
 
     private static final Log log = Log.getLog(AbstractToolWizard.class);
 
@@ -97,6 +97,11 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         extraCommandArgs = store.getString(PROP_NAME_EXTRA_ARGS);
+    }
+
+    @Override
+    protected String getDefaultWindowTitle() {
+        return task;
     }
 
     @Override

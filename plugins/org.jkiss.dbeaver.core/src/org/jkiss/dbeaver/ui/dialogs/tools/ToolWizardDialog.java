@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,20 +28,21 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.task.TaskConfigurationWizard;
+import org.jkiss.dbeaver.ui.task.TaskConfigurationWizardDialog;
 
 /**
  * Tool wizard dialog
  */
-public class ToolWizardDialog extends ActiveWizardDialog
+public class ToolWizardDialog extends TaskConfigurationWizardDialog
 {
 
     public static final int CLIENT_CONFIG_ID = 1000;
 
-    public ToolWizardDialog(IWorkbenchWindow window, IWizard wizard)
+    public ToolWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard)
     {
         super(window, wizard);
         setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());

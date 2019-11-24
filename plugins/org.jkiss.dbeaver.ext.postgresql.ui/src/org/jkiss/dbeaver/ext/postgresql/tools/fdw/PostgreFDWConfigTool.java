@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 
 import java.util.Collection;
@@ -42,7 +42,7 @@ public class PostgreFDWConfigTool implements IUserInterfaceTool
             } else {
                 continue;
             }
-            ToolWizardDialog dialog = new ToolWizardDialog(
+            ActiveWizardDialog dialog = new ActiveWizardDialog(
                 window,
                 new PostgreFDWConfigWizard(database));
             dialog.setFinishButtonLabel("Install");
