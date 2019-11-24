@@ -22,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -52,12 +51,9 @@ public class ClientHomesSelector
 
     public ClientHomesSelector(
         Composite parent,
-        int style,
         String title)
     {
-        selectorPanel = new Composite(parent, style);
-
-        selectorPanel.setLayout(new GridLayout(2, false));
+        selectorPanel = UIUtils.createComposite(parent, 2);
 
         Label controlLabel = UIUtils.createControlLabel(selectorPanel, title);
         controlLabel.setToolTipText("Local client configuration is needed for some administrative tasks like database dump/restore.");

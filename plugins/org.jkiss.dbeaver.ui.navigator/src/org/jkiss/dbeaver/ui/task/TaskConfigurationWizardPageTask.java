@@ -228,6 +228,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
     private void updateTaskTypeSelection() {
         UIUtils.disposeChildControls(configPanelPlaceholder);
         taskConfigPanel = null;
+        if (task != null) {
+            if (task.getType() != selectedTaskType) {
+                task.setType(selectedTaskType);
+                task.setProperties(new LinkedHashMap<>());
+            }
+        }
 
         if (selectedCategory != null && selectedCategory.supportsConfigurator()) {
             try {

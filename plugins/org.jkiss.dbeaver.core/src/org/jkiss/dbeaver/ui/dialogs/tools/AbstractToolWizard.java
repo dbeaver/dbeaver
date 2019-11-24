@@ -83,9 +83,6 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         this.task = task;
         this.logPage = new DatabaseWizardPageLog(task);
 
-        if (databaseObjects.isEmpty()) {
-            throw new IllegalArgumentException("Empty object list");
-        }
         for (BASE_OBJECT object : databaseObjects) {
             if (dataSourceContainer != null && dataSourceContainer != object.getDataSource().getContainer()) {
                 throw new IllegalArgumentException("Objects from different data sources");
