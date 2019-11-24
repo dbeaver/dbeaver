@@ -20,9 +20,9 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog, MySQLCatalog> {
 
@@ -54,6 +55,16 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
         this.logLevel = LogLevel.Normal;
         this.noBeep = true;
         this.mainPage = new MySQLScriptExecuteWizardPageSettings(this);
+    }
+
+    @Override
+    public String getTaskTypeId() {
+        return "mysqlScriptExecute";
+    }
+
+    @Override
+    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
+        // TODO: implement
     }
 
     public LogLevel getLogLevel()

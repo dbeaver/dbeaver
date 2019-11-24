@@ -26,15 +26,13 @@ import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSource,OracleDataSource> {
 
@@ -44,6 +42,16 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     {
         super(Collections.singleton(oracleSchema), OracleUIMessages.tools_script_execute_wizard_page_name);
         this.mainPage = new OracleScriptExecuteWizardPageSettings(this);
+    }
+
+    @Override
+    public String getTaskTypeId() {
+        return "oracleScriptExecute";
+    }
+
+    @Override
+    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
+        // TODO: implement
     }
 
     @Override

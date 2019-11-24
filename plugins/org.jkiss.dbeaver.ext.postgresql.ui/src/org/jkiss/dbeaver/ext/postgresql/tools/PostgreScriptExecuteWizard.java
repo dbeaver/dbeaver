@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
-import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreDatabase, PostgreDatabase> {
 
@@ -52,6 +54,16 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreData
     public boolean isVerbose()
     {
         return false;
+    }
+
+    @Override
+    public String getTaskTypeId() {
+        return "postgresScriptExecute";
+    }
+
+    @Override
+    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
+        // TODO: implement
     }
 
     @Override

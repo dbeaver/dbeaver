@@ -43,10 +43,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,6 +96,16 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
             // Backward compatibility
             setExtraCommandArgs(store.getString("MySQL.export.extraArgs"));
         }
+    }
+
+    @Override
+    public String getTaskTypeId() {
+        return "mysqlDatabaseBackup";
+    }
+
+    @Override
+    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
+        // TODO: implement
     }
 
     @Override

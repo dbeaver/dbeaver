@@ -36,10 +36,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBackupInfo> implements IExportWizard {
 
@@ -63,6 +60,16 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
             this.outputFilePattern = "dump-${database}-${timestamp}.backup";
         }
         showViews = CommonUtils.getBoolean(store.getString("Postgre.export.showViews"), false);
+    }
+
+    @Override
+    public String getTaskTypeId() {
+        return "postgresDatabaseBackup";
+    }
+
+    @Override
+    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
+        // TODO: implement
     }
 
     @Override
