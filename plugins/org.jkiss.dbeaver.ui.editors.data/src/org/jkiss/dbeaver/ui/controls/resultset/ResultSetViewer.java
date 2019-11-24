@@ -630,7 +630,7 @@ public class ResultSetViewer extends Viewer
 
     private void updatePresentationInToolbar() {
         // Update combo
-        viewerPanel.setRedraw(false);
+        mainPanel.setRedraw(false);
         try {
             boolean pVisible = activePresentationDescriptor != null;
             ((GridData) presentationSwitchFolder.getLayoutData()).exclude = !pVisible;
@@ -673,7 +673,7 @@ public class ResultSetViewer extends Viewer
             log.debug("Error updating presentation toolbar", e);
         } finally {
             // Enable redraw
-            viewerPanel.setRedraw(true);
+            mainPanel.setRedraw(true);
         }
     }
 
@@ -1625,10 +1625,7 @@ public class ResultSetViewer extends Viewer
             CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             statusBar.addListener(SWT.Resize, event -> {
-                Point fullSize = statusBar.computeSize(-1, -1);
-//                int exSize = fullSize.x - ((RowData)statusLabel.getLayoutData()).width;
-//                ((RowData)statusLabel.getLayoutData()).width = this.mainPanel.getSize().x - exSize;
-                //rowCountLabel.setLayoutData(new RowData(rowCountLabel.getMessage().length() * fontHeight + 20, SWT.DEFAULT));
+
             });
         }
     }
