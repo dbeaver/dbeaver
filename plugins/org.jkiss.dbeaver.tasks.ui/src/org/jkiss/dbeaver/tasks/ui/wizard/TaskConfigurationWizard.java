@@ -31,8 +31,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
@@ -42,7 +43,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class TaskConfigurationWizard extends BaseWizard implements IWorkbenchWizard {
@@ -66,7 +67,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
 
     public abstract String getTaskTypeId();
 
-    public abstract void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state);
+    public abstract void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state);
 
     public IStructuredSelection getCurrentSelection() {
         return currentSelection;
@@ -84,6 +85,10 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
 
     public DBPProject getProject() {
         return currentTask != null ? currentTask.getProject() : NavigatorUtils.getSelectedProject();
+    }
+
+    public DBTTaskType getTaskType() {
+        return TaskRegistry.getInstance().getTaskType(getTaskTypeId());
     }
 
     protected void updateWizardTitle() {
@@ -174,7 +179,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         DBTTask currentTask = getCurrentTask();
         if (currentTask == null) {
             // Create new task
-            DBTTaskType taskType = TaskRegistry.getInstance().getTaskType(getTaskTypeId());
+            DBTTaskType taskType = getTaskType();
             if (taskType == null) {
                 DBWorkbench.getPlatformUI().showError("No task type", "Can't find task type " + getTaskTypeId());
                 return;
@@ -195,20 +200,14 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         saveConfigurationToTask(theTask);
     }
 
-    private void saveConfigurationToTask(DBTTask theTask) {
+    protected void saveConfigurationToTask(DBTTask theTask) {
+        Map<String, Object> state = new LinkedHashMap<>();
+        saveTaskState(getRunnableContext(), state);
+        theTask.setProperties(state);
         try {
-            getRunnableContext().run(true, true, monitor -> {
-                try {
-                    saveTaskState(monitor, theTask.getProperties());
-                    theTask.getProject().getTaskManager().updateTaskConfiguration(theTask);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Tsk save error", "Error saving task configuration", e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
+            theTask.getProject().getTaskManager().updateTaskConfiguration(theTask);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Task save error", "Error saving task configuration", e);
         }
     }
 

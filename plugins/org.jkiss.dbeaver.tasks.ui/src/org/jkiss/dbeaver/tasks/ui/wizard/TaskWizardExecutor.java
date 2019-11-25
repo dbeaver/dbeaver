@@ -21,8 +21,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.utils.CommonUtils;
 
-class TaskWizardExecutor extends TaskProcessorUI {
+import java.util.Locale;
+
+public class TaskWizardExecutor extends TaskProcessorUI {
     private static final Log log = Log.getLog(TaskWizardExecutor.class);
 
     public TaskWizardExecutor(@NotNull DBRRunnableContext staticContext, @NotNull DBTTask task) {
@@ -31,13 +35,13 @@ class TaskWizardExecutor extends TaskProcessorUI {
 
     @Override
     protected boolean isShowFinalMessage() {
-        return false;//CommonUtils.getBoolean(getTask().getProperties().get("showFinalMessage"), super.isShowFinalMessage());
+        return CommonUtils.getBoolean(getTask().getProperties().get("showFinalMessage"), true);
     }
 
     @Override
     protected void runTask() throws DBException {
-//        DBTTaskHandler handlerTransfer = getTask().getType().createHandler();
-//        handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, this);
+        DBTTaskHandler handlerTransfer = getTask().getType().createHandler();
+        handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, this);
     }
 
 }

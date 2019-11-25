@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.ProjectMetadata;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -44,6 +45,8 @@ import java.util.*;
  * TaskManagerImpl
  */
 public class TaskManagerImpl implements DBTTaskManager {
+
+    public static final String TEMPORARY_ID = "#temp";
 
     private static final Log log = Log.getLog(TaskManagerImpl.class);
 
@@ -152,8 +155,17 @@ public class TaskManagerImpl implements DBTTaskManager {
         return task;
     }
 
+    @NotNull
+    @Override
+    public DBTTask createTemporaryTask(@NotNull DBTTaskType type, @NotNull String label) {
+        return new TaskImpl(getProject(), type, TEMPORARY_ID, label, label, new Date(), null);
+    }
+
     @Override
     public void updateTaskConfiguration(@NotNull DBTTask task) {
+        if (TEMPORARY_ID.equals(task.getId())) {
+            return;
+        }
         boolean newTask = false;
         synchronized (tasks) {
             if (!tasks.contains(task)) {
@@ -208,7 +220,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                     try {
                         String id = taskMap.getKey();
                         String task = JSONUtils.getString(taskJSON, "task");
-                        String label = JSONUtils.getString(taskJSON, "label");
+                        String label = CommonUtils.toString(JSONUtils.getString(taskJSON, "label"), id);
                         String description = JSONUtils.getString(taskJSON, "description");
                         Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, "createTime"));
                         Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, "updateTime"));

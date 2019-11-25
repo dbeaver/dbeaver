@@ -67,7 +67,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         private List<TaskRunImpl> runs = new ArrayList<>();
     }
 
-    public TaskImpl(DBPProject project, DBTTaskType type, String id, String label, String description, Date createTime, Date updateTime) {
+    public TaskImpl(@NotNull DBPProject project, @NotNull DBTTaskType type, @NotNull String id, @NotNull String label, @Nullable String description, @NotNull Date createTime, @Nullable Date updateTime) {
         this.project = project;
         this.id = id;
         this.label = label;

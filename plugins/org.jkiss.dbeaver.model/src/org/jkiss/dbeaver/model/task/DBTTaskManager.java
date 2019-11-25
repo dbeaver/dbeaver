@@ -58,6 +58,14 @@ public interface DBTTaskManager {
         @Nullable String description,
         @NotNull Map<String, Object> properties);
 
+    /**
+     * Temporary tasks can be used to execute some task without adding to task manager registry
+     */
+    @NotNull
+    DBTTask createTemporaryTask(
+        @NotNull DBTTaskType task,
+        @NotNull String label);
+
     void updateTaskConfiguration(@NotNull DBTTask task) throws DBException;
 
     void deleteTaskConfiguration(@NotNull DBTTask task);
