@@ -38,27 +38,16 @@ import java.lang.reflect.InvocationTargetException;
 public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionListener {
     private static final Log log = Log.getLog(TaskProcessorUI.class);
 
-    @Nullable
-    private DBTTask taskInfo;
-    @Nullable
-    private String taskName;
+    @NotNull
+    private DBTTask task;
     @NotNull
     private DBRRunnableContext staticContext;
     private long startTime;
     private boolean started;
 
-    private TaskProcessorUI(@NotNull DBRRunnableContext staticContext) {
-        this.staticContext = staticContext;
-    }
-
     public TaskProcessorUI(@NotNull DBRRunnableContext staticContext, @NotNull DBTTask task) {
-        this(staticContext);
-        this.taskInfo = task;
-    }
-
-    public TaskProcessorUI(@NotNull DBRRunnableContext staticContext, @NotNull String taskName) {
-        this(staticContext);
-        this.taskName = taskName;
+        this.staticContext = staticContext;
+        this.task = task;
     }
 
     protected void runTask() throws DBException {
@@ -69,12 +58,9 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
         return true;
     }
 
-    String getTaskName() {
-        return taskInfo == null ? taskName : taskInfo.getName();
-    }
-
-    String getTaskType() {
-        return taskInfo == null ? taskName : taskInfo.getType().getName();
+    @NotNull
+    public DBTTask getTask() {
+        return task;
     }
 
     public void executeTask() throws DBException {
@@ -107,8 +93,8 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                 // Show message box
                 DBeaverNotifications.showNotification(
                     "task",
-                    getTaskName(),
-                    getTaskType() + " task completed (" + RuntimeUtils.formatExecutionTime(elapsedTime) + ")",
+                    this.task.getName(),
+                    this.task.getType().getName() + " task completed (" + RuntimeUtils.formatExecutionTime(elapsedTime) + ")",
                     DBPMessageType.INFORMATION,
                     null);
             } else if (error != null) {
@@ -125,7 +111,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
 
     @Override
     public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-        staticContext.run(true, true, runnable);
+        staticContext.run(fork, cancelable, runnable);
     }
 
 }

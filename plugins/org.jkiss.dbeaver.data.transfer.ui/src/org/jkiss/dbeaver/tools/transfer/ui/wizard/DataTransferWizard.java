@@ -25,13 +25,13 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -275,15 +275,19 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         }
 
         try {
-            DBTTask currentTask = getCurrentTask();
-            if (currentTask != null) {
-                // Run task thru task manager
-                // Pass executor to visualize task progress in UI
-                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), getCurrentTask(), getSettings());
-                currentTask.getProject().getTaskManager().runTask(currentTask, executor, Collections.emptyMap());
-            } else {
-                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), DTMessages.data_transfer_wizard_job_name, getSettings());
+            DBTTask task = getCurrentTask();
+            if (task == null) {
+                task = getProject().getTaskManager().createTemporaryTask(getTaskType(), getWindowTitle());
+                saveConfigurationToTask(task);
+            }
+            // Run task thru task manager
+            // Pass executor to visualize task progress in UI
+            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task);
+            if (getCurrentTask() == null) {
+                // Execute directly in wizard
                 executor.executeTask();
+            } else {
+                task.getProject().getTaskManager().runTask(task, executor, Collections.emptyMap());
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't init data transfer", e);
@@ -401,7 +405,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         return null;
     }
 
-    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
+    public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
         List<IDataTransferNode> producers = new ArrayList<>();
         List<IDataTransferNode> consumers = new ArrayList<>();
         for (DataTransferPipe pipe : settings.getDataPipes()) {
@@ -412,8 +416,8 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
                 consumers.add(pipe.getConsumer());
             }
         }
-        DataTransferSettings.saveNodesLocation(monitor, state, producers, "producers");
-        DataTransferSettings.saveNodesLocation(monitor, state, consumers, "consumers");
+        DataTransferSettings.saveNodesLocation(runnableContext, state, producers, "producers");
+        DataTransferSettings.saveNodesLocation(runnableContext, state, consumers, "consumers");
         state.put("configuration", saveConfiguration(new LinkedHashMap<>()));
     }
 

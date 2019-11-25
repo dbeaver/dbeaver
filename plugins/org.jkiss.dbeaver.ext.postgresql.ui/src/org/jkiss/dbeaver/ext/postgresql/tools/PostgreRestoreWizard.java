@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
@@ -53,7 +54,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     }
 
     @Override
-    public void saveTaskState(DBRProgressMonitor monitor, Map<String, Object> state) {
+    public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
         // TODO: implement
     }
 

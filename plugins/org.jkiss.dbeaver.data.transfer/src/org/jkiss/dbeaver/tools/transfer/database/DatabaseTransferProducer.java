@@ -247,7 +247,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {
 
         @Override
-        public void serializeObject(DBRProgressMonitor monitor, DatabaseTransferProducer object, Map<String, Object> state) {
+        public void serializeObject(DBRRunnableContext runnableContext, DatabaseTransferProducer object, Map<String, Object> state) {
             DBSDataContainer dataContainer = object.dataContainer;
             if (dataContainer instanceof IAdaptable) {
                 DBSDataContainer nestedDataContainer = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);
@@ -285,7 +285,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         public DatabaseTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
             DatabaseTransferProducer producer = new DatabaseTransferProducer();
             try {
-                runnableContext.run(true, true, monitor -> {
+                runnableContext.run(false, true, monitor -> {
                     try {
                         String selType = CommonUtils.toString(state.get("type"));
                         String projectName = CommonUtils.toString(state.get("project"));
