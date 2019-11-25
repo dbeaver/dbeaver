@@ -14,27 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.preferences;
+package org.jkiss.dbeaver.registry.task;
 
+import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Wrapper over simple properties
  */
-public class PropertiesPreferenceStore extends AbstractPreferenceStore {
+public class TaskPreferenceStore extends AbstractPreferenceStore {
     private DBPPreferenceStore parentStore;
+    private final DBTTask task;
     private Map<String, Object> properties;
     private boolean dirty = false;
 
-    public PropertiesPreferenceStore(Map<String, Object> properties) {
+    public TaskPreferenceStore(DBTTask task) {
         this.parentStore = DBWorkbench.getPlatform().getPreferenceStore();
-        this.properties = properties;
+        this.task = task;
+        this.properties = new LinkedHashMap<>(task.getProperties());
     }
 
     public DBPPreferenceStore getParentStore() {
@@ -57,7 +62,7 @@ public class PropertiesPreferenceStore extends AbstractPreferenceStore {
 
     @Override
     public void save() throws IOException {
-        // do nothing
+        task.setProperties(properties);
     }
 
     @Override
@@ -248,10 +253,10 @@ public class PropertiesPreferenceStore extends AbstractPreferenceStore {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof PropertiesPreferenceStore)) {
+        if (!(obj instanceof TaskPreferenceStore)) {
             return false;
         }
-        PropertiesPreferenceStore copy = (PropertiesPreferenceStore) obj;
+        TaskPreferenceStore copy = (TaskPreferenceStore) obj;
         return
             CommonUtils.equalObjects(parentStore, copy.parentStore) &&
                 CommonUtils.equalObjects(properties, copy.properties);

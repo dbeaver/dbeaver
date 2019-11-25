@@ -29,12 +29,10 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
-import org.jkiss.dbeaver.model.impl.preferences.PropertiesPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractImportExportWizard;
@@ -75,17 +73,17 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
 
     public MySQLExportWizard(Collection<DBSObject> objects) {
         super(objects, MySQLUIMessages.tools_db_export_wizard_task_name);
-
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        loadSettings(store);
+        loadExportSettings();
     }
 
     public MySQLExportWizard(DBTTask task) {
-        super(new ArrayList<>(), MySQLUIMessages.tools_db_export_wizard_task_name);
-        loadSettings(new PropertiesPreferenceStore(task.getProperties()));
+        super(task);
+        loadExportSettings();
     }
 
-    private void loadSettings(DBPPreferenceStore store) {
+    private void loadExportSettings() {
+        DBPPreferenceStore store = getPreferenceStore();
+
         this.outputFilePattern = store.getString("MySQL.export.outputFilePattern");
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
             this.outputFilePattern = "dump-${database}-${timestamp}.sql";
@@ -104,6 +102,21 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
             // Backward compatibility
             setExtraCommandArgs(store.getString("MySQL.export.extraArgs"));
         }
+    }
+
+    private void saveExportSettings() {
+        DBPPreferenceStore store = getPreferenceStore();
+        store.setValue("MySQL.export.outputFilePattern", this.outputFilePattern);
+        store.setValue("MySQL.export.noCreateStatements", noCreateStatements);
+        store.setValue("MySQL.export.addDropStatements", addDropStatements);
+        store.setValue("MySQL.export.disableKeys", disableKeys);
+        store.setValue("MySQL.export.extendedInserts", extendedInserts);
+        store.setValue("MySQL.export.dumpEvents", dumpEvents);
+        store.setValue("MySQL.export.comments", comments);
+        store.setValue("MySQL.export.removeDefiner", removeDefiner);
+        store.setValue("MySQL.export.binariesInHex", binariesInHex);
+        store.setValue("MySQL.export.noData", noData);
+        store.setValue("MySQL.export.showViews", showViews);
     }
 
     @Override
@@ -212,18 +225,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     public boolean performFinish() {
         objectsPage.saveState();
 
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue("MySQL.export.outputFilePattern", this.outputFilePattern);
-        store.setValue("MySQL.export.noCreateStatements", noCreateStatements);
-        store.setValue("MySQL.export.addDropStatements", addDropStatements);
-        store.setValue("MySQL.export.disableKeys", disableKeys);
-        store.setValue("MySQL.export.extendedInserts", extendedInserts);
-        store.setValue("MySQL.export.dumpEvents", dumpEvents);
-        store.setValue("MySQL.export.comments", comments);
-        store.setValue("MySQL.export.removeDefiner", removeDefiner);
-        store.setValue("MySQL.export.binariesInHex", binariesInHex);
-        store.setValue("MySQL.export.noData", noData);
-        store.setValue("MySQL.export.showViews", showViews);
+        saveExportSettings();
 
         return super.performFinish();
     }

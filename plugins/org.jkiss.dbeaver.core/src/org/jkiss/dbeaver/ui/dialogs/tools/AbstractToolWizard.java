@@ -24,11 +24,13 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -36,6 +38,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -55,11 +59,13 @@ import java.util.List;
  * Abstract wizard
  */
 public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
-        extends TaskConfigurationWizard implements DBRRunnableWithProgress {
+    extends TaskConfigurationWizard implements DBRRunnableWithProgress {
 
     private static final Log log = Log.getLog(AbstractToolWizard.class);
 
     private final String PROP_NAME_EXTRA_ARGS = "tools.wizard." + getClass().getSimpleName() + ".extraArgs";
+
+    private final DBPPreferenceStore preferenceStore;
 
     private final List<BASE_OBJECT> databaseObjects;
     private DBPNativeClientLocation clientHome;
@@ -69,7 +75,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private String toolUserPassword;
     private String extraCommandArgs;
 
-    protected String task;
+    protected String taskTitle;
     protected final DatabaseWizardPageLog logPage;
     private boolean finished;
     protected boolean transferFinished;
@@ -77,33 +83,121 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private boolean isSuccess;
     private String errorMessage;
 
-    protected AbstractToolWizard(Collection<BASE_OBJECT> databaseObjects, String task)
-    {
+    protected AbstractToolWizard(@NotNull Collection<BASE_OBJECT> databaseObjects, @NotNull String taskTitle) {
         this.databaseObjects = new ArrayList<>(databaseObjects);
-        this.task = task;
-        this.logPage = new DatabaseWizardPageLog(task);
+        this.taskTitle = taskTitle;
+        this.logPage = new DatabaseWizardPageLog(taskTitle);
+        this.preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
 
-        for (BASE_OBJECT object : databaseObjects) {
-            if (dataSourceContainer != null && dataSourceContainer != object.getDataSource().getContainer()) {
-                throw new IllegalArgumentException("Objects from different data sources");
-            }
-            dataSourceContainer = object.getDataSource().getContainer();
-            connectionInfo = dataSourceContainer.getActualConnectionConfiguration();
+        loadToolSettings();
+    }
+
+    public AbstractToolWizard(@NotNull DBTTask task) {
+        super(task);
+        this.databaseObjects = new ArrayList<>();
+        this.taskTitle = task.getType().getName();
+        this.logPage = new DatabaseWizardPageLog(taskTitle);
+        this.preferenceStore = new TaskPreferenceStore(task);
+
+        loadToolSettings();
+    }
+
+    @NotNull
+    protected DBPPreferenceStore getPreferenceStore() {
+        return preferenceStore;
+    }
+
+    public DBPProject getProject() {
+        if (dataSourceContainer != null) {
+            return dataSourceContainer.getProject();
         }
+        return super.getProject();
+    }
 
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+    private void loadToolSettings() {
+        if (getCurrentTask() != null) {
+            String projectName = preferenceStore.getString("project");
+            DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+            if (project == null) {
+                if (!CommonUtils.isEmpty(projectName)) {
+                    log.error("Can't find project '" + projectName + "' for tool configuration");
+                }
+                project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+            }
+            String dsID = preferenceStore.getString("dataSource");
+            if (!CommonUtils.isEmpty(dsID)) {
+                dataSourceContainer = project.getDataSourceRegistry().getDataSource(dsID);
+                if (dataSourceContainer == null) {
+                    log.error("Can't find datasource '" + dsID+ "' in project '" + project.getName() + "' for tool configuration");
+                }
+            }
+            {
+                List<String> databaseObjectList = (List<String>) ((TaskPreferenceStore)preferenceStore).getProperties().get("databaseObjects");
+                if (!CommonUtils.isEmpty(databaseObjectList)) {
+                    DBPProject finalProject = project;
+                    try {
+                        getRunnableContext().run(false, true, monitor -> {
+                            for (String objectId : databaseObjectList) {
+                                try {
+                                    DBSObject object = DBUtils.findObjectById(monitor, finalProject, objectId);
+                                    if (object != null) {
+                                        databaseObjects.add((BASE_OBJECT) object);
+                                    }
+                                } catch (Throwable e) {
+                                    log.error("Can't find database object '" + objectId + "' in project '" + finalProject.getName() + "' for task configuration");
+                                }
+                            }
+                        });
+                    } catch (InvocationTargetException e) {
+                        log.error("Error loading objects configuration", e);
+                    } catch (InterruptedException e) {
+                        // Ignore
+                    }
+                }
+            }
+        } else {
+            for (BASE_OBJECT object : this.databaseObjects) {
+                if (dataSourceContainer != null && dataSourceContainer != object.getDataSource().getContainer()) {
+                    throw new IllegalArgumentException("Objects from different data sources");
+                }
+                dataSourceContainer = object.getDataSource().getContainer();
+            }
+        }
+        connectionInfo = dataSourceContainer == null ? null : dataSourceContainer.getActualConnectionConfiguration();
 
-        extraCommandArgs = store.getString(PROP_NAME_EXTRA_ARGS);
+        extraCommandArgs = getPreferenceStore().getString(PROP_NAME_EXTRA_ARGS);
+    }
+
+    private void saveToolSettings() {
+        preferenceStore.setValue(PROP_NAME_EXTRA_ARGS, extraCommandArgs);
+
+        if (getCurrentTask() != null) {
+            preferenceStore.setValue("project", getProject().getName());
+            if (dataSourceContainer != null) {
+                preferenceStore.setValue("dataSource", dataSourceContainer.getId());
+            }
+
+            // Save input objects to task properties
+            List<String> objectList = new ArrayList<>();
+            for (BASE_OBJECT object : databaseObjects) {
+                objectList.add(DBUtils.getObjectFullId(object));
+            }
+            ((TaskPreferenceStore)preferenceStore).getProperties().put("databaseObjects", objectList);
+        }
+        try {
+            preferenceStore.save();
+        } catch (IOException e) {
+            log.error("Error saving tool settings");
+        }
     }
 
     @Override
     protected String getDefaultWindowTitle() {
-        return task;
+        return taskTitle;
     }
 
     @Override
-    public boolean canFinish()
-    {
+    public boolean canFinish() {
         if (!super.canFinish()) {
             return false;
         }
@@ -125,38 +219,31 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         return true;
     }
 
-    public List<BASE_OBJECT> getDatabaseObjects()
-    {
+    public List<BASE_OBJECT> getDatabaseObjects() {
         return databaseObjects;
     }
 
-    public DBPConnectionConfiguration getConnectionInfo()
-    {
+    public DBPConnectionConfiguration getConnectionInfo() {
         return connectionInfo;
     }
 
-    public DBPNativeClientLocation getClientHome()
-    {
+    public DBPNativeClientLocation getClientHome() {
         return clientHome;
     }
 
-    public String getToolUserName()
-    {
+    public String getToolUserName() {
         return toolUserName;
     }
 
-    public void setToolUserName(String toolUserName)
-    {
+    public void setToolUserName(String toolUserName) {
         this.toolUserName = toolUserName;
     }
 
-    public String getToolUserPassword()
-    {
+    public String getToolUserPassword() {
         return toolUserPassword;
     }
 
-    public void setToolUserPassword(String toolUserPassword)
-    {
+    public void setToolUserPassword(String toolUserPassword) {
         this.toolUserPassword = toolUserPassword;
     }
 
@@ -185,8 +272,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     public abstract Collection<PROCESS_ARG> getRunInfo();
 
     @Override
-    public void createPageControls(Composite pageContainer)
-    {
+    public void createPageControls(Composite pageContainer) {
         super.createPageControls(pageContainer);
 
         updateErrorMessage();
@@ -204,7 +290,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 } else {
                     clientHome = null;
                 }
-                if (clientHome == null){
+                if (clientHome == null) {
                     currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);
                     getContainer().updateMessage();
                     return;
@@ -238,7 +324,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             });
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
-            ((WizardPage)getContainer().getCurrentPage()).setErrorMessage("Error downloading native client file(s)");
+            ((WizardPage) getContainer().getCurrentPage()).setErrorMessage("Error downloading native client file(s)");
             getContainer().updateMessage();
             return false;
         } catch (InterruptedException e) {
@@ -251,8 +337,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     @Override
     public boolean performFinish() {
         // Save settings
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue(PROP_NAME_EXTRA_ARGS, extraCommandArgs);
+        saveToolSettings();
 
         if (getContainer().getCurrentPage() != logPage) {
             getContainer().showPage(logPage);
@@ -265,24 +350,21 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         long startTime = System.currentTimeMillis();
         try {
             UIUtils.run(getContainer(), true, true, this);
-        }
-        catch (InterruptedException ex) {
-            UIUtils.showMessageBox(getShell(), task, NLS.bind(CoreMessages.tools_wizard_error_task_canceled, task, getObjectsName()), SWT.ICON_ERROR);
+        } catch (InterruptedException ex) {
+            UIUtils.showMessageBox(getShell(), taskTitle, NLS.bind(CoreMessages.tools_wizard_error_task_canceled, taskTitle, getObjectsName()), SWT.ICON_ERROR);
             return false;
-        }
-        catch (InvocationTargetException ex) {
+        } catch (InvocationTargetException ex) {
             DBWorkbench.getPlatformUI().showError(
-                    NLS.bind(CoreMessages.tools_wizard_error_task_error_title, task),
-                CoreMessages.tools_wizard_error_task_error_message + task,
+                NLS.bind(CoreMessages.tools_wizard_error_task_error_title, taskTitle),
+                CoreMessages.tools_wizard_error_task_error_message + taskTitle,
                 ex.getTargetException());
             return false;
-        }
-        finally {
+        } finally {
             getContainer().updateButtons();
 
         }
         long workTime = System.currentTimeMillis() - startTime;
-        notifyToolFinish(task + " finished", workTime);
+        notifyToolFinish(taskTitle + " finished", workTime);
         if (isSuccess) {
             onSuccess(workTime);
         } else {
@@ -310,8 +392,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     }
 
     @Override
-    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-    {
+    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         try {
             isSuccess = true;
             for (PROCESS_ARG arg : getRunInfo()) {
@@ -343,8 +424,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     }
 
     public boolean executeProcess(DBRProgressMonitor monitor, PROCESS_ARG arg)
-        throws IOException, CoreException, InterruptedException
-    {
+        throws IOException, CoreException, InterruptedException {
         monitor.beginTask(getWindowTitle(), 1);
         try {
             final List<String> commandLine = getCommandLine(arg);
@@ -362,7 +442,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
             Thread.sleep(100);
 
-            for (;;) {
+            for (; ; ) {
                 Thread.sleep(100);
                 if (monitor.isCanceled()) {
                     process.destroy();
@@ -395,28 +475,24 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         return true;
     }
 
-    protected boolean isMergeProcessStreams()
-    {
+    protected boolean isMergeProcessStreams() {
         return false;
     }
 
-    public boolean isVerbose()
-    {
+    public boolean isVerbose() {
         return false;
     }
 
-    protected void onSuccess(long workTime)
-    {
+    protected void onSuccess(long workTime) {
 
     }
 
-    protected void onError()
-    {
+    protected void onError() {
         UIUtils.showMessageBox(
-                getShell(),
-                task,
-                errorMessage == null ? "Internal error" : errorMessage,
-                SWT.ICON_ERROR);
+            getShell(),
+            taskTitle,
+            errorMessage == null ? "Internal error" : errorMessage,
+            SWT.ICON_ERROR);
     }
 
     abstract protected java.util.List<String> getCommandLine(PROCESS_ARG arg) throws IOException;
@@ -438,8 +514,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         protected InputStream input;
         protected File outFile;
 
-        protected DumpJob(String name, DBRProgressMonitor monitor, InputStream stream, File outFile)
-        {
+        protected DumpJob(String name, DBRProgressMonitor monitor, InputStream stream, File outFile) {
             super(name);
             this.monitor = monitor;
             this.input = stream;
@@ -460,8 +535,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     }
 
     public class DumpCopierJob extends DumpJob {
-        public DumpCopierJob(DBRProgressMonitor monitor, String name, InputStream stream, File outFile)
-        {
+        public DumpCopierJob(DBRProgressMonitor monitor, String name, InputStream stream, File outFile) {
             super(name, monitor, stream, outFile);
         }
 
@@ -474,8 +548,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             try {
                 NumberFormat numberFormat = NumberFormat.getInstance();
 
-                try (OutputStream output = new FileOutputStream(outFile)){
-                    for (;;) {
+                try (OutputStream output = new FileOutputStream(outFile)) {
+                    for (; ; ) {
                         int count = input.read(buffer);
                         if (count <= 0) {
                             break;
@@ -490,8 +564,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                     }
                     output.flush();
                 }
-            }
-            finally {
+            } finally {
                 monitor.done();
             }
         }
@@ -504,9 +577,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         private String inputCharset;
         private String outputCharset;
 
-        public TextFileTransformerJob(DBRProgressMonitor monitor, File inputFile, OutputStream stream, String inputCharset, String outputCharset)
-        {
-            super(task);
+        public TextFileTransformerJob(DBRProgressMonitor monitor, File inputFile, OutputStream stream, String inputCharset, String outputCharset) {
+            super(taskTitle);
             this.monitor = monitor;
             this.output = stream;
             this.inputFile = inputFile;
@@ -515,15 +587,13 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             try {
                 try (InputStream scriptStream = new ProgressStreamReader(
                     monitor,
-                    task,
+                    taskTitle,
                     new FileInputStream(inputFile),
-                    inputFile.length()))
-                {
+                    inputFile.length())) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(scriptStream, inputCharset));
                     PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, outputCharset));
                     while (!monitor.isCanceled()) {
@@ -541,8 +611,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             } catch (IOException e) {
                 log.debug(e);
                 logPage.appendLog(e.getMessage());
-            }
-            finally {
+            } finally {
                 monitor.done();
                 transferFinished = true;
             }
@@ -554,23 +623,20 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         private OutputStream output;
         private File inputFile;
 
-        public BinaryFileTransformerJob(DBRProgressMonitor monitor, File inputFile, OutputStream stream)
-        {
-            super(task);
+        public BinaryFileTransformerJob(DBRProgressMonitor monitor, File inputFile, OutputStream stream) {
+            super(taskTitle);
             this.monitor = monitor;
             this.output = stream;
             this.inputFile = inputFile;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             try (InputStream scriptStream = new ProgressStreamReader(
                 monitor,
-                task,
+                taskTitle,
                 new FileInputStream(inputFile),
-                inputFile.length()))
-            {
+                inputFile.length())) {
                 byte[] buffer = new byte[100000];
                 while (!monitor.isCanceled()) {
                     int readSize = scriptStream.read(buffer);
@@ -584,8 +650,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             } catch (IOException e) {
                 log.debug(e);
                 logPage.appendLog(e.getMessage() + "\n");
-            }
-            finally {
+            } finally {
                 try {
                     output.close();
                 } catch (IOException e) {

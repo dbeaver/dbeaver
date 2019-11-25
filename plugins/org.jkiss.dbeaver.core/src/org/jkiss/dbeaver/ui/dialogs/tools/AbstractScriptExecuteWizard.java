@@ -58,7 +58,7 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle(task);
+        setWindowTitle(taskTitle);
         setNeedsProgressMonitor(true);
     }
 
@@ -71,8 +71,8 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
 	@Override
 	public void onSuccess(long workTime) {
         UIUtils.showMessageBox(getShell(),
-                task,
-                NLS.bind(CoreMessages.tools_script_execute_wizard_task_completed, task, getObjectsName()) , //$NON-NLS-1$
+            taskTitle,
+                NLS.bind(CoreMessages.tools_script_execute_wizard_task_completed, taskTitle, getObjectsName()) , //$NON-NLS-1$
                         SWT.ICON_INFORMATION);
 	}
 
