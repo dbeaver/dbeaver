@@ -19,6 +19,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ext.ui.locks,
- org.jkiss.dbeaver.data.gis
+ org.jkiss.dbeaver.data.gis,
+ org.jkiss.dbeaver.ui.editors.session
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.exasol

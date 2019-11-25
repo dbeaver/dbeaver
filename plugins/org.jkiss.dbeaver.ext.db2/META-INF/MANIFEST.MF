@@ -15,6 +15,13 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.views,
  org.eclipse.ui.editors,
  org.eclipse.ui.workbench.texteditor,
- org.jkiss.dbeaver.core
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.tasks.ui,
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.editors.connection,
+ org.jkiss.dbeaver.ui.editors.sql,
+ org.jkiss.dbeaver.ui.editors.session
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.db2
