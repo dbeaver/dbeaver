@@ -21,9 +21,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskProcessorUI;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
-import org.jkiss.dbeaver.ui.task.TaskProcessorUI;
 
 import java.util.Locale;
 

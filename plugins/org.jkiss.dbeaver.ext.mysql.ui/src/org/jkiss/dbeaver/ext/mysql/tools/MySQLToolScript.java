@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizard;
+import org.jkiss.dbeaver.tasks.ui.nativetool.ToolWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
-import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;

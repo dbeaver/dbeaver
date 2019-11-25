@@ -22,8 +22,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.ui.nativetool.ToolWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 
 import java.util.Collection;
 

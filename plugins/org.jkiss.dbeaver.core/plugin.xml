@@ -23,7 +23,6 @@
 
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.objectManager" name="%extension-point.org.jkiss.dbeaver.objectManager.name" schema="schema/org.jkiss.dbeaver.objectManager.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.tools" name="%extension-point.org.jkiss.dbeaver.tools.name" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
@@ -524,10 +523,6 @@
                 </command>
                 <separator name="transactions" visible="false"/>
                 <separator name="tools" visible="true"/>
-                <menu label="%menu.database.tools" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/tools.png">
-                    <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
-                </menu>
-                <command commandId="org.jkiss.dbeaver.ui.tools.menu"/>
                 <command commandId="org.jkiss.dbeaver.core.migrate.connection">
                     <visibleWhen checkEnabled="true"/>
                 </command>
@@ -793,33 +788,6 @@
             <command commandId="org.eclipse.ui.edit.rename" label="%command.org.eclipse.ui.edit.rename.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-        </menuContribution>
-
-        <!-- Tools context menu -->
-
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
-            <command commandId="org.jkiss.dbeaver.core.procedure.execute">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <!--<command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection">
-                <visibleWhen checkEnabled="true"/>
-            </command>-->
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.forSelection">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-
-            <separator name="compare" visible="false"/>
-            <separator name="export_import" visible="false"/>
-            <separator name="generate" visible="false"/>
-
-            <menu label="%menu.database.tools" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/tools.png">
-                <visibleWhen>
-                    <with variable="activePart">
-                        <test property="org.jkiss.dbeaver.core.tools.hasTools"/>
-                    </with>
-                </visibleWhen>
-                <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
-            </menu>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">

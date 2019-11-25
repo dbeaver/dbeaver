@@ -20,6 +20,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.data.transfer.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.tasks.ui,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.navigator
