@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tasks.ui.nativetool;
+package org.jkiss.dbeaver.tasks.nativetool;
 
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 
 /**
- * DTTaskHandlerNativeTool
+ * TaskHandlerNativeTool
  */
-public abstract class DTTaskHandlerNativeTool implements DBTTaskHandler {
+public abstract class TaskHandlerNativeTool implements DBTTaskHandler {
 
 /*
     private boolean refreshObjects;
