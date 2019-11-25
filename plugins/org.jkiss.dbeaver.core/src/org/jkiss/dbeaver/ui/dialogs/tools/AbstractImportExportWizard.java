@@ -23,6 +23,7 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 
 import java.io.File;
@@ -41,6 +42,10 @@ public abstract class AbstractImportExportWizard<PROCESS_ARG> extends AbstractTo
 
     protected AbstractImportExportWizard(Collection<DBSObject> objects, String title) {
         super(objects, title);
+    }
+
+    protected AbstractImportExportWizard(DBTTask task) {
+        super(task);
     }
 
     @Override
@@ -71,7 +76,7 @@ public abstract class AbstractImportExportWizard<PROCESS_ARG> extends AbstractTo
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle(task);
+        setWindowTitle(taskTitle);
         setNeedsProgressMonitor(true);
     }
 
