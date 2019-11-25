@@ -142,6 +142,26 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         if (currentTask != null) {
             saveTask();
         }
+
+/*
+        try {
+            DBTTask theTask = currentTask;
+            if (theTask == null) {
+                // Make fake task
+                DBTTaskType taskType = TaskRegistry.getInstance().getTaskType(getTaskTypeId());
+                theTask = new TaskImpl(getProject(), taskType, null, getWindowTitle(), getWindowTitle(), new Date(), new Date());
+                theTask.setProperties(new LinkedHashMap<>());
+                saveConfigurationToTask(theTask);
+            }
+            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), theTask);
+            theTask.getProject().getTaskManager().runTask(theTask, executor, Collections.emptyMap());
+
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't init data transfer", e);
+            return false;
+        }
+*/
+
         return true;
     }
 
@@ -170,8 +190,12 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
                 taskPage.saveSettings();
             }
         }
+        DBTTask theTask = currentTask;
+        saveConfigurationToTask(theTask);
+    }
+
+    private void saveConfigurationToTask(DBTTask theTask) {
         try {
-            DBTTask theTask = currentTask;
             getRunnableContext().run(true, true, monitor -> {
                 try {
                     saveTaskState(monitor, theTask.getProperties());
