@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.ui.task.TaskConfigurationWizardDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class DataTransferWizard extends TaskConfigurationWizard implements IExportWizard, IImportWizard {
@@ -260,8 +259,8 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     @Override
     public boolean performCancel() {
         // Save settings if we have task
-        if (getCurrentTask() != null && !saveSettings()) {
-            return false;
+        if (getCurrentTask() != null) {
+            saveDialogSettings();
         }
 
         return super.performCancel();
@@ -269,13 +268,11 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
 
     @Override
     public boolean performFinish() {
-        if (!saveSettings()) {
+        saveDialogSettings();
+
+        if (!super.performFinish()) {
             return false;
         }
-
-        super.performFinish();
-
-        DTUIActivator.getDefault().saveDialogSettings();
 
         try {
             DBTTask currentTask = getCurrentTask();
@@ -293,26 +290,16 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             return false;
         }
 
-        // Done
         return true;
     }
 
-    private boolean saveSettings() {
+    // Saves wizard settings in UI dialog settings
+    private void saveDialogSettings() {
         // Save settings
-        try {
-            getRunnableContext().run(true, true, this::saveSettings);
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't save settings", e.getTargetException());
-            return false;
-        } catch (InterruptedException e) {
-            return false;
-        }
-        return true;
-    }
-
-    private void saveSettings(DBRProgressMonitor monitor) {
         DialogSettingsMap dialogSettings = new DialogSettingsMap(getDialogSettings());
-        saveConfiguration(monitor, dialogSettings);
+        saveConfiguration(dialogSettings);
+
+        DTUIActivator.getDefault().saveDialogSettings();
     }
 
     @Override
@@ -427,10 +414,10 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         }
         DataTransferSettings.saveNodesLocation(monitor, state, producers, "producers");
         DataTransferSettings.saveNodesLocation(monitor, state, consumers, "consumers");
-        state.put("configuration", saveConfiguration(monitor, new LinkedHashMap<>()));
+        state.put("configuration", saveConfiguration(new LinkedHashMap<>()));
     }
 
-    private Map<String, Object> saveConfiguration(DBRProgressMonitor monitor, Map<String, Object> config) {
+    private Map<String, Object> saveConfiguration(Map<String, Object> config) {
         config.put("maxJobCount", settings.getMaxJobCount());
         config.put("showFinalMessage", settings.isShowFinalMessage());
         // Save nodes' settings
