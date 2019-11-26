@@ -59,7 +59,7 @@ import java.util.List;
  * Abstract wizard
  */
 public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
-    extends TaskConfigurationWizard implements DBRRunnableWithProgress {
+    extends TaskConfigurationWizard {
 
     private static final Log log = Log.getLog(AbstractToolWizard.class);
 
@@ -271,6 +271,10 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
     public abstract Collection<PROCESS_ARG> getRunInfo();
 
+    public Collection<BASE_OBJECT> getUpdatedObjects(PROCESS_ARG settings) {
+        return Collections.emptyList();
+    }
+
     @Override
     public void createPageControls(Composite pageContainer) {
         super.createPageControls(pageContainer);
@@ -349,7 +353,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
         long startTime = System.currentTimeMillis();
         try {
-            UIUtils.run(getContainer(), true, true, this);
+            UIUtils.run(getContainer(), true, true, new ToolRunner());
         } catch (InterruptedException ex) {
             UIUtils.showMessageBox(getShell(), taskTitle, NLS.bind(TaskNativeUIMessages.tools_wizard_error_task_canceled, taskTitle, getObjectsName()), SWT.ICON_ERROR);
             return false;
@@ -361,7 +365,6 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             return false;
         } finally {
             getContainer().updateButtons();
-
         }
         long workTime = System.currentTimeMillis() - startTime;
         notifyToolFinish(taskTitle + " finished", workTime);
@@ -389,38 +392,6 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             str.append(object.getName());
         }
         return str.toString();
-    }
-
-    @Override
-    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        try {
-            isSuccess = true;
-            for (PROCESS_ARG arg : getRunInfo()) {
-                if (monitor.isCanceled()) break;
-                if (!executeProcess(monitor, arg)) {
-                    isSuccess = false;
-                }
-            }
-            refreshObjects = isSuccess && !monitor.isCanceled();
-            if (refreshObjects && needsModelRefresh()) {
-                // Refresh navigator node (script execution can change everything inside)
-                for (BASE_OBJECT object : databaseObjects) {
-                    final DBNDatabaseNode node = dataSourceContainer.getPlatform().getNavigatorModel().findNode(object);
-                    if (node != null) {
-                        node.refreshNode(monitor, AbstractToolWizard.this);
-                    }
-                }
-            }
-        } catch (InterruptedException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InvocationTargetException(e);
-        } finally {
-            finished = true;
-        }
-        if (monitor.isCanceled()) {
-            throw new InterruptedException();
-        }
     }
 
     public boolean executeProcess(DBRProgressMonitor monitor, PROCESS_ARG arg)
@@ -658,6 +629,40 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 }
                 monitor.done();
                 transferFinished = true;
+            }
+        }
+    }
+
+    private class ToolRunner implements DBRRunnableWithProgress {
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            try {
+                isSuccess = true;
+                for (PROCESS_ARG arg : getRunInfo()) {
+                    if (monitor.isCanceled()) break;
+                    if (!executeProcess(monitor, arg)) {
+                        isSuccess = false;
+                    }
+                }
+                refreshObjects = isSuccess && !monitor.isCanceled();
+                if (refreshObjects && needsModelRefresh()) {
+                    // Refresh navigator node (script execution can change everything inside)
+                    for (BASE_OBJECT object : databaseObjects) {
+                        final DBNDatabaseNode node = dataSourceContainer.getPlatform().getNavigatorModel().findNode(object);
+                        if (node != null) {
+                            node.refreshNode(monitor, AbstractToolWizard.this);
+                        }
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new InvocationTargetException(e);
+            } finally {
+                finished = true;
+            }
+            if (monitor.isCanceled()) {
+                throw new InterruptedException();
             }
         }
     }
