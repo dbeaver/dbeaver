@@ -608,13 +608,13 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBSDataType getLocalDataType(String typeName) {
+    public OracleDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
     @Nullable
     @Override
-    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
+    public OracleDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
         int divPos = typeFullName.indexOf(SQLConstants.STRUCT_SEPARATOR);
         if (divPos == -1) {
             // Simple type name
