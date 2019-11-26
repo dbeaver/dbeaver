@@ -616,7 +616,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
             curNetworkHandler.setEnabled(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_ENABLED));
             curNetworkHandler.setSavePassword(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_SAVE_PASSWORD));
             if (!passwordReadCanceled) {
-                final String[] creds = readSecuredCredentials(handlerCfg, dataSource, profile, "network/" + handlerId);
+                final String[] creds = readSecuredCredentials(handlerCfg, dataSource, profile,
+                    "network/" + handlerId + (profile == null ? "" : "/profile/" + profile.getProfileName()));
                 curNetworkHandler.setUserName(creds[0]);
                 if (curNetworkHandler.isSavePassword()) {
                     curNetworkHandler.setPassword(creds[1]);
@@ -857,7 +858,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             saveSecuredCredentials(
                 dataSource,
                 profile,
-                "network/" + configuration.getId(),
+                "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
                 configuration.getUserName(),
                 configuration.isSavePassword() ? configuration.getPassword() : null);
         }
@@ -880,12 +881,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     private void saveSecuredCredentials(
         @Nullable DataSourceDescriptor dataSource,
-        @Nullable DBWNetworkProfile  profile,
+        @Nullable DBWNetworkProfile profile,
         @Nullable String subNode,
         @Nullable String userName,
         @Nullable String password) {
         assert dataSource != null|| profile != null;
-        boolean saved = !passwordWriteCanceled&& DataSourceRegistry.saveCredentialsInSecuredStorage(
+        boolean saved = !passwordWriteCanceled && DataSourceRegistry.saveCredentialsInSecuredStorage(
             registry.getProject(), dataSource, subNode, userName, password);
         if (!saved) {
             passwordWriteCanceled = true;
@@ -911,7 +912,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable String subNode)
     {
         String[] creds = new String[2];
-        final DBASecureStorage secureStorage = dataSource == null ? DBWorkbench.getPlatform().getSecureStorage() : dataSource.getProject().getSecureStorage();
+        final DBASecureStorage secureStorage = dataSource == null ? registry.getProject().getSecureStorage() : dataSource.getProject().getSecureStorage();
         {
             try {
                 if (secureStorage.useSecurePreferences()) {
