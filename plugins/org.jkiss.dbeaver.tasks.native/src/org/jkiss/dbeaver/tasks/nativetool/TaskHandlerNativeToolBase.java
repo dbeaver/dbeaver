@@ -19,6 +19,11 @@ package org.jkiss.dbeaver.tasks.nativetool;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -27,18 +32,28 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * TaskHandlerNativeTool
+ * TaskHandlerNativeToolBase
  */
-public abstract class TaskHandlerNativeTool<BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler {
+public abstract class TaskHandlerNativeToolBase<BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler {
+
+    private List<BASE_OBJECT> databaseObjects;
+    private DBPNativeClientLocation clientHome;
+    private DBPDataSourceContainer dataSourceContainer;
+    private DBPConnectionConfiguration connectionInfo;
+    private String toolUserName;
+    private String toolUserPassword;
+    private String extraCommandArgs;
 
     private boolean refreshObjects;
     private boolean isSuccess;
@@ -47,8 +62,6 @@ public abstract class TaskHandlerNativeTool<BASE_OBJECT extends DBSObject, PROCE
     // Methods to implement in real handlers
 
     public abstract Collection<PROCESS_ARG> getRunInfo(DBTTask task);
-
-    protected abstract List<BASE_OBJECT> getDatabaseObjects(PROCESS_ARG runInfo);
 
     protected abstract List<String> getCommandLine(PROCESS_ARG arg) throws IOException;
 
@@ -78,6 +91,60 @@ public abstract class TaskHandlerNativeTool<BASE_OBJECT extends DBSObject, PROCE
     }
 
     ////////////////////////////////////
+    // Helpers
+
+    public List<BASE_OBJECT> getDatabaseObjects() {
+        return databaseObjects;
+    }
+
+    public DBPConnectionConfiguration getConnectionInfo() {
+        return connectionInfo;
+    }
+
+    public DBPNativeClientLocation getClientHome() {
+        return clientHome;
+    }
+
+    public String getToolUserName() {
+        return toolUserName;
+    }
+
+    public void setToolUserName(String toolUserName) {
+        this.toolUserName = toolUserName;
+    }
+
+    public String getToolUserPassword() {
+        return toolUserPassword;
+    }
+
+    public void setToolUserPassword(String toolUserPassword) {
+        this.toolUserPassword = toolUserPassword;
+    }
+
+    public String getExtraCommandArgs() {
+        return extraCommandArgs;
+    }
+
+    public void setExtraCommandArgs(String extraCommandArgs) {
+        this.extraCommandArgs = extraCommandArgs;
+    }
+
+    protected void addExtraCommandArgs(List<String> cmd) {
+        if (!CommonUtils.isEmptyTrimmed(extraCommandArgs)) {
+            Collections.addAll(cmd, extraCommandArgs.split(" "));
+        }
+    }
+
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
+    }
+
+    public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
+        return null;
+    }
+
+
+    ////////////////////////////////////
     // Native tool executor
 
     @Override
@@ -92,6 +159,13 @@ public abstract class TaskHandlerNativeTool<BASE_OBJECT extends DBSObject, PROCE
 
         try {
             runnableContext.run(true, true, monitor -> {
+                loadToolSettings(monitor, task, log);
+
+                if (!prepareTaskRun(monitor, task, log)) {
+                    isSuccess = false;
+                    return;
+                }
+
                 Collection<PROCESS_ARG> runList = getRunInfo(task);
                 try {
                     isSuccess = true;
@@ -106,17 +180,15 @@ public abstract class TaskHandlerNativeTool<BASE_OBJECT extends DBSObject, PROCE
                 }
                 refreshObjects = isSuccess && !monitor.isCanceled();
 
-                if (refreshObjects && needsModelRefresh()) {
+                if (refreshObjects && !CommonUtils.isEmpty(databaseObjects) && needsModelRefresh()) {
                     // Refresh navigator node (script execution can change everything inside)
-                    for (PROCESS_ARG runInfo : runList) {
-                        for (BASE_OBJECT object : getDatabaseObjects(runInfo)) {
-                            final DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(object);
-                            if (node != null) {
-                                try {
-                                    node.refreshNode(monitor, TaskHandlerNativeTool.this);
-                                } catch (DBException e) {
-                                    log.debug("Error refreshing node '" + node.getNodeItemPath() + "' after native tool execution", e);
-                                }
+                    for (BASE_OBJECT object : databaseObjects) {
+                        final DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(object);
+                        if (node != null) {
+                            try {
+                                node.refreshNode(monitor, TaskHandlerNativeToolBase.this);
+                            } catch (DBException e) {
+                                log.debug("Error refreshing node '" + node.getNodeItemPath() + "' after native tool execution", e);
                             }
                         }
                     }
@@ -130,6 +202,10 @@ public abstract class TaskHandlerNativeTool<BASE_OBJECT extends DBSObject, PROCE
         }
 
         log.debug(task.getType().getName() + " completed");
+    }
+
+    protected boolean prepareTaskRun(DBRProgressMonitor monitor, DBTTask task, Log log) {
+        return true;
     }
 
     private boolean executeProcess(DBRProgressMonitor monitor, DBTTask task, Log log, PROCESS_ARG arg) throws IOException, DBException, InterruptedException {
@@ -176,6 +252,45 @@ public abstract class TaskHandlerNativeTool<BASE_OBJECT extends DBSObject, PROCE
         }
 
         return true;
+    }
+
+    protected void loadToolSettings(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, Log log) {
+        String projectName = CommonUtils.toString(task.getProperties().get("project"));
+        DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+        if (project == null) {
+            if (!CommonUtils.isEmpty(projectName)) {
+                log.error("Can't find project '" + projectName + "' for tool configuration");
+            }
+            project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        }
+        String dsID = CommonUtils.toString(task.getProperties().get("dataSource"));
+        if (!CommonUtils.isEmpty(dsID)) {
+            dataSourceContainer = project.getDataSourceRegistry().getDataSource(dsID);
+            if (dataSourceContainer == null) {
+                log.error("Can't find datasource '" + dsID+ "' in project '" + project.getName() + "' for tool configuration");
+            }
+        }
+        {
+            List<String> databaseObjectList = (List<String>) task.getProperties().get("databaseObjects");
+            if (!CommonUtils.isEmpty(databaseObjectList)) {
+                DBPProject finalProject = project;
+                for (String objectId : databaseObjectList) {
+                    try {
+                        DBSObject object = DBUtils.findObjectById(monitor, finalProject, objectId);
+                        if (object != null) {
+                            databaseObjects.add((BASE_OBJECT) object);
+                        }
+                    } catch (Throwable e) {
+                        log.error("Can't find database object '" + objectId + "' in project '" + finalProject.getName() + "' for task configuration");
+                    }
+                }
+            }
+        }
+        connectionInfo = dataSourceContainer == null ? null : dataSourceContainer.getActualConnectionConfiguration();
+
+        toolUserName = CommonUtils.toString(task.getProperties().get("toolUserName"));
+        toolUserPassword = CommonUtils.toString(task.getProperties().get("toolUserPassword"));
+        extraCommandArgs = CommonUtils.toString(task.getProperties().get("extraArgs"));
     }
 
 }
