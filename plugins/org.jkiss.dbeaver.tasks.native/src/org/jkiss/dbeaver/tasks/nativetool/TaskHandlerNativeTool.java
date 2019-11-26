@@ -16,16 +16,69 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * TaskHandlerNativeTool
  */
-public abstract class TaskHandlerNativeTool implements DBTTaskHandler {
+public abstract class TaskHandlerNativeTool<BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler {
 
-/*
     private boolean refreshObjects;
     private boolean isSuccess;
+
+    ////////////////////////////////////
+    // Methods to implement in real handlers
+
+    public abstract Collection<PROCESS_ARG> getRunInfo(DBTTask task);
+
+    protected abstract List<BASE_OBJECT> getDatabaseObjects(PROCESS_ARG runInfo);
+
+    protected abstract List<String> getCommandLine(PROCESS_ARG arg) throws IOException;
+
+    protected void setupProcessParameters(ProcessBuilder process) {
+    }
+
+    protected abstract void startProcessHandler(DBRProgressMonitor monitor, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process);
+
+    protected boolean isNativeClientHomeRequired() {
+        return true;
+    }
+
+    protected boolean isMergeProcessStreams() {
+        return false;
+    }
+
+    public boolean isVerbose() {
+        return false;
+    }
+
+    protected boolean needsModelRefresh() {
+        return true;
+    }
+
+    protected void onSuccess(long workTime) {
+
+    }
+
+    ////////////////////////////////////
+    // Native tool executor
 
     @Override
     public void executeTask(
@@ -37,22 +90,49 @@ public abstract class TaskHandlerNativeTool implements DBTTaskHandler {
     {
         log.debug(task.getType().getName() + " initiated");
 
-        runnableContext.run(true, true, monitor -> {
-            isSuccess = true;
-            for (PROCESS_ARG arg : getRunInfo()) {
-                if (monitor.isCanceled()) break;
-                if (!executeProcess(monitor, arg)) {
-                    isSuccess = false;
+        try {
+            runnableContext.run(true, true, monitor -> {
+                Collection<PROCESS_ARG> runList = getRunInfo(task);
+                try {
+                    isSuccess = true;
+                    for (PROCESS_ARG arg : runList) {
+                        if (monitor.isCanceled()) break;
+                        if (!executeProcess(monitor, task, log, arg)) {
+                            isSuccess = false;
+                        }
+                    }
+                } catch (Exception e){
+                    throw new InvocationTargetException(e);
                 }
-            }
-            refreshObjects = isSuccess && !monitor.isCanceled();
-        });
+                refreshObjects = isSuccess && !monitor.isCanceled();
+
+                if (refreshObjects && needsModelRefresh()) {
+                    // Refresh navigator node (script execution can change everything inside)
+                    for (PROCESS_ARG runInfo : runList) {
+                        for (BASE_OBJECT object : getDatabaseObjects(runInfo)) {
+                            final DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(object);
+                            if (node != null) {
+                                try {
+                                    node.refreshNode(monitor, TaskHandlerNativeTool.this);
+                                } catch (DBException e) {
+                                    log.debug("Error refreshing node '" + node.getNodeItemPath() + "' after native tool execution", e);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            throw new DBException("Error executing native tool", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+            log.debug("Canceled");
+        }
 
         log.debug(task.getType().getName() + " completed");
     }
 
-    public boolean executeProcess(DBRProgressMonitor monitor, DBTTask task, Log log, PROCESS_ARG arg)
-        throws IOException, CoreException, InterruptedException {
+    private boolean executeProcess(DBRProgressMonitor monitor, DBTTask task, Log log, PROCESS_ARG arg) throws IOException, DBException, InterruptedException {
         monitor.beginTask(task.getName(), 1);
         try {
             final List<String> commandLine = getCommandLine(arg);
@@ -78,9 +158,7 @@ public abstract class TaskHandlerNativeTool implements DBTTaskHandler {
                 try {
                     final int exitCode = process.exitValue();
                     if (exitCode != 0) {
-                        String errorMessage = NLS.bind(TaskNativeUIMessages.tools_wizard_log_process_exit_code, exitCode);
-                        log.error(errorMessage);
-                        //logPage.appendLog(errorMessage + "\n", true);
+                        log.error("Process exit code: " + exitCode);
                         return false;
                     }
                 } catch (IllegalThreadStateException e) {
@@ -99,6 +177,5 @@ public abstract class TaskHandlerNativeTool implements DBTTaskHandler {
 
         return true;
     }
-*/
 
 }

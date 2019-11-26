@@ -53,6 +53,11 @@ public abstract class AbstractImportExportWizard<PROCESS_ARG> extends AbstractTo
         return false;
     }
 
+    @Override
+    public boolean isRunTaskOnFinish() {
+        return true;
+    }
+
     public File getOutputFolder()
     {
         return outputFolder;

@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.tasks.ui.nativetool.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class TaskNativeUIMessages extends NLS {
-	public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
+	public static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages"; //$NON-NLS-1$
 
 	public static String tools_script_execute_wizard_task_completed;
 	public static String tools_wizard_error_task_error_message;
