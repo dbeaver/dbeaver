@@ -46,12 +46,6 @@
             properties="canOpen,canCreate,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter"
             type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
-            namespace="org.jkiss.dbeaver.core.tools"
-            properties="hasTools"
-            type="org.eclipse.ui.IWorkbenchPart"/>
-        <propertyTester
             class="org.jkiss.dbeaver.ui.actions.UIPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.UIPropertyTester"
             namespace="org.jkiss.dbeaver.core.ui"
