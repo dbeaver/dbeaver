@@ -1509,7 +1509,7 @@ public final class DBUtils {
         DBPDataSource dataSource = structObject == null ? null : structObject.getDataSource();
         String typeName = typedObject.getTypeName();
         String typeModifiers = SQLUtils.getColumnTypeModifiers(dataSource, typedObject, typeName, typedObject.getDataKind());
-        return typeModifiers == null ? typeName : (typeName + CommonUtils.notEmpty(typeModifiers));
+        return typeModifiers == null ? typeName : (typeName + typeModifiers);
     }
 
     public static void releaseValue(@Nullable Object value)

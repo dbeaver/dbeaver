@@ -573,7 +573,11 @@ public class BasicSQLDialect implements SQLDialect {
                     }
                 }
                 if (scale != null && scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
-                    return "(" + precision + ',' + scale + ')';
+                    /*if (scale == 0) {
+                        return "(" + precision + ')';
+                    } else */{
+                        return "(" + precision + ',' + scale + ')';
+                    }
                 }
             } else if (typeName.equals("BIT")) {
                 // Bit string?
