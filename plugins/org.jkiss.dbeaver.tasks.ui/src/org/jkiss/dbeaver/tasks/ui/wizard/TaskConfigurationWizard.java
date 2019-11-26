@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -68,6 +69,10 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     public abstract String getTaskTypeId();
 
     public abstract void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state);
+
+    public boolean isRunTaskOnFinish() {
+        return false;
+    }
 
     public IStructuredSelection getCurrentSelection() {
         return currentSelection;
@@ -149,25 +154,35 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             saveTask();
         }
 
-/*
-        try {
-            DBTTask theTask = currentTask;
-            if (theTask == null) {
-                // Make fake task
-                DBTTaskType taskType = TaskRegistry.getInstance().getTaskType(getTaskTypeId());
-                theTask = new TaskImpl(getProject(), taskType, null, getWindowTitle(), getWindowTitle(), new Date(), new Date());
-                theTask.setProperties(new LinkedHashMap<>());
-                saveConfigurationToTask(theTask);
+        if (isRunTaskOnFinish()) {
+            if (!runTask()) {
+                return false;
             }
-            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), theTask);
-            theTask.getProject().getTaskManager().runTask(theTask, executor, Collections.emptyMap());
+        }
 
+        return true;
+    }
+
+    protected boolean runTask() {
+        try {
+            DBTTask task = getCurrentTask();
+            if (task == null) {
+                task = getProject().getTaskManager().createTemporaryTask(getTaskType(), getWindowTitle());
+                saveConfigurationToTask(task);
+            }
+            // Run task thru task manager
+            // Pass executor to visualize task progress in UI
+            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task);
+            if (getCurrentTask() == null) {
+                // Execute directly in wizard
+                executor.executeTask();
+            } else {
+                task.getProject().getTaskManager().runTask(task, executor, Collections.emptyMap());
+            }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't init data transfer", e);
+            DBWorkbench.getPlatformUI().showError("Task run error", e.getMessage(), e);
             return false;
         }
-*/
-
         return true;
     }
 
@@ -175,7 +190,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         return true;
     }
 
-    public void saveTask() {
+    private void saveTask() {
         DBTTask currentTask = getCurrentTask();
         if (currentTask == null) {
             // Create new task
