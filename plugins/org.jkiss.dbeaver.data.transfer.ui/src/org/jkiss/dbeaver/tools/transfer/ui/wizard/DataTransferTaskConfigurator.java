@@ -288,7 +288,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                 }
             }
             settings.setDataPipes(producers, consumers);
-            dtWizard.loadSettings(dtWizard.getRunnableContext());
+            dtWizard.loadSettings();
         }
 
         @Override
