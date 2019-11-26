@@ -53,12 +53,12 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     }
 
     @Override
-    protected synchronized void loadObjects(DBRProgressMonitor monitor, PostgreSchema postgreSchema) throws DBException {
-        super.loadObjects(monitor, postgreSchema);
+    protected synchronized void loadObjects(DBRProgressMonitor monitor, PostgreSchema schema) throws DBException {
+        super.loadObjects(monitor, schema);
 
         // Cache aliases
-        if (postgreSchema.isCatalogSchema()) {
-            mapDataTypeAliases(PostgreConstants.DATA_TYPE_ALIASES);
+        if (schema.isCatalogSchema()) {
+            mapDataTypeAliases(schema.getDataSource().getServerType().getDataTypeAliases());
             mapDataTypeAliases(PostgreConstants.SERIAL_TYPES);
         }
     }

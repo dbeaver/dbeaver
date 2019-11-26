@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * PostgreServerCockroachDB
@@ -188,6 +185,17 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
         } catch (Exception e) {
             throw new DBException(e, table.getDataSource());
         }
+    }
+
+    @Override
+    public Map<String, String> getDataTypeAliases() {
+        Map<String, String> aliasMap = new LinkedHashMap<>(super.getDataTypeAliases());
+        aliasMap.put("string", "text");
+        aliasMap.put("bytes", "bytea");
+        aliasMap.put("decimal", "numeric");
+        aliasMap.put("dec", "numeric");
+        aliasMap.put("float", "float8");
+        return aliasMap;
     }
 
     @Override

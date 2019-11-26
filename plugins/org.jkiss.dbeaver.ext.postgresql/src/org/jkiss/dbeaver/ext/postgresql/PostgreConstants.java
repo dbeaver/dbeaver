@@ -104,6 +104,7 @@ public class PostgreConstants {
     public static final Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
     public static final Map<String, String> DATA_TYPE_CANONICAL_NAMES = new HashMap<>();
 
+    public static final String TYPE_BOOL = "bool";
     public static final String TYPE_INT2 = "int2";
     public static final String TYPE_INT4 = "int4";
     public static final String TYPE_INT8 = "int8";
@@ -117,6 +118,7 @@ public class PostgreConstants {
     public static final String COLLATION_DEFAULT = "default";
 
     static {
+        DATA_TYPE_ALIASES.put("boolean", TYPE_BOOL);
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
         DATA_TYPE_ALIASES.put("int", TYPE_INT4);
         DATA_TYPE_ALIASES.put("bigint", TYPE_INT8);
