@@ -324,6 +324,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public Map<String, String> getDataTypeAliases() {
+        return PostgreConstants.DATA_TYPE_ALIASES;
+    }
+
+    @Override
     public boolean supportsExplainPlan() {
         return true;
     }
