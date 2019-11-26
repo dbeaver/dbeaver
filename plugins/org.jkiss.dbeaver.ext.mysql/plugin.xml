@@ -344,7 +344,7 @@
 
     </extension>
 
-    <extension point="org.jkiss.dbeaver.task">
+    <!--extension point="org.jkiss.dbeaver.task">
         <category id="mysql" name="MySQL" description="MySQL database task"/>
 
         <task id="mysqlDatabaseBackup" name="Database export" description="Database export task" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.task.DatabaseExportHandler">
@@ -357,6 +357,6 @@
         <task id="mysqlScriptExecute" name="SQL script" description="SQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/sql/sql_exec.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.task.ScriptExecuteHandler">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
-    </extension>
+    </extension-->
 
 </plugin>
