@@ -120,7 +120,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
             "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
             "\nWHERE typnamespace=? ");
         if (PostgreUtils.supportsTypeCategory(session.getDataSource())) {
-            sql.append("AND t.typcategory <> 'A'");
+            //sql.append("AND t.typcategory <> 'A'");
         }
         sql.append("\nORDER by t.oid");
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
