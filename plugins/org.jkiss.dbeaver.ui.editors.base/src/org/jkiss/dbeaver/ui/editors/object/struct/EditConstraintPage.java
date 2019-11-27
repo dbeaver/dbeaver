@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
@@ -97,6 +96,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Can't get attributes", "Error obtaining entity attributes", e);
         }
+        this.constraintName = this.constraint.getName();
     }
 
     private void addTypePrefix(DBSEntityConstraintType type, String prefix) {
@@ -132,11 +132,13 @@ public class EditConstraintPage extends AttributesSelectorPage {
             addTypePrefix(DBSEntityConstraintType.FOREIGN_KEY, "_FK");
             addTypePrefix(DBSEntityConstraintType.CHECK, "_CHECK");
 
-            String namePrefix = TYPE_PREFIX.get(constraintTypes[0]);
-            if (namePrefix == null) {
-                namePrefix = "KEY";
+            if (CommonUtils.isEmpty(this.constraintName)) {
+                String namePrefix = TYPE_PREFIX.get(constraintTypes[0]);
+                if (namePrefix == null) {
+                    namePrefix = "KEY";
+                }
+                this.constraintName = DBObjectNameCaseTransformer.transformName(entity.getDataSource(), CommonUtils.escapeIdentifier(entity.getName()) + namePrefix);
             }
-            this.constraintName = DBObjectNameCaseTransformer.transformName(entity.getDataSource(), CommonUtils.escapeIdentifier(entity.getName()) + namePrefix);
         }
 
         final Text nameText = entity != null ? UIUtils.createLabelText(panel, EditorsMessages.dialog_struct_edit_constrain_label_name, constraintName) : null;

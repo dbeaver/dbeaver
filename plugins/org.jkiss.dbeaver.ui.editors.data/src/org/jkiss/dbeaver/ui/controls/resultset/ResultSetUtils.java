@@ -54,6 +54,8 @@ public class ResultSetUtils
 {
     private static final Log log = Log.getLog(ResultSetUtils.class);
 
+    private static final boolean BROWSE_LAZY_ASSOCIATIONS = false;
+
     private static volatile IDialogSettings viewerSettings;
 
     @NotNull
@@ -495,7 +497,7 @@ public class ResultSetUtils
 
     public static DBSEntity getAssociatedEntity(DBSEntityConstraint constraint) {
         DBSEntity[] associatedEntity = new DBSEntity[1];
-        if (constraint instanceof DBSEntityAssociationLazy) {
+        if (BROWSE_LAZY_ASSOCIATIONS && constraint instanceof DBSEntityAssociationLazy) {
             try {
                 UIUtils.runInProgressService(monitor -> {
                     try {
