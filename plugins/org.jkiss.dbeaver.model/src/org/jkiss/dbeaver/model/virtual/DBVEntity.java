@@ -389,7 +389,10 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             entityConstraints = new ArrayList<>();
         }
         if (entityConstraints.isEmpty()) {
-            entityConstraints.add(new DBVEntityConstraint(this, DBSEntityConstraintType.VIRTUAL_KEY, "PRIMARY"));
+            entityConstraints.add(new DBVEntityConstraint(
+                this,
+                DBSEntityConstraintType.VIRTUAL_KEY,
+                "VIRTUAL_PK"));
         }
         for (DBVEntityConstraint constraint : entityConstraints) {
             if (constraint.getConstraintType().isUnique()) {
