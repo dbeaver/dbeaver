@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
@@ -190,6 +191,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
 
     @Override
     public void executeShellProgram(String shellCommand) {
+        File filePath = new File(shellCommand);
+        if (filePath.exists() && filePath.isDirectory()) {
+            System.out.println("Open directory '" + shellCommand + "'");
+            return;
+        }
         try {
             Runtime.getRuntime().exec(shellCommand);
         } catch (Exception e) {
