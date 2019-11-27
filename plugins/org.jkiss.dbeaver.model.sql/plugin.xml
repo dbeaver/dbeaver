@@ -3,6 +3,7 @@
 
 <plugin>
     <extension-point id="org.jkiss.dbeaver.sqlFormatter" name="%extension-point.org.jkiss.dbeaver.sqlFormatter.name" schema="schema/org.jkiss.dbeaver.sqlFormatter.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.model.sql.internal.SQLModelPreferencesInitializer"/>
@@ -13,6 +14,12 @@
         <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" label="%sql.formatter.default.name" description="%sql.formatter.default.tip"/>
         <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" label="%sql.formatter.compact.name" description="%sql.formatter.compact.tip"/>
         <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" label="%sql.formatter.external.name" description="%sql.formatter.external.tip"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="set" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
+        <command id="echo" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
+        <command id="export" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandExport" label="Export resultset" description="Export results of the next query. Launches data transfer process."/>
     </extension>
 
 </plugin>

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.registry;
+package org.jkiss.dbeaver.model.sql.registry;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;

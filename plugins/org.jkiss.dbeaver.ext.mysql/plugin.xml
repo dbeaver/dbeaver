@@ -300,7 +300,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
-        <command id="mysql.source" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
+        <command id="mysql.source" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dashboard">

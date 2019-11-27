@@ -14,29 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.sql.commands;
+package org.jkiss.dbeaver.model.sql.commands;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
+import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
-import org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Control command handler
  */
-public class SQLCommandEcho implements SQLControlCommandHandler {
+public class SQLCommandSet implements SQLControlCommandHandler {
 
     @Override
     public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
         String parameter = command.getParameter();
-        if (parameter != null) {
-            parameter = GeneralUtils.replaceVariables(parameter, new ScriptVariablesResolver(scriptContext));
+        int divPos = parameter.indexOf('=');
+        if (divPos == -1) {
+            throw new DBCException("Bad set syntax. Expected syntax:\n@set varName = value or expression");
         }
-        scriptContext.getOutputWriter().println(parameter);
+        String varName = parameter.substring(0, divPos).trim();
+        String varValue = parameter.substring(divPos + 1).trim();
+        varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)));
+        scriptContext.setVariable(varName, varValue);
 
         return true;
     }
+
+    ;
 
 }

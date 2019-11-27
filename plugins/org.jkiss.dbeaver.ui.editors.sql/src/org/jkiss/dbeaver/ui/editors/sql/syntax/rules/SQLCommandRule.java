@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax.rules;
 
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.ICharacterScanner;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 
 public class SQLCommandRule extends EndOfLineRule {

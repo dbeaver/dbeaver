@@ -19,8 +19,11 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -139,6 +142,17 @@ public class SQLScriptContext {
 
     public void setIgnoreParameters(boolean ignoreParameters) {
         this.ignoreParameters = ignoreParameters;
+    }
+
+    public boolean executeControlCommand(SQLControlCommand command) throws DBException {
+        if (command.isEmptyCommand()) {
+            return true;
+        }
+        SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId());
+        if (commandHandler == null) {
+            throw new DBException("Command '" + command.getCommand() + "' not supported");
+        }
+        return commandHandler.createHandler().handleCommand(command, this);
     }
 
     public void copyFrom(SQLScriptContext context) {

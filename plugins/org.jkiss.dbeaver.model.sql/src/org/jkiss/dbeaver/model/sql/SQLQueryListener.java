@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
 /**
- * Control command handler
+ * SQLQueryListener
+ *
+ * @author Serge Rider
  */
-public interface SQLControlCommandHandler
+public interface SQLQueryListener
 {
-    /**
-     *
-     * @param command       command
-     * @param scriptContext script context
-     * @return false if command failed and execution has to be stopped
-     */
-    boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext)
-        throws DBException;
+    void onStartScript();
+
+    void onStartQuery(DBCSession session, SQLQuery query);
+
+    void onEndQuery(DBCSession session, SQLQueryResult result);
+
+    void onEndScript(DBCStatistics statistics, boolean hasErrors);
 
 }

@@ -50,10 +50,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
-import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
-import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -62,8 +59,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -313,7 +308,7 @@ public class SQLQueryJob extends DataSourceJob
     {
         if (element instanceof SQLControlCommand) {
             try {
-                return executeControlCommand((SQLControlCommand)element);
+                return scriptContext.executeControlCommand((SQLControlCommand)element);
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
@@ -554,17 +549,6 @@ public class SQLQueryJob extends DataSourceJob
                 closeStatement();
             }
         }
-    }
-
-    public boolean executeControlCommand(SQLControlCommand command) throws DBException {
-        if (command.isEmptyCommand()) {
-            return true;
-        }
-        SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId());
-        if (commandHandler == null) {
-            throw new DBException("Command '" + command.getCommand() + "' not supported");
-        }
-        return commandHandler.createHandler().handleCommand(command, scriptContext);
     }
 
     private void showExecutionResult(DBCSession session) {

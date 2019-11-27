@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.sql;
 
-package org.jkiss.dbeaver.runtime.sql;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * SQLScriptCommitType
-*/
-public enum SQLScriptCommitType
+ * Control command handler
+ */
+public interface SQLControlCommandHandler
 {
-    AT_END,
-    AUTOCOMMIT,
-    NLINES,
-    NO_COMMIT
+    /**
+     *
+     * @param command       command
+     * @param scriptContext script context
+     * @return false if command failed and execution has to be stopped
+     */
+    boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext)
+        throws DBException;
 
 }

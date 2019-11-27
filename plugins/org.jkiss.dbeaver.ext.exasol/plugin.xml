@@ -561,7 +561,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
-        <command id="exasol.define" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandSet" label="Define" description="Defines variable"/>
+        <command id="exasol.define" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandSet" label="Define" description="Defines variable"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
