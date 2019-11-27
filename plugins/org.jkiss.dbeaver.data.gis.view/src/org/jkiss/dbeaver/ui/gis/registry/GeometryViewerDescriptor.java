@@ -28,6 +28,8 @@ import org.jkiss.utils.CommonUtils;
 
 public class GeometryViewerDescriptor extends AbstractDescriptor {
 
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.data.gis.geometryViewer"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(GeometryViewerDescriptor.class);
 
     private final ObjectType type;

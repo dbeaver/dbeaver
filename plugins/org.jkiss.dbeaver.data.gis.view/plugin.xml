@@ -4,6 +4,7 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.data.gis.geometryViewer" name="Geometry viewer" schema="schema/org.jkiss.dbeaver.data.gis.geometryViewer.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.data.gis.leaflet.tiles" name="Leaflet tiles" schema="schema/org.jkiss.dbeaver.data.gis.leafletTiles.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.gis.internal.GISViewerPreferencesInitializer"/>
@@ -31,6 +32,20 @@
                 id="browser"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.data.gis.leaflet.tiles">
+        <tiles id="mapbox" label="MapBox" layersDefinition="'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+            maxZoom: 18,
+            attribution: 'Map data &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/&quot; target=&quot;_new&quot;>OpenStreetMap&lt;/a> contributors ' +
+            '&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/2.0/&quot; target=&quot;_new&quot;>CC-BY-SA&lt;/a>, ' +
+            'Imagery &lt;a href=&quot;https://www.mapbox.com/&quot; target=&quot;_new&quot;>Mapbox&lt;/a>',
+            id: 'mapbox.streets'}"/>
+        <tiles id="osm" label="OpenStreetMap" layersDefinition="'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap&lt;/a> contributors',
+            id: 'osm.streets'}"/>
+    </extension>
+
 
     <extension point="org.jkiss.dbeaver.resultset.presentation">
         <presentation
