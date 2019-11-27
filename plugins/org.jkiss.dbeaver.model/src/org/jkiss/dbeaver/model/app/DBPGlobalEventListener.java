@@ -15,20 +15,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.serialize;
-
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+package org.jkiss.dbeaver.model.app;
 
 import java.util.Map;
 
 /**
- * Object serializer
+ * DBPGlobalEventListener
  */
-public interface DBPObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
-
-    void serializeObject(DBRRunnableContext runnableContext, OBJECT_TYPE object, Map<String, Object> state);
-
-    OBJECT_TYPE deserializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE objectContext, Map<String, Object> state) throws DBCException;
-
+public interface DBPGlobalEventListener
+{
+    void handleGlobalEvent(String eventId, Map<String, Object> properties);
 }

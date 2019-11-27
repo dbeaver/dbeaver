@@ -24,6 +24,7 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -49,6 +50,7 @@ import java.util.*;
 public class DataTransferWizard extends TaskConfigurationWizard implements IExportWizard, IImportWizard {
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataTransfer";//$NON-NLS-1$
+    private static final Log log = Log.getLog(DataTransferWizard.class);
 
     public static void openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
@@ -112,7 +114,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
 
     public DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
         this(task);
-        this.settings = new DataTransferSettings(runnableContext, task);
+        this.settings = new DataTransferSettings(runnableContext, task, log);
         loadSettings();
     }
 

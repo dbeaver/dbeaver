@@ -419,7 +419,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     public String getOutputFileName() {
-        Object extension = processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
+        Object extension = processorProperties == null ? null : processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
         String fileName = translatePattern(
             settings.getOutputFilePattern(),
             null).trim();
@@ -476,6 +476,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     if (settings.isUseSingleFile()) {
                         return "export";
                     }
+                    if (dataContainer == null) {
+                        return null;
+                    }
                     String tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
                     return stripObjectName(tableName);
                 }
@@ -484,6 +487,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 case VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
                 case VARIABLE_PROJECT: {
+                    if (dataContainer == null) {
+                        return null;
+                    }
                     DBPProject project = DBUtils.getObjectOwnerProject(dataContainer);
                     return project == null ? "" : project.getName();
                 }

@@ -44,7 +44,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         @NotNull Log log,
         @NotNull DBTTaskExecutionListener listener) throws DBException
     {
-        DataTransferSettings settings = new DataTransferSettings(runnableContext, task);
+        DataTransferSettings settings = new DataTransferSettings(runnableContext, task, log);
         executeWithSettings(runnableContext, locale, log, listener, settings);
     }
 
