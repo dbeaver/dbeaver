@@ -334,6 +334,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
     {
         if (editUniqueKeyPage != null) {
             Collection<DBSEntityAttribute> uniqueAttrs = editUniqueKeyPage.getSelectedAttributes();
+            uniqueConstraint.setName(editUniqueKeyPage.getConstraintName());
             uniqueConstraint.setAttributes(uniqueAttrs);
             DBDRowIdentifier virtualEntityIdentifier = viewer.getVirtualEntityIdentifier();
             if (virtualEntityIdentifier != null) {
