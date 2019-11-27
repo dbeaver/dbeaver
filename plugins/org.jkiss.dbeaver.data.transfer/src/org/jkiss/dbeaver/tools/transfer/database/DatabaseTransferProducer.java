@@ -124,7 +124,11 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         throws DBException {
         String contextTask = DTMessages.data_transfer_wizard_job_task_export;
 
-        DBPDataSource dataSource = getDatabaseObject().getDataSource();
+        DBSDataContainer databaseObject = getDatabaseObject();
+        if (databaseObject == null) {
+            throw new DBException("No input database object found");
+        }
+        DBPDataSource dataSource = databaseObject.getDataSource();
         assert (dataSource != null);
 
         DBExecUtils.tryExecuteRecover(monitor1, dataSource, monitor -> {
@@ -282,7 +286,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         }
 
         @Override
-        public DatabaseTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
+        public DatabaseTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) throws DBCException {
             DatabaseTransferProducer producer = new DatabaseTransferProducer();
             try {
                 runnableContext.run(false, true, monitor -> {
@@ -322,9 +326,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     }
                 });
             } catch (InvocationTargetException e) {
-                log.debug("Error deserializing node location", e.getTargetException());
+                throw new DBCException("Error deserializing node location", e.getTargetException());
             } catch (InterruptedException e) {
-                // Ignore
+                throw new DBCException("Deserialization canceled", e);
             }
 
             return producer;

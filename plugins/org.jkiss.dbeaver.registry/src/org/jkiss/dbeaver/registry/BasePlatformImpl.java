@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
+import org.jkiss.dbeaver.model.app.DBPGlobalEventManager;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -152,6 +153,11 @@ public abstract class BasePlatformImpl implements DBPPlatform {
     @Override
     public DBERegistry getEditorsRegistry() {
         return ObjectManagerRegistry.getInstance();
+    }
+
+    @Override
+    public DBPGlobalEventManager getGlobalEventManager() {
+        return GlobalEventManagerImpl.getInstance();
     }
 
     @NotNull

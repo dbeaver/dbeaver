@@ -419,11 +419,20 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     public void refresh() {
+        refreshTasks();
         refreshScheduledTasks();
         taskViewer.refresh(true);
     }
 
     private void loadTasks() {
+        refreshTasks();
+        refreshScheduledTasks();
+
+        taskViewer.setInput(allTasks);
+        taskColumnController.repackColumns();
+    }
+
+    private void refreshTasks() {
         allTasks.clear();
 
         List<DBPProject> projectsWithTasks = new ArrayList<>();
@@ -437,11 +446,6 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             Collections.addAll(allTasks, tasks);
         }
         allTasks.sort(Comparator.comparing(DBTTask::getCreateTime));
-
-        refreshScheduledTasks();
-
-        taskViewer.setInput(allTasks);
-        taskColumnController.repackColumns();
     }
 
     private void refreshScheduledTasks() {

@@ -24,6 +24,10 @@ import org.jkiss.code.Nullable;
  */
 public interface DBTTaskRegistry {
 
+    String EVENT_TASK_EXECUTE = "taskExecuted";
+    String EVENT_PARAM_PROJECT = "project";
+    String EVENT_PARAM_TASK = "taskId";
+
     @NotNull
     DBTTaskType[] getAllTaskTypes();
 

@@ -23,7 +23,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -87,6 +90,19 @@ public class TaskRegistry implements DBTTaskRegistry
                 }
             }
         }
+
+        DBWorkbench.getPlatform().getGlobalEventManager().addEventListener((eventId, properties) -> {
+            if (eventId.equals(EVENT_TASK_EXECUTE)) {
+                String projectName = CommonUtils.toString(properties.get(EVENT_PARAM_PROJECT));
+                String taskId = CommonUtils.toString(properties.get(EVENT_PARAM_TASK));
+                DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                if (project != null) {
+                    DBTTask task = project.getTaskManager().getTaskById(taskId);
+                    DBTTaskEvent event = new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_UPDATE);
+                    notifyTaskListeners(event);
+                }
+            }
+        });
     }
 
     @NotNull

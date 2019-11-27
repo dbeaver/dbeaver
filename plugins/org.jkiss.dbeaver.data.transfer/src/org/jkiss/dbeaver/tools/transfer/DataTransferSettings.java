@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -146,11 +147,11 @@ public class DataTransferSettings {
         }
     }
 
-    public DataTransferSettings(DBRRunnableContext runnableContext, DBTTask task) {
+    public DataTransferSettings(DBRRunnableContext runnableContext, DBTTask task, Log taskLog) {
         this(
             runnableContext,
-            getNodesFromLocation(runnableContext, task, "producers", IDataTransferProducer.class),
-            getNodesFromLocation(runnableContext, task, "consumers", IDataTransferConsumer.class),
+            getNodesFromLocation(runnableContext, task, taskLog, "producers", IDataTransferProducer.class),
+            getNodesFromLocation(runnableContext, task, taskLog, "consumers", IDataTransferConsumer.class),
             JSONUtils.getObject(task.getProperties(), "configuration")
         );
     }
@@ -461,16 +462,20 @@ public class DataTransferSettings {
         }
     }
 
-    public static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, DBTTask task, String nodeType, Class<T> nodeClass) {
+    public static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, DBTTask task, Log taskLog, String nodeType, Class<T> nodeClass) {
         Map<String, Object> config = task.getProperties();
         List<T> result = new ArrayList<>();
         Object nodeList = config.get(nodeType);
         if (nodeList instanceof Collection) {
             for (Object nodeObj : (Collection)nodeList) {
                 if (nodeObj instanceof Map) {
-                    Object node = JSONUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
-                    if (nodeClass.isInstance(node)) {
-                        result.add(nodeClass.cast(node));
+                    try {
+                        Object node = JSONUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
+                        if (nodeClass.isInstance(node)) {
+                            result.add(nodeClass.cast(node));
+                        }
+                    } catch (DBCException e) {
+                        taskLog.error(e);
                     }
                 }
             }

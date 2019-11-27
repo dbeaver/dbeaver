@@ -644,7 +644,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         @Override
-        public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
+        public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) throws DBCException {
             DatabaseTransferConsumer consumer = new DatabaseTransferConsumer();
 
             String entityId = CommonUtils.toString(state.get("entityId"), null);
@@ -663,9 +663,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         }
                     });
                 } catch (InvocationTargetException e) {
-                    log.debug("Error deserializing node location", e.getTargetException());
+                    throw new DBCException("Error deserializing node location", e.getTargetException());
                 } catch (InterruptedException e) {
-                    // Ignore
+                    throw new DBCException("Deserialization canceled", e);
                 }
             }
 
