@@ -41,19 +41,16 @@ import java.util.Map;
 
 public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
 
-    public OracleDataSourceProvider()
-    {
+    public OracleDataSourceProvider() {
     }
 
     @Override
-    public long getFeatures()
-    {
+    public long getFeatures() {
         return FEATURE_SCHEMAS;
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
-    {
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
         OracleConstants.ConnectionType connectionType;
         String conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
