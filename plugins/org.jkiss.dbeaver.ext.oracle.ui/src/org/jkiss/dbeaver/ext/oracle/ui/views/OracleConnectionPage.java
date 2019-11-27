@@ -61,6 +61,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private Combo userRoleCombo;
     private Text passwordText;
     private Combo tnsNameCombo;
+    private Combo walletTnsNameCombo;
 	private TabFolder connectionTypeFolder;
     private ClientHomesSelector oraHomeSelector;
     private Text connectionUrlText;
@@ -71,18 +72,17 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
     private static ImageDescriptor logoImage = OracleUIActivator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
     private TextWithOpenFolder tnsPathText;
+    private TextWithOpenFolder walletPathText;
 
     private boolean activated = false;
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
     }
 
     @Override
-    public void createControl(Composite composite)
-    {
+    public void createControl(Composite composite) {
         super.setImageDescriptor(logoImage);
 
         controlModifyListener = new ControlsListener();
@@ -97,14 +97,13 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         createBasicConnectionControls(connectionTypeFolder);
-		createTNSConnectionControls(connectionTypeFolder);
+        createTNSConnectionControls(connectionTypeFolder);
+        createWalletConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
         connectionTypeFolder.setSelection(connectionType.ordinal());
-        connectionTypeFolder.addSelectionListener(new SelectionAdapter()
-        {
+        connectionTypeFolder.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection()[0].getData();
                 site.getActiveDataSource().getConnectionConfiguration().setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
                 updateUI();
@@ -124,8 +123,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         setControl(addrGroup);
     }
 
-    private void createBasicConnectionControls(TabFolder protocolFolder)
-    {
+    private void createBasicConnectionControls(TabFolder protocolFolder) {
         TabItem protocolTabBasic = new TabItem(protocolFolder, SWT.NONE);
         protocolTabBasic.setText(OracleUIMessages.dialog_connection_basic_tab);
         protocolTabBasic.setData(OracleConstants.ConnectionType.BASIC);
@@ -170,8 +168,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
     }
 
-    private void createTNSConnectionControls(TabFolder protocolFolder)
-    {
+    private void createTNSConnectionControls(TabFolder protocolFolder) {
         TabItem protocolTabTNS = new TabItem(protocolFolder, SWT.NONE);
         protocolTabTNS.setText(OracleUIMessages.dialog_connection_tns_tab);
         protocolTabTNS.setData(OracleConstants.ConnectionType.TNS);
@@ -196,9 +193,8 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         });
     }
 
-    private Collection<String> getAvailableServiceNames()
-    {
-        String tnsPath = tnsPathText.getText();
+    private Collection<String> getAvailableServiceNames(TextWithOpenFolder folder) {
+        String tnsPath = folder.getText();
         if (!CommonUtils.isEmpty(tnsPath)) {
             File tnsFile = new File(tnsPath);
             if (tnsFile.exists()) {
@@ -222,7 +218,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private void populateTnsNameCombo() {
         String oldText = tnsNameCombo.getText();
         tnsNameCombo.removeAll();
-        Collection<String> serviceNames = getAvailableServiceNames();
+        Collection<String> serviceNames = getAvailableServiceNames(tnsPathText);
         if (serviceNames.isEmpty()) {
             tnsNameCombo.setEnabled(false);
         } else {
@@ -239,8 +235,27 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         }
     }
 
-    private void createCustomConnectionControls(TabFolder protocolFolder)
-    {
+    private void populateWalletTnsNameCombo() {
+        String oldText = walletTnsNameCombo.getText();
+        walletTnsNameCombo.removeAll();
+        Collection<String> serviceNames = getAvailableServiceNames(walletPathText);
+        if (serviceNames.isEmpty()) {
+            walletTnsNameCombo.setEnabled(false);
+        } else {
+            walletTnsNameCombo.setEnabled(true);
+            for (String alias : serviceNames) {
+                walletTnsNameCombo.add(alias);
+            }
+            if (!oldText.isEmpty()) {
+                UIUtils.setComboSelection(walletTnsNameCombo, oldText);
+            }
+            if (walletTnsNameCombo.getSelectionIndex() < 0) {
+                walletTnsNameCombo.select(0);
+            }
+        }
+    }
+
+    private void createCustomConnectionControls(TabFolder protocolFolder) {
         TabItem protocolTabCustom = new TabItem(protocolFolder, SWT.NONE);
         protocolTabCustom.setText(OracleUIMessages.dialog_connection_custom_tab);
         protocolTabCustom.setData(OracleConstants.ConnectionType.CUSTOM);
@@ -258,8 +273,32 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         connectionUrlText.addModifyListener(controlModifyListener);
     }
 
-    private void createSecurityGroup(Composite parent)
-    {
+    private void createWalletConnectionControls(TabFolder protocolFolder) {
+        TabItem protocolTabWallet = new TabItem(protocolFolder, SWT.NONE);
+        protocolTabWallet.setText(OracleUIMessages.dialog_connection_wallet_tab);
+        protocolTabWallet.setData(OracleConstants.ConnectionType.WALLET);
+
+        Composite targetContainer = new Composite(protocolFolder, SWT.NONE);
+        targetContainer.setLayout(new GridLayout(2, false));
+        targetContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        protocolTabWallet.setControl(targetContainer);
+
+        UIUtils.createControlLabel(targetContainer, "Network Alias");
+        walletTnsNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
+        walletTnsNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        walletTnsNameCombo.addModifyListener(controlModifyListener);
+
+        UIUtils.createControlLabel(targetContainer, "Wallet path");
+        walletPathText = new TextWithOpenFolder(targetContainer, "Oracle Wallet directory");
+        walletPathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        walletPathText.setToolTipText("Path to eWallet directory");
+        walletPathText.getTextControl().addModifyListener(e -> {
+            populateWalletTnsNameCombo();
+            updateUI();
+        });
+    }
+
+    private void createSecurityGroup(Composite parent) {
         Label userNameLabel = UIUtils.createControlLabel(parent, OracleUIMessages.dialog_connection_user_name);
         userNameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
@@ -309,8 +348,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         parent.setTabList(new Control[]{userNameText, passwordText, userRoleCombo, osAuthCheck});
     }
 
-    private void createClientHomeGroup(Composite bottomControls)
-    {
+    private void createClientHomeGroup(Composite bottomControls) {
         oraHomeSelector = new ClientHomesSelector(bottomControls, OracleUIMessages.dialog_connection_ora_home) {
             @Override
             protected void handleHomeChange()
@@ -327,8 +365,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     }
 
     @Override
-    public boolean isComplete()
-    {
+    public boolean isComplete() {
 //        if (isOCI && CommonUtils.isEmpty(oraHomeSelector.getSelectedHome())) {
 //            return false;
 //        }
@@ -337,6 +374,8 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 return !CommonUtils.isEmpty(serviceNameCombo.getText());
             case TNS:
                 return !CommonUtils.isEmpty(tnsNameCombo.getText());
+            case WALLET:
+                return !CommonUtils.isEmpty(walletTnsNameCombo.getText());
             case CUSTOM:
                 return !CommonUtils.isEmpty(connectionUrlText.getText());
             default:
@@ -345,14 +384,12 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     }
 
     @Override
-    protected boolean isCustomURL()
-    {
+    protected boolean isCustomURL() {
         return this.connectionType == OracleConstants.ConnectionType.CUSTOM;
     }
 
     @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
         super.loadSettings();
 
         // Load values from new connection info
@@ -372,7 +409,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         }
 
         if (serviceNameCombo.getItemCount() == 0) {
-            for (String alias : getAvailableServiceNames()) {
+            for (String alias : getAvailableServiceNames(tnsPathText)) {
                 serviceNameCombo.add(alias);
             }
         }
@@ -401,11 +438,16 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             case TNS: {
                 tnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
                 String tnsPathProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_TNS_PATH);
-//                if (tnsPathProperty == null) {
-//                    tnsPathProperty = System.getenv(OracleConstants.VAR_TNS_ADMIN);
-//                }
                 if (tnsPathProperty != null) {
                     tnsPathText.setText(tnsPathProperty);
+                }
+                break;
+            }
+            case WALLET: {
+                walletTnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+                String tnsPathProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_WALLET_PATH);
+                if (tnsPathProperty != null) {
+                    walletPathText.setText(tnsPathProperty);
                 }
                 break;
             }
@@ -434,8 +476,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
 
@@ -449,6 +490,10 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             case TNS:
                 connectionInfo.setDatabaseName(tnsNameCombo.getText().trim());
                 connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, tnsPathText.getText());
+                break;
+            case WALLET:
+                connectionInfo.setDatabaseName(walletTnsNameCombo.getText().trim());
+                connectionInfo.setProviderProperty(OracleConstants.PROP_WALLET_PATH, walletPathText.getText());
                 break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText());
