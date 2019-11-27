@@ -172,9 +172,14 @@ public class Log
         }
         synchronized (Log.class) {
             debugWriter.print(sdf.format(new Date()) + " - "); //$NON-NLS-1$
-            debugWriter.println(message);
+            if (message != null) {
+                debugWriter.println(message);
+            }
             if (t != null) {
                 t.printStackTrace(debugWriter);
+            }
+            if (message == null && t == null) {
+                debugWriter.println();
             }
             debugWriter.flush();
             for (Listener listener : listeners) {

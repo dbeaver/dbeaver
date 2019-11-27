@@ -663,7 +663,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         }
                     });
                 } catch (InvocationTargetException e) {
-                    throw new DBCException("Error deserializing node location", e.getTargetException());
+                    throw new DBCException("Error instantiating data consumer", e.getTargetException());
                 } catch (InterruptedException e) {
                     throw new DBCException("Deserialization canceled", e);
                 }
