@@ -326,7 +326,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     }
                 });
             } catch (InvocationTargetException e) {
-                throw new DBCException("Error deserializing node location", e.getTargetException());
+                throw new DBCException("Error instantiating data producer", e.getTargetException());
             } catch (InterruptedException e) {
                 throw new DBCException("Deserialization canceled", e);
             }
