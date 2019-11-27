@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
+import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -188,6 +189,15 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         saveAttributeSettings();
     }
 
+    @Override
+    public void refresh() {
+        try {
+            reloadGeometryData(lastValue, true);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Refresh", "Can't refresh value viewer", e);
+        }
+    }
+
     public void setGeometryData(@Nullable DBGeometry[] values) throws DBException {
         reloadGeometryData(values, false);
     }
@@ -317,6 +327,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                         return String.valueOf(toolsVisible);
                     case "geomCRS":
                         return geomCRS;
+                    case "defaultTiles":
+                        return GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLayersDefinition();
                 }
                 return null;
             });
@@ -459,6 +471,9 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
         Action crsSelectorAction = new SelectCRSAction(this);
         toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
+
+        Action tilesSelectorAction = new SelectTilesAction(this);
+        toolBarManager.add(ActionUtils.makeActionContribution(tilesSelectorAction, true));
 
         toolBarManager.add(new Action("Flip coordinates", Action.AS_CHECK_BOX) {
             {

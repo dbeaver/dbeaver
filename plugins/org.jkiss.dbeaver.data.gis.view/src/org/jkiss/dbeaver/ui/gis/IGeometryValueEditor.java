@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.gis;
 
 import org.eclipse.swt.widgets.Control;
 
-import java.util.List;
-
 /**
  * Geometry value editor
  */
@@ -31,4 +29,5 @@ public interface IGeometryValueEditor {
 
     void setValueSRID(int srid);
 
+    void refresh();
 }
