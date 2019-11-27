@@ -374,6 +374,8 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 return !CommonUtils.isEmpty(serviceNameCombo.getText());
             case TNS:
                 return !CommonUtils.isEmpty(tnsNameCombo.getText());
+            case WALLET:
+                return !CommonUtils.isEmpty(walletTnsNameCombo.getText());
             case CUSTOM:
                 return !CommonUtils.isEmpty(connectionUrlText.getText());
             default:
