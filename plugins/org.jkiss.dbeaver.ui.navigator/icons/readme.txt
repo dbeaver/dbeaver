@@ -1,0 +1,1 @@
+These icons will be deleted in future versions. Left here for backward compatibility with 6.3.5-.
