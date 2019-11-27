@@ -541,7 +541,7 @@ public class BasicSQLDialect implements SQLDialect {
         if (dataKind == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
                 long maxLength = column.getMaxLength();
-                if (maxLength > 0) {
+                if (maxLength > 0 && maxLength != Integer.MAX_VALUE && maxLength != Long.MAX_VALUE) {
                     Object maxStringLength = dataSource.getDataSourceFeature(DBConstants.FEATURE_MAX_STRING_LENGTH);
                     if (maxStringLength instanceof Number) {
                         int lengthLimit = ((Number) maxStringLength).intValue();
