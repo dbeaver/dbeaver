@@ -422,6 +422,8 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         refreshTasks();
         refreshScheduledTasks();
         taskViewer.refresh(true);
+
+        loadTaskRuns();
     }
 
     private void loadTasks() {

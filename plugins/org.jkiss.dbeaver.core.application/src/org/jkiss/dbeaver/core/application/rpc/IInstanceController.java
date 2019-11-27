@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.core.application.rpc;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Map;
 
 /**
  * DBeaver instance controller.
@@ -41,4 +42,6 @@ public interface IInstanceController extends Remote {
     void closeAllEditors() throws RemoteException;
 
     void executeWorkbenchCommand(String commandID) throws RemoteException;
+
+    void fireGlobalEvent(String eventId, Map<String, Object> properties) throws RemoteException;
 }

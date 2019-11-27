@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
+import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
 import org.jkiss.dbeaver.core.application.update.VersionUpdateDialog;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
@@ -157,10 +158,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
         Location instanceLoc = Platform.getInstanceLocation();
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
         {
-            String defaultHomePath = WORKSPACE_DIR_CURRENT;
-            if (instanceLoc.isSet()) {
-                defaultHomePath = instanceLoc.getURL().getFile();
-            }
+            String defaultHomePath = getDefaultInstanceLocation();
             if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
                 log.debug("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
                 return IApplication.EXIT_OK;
@@ -265,6 +263,15 @@ public class DBeaverApplication extends BaseApplicationImpl {
             display.dispose();
             display = null;
         }
+    }
+
+    private String getDefaultInstanceLocation() {
+        String defaultHomePath = WORKSPACE_DIR_CURRENT;
+        Location instanceLoc = Platform.getInstanceLocation();
+        if (instanceLoc.isSet()) {
+            defaultHomePath = instanceLoc.getURL().getFile();
+        }
+        return defaultHomePath;
     }
 
     private void updateSplashHandler() {
@@ -487,8 +494,12 @@ public class DBeaverApplication extends BaseApplicationImpl {
         }
     }
 
-    IInstanceController getInstanceServer() {
+    public IInstanceController getInstanceServer() {
         return instanceServer;
+    }
+
+    public IInstanceController createInstanceClient() {
+        return InstanceClient.createClient(getDefaultInstanceLocation());
     }
 
     private static File getDefaultWorkspaceLocation(String path) {
