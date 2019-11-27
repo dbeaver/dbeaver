@@ -31,7 +31,7 @@ public class HandlerDashboardOpen extends AbstractDataSourceHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, true);
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
         if (dataSourceContainer == null) {
             dataSourceContainer = getDataSourceContainer(event, true);
         }
