@@ -51,7 +51,7 @@ public class Log
     }
 
     private final String name;
-    private PrintStream logWriter;
+    private static ThreadLocal<PrintStream> logWriter = new ThreadLocal<>();
     private static boolean quietMode;
 
     public static Log getLog(Class<?> forClass) {
@@ -60,6 +60,18 @@ public class Log
 
     public static boolean isQuietMode() {
         return quietMode;
+    }
+
+    public static PrintStream getLogWriter() {
+        return logWriter.get();
+    }
+
+    public static void setLogWriter(OutputStream logWriter) {
+        if (logWriter == null) {
+            Log.logWriter.remove();
+        } else {
+            Log.logWriter.set(new PrintStream(logWriter, true));
+        }
     }
 
     public void log(IStatus status) {
@@ -91,20 +103,14 @@ public class Log
         }
     }
 
-    private Log(String name)
-    {
+    private Log(String name) {
         this.name = name;
-        logWriter = null;
-    }
-
-    public Log(String name, OutputStream out) {
-        this.name = name;
-        this.logWriter = new PrintStream(out);
     }
 
     public void flush() {
-        if (logWriter != null) {
-            logWriter.flush();
+        PrintStream logStream = logWriter.get();
+        if (logStream != null) {
+            logStream.flush();
         }
     }
 
@@ -166,7 +172,8 @@ public class Log
     }
 
     private void debugMessage(Object message, Throwable t) {
-        PrintStream debugWriter = logWriter != null ? logWriter : (quietMode ? null : System.err);
+        PrintStream logStream = logWriter.get();
+        PrintStream debugWriter = logStream != null ? logStream : (quietMode ? null : System.err);
         if (debugWriter == null) {
             return;
         }
@@ -249,7 +256,7 @@ public class Log
     private void writeExceptionStatus(int severity, Object message, Throwable t)
     {
         debugMessage(message, t);
-        if (logWriter == null) {
+        if (logWriter.get() == null) {
             if (t == null) {
                 writeEclipseLog(createStatus(severity, message));
             } else {
@@ -263,7 +270,7 @@ public class Log
     }
 
     private void writeEclipseLog(IStatus status) {
-        if (logWriter == null && eclipseLog != null) {
+        if (logWriter.get() == null && eclipseLog != null) {
             eclipseLog.log(status);
         }
     }

@@ -80,7 +80,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             File logFile = task.getRunLog(taskRun);
 
             try (OutputStream logStream = new FileOutputStream(logFile)) {
-                taskLog = new Log(getName(), logStream);
+                taskLog = Log.getLog(TaskRunJob.class);
+                Log.setLogWriter(logStream);
                 try {
                     monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
                     executeTask(new LoggingProgressMonitor(monitor));
@@ -90,6 +91,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     throw e;
                 } finally {
                     monitor.done();
+                    Log.setLogWriter(null);
                     taskLog.flush();
                 }
             } finally {
