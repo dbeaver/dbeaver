@@ -157,6 +157,11 @@ public class DBeaverInstanceServer implements IInstanceController {
         }
     }
 
+    @Override
+    public void fireGlobalEvent(String eventId, Map<String, Object> properties) throws RemoteException {
+        DBWorkbench.getPlatform().getGlobalEventManager().fireGlobalEvent(eventId, properties);
+    }
+
     public static IInstanceController startInstanceServer(CommandLine commandLine, IInstanceController server) {
         try {
             portNumber = IOUtils.findFreePort(20000, 65000);

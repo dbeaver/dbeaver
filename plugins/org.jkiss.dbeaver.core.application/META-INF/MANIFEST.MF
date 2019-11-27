@@ -9,6 +9,7 @@ Bundle-Version: 6.3.0.qualifier
 Bundle-Release-Date: 20191202
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jkiss.dbeaver.core.application,
+ org.jkiss.dbeaver.core.application.rpc,
  org.jkiss.dbeaver.core.application.update
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.osgi,
