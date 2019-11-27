@@ -167,7 +167,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
         DBTTaskManager taskManager = project.getTaskManager();
         try {
             if (task == null) {
-                task = (TaskImpl) taskManager.createTaskConfiguration(taskType, taskLabelCombo.getText(), taskDescriptionText.getText(), state);
+                task = (TaskImpl) taskManager.createTask(taskType, taskLabelCombo.getText(), taskDescriptionText.getText(), state);
             }
             task.setName(taskLabelCombo.getText());
             task.setDescription(taskDescriptionText.getText());
