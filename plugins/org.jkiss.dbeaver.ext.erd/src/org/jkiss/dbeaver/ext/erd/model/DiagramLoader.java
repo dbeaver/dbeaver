@@ -281,7 +281,7 @@ public class DiagramLoader
                     }
                     final DBSObject child = container.getChild(monitor, tableName);
                     if (!(child instanceof DBSEntity)) {
-                        diagram.addErrorMessage("Cannot find table '" + tableName + "' in '" + container.getName() + "'");
+                        log.debug("Cannot find table '" + tableName + "' in '" + container.getName() + "'");
                         continue;
                     }
                     String locX = entityElem.getAttribute(ATTR_X);
