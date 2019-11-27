@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.sql.commands;
+package org.jkiss.dbeaver.ui.editors.sql.commands;
 
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -23,13 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryResult;
-import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
-import org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;

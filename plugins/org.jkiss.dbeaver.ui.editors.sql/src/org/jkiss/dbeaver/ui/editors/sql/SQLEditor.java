@@ -82,7 +82,6 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -118,8 +117,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2500,29 +2499,19 @@ public class SQLEditor extends SQLEditorBase implements
                 }
 
                 if (export) {
-                    // Use special consumer and data containers
-                    SQLQueryResultsConsumer resultsConsumer = new SQLQueryResultsConsumer();
-                    SQLQueryJob job = new SQLQueryJob(
-                        getSite(),
-                        "Export from query",
-                        executionContext,
-                        resultsContainer,
-                        queries,
-                        scriptContext,
-                        resultsConsumer,
-                        listener);
-
                     List<IDataTransferProducer> producers = new ArrayList<>();
                     for (int i = 0; i < queries.size(); i++) {
                         SQLScriptElement element = queries.get(i);
                         if (element instanceof SQLControlCommand) {
                             try {
-                                job.executeControlCommand((SQLControlCommand) element);
+                                scriptContext.executeControlCommand((SQLControlCommand) element);
                             } catch (DBException e) {
                                 DBWorkbench.getPlatformUI().showError("Command error", "Error processing control command", e);
                             }
                         } else {
                             SQLQuery query = (SQLQuery) element;
+                            scriptContext.fillQueryParameters(query);
+
                             SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(SQLEditor.this, query, scriptContext, log);
                             producers.add(new DatabaseTransferProducer(dataContainer, null));
                         }

@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.model.sql;
 
 /**
- * SQLScriptErrorHandling
+ * SQLScriptCommitType
 */
-public enum SQLScriptErrorHandling
+public enum SQLScriptCommitType
 {
-    STOP_ROLLBACK,
-    STOP_COMMIT,
-    IGNORE
+    AT_END,
+    AUTOCOMMIT,
+    NLINES,
+    NO_COMMIT
 
 }

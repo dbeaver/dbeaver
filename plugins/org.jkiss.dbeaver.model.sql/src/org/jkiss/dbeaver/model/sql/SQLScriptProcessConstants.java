@@ -14,26 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.sql;
-
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryResult;
+package org.jkiss.dbeaver.model.sql;
 
 /**
- * SQLQueryListener
- *
- * @author Serge Rider
+ * SQL statement pragmaas (execution flow controllers)
  */
-public interface SQLQueryListener
-{
-    void onStartScript();
+public interface SQLScriptProcessConstants {
 
-    void onStartQuery(DBCSession session, SQLQuery query);
-
-    void onEndQuery(DBCSession session, SQLQueryResult result);
-
-    void onEndScript(DBCStatistics statistics, boolean hasErrors);
+    String PRAGMA_EXPORT = "export";
 
 }

@@ -12,7 +12,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 
 
 /**

@@ -53,7 +53,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler"/>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.sql.SQLControlCommandHandler"/>
                </appInfo>
             </annotation>
          </attribute>

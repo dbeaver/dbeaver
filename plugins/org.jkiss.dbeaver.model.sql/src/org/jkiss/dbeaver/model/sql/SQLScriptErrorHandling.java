@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.sql;
+
+package org.jkiss.dbeaver.model.sql;
 
 /**
- * SQL statement pragmaas (execution flow controllers)
- */
-public interface SQLScriptProcessConstants {
-
-    String PRAGMA_EXPORT = "export";
+ * SQLScriptErrorHandling
+*/
+public enum SQLScriptErrorHandling
+{
+    STOP_ROLLBACK,
+    STOP_COMMIT,
+    IGNORE
 
 }
