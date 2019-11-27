@@ -46,7 +46,7 @@ public class TaskHandlerCreate extends AbstractHandler {
             try {
 /*
                 DBTTaskConfigurator configurator = dialog.getSelectedCategory().createConfigurator();
-                DBTTask task = taskManager.createTaskConfiguration(
+                DBTTask task = taskManager.createTask(
                     dialog.getSelectedTaskType(),
                     dialog.getTaskName(),
                     dialog.getTaskDescription(),

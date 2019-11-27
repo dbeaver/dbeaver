@@ -296,7 +296,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
 
             if (task == null) {
-                task = (TaskImpl) selectedProject.getTaskManager().createTaskConfiguration(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, new LinkedHashMap<>());
+                task = (TaskImpl) selectedProject.getTaskManager().createTask(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, new LinkedHashMap<>());
             }
             realWizard = (TaskConfigurationWizard) configurator.createTaskConfigWizard(task);
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();

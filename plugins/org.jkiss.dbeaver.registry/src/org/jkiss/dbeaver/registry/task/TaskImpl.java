@@ -54,7 +54,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         .create();
 
     private final DBPProject project;
-    private String id;
+    private final String id;
     private String label;
     private String description;
     private Date createTime;
