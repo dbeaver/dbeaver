@@ -41,19 +41,16 @@ import java.util.Map;
 
 public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
 
-    public OracleDataSourceProvider()
-    {
+    public OracleDataSourceProvider() {
     }
 
     @Override
-    public long getFeatures()
-    {
+    public long getFeatures() {
         return FEATURE_SCHEMAS;
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
-    {
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
         OracleConstants.ConnectionType connectionType;
         String conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
@@ -66,8 +63,37 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             return connectionInfo.getUrl();
         }
         StringBuilder url = new StringBuilder(100);
-        url.append("jdbc:oracle:thin:@"); //$NON-NLS-1$
-        if (connectionType == OracleConstants.ConnectionType.TNS) {
+        url.append("jdbc:oracle:thin:"); //$NON-NLS-1$
+        if (connectionType == OracleConstants.ConnectionType.WALLET) {
+        	url.append("/@");
+            File oraHomePath;
+            boolean checkTnsAdmin;
+            String tnsPathProp = CommonUtils.toString(connectionInfo.getProviderProperty(OracleConstants.PROP_WALLET_PATH));
+            if (!CommonUtils.isEmpty(tnsPathProp)) {
+                oraHomePath = new File(tnsPathProp);
+                checkTnsAdmin = false;
+            } else {
+                final String clientHomeId = connectionInfo.getClientHomeId();
+                final OracleHomeDescriptor oraHome = CommonUtils.isEmpty(clientHomeId) ? null : OCIUtils.getOraHome(clientHomeId);
+                oraHomePath = oraHome == null ? null : oraHome.getPath();
+                checkTnsAdmin = true;
+            }
+
+            final Map<String, String> tnsNames = OCIUtils.readTnsNames(oraHomePath, checkTnsAdmin);
+            final String tnsDescription = tnsNames.get(connectionInfo.getDatabaseName());
+            if (!CommonUtils.isEmpty(tnsDescription)) {
+                url.append(tnsDescription);
+            } else {
+                // TNS name not found.
+                // Last chance - set TNS path and hope that Oracle driver find figure something out
+                final File tnsNamesFile = OCIUtils.findTnsNamesFile(oraHomePath, checkTnsAdmin);
+                if (tnsNamesFile != null && tnsNamesFile.exists()) {
+                    System.setProperty(OracleConstants.VAR_ORACLE_NET_TNS_ADMIN, tnsNamesFile.getAbsolutePath());
+                }
+                url.append(connectionInfo.getDatabaseName());
+            }
+        } else if (connectionType == OracleConstants.ConnectionType.TNS) {
+        	url.append("@");
             // TNS name specified
             // Try to get description from TNSNAMES
             File oraHomePath;
@@ -98,6 +124,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             }
         } else {
             // Basic connection info specified
+        	url.append("@");
             boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProviderProperty(OracleConstants.PROP_SID_SERVICE));
             if (!isSID) {
                 url.append("//"); //$NON-NLS-1$
