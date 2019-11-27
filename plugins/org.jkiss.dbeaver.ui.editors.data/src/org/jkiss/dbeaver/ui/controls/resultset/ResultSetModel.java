@@ -936,9 +936,18 @@ public class ResultSetModel {
     void updateDataFilter(DBDDataFilter filter, boolean forceUpdate) {
         this.visibleAttributes.clear();
         Collections.addAll(this.visibleAttributes, this.attributes);
+        List<DBDAttributeConstraint> missingConstraints = new ArrayList<>();
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
             DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
-            if (filterConstraint == null || (!forceUpdate &&
+            if (filterConstraint == null) {
+                // Constraint not found
+                // Let's add it just to visualize condition in filters text
+                if (constraint.getOperator() != null) {
+                    missingConstraints.add(constraint);
+                }
+                continue;
+            }
+            if ((!forceUpdate &&
                 constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
                 constraint.getVisualPosition() == constraint.getOriginalVisualPosition()))
             {
@@ -978,6 +987,10 @@ public class ResultSetModel {
                     }
                 }
             }
+        }
+
+        if (!missingConstraints.isEmpty()) {
+            this.dataFilter.addConstraints(missingConstraints);
         }
 
         if (filter.getConstraints().size() != attributes.length) {
