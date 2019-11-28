@@ -414,6 +414,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                         loadTaskRuns();
                     }
                     break;
+                case TASK_EXECUTE:
+                    refresh();
+                    break;
             }
         });
     }

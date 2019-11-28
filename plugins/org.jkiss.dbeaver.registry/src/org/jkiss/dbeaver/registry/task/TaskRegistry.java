@@ -98,7 +98,7 @@ public class TaskRegistry implements DBTTaskRegistry
                 DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
                 if (project != null) {
                     DBTTask task = project.getTaskManager().getTaskById(taskId);
-                    DBTTaskEvent event = new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_UPDATE);
+                    DBTTaskEvent event = new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_EXECUTE);
                     notifyTaskListeners(event);
                 }
             }
