@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
@@ -58,8 +59,9 @@ public class EditConstraintPage extends AttributesSelectorPage {
     private Map<DBSEntityConstraintType, String> TYPE_PREFIX = new HashMap<>();
     private Group expressionGroup;
     private Text expressionText;
-    private Boolean enableConstraint = true;
-    private Boolean showEnable = false;
+    private boolean enableConstraint = true;
+    private boolean showEnable = false;
+    private boolean useAllColumns = false;
 
     public EditConstraintPage(
         String title,
@@ -97,6 +99,13 @@ public class EditConstraintPage extends AttributesSelectorPage {
             DBWorkbench.getPlatformUI().showError("Can't get attributes", "Error obtaining entity attributes", e);
         }
         this.constraintName = this.constraint.getName();
+        if (constraint instanceof DBVEntityConstraint) {
+            this.useAllColumns = ((DBVEntityConstraint) constraint).isUseAllColumns();
+        }
+    }
+
+    private boolean isUniqueVirtualKeyEdit() {
+        return this.constraintTypes.length == 1 && this.constraintTypes[0] == DBSEntityConstraintType.VIRTUAL_KEY;
     }
 
     private void addTypePrefix(DBSEntityConstraintType type, String prefix) {
@@ -180,13 +189,24 @@ public class EditConstraintPage extends AttributesSelectorPage {
             }
         });
 
-        {
+        if (showEnable) {
             final Button enableConstraintButton = UIUtils.createCheckbox(panel, "Enable Constraint", "Enable constraint after creation", true, 2);
             enableConstraintButton.setVisible(showEnable);
             enableConstraintButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     enableConstraint = enableConstraintButton.getSelection();
+                }
+            });
+        }
+
+        if (isUniqueVirtualKeyEdit()) {
+            final Button useAllColumnsCheck = UIUtils.createCheckbox(panel, "Use All columns", "Include all table columns in unique key", useAllColumns, 2);
+            useAllColumnsCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    useAllColumns = useAllColumnsCheck.getSelection();
+                    columnsTable.setEnabled(!useAllColumns);
                 }
             });
         }
@@ -206,7 +226,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
                 updatePageState();
             }
         });
-
+        columnsTable.setEnabled(!useAllColumns);
     }
 
     public String getConstraintName() {
@@ -252,4 +272,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
     	return this.enableConstraint;
     }
 
+    public boolean isUseAllColumns() {
+        return this.useAllColumns;
+    }
 }

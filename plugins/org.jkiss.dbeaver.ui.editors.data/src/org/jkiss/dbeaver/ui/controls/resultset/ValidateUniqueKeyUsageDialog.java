@@ -77,7 +77,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
                 super.buttonPressed(buttonId);
                 break;
             case IDialogConstants.INTERNAL_ID:
-                if (useAllColumns(getShell(), viewer)) {
+                if (useAllColumns(viewer)) {
                     super.buttonPressed(IDialogConstants.OK_ID);
                 }
                 break;
@@ -97,7 +97,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
         }
     }
 
-    private static boolean useAllColumns(Shell shell, ResultSetViewer viewer)
+    private static boolean useAllColumns(ResultSetViewer viewer)
     {
         // Use all columns
         final DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
@@ -113,6 +113,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             return false;
         }
         constraint.setAttributes(uniqueColumns);
+        constraint.setUseAllColumns(true);
 
         try {
             identifier.reloadAttributes(
@@ -139,7 +140,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
         }
 
         if (executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS)) {
-            if (useAllColumns(viewer.getControl().getShell(), viewer)) {
+            if (useAllColumns(viewer)) {
                 return true;
             }
         }

@@ -272,18 +272,12 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 }
             });
         }
-
-/*
-        editUniqueKeyPage = new EditConstraintPage(
-            "Define unique identifier",
-            uniqueConstraint);
-        editUniqueKeyPage.createControl(group);
-*/
     }
 
     private void changeConstraint(DBVEntityConstraint constraint, EditConstraintPage editPage) {
         constraint.setName(editPage.getConstraintName());
         constraint.setAttributes(editPage.getSelectedAttributes());
+        constraint.setUseAllColumns(false);
     }
 
     private void createUniqueKeyItem(Table ukTable, DBVEntityConstraint uk) {

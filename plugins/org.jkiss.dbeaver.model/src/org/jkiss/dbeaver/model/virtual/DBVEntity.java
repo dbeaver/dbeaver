@@ -152,8 +152,12 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             Map<String, Object> consMap = consObject.getValue();
             String consType = JSONUtils.getString(consMap, "type");
             DBVEntityConstraint constraint = new DBVEntityConstraint(this, DBSEntityConstraintType.VIRTUAL_KEY, consName);
-            for (String attrName : JSONUtils.deserializeStringList(consMap, "attributes")) {
-                constraint.addAttribute(attrName);
+            boolean useAllColumns = JSONUtils.getBoolean(consMap, "useAllColumns");
+            constraint.setUseAllColumns(useAllColumns);
+            if (!useAllColumns) {
+                for (String attrName : JSONUtils.deserializeStringList(consMap, "attributes")) {
+                    constraint.addAttribute(attrName);
+                }
             }
             if (entityConstraints == null) entityConstraints = new ArrayList<>();
             entityConstraints.add(constraint);

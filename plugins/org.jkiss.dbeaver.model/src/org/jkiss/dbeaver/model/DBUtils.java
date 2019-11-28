@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
@@ -1086,6 +1087,17 @@ public final class DBUtils {
     @NotNull
     public static List<DBSEntityAttribute> getEntityAttributes(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityReferrer referrer)
     {
+        try {
+            if (referrer instanceof DBVEntityConstraint && ((DBVEntityConstraint) referrer).isUseAllColumns()) {
+                DBSEntity realEntity = ((DBVEntityConstraint) referrer).getEntity().getRealEntity(monitor);
+                if (realEntity != null) {
+                    Collection<? extends DBSEntityAttribute> attributes = realEntity.getAttributes(monitor);
+                    return attributes == null ? Collections.emptyList() : new ArrayList<>(attributes);
+                }
+            }
+        } catch (DBException e) {
+            log.error("Error discovering virtual constraint attributes", e);
+        }
         Collection<? extends DBSEntityAttributeRef> constraintColumns = null;
         if (referrer != null) {
             try {
