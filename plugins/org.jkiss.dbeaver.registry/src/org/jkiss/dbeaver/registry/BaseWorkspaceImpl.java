@@ -77,6 +77,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
             } catch (Throwable e) {
                 log.error(e);
             }
+            allProjects = root.getProjects();
         }
         for (IProject project : allProjects) {
             if (project.exists() && !project.isHidden()) {
