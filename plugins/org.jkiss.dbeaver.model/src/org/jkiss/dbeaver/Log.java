@@ -26,6 +26,8 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -70,7 +72,13 @@ public class Log
         if (logWriter == null) {
             Log.logWriter.remove();
         } else {
-            Log.logWriter.set(new PrintStream(logWriter, true));
+            PrintStream printStream;
+            try {
+                printStream = new PrintStream(logWriter, true, StandardCharsets.UTF_8.toString());
+            } catch (UnsupportedEncodingException e) {
+                printStream = new PrintStream(logWriter, true);
+            }
+            Log.logWriter.set(printStream);
         }
     }
 
