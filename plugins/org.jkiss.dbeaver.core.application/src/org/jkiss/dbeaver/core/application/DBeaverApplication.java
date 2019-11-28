@@ -311,10 +311,30 @@ public class DBeaverApplication extends BaseApplicationImpl {
                 if (settingsFile.exists()) {
                     settingsFile.deleteOnExit();
                 }
+                //markFoldertoDelete(new File(instanceDir, ".metadata/.plugins/org.eclipse.core.resources/.root"));
+                //markFoldertoDelete(new File(instanceDir, ".metadata/.plugins/org.eclipse.core.resources/.safetable"));
             }
         } catch (Throwable e) {
             log.error("Error resetting UI settings", e);
         }
+    }
+
+    private void markFoldertoDelete(File folder) {
+        if (!folder.exists()) {
+            return;
+        }
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    markFoldertoDelete(file);
+                } else {
+                    log.debug("Delete resource file " + file.getAbsolutePath());
+                    file.deleteOnExit();
+                }
+            }
+        }
+        folder.deleteOnExit();
     }
 
     /**
