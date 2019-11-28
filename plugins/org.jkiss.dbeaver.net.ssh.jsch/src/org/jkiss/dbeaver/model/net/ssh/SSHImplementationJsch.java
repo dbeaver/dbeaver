@@ -45,16 +45,14 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
     private static final Log log = Log.getLog(SSHImplementationJsch.class);
 
-    private static transient JSch jsch;
+    private transient JSch jsch;
     private transient volatile Session session;
 
     @Override
     protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, String sshLocalHost, int sshLocalPort, String sshRemoteHost, int sshRemotePort) throws DBException, IOException {
         try {
-            if (jsch == null) {
-                jsch = new JSch();
-                JSch.setLogger(new LoggerProxy());
-            }
+            jsch = new JSch();
+            JSch.setLogger(new LoggerProxy());
 
             AuthType authType = AuthType.valueOf(configuration.getProperty(SSHConstants.PROP_AUTH_TYPE).toString());
 
