@@ -79,7 +79,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        testButton = createButton(parent, TEST_BUTTON_ID, CoreMessages.dialog_connection_button_test, false);
+        testButton = createButton(parent, TEST_BUTTON_ID, "   " + CoreMessages.dialog_connection_button_test + "   ", false);
         testButton.setEnabled(false);
 
         Label spacer = new Label(parent, SWT.NONE);
