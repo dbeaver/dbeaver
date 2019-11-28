@@ -28,7 +28,8 @@ public class DBTTaskEvent
     {
         TASK_ADD,
         TASK_UPDATE,
-        TASK_REMOVE
+        TASK_REMOVE,
+        TASK_EXECUTE,
     }
 
     private DBTTask task;
