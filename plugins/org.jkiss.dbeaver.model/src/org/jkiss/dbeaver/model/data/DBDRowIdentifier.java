@@ -26,10 +26,12 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -81,7 +83,9 @@ public class DBDRowIdentifier implements DBPObject {
     public void reloadAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding[] bindings) throws DBException
     {
         this.attributes.clear();
-        if (entityIdentifier instanceof DBSEntityReferrer) {
+        if (entityIdentifier instanceof DBVEntityConstraint && ((DBVEntityConstraint) entityIdentifier).isUseAllColumns()) {
+            Collections.addAll(this.attributes, bindings);
+        } else if (entityIdentifier instanceof DBSEntityReferrer) {
             DBSEntityReferrer referrer = (DBSEntityReferrer) entityIdentifier;
             Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(referrer.getAttributeReferences(monitor));
             for (DBSEntityAttributeRef cColumn : refs) {
