@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -32,10 +34,13 @@ import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Map;
 
@@ -53,13 +58,22 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
                         // Get flag from connection
                         newAutocommit = !txnManager.isAutoCommit();
                     }
-                    container.setDefaultAutoCommit(newAutocommit, context, true, new Runnable() {
+                    boolean autoCommit = newAutocommit;
+                    new AbstractJob("Set auto-commit") {
                         @Override
-                        public void run() {
-                            // Save config
-                            container.persistConfiguration();
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            monitor.beginTask("Change connection auto-commit to " + autoCommit, 1);
+                            try {
+                                monitor.subTask("Change context '" + context.getContextName() + "' auto-commit state");
+                                txnManager.setAutoCommit(monitor, autoCommit);
+                            } catch (Exception e) {
+                                return GeneralUtils.makeExceptionStatus(e);
+                            } finally {
+                                monitor.done();
+                            }
+                            return Status.OK_STATUS;
                         }
-                    });
+                    }.schedule();
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Auto-Commit", "Error while toggle auto-commit", e);
                 }
