@@ -185,9 +185,11 @@ public class ERDEntity extends ERDElement<DBSEntity> {
             }
 
             // Mark attribute's fk flag
-            for (ERDEntityAttribute attribute : this.getAttributes()) {
-                if (fkAttrs.contains(attribute.getObject())) {
-                    attribute.setInForeignKey(true);
+            if (!fkAttrs.isEmpty()) {
+                for (ERDEntityAttribute attribute : this.getAttributes()) {
+                    if (fkAttrs.contains(attribute.getObject())) {
+                        attribute.setInForeignKey(true);
+                    }
                 }
             }
 
