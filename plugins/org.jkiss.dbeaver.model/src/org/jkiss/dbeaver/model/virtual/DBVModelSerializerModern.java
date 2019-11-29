@@ -19,15 +19,8 @@ package org.jkiss.dbeaver.model.virtual;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -120,14 +113,18 @@ class DBVModelSerializerModern implements DBVModelSerializer
                     json.name(c.getName());
                     json.beginObject();
                     JSONUtils.field(json, "type", c.getConstraintType().getId());
-                    List<DBVEntityConstraintColumn> attrRefs = c.getAttributeReferences(null);
-                    if (!CommonUtils.isEmpty(attrRefs)) {
-                        json.name("attributes");
-                        json.beginArray();
-                        for (DBVEntityConstraintColumn cc : attrRefs) {
-                            json.value(cc.getAttributeName());
+                    if (c.isUseAllColumns()) {
+                        JSONUtils.field(json, "useAllColumns", true);
+                    } else {
+                        List<DBVEntityConstraintColumn> attrRefs = c.getAttributeReferences(null);
+                        if (!CommonUtils.isEmpty(attrRefs)) {
+                            json.name("attributes");
+                            json.beginArray();
+                            for (DBVEntityConstraintColumn cc : attrRefs) {
+                                json.value(cc.getAttributeName());
+                            }
+                            json.endArray();
                         }
-                        json.endArray();
                     }
                     json.endObject();
                 }

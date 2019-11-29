@@ -24,7 +24,6 @@ import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditPartFactory;
@@ -148,30 +147,26 @@ public class ERDDecoratorDefault implements ERDDecorator {
             }
         }
         if (attributeVisibility != ERDAttributeVisibility.NONE) {
-            Set<DBSEntityAttribute> keyColumns = null;
-            if (attributeVisibility == ERDAttributeVisibility.KEYS) {
-                keyColumns = new HashSet<>();
-                try {
-                    for (DBSEntityAssociation assoc : DBVUtils.getAllAssociations(monitor, entity)) {
-                        if (assoc instanceof DBSEntityReferrer) {
-                            keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
-                        }
+            Set<DBSEntityAttribute> keyColumns = new HashSet<>();
+            try {
+                for (DBSEntityAssociation assoc : DBVUtils.getAllAssociations(monitor, entity)) {
+                    if (assoc instanceof DBSEntityReferrer) {
+                        keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
                     }
-                    for (DBSEntityConstraint constraint : DBVUtils.getAllConstraints(monitor, entity)) {
-                        if (constraint instanceof DBSEntityReferrer) {
-                            keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) constraint));
-                        }
-                    }
-                } catch (DBException e) {
-                    log.warn(e);
                 }
+                for (DBSEntityConstraint constraint : DBVUtils.getAllConstraints(monitor, entity)) {
+                    if (constraint instanceof DBSEntityReferrer) {
+                        keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) constraint));
+                    }
+                }
+            } catch (DBException e) {
+                log.warn(e);
             }
+
             Collection<? extends DBSEntityAttribute> idColumns = null;
             try {
                 idColumns = ERDUtils.getBestTableIdentifier(monitor, entity);
-                if (keyColumns != null) {
-                    keyColumns.addAll(idColumns);
-                }
+                keyColumns.addAll(idColumns);
             } catch (DBException e) {
                 log.error("Error reading table identifier", e);
             }
@@ -183,7 +178,9 @@ public class ERDDecoratorDefault implements ERDDecorator {
                     entity.getDataSource().getContainer().getObjectFilter(firstAttr.getClass(), entity, false);
                 if (!CommonUtils.isEmpty(attributes)) {
                     for (DBSEntityAttribute attribute : attributes) {
-                        if (!isAttributeVisible(erdEntity, attribute)) {
+                        boolean isInIdentifier = idColumns != null && idColumns.contains(attribute);
+                        if (!keyColumns.contains(attribute) && !isAttributeVisible(erdEntity, attribute)) {
+                            // Show all visible attributes and all key attributes
                             continue;
                         }
                         if (columnFilter != null && !columnFilter.matches(attribute.getName())) {
@@ -192,7 +189,7 @@ public class ERDDecoratorDefault implements ERDDecorator {
 
                         switch (attributeVisibility) {
                             case PRIMARY:
-                                if (idColumns == null || !idColumns.contains(attribute)) {
+                                if (!isInIdentifier) {
                                     continue;
                                 }
                                 break;
