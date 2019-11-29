@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
@@ -149,7 +150,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         String defEditorPage = store.getString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE);
         List<EntityEditorDescriptor> entityEditors = getAvailableEditorPages();
         defaultEditorPageCombo.removeAll();
-        defaultEditorPageCombo.add("");
+        defaultEditorPageCombo.add("Default");
         for (EntityEditorDescriptor eed : entityEditors) {
             defaultEditorPageCombo.add(eed.getName());
             if (eed.getId().equals(defEditorPage)) {
@@ -196,7 +197,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             for (AbstractDescriptor.ObjectType ot : editor.getObjectTypes()) {
                 if (!DBSDataContainer.class.getName().equals(ot.getImplName()) &&
                     !DBSObjectContainer.class.getName().equals(ot.getImplName()) &&
-                    !DBSEntity.class.getName().equals(ot.getImplName()))
+                    !DBSEntity.class.getName().equals(ot.getImplName()) &&
+                    !DBSTable.class.getName().equals(ot.getImplName()))
                 {
                     return true;
                 }
