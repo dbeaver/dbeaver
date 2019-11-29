@@ -927,7 +927,7 @@
                         class="io.prestosql.jdbc.PrestoDriver"
                         sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                         defaultPort="8080"
-                        description="Presto (prestosql) JDBC driver"
+                        description="Community Presto (prestosql) JDBC driver"
                         webURL="https://prestosql.io/"
                         categories="sql,analytic,bigdata,hadoop">
                     <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
