@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
@@ -156,6 +157,12 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
     public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException
     {
         throw new DBException("Connection invalidate not supported");
+    }
+
+    @Nullable
+    @Override
+    public DBCExecutionContextDefaults getContextDefaults() {
+        return null;
     }
 
     @Override
