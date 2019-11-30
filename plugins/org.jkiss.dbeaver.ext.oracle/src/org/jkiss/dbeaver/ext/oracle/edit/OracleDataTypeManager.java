@@ -48,6 +48,11 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
+    public boolean canCreateObject(Object container) {
+        return container instanceof OracleSchema;
+    }
+
+    @Override
     protected OracleDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
         OracleSchema schema = (OracleSchema) container;
