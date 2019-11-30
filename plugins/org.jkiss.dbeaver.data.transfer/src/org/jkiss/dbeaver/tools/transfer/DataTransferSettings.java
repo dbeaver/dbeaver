@@ -67,9 +67,37 @@ public class DataTransferSettings {
 
     private boolean showFinalMessage = true;
 
-    public DataTransferSettings(DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, Map<String, Object> configuration) {
+    public DataTransferSettings(
+        @NotNull DBRRunnableContext runnableContext,
+        @Nullable Collection<IDataTransferProducer> producers,
+        @Nullable Collection<IDataTransferConsumer> consumers,
+        @NotNull Map<String, Object> configuration,
+        boolean selectDefaultNodes) {
         initializePipes(producers, consumers);
-        loadConfiguration(runnableContext, configuration);
+        loadConfiguration(runnableContext, configuration, selectDefaultNodes);
+    }
+
+    public DataTransferSettings(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DBTTask task,
+        @NotNull Log taskLog,
+        @NotNull Map<String, Object> configuration) {
+        this(
+            runnableContext,
+            getNodesFromLocation(runnableContext, task, taskLog, "producers", IDataTransferProducer.class),
+            getNodesFromLocation(runnableContext, task, taskLog, "consumers", IDataTransferConsumer.class),
+            getTaskOrSavedSettings(task, configuration),
+            !task.getProperties().isEmpty()
+        );
+    }
+
+    // When we create new task its settings are empty. We need to load defaults from saved settings (usually data transfer dialog settings)
+    private static Map<String, Object> getTaskOrSavedSettings(@NotNull DBTTask task, @NotNull Map<String, Object> savedSettings) {
+        Map<String, Object> taskSettings = JSONUtils.getObject(task.getProperties(), "configuration");
+        if (taskSettings.isEmpty() && !savedSettings.isEmpty()) {
+            return savedSettings;
+        }
+        return taskSettings;
     }
 
     private void initializePipes(@Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers) {
@@ -147,16 +175,7 @@ public class DataTransferSettings {
         }
     }
 
-    public DataTransferSettings(DBRRunnableContext runnableContext, DBTTask task, Log taskLog) {
-        this(
-            runnableContext,
-            getNodesFromLocation(runnableContext, task, taskLog, "producers", IDataTransferProducer.class),
-            getNodesFromLocation(runnableContext, task, taskLog, "consumers", IDataTransferConsumer.class),
-            JSONUtils.getObject(task.getProperties(), "configuration")
-        );
-    }
-
-    private void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
+    private void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config, boolean selectDefaultNodes) {
         this.setMaxJobCount(CommonUtils.toInt(config.get("maxJobCount"), DataTransferSettings.DEFAULT_THREADS_NUM));
         this.setShowFinalMessage(CommonUtils.getBoolean(config.get("showFinalMessage"), this.isShowFinalMessage()));
 
@@ -258,6 +277,13 @@ public class DataTransferSettings {
             if (nodeSettings != null) {
                 nodeSettings.loadSettings(runnableContext, this, nodeSection);
             }
+        }
+
+        if (!selectDefaultNodes) {
+            // Now cleanup all nodes. We needed them only to load default producer/consumer settings
+            this.producer = null;
+            this.consumer = null;
+            this.processor = null;
         }
     }
 
@@ -475,6 +501,9 @@ public class DataTransferSettings {
                             result.add(nodeClass.cast(node));
                         }
                     } catch (DBCException e) {
+                        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                            DBWorkbench.getPlatformUI().showError("Configuration error", "Error reading task configuration", e);
+                        }
                         taskLog.error(e);
                     }
                 }

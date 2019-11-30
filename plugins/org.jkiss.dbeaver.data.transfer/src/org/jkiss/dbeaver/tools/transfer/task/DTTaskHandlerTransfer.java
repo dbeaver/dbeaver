@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,7 +45,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         @NotNull Log log,
         @NotNull DBTTaskExecutionListener listener) throws DBException
     {
-        DataTransferSettings settings = new DataTransferSettings(runnableContext, task, log);
+        DataTransferSettings settings = new DataTransferSettings(runnableContext, task, log, Collections.emptyMap());
         executeWithSettings(runnableContext, locale, log, listener, settings);
     }
 
