@@ -45,6 +45,11 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
     }
 
     @Override
+    public boolean canCreateObject(Object container) {
+        return container instanceof OracleTableBase;
+    }
+
+    @Override
     protected OracleTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) {
         OracleTableBase table = (OracleTableBase) container;
         return new OracleTableTrigger(table, "NEW_TRIGGER");
