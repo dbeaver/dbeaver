@@ -114,13 +114,13 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
 
     public DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
         this(task);
-        this.settings = new DataTransferSettings(runnableContext, task, log);
+        this.settings = new DataTransferSettings(runnableContext, task, log, new DialogSettingsMap(getDialogSettings()));
         loadSettings();
     }
 
     private DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable DBTTask task) {
         this(task);
-        this.settings = new DataTransferSettings(runnableContext, producers, consumers, new DialogSettingsMap(getDialogSettings()));
+        this.settings = new DataTransferSettings(runnableContext, producers, consumers, new DialogSettingsMap(getDialogSettings()), true);
 
         loadSettings();
     }
@@ -257,10 +257,12 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
 
     @Override
     public boolean performCancel() {
+/*
         // Save settings if we have task
         if (getCurrentTask() != null) {
             saveDialogSettings();
         }
+*/
 
         return super.performCancel();
     }
