@@ -18,7 +18,7 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 <a href="https://dbeaver.io/product/dbeaver-ss-mock.png"><img src="https://dbeaver.io/product/dbeaver-ss-mock.png" width="400"/></a>
 <a href="https://dbeaver.io/product/dbeaver-ss-erd.png"><img src="https://dbeaver.io/product/dbeaver-ss-erd.png" width="400"/></a>
 <a href="https://dbeaver.io/product/dbeaver-ss-classic-new.png"><img src="https://dbeaver.io/product/dbeaver-ss-classic-new.png" width="400"/></a>
-<a href="https://dbeaver.io/product/dbeaver-ss-dark.png"><img src="https://dbeaver.io/product/dbeaver-ss-dark.png" width="400"/></a>
+<a href="https://dbeaver.io/product/dbeaver-ss-dark-new.png"><img src="https://dbeaver.io/product/dbeaver-ss-dark-new.png" width="400"/></a>
 
 ## Download
 
