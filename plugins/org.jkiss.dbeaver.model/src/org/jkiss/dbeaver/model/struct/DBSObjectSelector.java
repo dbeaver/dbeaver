@@ -24,8 +24,11 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Active object (schema selector)
+ * Active object (schema selector).
+ *
+ * It is deprecated. Use DBCExecutionContextDefaults instead.
  */
+@Deprecated()
 public interface DBSObjectSelector
 {
 
@@ -35,6 +38,7 @@ public interface DBSObjectSelector
      * Get active selected (default) object.
      * Returns null if there is no default object.
      */
+    @Deprecated
     @Nullable
     DBSObject getDefaultObject();
 
@@ -43,6 +47,7 @@ public interface DBSObjectSelector
      * You may call this method only if {@link #supportsDefaultChange()} returns true.
      * Note: default object will be changed for all execution contexts of the datasource.
      */
+    @Deprecated
     void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException;
 
     /**
@@ -50,6 +55,7 @@ public interface DBSObjectSelector
      * If it changes from the active default object then changes it and returns true.
      * Otherwise returns false.
      */
+    @Deprecated
     boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException;
 
 }

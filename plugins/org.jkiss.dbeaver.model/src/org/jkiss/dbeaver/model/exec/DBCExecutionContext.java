@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -96,4 +97,10 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
     @NotNull
     InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException;
 
+    /**
+     * Defaults reader/writer.
+     * @return null if defaults are not supported
+     */
+    @Nullable
+    DBCExecutionContextDefaults getContextDefaults();
 }
