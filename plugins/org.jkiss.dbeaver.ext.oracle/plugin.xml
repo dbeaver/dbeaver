@@ -162,7 +162,7 @@
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                             </items>
                         </folder>
-                        <folder label="%tree.table.triggers.node.name" icon="#triggers" description="Table triggers">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" label="%tree.table.triggers.node.name" icon="#triggers" description="Table triggers">
                             <items label="%tree.table.trigger.node.name" path="tabletrigger" property="tableTriggers" icon="#trigger">
                                 <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false" virtual="true">
                                 </items>
@@ -192,7 +192,7 @@
                     </items>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
-                    <folder label="%tree.types.node.name" icon="#data_types" description="Types">
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="%tree.types.node.name" icon="#data_types" description="Types">
                         <items label="%tree.data_type.node.name" path="type" property="localDataTypes" icon="#data_type"/>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="%tree.public_synonyms.node.name" icon="#synonyms" description="Public synonyms">
