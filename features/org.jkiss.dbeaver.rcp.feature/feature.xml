@@ -82,7 +82,8 @@
     <plugin id="org.eclipse.equinox.preferences" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.registry" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.simpleconfigurator" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.eclipse.equinox.util" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+<!--    Was removed in 2019-12? -->
+<!--    <plugin id="org.eclipse.equinox.util" download-size="0" install-size="0" version="0.0.0" unpack="false"/>-->
     <plugin id="org.eclipse.help" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.jface" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.jface.databinding" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
