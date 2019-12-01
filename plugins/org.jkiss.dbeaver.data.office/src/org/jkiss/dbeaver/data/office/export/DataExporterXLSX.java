@@ -126,28 +126,29 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
-        Object nullStringProp = site.getProperties().get(PROP_NULL_STRING);
+        Map<Object, Object> properties = site.getProperties();
+        Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
 
         try {
-            printHeader = (Boolean) site.getProperties().get(PROP_HEADER);
+            printHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), true);
         } catch (Exception e) {
             printHeader = false;
         }
 
         try {
-            rowNumber = (Boolean) site.getProperties().get(PROP_ROWNUMBER);
+            rowNumber = CommonUtils.getBoolean(properties.get(PROP_ROWNUMBER), false);
         } catch (Exception e) {
             rowNumber = false;
         }
 
         try {
-            boolTrue = (String) site.getProperties().get(PROP_TRUESTRING);
+            boolTrue = CommonUtils.toString(properties.get(PROP_TRUESTRING), "true");
         } catch (Exception e) {
             boolTrue = "true";
         }
         try {
-            boolFalse = (String) site.getProperties().get(PROP_FALSESTRING);
+            boolFalse = CommonUtils.toString(properties.get(PROP_FALSESTRING), "false");
         } catch (Exception e) {
             boolFalse = "false";
         }
@@ -156,31 +157,31 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
 
         try {
-            exportSql = (Boolean) site.getProperties().get(PROP_EXPORT_SQL);
+            exportSql = CommonUtils.getBoolean(properties.get(PROP_EXPORT_SQL), false);
         } catch (Exception e) {
             exportSql = false;
         }
 
         try {
-            splitSqlText = (Boolean) site.getProperties().get(PROP_SPLIT_SQLTEXT);
+            splitSqlText = CommonUtils.getBoolean(properties.get(PROP_SPLIT_SQLTEXT), false);
         } catch (Exception e) {
             splitSqlText = false;
         }
 
         try {
-            splitByRowCount = (Integer) site.getProperties().get(PROP_SPLIT_BYROWCOUNT);
+            splitByRowCount = CommonUtils.toInt(properties.get(PROP_SPLIT_BYROWCOUNT), EXCEL2007MAXROWS);
         } catch (Exception e) {
             splitByRowCount = EXCEL2007MAXROWS;
         }
 
         try {
-            splitByCol = (Integer) site.getProperties().get(PROP_SPLIT_BYCOL);
+            splitByCol = CommonUtils.toInt(properties.get(PROP_SPLIT_BYCOL), 0);
         } catch (Exception e) {
             splitByCol = -1;
         }
 
         try {
-            dateFormat = (String) site.getProperties().get(PROP_DATE_FORMAT);
+            dateFormat = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), "");
         } catch (Exception e) {
             dateFormat = "";
         }
@@ -195,7 +196,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         try {
 
-            border = BorderStyle.valueOf((String) site.getProperties().get(PROP_BORDER));
+            border = BorderStyle.valueOf(CommonUtils.toString(properties.get(PROP_BORDER), BorderStyle.THIN.name()));
 
         } catch (Exception e) {
 
@@ -207,7 +208,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         try {
 
-            fontStyle = FontStyleProp.valueOf((String) site.getProperties().get(PROP_HEADER_FONT));
+            fontStyle = FontStyleProp.valueOf(CommonUtils.toString(properties.get(PROP_HEADER_FONT), FontStyleProp.BOLD.name()));
 
         } catch (Exception e) {
 
