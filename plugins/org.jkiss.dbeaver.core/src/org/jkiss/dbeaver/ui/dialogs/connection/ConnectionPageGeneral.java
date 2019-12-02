@@ -289,15 +289,18 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             UIUtils.createDialogButton(ctGroup, CoreMessages.dialog_connection_wizard_final_label_edit, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+                    DBPConnectionType curConType = connectionTypeCombo.getSelectedItem();
                     DataSourceDescriptor dataSource = getActiveDataSource();
                     UIUtils.showPreferencesFor(
                         getControl().getShell(),
                         dataSource.getConnectionConfiguration().getConnectionType(),
                         PrefPageConnectionTypes.PAGE_ID);
                     loadConnectionTypes();
-                    DBPConnectionType connectionType = dataSource.getConnectionConfiguration().getConnectionType();
-                    connectionTypeCombo.select(connectionType);
-                    getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, connectionType, connectionType);
+                    if (!connectionTypeCombo.getItems().contains(curConType)) {
+                        curConType = connectionTypeCombo.getItems().get(0);
+                    }
+                    connectionTypeCombo.select(curConType);
+                    getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, curConType, curConType);
                 }
             });
         }
