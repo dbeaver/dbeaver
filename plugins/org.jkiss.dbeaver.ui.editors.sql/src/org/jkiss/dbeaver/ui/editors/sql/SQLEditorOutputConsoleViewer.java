@@ -41,10 +41,10 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
     private PrintWriter writer;
 
     public SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, int styles) {
-        this(site, resultTabs, styles, new MessageConsole("sql-output", null));
+        this(site, resultTabs, new MessageConsole("sql-output", null));
     }
 
-    private SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, int styles, MessageConsole console) {
+    private SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, MessageConsole console) {
         super(resultTabs, console);
         this.console = console;
         this.getText().setMargins(5, 5, 5, 5);
