@@ -103,7 +103,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     @Override
     public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue)
     {
-        UIUtils.asyncExec(() -> {
+        UIExecutionQueue.queueExec(() -> {
             getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));
             getSite().getSelectionProvider().setSelection(new StructuredSelection());
         });
