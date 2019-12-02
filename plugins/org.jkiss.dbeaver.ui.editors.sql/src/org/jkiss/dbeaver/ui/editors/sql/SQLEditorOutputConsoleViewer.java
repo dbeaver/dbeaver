@@ -36,91 +36,90 @@ import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 
 public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
 
-	private MessageConsole console;
+    private MessageConsole console;
     private boolean hasNewOutput;
+    private PrintWriter writer;
 
-	private SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, int styles, MessageConsole console) {
-		super(resultTabs, console);
-		this.console = console;
-		this.getText().setMargins(5, 5, 5, 5);
+    public SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, int styles) {
+        this(site, resultTabs, styles, new MessageConsole("sql-output", null));
+    }
 
-		setEditable(false);
+    private SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, int styles, MessageConsole console) {
+        super(resultTabs, console);
+        this.console = console;
+        this.getText().setMargins(5, 5, 5, 5);
 
-        createContextMenu(site);
+        setEditable(false);
+
+        createContextMenu();
         refreshStyles();
 
-		OutputStream consoleOutputStream = console.newOutputStream();
+        OutputStream consoleOutputStream = console.newOutputStream();
         OutputStream out = new OutputStream() {
             @Override
             public void write(final byte[] buf, final int off, final int len) throws IOException {
-            	consoleOutputStream.write(buf, off, len);
+                consoleOutputStream.write(buf, off, len);
                 hasNewOutput = true;
             }
             @Override
             public void flush() throws IOException {
-            	consoleOutputStream.flush();
+                consoleOutputStream.flush();
             }
             @Override
             public void close() throws IOException {
-            	consoleOutputStream.flush();
+                consoleOutputStream.flush();
             }
-			@Override
-			public void write(int b) throws IOException {
-				consoleOutputStream.write(b);
-			}
+            @Override
+            public void write(int b) throws IOException {
+                consoleOutputStream.write(b);
+            }
         };
-		writer = new PrintWriter(out, true);
-	}
+        writer = new PrintWriter(out, true);
+    }
 
-	public SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, int styles) {
-		this(site, resultTabs, styles, new MessageConsole("sql-output", null));
-	}
+    public boolean isDisposed() {
+        return this.getControl().isDisposed();
+    }
 
-	public boolean isDisposed() {
-		return this.getControl().isDisposed();
-	}
+    public PrintWriter getOutputWriter() {
+        return writer;
+    }
 
-	private PrintWriter writer;
+    public void scrollToEnd() {
+        revealEndOfDocument();
+    }
 
-	public PrintWriter getOutputWriter() {
-		return writer;
-	}
+    public boolean isVisible() {
+        return getControl().getVisible();
+    }
 
-	public void scrollToEnd() {
-		revealEndOfDocument();
-	}
+    public void resetNewOutput() {
+        hasNewOutput = false;
+    }
 
-	public boolean isVisible() {
-		return getControl().getVisible();
-	}
+    public void clearOutput() {
+        console.clearConsole();
+    }
 
-	public void resetNewOutput() {
-		hasNewOutput = false;
-	}
-
-	public void clearOutput() {
-		console.clearConsole();
-	}
-
-	public void refreshStyles() {
+    public void refreshStyles() {
         ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
         Font outputFont = currentTheme.getFontRegistry().get(SQLConstants.CONFIG_FONT_OUTPUT);
         if (outputFont != null) {
-        	getTextWidget().setFont(outputFont);
+            getTextWidget().setFont(outputFont);
         }
         getTextWidget().setForeground(currentTheme.getColorRegistry().get(SQLConstants.CONFIG_COLOR_TEXT));
         getTextWidget().setBackground(currentTheme.getColorRegistry().get(SQLConstants.CONFIG_COLOR_BACKGROUND));
-	}
+    }
 
-	public StyledText getText() {
-		return getTextWidget();
-	}
+    public StyledText getText() {
+        return getTextWidget();
+    }
 
-	public boolean isHasNewOutput() {
-		return hasNewOutput;
-	}
+    public boolean isHasNewOutput() {
+        return hasNewOutput;
+    }
 
-    private void createContextMenu(IWorkbenchPartSite site) {
+    private void createContextMenu() {
         MenuManager menuMgr = new MenuManager();
         menuMgr.addMenuListener(manager -> {
             StyledTextUtils.fillDefaultStyledTextContextMenu(manager, getTextWidget());
