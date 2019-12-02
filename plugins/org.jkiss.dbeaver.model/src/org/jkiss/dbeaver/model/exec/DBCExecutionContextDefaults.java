@@ -30,7 +30,7 @@ public interface DBCExecutionContextDefaults<CATALOG extends DBSCatalog, SCHEMA 
 
     CATALOG getDefaultCatalog();
 
-    SCHEMA getDefaultSchema(CATALOG catalog);
+    SCHEMA getDefaultSchema();
 
     boolean supportsCatalogChange();
 

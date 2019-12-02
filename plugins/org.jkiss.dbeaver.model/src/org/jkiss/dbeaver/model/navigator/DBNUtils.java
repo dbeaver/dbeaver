@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
@@ -123,10 +125,20 @@ public class DBNUtils {
     {
         if (element instanceof DBSWrapper) {
             DBSObject object = ((DBSWrapper) element).getObject();
-            DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                DBSObjectSelector.class, object);
-            if (activeContainer != null) {
-                return activeContainer.getDefaultObject() == object;
+            if (object != null) {
+                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(object, true);
+                if (defaultContext != null) {
+                    DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
+                    if (contextDefaults != null) {
+                        return contextDefaults.getDefaultCatalog() == object || contextDefaults.getDefaultSchema() == object;
+                    } else {
+                        DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
+                            DBSObjectSelector.class, object);
+                        if (activeContainer != null) {
+                            return activeContainer.getDefaultObject() == object;
+                        }
+                    }
+                }
             }
         } else if (element instanceof DBNProject) {
             if (((DBNProject)element).getProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject()) {
