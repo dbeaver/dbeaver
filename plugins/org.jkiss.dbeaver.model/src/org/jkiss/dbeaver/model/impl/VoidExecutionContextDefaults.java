@@ -34,7 +34,7 @@ public class VoidExecutionContextDefaults implements DBCExecutionContextDefaults
     }
 
     @Override
-    public DBSSchema getDefaultSchema(DBSCatalog catalog) {
+    public DBSSchema getDefaultSchema() {
         return null;
     }
 
