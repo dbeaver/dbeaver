@@ -173,7 +173,7 @@ public class SQLEditor extends SQLEditorBase implements
     private CTabItem activeResultsTab;
 
     private SQLLogPanel logViewer;
-    private SQLEditorOutputViewer outputViewer;
+    private SQLEditorOutputConsoleViewer outputViewer;
 
     private volatile QueryProcessor curQueryProcessor;
     private final List<QueryProcessor> queryProcessors = new ArrayList<>();
@@ -952,7 +952,7 @@ public class SQLEditor extends SQLEditorBase implements
         // Extra views
         //planView = new ExplainPlanViewer(this, resultTabs);
         logViewer = new SQLLogPanel(resultTabs, this);
-        outputViewer = new SQLEditorOutputViewer(getSite(), resultTabs, SWT.NONE);
+        outputViewer = new SQLEditorOutputConsoleViewer(getSite(), resultTabs, SWT.NONE);
 
         // Create results tab
         createQueryProcessor(true, true);
@@ -1063,7 +1063,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        if (view == outputViewer) {
+        if (view == outputViewer.getControl()) {
             updateOutputViewerIcon(false);
             outputViewer.resetNewOutput();
         }
@@ -1116,7 +1116,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
-        showExtraView(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, SQLEditorMessages.editors_sql_output, SQLEditorMessages.editors_sql_output_tip, IMG_OUTPUT, outputViewer);
+        showExtraView(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, SQLEditorMessages.editors_sql_output, SQLEditorMessages.editors_sql_output_tip, IMG_OUTPUT, outputViewer.getControl());
     }
 
     public void showExecutionLogPanel() {

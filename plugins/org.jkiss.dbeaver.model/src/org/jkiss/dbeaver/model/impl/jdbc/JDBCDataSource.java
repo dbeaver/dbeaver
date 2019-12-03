@@ -447,6 +447,10 @@ public abstract class JDBCDataSource
         return this;
     }
 
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new JDBCExecutionContext(instance, type);
+    }
+
     @Nullable
     @Override
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type)
@@ -684,6 +688,8 @@ public abstract class JDBCDataSource
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
             return adapter.cast(DBUtils.getDefaultContext(getDefaultInstance(), false));
+        } else if (adapter == DBCQueryTransformProvider.class) {
+            return adapter.cast(this);
         }
         return null;
     }
@@ -715,4 +721,5 @@ public abstract class JDBCDataSource
             throw new DBException(e, this);
         }
     }
+
 }

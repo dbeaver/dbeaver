@@ -94,7 +94,7 @@ public class AbstractTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean isSupportsTransactions() {
         return false;
     }
 }

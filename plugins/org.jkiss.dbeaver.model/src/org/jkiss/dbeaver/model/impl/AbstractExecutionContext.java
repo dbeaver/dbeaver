@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -69,6 +70,12 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
     @Override
     public DATASOURCE getDataSource() {
         return dataSource;
+    }
+
+    @Nullable
+    @Override
+    public DBCExecutionContextDefaults getContextDefaults() {
+        return null;
     }
 
 
