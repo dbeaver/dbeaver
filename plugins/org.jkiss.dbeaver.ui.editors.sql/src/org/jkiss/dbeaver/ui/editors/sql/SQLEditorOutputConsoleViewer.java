@@ -32,7 +32,9 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
 
@@ -53,6 +55,7 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
 
         createContextMenu();
         refreshStyles();
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(site, getTextWidget());
 
         OutputStream consoleOutputStream = console.newOutputStream();
         OutputStream out = new OutputStream() {
@@ -136,4 +139,17 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
         getTextWidget().addDisposeListener(e -> menuMgr.dispose());
     }
 
+    public void appendToLog(String data) {
+        UIUtils.asyncExec(() -> {
+            writer.write(data);
+            writer.flush();
+        });
+    }
+
+    public void appendToLog(char [] data, int start, int end) {
+        UIUtils.asyncExec(() -> {
+            writer.write(data, start, end);
+            writer.flush();
+        });
+    }
 }

@@ -527,15 +527,8 @@ public class SQLEditor extends SQLEditorBase implements
     private class OutputLogWriter extends Writer {
         @Override
         public void write(@NotNull final char[] cbuf, final int off, final int len) {
-            UIUtils.syncExec(() -> {
-                if (!outputViewer.isDisposed()) {
-                    outputViewer.getOutputWriter().write(cbuf, off, len);
-                    outputViewer.scrollToEnd();
-                    if (!outputViewer.isVisible()) {
-                        updateOutputViewerIcon(true);
-                    }
-                }
-            });
+            outputViewer.appendToLog(cbuf, off, len);
+            outputViewer.scrollToEnd();
         }
 
         @Override
@@ -3224,7 +3217,7 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public IFindReplaceTarget getTarget() {
             CTabItem activeResultsTab = getActiveResultsTab();
-            if (activeResultsTab != null && outputViewer != null && activeResultsTab.getData() == outputViewer) {
+            if (activeResultsTab != null && outputViewer != null && activeResultsTab.getData() == outputViewer.getControl()) {
                 return new StyledTextFindReplaceTarget(outputViewer.getText());
             }
             ResultSetViewer rsv = getActiveResultSetViewer();
@@ -3441,20 +3434,8 @@ public class SQLEditor extends SQLEditorBase implements
             final String dumpString = dump.toString()
                     .replace("\0", ""); // Remove zero characters
             if (!dumpString.isEmpty()) {
-                UIUtils.asyncExec(() -> {
-                    if (outputViewer.isDisposed()) {
-                        return;
-                    }
-                    try {
-                        IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
-                    } catch (IOException e) {
-                        log.error(e);
-                    }
-                    if (outputViewer.isHasNewOutput()) {
-                        outputViewer.scrollToEnd();
-                        updateOutputViewerIcon(true);
-                    }
-                });
+                outputViewer.appendToLog(dumpString);
+                outputViewer.scrollToEnd();
             }
         }
     }
