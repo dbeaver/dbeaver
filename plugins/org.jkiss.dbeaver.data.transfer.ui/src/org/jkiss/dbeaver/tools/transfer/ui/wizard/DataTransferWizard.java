@@ -24,17 +24,21 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskProcessorUI;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferNodeConfiguratorDescriptor;
@@ -271,7 +275,24 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     public boolean performFinish() {
         saveDialogSettings();
 
-        return super.performFinish();
+        if (!super.performFinish()) {
+            return false;
+        }
+
+        try {
+            DBTTask currentTask = getCurrentTask();
+            if (currentTask == null) {
+                // Execute directly - without task serialize/deserialize
+                // We need it because some data producers cannot be serialized properly (e.g. ResultSetDatacontainer - see #7342)
+                DataTransferWizardExecutor executor = new DataTransferWizardExecutor(getRunnableContext(), DTMessages.data_transfer_wizard_job_name, getSettings());
+                executor.executeTask();
+            }
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't init data transfer", e);
+            return false;
+        }
+
+        return true;
     }
 
     // Saves wizard settings in UI dialog settings
@@ -400,7 +421,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
 
     @Override
     public boolean isRunTaskOnFinish() {
-        return true;
+        return getCurrentTask() != null;
     }
 
     private Map<String, Object> saveConfiguration(Map<String, Object> config) {
@@ -454,4 +475,24 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         return config;
     }
 
+    class DataTransferWizardExecutor extends TaskProcessorUI {
+        private DataTransferSettings settings;
+
+        DataTransferWizardExecutor(@NotNull DBRRunnableContext staticContext, @NotNull String taskName, @NotNull DataTransferSettings settings) {
+            super(staticContext, getProject().getTaskManager().createTemporaryTask(getTaskType(), taskName));
+            this.settings = settings;
+        }
+
+        @Override
+        protected boolean isShowFinalMessage() {
+            return settings.isShowFinalMessage();
+        }
+
+        @Override
+        protected void runTask() throws DBException {
+            DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
+            handlerTransfer.executeWithSettings(this, Locale.getDefault(), log, this, settings);
+        }
+
+    }
 }

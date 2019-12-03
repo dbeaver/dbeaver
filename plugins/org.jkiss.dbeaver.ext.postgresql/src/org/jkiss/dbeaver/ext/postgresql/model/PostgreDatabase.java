@@ -256,11 +256,6 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         return null;
     }
 
-    @Override
-    public JDBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
-        return super.getDefaultContext(monitor, meta);
-    }
-
     @Property(viewable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) {
         if (!getDataSource().getServerType().supportsDatabaseDescription()) {

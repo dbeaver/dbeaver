@@ -19,15 +19,11 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,7 +33,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class GenericCatalog extends GenericObjectContainer implements DBSCatalog, DBSObjectSelector
+public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
 {
     private String catalogName;
     private List<GenericSchema> schemas;
@@ -156,47 +152,4 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return this;
     }
 
-    @Override
-    public boolean supportsDefaultChange()
-    {
-        return GenericConstants.ENTITY_TYPE_SCHEMA.equals(getDataSource().getSelectedEntityType()) &&
-            !CommonUtils.isEmpty(schemas);
-    }
-
-    @Override
-    public GenericSchema getDefaultObject()
-    {
-        return DBUtils.findObject(schemas, getDataSource().getSelectedEntityName());
-    }
-
-    @Override
-    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException
-    {
-        final GenericSchema oldSelectedEntity = getDefaultObject();
-        // Check removed because we can select the same object on invalidate
-//        if (object == oldSelectedEntity) {
-//            return;
-//        }
-        if (!(object instanceof GenericSchema)) {
-            throw new DBException("Bad child type: " + object);
-        }
-        if (!schemas.contains(GenericSchema.class.cast(object))) {
-            throw new DBException("Wrong child object specified as active: " + object);
-        }
-
-        GenericDataSource dataSource = getDataSource();
-        for (JDBCExecutionContext context : dataSource.getDefaultInstance().getAllContexts()) {
-            dataSource.setActiveEntityName(monitor, context, object);
-        }
-
-        if (oldSelectedEntity != null) {
-            DBUtils.fireObjectSelect(oldSelectedEntity, false);
-        }
-        DBUtils.fireObjectSelect(object, true);
-    }
-
-    @Override
-    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
-        return getDataSource().refreshDefaultObject(session);
-    }
 }

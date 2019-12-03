@@ -22,6 +22,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -76,7 +77,9 @@ class TransformerSettingsDialog extends BaseDialog {
         this.currentAttribute = currentAttribute;
         this.selector = selector;
 
-        this.vEntitySrc = DBVUtils.getVirtualEntity(viewer.getDataContainer(), true);
+        this.vEntitySrc = this.currentAttribute == null ?
+            viewer.getModel().getVirtualEntity(true) :
+            DBVUtils.getVirtualEntity(currentAttribute, true);
         this.vEntity = new DBVEntity(vEntitySrc.getContainer(), vEntitySrc, vEntitySrc.getModel());
     }
 
@@ -261,6 +264,9 @@ class TransformerSettingsDialog extends BaseDialog {
 
     private void createTransformSettingsArea(Composite composite) {
         Composite settingsPanel = UIUtils.createComposite(composite, 1);
+        if (composite.getLayout() instanceof GridLayout) {
+            settingsPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
         if (selector || transformer != null) {
             final Composite placeholder = UIUtils.createControlGroup(settingsPanel, "Transformer", 2, GridData.FILL_HORIZONTAL, -1);
             if (!selector) {

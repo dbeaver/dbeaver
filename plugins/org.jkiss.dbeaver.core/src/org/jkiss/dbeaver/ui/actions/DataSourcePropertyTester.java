@@ -96,7 +96,7 @@ public class DataSourcePropertyTester extends PropertyTester
                         return false;
                     }
                     DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                    return txnManager != null && txnManager.isEnabled();
+                    return txnManager != null && txnManager.isSupportsTransactions();
                 }
                 case PROP_TRANSACTION_ACTIVE:
                     if (context != null && context.isConnected()) {
