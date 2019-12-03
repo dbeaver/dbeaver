@@ -80,8 +80,8 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
 
     @Override
     public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
-        filterAttributes = proceedSelectedRowsOnly(flags);
-        if (filterAttributes || proceedSelectedColumnsOnly(flags)) {
+        filterAttributes = proceedSelectedColumnsOnly(flags);
+        if (filterAttributes || proceedSelectedRowsOnly(flags)) {
 
             long startTime = System.currentTimeMillis();
             DBCStatistics statistics = new DBCStatistics();
