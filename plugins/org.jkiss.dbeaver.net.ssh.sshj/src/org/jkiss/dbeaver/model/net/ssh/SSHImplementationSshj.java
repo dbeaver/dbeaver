@@ -24,7 +24,6 @@ import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthMethod;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -54,7 +53,10 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     @Override
     protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, String sshLocalHost, int sshLocalPort, String sshRemoteHost, int sshRemotePort) throws DBException, IOException {
         try {
-            AuthType authType = AuthType.valueOf(configuration.getProperty(SSHConstants.PROP_AUTH_TYPE).toString());
+            String autoTypeString = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_AUTH_TYPE));
+            AuthType authType = CommonUtils.isEmpty(autoTypeString) ?
+                (privKeyFile == null ? AuthType.PASSWORD : AuthType.PUBLIC_KEY) :
+                CommonUtils.valueOf(AuthType.class, autoTypeString, AuthType.PASSWORD);
 
             Config clientConfig = new DefaultConfig();
             clientConfig.setLoggerFactory(LoggerFactory.DEFAULT);
