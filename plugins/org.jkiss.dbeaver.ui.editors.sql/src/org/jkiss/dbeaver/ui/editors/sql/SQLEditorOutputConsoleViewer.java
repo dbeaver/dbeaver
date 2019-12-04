@@ -48,6 +48,7 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
         super(resultTabs, console);
         this.console = console;
         this.getText().setMargins(5, 5, 5, 5);
+        this.console.setWaterMarks(1024*1024*10, 1024*1024*20);
 
         setEditable(false);
 
