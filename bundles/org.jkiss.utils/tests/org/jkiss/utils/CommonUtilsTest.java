@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 //@RunWith(PowerMockRunner.class)
@@ -431,7 +432,7 @@ public class CommonUtilsTest {
     collectionList.add("a");
     Assert.assertEquals("a", CommonUtils.getItem(collectionList, 0));
 
-    final HashSet<String> collectionSet = new HashSet<>();
+    final HashSet<String> collectionSet = new LinkedHashSet<>();
     collectionSet.add("a");
     collectionSet.add("b");
     Assert.assertEquals("b", CommonUtils.getItem(collectionSet, 1));
