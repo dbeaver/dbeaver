@@ -18,6 +18,7 @@
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
         <command id="set" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
+        <command id="unset" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandUnset" label="Unset" description="Removes variable/parameter"/>
         <command id="echo" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
         <command id="export" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandExport" label="Export resultset" description="Export results of the next query. Launches data transfer process."/>
     </extension>

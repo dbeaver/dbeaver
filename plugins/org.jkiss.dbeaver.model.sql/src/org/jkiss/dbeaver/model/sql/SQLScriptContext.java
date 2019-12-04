@@ -103,6 +103,13 @@ public class SQLScriptContext {
         }
     }
 
+    public void removeVariable(String name) {
+        variables.remove(name);
+        if (parentContext != null) {
+            parentContext.removeVariable(name);
+        }
+    }
+
     @NotNull
     public Map<String, Object> getPragmas() {
         return pragmas;
