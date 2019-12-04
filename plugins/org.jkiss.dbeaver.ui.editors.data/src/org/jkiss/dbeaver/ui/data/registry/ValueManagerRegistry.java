@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.MimeType;
 
@@ -79,7 +80,7 @@ public class ValueManagerRegistry {
             manager = findManager(dataSource, type, valueType, false, false);
         }
         if (manager == null) {
-            throw new IllegalStateException("Can't find default data manager for " + type);
+            return DefaultValueManager.INSTANCE;
         }
         return manager;
     }

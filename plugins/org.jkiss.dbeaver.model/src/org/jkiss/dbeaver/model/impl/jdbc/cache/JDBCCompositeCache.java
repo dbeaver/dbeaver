@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 
 /**
@@ -344,7 +345,11 @@ public abstract class JDBCCompositeCache<
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+            if (ex instanceof SQLFeatureNotSupportedException) {
+                log.debug("Error reading cache: feature not supported", ex);
+            } else {
+                throw new DBException(ex, dataSource);
+            }
         }
 
         if (monitor.isCanceled()) {
