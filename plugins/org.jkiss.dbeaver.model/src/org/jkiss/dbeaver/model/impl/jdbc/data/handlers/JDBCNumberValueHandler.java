@@ -138,6 +138,14 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                     }
                 }
                 break;
+            case Types.DOUBLE:
+            case Types.REAL:
+            case Types.FLOAT:
+                if (isReadDecimalsAsDouble()) {
+                    // Always read as double to avoid precision loose (#7214)
+                    value = resultSet.getDouble(index);
+                    break;
+                }
             default:
                 // Here may be any numeric value. float, double, BigDecimal or BigInteger for example
                 boolean gotValue = false;
@@ -176,6 +184,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         } else {
             return value;
         }
+    }
+
+    protected boolean isReadDecimalsAsDouble() {
+        return false;
     }
 
     @Override
