@@ -500,7 +500,9 @@
             <type name="DATE"/>
             <type name="DATETIME"/>
             <type name="TIMESTAMP"/>
-        </provider>
+            <!--<type kind="NUMERIC"/>-->
+
+       </provider>
     </extension>
 
     <extension point="org.jkiss.dbeaver.tools">
