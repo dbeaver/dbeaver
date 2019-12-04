@@ -3403,10 +3403,9 @@ public class SQLEditor extends SQLEditorBase implements
                 serverOutputs.clear();
             }
 
-            final StringWriter dump = new StringWriter();
             for (ServerOutputInfo info : outputs) {
                 try {
-                    info.outputReader.readServerOutput(monitor, info.executionContext, info.result, null, new PrintWriter(dump, true));
+                    info.outputReader.readServerOutput(monitor, info.executionContext, info.result, null, outputViewer.getOutputWriter());
                 } catch (Exception e) {
                     log.error(e);
                 }
@@ -3428,7 +3427,7 @@ public class SQLEditor extends SQLEditorBase implements
                             DBCStatement statement = queryJob.getCurrentStatement();
                             if (statement != null) {
                                 try {
-                                    outputReader.readServerOutput(monitor, executionContext, null, statement, new PrintWriter(dump, true));
+                                    outputReader.readServerOutput(monitor, executionContext, null, statement, outputViewer.getOutputWriter());
                                 } catch (DBCException e) {
                                     log.error(e);
                                 }
@@ -3437,25 +3436,17 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
-
-            final String dumpString = dump.toString()
-                    .replace("\0", ""); // Remove zero characters
-            if (!dumpString.isEmpty()) {
-                UIUtils.asyncExec(() -> {
-                    if (outputViewer.isDisposed()) {
-                        return;
+            UIUtils.asyncExec(() -> {
+                if (outputViewer!=null) {
+                    if (outputViewer.getControl()!=null) {
+                        if (!outputViewer.isDisposed() && outputViewer.isHasNewOutput()) {
+                            outputViewer.scrollToEnd();
+                            updateOutputViewerIcon(true);
+                            outputViewer.resetNewOutput();
+                        }
                     }
-                    try {
-                        IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
-                    } catch (IOException e) {
-                        log.error(e);
-                    }
-                    if (outputViewer.isHasNewOutput()) {
-                        outputViewer.scrollToEnd();
-                        updateOutputViewerIcon(true);
-                    }
-                });
-            }
+                }
+            });
         }
     }
 }
