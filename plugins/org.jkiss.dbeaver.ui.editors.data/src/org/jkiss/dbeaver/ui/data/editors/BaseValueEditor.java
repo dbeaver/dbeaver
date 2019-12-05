@@ -133,15 +133,16 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                  }
             }
 
-            // Set control font (the same as for results viewer)
-            ITheme currentTheme = valueController.getValueSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme();
-            if (currentTheme != null) {
-                Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
-                if (rsFont != null) {
-                    inlineControl.setFont(rsFont);
+            if (!UIUtils.isInDialog(inlineControl)) {
+                // Set control font (the same as for results viewer)
+                ITheme currentTheme = valueController.getValueSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme();
+                if (currentTheme != null) {
+                    Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
+                    if (rsFont != null) {
+                        inlineControl.setFont(rsFont);
+                    }
                 }
             }
-
         }
         final ControlModifyListener modifyListener = new ControlModifyListener();
         inlineControl.addListener(SWT.Modify, modifyListener);
