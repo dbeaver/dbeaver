@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UITextUtils;
 
 /**
  * Grid row header renderer.
@@ -51,7 +51,7 @@ class GridRowRenderer extends AbstractRenderer {
     public void paint(GC gc, Rectangle bounds, boolean selected, int level, IGridContentProvider.ElementState state, Object element) {
         String text = grid.getLabelProvider().getText(element);
 
-        gc.setFont(getDisplay().getSystemFont());
+        gc.setFont(grid.normalFont);
 
         Color background = selected ? grid.getContentProvider().getCellHeaderSelectionBackground(element) : grid.getContentProvider().getCellHeaderBackground(element);
         if (background == null) {
