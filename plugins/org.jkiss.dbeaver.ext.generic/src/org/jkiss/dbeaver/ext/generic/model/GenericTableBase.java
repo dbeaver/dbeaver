@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 
 /**
@@ -440,7 +441,12 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
             return fkList;
         } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
+            if (ex instanceof SQLFeatureNotSupportedException) {
+                log.debug("Error reading references", ex);
+                return Collections.emptyList();
+            } else {
+                throw new DBException(ex, getDataSource());
+            }
         }
     }
 
