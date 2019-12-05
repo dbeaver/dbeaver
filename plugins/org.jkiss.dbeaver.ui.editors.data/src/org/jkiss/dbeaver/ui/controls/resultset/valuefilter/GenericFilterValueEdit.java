@@ -65,35 +65,73 @@ class GenericFilterValueEdit {
 
     private static final Log log = Log.getLog(GenericFilterValueEdit.class);
 
-    TableViewer tableViewer;
-    String filterPattern;
+    private TableViewer tableViewer;
+    private String filterPattern;
 
     private KeyLoadJob loadJob;
-    IValueEditor editor;
-    Text textControl;
+    private IValueEditor editor;
+    private Text textControl;
 
     @NotNull
-    final ResultSetViewer viewer;
+    private final ResultSetViewer viewer;
     @NotNull
-    final DBDAttributeBinding attr;
+    private final DBDAttributeBinding attribute;
     @NotNull
-    final ResultSetRow[] rows;
+    private final ResultSetRow[] rows;
     @NotNull
-    final DBCLogicalOperator operator;
+    private final DBCLogicalOperator operator;
 
     private boolean isCheckedTable;
 
     private static final int MAX_MULTI_VALUES = 1000;
     private static final String MULTI_KEY_LABEL = "...";
 
-
-    GenericFilterValueEdit(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
+    GenericFilterValueEdit(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
         this.viewer = viewer;
-        this.attr = attr;
+        this.attribute = attribute;
         this.rows = rows;
         this.operator = operator;
     }
 
+    @NotNull
+    public ResultSetViewer getViewer() {
+        return viewer;
+    }
+
+    public TableViewer getTableViewer() {
+        return tableViewer;
+    }
+
+    public String getFilterPattern() {
+        return filterPattern;
+    }
+
+    public void setFilterPattern(String filterPattern) {
+        this.filterPattern = filterPattern;
+    }
+
+    @NotNull
+    public DBDAttributeBinding getAttribute() {
+        return attribute;
+    }
+
+    @NotNull
+    public ResultSetRow[] getRows() {
+        return rows;
+    }
+
+    @NotNull
+    public DBCLogicalOperator getOperator() {
+        return operator;
+    }
+
+    public IValueEditor getEditor() {
+        return editor;
+    }
+
+    public void setEditor(IValueEditor editor) {
+        this.editor = editor;
+    }
 
     void setupTable(Composite composite, int style, boolean visibleLines, boolean visibleHeader, Object layoutData) {
 
@@ -163,13 +201,13 @@ class GenericFilterValueEdit {
             return;
         }
         // Load values
-        final DBSEntityReferrer enumerableConstraint = ResultSetUtils.getEnumerableConstraint(attr);
+        final DBSEntityReferrer enumerableConstraint = ResultSetUtils.getEnumerableConstraint(attribute);
         if (enumerableConstraint != null) {
             loadConstraintEnum(enumerableConstraint, onFinish);
-        } else if (attr.getEntityAttribute() instanceof DBSAttributeEnumerable) {
-            loadAttributeEnum((DBSAttributeEnumerable) attr.getEntityAttribute(), onFinish);
+        } else if (attribute.getEntityAttribute() instanceof DBSAttributeEnumerable) {
+            loadAttributeEnum((DBSAttributeEnumerable) attribute.getEntityAttribute(), onFinish);
         } else {
-            loadMultiValueList(Collections.emptyList(), isCheckedTable);
+            loadMultiValueList(Collections.emptyList(), true);
         }
     }
 
@@ -177,7 +215,7 @@ class GenericFilterValueEdit {
         loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values", onFinish) {
             @Override
             List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
-                final DBSEntityAttribute tableColumn = attr.getEntityAttribute();
+                final DBSEntityAttribute tableColumn = attribute.getEntityAttribute();
                 if (tableColumn == null) {
                     return null;
                 }
@@ -219,7 +257,7 @@ class GenericFilterValueEdit {
 
         if (tableViewer.getTable().getColumns().length > 1)
             tableViewer.getTable().getColumn(1).setText("Count");
-        loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values", onFinish) {
+        loadJob = new KeyLoadJob("Load '" + attribute.getName() + "' values", onFinish) {
 
             private List<DBDLabelValuePair> result;
 
@@ -244,7 +282,7 @@ class GenericFilterValueEdit {
         }
 
         Pattern pattern = null;
-        if (!CommonUtils.isEmpty(filterPattern) && attr.getDataKind() == DBPDataKind.STRING) {
+        if (!CommonUtils.isEmpty(filterPattern) && attribute.getDataKind() == DBPDataKind.STRING) {
             pattern = Pattern.compile(SQLUtils.makeLikePattern("%" + filterPattern + "%"), Pattern.CASE_INSENSITIVE);
         }
 
@@ -267,13 +305,13 @@ class GenericFilterValueEdit {
         if (mergeResultsWithData) {
             // Add values from fetched rows
             for (ResultSetRow row : viewer.getModel().getAllRows()) {
-                Object cellValue = viewer.getModel().getCellValue(attr, row);
+                Object cellValue = viewer.getModel().getCellValue(attribute, row);
                 if (DBUtils.isNullValue(cellValue)) {
                     hasNulls = true;
                     continue;
                 }
                 if (!keyPresents(rowData, cellValue)) {
-                    String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
+                    String itemString = attribute.getValueHandler().getValueDisplayString(attribute, cellValue, DBDDisplayFormat.UI);
                     rowData.put(cellValue, new DBDLabelValuePair(itemString, cellValue));
                 }
             }
@@ -283,17 +321,17 @@ class GenericFilterValueEdit {
         if (pattern != null) {
             for (Iterator<DBDLabelValuePair> iter = sortedList.iterator(); iter.hasNext(); ) {
                 final DBDLabelValuePair valuePair = iter.next();
-                String itemString = attr.getValueHandler().getValueDisplayString(attr, valuePair.getValue(), DBDDisplayFormat.UI);
+                String itemString = attribute.getValueHandler().getValueDisplayString(attribute, valuePair.getValue(), DBDDisplayFormat.UI);
                 if (!pattern.matcher(itemString).matches() && (valuePair.getLabel() == null || !pattern.matcher(valuePair.getLabel()).matches())) {
                     iter.remove();
                 }
             }
-        } else if (filterPattern != null && attr.getDataKind() == DBPDataKind.NUMERIC) {
+        } else if (filterPattern != null && attribute.getDataKind() == DBPDataKind.NUMERIC) {
             // Filter numeric values
             double minValue = CommonUtils.toDouble(filterPattern);
             for (Iterator<DBDLabelValuePair> iter = sortedList.iterator(); iter.hasNext(); ) {
                 final DBDLabelValuePair valuePair = iter.next();
-                String itemString = attr.getValueHandler().getValueDisplayString(attr, valuePair.getValue(), DBDDisplayFormat.EDIT);
+                String itemString = attribute.getValueHandler().getValueDisplayString(attribute, valuePair.getValue(), DBDDisplayFormat.EDIT);
                 double itemValue = CommonUtils.toDouble(itemString);
                 if (itemValue < minValue) {
                     iter.remove();
@@ -323,10 +361,10 @@ class GenericFilterValueEdit {
 
         Set<Object> checkedValues = new HashSet<>();
         for (ResultSetRow row : rows) {
-            Object value = viewer.getModel().getCellValue(attr, row);
+            Object value = viewer.getModel().getCellValue(attribute, row);
             checkedValues.add(value);
         }
-        DBDAttributeConstraint constraint = viewer.getModel().getDataFilter().getConstraint(attr);
+        DBDAttributeConstraint constraint = viewer.getModel().getDataFilter().getConstraint(attribute);
         if (constraint != null && constraint.getOperator() == DBCLogicalOperator.IN) {
             //checkedValues.add(constraint.getValue());
             if (constraint.getValue() instanceof Object[]) {
@@ -354,8 +392,11 @@ class GenericFilterValueEdit {
             }
 
         ViewerColumnController vcc = ViewerColumnController.getFromControl(tableViewer.getTable());
-        if (vcc != null)
+        if (vcc != null) {
             vcc.repackColumns();
+        } else {
+            UIUtils.packColumns(tableViewer.getTable(), true);
+        }
         if (firstVisibleItem != null) {
             final Widget item = tableViewer.testFindItem(firstVisibleItem);
             if (item != null) {

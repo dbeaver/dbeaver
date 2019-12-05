@@ -23,7 +23,10 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -40,18 +43,18 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.util.ArrayList;
 
 public class FilterValueEditDialog extends BaseDialog{
 	
-
 	private static final String DIALOG_ID = "DBeaver.FilterValueEditDialog";//$NON-NLS-1$
     private GenericFilterValueEdit handler;
     private Object value;
     private static final Log log = Log.getLog(FilterValueEditDialog.class);
-    private ViewerColumnController columnController;
 
     public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, ResultSetRow[] rows, DBCLogicalOperator operator) {
 		super(viewer.getControl().getShell(), "Edit value", null);
@@ -61,7 +64,7 @@ public class FilterValueEditDialog extends BaseDialog{
 	@Override
     protected IDialogSettings getDialogBoundsSettings()
     {
-        return UIUtils.getDialogSettings(DIALOG_ID + "." + handler.operator.name());
+        return UIUtils.getDialogSettings(DIALOG_ID + "." + handler.getOperator().name());
     }
 
     @Override
@@ -69,10 +72,10 @@ public class FilterValueEditDialog extends BaseDialog{
     {
         Composite composite = super.createDialogArea(parent);
 
-        Label label = UIUtils.createControlLabel(composite, handler.attr.getName() + " " + handler.operator.getStringValue());
+        Label label = UIUtils.createControlLabel(composite, handler.getAttribute().getName() + " " + handler.getOperator().getStringValue());
         label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        int argumentCount = handler.operator.getArgumentCount();
+        int argumentCount = handler.getOperator().getArgumentCount();
         if (argumentCount == 1) {
             createSingleValueEditor(composite);
         } else if (argumentCount < 0) {
@@ -88,10 +91,10 @@ public class FilterValueEditDialog extends BaseDialog{
         editorPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         editorPlaceholder.setLayout(new FillLayout());
 
-        ResultSetRow singleRow = handler.rows[0];
+        ResultSetRow singleRow = handler.getRows()[0];
         final ResultSetValueController valueController = new ResultSetValueController(
-            handler.viewer,
-            handler.attr,
+            handler.getViewer(),
+            handler.getAttribute(),
             singleRow,
             IValueController.EditType.INLINE,
             editorPlaceholder) {
@@ -102,26 +105,21 @@ public class FilterValueEditDialog extends BaseDialog{
             }
         };
 
+        IValueEditor editor = null;
         try {
-        	handler.editor = valueController.getValueManager().createEditor(valueController);
-            if (handler.editor != null) {
-            	handler.editor.createControl();
-            	handler.editor.primeEditorValue(valueController.getValue());
-            }
-        } catch (DBException e) {
+            editor = valueController.getValueManager().createEditor(valueController);
+        } catch (Exception e) {
             log.error("Can't create inline value editor", e);
         }
-        if (handler.editor == null) {
-        	handler.textControl = new Text(editorPlaceholder, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-        	handler.textControl.setText("");
-/*
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 300;
-            gd.heightHint = 300;
-            gd.minimumHeight = 100;
-            gd.minimumWidth = 100;
-            handler.textControl.setLayoutData(gd);
-*/
+        if (editor == null) {
+            editor = new StringInlineEditor(valueController);
+        }
+        handler.setEditor(editor);
+        editor.createControl();
+        try {
+            editor.primeEditorValue(valueController.getValue());
+        } catch (DBException e) {
+            log.error("Error populating filter value", e);
         }
     }
 
@@ -133,11 +131,11 @@ public class FilterValueEditDialog extends BaseDialog{
 		handler.setupTable(composite, SWT.BORDER | SWT.MULTI | SWT.CHECK | SWT.FULL_SELECTION, true, true, layoutData);
 
 
-        columnController = new ViewerColumnController(getClass().getName(), handler.tableViewer);
+        ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), handler.getTableViewer());
         columnController.addColumn("Value", "Value", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                return handler.attr.getValueHandler().getValueDisplayString(handler.attr, ((DBDLabelValuePair)element).getValue(), DBDDisplayFormat.UI);
+                return handler.getAttribute().getValueHandler().getValueDisplayString(handler.getAttribute(), ((DBDLabelValuePair)element).getValue(), DBDDisplayFormat.UI);
             }
         });
         columnController.addColumn("Description", "Row description (composed from dictionary columns)", SWT.LEFT, true, true, new ColumnLabelProvider() {
@@ -152,7 +150,7 @@ public class FilterValueEditDialog extends BaseDialog{
 	        new Action("Select &All") {
 	            @Override
 	            public void run() {
-                    for (TableItem item : handler.tableViewer.getTable().getItems()) {
+                    for (TableItem item : handler.getTableViewer().getTable().getItems()) {
                         item.setChecked(true);
                     }
 	            }
@@ -160,7 +158,7 @@ public class FilterValueEditDialog extends BaseDialog{
 	        new Action("Select &None") {
 	            @Override
 	            public void run() {
-                    for (TableItem item : handler.tableViewer.getTable().getItems()) {
+                    for (TableItem item : handler.getTableViewer().getTable().getItems()) {
                         item.setChecked(false);
                     }
 	            }
@@ -170,7 +168,7 @@ public class FilterValueEditDialog extends BaseDialog{
 
         handler.addFilterTextbox(composite);
 
-        handler.filterPattern = null;
+        handler.setFilterPattern(null);
         handler.loadValues(null);
 
         columnController.createColumns(true);
@@ -183,7 +181,7 @@ public class FilterValueEditDialog extends BaseDialog{
 	@Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        if (handler.operator.getArgumentCount() == 1) {
+        if (handler.getOperator().getArgumentCount() == 1) {
             Button copyButton = createButton(parent, IDialogConstants.DETAILS_ID, "Clipboard", false);
             copyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_CLIPBOARD));
         }
@@ -196,8 +194,8 @@ public class FilterValueEditDialog extends BaseDialog{
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.DETAILS_ID) {
             try {
-                Object value = ResultSetUtils.getAttributeValueFromClipboard(handler.attr);
-                handler.editor.primeEditorValue(value);
+                Object value = ResultSetUtils.getAttributeValueFromClipboard(handler.getAttribute());
+                handler.getEditor().primeEditorValue(value);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Copy from clipboard", "Can't copy value", e);
             }
@@ -209,23 +207,21 @@ public class FilterValueEditDialog extends BaseDialog{
     @Override
     protected void okPressed()
     {
-        if (handler.tableViewer != null) {
+        if (handler.getTableViewer() != null) {
             java.util.List<Object> values = new ArrayList<>();
                         
             for (DBDLabelValuePair item : handler.getMultiValues()) {
-                if (  ((TableItem)handler.tableViewer.testFindItem(item)).getChecked()) {
+                if (  ((TableItem)handler.getTableViewer().testFindItem(item)).getChecked()) {
                     values.add(item.getValue());
                 }
             }
             value = values.toArray();
-        } else if (handler.editor != null) {
+        } else if (handler.getEditor() != null) {
             try {
-            	value = handler.editor.extractEditorValue();
+            	value = handler.getEditor().extractEditorValue();
             } catch (DBException e) {
                 log.error("Can't get editor value", e);
             }
-        } else {
-        	value = handler.textControl.getText();
         }
         super.okPressed();
     }
