@@ -63,24 +63,24 @@ public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
             int paramIndex, Object value) throws DBCException, SQLException {
-        int valueSRID = 0;
-        if (value instanceof DBGeometry) {
-            valueSRID = ((DBGeometry) value).getSRID();
-            value = ((DBGeometry) value).getRawValue();
+        Object geometry = value;
+        int srid = 0;
+        if (geometry instanceof DBGeometry) {
+            srid = ((DBGeometry) geometry).getSRID();
+            geometry = ((DBGeometry) geometry).getRawValue();
         }
-        if (valueSRID == 0 && paramType instanceof GisAttribute) {
-            valueSRID = ((GisAttribute) paramType).getAttributeGeometrySRID(session.getProgressMonitor());
+        if (srid == 0 && paramType instanceof GisAttribute) {
+            srid = ((GisAttribute) paramType).getAttributeGeometrySRID(session.getProgressMonitor());
         }
-        if (value == null) {
+        if (geometry == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
-        } else if (value instanceof Geometry) {
-            Geometry geometry = (Geometry) value;
-            if (geometry.getSRID() == 0) {
-                geometry.setSRID(valueSRID);
+        } else if (geometry instanceof Geometry) {
+            Geometry g = (Geometry) geometry;
+            if (g.getSRID() == 0) {
+                g.setSRID(srid);
             }
             try {
-                statement.setBytes(paramIndex,
-                        HANAWKBWriter.write(geometry, HANAXyzmModeFinder.findXyzmMode(geometry)));
+                statement.setBytes(paramIndex, HANAWKBWriter.write(g, HANAXyzmModeFinder.findXyzmMode(g)));
             } catch (HANAWKBWriterException e) {
                 throw new DBCException(e, session.getDataSource());
             }

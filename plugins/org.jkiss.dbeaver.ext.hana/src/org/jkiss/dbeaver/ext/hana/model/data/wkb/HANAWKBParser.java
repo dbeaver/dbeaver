@@ -65,9 +65,6 @@ public class HANAWKBParser {
 
     private static final int EWKB_FLAG = 0x20000000;
 
-    public HANAWKBParser() {
-    }
-
     private GeometryFactory factory;
 
     private ByteBuffer data;
@@ -120,8 +117,9 @@ public class HANAWKBParser {
             return parseGeometryCollection();
         case CIRCULARSTRING:
             throw new HANAWKBParserException("Circular strings are not supported by JTS");
+        default:
+            throw new AssertionError();
         }
-        throw new AssertionError();
     }
 
     private Point parsePoint() {
@@ -182,7 +180,7 @@ public class HANAWKBParser {
         int numLineStrings = data.getInt();
         LineString[] lineStrings = new LineString[numLineStrings];
         for (int i = 0; i < numLineStrings; ++i) {
-            lineStrings[i] = (LineString) parseSubGeometry(GeometryType.MULTILINESTRING);
+            lineStrings[i] = (LineString) parseSubGeometry();
         }
         return factory.createMultiLineString(lineStrings);
     }
@@ -191,7 +189,7 @@ public class HANAWKBParser {
         int numPolygons = data.getInt();
         Polygon[] polygons = new Polygon[numPolygons];
         for (int i = 0; i < numPolygons; ++i) {
-            polygons[i] = (Polygon) parseSubGeometry(GeometryType.MULTIPOLYGON);
+            polygons[i] = (Polygon) parseSubGeometry();
         }
         return factory.createMultiPolygon(polygons);
     }
@@ -200,12 +198,12 @@ public class HANAWKBParser {
         int numGeometries = data.getInt();
         Geometry[] geometries = new Geometry[numGeometries];
         for (int i = 0; i < numGeometries; ++i) {
-            geometries[i] = parseSubGeometry(GeometryType.GEOMETRYCOLLECTION);
+            geometries[i] = parseSubGeometry();
         }
         return factory.createGeometryCollection(geometries);
     }
 
-    private Geometry parseSubGeometry(GeometryType parentType) throws HANAWKBParserException {
+    private Geometry parseSubGeometry() throws HANAWKBParserException {
         readAndSetByteOrder();
         int typeCode = data.getInt();
         GeometryType type = getGeometryType(typeCode);
@@ -250,6 +248,8 @@ public class HANAWKBParser {
                 cs.getCoordinate(i).setM(data.getDouble());
             }
             break;
+        default:
+            throw new AssertionError();
         }
         return cs;
     }
@@ -276,8 +276,9 @@ public class HANAWKBParser {
             return XyzmMode.XYM;
         case XYZM_MODE_XYZM:
             return XyzmMode.XYZM;
+        default:
+            throw new HANAWKBParserException(MessageFormat.format("Invalid XYZM-mode {0}", xyzmFlag));
         }
-        throw new HANAWKBParserException(MessageFormat.format("Invalid XYZM-mode {0}", xyzmFlag));
     }
 
     private void readAndSetByteOrder() throws HANAWKBParserException {

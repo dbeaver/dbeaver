@@ -36,6 +36,10 @@ import org.locationtech.jts.geom.Polygon;
  */
 public class HANAXyzmModeFinder {
 
+    private boolean allHaveZ = true;
+
+    private boolean someHaveM = false;
+
     /**
      * Finds the XYZM mode of a geometry.
      *
@@ -50,10 +54,6 @@ public class HANAXyzmModeFinder {
 
     private HANAXyzmModeFinder() {
     }
-
-    private boolean allHaveZ = true;
-
-    private boolean someHaveM = false;
 
     private XyzmMode inspect(Geometry g) {
         inspectGeometry(g);
