@@ -563,8 +563,12 @@ public final class DBUtils {
         String[] names = objectId.split("/");
         DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(names[0]);
         if (dataSourceContainer == null) {
-            log.debug("Can't find datasource '" + names[0] + "' for object ID " + objectId);
-            return null;
+            log.debug("Can't find datasource '" + names[0] + "' in project " + project.getName());
+            dataSourceContainer = findDataSource(names[0]);
+            if (dataSourceContainer == null) {
+                log.debug("Can't find datasource '" + names[0] + "' in any project");
+                return null;
+            }
         }
         if (!dataSourceContainer.isConnected()) {
             dataSourceContainer.connect(monitor, true, true);
