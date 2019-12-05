@@ -78,9 +78,9 @@ public class EntityDiagramFigure extends FreeformLayer {
                         //setConstraint(hintFigure, );
                     } else {
                         hintFigure.setVisible(false);
+                        EntityDiagramFigure.this.removeFigureListener(this);
                     }
                 }
-                EntityDiagramFigure.this.removeFigureListener(this);
             }
         });
     }
