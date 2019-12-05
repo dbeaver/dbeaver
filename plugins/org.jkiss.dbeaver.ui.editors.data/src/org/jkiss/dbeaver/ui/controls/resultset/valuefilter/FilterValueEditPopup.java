@@ -83,9 +83,9 @@ public class FilterValueEditPopup extends Dialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Filter by '" + filter.attr.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
+        getShell().setText("Filter by '" + filter.getAttribute().getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
 
-        DBSEntityReferrer descReferrer = ResultSetUtils.getEnumerableConstraint(filter.attr);
+        DBSEntityReferrer descReferrer = ResultSetUtils.getEnumerableConstraint(filter.getAttribute());
 
         Composite group = (Composite) super.createDialogArea(parent);
         {
@@ -117,19 +117,19 @@ public class FilterValueEditPopup extends Dialog {
         tableComposite.setLayout(new FillLayout());
 
         filter.setupTable(tableComposite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL, true, descReferrer != null, new GridData(GridData.FILL_BOTH));
-        Table table = filter.tableViewer.getTable();
+        Table table = filter.getTableViewer().getTable();
 
-        TableViewerColumn resultsetColumn = new TableViewerColumn(filter.tableViewer, UIUtils.createTableColumn(table, SWT.NONE, "Value"));
+        TableViewerColumn resultsetColumn = new TableViewerColumn(filter.getTableViewer(), UIUtils.createTableColumn(table, SWT.NONE, "Value"));
         resultsetColumn.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                return filter.attr.getValueHandler().getValueDisplayString(filter.attr, ((DBDLabelValuePair) element).getValue(), DBDDisplayFormat.UI);
+                return filter.getAttribute().getValueHandler().getValueDisplayString(filter.getAttribute(), ((DBDLabelValuePair) element).getValue(), DBDDisplayFormat.UI);
             }
         });
 
         TableViewerColumn descColumn = null;
         if (descReferrer != null) {
-            descColumn = new TableViewerColumn(filter.tableViewer, UIUtils.createTableColumn(table, SWT.NONE, "Description"));
+            descColumn = new TableViewerColumn(filter.getTableViewer(), UIUtils.createTableColumn(table, SWT.NONE, "Description"));
             descColumn.setLabelProvider(new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
@@ -150,19 +150,19 @@ public class FilterValueEditPopup extends Dialog {
         };
         table.addFocusListener(focusListener);
 
-        filter.tableViewer.addSelectionChangedListener(event -> {
+        filter.getTableViewer().addSelectionChangedListener(event -> {
             ISelection selection = event.getSelection();
             if (selection instanceof IStructuredSelection) {
                 value = ((IStructuredSelection) selection).getFirstElement();
             }
             //okPressed();
         });
-        filter.tableViewer.addDoubleClickListener(event -> {
-            value = filter.tableViewer.getStructuredSelection().getFirstElement();
+        filter.getTableViewer().addDoubleClickListener(event -> {
+            value = filter.getTableViewer().getStructuredSelection().getFirstElement();
             okPressed();
         });
 
-        if (filter.attr.getDataKind() == DBPDataKind.STRING || descReferrer != null) {
+        if (filter.getAttribute().getDataKind() == DBPDataKind.STRING || descReferrer != null) {
             Text filterTextbox = filter.addFilterTextbox(group);
             filterTextbox.setFocus();
             filterTextbox.addTraverseListener(e -> {
@@ -177,7 +177,7 @@ public class FilterValueEditPopup extends Dialog {
         } else {
             table.setFocus();
         }
-        filter.filterPattern = null;
+        filter.setFilterPattern(null);
         filter.loadValues(() -> {
             UIUtils.asyncExec(() -> UIUtils.packColumns(table, false));
         });
