@@ -1185,7 +1185,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public void completeLoading(EntityDiagram result) {
             super.completeLoading(result);
             super.visualizeLoading();
-            if (!result.getEntities().isEmpty()) {
+            if (result != null && !result.getEntities().isEmpty()) {
                 setErrorMessage(null);
             }
             getGraphicalViewer().setContents(result);
