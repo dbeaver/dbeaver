@@ -106,6 +106,9 @@
 
     <plugin id="org.eclipse.update.configurator" download-size="0" install-size="0" version="0.0.0"/>
 
+    <plugin id="com.sun.jna" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="com.sun.jna.platform" download-size="0" install-size="0" version="0.0.0"/>
+
     <!-- GEF -->
 
     <!-- IDE plugin -->
