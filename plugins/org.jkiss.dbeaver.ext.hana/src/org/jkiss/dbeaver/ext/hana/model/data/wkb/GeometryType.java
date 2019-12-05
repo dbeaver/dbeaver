@@ -22,14 +22,15 @@ package org.jkiss.dbeaver.ext.hana.model.data.wkb;
  * @author Stefan Uhrig, SAP SE
  */
 public enum GeometryType {
+
     POINT(1), LINESTRING(2), POLYGON(3), MULTIPOINT(4), MULTILINESTRING(5), MULTIPOLYGON(6), GEOMETRYCOLLECTION(
             7), CIRCULARSTRING(8);
+
+    private int typeCode;
 
     GeometryType(int typeCode) {
         this.typeCode = typeCode;
     }
-
-    private int typeCode;
 
     public int getTypeCode() {
         return typeCode;

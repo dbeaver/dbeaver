@@ -24,17 +24,17 @@ package org.jkiss.dbeaver.ext.hana.model.data.wkb;
 public enum XyzmMode {
     XY(2, false, false), XYZ(3, true, false), XYM(3, false, true), XYZM(4, true, true);
 
-    XyzmMode(int coordinatesPerPoint, boolean hasZ, boolean hasM) {
-        this.coordinatesPerPoint = coordinatesPerPoint;
-        this.hasZ = hasZ;
-        this.hasM = hasM;
-    }
-
     private int coordinatesPerPoint;
 
     private boolean hasZ;
 
     private boolean hasM;
+
+    XyzmMode(int coordinatesPerPoint, boolean hasZ, boolean hasM) {
+        this.coordinatesPerPoint = coordinatesPerPoint;
+        this.hasZ = hasZ;
+        this.hasM = hasM;
+    }
 
     public int getCoordinatesPerPoint() {
         return coordinatesPerPoint;

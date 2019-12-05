@@ -37,6 +37,8 @@ public class HANATableColumn extends GenericTableColumn implements DBPNamedObjec
 
 	private static final int FLAT_EARTH_SRID_END = 2000000000;
 
+    private GeometryInfo geometryInfo;
+
     public HANATableColumn(GenericTable table) {
         super(table);
     }
@@ -49,8 +51,6 @@ public class HANATableColumn extends GenericTableColumn implements DBPNamedObjec
         private String type;
         private int srid = -1;
     }
-
-    private GeometryInfo geometryInfo;
 
     @Override
     public int getAttributeGeometrySRID(DBRProgressMonitor monitor) throws DBCException {

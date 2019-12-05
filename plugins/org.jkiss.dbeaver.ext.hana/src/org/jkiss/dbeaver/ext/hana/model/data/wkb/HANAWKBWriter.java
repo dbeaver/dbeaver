@@ -39,53 +39,59 @@ import org.locationtech.jts.geom.Polygon;
  */
 public class HANAWKBWriter {
 
-    public static byte[] write(Geometry geometry, XyzmMode xyzmMode) throws HANAWKBWriterException {
-        if (geometry == null) {
-            return null;
-        }
-        int size = computeSize(geometry, xyzmMode);
-        ByteBuffer buffer = ByteBuffer.allocate(size);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        write(geometry, xyzmMode, buffer);
-        return buffer.array();
-    }
-
     private static final int HEADER_SIZE = 5;
 
     private static final int COUNT_SIZE = 4;
 
     private static final int COORD_SIZE = 8;
 
-    private static int computeSize(Geometry geometry, XyzmMode xyzmMode) throws HANAWKBWriterException {
+    private static final byte NDR = 1;
+
+    private static final int Z_OFFSET = 1000;
+
+    private static final int M_OFFSET = 2000;
+
+    public static byte[] write(Geometry geometry, XyzmMode xyzmMode) throws HANAWKBWriterException {
+        if (geometry == null) {
+            return null;
+        }
+        int size = computeGeometrySize(geometry, xyzmMode);
+        ByteBuffer buffer = ByteBuffer.allocate(size);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        writeGeometry(geometry, xyzmMode, buffer);
+        return buffer.array();
+    }
+
+    private static int computeGeometrySize(Geometry geometry, XyzmMode xyzmMode) throws HANAWKBWriterException {
         if (geometry instanceof Point) {
-            return computeSize((Point) geometry, xyzmMode);
+            return computePointSize(xyzmMode);
         } else if (geometry instanceof LineString) {
-            return computeSize((LineString) geometry, xyzmMode);
+            return computeLineStringSize((LineString) geometry, xyzmMode);
         } else if (geometry instanceof Polygon) {
-            return computeSize((Polygon) geometry, xyzmMode);
+            return computePolygonSize((Polygon) geometry, xyzmMode);
         } else if (geometry instanceof MultiPoint) {
-            return computeSize((MultiPoint) geometry, xyzmMode);
+            return computeMultiPointSize((MultiPoint) geometry, xyzmMode);
         } else if (geometry instanceof MultiLineString) {
-            return computeSize((MultiLineString) geometry, xyzmMode);
+            return computeMultiLineStringSize((MultiLineString) geometry, xyzmMode);
         } else if (geometry instanceof MultiPolygon) {
-            return computeSize((MultiPolygon) geometry, xyzmMode);
+            return computeMultiPolygonSize((MultiPolygon) geometry, xyzmMode);
         } else if (geometry instanceof GeometryCollection) {
-            return computeSize((GeometryCollection) geometry, xyzmMode);
+            return computeGeometryCollectionSize((GeometryCollection) geometry, xyzmMode);
         } else {
             throw new HANAWKBWriterException(
                     MessageFormat.format("Unsupported geometry type {0}", geometry.getGeometryType()));
         }
     }
 
-    private static int computeSize(Point point, XyzmMode xyzmMode) {
+    private static int computePointSize(XyzmMode xyzmMode) {
         return HEADER_SIZE + xyzmMode.getCoordinatesPerPoint() * COORD_SIZE;
     }
 
-    private static int computeSize(LineString lineString, XyzmMode xyzmMode) {
+    private static int computeLineStringSize(LineString lineString, XyzmMode xyzmMode) {
         return HEADER_SIZE + COUNT_SIZE + lineString.getNumPoints() * xyzmMode.getCoordinatesPerPoint() * COORD_SIZE;
     }
 
-    private static int computeSize(Polygon polygon, XyzmMode xyzmMode) {
+    private static int computePolygonSize(Polygon polygon, XyzmMode xyzmMode) {
         int size = HEADER_SIZE + COUNT_SIZE;
         LineString shell = polygon.getExteriorRing();
         if ((shell == null) || (shell.getNumPoints() == 0)) {
@@ -100,63 +106,58 @@ public class HANAWKBWriter {
         return size;
     }
 
-    private static int computeSize(MultiPoint multiPoint, XyzmMode xyzmMode) {
+    private static int computeMultiPointSize(MultiPoint multiPoint, XyzmMode xyzmMode) {
         return HEADER_SIZE + COUNT_SIZE + multiPoint.getNumPoints() * xyzmMode.getCoordinatesPerPoint() * COORD_SIZE;
     }
 
-    private static int computeSize(MultiLineString multiLineString, XyzmMode xyzmMode) {
+    private static int computeMultiLineStringSize(MultiLineString multiLineString, XyzmMode xyzmMode) {
         int size = HEADER_SIZE + COUNT_SIZE;
         for (int i = 0; i < multiLineString.getNumGeometries(); ++i) {
-            size += computeSize((LineString) multiLineString.getGeometryN(i), xyzmMode);
+            size += computeLineStringSize((LineString) multiLineString.getGeometryN(i), xyzmMode);
         }
         return size;
     }
 
-    private static int computeSize(MultiPolygon multiPolygon, XyzmMode xyzmMode) {
+    private static int computeMultiPolygonSize(MultiPolygon multiPolygon, XyzmMode xyzmMode) {
         int size = HEADER_SIZE + COUNT_SIZE;
         for (int i = 0; i < multiPolygon.getNumGeometries(); ++i) {
-            size += computeSize((Polygon) multiPolygon.getGeometryN(i), xyzmMode);
+            size += computePolygonSize((Polygon) multiPolygon.getGeometryN(i), xyzmMode);
         }
         return size;
     }
 
-    private static int computeSize(GeometryCollection geometryCollection, XyzmMode xyzmMode)
+    private static int computeGeometryCollectionSize(GeometryCollection geometryCollection, XyzmMode xyzmMode)
             throws HANAWKBWriterException {
         int size = HEADER_SIZE + COUNT_SIZE;
         for (int i = 0; i < geometryCollection.getNumGeometries(); ++i) {
-            size += computeSize(geometryCollection.getGeometryN(i), xyzmMode);
+            size += computeGeometrySize(geometryCollection.getGeometryN(i), xyzmMode);
         }
         return size;
     }
 
-    private static final byte NDR = 1;
-
-    private static final int Z_OFFSET = 1000;
-
-    private static final int M_OFFSET = 2000;
-
-    private static void write(Geometry geometry, XyzmMode xyzmMode, ByteBuffer buffer) throws HANAWKBWriterException {
+    private static void writeGeometry(Geometry geometry, XyzmMode xyzmMode, ByteBuffer buffer)
+            throws HANAWKBWriterException {
         if (geometry instanceof Point) {
-            write((Point) geometry, xyzmMode, buffer);
+            writePoint((Point) geometry, xyzmMode, buffer);
         } else if (geometry instanceof LineString) {
-            write((LineString) geometry, xyzmMode, buffer);
+            writeLineString((LineString) geometry, xyzmMode, buffer);
         } else if (geometry instanceof Polygon) {
-            write((Polygon) geometry, xyzmMode, buffer);
+            writePolygon((Polygon) geometry, xyzmMode, buffer);
         } else if (geometry instanceof MultiPoint) {
-            write((MultiPoint) geometry, xyzmMode, buffer);
+            writeMultiPoint((MultiPoint) geometry, xyzmMode, buffer);
         } else if (geometry instanceof MultiLineString) {
-            write((MultiLineString) geometry, xyzmMode, buffer);
+            writeMultiLineString((MultiLineString) geometry, xyzmMode, buffer);
         } else if (geometry instanceof MultiPolygon) {
-            write((MultiPolygon) geometry, xyzmMode, buffer);
+            writeMultiPolygon((MultiPolygon) geometry, xyzmMode, buffer);
         } else if (geometry instanceof GeometryCollection) {
-            write((GeometryCollection) geometry, xyzmMode, buffer);
+            writeGeometryCollection((GeometryCollection) geometry, xyzmMode, buffer);
         } else {
             throw new HANAWKBWriterException(
                     MessageFormat.format("Unsupported geometry type {0}", geometry.getGeometryType()));
         }
     }
 
-    private static void write(Point point, XyzmMode xyzmMode, ByteBuffer buffer) {
+    private static void writePoint(Point point, XyzmMode xyzmMode, ByteBuffer buffer) {
         writeHeader(GeometryType.POINT, xyzmMode, buffer);
         CoordinateSequence cs = point.getCoordinateSequence();
         if (cs.size() == 0) {
@@ -175,12 +176,12 @@ public class HANAWKBWriter {
         }
     }
 
-    private static void write(LineString lineString, XyzmMode xyzmMode, ByteBuffer buffer) {
+    private static void writeLineString(LineString lineString, XyzmMode xyzmMode, ByteBuffer buffer) {
         writeHeader(GeometryType.LINESTRING, xyzmMode, buffer);
-        write(lineString.getCoordinateSequence(), xyzmMode, buffer);
+        writeCoordinateSequence(lineString.getCoordinateSequence(), xyzmMode, buffer);
     }
 
-    private static void write(Polygon polygon, XyzmMode xyzmMode, ByteBuffer buffer) {
+    private static void writePolygon(Polygon polygon, XyzmMode xyzmMode, ByteBuffer buffer) {
         writeHeader(GeometryType.POLYGON, xyzmMode, buffer);
         LineString shell = polygon.getExteriorRing();
         if ((shell == null) || (shell.getNumPoints() == 0)) {
@@ -190,51 +191,51 @@ public class HANAWKBWriter {
         int numHoles = polygon.getNumInteriorRing();
         buffer.putInt(1 + numHoles);
 
-        write(shell.getCoordinateSequence(), xyzmMode, buffer);
+        writeCoordinateSequence(shell.getCoordinateSequence(), xyzmMode, buffer);
         for (int i = 0; i < numHoles; ++i) {
             LineString hole = polygon.getInteriorRingN(0);
-            write(hole.getCoordinateSequence(), xyzmMode, buffer);
+            writeCoordinateSequence(hole.getCoordinateSequence(), xyzmMode, buffer);
         }
     }
 
-    private static void write(MultiPoint multiPoint, XyzmMode xyzmMode, ByteBuffer buffer) {
+    private static void writeMultiPoint(MultiPoint multiPoint, XyzmMode xyzmMode, ByteBuffer buffer) {
         writeHeader(GeometryType.MULTIPOINT, xyzmMode, buffer);
         int numPoints = multiPoint.getNumPoints();
         buffer.putInt(numPoints);
         for (int i = 0; i < numPoints; ++i) {
-            write((Point) multiPoint.getGeometryN(i), xyzmMode, buffer);
+            writePoint((Point) multiPoint.getGeometryN(i), xyzmMode, buffer);
         }
     }
 
-    private static void write(MultiLineString multiLineString, XyzmMode xyzmMode, ByteBuffer buffer) {
+    private static void writeMultiLineString(MultiLineString multiLineString, XyzmMode xyzmMode, ByteBuffer buffer) {
         writeHeader(GeometryType.MULTILINESTRING, xyzmMode, buffer);
         int numLineStrings = multiLineString.getNumGeometries();
         buffer.putInt(numLineStrings);
         for (int i = 0; i < numLineStrings; ++i) {
-            write((LineString) multiLineString.getGeometryN(i), xyzmMode, buffer);
+            writeLineString((LineString) multiLineString.getGeometryN(i), xyzmMode, buffer);
         }
     }
 
-    private static void write(MultiPolygon multiPolygon, XyzmMode xyzmMode, ByteBuffer buffer) {
+    private static void writeMultiPolygon(MultiPolygon multiPolygon, XyzmMode xyzmMode, ByteBuffer buffer) {
         writeHeader(GeometryType.MULTIPOLYGON, xyzmMode, buffer);
         int numPolygons = multiPolygon.getNumGeometries();
         buffer.putInt(numPolygons);
         for (int i = 0; i < numPolygons; ++i) {
-            write((Polygon) multiPolygon.getGeometryN(i), xyzmMode, buffer);
+            writePolygon((Polygon) multiPolygon.getGeometryN(i), xyzmMode, buffer);
         }
     }
 
-    private static void write(GeometryCollection geometryCollection, XyzmMode xyzmMode, ByteBuffer buffer)
-            throws HANAWKBWriterException {
+    private static void writeGeometryCollection(GeometryCollection geometryCollection, XyzmMode xyzmMode,
+            ByteBuffer buffer) throws HANAWKBWriterException {
         writeHeader(GeometryType.GEOMETRYCOLLECTION, xyzmMode, buffer);
         int numGeometries = geometryCollection.getNumGeometries();
         buffer.putInt(numGeometries);
         for (int i = 0; i < numGeometries; ++i) {
-            write(geometryCollection.getGeometryN(i), xyzmMode, buffer);
+            writeGeometry(geometryCollection.getGeometryN(i), xyzmMode, buffer);
         }
     }
 
-    private static void write(CoordinateSequence cs, XyzmMode xyzmMode, ByteBuffer buffer) {
+    private static void writeCoordinateSequence(CoordinateSequence cs, XyzmMode xyzmMode, ByteBuffer buffer) {
         int numPoints = cs.size();
         buffer.putInt(numPoints);
         for (int i = 0; i < numPoints; ++i) {
