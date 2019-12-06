@@ -113,8 +113,8 @@ public class HANAMetaModel extends GenericMetaModel
             try (JDBCPreparedStatement dbStat = session.prepareCall(
                 "CALL get_object_definition(?,?)"))
             {
-                dbStat.setString(1, sourceObject.getContainer().getName());
-                dbStat.setString(2, sourceObject.getName());
+                dbStat.setString(1, DBUtils.getQuotedIdentifier(sourceObject.getContainer()));
+                dbStat.setString(2, DBUtils.getQuotedIdentifier(sourceObject));
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder ddl = new StringBuilder();
                     while (dbResult.nextRow()) {
