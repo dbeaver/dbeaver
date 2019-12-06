@@ -52,7 +52,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         super(parent, style);
         setExpandSingleRoot(false);
         setNewPropertiesAllowed(true);
-        setNamesEditable(true);
+        //setNamesEditable(true);
     }
 
     public PropertySourceCustom makeProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
