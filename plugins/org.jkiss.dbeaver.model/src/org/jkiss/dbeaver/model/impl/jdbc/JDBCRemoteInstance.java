@@ -122,7 +122,7 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
     @NotNull
     @Override
     public JDBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
-        if (metaContext != null && meta) {
+        if (metaContext != null && (meta || executionContext == null)) {
             return this.metaContext;
         }
         if (executionContext == null) {
