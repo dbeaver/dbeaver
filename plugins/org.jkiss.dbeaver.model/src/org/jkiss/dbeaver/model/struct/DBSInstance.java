@@ -30,10 +30,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBSInstance extends DBSObject
 {
+
     /**
      * Default execution context
      *
-     * @param monitor
+     * @param monitor progress monitor
      * @param meta request for metadata operations context
      * @return default data source execution context.
      */
@@ -58,4 +59,5 @@ public interface DBSInstance extends DBSObject
     DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException;
 
     void shutdown(DBRProgressMonitor monitor);
+
 }
