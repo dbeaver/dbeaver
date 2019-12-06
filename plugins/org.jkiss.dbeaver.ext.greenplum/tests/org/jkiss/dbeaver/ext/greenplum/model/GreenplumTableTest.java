@@ -68,6 +68,7 @@ public class GreenplumTableTest {
 
         Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
         Mockito.when(mockDatabase.getDefaultContext(Mockito.anyObject(), Mockito.anyBoolean())).thenReturn(mockContext);
+        Mockito.when(mockDatabase.isInstanceConnected()).thenReturn(true);
 
         Mockito.when(mockResults.getString("relname")).thenReturn(exampleTableName);
         Mockito.when(mockResults.getString("relpersistence")).thenReturn("x");
