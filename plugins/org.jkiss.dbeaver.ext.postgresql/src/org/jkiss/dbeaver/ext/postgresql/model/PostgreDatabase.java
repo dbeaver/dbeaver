@@ -209,7 +209,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     @Override
     public boolean isInstanceConnected() {
-        return executionContext != null;
+        return metaContext != null || executionContext != null;
     }
 
     private void loadInfo(ResultSet dbResult) {
