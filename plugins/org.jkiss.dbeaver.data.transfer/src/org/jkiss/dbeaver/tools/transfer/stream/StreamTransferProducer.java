@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -155,7 +152,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         this.sourceObject.entityMapping = entityMapping;
     }
 
-    private class StreamSourceObject implements DBSEntity, DBSDataContainer {
+    private class StreamSourceObject implements DBSEntity, DBSDataContainer, DBPQualifiedObject {
 
         private StreamProducerSettings.EntityMapping entityMapping;
 
@@ -244,6 +241,12 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         @Override
         public boolean isPersisted() {
             return true;
+        }
+
+        @NotNull
+        @Override
+        public String getFullyQualifiedName(DBPEvaluationContext context) {
+            return getName();
         }
     }
 
