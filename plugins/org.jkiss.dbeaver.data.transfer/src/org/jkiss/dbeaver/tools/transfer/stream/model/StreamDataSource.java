@@ -21,30 +21,47 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
-import org.jkiss.dbeaver.model.impl.AbstractSimpleDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Data container transfer producer
  */
-public class StreamDataSource extends AbstractSimpleDataSource implements DBDValueHandlerProvider {
+public class StreamDataSource implements DBPDataSource, DBSInstance, DBDValueHandlerProvider {
+
+    private final StreamDataSourceContainer container;
+    private final StreamExecutionContext executionContext;
+
+    public StreamDataSource(StreamDataSourceContainer container) {
+        this.container = container;
+        this.executionContext = new StreamExecutionContext(this, "Main");
+    }
 
     public StreamDataSource(File inputFile) {
-        super(new StreamDataSourceContainer(inputFile));
+        this(new StreamDataSourceContainer(inputFile));
     }
 
     public StreamDataSource(String inputName) {
-        super(new StreamDataSourceContainer(inputName));
+        this(new StreamDataSourceContainer(inputName));
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceContainer getContainer() {
+        return container;
     }
 
     @NotNull
@@ -65,32 +82,36 @@ public class StreamDataSource extends AbstractSimpleDataSource implements DBDVal
 
     @NotNull
     @Override
+    public DBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
+        return executionContext;
+    }
+
+    @NotNull
+    @Override
+    public DBCExecutionContext[] getAllContexts() {
+        return new DBCExecutionContext[] { executionContext };
+    }
+
+    @NotNull
+    @Override
     public StreamExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException {
         return new StreamExecutionContext(this, purpose);
     }
 
+    @NotNull
+    @Override
+    public DBSInstance getDefaultInstance() {
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public Collection<? extends DBSInstance> getAvailableInstances() {
+        return Collections.singleton(this);
+    }
+
     @Override
     public void shutdown(DBRProgressMonitor monitor) {
-
-    }
-
-    @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return null;
-    }
-
-    @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
 
     }
 
@@ -99,5 +120,34 @@ public class StreamDataSource extends AbstractSimpleDataSource implements DBDVal
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject) {
         return DefaultValueHandler.INSTANCE;
+    }
+
+    @Nullable
+    @Override
+    public DBSObject getParentObject() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSource getDataSource() {
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return container.getName();
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return true;
     }
 }
