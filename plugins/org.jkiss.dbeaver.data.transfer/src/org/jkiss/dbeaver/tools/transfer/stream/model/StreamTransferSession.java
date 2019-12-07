@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.tools.transfer.stream;
+package org.jkiss.dbeaver.tools.transfer.stream.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
@@ -29,29 +29,33 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class StreamTransferSession extends AbstractSession {
 
-    private static final Log log = Log.getLog(StreamTransferSession.class);
+    private final StreamExecutionContext executionContext;
 
-    public StreamTransferSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
+    StreamTransferSession(DBRProgressMonitor monitor, StreamExecutionContext executionContext, DBCExecutionPurpose purpose, String taskTitle) {
         super(monitor, purpose, taskTitle);
+        this.executionContext = executionContext;
     }
 
+    @NotNull
     @Override
     public DBCExecutionContext getExecutionContext() {
-        return null;
+        return executionContext;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
-        return null;
+        return executionContext.getDataSource();
     }
 
+    @NotNull
     @Override
-    public DBCStatement prepareStatement(DBCStatementType type, String query, boolean scrollable, boolean updatable, boolean returnGeneratedKeys) throws DBCException {
+    public DBCStatement prepareStatement(@NotNull DBCStatementType type, @NotNull String query, boolean scrollable, boolean updatable, boolean returnGeneratedKeys) throws DBCException {
         throw new DBCException("Not supported");
     }
 
     @Override
-    public void cancelBlock(DBRProgressMonitor monitor, Thread blockThread) throws DBException {
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, Thread blockThread) throws DBException {
         // do nothing
     }
 }
