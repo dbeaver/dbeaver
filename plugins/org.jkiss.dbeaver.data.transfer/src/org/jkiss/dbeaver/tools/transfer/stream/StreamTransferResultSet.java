@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetColumn;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
+import org.jkiss.dbeaver.tools.transfer.stream.model.StreamTransferSession;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
