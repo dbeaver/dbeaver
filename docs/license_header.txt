@@ -15,3 +15,7 @@
 
    Contributors:
       Serge Rider - initial API and implementation
+      John Smith - German localization
+
+   Notes:
+      Any important notes (legal or implementation related)
