@@ -54,7 +54,21 @@ import java.util.List;
  */
 public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer {
 
-    private static final List<String> SYSTEM_SCHEMA = Arrays.asList("SYS", "DB2QP", "SQLJ", "NULLID");
+    private static final List<String> SYSTEM_SCHEMA = Arrays.asList(
+        "SYS",
+        "SYSCAT",
+        "SYSFUN",
+        "SYSIBM",
+        "SYSIBMADM",
+        "SYSIBMINTERNAL",
+        "SYSIBMTS",
+        "SYSPROC",
+        "SYSPUBLIC",
+        "SYSSTAT",
+        "SYSTOOLS",
+        "DB2QP",
+        "SQLJ",
+        "NULLID");
 
     private static final String C_SEQ = "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR";
     private static final String C_PKG = "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR";
