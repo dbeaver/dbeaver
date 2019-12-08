@@ -20,14 +20,11 @@ package org.jkiss.dbeaver.ext.db2.model.cache;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
+import org.jkiss.dbeaver.ext.db2.model.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
@@ -109,7 +106,16 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
     protected DB2TableReference fetchObject(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table, String constName,
         JDBCResultSet dbResult) throws SQLException, DBException
     {
-        return new DB2TableReference(session.getProgressMonitor(), db2Table, dbResult);
+        String ownerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
+        String ownerTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
+        DB2Table ownerTable = DB2Utils.findTableBySchemaNameAndName(
+            session.getProgressMonitor(), db2Schema.getDataSource(), ownerSchemaName, ownerTableName);
+        if (ownerTable == null) {
+            log.error("Cannot find reference owner table " + ownerSchemaName + "." + ownerTableName);
+            return null;
+        }
+
+        return new DB2TableReference(session.getProgressMonitor(), ownerTable, dbResult);
     }
 
     @Nullable
