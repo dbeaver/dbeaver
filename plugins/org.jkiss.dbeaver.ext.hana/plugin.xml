@@ -118,4 +118,18 @@
         <manager class="org.jkiss.dbeaver.ext.hana.edit.HANATableColumnManager" objectType="org.jkiss.dbeaver.ext.hana.model.HANATableColumn"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.hana.model.data.HANAValueHandlerProvider"
+                description="%provider.data.type.hana.description"
+                id="org.jkiss.dbeaver.ext.hana.model.data.HANAValueHandlerProvider"
+                label="%provider.data.type.hana.name">
+
+            <datasource id="hana"/>
+
+            <type name="ST_Geometry"/>
+            <type name="ST_Point"/>
+        </provider>
+    </extension>
+
 </plugin>
