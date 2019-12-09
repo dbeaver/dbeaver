@@ -105,6 +105,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 StreamTransferConsumer.VARIABLE_TABLE,
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
                 StreamTransferConsumer.VARIABLE_DATE,
+                StreamTransferConsumer.VARIABLE_INDEX,
                 StreamTransferConsumer.VARIABLE_PROJECT);
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(e -> {
@@ -121,6 +122,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_INDEX),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)
                 }));
 

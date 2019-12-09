@@ -73,6 +73,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static final String VARIABLE_SCHEMA = "schema";
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
+    public static final String VARIABLE_INDEX = "index";
     public static final String VARIABLE_DATE = "date";
     public static final String VARIABLE_PROJECT = "project";
     public static final String VARIABLE_FILE = "file";
@@ -504,6 +505,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     }
                 case VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
+                case VARIABLE_INDEX:
+                    return String.valueOf(parameters.orderNumber + 1);
                 case VARIABLE_PROJECT: {
                     if (dataContainer == null) {
                         return null;
