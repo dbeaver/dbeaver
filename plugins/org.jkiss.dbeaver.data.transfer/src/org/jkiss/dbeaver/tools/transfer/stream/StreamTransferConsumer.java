@@ -51,6 +51,8 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -97,6 +99,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private StringWriter outputBuffer;
     private boolean initialized = false;
     private TransferParameters parameters;
+    private Date startTimestamp;
 
     public StreamTransferConsumer() {
     }
@@ -246,6 +249,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         } catch (DBException e) {
             throw new DBCException("Can't initialize data exporter", e);
         }
+
+        startTimestamp = new Date();
     }
 
     private void closeExporter() {
@@ -428,7 +433,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 //            fileName += "_" + String.valueOf(parameters.orderNumber + 1);
 //        }
         if (multiFileNumber > 0) {
-            fileName += "_" + String.valueOf(multiFileNumber + 1);
+            fileName += "_" + (multiFileNumber + 1);
         }
         if (extension != null) {
             return fileName + "." + extension;
@@ -483,7 +488,20 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     return stripObjectName(tableName);
                 }
                 case VARIABLE_TIMESTAMP:
-                    return RuntimeUtils.getCurrentTimeStamp();
+                    Date ts;
+                    if (startTimestamp != null) {
+                        // Use saved timestamp (#7352)
+                        ts = startTimestamp;
+                    } else {
+                        ts = new Date();
+                    }
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat(settings.getOutputTimestampPattern());
+                        return sdf.format(ts);
+                    } catch (Exception e) {
+                        log.error(e);
+                        return "BAD_TIMESTAMP";
+                    }
                 case VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
                 case VARIABLE_PROJECT: {
@@ -658,13 +676,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public void write(byte[] b) throws IOException {
+        public void write(@NotNull byte[] b) throws IOException {
             this.out.write(b);
             bytesWritten += b.length;
         }
 
         @Override
-        public void write(byte[] b, int off, int len) throws IOException {
+        public void write(@NotNull byte[] b, int off, int len) throws IOException {
             this.out.write(b, off, len);
             bytesWritten += len;
         }

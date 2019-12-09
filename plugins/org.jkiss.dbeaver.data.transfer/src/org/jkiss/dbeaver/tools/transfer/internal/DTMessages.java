@@ -64,6 +64,7 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_output_label_use_single_file_tip;
 	public static String data_transfer_wizard_output_label_directory;
 	public static String data_transfer_wizard_output_label_encoding;
+	public static String data_transfer_wizard_output_label_timestamp_pattern;
 	public static String data_transfer_wizard_output_label_extract_type;
 	public static String data_transfer_wizard_output_label_file_name_pattern;
 	public static String data_transfer_wizard_output_label_insert_bom;
