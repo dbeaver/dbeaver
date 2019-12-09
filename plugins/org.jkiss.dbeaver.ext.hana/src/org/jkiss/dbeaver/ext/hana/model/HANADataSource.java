@@ -51,6 +51,10 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     private static final Log log = Log.getLog(HANADataSource.class);
     private static final String PROP_APPLICATION_NAME = "SESSIONVARIABLE:APPLICATION";
     private static final String PROP_READONLY = "READONLY";
+    private static final String PROP_SPATIAL_OUTPUT_REPRESENTATION = "SESSIONVARIABLE:SPATIAL_OUTPUT_REPRESENTATION";
+    private static final String VALUE_SPATIAL_OUTPUT_REPRESENTATION = "EWKB";
+    private static final String PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "SESSIONVARIABLE:SPATIAL_WKB_EMPTY_POINT_REPRESENTATION";
+    private static final String VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "NAN_COORDINATES";
     
 
     private HashMap<String, String> sysViewColumnUnits; 
@@ -112,6 +116,10 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         if (getContainer().isConnectionReadOnly()) {
             props.put(PROP_READONLY, "TRUE");
         }
+        // Represent geometries as EWKB (instead of as WKB) so that we can extract the SRID
+        props.put(PROP_SPATIAL_OUTPUT_REPRESENTATION, VALUE_SPATIAL_OUTPUT_REPRESENTATION);
+        // Represent empty points using NaN-coordinates
+        props.put(PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION, VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION);
         return props;
     }
     
