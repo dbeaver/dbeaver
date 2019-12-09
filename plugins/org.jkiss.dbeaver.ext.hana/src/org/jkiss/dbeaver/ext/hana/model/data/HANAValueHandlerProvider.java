@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Stefan Uhrig (stefan.uhrig@sap.com)
+ * Copyright (C) 2010-2019 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Contributors:
+ *    Stefan Uhrig - initial implementation
  */
 package org.jkiss.dbeaver.ext.hana.model.data;
 
@@ -23,11 +26,6 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-/**
- * Handler provider for HANA specific types.
- *
- * @author Stefan Uhrig, SAP SE
- */
 public class HANAValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
