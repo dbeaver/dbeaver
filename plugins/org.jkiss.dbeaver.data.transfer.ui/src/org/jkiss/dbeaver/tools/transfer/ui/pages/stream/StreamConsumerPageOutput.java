@@ -40,6 +40,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
 
     private Combo encodingCombo;
     private Button encodingBOMCheckbox;
+    private Text timestampPattern;
     private Text directoryText;
     private Text fileNameText;
     private Button compressCheckbox;
@@ -134,7 +135,11 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     }
                     updatePageCompletion();
                 });
-                encodingBOMCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_insert_bom, DTMessages.data_transfer_wizard_output_label_insert_bom_tooltip, false, 3);
+                timestampPattern = UIUtils.createLabelText(generalSettings, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, SWT.BORDER);
+                timestampPattern.addModifyListener(e -> {
+                    settings.setOutputTimestampPattern(timestampPattern.getText());
+                });
+                encodingBOMCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_insert_bom, DTMessages.data_transfer_wizard_output_label_insert_bom_tooltip, false, 1);
                 encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -201,7 +206,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setExecuteProcessOnFinish(execProcessCheckbox.getSelection());
-                    toggleExecProcessControls();
+                    updateControlsEnablement();
                     updatePageCompletion();
                 }
             });
@@ -256,15 +261,10 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         encodingCombo.setEnabled(!isBinary && !clipboard);
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
+        timestampPattern.setEnabled(!clipboard);
         showFolderCheckbox.setEnabled(!clipboard);
         execProcessCheckbox.setEnabled(!clipboard);
         execProcessText.setEnabled(!clipboard);
-    }
-
-    private void toggleExecProcessControls() {
-        boolean clipboard = clipboardCheck.getSelection();
-        final boolean isExecCommand = execProcessCheckbox.getSelection();
-        execProcessText.setEnabled(!clipboard && isExecCommand);
     }
 
     @Override
@@ -282,6 +282,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         splitFilesCheckbox.setSelection(settings.isSplitOutFiles());
         maximumFileSizeText.setText(String.valueOf(settings.getMaxOutFileSize()));
         encodingCombo.setText(CommonUtils.toString(settings.getOutputEncoding()));
+        timestampPattern.setText(settings.getOutputTimestampPattern());
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
         showFolderCheckbox.setSelection(settings.isOpenFolderOnFinish());
         execProcessCheckbox.setSelection(settings.isExecuteProcessOnFinish());
@@ -296,7 +297,6 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
 
         updatePageCompletion();
         updateControlsEnablement();
-        toggleExecProcessControls();
     }
 
     @Override

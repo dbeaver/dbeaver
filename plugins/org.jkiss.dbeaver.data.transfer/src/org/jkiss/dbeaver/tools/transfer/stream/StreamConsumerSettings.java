@@ -58,6 +58,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private String outputFilePattern = GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE) + "_" + GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP);
     private String outputEncoding = GeneralUtils.getDefaultFileEncoding();
     private boolean outputEncodingBOM = false;
+    private String outputTimestampPattern = GeneralUtils.DEFAULT_TIMESTAMP_PATTERN;
 
     private DBDDataFormatterProfile formatterProfile;
 
@@ -116,6 +117,14 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     public void setOutputEncodingBOM(boolean outputEncodingBOM) {
         this.outputEncodingBOM = outputEncodingBOM;
+    }
+
+    public String getOutputTimestampPattern() {
+        return outputTimestampPattern;
+    }
+
+    public void setOutputTimestampPattern(String outputTimestampPattern) {
+        this.outputTimestampPattern = outputTimestampPattern;
     }
 
     public boolean isOutputClipboard() {
@@ -198,7 +207,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         outputFolder = CommonUtils.toString(settings.get("outputFolder"), outputFolder);
         outputFilePattern = CommonUtils.toString(settings.get("outputFilePattern"), outputFilePattern);
         outputEncoding = CommonUtils.toString(settings.get("outputEncoding"), outputEncoding);
-
+        outputTimestampPattern = CommonUtils.toString(settings.get("outputTimestampPattern"), outputTimestampPattern);
         outputEncodingBOM = CommonUtils.getBoolean(settings.get("outputEncodingBOM"), outputEncodingBOM);
         outputClipboard = CommonUtils.getBoolean(settings.get("outputClipboard"), outputClipboard);
         if (dataTransferSettings.getDataPipes().size() > 1) {
@@ -228,6 +237,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         settings.put("outputFolder", outputFolder);
         settings.put("outputFilePattern", outputFilePattern);
         settings.put("outputEncoding", outputEncoding);
+        settings.put("outputTimestampPattern", outputTimestampPattern);
         settings.put("outputEncodingBOM", outputEncodingBOM);
         settings.put("outputClipboard", outputClipboard);
         settings.put("useSingleFile", useSingleFile);
@@ -256,6 +266,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_directory, outputFolder);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_file_name_pattern, outputFilePattern);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_encoding, outputEncoding);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, outputTimestampPattern);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_insert_bom, outputEncodingBOM);
         } else {
             DTUtils.addSummary(summary, "Copy to clipboard", outputClipboard);
