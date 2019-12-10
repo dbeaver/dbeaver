@@ -29,8 +29,8 @@ class PostgreDialectRules implements SQLRuleProvider {
 
     @Override
     public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
-        if (position == RulePosition.INITIAL) {
-            rules.add(new PostgreDollarQuoteRule());
+        if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
+            rules.add(new PostgreDollarQuoteRule(position == RulePosition.PARTITION));
         }
     }
 
