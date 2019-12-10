@@ -16,50 +16,125 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui.sql;
 
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.ICharacterScanner;
-import org.eclipse.jface.text.rules.IRule;
+import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockToggleToken;
 
-class PostgreDollarQuoteRule implements IRule {
+class PostgreDollarQuoteRule implements IPredicateRule {
 
-    private final IToken blockToken;
+    private final boolean partitionRule;
+    private final IToken partStringToken, partCodeToken;
+    private final IToken stringToken, delimiterToken;
 
-    public PostgreDollarQuoteRule() {
-        blockToken = new SQLBlockToggleToken(
+    PostgreDollarQuoteRule(boolean partitionRule) {
+        this.partitionRule = partitionRule;
+
+        this.partStringToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
+        this.partCodeToken = new Token(IDocument.DEFAULT_CONTENT_TYPE);
+        this.stringToken = new Token(
+            new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_STRING), null, SWT.NORMAL));
+        this.delimiterToken = new SQLBlockToggleToken(
             new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.BOLD));
     }
 
     @Override
     public IToken evaluate(ICharacterScanner scanner) {
+        return evaluate(scanner, false);
+    }
+
+    @Override
+    public IToken getSuccessToken() {
+        return partitionRule ? partStringToken : stringToken;
+    }
+
+    @Override
+    public IToken evaluate(ICharacterScanner scanner, boolean resume) {
+        int totalRead = 0;
         int c = scanner.read();
+        totalRead++;
         if (c == '$') {
             int charsRead = 0;
             do {
                 c = scanner.read();
                 charsRead++;
+                totalRead++;
                 if (c == '$') {
+
                     if (charsRead <= 1) {
-                        // Here is a trick - dollar quote without tag is a string. Quote with tag is just a block toggle.
-                        // I'm afraid we can't do more ()#6608
+                        // Here is a trick - dollar quote without preceding AS or DO and without tag is a string.
+                        // Quote with tag is just a block toggle.
+                        // I'm afraid we can't do more (#6608, #7183)
+                        boolean stringEndFound = false;
+                        //StringBuilder stringValue = new StringBuilder();
+                        for (;;) {
+                            c = scanner.read();
+                            totalRead++;
+                            if (c == ICharacterScanner.EOF) {
+                                break;
+                            }
+                            if (c == '$') {
+                                int c2 = scanner.read();
+                                totalRead++;
+                                if (c2 == '$') {
+                                    stringEndFound = true;
+                                    break;
+                                } else {
+                                    scanner.unread();
+                                    totalRead--;
+                                }
+                            }
+                            //stringValue.append((char)c);
+                        }
+
+                        if (!stringEndFound) {
+                            if (!partitionRule) {
+                                unread(scanner, totalRead - 2);
+                                return delimiterToken;
+                            } else {
+                                break;
+                            }
+                        }
+/*
+                        String encString = stringValue.toString().toUpperCase(Locale.ENGLISH);
+                        if (encString.contains(SQLConstants.BLOCK_BEGIN) && encString.contains(SQLConstants.BLOCK_END)) {
+                            // Seems to be a code block
+                            if (!partitionRule) {
+                                unread(scanner, totalRead - 2);
+                                return delimiterToken;
+                            } else {
+                                return partCodeToken;
+                            }
+                        }
+*/
+                        // Find the end of the string
+                        return partitionRule ? partStringToken : stringToken;
+                    }
+                    if (!partitionRule) {
+                        return delimiterToken;
+                    } else {
                         break;
                     }
-                    return blockToken;
                 }
             } while (Character.isLetterOrDigit(c) || c == '_');
-
-            for (int i = 0; i < charsRead; i++) {
-                scanner.unread();
-            }
         }
-        scanner.unread();
+
+        unread(scanner, totalRead);
 
         return Token.UNDEFINED;
+    }
+
+    private static void unread(ICharacterScanner scanner, int totalRead) {
+        while (totalRead-- > 0) {
+            scanner.unread();
+        }
     }
 
 }
