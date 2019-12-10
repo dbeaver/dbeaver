@@ -903,10 +903,10 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         }
 
         @Override
-        protected boolean handleCacheReadError(DBException error) {
+        protected boolean handleCacheReadError(Exception error) {
             // #271, #501: in some databases (AWS?) pg_authid is not accessible
             // FIXME: maybe some better workaround?
-            if (PostgreConstants.EC_PERMISSION_DENIED.equals(error.getDatabaseState())) {
+            if (error instanceof DBException && PostgreConstants.EC_PERMISSION_DENIED.equals(((DBException) error).getDatabaseState())) {
                 log.warn(error);
                 setCache(Collections.emptyList());
                 return true;
