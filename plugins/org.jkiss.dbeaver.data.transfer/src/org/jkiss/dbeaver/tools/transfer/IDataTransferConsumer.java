@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -34,6 +35,7 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
         public int totalConsumers;
         public boolean isBinary;
         public boolean isHTML;
+        public Date startTimestamp;
 
         public TransferParameters() {
         }

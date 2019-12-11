@@ -100,7 +100,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private StringWriter outputBuffer;
     private boolean initialized = false;
     private TransferParameters parameters;
-    private Date startTimestamp;
 
     public StreamTransferConsumer() {
     }
@@ -250,8 +249,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         } catch (DBException e) {
             throw new DBCException("Can't initialize data exporter", e);
         }
-
-        startTimestamp = new Date();
     }
 
     private void closeExporter() {
@@ -490,9 +487,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 }
                 case VARIABLE_TIMESTAMP:
                     Date ts;
-                    if (startTimestamp != null) {
+                    if (parameters.startTimestamp != null) {
                         // Use saved timestamp (#7352)
-                        ts = startTimestamp;
+                        ts = parameters.startTimestamp;
                     } else {
                         ts = new Date();
                     }

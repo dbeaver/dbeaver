@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.tools.transfer;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 
+import java.util.Date;
+
 /**
  * Data transfer pipe is tuple of produces and consumer
  */
@@ -66,6 +68,7 @@ public class DataTransferPipe {
             processorDescriptor != null && processorDescriptor.isHTMLFormat());
         parameters.orderNumber = pipeIndex;
         parameters.totalConsumers = totalPipes;
+        parameters.startTimestamp = new Date();
         consumer.initTransfer(
             producer.getDatabaseObject(),
             consumerSettings,
