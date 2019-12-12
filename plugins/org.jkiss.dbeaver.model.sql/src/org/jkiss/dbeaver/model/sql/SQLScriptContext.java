@@ -40,6 +40,7 @@ import java.util.Map;
 public class SQLScriptContext {
 
     private final Map<String, Object> variables = new HashMap<>();
+    private final Map<String, Object> defaultParameters = new HashMap<>();
     private final Map<String, Object> pragmas = new HashMap<>();
     private Map<String, Object> statementPragmas;
 
@@ -110,6 +111,14 @@ public class SQLScriptContext {
         }
     }
 
+    public Object getParameterDefaultValue(String name) {
+        return defaultParameters.get(name);
+    }
+
+    public void setParameterDefaultValue(String name, Object value) {
+        defaultParameters.put(name, value);
+    }
+
     @NotNull
     public Map<String, Object> getPragmas() {
         return pragmas;
@@ -173,7 +182,7 @@ public class SQLScriptContext {
         this.pragmas.putAll(context.pragmas);
     }
 
-    public boolean fillQueryParameters(SQLQuery query) {
+    public boolean fillQueryParameters(SQLQuery query, boolean useDefaults) {
         if (ignoreParameters || parametersProvider == null) {
             return true;
         }
@@ -185,7 +194,7 @@ public class SQLScriptContext {
         }
 
         // Resolve parameters (only if it is the first fetch)
-        Boolean paramsResult = parametersProvider.prepareStatementParameters(this, query, parameters);
+        Boolean paramsResult = parametersProvider.prepareStatementParameters(this, query, parameters, useDefaults);
         if (paramsResult == null) {
             ignoreParameters = true;
             return true;

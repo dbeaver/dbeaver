@@ -30,6 +30,6 @@ public interface SQLParametersProvider {
     /**
      * @return true if parameters processed, false if use canceled query, null if parameters must be ignored till the end of script.
      */
-    Boolean prepareStatementParameters(@NotNull SQLScriptContext scriptContext, @NotNull SQLQuery sqlStatement, @NotNull List<SQLQueryParameter> parameters);
+    Boolean prepareStatementParameters(@NotNull SQLScriptContext scriptContext, @NotNull SQLQuery sqlStatement, @NotNull List<SQLQueryParameter> parameters, boolean useDefaults);
 
 }

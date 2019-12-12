@@ -40,11 +40,12 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
     }
 
     @Override
-    public Boolean prepareStatementParameters(@NotNull SQLScriptContext scriptContext, @NotNull SQLQuery sqlStatement, @NotNull List<SQLQueryParameter> parameters) {
+    public Boolean prepareStatementParameters(@NotNull SQLScriptContext scriptContext, @NotNull SQLQuery sqlStatement, @NotNull List<SQLQueryParameter> parameters, boolean useDefaults) {
         for (SQLQueryParameter param : parameters) {
             String paramName = param.getVarName();
-            if (scriptContext.hasVariable(paramName)) {
-                Object varValue = scriptContext.getVariable(paramName);
+            Object defValue = useDefaults ? scriptContext.getParameterDefaultValue(paramName) : null;
+            if (defValue != null || scriptContext.hasVariable(paramName)) {
+                Object varValue = defValue != null ? defValue : scriptContext.getVariable(paramName);
                 String strValue = varValue == null ? null : varValue.toString();
                 param.setValue(strValue);
                 param.setVariableSet(true);
@@ -73,9 +74,13 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
         if (paramsResult == IDialogConstants.OK_ID) {
             // Save values back to script context
             for (SQLQueryParameter param : parameters) {
-                if (param.isNamed() && scriptContext.hasVariable(param.getVarName())) {
+                if (param.isNamed()) {
                     String strValue = param.getValue();
-                    scriptContext.setVariable(param.getVarName(), strValue);
+                    if (scriptContext.hasVariable(param.getVarName())) {
+                        scriptContext.setVariable(param.getVarName(), strValue);
+                    } else {
+                        scriptContext.setParameterDefaultValue(param.getVarName(), strValue);
+                    }
                 }
             }
             return true;

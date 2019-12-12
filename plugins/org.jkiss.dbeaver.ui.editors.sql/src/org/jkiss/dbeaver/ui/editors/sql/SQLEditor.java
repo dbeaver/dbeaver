@@ -113,12 +113,11 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1949,7 +1948,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public boolean transformQueryWithParameters(SQLQuery query) {
-        return createScriptContext().fillQueryParameters(query);
+        return createScriptContext().fillQueryParameters(query, false);
     }
 
     private boolean checkSession(DBRProgressListener onFinish)
@@ -2510,7 +2509,7 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         } else {
                             SQLQuery query = (SQLQuery) element;
-                            scriptContext.fillQueryParameters(query);
+                            scriptContext.fillQueryParameters(query, false);
 
                             SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(SQLEditor.this, query, scriptContext, log);
                             producers.add(new DatabaseTransferProducer(dataContainer, null));
@@ -2844,6 +2843,7 @@ public class SQLEditor extends SQLEditorBase implements
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
                 job.setFetchSize(fetchSize);
+                job.setFetchFlags(flags);
 
                 job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber);
 

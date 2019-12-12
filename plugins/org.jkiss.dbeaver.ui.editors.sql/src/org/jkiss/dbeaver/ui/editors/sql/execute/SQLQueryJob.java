@@ -105,6 +105,7 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean skipConfirmation;
     private int fetchSize;
+    private long fetchFlags;
 
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
@@ -164,6 +165,11 @@ public class SQLQueryJob extends DataSourceJob
 
     public void setFetchSize(int fetchSize) {
         this.fetchSize = fetchSize;
+    }
+
+
+    public void setFetchFlags(long fetchFlags) {
+        this.fetchFlags = fetchFlags;
     }
 
     @Override
@@ -349,7 +355,7 @@ public class SQLQueryJob extends DataSourceJob
             if (dataReceiver instanceof DBDDataReceiverInteractive) {
                 ((DBDDataReceiverInteractive) dataReceiver).setDataReceivePaused(true);
             }
-            if (!scriptContext.fillQueryParameters((SQLQuery) element)) {
+            if (!scriptContext.fillQueryParameters((SQLQuery) element, CommonUtils.isBitSet(fetchFlags, DBSDataContainer.FLAG_REFRESH))) {
                 // User canceled
                 return false;
             }

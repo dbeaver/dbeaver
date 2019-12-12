@@ -44,6 +44,7 @@ public interface DBSDataContainer extends DBSObject {
     long FLAG_USE_SELECTED_ROWS     = 1 << 2;
     long FLAG_USE_SELECTED_COLUMNS  = 1 << 3;
     long FLAG_FETCH_SEGMENT         = 1 << 4;
+    long FLAG_REFRESH               = 1 << 8;
 
     @Nullable
     DBPDataSource getDataSource();
