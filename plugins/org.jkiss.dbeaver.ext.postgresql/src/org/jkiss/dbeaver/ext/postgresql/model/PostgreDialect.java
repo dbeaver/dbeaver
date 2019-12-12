@@ -103,6 +103,7 @@ public class PostgreDialect extends JDBCSQLDialect {
         "END_FRAME",
         "END_PARTITION",
         "ENFORCED",
+        "EXIT",
         "EXPRESSION",
         //"FILE",
         "FIRST_VALUE",
