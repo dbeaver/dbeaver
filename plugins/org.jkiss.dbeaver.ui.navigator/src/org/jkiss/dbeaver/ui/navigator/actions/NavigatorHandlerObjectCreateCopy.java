@@ -27,9 +27,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.FileTransfer;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -56,6 +57,18 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        Shell activeShell = HandlerUtil.getActiveShell(event);
+        Control focusControl = activeShell.getDisplay().getFocusControl();
+        if (focusControl instanceof Text) {
+            ((Text) focusControl).paste();
+            return null;
+        } else if (focusControl instanceof StyledText) {
+            ((StyledText) focusControl).paste();
+            return null;
+        } else if (focusControl instanceof Combo) {
+            ((Combo) focusControl).paste();
+            return null;
+        }
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         DBNNode curNode = NavigatorUtils.getSelectedNode(selection);
