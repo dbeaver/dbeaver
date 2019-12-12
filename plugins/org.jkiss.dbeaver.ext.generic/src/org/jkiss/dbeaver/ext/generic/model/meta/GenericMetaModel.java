@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -449,6 +450,9 @@ public class GenericMetaModel {
 
             if (tableFilters != null && tableFilters.hasSingleMask()) {
                 tableNamePattern = tableFilters.getSingleMask();
+                if (!CommonUtils.isEmpty(tableNamePattern)) {
+                    tableNamePattern = SQLUtils.makeSQLLike(tableNamePattern);
+                }
             } else {
                 tableNamePattern = owner.getDataSource().getAllObjectsPattern();
             }
