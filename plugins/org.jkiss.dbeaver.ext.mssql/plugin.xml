@@ -397,6 +397,36 @@
                     <file type="jar" path="drivers/sybase/jconnect/jconn4.jar" bundle="drivers.sybase.jconnect"/>
                     <file type="license" path="drivers/sybase/jconnect/LICENSE.txt" bundle="drivers.sybase.jconnect"/>
                 </driver>
+                <driver
+                        id="sypase_jconn"
+                        label="SAP ASE jConnect"
+                        icon="icons/sap_ase_icon.png"
+                        iconBig="icons/sap_ase_icon_big.png"
+                        class="com.sybase.jdbc4.jdbc.SybDriver"
+                        sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
+                        useURL="false"
+                        defaultPort="5000"
+                        webURL="https://help.sap.com/viewer/bb5dd5b844d046ea97fa6b328e0fda1d/8.0/en-US/b9acdb91f1e94cc2bdf12e9986567643.html"
+                        description="SAP ASE jConnect driver"
+                        categories="sql">
+
+                    <property name="loginTimeout" value="20"/>
+
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="script-delimiter" value="go"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+
+                    <file type="jar" path="repo:/drivers/sybase/jconnect/jconn4.jar" bundle="!drivers.sybase.jconnect"/>
+                    <file type="license" path="repo:/drivers/sybase/jconnect/LICENSE.txt" bundle="!drivers.sybase.jconnect"/>
+
+                    <file type="jar" path="drivers/sybase/jconnect/jconn4.jar" bundle="drivers.sybase.jconnect"/>
+                    <file type="license" path="drivers/sybase/jconnect/LICENSE.txt" bundle="drivers.sybase.jconnect"/>
+                </driver>
 
             </drivers>
         </datasource>
