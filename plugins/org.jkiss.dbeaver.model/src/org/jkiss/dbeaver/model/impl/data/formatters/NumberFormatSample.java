@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
-import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -46,7 +45,8 @@ public class NumberFormatSample implements DBDDataFormatterSample {
         props.put(PROP_MIN_FRACT_DIGITS, tmp.getMinimumFractionDigits());
         props.put(PROP_USE_TYPE_SCALE, false);
         // Use UNNECESSARY by default [#6493]
-        props.put(PROP_ROUNDING_MODE, RoundingMode.UNNECESSARY.name());
+        // FIX: Use default. The problem in rounding was caused by float->double conversions.
+        //props.put(PROP_ROUNDING_MODE, RoundingMode.UNNECESSARY.name());
         return props;
     }
 
