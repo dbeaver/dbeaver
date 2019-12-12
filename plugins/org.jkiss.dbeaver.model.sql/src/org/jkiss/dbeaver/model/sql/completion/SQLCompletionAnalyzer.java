@@ -841,7 +841,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         }
                     }
                     // It is table name completion after FROM. Auto-generate table alias
-                    alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> aliases.contains(s) || queryText.contains(" as " + s));
+                    SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
+                    alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> aliases.contains(s) || queryText.contains(" " + s) || sqlDialect.getKeywordType(s) != null);
                 }
             }
         }
