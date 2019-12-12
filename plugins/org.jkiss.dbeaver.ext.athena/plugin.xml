@@ -23,7 +23,7 @@
                         icon="icons/athena_icon.png"
                         iconBig="icons/athena_icon_big.png"
                         class="com.simba.athena.jdbc.Driver"
-                        sampleURL="jdbc:athena://AWSRegion=region;"
+                        sampleURL="jdbc:athena://AWSRegion={region};"
                         defaultPort=""
                         description="%driver.athena.description"
                         category="AWS"
