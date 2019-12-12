@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ext.oracle.ui.config;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * OracleProcedureConfigurator
@@ -36,8 +38,20 @@ public class OracleProcedureConfigurator implements DBEObjectConfigurator<Oracle
                 if (!editPage.edit()) {
                     return null;
                 }
-                procedure.setName(editPage.getProcedureName());
-                procedure.setProcedureType(editPage.getProcedureType());
+                DBSProcedureType procedureType = editPage.getProcedureType();
+                String procedureName = editPage.getProcedureName();
+
+                procedure.setName(procedureName);
+                procedure.setProcedureType(procedureType);
+
+                procedure.setObjectDefinitionText(
+                    "CREATE OR REPLACE " + procedureType.name() + " " + procedureName +
+                    (procedureType == DBSProcedureType.FUNCTION ? "() RETURN NUMBER" : "") + GeneralUtils.getDefaultLineSeparator() +
+                        "IS" + GeneralUtils.getDefaultLineSeparator() +
+                        "BEGIN" + GeneralUtils.getDefaultLineSeparator() +
+                        (procedureType == DBSProcedureType.FUNCTION ? "\tRETURN 1;" + GeneralUtils.getDefaultLineSeparator() : "") +
+                        "END " + procedureName + ";" + GeneralUtils.getDefaultLineSeparator());
+
 
                 return procedure;
             }
