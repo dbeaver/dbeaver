@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.core.application;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
@@ -49,11 +47,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.StringJoiner;
 
-public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener {
+public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener, IResourceChangeListener {
     private static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
 
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -64,6 +63,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         }
 
         DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
+
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
     private void refreshProjects() {
@@ -80,6 +81,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
     @Override
     public void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         // Remove project listener
         DBeaverCore core = DBeaverCore.getInstance();
         if (core != null) {
@@ -261,6 +263,40 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     @Override
     public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
         UIUtils.asyncExec(this::recomputeTitle);
+    }
+
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+            // Checker for active editor's file change
+            try {
+                event.getDelta().accept(delta -> {
+                    IResource resource = delta.getResource();
+                    if (resource instanceof IFile) {
+                        if ((IResourceDelta.MOVED_TO & delta.getFlags()) != 0) {
+                            IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                            if (workbenchWindow != null) {
+                                IWorkbenchPage activePage = workbenchWindow.getActivePage();
+                                if (activePage != null) {
+                                    IEditorPart activeEditor = activePage.getActiveEditor();
+                                    if (activeEditor != null) {
+                                        IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
+                                        if (file != null && file.equals(resource)) {
+                                            UIUtils.asyncExec(this::recomputeTitle);
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                        return false;
+                    }
+                    return true;
+                });
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
     }
 
     public class EditorAreaDropAdapter extends DropTargetAdapter {
