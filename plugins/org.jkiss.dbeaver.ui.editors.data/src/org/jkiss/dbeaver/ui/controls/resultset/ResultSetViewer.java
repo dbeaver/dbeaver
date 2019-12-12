@@ -3525,10 +3525,10 @@ public class ResultSetViewer extends Viewer
                                 // Update status (update execution statistics)
                                 updateStatusMessage();
                             }
-                            updateFiltersText(true);
-                            updateToolbar();
                             fireResultSetLoad();
                         }
+                        updateFiltersText(true);
+                        updateToolbar();
                         // auto-refresh
                         autoRefreshControl.scheduleAutoRefresh(error != null);
                     } finally {
