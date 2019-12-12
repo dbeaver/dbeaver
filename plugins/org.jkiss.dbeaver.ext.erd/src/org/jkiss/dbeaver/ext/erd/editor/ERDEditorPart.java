@@ -1008,6 +1008,18 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
                     store.getInt(ERDConstants.PREF_GRID_WIDTH),
                     store.getInt(ERDConstants.PREF_GRID_HEIGHT)));
+            } else if (ERDConstants.PREF_ATTR_VISIBILITY.equals(event.getProperty())) {
+                EntityDiagram diagram = getDiagram();
+                ERDAttributeVisibility attrVisibility = CommonUtils.valueOf(ERDAttributeVisibility.class, CommonUtils.toString(event.getNewValue()));
+                diagram.setAttributeVisibility(attrVisibility);
+                for (ERDEntity entity : diagram.getEntities()) {
+                    entity.reloadAttributes(diagram);
+                }
+                diagram.setNeedsAutoLayout(true);
+
+                UIUtils.asyncExec(() -> graphicalViewer.setContents(diagram));
+            } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
+                refreshDiagram(true, false);
             }
         }
     }
