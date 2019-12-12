@@ -75,7 +75,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         }
 
         if (scriptContext != null) {
-            if (!scriptContext.fillQueryParameters(sqlQuery)) {
+            if (!scriptContext.fillQueryParameters(sqlQuery, CommonUtils.isBitSet(flags, DBSDataContainer.FLAG_REFRESH))) {
                 // User canceled
                 return statistics;
             }

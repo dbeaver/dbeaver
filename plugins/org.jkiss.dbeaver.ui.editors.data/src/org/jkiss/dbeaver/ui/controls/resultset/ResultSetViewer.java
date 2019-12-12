@@ -1647,7 +1647,7 @@ public class ResultSetViewer extends Viewer
         if (curState == null) {
             setNewState(targetEntity, model.getDataFilter());
         }
-        runDataPump(targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
+        runDataPump(targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, false, null);
     }
 
     ////////////////////////////////////////////////////////////
@@ -2989,7 +2989,7 @@ public class ResultSetViewer extends Viewer
             segmentSize = (state.rowNumber / segmentSize + 1) * segmentSize;
         }
 
-        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, true, false, null);
+        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, true, false, false, null);
     }
 
     @Override
@@ -3151,7 +3151,8 @@ public class ResultSetViewer extends Viewer
             };
 
             dataReceiver.setNextSegmentRead(false);
-            runDataPump(dataContainer, dataFilter, 0, segmentSize, 0, true, false, finalizer);
+            // Trick - in fact it is not a refresh but "execute" action
+            runDataPump(dataContainer, dataFilter, 0, segmentSize, 0, true, false, false, finalizer);
         } else {
             DBWorkbench.getPlatformUI().showError("Error executing query", "Viewer detached from data source");
         }
@@ -3194,6 +3195,7 @@ public class ResultSetViewer extends Viewer
                 curRow == null ? -1 : curRow.getRowNumber(),
                 true,
                 false,
+                true,
                 null);
         }
     }
@@ -3211,7 +3213,7 @@ public class ResultSetViewer extends Viewer
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
             dataReceiver.setNextSegmentRead(false);
-            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, false, onSuccess);
+            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, false, true, onSuccess);
         } else {
             return false;
         }
@@ -3276,6 +3278,7 @@ public class ResultSetViewer extends Viewer
                 -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
                 false,
                 true,
+                true,
                 null);
         }
     }
@@ -3307,6 +3310,7 @@ public class ResultSetViewer extends Viewer
                 -1,
                 curRow == null ? -1 : curRow.getRowNumber(),
                 false,
+                true,
                 true,
                 null);
         }
@@ -3380,8 +3384,9 @@ public class ResultSetViewer extends Viewer
         final int offset,
         final int maxRows,
         final int focusRow,
-        final boolean saveHistory,
-        final boolean scroll,
+        final boolean saveHistory, // Save history state (sometimes we don'ty need it)
+        final boolean scroll, // Scroll operation
+        final boolean refresh, // Refresh. Nothing was changed but refresh from server or scroll happened
         @Nullable final Runnable finalizer)
     {
         if (viewerPanel.isDisposed()) {
@@ -3545,6 +3550,7 @@ public class ResultSetViewer extends Viewer
         };
         dataPumpJob.setOffset(offset);
         dataPumpJob.setMaxRows(maxRows);
+        dataPumpJob.setRefresh(refresh);
 
         queueDataPump(dataPumpJob);
 

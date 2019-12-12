@@ -42,6 +42,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
     private int maxRows;
     private Throwable error;
     private DBCStatistics statistics;
+    private boolean refresh;
 
     ResultSetJobDataRead(DBSDataContainer dataContainer, DBDDataFilter dataFilter, ResultSetViewer controller, DBCExecutionContext executionContext, Composite progressControl) {
         super(ResultSetMessages.controls_rs_pump_job_name + " [" + dataContainer + "]", dataContainer, controller, executionContext);
@@ -57,6 +58,10 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
     public void setMaxRows(int maxRows)
     {
         this.maxRows = maxRows;
+    }
+
+    public void setRefresh(boolean refresh) {
+        this.refresh = refresh;
     }
 
     public Throwable getError()
@@ -77,8 +82,10 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
 
         new PumpVisualizer(visualizer).schedule(PROGRESS_VISUALIZE_PERIOD * 2);
 
-        long flags = DBSDataContainer.FLAG_READ_PSEUDO |
-            (offset > 0 ? DBSDataContainer.FLAG_FETCH_SEGMENT : DBSDataContainer.FLAG_NONE);
+        long fetchFlags = DBSDataContainer.FLAG_READ_PSEUDO;
+        if (offset > 0) {
+            fetchFlags |= DBSDataContainer.FLAG_FETCH_SEGMENT;
+        }
 
         if (offset > 0 && dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
             if (maxRows > 0) {
@@ -86,6 +93,11 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
             }
             offset = 0;
         }
+
+        if (refresh) {
+            fetchFlags |= DBSDataContainer.FLAG_REFRESH;
+        }
+        long finalFlags = fetchFlags;
 
         DBCExecutionPurpose purpose = dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER;
 
@@ -103,7 +115,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
                         dataFilter,
                         offset,
                         maxRows,
-                        flags,
+                        finalFlags,
                         0);
                 } catch (Throwable e) {
                     throw new InvocationTargetException(e);

@@ -542,6 +542,10 @@ public class CommonUtils {
         return (value & mask) == mask;
     }
 
+    public static boolean isBitSet(long value, long mask) {
+        return (value & mask) == mask;
+    }
+
     @Nullable
     public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name) {
         return valueOf(type, name, null, false);
