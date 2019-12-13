@@ -230,7 +230,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         }
     }
 
-    private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, DBCExecutionContext executionContext, @Nullable String curInstanceName, @Nullable String newInstanceName, @NotNull String newSchemaName) {
+    private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, DBCExecutionContext executionContext, @Nullable String curInstanceName, @Nullable String newInstanceName, @Nullable String newSchemaName) {
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             new AbstractJob("Change active database") {
@@ -261,7 +261,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
     }
 
     @SuppressWarnings("unchecked")
-    private static void changeDefaultObject(DBRProgressMonitor monitor, DBSObjectContainer rootContainer, DBCExecutionContextDefaults contextDefaults, @Nullable String newInstanceName, @Nullable String curInstanceName, @NotNull String newSchemaName) throws DBException {
+    private static void changeDefaultObject(DBRProgressMonitor monitor, DBSObjectContainer rootContainer, DBCExecutionContextDefaults contextDefaults, @Nullable String newInstanceName, @Nullable String curInstanceName, @Nullable String newSchemaName) throws DBException {
         DBSCatalog newCatalog = null;
         DBSSchema newSchema = null;
 
@@ -271,14 +271,16 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 newCatalog = (DBSCatalog) newInstance;
             }
         }
-        DBSObject schemaObject;
-        if (newCatalog == null) {
-            schemaObject = rootContainer.getChild(monitor, newSchemaName);
-        } else {
-            schemaObject = newCatalog.getChild(monitor, newSchemaName);
-        }
-        if (schemaObject instanceof DBSSchema) {
-            newSchema = (DBSSchema) schemaObject;
+        DBSObject schemaObject = null;
+        if (newSchemaName != null) {
+            if (newCatalog == null) {
+                schemaObject = rootContainer.getChild(monitor, newSchemaName);
+            } else {
+                schemaObject = newCatalog.getChild(monitor, newSchemaName);
+            }
+            if (schemaObject instanceof DBSSchema) {
+                newSchema = (DBSSchema) schemaObject;
+            }
         }
 
         boolean changeCatalog = !CommonUtils.equalObjects(curInstanceName, newInstanceName);
@@ -388,7 +390,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                                 // Nothing can be changed
                                 objectContainer = null;
                             }
-                            defObject = contextDefaults.getDefaultSchema();
+                            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                            if (defaultSchema != null) {
+                                defObject = defaultSchema;
+                            }
                         } else {
                             // Default object can be object container + object selector (e.g. in PG)
                             objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
@@ -453,16 +458,22 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             for (DBNDatabaseNode node : databaseListReader.nodeList) {
                 menuItems.add(
                     new ActionContributionItem(new Action(node.getName(), Action.AS_CHECK_BOX) {
+                        private final DBSObject object = node.getObject();
                         {
                             setImageDescriptor(DBeaverIcons.getImageDescriptor(node.getNodeIcon()));
                         }
                         @Override
                         public boolean isChecked() {
-                            return ArrayUtils.contains(finalDefObjects, node.getObject());
+                            return ArrayUtils.contains(finalDefObjects, object);
                         }
                         @Override
                         public void run() {
-                            changeDataBaseSelection(dataSourceContainer, executionContext, databaseListReader.currentDatabaseInstanceName, databaseListReader.currentDatabaseInstanceName, node.getNodeName());
+                            changeDataBaseSelection(
+                                dataSourceContainer,
+                                executionContext,
+                                databaseListReader.currentDatabaseInstanceName,
+                                (object instanceof DBSCatalog ? object.getName() : databaseListReader.currentDatabaseInstanceName),
+                                (object instanceof DBSSchema ? node.getNodeName() : null));
                         }
                     }
                 ));
