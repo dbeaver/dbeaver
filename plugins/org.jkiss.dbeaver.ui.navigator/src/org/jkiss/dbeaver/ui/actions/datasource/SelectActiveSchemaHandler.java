@@ -31,7 +31,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -295,7 +294,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
     }
 
     @SuppressWarnings("deprecated")
-    private static void changeDefaultObjectLegacy(DBRProgressMonitor monitor, DBPDataSource dataSource, DBSObjectContainer rootContainer, @Nullable String curInstanceName, @Nullable String newInstanceName, @NotNull String newSchemaName) throws DBException {
+    private static void changeDefaultObjectLegacy(DBRProgressMonitor monitor, DBPDataSource dataSource, DBSObjectContainer rootContainer, @Nullable String curInstanceName, @Nullable String newInstanceName, @Nullable String newSchemaName) throws DBException {
         DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
         if (os != null) {
             if (newInstanceName != null && !CommonUtils.equalObjects(curInstanceName, newInstanceName)) {
@@ -316,15 +315,17 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             }
         }
 
-        if (rootContainer != null && os != null && os.supportsDefaultChange()) {
-            DBSObject newChild = rootContainer.getChild(monitor, newSchemaName);
-            if (newChild != null) {
-                os.setDefaultObject(monitor, newChild);
+        if (newSchemaName != null) {
+            if (rootContainer != null && os != null && os.supportsDefaultChange()) {
+                DBSObject newChild = rootContainer.getChild(monitor, newSchemaName);
+                if (newChild != null) {
+                    os.setDefaultObject(monitor, newChild);
+                } else {
+                    throw new DBException(MessageFormat.format(UINavigatorMessages.toolbar_datasource_selector_error_database_not_found, newSchemaName));
+                }
             } else {
-                throw new DBException(MessageFormat.format(UINavigatorMessages.toolbar_datasource_selector_error_database_not_found, newSchemaName));
+                throw new DBException(UINavigatorMessages.toolbar_datasource_selector_error_database_change_not_supported);
             }
-        } else {
-            throw new DBException(UINavigatorMessages.toolbar_datasource_selector_error_database_change_not_supported);
         }
     }
 
