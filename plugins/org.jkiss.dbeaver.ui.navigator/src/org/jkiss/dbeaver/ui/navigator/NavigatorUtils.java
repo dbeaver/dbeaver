@@ -35,12 +35,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -189,23 +192,8 @@ public class NavigatorUtils {
             final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
             final DBNNode selectedNode = getSelectedNode(viewer);
             if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
-                // Add "Set active object" menu
-                if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
-                    final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                        DBSObjectSelector.class, ((DBNDatabaseNode) selectedNode).getObject());
-                    if (activeContainer != null && activeContainer.supportsDefaultChange()) {
-                        DBSObject activeChild;
-                        activeChild = activeContainer.getDefaultObject();
-                        if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
-                            DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
-                            if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
-                                manager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_SET_ACTIVE));
-                            }
-                        }
-                    }
-                }
+                addSetActiveObjectAction(workbenchSite, manager, selectedNode);
 
-                manager.add(new Separator());
             }
 
             manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
@@ -239,6 +227,46 @@ public class NavigatorUtils {
         control.setMenu(menu);
 
         return menuMgr;
+    }
+
+    private static void addSetActiveObjectAction(IWorkbenchSite workbenchSite, IMenuManager manager, DBNNode selectedNode) {
+        // Add "Set active object" menu
+        boolean addSetActive = false;
+        if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
+            DBSObject selectedObject = ((DBNDatabaseNode) selectedNode).getObject();
+            DBPDataSource dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
+            if (dataSource != null) {
+                DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), true);
+                DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
+                if (contextDefaults != null) {
+                    if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange()) ||
+                        (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange()))
+                    {
+                        addSetActive = true;
+                    }
+                }
+            }
+            if (!addSetActive) {
+                final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
+                    DBSObjectSelector.class, selectedObject);
+                if (activeContainer != null && activeContainer.supportsDefaultChange()) {
+                    DBSObject activeChild;
+                    activeChild = activeContainer.getDefaultObject();
+                    if (activeChild != selectedObject) {
+                        DBNDatabaseNode databaseNode = (DBNDatabaseNode) selectedNode;
+                        if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == selectedObject.getClass())) {
+                            addSetActive = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (addSetActive) {
+            manager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_SET_ACTIVE));
+        }
+
+        manager.add(new Separator());
     }
 
     public static void executeNodeAction(DBXTreeNodeHandler.Action action, Object node, IServiceLocator serviceLocator) {

@@ -78,7 +78,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return null;
         }
 
-        DatabaseListReader databaseListReader = new DatabaseListReader(dataSourceContainer.getDataSource());
+        DBCExecutionContext executionContext = getExecutionContext(HandlerUtil.getActiveEditor(event));
+        DatabaseListReader databaseListReader = new DatabaseListReader(dataSourceContainer.getDataSource(), executionContext);
         try {
             UIUtils.runInProgressService(databaseListReader);
         } catch (InvocationTargetException e) {
@@ -107,7 +108,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         DBNDatabaseNode node = dialog.getSelectedObject();
         if (node != null && node != databaseListReader.active) {
             // Change current schema
-            changeDataBaseSelection(dataSourceContainer, databaseListReader.currentDatabaseInstanceName, dialog.getCurrentInstanceName(), node.getNodeName());
+            changeDataBaseSelection(dataSourceContainer, executionContext, databaseListReader.currentDatabaseInstanceName, dialog.getCurrentInstanceName(), node.getNodeName());
         }
 
         return null;
@@ -175,8 +176,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 if (contextDefaults != null) {
                     DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
                     DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-                    if (defaultCatalog != null && defaultSchema != null) {
-                        schemaName = defaultCatalog.getName() + "@" + defaultSchema.getName();
+                    if (defaultCatalog != null && (defaultSchema != null || contextDefaults.supportsSchemaChange())) {
+                        schemaName = defaultSchema == null ? "?": defaultSchema.getName() + "@" + defaultCatalog.getName();
                         schemaIcon = DBIcon.TREE_SCHEMA;
                     } else if (defaultCatalog != null) {
                         schemaName = defaultCatalog.getName();
@@ -229,7 +230,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         }
     }
 
-    private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, @Nullable String curInstanceName, @Nullable String newInstanceName, @NotNull String newSchemaName) {
+    private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, DBCExecutionContext executionContext, @Nullable String curInstanceName, @Nullable String newInstanceName, @NotNull String newSchemaName) {
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             new AbstractJob("Change active database") {
@@ -241,12 +242,11 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                             return Status.OK_STATUS;
                         }
 
-                        DBCExecutionContext executionContext = getExecutionContext(UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
                         DBCExecutionContextDefaults contextDefaults = null;
                         if (executionContext != null) {
                             contextDefaults = executionContext.getContextDefaults();
                         }
-                        if (contextDefaults != null && (newInstanceName == null ? contextDefaults.supportsSchemaChange() : contextDefaults.supportsCatalogChange())) {
+                        if (contextDefaults != null && (contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange())) {
                             changeDefaultObject(monitor, rootContainer, contextDefaults, newInstanceName, curInstanceName, newSchemaName);
                         } else {
                             changeDefaultObjectLegacy(monitor, dataSource, rootContainer, curInstanceName, newInstanceName, newSchemaName);
@@ -264,7 +264,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
     private static void changeDefaultObject(DBRProgressMonitor monitor, DBSObjectContainer rootContainer, DBCExecutionContextDefaults contextDefaults, @Nullable String newInstanceName, @Nullable String curInstanceName, @NotNull String newSchemaName) throws DBException {
         DBSCatalog newCatalog = null;
         DBSSchema newSchema = null;
-        if (newInstanceName != null && !CommonUtils.equalObjects(curInstanceName, newInstanceName)) {
+
+        if (newInstanceName != null) {
             DBSObject newInstance = rootContainer.getChild(monitor, newInstanceName);
             if (newInstance instanceof DBSCatalog) {
                 newCatalog = (DBSCatalog) newInstance;
@@ -280,11 +281,13 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             newSchema = (DBSSchema) schemaObject;
         }
 
-        if (newCatalog != null && newSchema != null) {
+        boolean changeCatalog = !CommonUtils.equalObjects(curInstanceName, newInstanceName);
+
+        if (newCatalog != null && newSchema != null && changeCatalog) {
             contextDefaults.setDefaultCatalog(monitor, newCatalog, newSchema);
         } else if (newSchema != null) {
             contextDefaults.setDefaultSchema(monitor, newSchema);
-        } else if (newCatalog != null) {
+        } else if (newCatalog != null && changeCatalog) {
             contextDefaults.setDefaultCatalog(monitor, newCatalog, null);
         }
     }
@@ -325,45 +328,80 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
     private static class DatabaseListReader implements DBRRunnableWithProgress {
         private final DBPDataSource dataSource;
+        private final DBCExecutionContext executionContext;
         private final List<DBNDatabaseNode> nodeList = new ArrayList<>();
         // Remote instance node
         private DBSObject active;
         private boolean enabled;
         private String currentDatabaseInstanceName;
 
-        DatabaseListReader(DBPDataSource dataSource) {
+        DatabaseListReader(DBPDataSource dataSource, DBCExecutionContext executionContext) {
             this.dataSource = dataSource;
+            this.executionContext = executionContext;
         }
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+
             DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-            if (objectContainer == null || objectSelector == null) {
+            if (objectContainer == null) {
+                return;
+            }
+
+            DBCExecutionContextDefaults contextDefaults = null;
+            if (executionContext != null) {
+                contextDefaults = executionContext.getContextDefaults();
+            }
+
+            DBSObjectSelector objectSelector = null;
+            if (contextDefaults == null) {
+                objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+            }
+            if (contextDefaults == null && objectSelector == null) {
                 return;
             }
             try {
                 monitor.beginTask(UINavigatorMessages.toolbar_datasource_selector_action_read_databases, 1);
                 currentDatabaseInstanceName = null;
+
                 Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
                 if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
                     enabled = false;
                 } else {
                     enabled = true;
 
-                    DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-
-                    DBSObject defObject = objectSelector.getDefaultObject();
+                    DBSObject defObject = null;
+                    if (contextDefaults != null) {
+                        if (DBSCatalog.class.isAssignableFrom(childType)) {
+                            defObject = contextDefaults.getDefaultCatalog();
+                        }
+                    } else {
+                        defObject = objectSelector.getDefaultObject();
+                    }
                     if (defObject instanceof DBSObjectContainer) {
-                        // Default object can be object container + object selector (e.g. in PG)
-                        objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
-                        if (objectSelector != null && objectSelector.supportsDefaultChange()) {
+                        if (contextDefaults != null) {
                             currentDatabaseInstanceName = defObject.getName();
-                            objectContainer = (DBSObjectContainer) defObject;
-                            defObject = objectSelector.getDefaultObject();
+                            if (contextDefaults.supportsSchemaChange()) {
+                                objectContainer = (DBSObjectContainer) defObject;
+                            } else if (!contextDefaults.supportsCatalogChange()) {
+                                // Nothing can be changed
+                                objectContainer = null;
+                            }
+                            defObject = contextDefaults.getDefaultSchema();
+                        } else {
+                            // Default object can be object container + object selector (e.g. in PG)
+                            objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
+                            if (objectSelector != null && objectSelector.supportsDefaultChange()) {
+                                currentDatabaseInstanceName = defObject.getName();
+                                objectContainer = (DBSObjectContainer) defObject;
+                                defObject = objectSelector.getDefaultObject();
+                            }
                         }
                     }
-                    Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
+                    Collection<? extends DBSObject> children = objectContainer == null ?
+                        (defObject == null ? Collections.emptyList() : Collections.singletonList(defObject)) :
+                        objectContainer.getChildren(monitor);
                     active = defObject;
                     // Cache navigator nodes
                     if (children != null) {
@@ -391,16 +429,17 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
         @Override
         protected void fillContributionItems(List<IContributionItem> menuItems) {
-            DBPDataSourceContainer dataSourceContainer = DataSourceToolbarUtils.getCurrentDataSource(UIUtils.getActiveWorkbenchWindow());
+            IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+            DBPDataSourceContainer dataSourceContainer = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
             if (dataSourceContainer == null) {
                 return;
             }
 
-            DatabaseListReader databaseListReader = new DatabaseListReader(dataSourceContainer.getDataSource());
+            DBCExecutionContext executionContext = getExecutionContext(workbenchWindow.getActivePage().getActiveEditor());
+            DatabaseListReader databaseListReader = new DatabaseListReader(dataSourceContainer.getDataSource(), executionContext);
             RuntimeUtils.runTask(databaseListReader, "Read database list", DB_LIST_READ_TIMEOUT);
 
             DBSObject[] defObjects = null;
-            DBCExecutionContext executionContext = getExecutionContext(UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
             if (executionContext != null) {
                 DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
@@ -423,7 +462,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         }
                         @Override
                         public void run() {
-                            changeDataBaseSelection(dataSourceContainer, databaseListReader.currentDatabaseInstanceName, databaseListReader.currentDatabaseInstanceName, node.getNodeName());
+                            changeDataBaseSelection(dataSourceContainer, executionContext, databaseListReader.currentDatabaseInstanceName, databaseListReader.currentDatabaseInstanceName, node.getNodeName());
                         }
                     }
                 ));

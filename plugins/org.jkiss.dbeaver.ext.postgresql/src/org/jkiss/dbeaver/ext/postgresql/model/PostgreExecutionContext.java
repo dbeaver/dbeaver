@@ -1,0 +1,203 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.postgresql.model;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * PostgreExecutionContext
+ */
+public class PostgreExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<PostgreDatabase, PostgreSchema> {
+    private static final Log log = Log.getLog(PostgreExecutionContext.class);
+
+    private PostgreSchema activeSchema;
+    private final List<String> searchPath = new ArrayList<>();
+    private List<String> defaultSearchPath = new ArrayList<>();
+    private String activeUser;
+
+    public PostgreExecutionContext(@NotNull PostgreDatabase database, String purpose) {
+        super(database, purpose);
+    }
+
+    @NotNull
+    @Override
+    public PostgreDataSource getDataSource() {
+        return (PostgreDataSource) super.getDataSource();
+    }
+
+    @Nullable
+    @Override
+    public DBCExecutionContextDefaults getContextDefaults() {
+        return this;
+    }
+
+    @Override
+    public PostgreDatabase getDefaultCatalog() {
+        return (PostgreDatabase) getOwnerInstance();
+    }
+
+    @Override
+    public PostgreSchema getDefaultSchema() {
+        return activeSchema;
+    }
+
+    @Override
+    public boolean supportsCatalogChange() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsSchemaChange() {
+        return true;
+    }
+
+    // FIXME: Now it changes default database for entire datasource. Perhaps we need to change it only for current editor?
+    @Override
+    public void setDefaultCatalog(DBRProgressMonitor monitor, PostgreDatabase catalog, PostgreSchema schema) throws DBCException {
+        try {
+            getDefaultCatalog().getDataSource().setDefaultInstance(monitor, catalog, schema);
+        } catch (DBException e) {
+            throw new DBCException("Error changing default database", e);
+        }
+    }
+
+    @Override
+    public void setDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema) throws DBCException {
+        setDefaultSchema(monitor, schema, true);
+    }
+
+    public void setDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect) throws DBCException {
+        PostgreSchema oldActiveSchema = this.activeSchema;
+        if (oldActiveSchema == schema) {
+            return;
+        }
+
+        setSearchPath(monitor, schema);
+        this.activeSchema = schema;
+        setSearchPath(schema.getName());
+
+        if (reflect) {
+            if (oldActiveSchema != null) {
+                DBUtils.fireObjectSelect(oldActiveSchema, false);
+            }
+            DBUtils.fireObjectSelect(activeSchema, true);
+        }
+    }
+
+    @Override
+    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+        // Check default active schema
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Get context active schema")) {
+            try (JDBCPreparedStatement stat = session.prepareStatement("SELECT current_schema(),session_user")) {
+                try (JDBCResultSet rs = stat.executeQuery()) {
+                    if (rs.nextRow()) {
+                        String activeSchemaName = JDBCUtils.safeGetString(rs, 1);
+                        if (!CommonUtils.isEmpty(activeSchemaName)) {
+                            activeSchema = getDefaultCatalog().getSchema(monitor, activeSchemaName);
+                        }
+                        activeUser = JDBCUtils.safeGetString(rs, 2);
+                    }
+                }
+            }
+            String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
+            this.searchPath.clear();
+            if (searchPathStr != null) {
+                for (String str : searchPathStr.split(",")) {
+                    str = str.trim();
+                    this.searchPath.add(DBUtils.getUnQuotedIdentifier(getDataSource(), str));
+                }
+            } else {
+                this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
+            }
+
+            defaultSearchPath = new ArrayList<>(searchPath);
+        } catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
+        }
+
+        return false;
+    }
+
+    public String getActiveUser() {
+        return activeUser;
+    }
+
+    public List<String> getSearchPath() {
+        return searchPath;
+    }
+
+    List<String> getDefaultSearchPath() {
+        return defaultSearchPath;
+    }
+
+    private void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema) throws DBCException {
+        // Construct search path from current search path but put default schema first
+        List<String> newSearchPath = new ArrayList<>(getDefaultSearchPath());
+        {
+            String defSchemaName = schema.getName();
+            int schemaIndex = newSearchPath.indexOf(defSchemaName);
+            if (schemaIndex == 0) {
+                // Already default schema
+            } else {
+                if (schemaIndex > 0) {
+                    // Remove from previous position
+                    newSearchPath.remove(schemaIndex);
+                }
+                // Add it first
+                newSearchPath.add(0, defSchemaName);
+            }
+        }
+        StringBuilder spString = new StringBuilder();
+        for (String sp : newSearchPath) {
+            if (spString.length() > 0) spString.append(",");
+            spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
+        }
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
+            JDBCUtils.executeSQL(session, "SET search_path = " + spString);
+        } catch (SQLException e) {
+            throw new DBCException("Error setting search path", e, dataSource);
+        }
+    }
+
+    private void setSearchPath(String path) {
+        searchPath.clear();
+        searchPath.add(path);
+        if (!path.equals(activeUser)) {
+            searchPath.add(activeUser);
+        }
+    }
+
+}

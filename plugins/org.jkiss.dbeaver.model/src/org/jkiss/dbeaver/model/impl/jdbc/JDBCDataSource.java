@@ -108,7 +108,7 @@ public abstract class JDBCDataSource
     }
 
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
-        this.defaultRemoteInstance = new JDBCRemoteInstance<>(monitor, this, true);
+        this.defaultRemoteInstance = new JDBCRemoteInstance(monitor, this, true);
     }
 
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose)

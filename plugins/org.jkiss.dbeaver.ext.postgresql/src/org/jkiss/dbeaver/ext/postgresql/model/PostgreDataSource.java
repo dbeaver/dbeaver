@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
 /**
  * PostgreDataSource
  */
-public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, IAdaptable {
+public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, IAdaptable {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
 
@@ -189,24 +189,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
     }
 
+    @Override
+    protected PostgreExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new PostgreExecutionContext((PostgreDatabase) instance, type);
+    }
+
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
-            PostgreDatabase activeDatabase = getDefaultObject();
-            if (activeDatabase != null) {
-                final PostgreSchema activeSchema = activeDatabase.getDefaultObject();
-                if (activeSchema != null) {
-
-                    // Check default active schema
-                    String curDefSchema;
-                    try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Get context active schema")) {
-                        curDefSchema = JDBCUtils.queryString(session, "SELECT current_schema()");
-                    } catch (SQLException e) {
-                        throw new DBCException(e, getDataSource());
-                    }
-                    if (curDefSchema == null || !curDefSchema.equals(activeSchema.getName())) {
-                        activeDatabase.setSearchPath(monitor, activeSchema, context);
-                    }
-                }
+            final PostgreSchema activeSchema = getDefaultInstance().getActiveSchema();
+            if (activeSchema != null) {
+                ((PostgreExecutionContext)context).setDefaultSchema(monitor, activeSchema);
+            }
+        } else {
+            try {
+                ((PostgreExecutionContext)context).refreshDefaults(monitor);
+            } catch (DBException e) {
+                log.debug("Error reading connection defaults");
             }
         }
     }
@@ -285,60 +283,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         throws DBException
     {
         databaseCache.getAllObjects(monitor, this);
-    }
-
-    @Override
-    public boolean supportsDefaultChange()
-    {
-        return true;
-    }
-
-    ////////////////////////////////////////////////////
-    // Default schema and search path
-
-    @Override
-    public PostgreDatabase getDefaultObject()
-    {
-        return getDefaultInstance();
-    }
-
-    @Override
-    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
-        throws DBException
-    {
-        final PostgreDatabase oldDatabase = getDefaultObject();
-        if (!(object instanceof PostgreDatabase)) {
-            throw new IllegalArgumentException("Invalid object type: " + object);
-        }
-        final PostgreDatabase newDatabase = (PostgreDatabase) object;
-        if (oldDatabase == newDatabase) {
-            // The same
-            return;
-        }
-
-        PostgreDatabase oldActiveInstance = getDefaultInstance();
-
-        PostgreDatabase newActiveInstance = (PostgreDatabase) object;
-        newActiveInstance.initializeMetaContext(monitor);
-        newActiveInstance.cacheDataTypes(monitor, false);
-
-        activeDatabaseName = newActiveInstance.getName();
-
-        // Notify UI
-        if (oldDatabase != null) {
-            DBUtils.fireObjectSelect(oldDatabase, false);
-        }
-        DBUtils.fireObjectSelect(newDatabase, true);
-
-        if (oldActiveInstance != newActiveInstance) {
-            // Close all database connections but meta (we need it to browse metadata like navigator tree)
-            oldActiveInstance.shutdown(monitor, true);
-        }
-    }
-
-    @Override
-    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
-        return true;
     }
 
     ////////////////////////////////////////////
@@ -452,6 +396,41 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public List<PostgreDatabase> getAvailableInstances() {
         return databaseCache.getCachedObjects();
+    }
+
+    public void setDefaultInstance(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase newDatabase, PostgreSchema schema)
+        throws DBException
+    {
+        final PostgreDatabase oldDatabase = getDefaultInstance();
+        if (oldDatabase == newDatabase) {
+            // The same
+            return;
+        }
+
+        newDatabase.initializeMetaContext(monitor);
+        newDatabase.cacheDataTypes(monitor, false);
+
+        PostgreSchema oldDefaultSchema = null;
+        if (schema != null) {
+            oldDefaultSchema = newDatabase.getDefaultContext().getDefaultSchema();
+            newDatabase.getDefaultContext().setDefaultSchema(monitor, schema, false);
+        }
+
+        activeDatabaseName = newDatabase.getName();
+
+        // Notify UI
+        DBUtils.fireObjectSelect(oldDatabase, false);
+        DBUtils.fireObjectSelect(newDatabase, true);
+
+        if (schema != null && schema != oldDefaultSchema) {
+            if (oldDefaultSchema != null) {
+                DBUtils.fireObjectSelect(oldDefaultSchema, false);
+            }
+            DBUtils.fireObjectSelect(schema, true);
+        }
+
+        // Close all database connections but meta (we need it to browse metadata like navigator tree)
+        oldDatabase.shutdown(monitor, true);
     }
 
     public List<String> getTemplateDatabases(DBRProgressMonitor monitor) throws DBException {
