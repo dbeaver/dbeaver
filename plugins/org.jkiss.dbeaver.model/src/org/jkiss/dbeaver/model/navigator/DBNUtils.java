@@ -126,7 +126,8 @@ public class DBNUtils {
         if (element instanceof DBSWrapper) {
             DBSObject object = ((DBSWrapper) element).getObject();
             if (object != null) {
-                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(object, true);
+                // Get default context from default instance - not from active object
+                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(object.getDataSource(), true);
                 if (defaultContext != null) {
                     DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
                     if (contextDefaults != null) {

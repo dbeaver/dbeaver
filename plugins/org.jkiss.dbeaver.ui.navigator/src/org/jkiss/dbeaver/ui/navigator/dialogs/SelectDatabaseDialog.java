@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
@@ -76,9 +75,8 @@ public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (currentInstanceName != null && dataSource != null) {
 
-            DBSObjectSelector instanceSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
             DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-            if (instanceSelector != null && instanceContainer != null) {
+            if (instanceContainer != null) {
 
                 // Create instance selector
                 Composite instancePanel = UIUtils.createComposite(dialogArea, 3);

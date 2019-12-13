@@ -33,11 +33,11 @@ import java.util.List;
 /**
  * JDBC data source
  */
-public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DBSInstance {
+public class JDBCRemoteInstance implements DBSInstance {
     private static final Log log = Log.getLog(JDBCRemoteInstance.class);
 
     @NotNull
-    protected final DATASOURCE dataSource;
+    protected final JDBCDataSource dataSource;
     @Nullable
     protected JDBCExecutionContext executionContext;
     @Nullable
@@ -45,7 +45,7 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
     @NotNull
     private final List<JDBCExecutionContext> allContexts = new ArrayList<>();
 
-    protected JDBCRemoteInstance(@NotNull DBRProgressMonitor monitor, @NotNull DATASOURCE dataSource, boolean initContext)
+    protected JDBCRemoteInstance(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDataSource dataSource, boolean initContext)
         throws DBException {
         this.dataSource = dataSource;
         if (initContext) {
@@ -60,7 +60,7 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
 
     @NotNull
     @Override
-    public DATASOURCE getDataSource() {
+    public JDBCDataSource getDataSource() {
         return dataSource;
     }
 
@@ -122,6 +122,11 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
     @NotNull
     @Override
     public JDBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
+        return getDefaultContext(meta);
+    }
+
+    @NotNull
+    public JDBCExecutionContext getDefaultContext(boolean meta) {
         if (metaContext != null && (meta || executionContext == null)) {
             return this.metaContext;
         }
