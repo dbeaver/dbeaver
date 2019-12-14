@@ -173,7 +173,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         } else {
             // This session may already be in cache in case of reconnect/invalidate
             // (when context closed and reopened without new context object creation)
-            session.reopen();
+            session.reopen(context);
         }
 
         // Remove from closed sessions (in case of re-opened connection)
