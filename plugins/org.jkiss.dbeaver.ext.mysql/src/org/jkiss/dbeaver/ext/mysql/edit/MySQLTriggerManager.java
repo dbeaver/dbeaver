@@ -61,7 +61,7 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
                     "DROP TRIGGER IF EXISTS " + trigger.getFullyQualifiedName(DBPEvaluationContext.DDL))
             );
         }
-        MySQLCatalog curCatalog = trigger.getCatalog().getDataSource().getDefaultObject();
+        MySQLCatalog curCatalog = trigger.getCatalog().getDataSource().getDefaultDatabase();
         if (curCatalog != trigger.getCatalog()) {
             actions.add(new SQLDatabasePersistAction("Set current schema ", "USE " + DBUtils.getQuotedIdentifier(trigger.getCatalog()), false)); //$NON-NLS-2$
         }

@@ -138,6 +138,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 this.dataSource.initializeContextState(monitor, this, forceActiveObject && !connectionReadOnly);
             } catch (DBCException e) {
                 log.error("Error while initializing context state", e);
+            } catch (DBException e) {
+                e.printStackTrace();
             }
 
             try {

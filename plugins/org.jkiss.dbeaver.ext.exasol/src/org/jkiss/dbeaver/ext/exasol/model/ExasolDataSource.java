@@ -366,7 +366,7 @@ public class ExasolDataSource extends JDBCDataSource
 
 	protected void initializeContextState(@NotNull DBRProgressMonitor monitor,
 			@NotNull JDBCExecutionContext context, boolean setActiveObject)
-			throws DBCException
+        throws DBException
 	{
 		if (setActiveObject) {
 			setCurrentSchema(monitor, context, getDefaultObject());

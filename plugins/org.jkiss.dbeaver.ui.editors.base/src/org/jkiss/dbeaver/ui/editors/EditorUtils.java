@@ -177,7 +177,7 @@ public class EditorUtils {
             if (dataSourceId != null) {
                 DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
                 if (dataSource == null) {
-                    log.error("Datasource " + dataSourceId + " not found in project " + projectMeta.getName());
+                    log.debug("Datasource " + dataSourceId + " not found in project " + projectMeta.getName());
                 }
                 return dataSource;
             } else {

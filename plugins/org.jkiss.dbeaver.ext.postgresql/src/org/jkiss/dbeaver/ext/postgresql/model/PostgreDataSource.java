@@ -194,18 +194,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreExecutionContext((PostgreDatabase) instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBException {
         if (setActiveObject) {
             final PostgreSchema activeSchema = getDefaultInstance().getActiveSchema();
             if (activeSchema != null) {
                 ((PostgreExecutionContext)context).setDefaultSchema(monitor, activeSchema);
             }
         } else {
-            try {
-                ((PostgreExecutionContext)context).refreshDefaults(monitor);
-            } catch (DBException e) {
-                throw new DBCException("Error reading connection defaults");
-            }
+            ((PostgreExecutionContext)context).refreshDefaults(monitor);
         }
     }
 

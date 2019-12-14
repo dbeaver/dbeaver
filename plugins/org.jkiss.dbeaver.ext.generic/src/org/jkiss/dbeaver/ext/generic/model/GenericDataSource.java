@@ -181,7 +181,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return new GenericExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBException {
         super.initializeContextState(monitor, context, setActiveObject);
         boolean hasActiveObject = false;
         if (setActiveObject) {

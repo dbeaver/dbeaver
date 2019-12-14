@@ -132,7 +132,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBException {
         super.initializeContextState(monitor, context, setActiveObject);
         if (setActiveObject ) {
             SQLServerDatabase defaultObject = getDefaultDatabase(monitor);
@@ -140,11 +140,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 ((SQLServerExecutionContext)context).setCurrentDatabase(monitor, defaultObject);
             }
         } else {
-            try {
-                ((SQLServerExecutionContext)context).refreshDefaults(monitor);
-            } catch (DBException e) {
-                throw new DBCException("Error reading connection defaults");
-            }
+            ((SQLServerExecutionContext)context).refreshDefaults(monitor);
         }
     }
 
