@@ -24,7 +24,6 @@ import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -176,7 +175,11 @@ public class EditorUtils {
         if (projectMeta != null) {
             Object dataSourceId = projectMeta.getResourceProperty(file, PROP_SQL_DATA_SOURCE_ID);
             if (dataSourceId != null) {
-                return projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
+                DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
+                if (dataSource == null) {
+                    log.error("Datasource " + dataSourceId + " not found in project " + projectMeta.getName());
+                }
+                return dataSource;
             } else {
                 // Try to extract from embedded comment
                 return null;
