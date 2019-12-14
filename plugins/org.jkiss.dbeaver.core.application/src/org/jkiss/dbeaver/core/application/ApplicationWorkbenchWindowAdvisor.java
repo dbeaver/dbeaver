@@ -201,7 +201,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
                 @Override
                 public void partInputChanged(IWorkbenchPartReference partRef) {
-
+                    recomputeTitle();
                 }
             });
     }
