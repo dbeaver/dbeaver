@@ -29,12 +29,12 @@ import org.jkiss.utils.CommonUtils;
 public class QMMSessionInfo extends QMMObject {
 
     private final String containerId;
-    private final String containerName;
     private final String driverId;
+    private String containerName;
     @Nullable
-    private final DBPConnectionConfiguration connectionConfiguration;
-    private final String instanceId;
-    private final String contextName;
+    private DBPConnectionConfiguration connectionConfiguration;
+    private String instanceId;
+    private String contextName;
     @Nullable
     private SQLDialect sqlDialect;
     private boolean transactional;
@@ -47,8 +47,13 @@ public class QMMSessionInfo extends QMMObject {
     public QMMSessionInfo(DBCExecutionContext context, boolean transactional)
     {
         this.containerId = context.getDataSource().getContainer().getId();
-        this.containerName = context.getDataSource().getContainer().getName();
         this.driverId = context.getDataSource().getContainer().getDriver().getId();
+
+        initFromContext(context, transactional);
+    }
+
+    private void initFromContext(DBCExecutionContext context, boolean transactional) {
+        this.containerName = context.getDataSource().getContainer().getName();
         this.connectionConfiguration = context.getDataSource().getContainer().getConnectionConfiguration();
         this.instanceId = context.getOwnerInstance().getName();
         this.contextName = context.getContextName();
@@ -89,8 +94,8 @@ public class QMMSessionInfo extends QMMObject {
         super.close();
     }
 
-    public void reopen()
-    {
+    public void reopen(DBCExecutionContext context) {
+        initFromContext(context, transactional);
         super.reopen();
     }
 

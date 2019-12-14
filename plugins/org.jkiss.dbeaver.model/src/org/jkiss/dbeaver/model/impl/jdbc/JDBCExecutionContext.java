@@ -67,6 +67,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         return instance;
     }
 
+    protected void setOwnerInstance(@NotNull JDBCRemoteInstance instance) {
+        this.instance = instance;
+    }
+
     @NotNull
     private Connection getConnection() {
         return connection;
@@ -76,7 +80,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         connect(monitor, null, null, false, true);
     }
 
-    void connect(@NotNull DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, boolean forceActiveObject, boolean addContext) throws DBCException {
+    protected void connect(@NotNull DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, boolean forceActiveObject, boolean addContext) throws DBCException {
         if (connection != null && addContext) {
             log.error("Reopening not-closed connection");
             close();
@@ -157,6 +161,19 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         }
     }
 
+    protected void disconnect() {
+        // [JDBC] Need sync here because real connection close could take some time
+        // while UI may invoke callbacks to operate with connection
+        synchronized (this) {
+            if (this.connection != null) {
+                this.dataSource.closeConnection(connection, purpose);
+            }
+            this.connection = null;
+        }
+        // Notify QM
+        super.closeContext();
+    }
+
     @NotNull
     public Connection getConnection(DBRProgressMonitor monitor) throws SQLException {
         if (connection == null) {
@@ -223,15 +240,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     private void closeContext(boolean removeContext) {
-        // [JDBC] Need sync here because real connection close could take some time
-        // while UI may invoke callbacks to operate with connection
-        synchronized (this) {
-            if (this.connection != null) {
-                this.dataSource.closeConnection(connection, purpose);
-            }
-            this.connection = null;
-            super.closeContext();
-        }
+        disconnect();
 
         if (removeContext) {
             // Remove self from context list

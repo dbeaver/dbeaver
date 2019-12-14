@@ -116,8 +116,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -370,11 +370,7 @@ public class SQLEditor extends SQLEditorBase implements
             final DBPDataSource dataSource = dataSourceContainer.getDataSource();
             if (dataSource == null) {
                 releaseExecutionContext();
-            } else if (curDataSource != dataSource ||
-                (curDataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
-                executionContext != null &&
-                curDataSource.getDefaultInstance() != executionContext.getOwnerInstance()))
-            {
+            } else if (curDataSource != dataSource) {
                 // Datasource was changed or instance was changed (PG)
                 releaseExecutionContext();
                 curDataSource = dataSource;

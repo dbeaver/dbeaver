@@ -84,11 +84,21 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return true;
     }
 
-    // FIXME: Now it changes default database for entire datasource. Perhaps we need to change it only for current editor?
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, PostgreDatabase catalog, PostgreSchema schema) throws DBCException {
+        PostgreDataSource dataSource = getDefaultCatalog().getDataSource();
+        PostgreDatabase defaultInstance = dataSource.getDefaultInstance();
         try {
-            getDefaultCatalog().getDataSource().setDefaultInstance(monitor, catalog, schema);
+            if (defaultInstance.getDefaultContext() == this) {
+                dataSource.setDefaultInstance(monitor, catalog, schema);
+            } else {
+                disconnect();
+                setOwnerInstance(catalog);
+                connect(monitor, null, null, false, false);
+                if (schema != null) {
+                    setDefaultSchema(monitor, schema);
+                }
+            }
         } catch (DBException e) {
             throw new DBCException("Error changing default database", e);
         }
