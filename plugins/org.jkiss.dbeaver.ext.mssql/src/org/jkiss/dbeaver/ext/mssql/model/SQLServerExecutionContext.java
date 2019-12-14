@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -57,6 +58,10 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         return this;
     }
 
+    public String getActiveDatabaseName() {
+        return activeDatabaseName;
+    }
+
     @Override
     public SQLServerDatabase getDefaultCatalog() {
         return getDataSource().getDatabase(activeDatabaseName);
@@ -64,7 +69,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
     @Override
     public SQLServerSchema getDefaultSchema() {
-        return null;
+        return getDefaultCatalog().getSchema(SQLServerConstants.DEFAULT_SCHEMA_NAME);
     }
 
     @Override
@@ -86,6 +91,11 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
         if (!setCurrentDatabase(monitor, catalog)) {
             return;
+        }
+        try {
+            catalog.getSchemas(monitor);
+        } catch (DBException e) {
+            log.debug("Error caching database schemas", e);
         }
         activeDatabaseName = catalog.getName();
 

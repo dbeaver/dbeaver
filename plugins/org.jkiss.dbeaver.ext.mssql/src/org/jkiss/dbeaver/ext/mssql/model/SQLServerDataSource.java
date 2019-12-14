@@ -374,7 +374,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
         @Override
         protected SQLServerDatabase fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new SQLServerDatabase(owner, resultSet);
+            return new SQLServerDatabase(session, owner, resultSet);
         }
 
     }
