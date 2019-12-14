@@ -193,7 +193,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-        boolean setActiveObject) throws DBCException
+        boolean setActiveObject) throws DBException
     {
         if (setActiveObject) {
             setCurrentSchema(monitor, context, getDefaultObject());
