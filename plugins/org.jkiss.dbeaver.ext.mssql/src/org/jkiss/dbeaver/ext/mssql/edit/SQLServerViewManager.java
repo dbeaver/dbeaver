@@ -73,25 +73,25 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(actions, command.getObject(), ViewAction.CREATE);
+        createOrReplaceViewQuery(monitor, actions, command.getObject(), ViewAction.CREATE);
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceViewQuery(actionList, command.getObject(), ViewAction.ALTER);
+            createOrReplaceViewQuery(monitor, actionList, command.getObject(), ViewAction.ALTER);
         }
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        createOrReplaceViewQuery(actions, command.getObject(), ViewAction.DROP);
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+        createOrReplaceViewQuery(monitor, actions, command.getObject(), ViewAction.DROP);
     }
 
-    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, SQLServerView view, ViewAction action)
+    private void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLServerView view, ViewAction action)
     {
         SQLServerDatabase procDatabase = view.getContainer().getDatabase();
-        SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultObject();
+        SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultDatabase(monitor);
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }

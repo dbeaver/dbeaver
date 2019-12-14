@@ -70,7 +70,7 @@ public class EntityAddCommand extends Command
             if (entity.getObject() == null) {
                 // Entity is not initialized
                 if (entity.getDataSource() != null) {
-                    DBSObject selectedObject = DBUtils.getSelectedObject(entity.getDataSource(), true);
+                    DBSObject selectedObject = DBUtils.getSelectedObject(DBUtils.getDefaultContext(entity.getDataSource(), false), true);
                     DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(selectedObject != null ? selectedObject : entity.getDataSource().getContainer());
                     if (dsNode != null) {
                         DBNNode tableNode = DBWorkbench.getPlatformUI().selectObject(

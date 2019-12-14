@@ -1,8 +1,5 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
@@ -19,6 +16,9 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+
+import java.util.List;
+import java.util.Map;
 
 public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTablePartitionColumn, ExasolTable> implements DBEObjectEditor<ExasolTablePartitionColumn>, DBEObjectMaker<ExasolTablePartitionColumn, ExasolTable>  {
 
@@ -66,9 +66,9 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	}
 
 	@Override
-	protected void addObjectDeleteActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolTablePartitionColumn, ExasolTable>.ObjectDeleteCommand command,
-			Map<String, Object> options) {
+	protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+                                          ObjectDeleteCommand command,
+                                          Map<String, Object> options) {
 		ExasolTablePartitionColumn col = command.getObject();
 		ExasolTablePartitionColumnCache cache = getObjectsCache(col);
 		cache.removeObject(col, false);

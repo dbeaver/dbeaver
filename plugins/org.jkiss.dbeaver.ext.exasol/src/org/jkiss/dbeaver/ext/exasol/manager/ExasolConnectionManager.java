@@ -136,7 +136,7 @@ public class ExasolConnectionManager
     }
     
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command, Map<String, Object> options)
     {
         final ExasolConnection con = command.getObject();

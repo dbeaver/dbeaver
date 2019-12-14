@@ -52,7 +52,7 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, SQLObjectEditor<MySQLEvent, MySQLCatalog>.ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(new SQLDatabasePersistAction("Drop event", "DROP EVENT " + DBUtils.getQuotedIdentifier(command.getObject())));
 
     }

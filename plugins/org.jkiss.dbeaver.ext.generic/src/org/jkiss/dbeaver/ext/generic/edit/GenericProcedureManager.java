@@ -67,7 +67,7 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         GenericProcedure object = command.getObject();
         actions.add(

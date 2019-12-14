@@ -61,8 +61,8 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
         return newTrigger;
     }
 
-    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, SQLServerTableTrigger trigger, boolean create) {
-        DBSObject defaultDatabase = trigger.getDataSource().getDefaultObject();
+    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLServerTableTrigger trigger, boolean create) {
+        DBSObject defaultDatabase = trigger.getDataSource().getDefaultDatabase(monitor);
         if (defaultDatabase != trigger.getTable().getDatabase()) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getDatabase()), false)); //$NON-NLS-2$
         }
@@ -80,14 +80,14 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         SQLServerTableTrigger trigger = command.getObject();
-        DBSObject defaultDatabase = trigger.getDataSource().getDefaultObject();
+        DBSObject defaultDatabase = trigger.getDataSource().getDefaultDatabase(monitor);
         if (defaultDatabase != trigger.getTable().getDatabase()) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getDatabase()), false)); //$NON-NLS-2$
         }
 
-        super.addObjectDeleteActions(actions, command, options);
+        super.addObjectDeleteActions(monitor, actions, command, options);
 
         if (defaultDatabase != trigger.getTable().getDatabase()) {
             actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$

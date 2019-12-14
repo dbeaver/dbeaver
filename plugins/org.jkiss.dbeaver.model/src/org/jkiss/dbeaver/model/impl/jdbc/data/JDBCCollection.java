@@ -198,7 +198,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 if (column instanceof DBCAttributeMetaData) {
                     DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) column).getEntityMetaData();
                     if (entityMetaData != null) {
-                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), dataSource, entityMetaData);
+                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), entityMetaData);
                         if (docEntity != null) {
                             DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
                             if (attribute instanceof DBSTypedObjectEx) {

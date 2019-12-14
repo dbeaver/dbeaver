@@ -114,7 +114,7 @@ public class ExasolSchemaManager
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         int result = new UITask<Integer>() {
             protected Integer runTask() {
                 ConfirmationDialog dialog = new ConfirmationDialog(

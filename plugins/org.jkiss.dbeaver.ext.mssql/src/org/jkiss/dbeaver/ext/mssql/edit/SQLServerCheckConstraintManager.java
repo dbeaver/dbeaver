@@ -89,7 +89,7 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         final SQLServerTableCheckConstraint constraint = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(

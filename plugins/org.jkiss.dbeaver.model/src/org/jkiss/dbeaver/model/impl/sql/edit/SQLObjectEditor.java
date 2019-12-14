@@ -151,7 +151,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
     }
 
-    protected abstract void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options);
+    protected abstract void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options);
 
     //////////////////////////////////////////////////
     // Name generator
@@ -376,7 +376,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         @Override
         public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options) {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectDeleteActions(actions, this, options);
+            addObjectDeleteActions(monitor, actions, this, options);
             return actions.toArray(new DBEPersistAction[0]);
         }
 

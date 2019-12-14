@@ -1,0 +1,131 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.mssql.model;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.SQLException;
+
+/**
+ * SQLServerExecutionContext
+ */
+public class SQLServerExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<SQLServerDatabase, SQLServerSchema> {
+    private static final Log log = Log.getLog(SQLServerExecutionContext.class);
+
+    //private SQLServerDatabase activeDatabase;
+    private String activeDatabaseName;
+
+    SQLServerExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
+        super(instance, purpose);
+    }
+
+    @NotNull
+    @Override
+    public SQLServerDataSource getDataSource() {
+        return (SQLServerDataSource) super.getDataSource();
+    }
+
+    @Nullable
+    @Override
+    public DBCExecutionContextDefaults getContextDefaults() {
+        return this;
+    }
+
+    @Override
+    public SQLServerDatabase getDefaultCatalog() {
+        return getDataSource().getDatabase(activeDatabaseName);
+    }
+
+    @Override
+    public SQLServerSchema getDefaultSchema() {
+        return null;
+    }
+
+    @Override
+    public boolean supportsCatalogChange() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsSchemaChange() {
+        return false;
+    }
+
+    @Override
+    public void setDefaultCatalog(DBRProgressMonitor monitor, SQLServerDatabase catalog, SQLServerSchema schema) throws DBCException {
+        if (activeDatabaseName != null && activeDatabaseName.equals(catalog.getName())) {
+            return;
+        }
+        final SQLServerDatabase oldActiveDatabase = getDefaultCatalog();
+
+        if (!setCurrentDatabase(monitor, catalog)) {
+            return;
+        }
+        activeDatabaseName = catalog.getName();
+
+        // Send notifications
+        if (oldActiveDatabase != null) {
+            DBUtils.fireObjectSelect(oldActiveDatabase, false);
+        }
+        DBUtils.fireObjectSelect(catalog, true);
+    }
+
+    @Override
+    public void setDefaultSchema(DBRProgressMonitor monitor, SQLServerSchema schema) throws DBCException {
+        throw new DBCException("Not supported");
+    }
+
+    @Override
+    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+        // Check default active schema
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active database")) {
+            activeDatabaseName = SQLServerUtils.getCurrentDatabase(session);
+        } catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
+        }
+
+        return false;
+    }
+
+    boolean setCurrentDatabase(DBRProgressMonitor monitor, SQLServerDatabase object) throws DBCException {
+        if (object == null) {
+            log.debug("Null current schema");
+            return false;
+        }
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active database")) {
+            SQLServerUtils.setCurrentDatabase(session, object.getName());
+            activeDatabaseName = object.getName();
+            return true;
+        } catch (SQLException e) {
+            log.error(e);
+            return false;
+        }
+    }
+
+}

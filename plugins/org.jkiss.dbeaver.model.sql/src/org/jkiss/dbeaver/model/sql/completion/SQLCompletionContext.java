@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 
 /**
  * SQL Completion proposal
@@ -35,6 +35,8 @@ public interface SQLCompletionContext {
     int PROPOSAL_CASE_LOWER                         = 2;
 
     DBPDataSource getDataSource();
+
+    DBCExecutionContext getExecutionContext();
 
     SQLSyntaxManager getSyntaxManager();
 
