@@ -77,7 +77,7 @@ public class OracleQueueManager extends SQLObjectEditor<OracleQueue, OracleSchem
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
 
     }
 }

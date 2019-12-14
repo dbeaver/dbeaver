@@ -117,8 +117,8 @@ public class ExasolPriorityGroupManager extends SQLObjectEditor<ExasolPriorityGr
 
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
-                                          SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectDeleteCommand command,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+                                          ObjectDeleteCommand command,
                                           Map<String, Object> options) {
 
         ExasolPriorityGroup group = command.getObject();

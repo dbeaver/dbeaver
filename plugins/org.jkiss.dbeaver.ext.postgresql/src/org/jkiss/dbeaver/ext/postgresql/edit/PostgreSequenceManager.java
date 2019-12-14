@@ -85,7 +85,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction("Drop sequence", "DROP SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$

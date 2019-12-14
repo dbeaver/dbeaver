@@ -47,21 +47,21 @@ import java.util.regex.PatternSyntaxException;
 public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonitor> {
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
 
-    public static final String ALL_COLUMNS_PATTERN = "*";
-    public static final String MATCH_ANY_PATTERN = "%";
+    private static final String ALL_COLUMNS_PATTERN = "*";
+    private static final String MATCH_ANY_PATTERN = "%";
 
     private final SQLCompletionRequest request;
     private DBRProgressMonitor monitor;
 
-    final List<SQLCompletionProposalBase> proposals = new ArrayList<>();
-    boolean searchFinished = false;
+    private final List<SQLCompletionProposalBase> proposals = new ArrayList<>();
+    private boolean searchFinished = false;
 
     public SQLCompletionAnalyzer(SQLCompletionRequest request) {
         this.request = request;
     }
 
     @Override
-    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+    public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
         try {
             runAnalyzer(monitor);
         } catch (DBException e) {
@@ -140,7 +140,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
-                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
+                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
                     if (selectedObject != null) {
                         makeProposalsFromChildren(selectedObject, null, false);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
@@ -164,7 +164,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     // Part of column name
                     // Try to get from active object
                     DBSObjectContainer sc = (DBSObjectContainer) dataSource;
-                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
+                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
                     if (selectedObject instanceof DBSObjectContainer) {
                         sc = (DBSObjectContainer)selectedObject;
                     }
@@ -209,7 +209,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 // Add procedures/functions for column proposals
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
                 DBSObjectContainer sc = (DBSObjectContainer) dataSource;
-                DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
+                DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
                 if (selectedObject instanceof DBSObjectContainer) {
                     sc = (DBSObjectContainer)selectedObject;
                 }
@@ -277,7 +277,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         DBSInstance defaultInstance = dataSource == null ? null : dataSource.getDefaultInstance();
-        DBSObject selectedObject = defaultInstance == null ? null : DBUtils.getActiveInstanceObject(defaultInstance);
+        DBSObject selectedObject = defaultInstance == null ? null : DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
         boolean hideDups = request.getContext().isHideDuplicates() && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < proposals.size(); i++) {
@@ -461,7 +461,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)
         DBSObjectContainer selectedContainers[];
         {
-            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(monitor, dataSource);
+            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(monitor, request.getContext().getExecutionContext());
             selectedContainers = new DBSObjectContainer[selectedObjects.length];
             for (int i = 0; i < selectedObjects.length; i++) {
                 selectedContainers[i] = DBUtils.getAdapter(DBSObjectContainer.class, selectedObjects[i]);
@@ -861,7 +861,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 if (request.getWordDetector().getFullWord().indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
-                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
+                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
                         if (selectedObject != structObject.getContainer()) {
                             replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
                             isSingleObject = false;

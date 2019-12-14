@@ -204,7 +204,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             try {
                 ((PostgreExecutionContext)context).refreshDefaults(monitor);
             } catch (DBException e) {
-                log.debug("Error reading connection defaults");
+                throw new DBCException("Error reading connection defaults");
             }
         }
     }

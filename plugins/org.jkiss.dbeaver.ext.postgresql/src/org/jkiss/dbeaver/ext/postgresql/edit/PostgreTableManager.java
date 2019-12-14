@@ -172,7 +172,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         PostgreTableBase table = command.getObject();
         final String tableName = DBUtils.getEntityScriptName(table, options);

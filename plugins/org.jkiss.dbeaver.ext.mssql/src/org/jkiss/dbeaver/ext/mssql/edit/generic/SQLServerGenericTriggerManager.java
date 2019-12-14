@@ -61,19 +61,19 @@ public class SQLServerGenericTriggerManager extends SQLTriggerManager<SQLServerG
         return null;
     }
 
-    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, SQLServerGenericTrigger trigger, boolean create) {
+    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLServerGenericTrigger trigger, boolean create) {
 
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         SQLServerGenericTrigger trigger = command.getObject();
-        DBSObject defaultDatabase = trigger.getDataSource().getDefaultObject();
+        DBSObject defaultDatabase = DBUtils.getDefaultContext(trigger.getDataSource(), true).getContextDefaults().getDefaultCatalog();
         if (defaultDatabase != trigger.getTable().getCatalog()) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getCatalog()), false)); //$NON-NLS-2$
         }
 
-        super.addObjectDeleteActions(actions, command, options);
+        super.addObjectDeleteActions(monitor, actions, command, options);
 
         if (defaultDatabase != trigger.getTable().getCatalog()) {
             actions.add(new SQLDatabasePersistAction("Set current schema ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$

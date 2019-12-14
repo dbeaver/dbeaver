@@ -73,7 +73,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
     {
         final OracleDataType object = objectDeleteCommand.getObject();
         actions.add(

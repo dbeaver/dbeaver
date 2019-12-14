@@ -73,20 +73,20 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-        createOrReplaceProcedureQuery(actions, command.getObject(), true);
+        createOrReplaceProcedureQuery(monitor, actions, command.getObject(), true);
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceProcedureQuery(actionList, command.getObject(), false);
+            createOrReplaceProcedureQuery(monitor, actionList, command.getObject(), false);
         }
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         SQLServerDatabase procDatabase = command.getObject().getContainer().getDatabase();
-        SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultObject();
+        SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultDatabase(monitor);
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }
@@ -100,9 +100,9 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
         }
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, SQLServerProcedure procedure, boolean create) {
+    private void createOrReplaceProcedureQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLServerProcedure procedure, boolean create) {
         SQLServerDatabase procDatabase = procedure.getContainer().getDatabase();
-        SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultObject();
+        SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultDatabase(monitor);
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }

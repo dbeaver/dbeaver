@@ -109,7 +109,7 @@ public class ResultSetUtils
                             entityMeta = sqlQuery.getSingleSource();
                         }
                         if (entityMeta != null) {
-                            entity = DBUtils.getEntityFromMetaData(monitor, dataSource, entityMeta);
+                            entity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), entityMeta);
                             if (entity != null) {
                                 entityBindingMap.put(entityMeta, entity);
                             }
@@ -140,7 +140,7 @@ public class ResultSetUtils
                             // MySQL returns source table name instead of view name. That's crazy.
                             attrEntity = entity;
                         } else {
-                            attrEntity = DBUtils.getEntityFromMetaData(monitor, dataSource, attrEntityMeta);
+                            attrEntity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), attrEntityMeta);
                         }
                     }
                     if (attrEntity != null) {

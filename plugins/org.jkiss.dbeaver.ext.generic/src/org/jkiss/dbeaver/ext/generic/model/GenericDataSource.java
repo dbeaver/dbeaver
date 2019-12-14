@@ -57,8 +57,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource
-    implements DBSObjectSelector, DBPTermProvider, IAdaptable, GenericStructContainer {
+public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, IAdaptable, GenericStructContainer {
     private static final Log log = Log.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
@@ -668,40 +667,6 @@ public class GenericDataSource extends JDBCDataSource
 
     boolean hasSchemas() {
         return !CommonUtils.isEmpty(schemas);
-    }
-
-    @Override
-    public boolean supportsDefaultChange() {
-        GenericExecutionContext defaultContext = (GenericExecutionContext) getDefaultInstance().getDefaultContext(null, true);
-        return defaultContext.supportsCatalogChange() || defaultContext.supportsSchemaChange();
-    }
-
-    @Override
-    public DBSObject getDefaultObject() {
-        GenericExecutionContext defaultContext = (GenericExecutionContext) getDefaultInstance().getDefaultContext(null, true);
-        return defaultContext.getDefaultObject();
-    }
-
-    @Override
-    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
-        throws DBException
-    {
-        if (!isChild(object)) {
-            throw new DBException("Bad child object specified as active: " + object);
-        }
-
-        GenericExecutionContext defaultContext = (GenericExecutionContext) getDefaultInstance().getDefaultContext(null, true);
-        if (hasCatalogs()) {
-            defaultContext.setDefaultCatalog(monitor, (GenericCatalog) object, null);
-        } else if (hasSchemas()) {
-            defaultContext.setDefaultSchema(monitor, (GenericSchema) object);
-        }
-    }
-
-    @Override
-    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
-        GenericExecutionContext defaultContext = (GenericExecutionContext) getDefaultInstance().getDefaultContext(null, true);
-        return defaultContext.refreshDefaults(session.getProgressMonitor());
     }
 
     String getQueryGetActiveDB() {

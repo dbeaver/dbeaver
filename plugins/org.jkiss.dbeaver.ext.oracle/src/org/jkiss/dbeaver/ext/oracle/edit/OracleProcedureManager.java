@@ -61,7 +61,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
     {
         final OracleProcedureStandalone object = objectDeleteCommand.getObject();
         actions.add(

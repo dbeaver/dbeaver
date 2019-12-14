@@ -56,17 +56,17 @@ public abstract class SQLTriggerManager<OBJECT_TYPE extends DBSTrigger, CONTAINE
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
-        createOrReplaceTriggerQuery(actions, command.getObject(), true);
+        createOrReplaceTriggerQuery(monitor, actions, command.getObject(), true);
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        createOrReplaceTriggerQuery(actionList, command.getObject(), false);
+        createOrReplaceTriggerQuery(monitor, actionList, command.getObject(), false);
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction("Drop trigger",
@@ -74,7 +74,7 @@ public abstract class SQLTriggerManager<OBJECT_TYPE extends DBSTrigger, CONTAINE
         );
     }
 
-    protected abstract void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, OBJECT_TYPE trigger, boolean create);
+    protected abstract void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, OBJECT_TYPE trigger, boolean create);
 
 }
 

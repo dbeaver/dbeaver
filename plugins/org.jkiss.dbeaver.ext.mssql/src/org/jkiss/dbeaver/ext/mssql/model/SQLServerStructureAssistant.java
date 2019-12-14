@@ -116,7 +116,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             (SQLServerDatabase) parentObject :
             (parentObject instanceof SQLServerSchema ? ((SQLServerSchema) parentObject).getDatabase() : null);
         if (database == null) {
-            database = dataSource.getDefaultObject();
+            database = dataSource.getDefaultDatabase(monitor);
         }
         if (database == null) {
             return Collections.emptyList();

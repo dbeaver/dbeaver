@@ -74,7 +74,7 @@ public class ExasolSecurityPolicyManager
     }
     
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command, Map<String, Object> options)
     {
         final ExasolSecurityPolicy con = command.getObject();

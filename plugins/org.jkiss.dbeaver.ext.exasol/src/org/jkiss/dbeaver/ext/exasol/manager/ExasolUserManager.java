@@ -91,7 +91,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command, Map<String, Object> options) {
         ExasolUser obj = command.getObject();
         actions.add(new SQLDatabasePersistAction("Drop User", "DROP USER " + DBUtils.getQuotedIdentifier(obj)));

@@ -124,7 +124,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         OracleTable object = command.getObject();
         actions.add(

@@ -75,7 +75,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command, Map<String, Object> options) {
         ExasolRole obj = command.getObject();
         actions.add(new SQLDatabasePersistAction("Drop Role", "DROP ROLE " + DBUtils.getQuotedIdentifier(obj)));

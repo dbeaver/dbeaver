@@ -68,7 +68,7 @@ public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
         }
         if (!CommonUtils.isEmpty(catalogName) || !CommonUtils.isEmpty(schemaName)) {
             // Find container for specified schema/catalog
-            objectContainer = (DBSObjectContainer)DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, null);
+            objectContainer = (DBSObjectContainer)DBUtils.getObjectByPath(monitor, executionContext, objectContainer, catalogName, schemaName, null);
         } else {
             DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, executionContext.getDataSource());
             if (objectSelector != null) {

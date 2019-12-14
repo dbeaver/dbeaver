@@ -90,8 +90,8 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
 
     @Override
     protected void addObjectDeleteActions(
-        List<DBEPersistAction> actions,
-        SQLObjectEditor<PostgreTablespace, PostgreDatabase>.ObjectDeleteCommand command,
+        DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+        ObjectDeleteCommand command,
         Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistActionAtomic("Drop tablespace", "DROP TABLESPACE " + command.getObject().getName()) //$NON-NLS-2$

@@ -87,7 +87,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         SQLServerTable object = command.getObject();
         actions.add(
