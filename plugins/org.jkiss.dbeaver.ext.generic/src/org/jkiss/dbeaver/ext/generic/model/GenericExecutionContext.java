@@ -299,11 +299,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         if (!CommonUtils.equalObjects(oldEntityName, selectedEntityName)) {
             final DBSObject newDefaultObject = getDefaultObject();
             if (newDefaultObject != null) {
-                if (oldDefaultObject != null) {
-                    DBUtils.fireObjectSelect(oldDefaultObject, false);
-                }
-                DBUtils.fireObjectSelect(newDefaultObject, true);
-
+                DBUtils.fireObjectSelectionChange(oldDefaultObject, newDefaultObject);
                 return true;
             }
         }

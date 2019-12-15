@@ -98,10 +98,7 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
         activeDatabaseName = catalog.getName();
 
         // Send notifications
-        if (oldActiveDatabase != null) {
-            DBUtils.fireObjectSelect(oldActiveDatabase, false);
-        }
-        DBUtils.fireObjectSelect(catalog, true);
+        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog);
     }
 
     @Override
@@ -118,7 +115,7 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
             throw new DBCException(e, getDataSource());
         }
 
-        return false;
+        return true;
     }
 
     boolean setCurrentDatabase(DBRProgressMonitor monitor, MySQLCatalog object) throws DBCException {

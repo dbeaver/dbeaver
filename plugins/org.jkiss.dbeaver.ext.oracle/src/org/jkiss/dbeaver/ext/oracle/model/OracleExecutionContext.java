@@ -96,10 +96,7 @@ public class OracleExecutionContext extends JDBCExecutionContext implements DBCE
         activeSchemaName = schema.getName();
 
         // Send notifications
-        if (oldSelectedEntity != null) {
-            DBUtils.fireObjectSelect(oldSelectedEntity, false);
-        }
-        DBUtils.fireObjectSelect(schema, true);
+        DBUtils.fireObjectSelectionChange(oldSelectedEntity, schema);
     }
 
     @Override
@@ -117,7 +114,7 @@ public class OracleExecutionContext extends JDBCExecutionContext implements DBCE
             throw new DBCException(e, getDataSource());
         }
 
-        return false;
+        return true;
     }
 
     void setCurrentSchema(DBRProgressMonitor monitor, OracleSchema object) throws DBCException {

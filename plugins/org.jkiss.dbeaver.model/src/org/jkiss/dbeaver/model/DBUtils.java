@@ -1713,6 +1713,30 @@ public final class DBUtils {
         return new DBSObject[0];
     }
 
+    public static void refreshContextDefaultsAndReflect(DBRProgressMonitor monitor, DBCExecutionContextDefaults contextDefaults) {
+        try {
+            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+            if (contextDefaults.refreshDefaults(monitor)) {
+                fireObjectSelectionChange(defaultCatalog, contextDefaults.getDefaultCatalog());
+                fireObjectSelectionChange(defaultSchema, contextDefaults.getDefaultSchema());
+            }
+        } catch (Exception e) {
+            log.debug(e);
+        }
+    }
+
+    public static void fireObjectSelectionChange(DBSObject oldDefaultObject, DBSObject newDefaultObject) {
+        if (oldDefaultObject != newDefaultObject) {
+            if (oldDefaultObject != null) {
+                DBUtils.fireObjectSelect(oldDefaultObject, false);
+            }
+            if (newDefaultObject != null) {
+                DBUtils.fireObjectSelect(newDefaultObject, true);
+            }
+        }
+    }
+
     public static DBSObjectContainer getChangeableObjectContainer(DBPDataSource dataSource, DBSObjectContainer root) {
         DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
         DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();

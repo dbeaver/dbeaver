@@ -120,10 +120,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         setSearchPath(schema.getName());
 
         if (reflect) {
-            if (oldActiveSchema != null) {
-                DBUtils.fireObjectSelect(oldActiveSchema, false);
-            }
-            DBUtils.fireObjectSelect(activeSchema, true);
+            DBUtils.fireObjectSelectionChange(oldActiveSchema, activeSchema);
         }
     }
 
@@ -158,7 +155,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             throw new DBCException(e, getDataSource());
         }
 
-        return false;
+        return true;
     }
 
     public String getActiveUser() {
