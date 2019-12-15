@@ -46,7 +46,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -54,26 +54,19 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ExasolDataSource extends JDBCDataSource
-		implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
+public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner, IAdaptable {
 
     private static final Log LOG = Log.getLog(ExasolDataSource.class);
-
-	private static final String GET_CURRENT_SCHEMA = "SELECT CURRENT_SCHEMA";
-	private static final String SET_CURRENT_SCHEMA = "OPEN SCHEMA \"%s\"";
-	private static final String GET_CURRENT_SESSION = "SELECT CURRENT_SESSION";
 
 	private DBSObjectCache<ExasolDataSource, ExasolSchema> schemaCache;
 	private DBSObjectCache<ExasolDataSource, ExasolVirtualSchema> virtualSchemaCache;
@@ -97,9 +90,6 @@ public class ExasolDataSource extends JDBCDataSource
 	private Properties addMetaProps = new Properties();
 	
 	private int driverMajorVersion = 5;
-	
-
-	private String activeSchemaName;
 
 	// -----------------------
 	// Constructors
@@ -121,15 +111,10 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		super.initialize(monitor);
 		
-		try (JDBCSession session = DBUtils.openMetaSession(monitor, this,
-				"Load data source meta info")) {
-			
-			// First try to get active schema from special register 'CURRENT
-			// SCHEMA'
-			this.activeSchemaName = determineActiveSchema(session);
-			this.exasolCurrentUserPrivileges = new ExasolCurrentUserPrivileges(
-					monitor, session, this);
-			
+		try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
+
+			this.exasolCurrentUserPrivileges = new ExasolCurrentUserPrivileges(monitor, session, this);
+
 			this.driverMajorVersion = session.getMetaData().getDriverMajorVersion();
 
 		} catch (SQLException e) {
@@ -357,41 +342,25 @@ public class ExasolDataSource extends JDBCDataSource
                 positions.add(pos);
             }
             if (!positions.isEmpty()) {
-                return positions.toArray(new ErrorPosition[positions.size()]);
+                return positions.toArray(new ErrorPosition[0]);
             }
         }
         return null;
     }
-	
+
+	@Override
+	protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+		return new ExasolExecutionContext(instance, type);
+	}
 
 	protected void initializeContextState(@NotNull DBRProgressMonitor monitor,
-			@NotNull JDBCExecutionContext context, boolean setActiveObject)
+										  @NotNull JDBCExecutionContext context, boolean setActiveObject)
         throws DBException
 	{
 		if (setActiveObject) {
-			setCurrentSchema(monitor, context, getDefaultObject());
-		}
-	}
-
-	private String determineActiveSchema(JDBCSession session)
-			throws SQLException
-	{
-		// First try to get active schema from special register 'CURRENT SCHEMA'
-		String defSchema = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
-		if (defSchema == null) {
-			return null;
-		}
-
-		return defSchema.trim();
-	}
-	
-	public BigDecimal getCurrentSessionId(JDBCSession session)
-		throws DBException
-	{
-		try {
-			return (BigDecimal) JDBCUtils.queryObject(session, GET_CURRENT_SESSION);
-		} catch (SQLException e) {
-			throw new DBCException(e, this);
+			((ExasolExecutionContext)context).setCurrentSchema(monitor, getDefaultSchema());
+		} else {
+			((ExasolExecutionContext)context).refreshDefaults(monitor);
 		}
 	}
 
@@ -490,24 +459,15 @@ public class ExasolDataSource extends JDBCDataSource
 	// --------------------------
 
 	@Override
-	public boolean supportsDefaultChange()
-	{
-		return true;
-	}
-
-	@Override
-	public Class<? extends ExasolSchema> getChildType(
-			@NotNull DBRProgressMonitor monitor) throws DBException
+	public Class<? extends ExasolSchema> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
 	{
 		return ExasolSchema.class;
 	}
 
 	@Override
-	public Collection<ExasolSchema> getChildren(
-			@NotNull DBRProgressMonitor monitor) throws DBException
+	public Collection<ExasolSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
 	{
-		Collection<ExasolSchema> totalList = getSchemas(monitor);
-		return totalList;
+		return getSchemas(monitor);
 	}
 
 	@Override
@@ -519,74 +479,8 @@ public class ExasolDataSource extends JDBCDataSource
 		return getSchema(monitor, childName);
 	}
 
-	@Override
-	public ExasolSchema getDefaultObject()
-	{
-		return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
-	}
-
-	@Override
-	public void setDefaultObject(@NotNull DBRProgressMonitor monitor,
-			@NotNull DBSObject object) throws DBException
-	{
-		final ExasolSchema oldSelectedEntity = getDefaultObject();
-
-		if (!(object instanceof ExasolSchema)) {
-			throw new IllegalArgumentException(
-					"Invalid object type: " + object);
-		}
-
-		for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
-			setCurrentSchema(monitor, context, (ExasolSchema) object);
-		}
-
-		activeSchemaName = object.getName();
-
-		// Send notifications
-		if (oldSelectedEntity != null) {
-			DBUtils.fireObjectSelect(oldSelectedEntity, false);
-		}
-		if (this.activeSchemaName != null) {
-			DBUtils.fireObjectSelect(object, true);
-		}
-	}
-
-	@Override
-	public boolean refreshDefaultObject(@NotNull DBCSession session)
-			throws DBException
-	{
-		try {
-			final String newSchemaName = determineActiveSchema(
-					(JDBCSession) session);
-			if (!CommonUtils.equalObjects(newSchemaName, activeSchemaName)) {
-				final ExasolSchema newSchema = schemaCache
-						.getCachedObject(newSchemaName);
-				if (newSchema != null) {
-					setDefaultObject(session.getProgressMonitor(), newSchema);
-					return true;
-				}
-			}
-			return false;
-		} catch (Exception e) {
-			throw new DBException(e, this);
-		}
-	}
-
-	private void setCurrentSchema(DBRProgressMonitor monitor,
-			JDBCExecutionContext executionContext, ExasolSchema object)
-			throws DBCException
-	{
-		if (object == null) {
-			LOG.debug("Null current schema");
-			return;
-		}
-		try (JDBCSession session = executionContext.openSession(monitor,
-				DBCExecutionPurpose.UTIL, "Set active schema")) {
-			JDBCUtils.executeSQL(session,
-					String.format(SET_CURRENT_SCHEMA, object.getName()));
-		} catch (SQLException e) {
-			throw new DBCException(e, this);
-		}
+	public ExasolSchema getDefaultSchema() {
+		return (ExasolSchema) DBUtils.getDefaultContext(this, true).getContextDefaults().getDefaultSchema();
 	}
 
 	// --------------
