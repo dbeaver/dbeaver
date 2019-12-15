@@ -138,7 +138,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                 PostgreProcedure function = PostgreSqlDebugCore.resolveFunction(monitor, controller.getDataSourceContainer(), controller.getDebugConfiguration());
                 instance = function.getDatabase();
             }
-            this.controllerConnection = (JDBCExecutionContext) instance.openIsolatedContext(monitor, "Debug controller session");
+            this.controllerConnection = (JDBCExecutionContext) instance.openIsolatedContext(monitor, "Debug controller session", null);
 
             log.debug("Debug controller session created.");
             JDBCDataSource src = this.controllerConnection.getDataSource();
@@ -381,7 +381,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     private void attachLocal(DBRProgressMonitor monitor, PostgreProcedure function, List<String> parameters) throws DBGException {
 
         try {
-            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getOwnerInstance().openIsolatedContext(monitor, "Debug process session");
+            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getOwnerInstance().openIsolatedContext(monitor, "Debug process session", null);
             log.debug("Attaching locally....");
             this.sessionInfo = getSessionDescriptor(monitor, connection);
 

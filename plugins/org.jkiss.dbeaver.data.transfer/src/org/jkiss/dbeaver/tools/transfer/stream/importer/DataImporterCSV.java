@@ -137,7 +137,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         }
 
         final StreamDataSource streamDataSource = new StreamDataSource("Transfer stream");
-        try (StreamExecutionContext context = streamDataSource.openIsolatedContext(monitor, "Transfer stream data")) {
+        try (StreamExecutionContext context = streamDataSource.openIsolatedContext(monitor, "Transfer stream data", null)) {
             try (StreamTransferSession producerSession = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
                 LocalStatement localStatement = new LocalStatement(producerSession, "SELECT * FROM Stream");
                 StreamTransferResultSet resultSet = new StreamTransferResultSet(producerSession, localStatement, entityMapping);

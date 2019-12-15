@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -94,7 +95,7 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
 
     @NotNull
     @Override
-    public abstract EXEC_CONTEXT openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException;
+    public abstract EXEC_CONTEXT openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException;
 
     public void addExecutionContext(EXEC_CONTEXT context) {
         allContexts.add(context);

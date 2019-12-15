@@ -121,7 +121,7 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                try (DBCExecutionContext isolatedContext = lockManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View Locks")) {
+                try (DBCExecutionContext isolatedContext = lockManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View Locks", null)) {
                     try (DBCSession session = isolatedContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Retrieve server locks")) {
                         return lockManager.getLocks(session, null).values();
                     }
@@ -149,7 +149,7 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                try (DBCExecutionContext isolatedContext = lockManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View locks")) {
+                try (DBCExecutionContext isolatedContext = lockManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View locks", null)) {
                     try (DBCSession session = isolatedContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Kill server session by lock")) {
                     		lockManager.alterSession(session, this.lock, options);	                       
                         return null;

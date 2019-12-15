@@ -201,9 +201,9 @@ public class MySQLDataSource extends JDBCDataSource {
         return new MySQLExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBException {
-        if (setActiveObject) {
-            MySQLCatalog object = getDefaultDatabase();
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+        if (initFrom != null) {
+            MySQLCatalog object = ((MySQLExecutionContext)initFrom).getDefaultCatalog();
             if (object != null) {
                 ((MySQLExecutionContext)context).setCurrentDatabase(monitor, object);
             }

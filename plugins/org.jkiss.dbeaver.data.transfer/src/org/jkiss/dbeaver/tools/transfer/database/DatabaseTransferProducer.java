@@ -146,12 +146,16 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
             try {
                 DBCExecutionContext context;
-                if (!selectiveExportFromUI && newConnection) {
-                    context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer");
-                } else if (dataContainer instanceof DBPContextProvider) {
+                if (dataContainer instanceof DBPContextProvider) {
                     context = ((DBPContextProvider) dataContainer).getExecutionContext();
                 } else {
                     context = DBUtils.getDefaultContext(dataContainer, false);
+                }
+                if (context == null) {
+                    throw new DBCException("Can't retrieve execution context from data container " + dataContainer);
+                }
+                if (!selectiveExportFromUI && newConnection) {
+                    context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer", context);
                 }
                 try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
                     try {

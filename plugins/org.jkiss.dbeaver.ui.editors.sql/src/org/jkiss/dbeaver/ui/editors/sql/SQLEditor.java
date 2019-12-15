@@ -558,7 +558,7 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 String title = "SQLEditor <" + getEditorInput().getName() + ">";
                 monitor.subTask("Open context " + title);
-                executionContext = instance.openIsolatedContext(monitor, title);
+                executionContext = instance.openIsolatedContext(monitor, title, instance.getDefaultContext(monitor, false));
             } catch (DBException e) {
                 error = e;
                 return Status.OK_STATUS;

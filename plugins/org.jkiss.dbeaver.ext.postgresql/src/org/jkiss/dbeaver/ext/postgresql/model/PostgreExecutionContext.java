@@ -94,7 +94,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             } else {
                 disconnect();
                 setOwnerInstance(catalog);
-                connect(monitor, null, null, false, false);
+                connect(monitor, null, null, null, false);
                 if (schema != null) {
                     setDefaultSchema(monitor, schema);
                 }
