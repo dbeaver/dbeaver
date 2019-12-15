@@ -200,14 +200,19 @@ public class OracleUtils {
 
     public static void addSchemaChangeActions(List<DBEPersistAction> actions, OracleSourceObject object)
     {
+        OracleSchema schema = object.getSchema();
+        if (schema == null) {
+            return;
+        }
         actions.add(0, new SQLDatabasePersistAction(
             "Set target schema",
-            "ALTER SESSION SET CURRENT_SCHEMA=" + object.getSchema().getName(),
+            "ALTER SESSION SET CURRENT_SCHEMA=" + schema.getName(),
             DBEPersistAction.ActionType.INITIALIZER));
-        if (object.getSchema() != object.getDataSource().getDefaultObject()) {
+        OracleSchema defaultSchema = object.getDataSource().getDefaultSchema();
+        if (schema != defaultSchema) {
             actions.add(new SQLDatabasePersistAction(
                 "Set current schema",
-                "ALTER SESSION SET CURRENT_SCHEMA=" + object.getDataSource().getDefaultObject().getName(),
+                "ALTER SESSION SET CURRENT_SCHEMA=" + defaultSchema.getName(),
                 DBEPersistAction.ActionType.FINALIZER));
         }
     }

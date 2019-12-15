@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -43,7 +40,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLState;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
@@ -59,8 +59,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class OracleDataSource extends JDBCDataSource
-    implements DBSObjectSelector, IAdaptable {
+public class OracleDataSource extends JDBCDataSource implements IAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
     final public SchemaCache schemaCache = new SchemaCache();
@@ -72,7 +71,6 @@ public class OracleDataSource extends JDBCDataSource
 
     private OracleOutputReader outputReader;
     private OracleSchema publicSchema;
-    private String activeSchemaName;
     private boolean isAdmin;
     private boolean isAdminVisible;
     private String planTableName;
@@ -200,6 +198,11 @@ public class OracleDataSource extends JDBCDataSource
         }
     }
 
+    @Override
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new OracleExecutionContext(instance, type);
+    }
+
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBException {
         if (outputReader == null) {
             outputReader = new OracleOutputReader();
@@ -210,7 +213,9 @@ public class OracleDataSource extends JDBCDataSource
             context,
             outputReader.isServerOutputEnabled());
         if (setActiveObject) {
-            setCurrentSchema(monitor, context, getDefaultObject());
+            ((OracleExecutionContext)context).setCurrentSchema(monitor, getDefaultSchema());
+        } else {
+            ((OracleExecutionContext)context).refreshDefaults(monitor);
         }
 
         {
@@ -263,6 +268,10 @@ public class OracleDataSource extends JDBCDataSource
                 }
             }
         }
+    }
+
+    public OracleSchema getDefaultSchema() {
+        return (OracleSchema) DBUtils.getDefaultContext(this, true).getContextDefaults().getDefaultSchema();
     }
 
     @Override
@@ -417,15 +426,6 @@ public class OracleDataSource extends JDBCDataSource
                         isAdminVisible = CommonUtils.getBoolean(showAdmin, false);
                     }
                 }
-
-                // Get active schema
-                this.activeSchemaName = OracleUtils.getCurrentSchema(session);
-                if (this.activeSchemaName != null) {
-                    if (this.activeSchemaName.isEmpty()) {
-                        this.activeSchemaName = null;
-                    }
-                }
-
             } catch (SQLException e) {
                 //throw new DBException(e);
                 log.warn(e);
@@ -453,7 +453,6 @@ public class OracleDataSource extends JDBCDataSource
         this.userCache.clearCache();
         this.profileCache.clearCache();
         this.roleCache.clearCache();
-        this.activeSchemaName = null;
 
         this.initialize(monitor);
 
@@ -482,67 +481,6 @@ public class OracleDataSource extends JDBCDataSource
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
         throws DBException {
 
-    }
-
-    @Override
-    public boolean supportsDefaultChange() {
-        return true;
-    }
-
-    @Nullable
-    @Override
-    public OracleSchema getDefaultObject() {
-        return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
-    }
-
-    @Override
-    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
-        throws DBException {
-        final OracleSchema oldSelectedEntity = getDefaultObject();
-        if (!(object instanceof OracleSchema)) {
-            throw new IllegalArgumentException("Invalid object type: " + object);
-        }
-        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
-            setCurrentSchema(monitor, context, (OracleSchema) object);
-        }
-        activeSchemaName = object.getName();
-
-        // Send notifications
-        if (oldSelectedEntity != null) {
-            DBUtils.fireObjectSelect(oldSelectedEntity, false);
-        }
-        if (this.activeSchemaName != null) {
-            DBUtils.fireObjectSelect(object, true);
-        }
-    }
-
-    @Override
-    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
-        try {
-            final String currentSchema = OracleUtils.getCurrentSchema((JDBCSession) session);
-            if (currentSchema != null && !CommonUtils.equalObjects(currentSchema, activeSchemaName)) {
-                final OracleSchema newSchema = schemaCache.getCachedObject(currentSchema);
-                if (newSchema != null) {
-                    setDefaultObject(session.getProgressMonitor(), newSchema);
-                    return true;
-                }
-            }
-            return false;
-        } catch (SQLException e) {
-            throw new DBException(e, this);
-        }
-    }
-
-    private void setCurrentSchema(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, OracleSchema object) throws DBCException {
-        if (object == null) {
-            log.debug("Null current schema");
-            return;
-        }
-        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
-            OracleUtils.setCurrentSchema(session, object.getName());
-        } catch (SQLException e) {
-            throw new DBCException(e, this);
-        }
     }
 
     @Nullable
@@ -880,11 +818,6 @@ public class OracleDataSource extends JDBCDataSource
         @Override
         protected void invalidateObjects(DBRProgressMonitor monitor, OracleDataSource owner, Iterator<OracleSchema> objectIter) {
             setListOrderComparator(DBUtils.<OracleSchema>nameComparator());
-            // Add predefined types
-            if (!CommonUtils.isEmpty(owner.activeSchemaName) && getCachedObject(owner.activeSchemaName) == null) {
-                cacheObject(
-                    new OracleSchema(owner, 100, owner.activeSchemaName));
-            }
         }
     }
 
