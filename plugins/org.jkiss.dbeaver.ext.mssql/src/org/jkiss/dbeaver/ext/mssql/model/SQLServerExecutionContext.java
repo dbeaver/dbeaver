@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -108,7 +109,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
     @Override
     public void setDefaultSchema(DBRProgressMonitor monitor, SQLServerSchema schema) throws DBCException {
-        throw new DBCException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override

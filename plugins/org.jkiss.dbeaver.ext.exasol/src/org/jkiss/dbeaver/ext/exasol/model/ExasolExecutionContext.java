@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -86,7 +87,7 @@ public class ExasolExecutionContext extends JDBCExecutionContext implements DBCE
 
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, DBSCatalog catalog, ExasolSchema schema) throws DBCException {
-        throw new DBCException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override

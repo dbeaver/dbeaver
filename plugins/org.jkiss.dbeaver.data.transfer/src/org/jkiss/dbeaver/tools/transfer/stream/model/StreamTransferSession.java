@@ -51,7 +51,7 @@ public class StreamTransferSession extends AbstractSession {
     @NotNull
     @Override
     public DBCStatement prepareStatement(@NotNull DBCStatementType type, @NotNull String query, boolean scrollable, boolean updatable, boolean returnGeneratedKeys) throws DBCException {
-        throw new DBCException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override

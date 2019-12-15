@@ -163,7 +163,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 commandProposals.add(new SQLCommandCompletionProposal(request, command));
             }
         }
-        return commandProposals.toArray(new ICompletionProposal[commandProposals.size()]);
+        return commandProposals.toArray(new ICompletionProposal[0]);
     }
 
     @NotNull
@@ -185,7 +185,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
         templateProposals.sort(Comparator.comparing(TemplateProposal::getDisplayString));
-        return templateProposals.toArray(new ICompletionProposal[templateProposals.size()]);
+        return templateProposals.toArray(new ICompletionProposal[0]);
     }
 
     /**
