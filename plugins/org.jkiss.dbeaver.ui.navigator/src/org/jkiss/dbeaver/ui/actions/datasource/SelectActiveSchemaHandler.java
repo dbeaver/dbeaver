@@ -64,7 +64,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 import java.util.*;
 
 public class SelectActiveSchemaHandler extends AbstractDataSourceHandler implements IElementUpdater {
@@ -247,8 +246,6 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         }
                         if (contextDefaults != null && (contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange())) {
                             changeDefaultObject(monitor, rootContainer, contextDefaults, newInstanceName, curInstanceName, newSchemaName);
-                        } else {
-                            changeDefaultObjectLegacy(monitor, dataSource, rootContainer, curInstanceName, newInstanceName, newSchemaName);
                         }
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
@@ -293,42 +290,6 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         }
     }
 
-    @SuppressWarnings("deprecated")
-    private static void changeDefaultObjectLegacy(DBRProgressMonitor monitor, DBPDataSource dataSource, DBSObjectContainer rootContainer, @Nullable String curInstanceName, @Nullable String newInstanceName, @Nullable String newSchemaName) throws DBException {
-        DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-        if (os != null) {
-            if (newInstanceName != null && !CommonUtils.equalObjects(curInstanceName, newInstanceName)) {
-                // Change current instance
-                DBSObject newInstance = rootContainer.getChild(monitor, newInstanceName);
-                if (newInstance != null) {
-                    os.setDefaultObject(monitor, newInstance);
-                }
-            }
-            final DBSObject defObject = os.getDefaultObject();
-            if (defObject instanceof DBSObjectContainer) {
-                // USe seconds level of active object
-                DBSObjectSelector os2 = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
-                if (os2 != null && os2.supportsDefaultChange()) {
-                    rootContainer = (DBSObjectContainer) defObject;
-                    os = os2;
-                }
-            }
-        }
-
-        if (newSchemaName != null) {
-            if (rootContainer != null && os != null && os.supportsDefaultChange()) {
-                DBSObject newChild = rootContainer.getChild(monitor, newSchemaName);
-                if (newChild != null) {
-                    os.setDefaultObject(monitor, newChild);
-                } else {
-                    throw new DBException(MessageFormat.format(UINavigatorMessages.toolbar_datasource_selector_error_database_not_found, newSchemaName));
-                }
-            } else {
-                throw new DBException(UINavigatorMessages.toolbar_datasource_selector_error_database_change_not_supported);
-            }
-        }
-    }
-
     private static class DatabaseListReader implements DBRRunnableWithProgress {
         private final DBPDataSource dataSource;
         private final DBCExecutionContext executionContext;
@@ -356,12 +317,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             if (executionContext != null) {
                 contextDefaults = executionContext.getContextDefaults();
             }
-
-            DBSObjectSelector objectSelector = null;
             if (contextDefaults == null) {
-                objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-            }
-            if (contextDefaults == null && objectSelector == null) {
                 return;
             }
             try {
@@ -375,34 +331,20 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                     enabled = true;
 
                     DBSObject defObject = null;
-                    if (contextDefaults != null) {
-                        if (DBSCatalog.class.isAssignableFrom(childType)) {
-                            defObject = contextDefaults.getDefaultCatalog();
-                        }
-                    } else {
-                        defObject = objectSelector.getDefaultObject();
+                    if (DBSCatalog.class.isAssignableFrom(childType)) {
+                        defObject = contextDefaults.getDefaultCatalog();
                     }
-                    if (defObject instanceof DBSObjectContainer) {
-                        if (contextDefaults != null) {
-                            currentDatabaseInstanceName = defObject.getName();
-                            if (contextDefaults.supportsSchemaChange()) {
-                                objectContainer = (DBSObjectContainer) defObject;
-                            } else if (!contextDefaults.supportsCatalogChange()) {
-                                // Nothing can be changed
-                                objectContainer = null;
-                            }
-                            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-                            if (defaultSchema != null) {
-                                defObject = defaultSchema;
-                            }
-                        } else {
-                            // Default object can be object container + object selector (e.g. in PG)
-                            objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
-                            if (objectSelector != null && objectSelector.supportsDefaultChange()) {
-                                currentDatabaseInstanceName = defObject.getName();
-                                objectContainer = (DBSObjectContainer) defObject;
-                                defObject = objectSelector.getDefaultObject();
-                            }
+                    if (defObject != null) {
+                        currentDatabaseInstanceName = defObject.getName();
+                        if (contextDefaults.supportsSchemaChange()) {
+                            objectContainer = (DBSObjectContainer) defObject;
+                        } else if (!contextDefaults.supportsCatalogChange()) {
+                            // Nothing can be changed
+                            objectContainer = null;
+                        }
+                        DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                        if (defaultSchema != null) {
+                            defObject = defaultSchema;
                         }
                     }
                     Collection<? extends DBSObject> children = objectContainer == null ?

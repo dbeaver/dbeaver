@@ -188,7 +188,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             sqlDialect.getCatalogSeparator(),
                             sqlDialect.getIdentifierQuoteStrings(),
                             false);
-                        rootObject = SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, Arrays.asList(allNames), !request.isSimpleMode(), request.getWordDetector());
+                        rootObject = SQLSearchUtils.findObjectByFQN(monitor, sc, request.getContext().getExecutionContext(), Arrays.asList(allNames), !request.isSimpleMode(), request.getWordDetector());
                     }
                 }
                 if (rootObject != null) {
@@ -397,7 +397,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 sqlDialect.getCatalogSeparator(),
                 sqlDialect.getIdentifierQuoteStrings(),
                 false);
-            DBSObject rightTable = SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, Arrays.asList(allNames), !request.isSimpleMode(), request.getWordDetector());
+            DBSObject rightTable = SQLSearchUtils.findObjectByFQN(monitor, sc, request.getContext().getExecutionContext(), Arrays.asList(allNames), !request.isSimpleMode(), request.getWordDetector());
             if (rightTable instanceof DBSEntity) {
                 try {
                     String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, DBUtils.getQuotedIdentifier(leftTable), (DBSEntity) rightTable, DBUtils.getQuotedIdentifier(rightTable));
@@ -637,7 +637,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
         }
 
-        return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, !request.isSimpleMode(), request.getWordDetector());
+        return SQLSearchUtils.findObjectByFQN(monitor, sc, request.getContext().getExecutionContext(), nameList, !request.isSimpleMode(), request.getWordDetector());
     }
 
     private String getTableAliasPattern(String alias, String tableNamePattern) {

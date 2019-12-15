@@ -187,34 +187,35 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         });
 
         if (dataSource instanceof DBSObjectContainer) {
-            DBSObjectContainer schemaContainer = DBUtils.getChangeableObjectContainer((DBSObjectContainer) dataSource);
-
-            try {
-                final List<String> schemaNames = new ArrayList<>();
-                Collection<? extends DBSObject> children = schemaContainer.getChildren(monitor);
-                if (children != null) {
-                    for (DBSObject child : children) {
-                        if (child instanceof DBSObjectContainer) {
-                            schemaNames.add(child.getName());
+            DBSObjectContainer schemaContainer = DBUtils.getChangeableObjectContainer(dataSource, (DBSObjectContainer) dataSource);
+            if (schemaContainer != null) {
+                try {
+                    final List<String> schemaNames = new ArrayList<>();
+                    Collection<? extends DBSObject> children = schemaContainer.getChildren(monitor);
+                    if (children != null) {
+                        for (DBSObject child : children) {
+                            if (child instanceof DBSObjectContainer) {
+                                schemaNames.add(child.getName());
+                            }
                         }
                     }
-                }
-                if (!schemaNames.isEmpty()) {
-                    UIUtils.syncExec(() -> {
-                        if (!defaultSchema.isDisposed()) {
-                            String oldText = defaultSchema.getText();
-                            defaultSchema.removeAll();
-                            for (String name : schemaNames) {
-                                defaultSchema.add(name);
+                    if (!schemaNames.isEmpty()) {
+                        UIUtils.syncExec(() -> {
+                            if (!defaultSchema.isDisposed()) {
+                                String oldText = defaultSchema.getText();
+                                defaultSchema.removeAll();
+                                for (String name : schemaNames) {
+                                    defaultSchema.add(name);
+                                }
+                                if (!CommonUtils.isEmpty(oldText)) {
+                                    defaultSchema.setText(oldText);
+                                }
                             }
-                            if (!CommonUtils.isEmpty(oldText)) {
-                                defaultSchema.setText(oldText);
-                            }
-                        }
-                    });
+                        });
+                    }
+                } catch (DBException e) {
+                    log.warn("Can't read schema list", e);
                 }
-            } catch (DBException e) {
-                log.warn("Can't read schema list", e);
             }
         }
 
