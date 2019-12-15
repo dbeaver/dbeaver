@@ -147,7 +147,7 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
 
     @NotNull
     @Override
-    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException
+    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException
     {
         return this;
     }

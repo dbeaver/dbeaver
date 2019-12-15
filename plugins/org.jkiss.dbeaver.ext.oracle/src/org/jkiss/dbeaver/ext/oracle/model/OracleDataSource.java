@@ -203,7 +203,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
         return new OracleExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
         if (outputReader == null) {
             outputReader = new OracleOutputReader();
         }
@@ -212,8 +212,8 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
             monitor,
             context,
             outputReader.isServerOutputEnabled());
-        if (setActiveObject) {
-            ((OracleExecutionContext)context).setCurrentSchema(monitor, getDefaultSchema());
+        if (initFrom != null) {
+            ((OracleExecutionContext)context).setCurrentSchema(monitor, ((OracleExecutionContext)initFrom).getDefaultSchema());
         } else {
             ((OracleExecutionContext)context).refreshDefaults(monitor);
         }

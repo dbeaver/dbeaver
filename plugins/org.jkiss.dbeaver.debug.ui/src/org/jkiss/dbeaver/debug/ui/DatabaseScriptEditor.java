@@ -24,7 +24,7 @@ public class DatabaseScriptEditor extends SQLEditorBase {
     public DatabaseScriptEditor(DBSObject dbsObject, String title) {
         DBCExecutionContext isolatedContext = null;
         try {
-            isolatedContext = DBUtils.getObjectOwnerInstance(dbsObject).openIsolatedContext(new VoidProgressMonitor(), title);
+            isolatedContext = DBUtils.getObjectOwnerInstance(dbsObject).openIsolatedContext(new VoidProgressMonitor(), title, null);
         } catch (DBException e) {
             String message = NLS.bind("Unable to open execution context for {0}", dbsObject);
             log.error(message, e);

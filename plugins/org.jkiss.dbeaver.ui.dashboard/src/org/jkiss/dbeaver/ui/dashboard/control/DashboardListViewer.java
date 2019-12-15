@@ -227,7 +227,7 @@ public class DashboardListViewer extends StructuredViewer implements IDataSource
                 DBSInstance instance = DBUtils.getObjectOwnerInstance(dataSource);
                 if (instance != null) {
                     try {
-                        isolatedContext = instance.openIsolatedContext(monitor, "Dashboard connection");
+                        isolatedContext = instance.openIsolatedContext(monitor, "Dashboard connection", null);
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
                     }

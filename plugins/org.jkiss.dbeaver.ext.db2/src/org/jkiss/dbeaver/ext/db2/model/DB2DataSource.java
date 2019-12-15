@@ -191,10 +191,10 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          boolean setActiveObject) throws DBException
+                                          JDBCExecutionContext initFrom) throws DBException
     {
-        if (setActiveObject) {
-            ((DB2ExecutionContext)context).setCurrentSchema(monitor, getDefaultSchema());
+        if (initFrom != null) {
+            ((DB2ExecutionContext)context).setCurrentSchema(monitor, ((DB2ExecutionContext)initFrom).getDefaultSchema());
         } else {
             ((DB2ExecutionContext)context).refreshDefaults(monitor);
         }

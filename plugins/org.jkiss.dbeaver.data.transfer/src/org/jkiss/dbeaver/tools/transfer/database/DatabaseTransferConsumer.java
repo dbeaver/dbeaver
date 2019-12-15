@@ -297,7 +297,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         try {
             useIsolatedConnection = settings.isOpenNewConnections() && !dataSourceContainer.getDriver().isEmbedded();
             targetContext = useIsolatedConnection ?
-                DBUtils.getObjectOwnerInstance(targetDB).openIsolatedContext(monitor, "Data transfer consumer") : DBUtils.getDefaultContext(targetDB, false);
+                DBUtils.getObjectOwnerInstance(targetDB).openIsolatedContext(monitor, "Data transfer consumer", null) : DBUtils.getDefaultContext(targetDB, false);
         } catch (DBException e) {
             throw new DBCException("Error opening new connection", e);
         }

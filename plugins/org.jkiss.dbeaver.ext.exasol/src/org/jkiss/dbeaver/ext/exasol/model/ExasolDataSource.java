@@ -354,11 +354,11 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 	}
 
 	protected void initializeContextState(@NotNull DBRProgressMonitor monitor,
-										  @NotNull JDBCExecutionContext context, boolean setActiveObject)
+                                          @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom)
         throws DBException
 	{
-		if (setActiveObject) {
-			((ExasolExecutionContext)context).setCurrentSchema(monitor, getDefaultSchema());
+		if (initFrom != null) {
+			((ExasolExecutionContext)context).setCurrentSchema(monitor, ((ExasolExecutionContext)initFrom).getDefaultSchema());
 		} else {
 			((ExasolExecutionContext)context).refreshDefaults(monitor);
 		}

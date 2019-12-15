@@ -94,7 +94,7 @@ public class StreamDataSource implements DBPDataSource, DBSInstance, DBDValueHan
 
     @NotNull
     @Override
-    public StreamExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException {
+    public StreamExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException {
         return new StreamExecutionContext(this, purpose);
     }
 

@@ -77,10 +77,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     public void connect(DBRProgressMonitor monitor) throws DBCException {
-        connect(monitor, null, null, false, true);
+        connect(monitor, null, null, null, true);
     }
 
-    protected void connect(@NotNull DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, boolean forceActiveObject, boolean addContext) throws DBCException {
+    protected void connect(@NotNull DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, JDBCExecutionContext initFrom, boolean addContext) throws DBCException {
         if (connection != null && addContext) {
             log.error("Reopening not-closed connection");
             close();
@@ -135,7 +135,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
             try {
                 // Copy context state
-                this.dataSource.initializeContextState(monitor, this, forceActiveObject && !connectionReadOnly);
+                this.dataSource.initializeContextState(monitor, this, initFrom);
             } catch (DBCException e) {
                 log.error("Error while initializing context state", e);
             } catch (DBException e) {
@@ -229,7 +229,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             if (closeOnFailure) {
                 closeContext(false);
             }
-            connect(monitor, prevAutocommit, txnLevel, true, false);
+            connect(monitor, prevAutocommit, txnLevel, this, false);
 
             return InvalidateResult.RECONNECTED;
         }
@@ -410,7 +410,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
     public void reconnect(DBRProgressMonitor monitor) throws DBCException {
         close();
-        connect(monitor, null, null, false, true);
+        connect(monitor, null, null, this, true);
     }
 
     @Override
