@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -701,7 +702,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
-        throw new DBException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 
     class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -105,7 +106,7 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
 
     @Override
     public void setDefaultSchema(DBRProgressMonitor monitor, DBSSchema schema) throws DBCException {
-        throw new DBCException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override

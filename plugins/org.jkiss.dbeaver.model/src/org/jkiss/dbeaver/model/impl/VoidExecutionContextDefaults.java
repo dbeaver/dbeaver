@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -50,16 +51,16 @@ public class VoidExecutionContextDefaults implements DBCExecutionContextDefaults
 
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, DBSCatalog catalog, DBSSchema schema) throws DBCException {
-        throw new DBCException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
     public void setDefaultSchema(DBRProgressMonitor monitor, DBSSchema schema) throws DBCException {
-        throw new DBCException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
     public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
-        throw new DBCException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 }
