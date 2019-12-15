@@ -60,8 +60,8 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Navigator utils
@@ -243,20 +243,6 @@ public class NavigatorUtils {
                         (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange()))
                     {
                         addSetActive = true;
-                    }
-                }
-            }
-            if (!addSetActive) {
-                final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                    DBSObjectSelector.class, selectedObject);
-                if (activeContainer != null && activeContainer.supportsDefaultChange()) {
-                    DBSObject activeChild;
-                    activeChild = activeContainer.getDefaultObject();
-                    if (activeChild != selectedObject) {
-                        DBNDatabaseNode databaseNode = (DBNDatabaseNode) selectedNode;
-                        if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == selectedObject.getClass())) {
-                            addSetActive = true;
-                        }
                     }
                 }
             }

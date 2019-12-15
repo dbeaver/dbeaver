@@ -47,7 +47,10 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
@@ -844,9 +847,6 @@ public class DataSourceDescriptor
                 } catch (Throwable e) {
                     log.error("Error initializing datasource", e);
                 }
-
-                // Change connection properties
-                initConnectionState(monitor);
             }
 
             this.connectFailed = false;
@@ -895,33 +895,6 @@ public class DataSourceDescriptor
             monitor.done();
             connecting = false;
         }
-    }
-
-    private void initConnectionState(DBRProgressMonitor monitor) throws DBException {
-        if (dataSource == null) {
-            return;
-        }
-
-        // Set active object
-        if (dataSource instanceof DBSObjectContainer) {
-            String activeObject = getConnectionConfiguration().getBootstrap().getDefaultObjectName();
-            if (!CommonUtils.isEmptyTrimmed(activeObject)) {
-                DBSObjectContainer schemaContainer = DBUtils.getChangeableObjectContainer((DBSObjectContainer) dataSource);
-                if (schemaContainer != null && schemaContainer instanceof DBSObjectSelector) {
-                    DBSObject child = schemaContainer.getChild(monitor, activeObject);
-                    if (child != null) {
-                        try {
-                            ((DBSObjectSelector) schemaContainer).setDefaultObject(monitor, child);
-                        } catch (DBException e) {
-                            log.warn("Can't select active object", e);
-                        }
-                    } else {
-                        log.debug("Object '" + activeObject + "' not found");
-                    }
-                }
-            }
-        }
-
     }
 
     private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType)

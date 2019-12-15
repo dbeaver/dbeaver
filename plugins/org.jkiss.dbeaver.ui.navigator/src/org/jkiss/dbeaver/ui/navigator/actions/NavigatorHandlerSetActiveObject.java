@@ -23,7 +23,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -33,7 +32,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.TasksJob;
@@ -56,6 +54,7 @@ public class NavigatorHandlerSetActiveObject extends NavigatorHandlerObjectBase 
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private void markObjectAsActive(final DBNDatabaseNode databaseNode) {
         DBNNode parentNode = databaseNode.getParentNode();
 
@@ -78,13 +77,6 @@ public class NavigatorHandlerSetActiveObject extends NavigatorHandlerObjectBase 
                                 contextDefaults.setDefaultSchema(monitor, (DBSSchema) object);
                             } else {
                                 throw new DBCException("Internal error: active object change not supported");
-                            }
-                        } else {
-                            final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                                DBSObjectSelector.class, object);
-                            if (activeContainer != null) {
-
-                                activeContainer.setDefaultObject(monitor, object);
                             }
                         }
                     } catch (DBException e) {

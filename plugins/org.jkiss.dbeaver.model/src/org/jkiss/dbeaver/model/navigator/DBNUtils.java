@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
@@ -132,12 +131,6 @@ public class DBNUtils {
                     DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
                     if (contextDefaults != null) {
                         return contextDefaults.getDefaultCatalog() == object || contextDefaults.getDefaultSchema() == object;
-                    } else {
-                        DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                            DBSObjectSelector.class, object);
-                        if (activeContainer != null) {
-                            return activeContainer.getDefaultObject() == object;
-                        }
                     }
                 }
             }
