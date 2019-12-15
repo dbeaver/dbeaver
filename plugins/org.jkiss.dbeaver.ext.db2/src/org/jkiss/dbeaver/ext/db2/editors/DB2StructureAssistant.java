@@ -114,7 +114,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
         if (schema == null && !globalSearch) {
-            schema = dataSource.getDefaultObject();
+            schema = dataSource.getDefaultSchema();
         }
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
