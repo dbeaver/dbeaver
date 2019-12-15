@@ -34,7 +34,9 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * OracleStructureAssistant
@@ -121,7 +123,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                 findConstraintsByMask(session, schema, objectNameMask, objectTypes, maxResults, objects);
             }
             // Sort objects. Put ones in the current schema first
-            final OracleSchema activeSchema = dataSource.getDefaultObject();
+            final OracleSchema activeSchema = dataSource.getDefaultSchema();
             objects.sort((o1, o2) -> {
                 if (CommonUtils.equalObjects(o1.getContainer(), o2.getContainer())) {
                     return o1.getName().compareTo(o2.getName());
