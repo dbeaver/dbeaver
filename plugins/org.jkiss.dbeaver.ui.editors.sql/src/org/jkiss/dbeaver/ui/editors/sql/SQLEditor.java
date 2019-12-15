@@ -80,7 +80,6 @@ import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
@@ -116,8 +115,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -3291,19 +3290,14 @@ public class SQLEditor extends SQLEditorBase implements
     private void runPostExecuteActions(@Nullable SQLQueryResult result) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
-            final DBPDataSource dataSource = executionContext.getDataSource();
             // Refresh active object
             if (result == null || !result.hasError() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)) {
-                final DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-                if (objectSelector != null) {
+                DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                if (contextDefaults != null) {
                     new AbstractJob("Refresh default object") {
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
-                            try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Refresh default object")) {
-                                objectSelector.refreshDefaultObject(session);
-                            } catch (Exception e) {
-                                log.error(e);
-                            }
+                            DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults);
                             return Status.OK_STATUS;
                         }
                     }.schedule();

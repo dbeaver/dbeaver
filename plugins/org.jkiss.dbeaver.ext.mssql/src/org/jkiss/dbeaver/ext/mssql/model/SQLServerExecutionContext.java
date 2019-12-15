@@ -101,10 +101,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         activeDatabaseName = catalog.getName();
 
         // Send notifications
-        if (oldActiveDatabase != null) {
-            DBUtils.fireObjectSelect(oldActiveDatabase, false);
-        }
-        DBUtils.fireObjectSelect(catalog, true);
+        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog);
     }
 
     @Override

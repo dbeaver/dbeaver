@@ -101,10 +101,7 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
         activeSchemaName = schema.getName();
 
         // Send notifications
-        if (oldSelectedEntity != null) {
-            DBUtils.fireObjectSelect(oldSelectedEntity, false);
-        }
-        DBUtils.fireObjectSelect(schema, true);
+        DBUtils.fireObjectSelectionChange(oldSelectedEntity, schema);
     }
 
     @Override
@@ -117,7 +114,7 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
             throw new DBCException(e, getDataSource());
         }
 
-        return false;
+        return true;
     }
 
     void setCurrentSchema(DBRProgressMonitor monitor, DB2Schema object) throws DBCException {
