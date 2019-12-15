@@ -46,23 +46,18 @@ import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -79,13 +74,10 @@ import java.util.*;
  * 
  * @author Denis Forveille
  */
-public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
+public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IAdaptable {
 
     private static final Log                                     LOG                = Log.getLog(DB2DataSource.class);
 
-    private static final String                                  GET_CURRENT_USER   = "VALUES(SYSTEM_USER)";
-    private static final String                                  GET_CURRENT_SCHEMA = "VALUES(CURRENT SCHEMA)";
-    private static final String                                  SET_CURRENT_SCHEMA = "SET CURRENT SCHEMA = %s";
     private static final String                                  GET_SESSION_USER   = "VALUES(SESSION_USER)";
 
     private static final String                                  C_SCHEMA           = "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR";
@@ -132,7 +124,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private List<DB2Parameter>                                   listDBMParameters;
     private List<DB2XMLString>                                   listXMLStrings;
 
-    private String                                               activeSchemaName;
     private DB2CurrentUserPrivileges                             db2CurrentUserPrivileges;
 
     private String                                               schemaForExplainTables;
@@ -177,8 +168,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
 
             // First try to get active schema from special register 'CURRENT SCHEMA'
-            this.activeSchemaName = determineActiveSchema(session);
-            this.db2CurrentUserPrivileges = new DB2CurrentUserPrivileges(monitor, session, activeSchemaName, this);
+            DB2Schema defaultSchema = getDefaultSchema();
+            if (defaultSchema != null) {
+                this.db2CurrentUserPrivileges = new DB2CurrentUserPrivileges(monitor, session, defaultSchema.getName(), this);
+            }
 
         } catch (SQLException e) {
             LOG.warn("Error reading active schema", e);
@@ -192,32 +185,19 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-        boolean setActiveObject) throws DBException
-    {
-        if (setActiveObject) {
-            setCurrentSchema(monitor, context, getDefaultObject());
-        }
+    @Override
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new DB2ExecutionContext(instance, type);
     }
 
-    private String determineActiveSchema(JDBCSession session) throws SQLException
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
+                                          boolean setActiveObject) throws DBException
     {
-        // First try to get active schema from special register 'CURRENT SCHEMA'
-        String defSchema = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
-        if (defSchema == null) {
-            LOG.warn(GET_CURRENT_SCHEMA
-                + " returned null! How can it be? Trying to set active schema to special register 'SYSTEM_USER'");
-
-            // Then try to get active schema from special register 'SYSTEM_USER'
-            defSchema = JDBCUtils.queryString(session, GET_CURRENT_USER);
-            if (defSchema == null) {
-                LOG.warn(
-                    "Special registers 'CURRENT SCHEMA' and 'SYSTEM_USER' both returned null. Use connection username as active schema");
-                defSchema = getContainer().getActualConnectionConfiguration().getUserName();
-            }
+        if (setActiveObject) {
+            ((DB2ExecutionContext)context).setCurrentSchema(monitor, getDefaultSchema());
+        } else {
+            ((DB2ExecutionContext)context).refreshDefaults(monitor);
         }
-
-        return defSchema.trim();
     }
 
     @Override
@@ -376,12 +356,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // --------------------------
 
     @Override
-    public boolean supportsDefaultChange()
-    {
-        return true;
-    }
-
-    @Override
     public Class<? extends DB2Schema> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return DB2Schema.class;
@@ -399,66 +373,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         return getSchema(monitor, childName);
     }
 
-    @Override
-    public DB2Schema getDefaultObject()
+    public DB2Schema getDefaultSchema()
     {
-        return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
-    }
-
-    @Override
-    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException
-    {
-        final DB2Schema oldSelectedEntity = getDefaultObject();
-
-        if (!(object instanceof DB2Schema)) {
-            throw new IllegalArgumentException("Invalid object type: " + object);
-        }
-
-        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
-            setCurrentSchema(monitor, context, (DB2Schema) object);
-        }
-
-        activeSchemaName = object.getName();
-
-        // Send notifications
-        if (oldSelectedEntity != null) {
-            DBUtils.fireObjectSelect(oldSelectedEntity, false);
-        }
-        if (this.activeSchemaName != null) {
-            DBUtils.fireObjectSelect(object, true);
-        }
-    }
-
-    @Override
-    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException
-    {
-        try {
-            final String newSchemaName = determineActiveSchema((JDBCSession) session);
-            if (!CommonUtils.equalObjects(newSchemaName, activeSchemaName)) {
-                final DB2Schema newSchema = schemaCache.getCachedObject(newSchemaName);
-                if (newSchema != null) {
-                    setDefaultObject(session.getProgressMonitor(), newSchema);
-                    return true;
-                }
-            }
-            return false;
-        } catch (SQLException e) {
-            throw new DBException(e, this);
-        }
-    }
-
-    private void setCurrentSchema(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, DB2Schema object)
-        throws DBCException
-    {
-        if (object == null) {
-            LOG.debug("Null current schema");
-            return;
-        }
-        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
-            JDBCUtils.executeSQL(session, String.format(SET_CURRENT_SCHEMA, object.getName()));
-        } catch (SQLException e) {
-            throw new DBCException(e, this);
-        }
+        return (DB2Schema) DBUtils.getDefaultContext(this, true).getContextDefaults().getDefaultSchema();
     }
 
     // --------------
@@ -496,7 +413,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         // Verify explain table from current authorization id
         String sessionUserSchema;
         try {
-            sessionUserSchema = JDBCUtils.queryString((JDBCSession) session, GET_SESSION_USER).trim();
+            sessionUserSchema = CommonUtils.trim(JDBCUtils.queryString((JDBCSession) session, GET_SESSION_USER));
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
         }
