@@ -267,6 +267,7 @@ public class DashboardEditDialog extends BaseDialog {
     @Override
     protected void okPressed() {
         saveSettings();
+        DashboardRegistry.getInstance().saveSettings();
         super.okPressed();
     }
 
