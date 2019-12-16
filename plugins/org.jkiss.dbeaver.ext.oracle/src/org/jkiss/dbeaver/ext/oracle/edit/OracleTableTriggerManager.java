@@ -69,7 +69,7 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
             return;
         }
         String script = source;
-        if (!script.toUpperCase(Locale.ENGLISH).trim().startsWith("CREATE ")) {
+        if (!script.toUpperCase(Locale.ENGLISH).trim().contains("CREATE ")) {
             script = "CREATE OR REPLACE " + script;
         }
         actions.add(new SQLDatabasePersistAction("Create trigger", script, true)); //$NON-NLS-2$
