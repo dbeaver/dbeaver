@@ -49,6 +49,9 @@ public interface DBPScriptObject extends DBPObject {
     // Means that result script will be used for object save
     String OPTION_OBJECT_SAVE = "object.save";
 
+    // Can be used by DDL generators to generate object ALTER but CREATE.
+    String OPTION_OBJECT_ALTER = "object.alter";
+
     String OPTION_DDL_SKIP_FOREIGN_KEYS = "ddl.skipForeignKeys"; //$NON-NLS-1$
     String OPTION_DDL_ONLY_FOREIGN_KEYS = "ddl.onlyForeignKeys"; //$NON-NLS-1$
 
