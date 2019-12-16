@@ -832,7 +832,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         if (sqlStatement != null) {
                             TablesNamesFinder namesFinder = new TablesNamesFinder() {
                                 public void visit(Table table) {
-                                    if (table.getAlias() != null && table.getAlias().getName() != null) {
+                                    if (table != null && table.getAlias() != null && table.getAlias().getName() != null) {
                                         aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
                                     }
                                 }
