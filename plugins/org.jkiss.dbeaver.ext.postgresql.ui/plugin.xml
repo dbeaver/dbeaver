@@ -277,4 +277,10 @@
         </factory>
     </extension>
 
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.postgresql.general" class="org.jkiss.dbeaver.ext.postgresql.ui.PrefPagePostgreSQL" name="PostgreSQL">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+        </page>
+    </extension>
+
 </plugin>

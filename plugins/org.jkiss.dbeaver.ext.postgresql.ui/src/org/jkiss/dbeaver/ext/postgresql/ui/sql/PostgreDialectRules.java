@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.postgresql.ui.sql;
 
 import org.eclipse.jface.text.rules.IRule;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 
 import java.util.List;
@@ -28,9 +30,9 @@ import java.util.List;
 class PostgreDialectRules implements SQLRuleProvider {
 
     @Override
-    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
+    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<IRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-            rules.add(new PostgreDollarQuoteRule(position == RulePosition.PARTITION));
+            rules.add(new PostgreDollarQuoteRule(dataSource, position == RulePosition.PARTITION));
         }
     }
 

@@ -20,6 +20,8 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
@@ -33,7 +35,7 @@ import java.util.List;
 class OracleDialectRules implements SQLRuleProvider {
 
     @Override
-    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
+    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<IRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
             rules.add(new QStringRule(position == RulePosition.PARTITION));
         }

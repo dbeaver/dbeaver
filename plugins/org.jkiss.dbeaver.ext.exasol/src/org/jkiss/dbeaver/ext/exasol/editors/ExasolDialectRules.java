@@ -20,6 +20,8 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -34,7 +36,7 @@ import java.util.List;
 class ExasolDialectRules implements SQLRuleProvider {
 
     @Override
-    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
+    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<IRule> rules, @NotNull RulePosition position) {
         if (position == SQLRuleProvider.RulePosition.CONTROL) {
             final SQLControlToken defineToken = new SQLControlToken(
                 new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD),
