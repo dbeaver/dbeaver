@@ -139,6 +139,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
 
     @Override
     public void addPages() {
+        addTaskConfigPages();
         addPage(objectsPage);
         addPage(settingsPage);
         super.addPages();

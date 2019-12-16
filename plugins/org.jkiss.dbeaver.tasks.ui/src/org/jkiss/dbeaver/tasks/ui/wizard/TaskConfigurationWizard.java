@@ -121,6 +121,10 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     @Override
     public void addPages() {
         super.addPages();
+        addTaskConfigPages();
+    }
+
+    protected void addTaskConfigPages() {
         // If we are in task edit mode then add special first page.
         // Do not add it if this is an ew task wizard (because this page is added separately)
         if (isCurrentTaskSaved()) {
