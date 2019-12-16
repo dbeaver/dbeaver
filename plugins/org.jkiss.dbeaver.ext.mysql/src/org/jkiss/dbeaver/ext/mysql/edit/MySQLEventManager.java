@@ -45,7 +45,7 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
             log.error(e);
         }
 
-        actions.add(new SQLDatabasePersistAction("Create event", script.toString())); // $NON-NLS-2$
+        makeEventActions(actions, event, false, script.toString());
     }
 
     @Override
@@ -64,7 +64,18 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
             ddlText = "ALTER " + ddlText.substring(7);
         }
 
-        actionList.add(new SQLDatabasePersistAction("Alter event", ddlText)); // $NON-NLS-2$
+        makeEventActions(actionList, event, true, ddlText);
+    }
+
+    private void makeEventActions(List<DBEPersistAction> actionList, MySQLEvent event, boolean alter, String ddlText) {
+        MySQLCatalog curCatalog = event.getCatalog().getDataSource().getDefaultDatabase();
+        if (curCatalog != event.getCatalog()) {
+            actionList.add(new SQLDatabasePersistAction("Set current schema ", "USE " + DBUtils.getQuotedIdentifier(event.getCatalog()), false)); //$NON-NLS-2$
+        }
+        actionList.add(new SQLDatabasePersistAction(alter ? "Alter event" : "Create event", ddlText)); // $NON-NLS-2$
+        if (curCatalog != null && curCatalog != event.getCatalog()) {
+            actionList.add(new SQLDatabasePersistAction("Set current schema ", "USE " + DBUtils.getQuotedIdentifier(curCatalog), false)); //$NON-NLS-2$
+        }
     }
 
     @Override
