@@ -282,7 +282,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
 
     private RegularTimePeriod makeDataItem(DashboardContainer container, DashboardDatasetRow row) {
         switch (container.getDashboardInterval()) {
-            case second: return new Second(row.getTimestamp());
+            case second: return new FixedMillisecond(row.getTimestamp().getTime());
             case minute: return new Minute(row.getTimestamp());
             case hour: return new Hour(row.getTimestamp());
             case day: return new Day(row.getTimestamp());

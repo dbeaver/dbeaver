@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -117,7 +118,7 @@ public class DashboardUpdater {
                     }
                 });
             } catch (DBException e) {
-                log.debug("Error reading dashboard '" + dashboard.getDashboardId() + "' data", e);
+                log.debug("Error reading dashboard '" + dashboard.getDashboardId() + "' data: " + GeneralUtils.getRootCause(e).getMessage());
             }
         }
     }
