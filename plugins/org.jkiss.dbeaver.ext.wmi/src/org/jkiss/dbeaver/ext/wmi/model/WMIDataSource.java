@@ -45,7 +45,7 @@ import java.util.Collections;
 /**
  * WMIDataSource
  */
-public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionContext, SQLDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
+public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionContext, SQLDataSource, IAdaptable
 {
     private final DBPDataSourceContainer container;
     private WMINamespace rootNamespace;

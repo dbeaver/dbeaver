@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -60,8 +59,8 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Navigator utils
@@ -545,26 +544,24 @@ public class NavigatorUtils {
         if (dsProvider.getDataSourceContainer() != ds) {
             dsProvider.setDataSourceContainer(ds);
         }
+/*
         // Now check if we can change default object
         DBSObject dbObject = ((DBNDatabaseNode) selectedNode).getObject();
         if (dbObject != null && dbObject.getParentObject() != null) {
-            DBPObject parentObject = DBUtils.getPublicObject(dbObject.getParentObject());
-            if (parentObject instanceof DBSObjectSelector) {
-                DBSObjectSelector selector = (DBSObjectSelector) parentObject;
-                DBSObject curDefaultObject = selector.getDefaultObject();
-                if (curDefaultObject != dbObject) {
-                    if (curDefaultObject != null && curDefaultObject.getClass() != dbObject.getClass()) {
-                        // Wrong object type
-                        return true;
-                    }
+            DBSObject parentObject = dbObject.getParentObject();
+            DBCExecutionContext executionContext = DBUtils.getDefaultContext(parentObject, false);
+            if (executionContext != null) {
+                DBSObject curDefaultObject = DBUtils.getSelectedObject(executionContext);
+                if (curDefaultObject != null && curDefaultObject != dbObject && curDefaultObject.getClass() == dbObject.getClass()) {
                     try {
-                        selector.setDefaultObject(new VoidProgressMonitor(), dbObject);
+                        executionContext.getContextDefaults().setDefaultSchema(new VoidProgressMonitor(), dbObject);
                     } catch (Throwable e) {
                         log.debug(e);
                     }
                 }
             }
         }
+*/
         return true;
     }
 

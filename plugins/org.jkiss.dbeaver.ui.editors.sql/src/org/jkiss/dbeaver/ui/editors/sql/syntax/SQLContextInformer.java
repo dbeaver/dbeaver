@@ -273,12 +273,9 @@ public class SQLContextInformer
                             container = (DBSObjectContainer) childContainer;
                         } else {
                             // Check in selected object
-                            DBSObjectSelector dsSelector = DBUtils.getAdapter(DBSObjectSelector.class, getExecutionContext().getDataSource());
-                            if (dsSelector != null) {
-                                DBSObject curCatalog = dsSelector.getDefaultObject();
-                                if (curCatalog instanceof DBSObjectContainer) {
-                                    childContainer = ((DBSObjectContainer)curCatalog).getChild(monitor, containerNames[0]);
-                                }
+                            DBSObjectContainer activeContainer = DBUtils.getSelectedObject(getExecutionContext(), DBSObjectContainer.class);
+                            if (activeContainer != null) {
+                                childContainer = activeContainer;
                             }
                             if (childContainer == null && structureAssistant != null) {
                                 // Container is not direct child of schema/catalog. Let's try struct assistant
