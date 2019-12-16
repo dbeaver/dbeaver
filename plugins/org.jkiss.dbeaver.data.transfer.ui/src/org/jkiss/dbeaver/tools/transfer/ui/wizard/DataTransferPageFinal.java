@@ -97,7 +97,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             targetSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
-        getWizard().createTaskSaveButtons(composite, 1);
+        getWizard().createTaskSaveButtons(composite, true, 1);
 
         setControl(composite);
     }
