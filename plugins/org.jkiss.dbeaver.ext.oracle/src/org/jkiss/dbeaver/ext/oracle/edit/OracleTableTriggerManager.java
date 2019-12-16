@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -67,7 +68,11 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
         if (source == null) {
             return;
         }
-        actions.add(new SQLDatabasePersistAction("Create trigger", "CREATE OR REPLACE " + source, true)); //$NON-NLS-2$
+        String script = source;
+        if (!script.toUpperCase(Locale.ENGLISH).trim().startsWith("CREATE ")) {
+            script = "CREATE OR REPLACE " + script;
+        }
+        actions.add(new SQLDatabasePersistAction("Create trigger", script, true)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actions, trigger);
     }
 
