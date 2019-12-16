@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.tasks.ui.nativetool;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -37,22 +38,24 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 /**
  * Tool wizard dialog
  */
-public class ToolWizardDialog extends TaskConfigurationWizardDialog
-{
+public class ToolWizardDialog extends TaskConfigurationWizardDialog {
 
     public static final int CLIENT_CONFIG_ID = 1000;
 
-    public ToolWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard)
-    {
+    public ToolWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
         super(window, wizard);
         setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
         setHelpAvailable(false);
         setFinishButtonLabel(UIMessages.button_start);
     }
 
+    protected IDialogSettings getDialogBoundsSettings() {
+        // Do not save sizes. It breaks wizard on any UI changes.
+        return null;
+    }
+
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
+    protected void createButtonsForButtonBar(Composite parent) {
         if (getWizard() instanceof AbstractToolWizard<?, ?>) {
             boolean nativeClientRequired = ((AbstractToolWizard) getWizard()).isNativeClientHomeRequired();
             if (nativeClientRequired) {
@@ -64,8 +67,8 @@ public class ToolWizardDialog extends TaskConfigurationWizardDialog
                 Label spacer = new Label(parent, SWT.NONE);
                 spacer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-                ((GridLayout)parent.getLayout()).numColumns++;
-                ((GridLayout)parent.getLayout()).makeColumnsEqualWidth = false;
+                ((GridLayout) parent.getLayout()).numColumns++;
+                ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
             }
         }
 
@@ -92,7 +95,7 @@ public class ToolWizardDialog extends TaskConfigurationWizardDialog
         }
     }
 
-    private static class NativeClientConfigDialog extends BaseDialog  {
+    private static class NativeClientConfigDialog extends BaseDialog {
 
         private final DBPDataSourceContainer dataSource;
         private ClientHomesSelector homesSelector;
