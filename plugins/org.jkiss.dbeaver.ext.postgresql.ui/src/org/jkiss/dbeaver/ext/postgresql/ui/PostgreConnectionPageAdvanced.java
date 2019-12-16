@@ -115,8 +115,12 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         DBPPreferenceStore globalPrefs = DBWorkbench.getPlatform().getPreferenceStore();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
 
-        showNonDefault.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false));
-        showTemplates.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB), false));
+        showNonDefault.setSelection(
+            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
+            globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
+        showTemplates.setSelection(
+            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB),
+            globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB)));
         showTemplates.setEnabled(showNonDefault.getSelection());
 
         ddPlainBehaviorCombo.select(CommonUtils.getBoolean(
@@ -136,7 +140,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
 
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING, String.valueOf(ddPlainBehaviorCombo.getSelectionIndex() == 0));
-        connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(ddTagBehaviorCombo.getSelectionIndex() == 0));
+        connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_TAG_STRING, String.valueOf(ddTagBehaviorCombo.getSelectionIndex() == 0));
 
         saveConnectionURL(connectionCfg);
     }

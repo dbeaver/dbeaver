@@ -17,18 +17,17 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
@@ -37,12 +36,14 @@ import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 /**
  * PrefPagePostgreSQL
  */
-public class PrefPagePostgreSQL extends AbstractPrefPage
+public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPreferencePage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.postgresql.general"; //$NON-NLS-1$
 
     private Button showNonDefault;
     private Button showTemplates;
+    private Combo ddPlainBehaviorCombo;
+    private Combo ddTagBehaviorCombo;
 
     public PrefPagePostgreSQL()
     {
@@ -57,21 +58,20 @@ public class PrefPagePostgreSQL extends AbstractPrefPage
         gl.marginHeight = 10;
         gl.marginWidth = 10;
         cfgGroup.setLayout(gl);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        cfgGroup.setLayoutData(gd);
+        cfgGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        DBPPreferenceStore globalPrefs = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
             Group secureGroup = new Group(cfgGroup, SWT.NONE);
             secureGroup.setText(PostgreMessages.dialog_setting_connection_settings);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 4;
-            secureGroup.setLayoutData(gd);
+            secureGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             secureGroup.setLayout(new GridLayout(2, false));
 
             showNonDefault = UIUtils.createCheckbox(secureGroup,
                 PostgreMessages.dialog_setting_connection_nondefaultDatabase,
                 PostgreMessages.dialog_setting_connection_nondefaultDatabase_tip,
-                getPreferenceStore().getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
+                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
                 2);
             showNonDefault.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -82,21 +82,44 @@ public class PrefPagePostgreSQL extends AbstractPrefPage
             showTemplates = UIUtils.createCheckbox(secureGroup,
                 PostgreMessages.dialog_setting_connection_show_templates,
                 PostgreMessages.dialog_setting_connection_show_templates_tip,
-                getPreferenceStore().getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB),
+                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB),
                 2);
         }
 
+        {
+            Group secureGroup = new Group(cfgGroup, SWT.NONE);
+            secureGroup.setText(PostgreMessages.dialog_setting_group_sql);
+            secureGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            secureGroup.setLayout(new GridLayout(2, false));
 
-        setControl(cfgGroup);
+            ddPlainBehaviorCombo = UIUtils.createLabelCombo(secureGroup, PostgreMessages.dialog_setting_sql_dd_plain_label, PostgreMessages.dialog_setting_sql_dd_plain_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            ddPlainBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_string);
+            ddPlainBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_code_block);
+            ddTagBehaviorCombo = UIUtils.createLabelCombo(secureGroup, PostgreMessages.dialog_setting_sql_dd_tag_label, PostgreMessages.dialog_setting_sql_dd_tag_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            ddTagBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_string);
+            ddTagBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_code_block);
+
+            ddPlainBehaviorCombo.select(globalPrefs.getBoolean(PostgreConstants.PROP_DD_PLAIN_STRING) ? 0 : 1);
+            ddTagBehaviorCombo.select(globalPrefs.getBoolean(PostgreConstants.PROP_DD_TAG_STRING) ? 0 : 1);
+        }
 
         return cfgGroup;
     }
 
     @Override
     public boolean performOk() {
-        IPreferenceStore preferenceStore = getPreferenceStore();
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
+
+        preferenceStore.setValue(PostgreConstants.PROP_DD_PLAIN_STRING, ddPlainBehaviorCombo.getSelectionIndex() == 0);
+        preferenceStore.setValue(PostgreConstants.PROP_DD_TAG_STRING, ddTagBehaviorCombo.getSelectionIndex() == 0);
+
         return super.performOk();
+    }
+
+    @Override
+    public void init(IWorkbench workbench) {
+
     }
 }
