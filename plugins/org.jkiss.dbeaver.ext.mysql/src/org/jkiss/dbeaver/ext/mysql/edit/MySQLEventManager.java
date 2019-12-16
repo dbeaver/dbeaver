@@ -5,6 +5,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEvent;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -13,6 +14,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,11 +46,25 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
         }
 
         actions.add(new SQLDatabasePersistAction("Create event", script.toString())); // $NON-NLS-2$
-
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+        final MySQLEvent event = command.getObject();
+        final StringBuilder script = new StringBuilder();
+        options = new LinkedHashMap<>(options);
+        options.put(DBPScriptObject.OPTION_OBJECT_ALTER, true);
+        try {
+            script.append(event.getObjectDefinitionText(monitor, options));
+        } catch (DBException e) {
+            log.error(e);
+        }
+        String ddlText = script.toString();
+        if (ddlText.startsWith("CREATE ") || ddlText.startsWith("create ")) {
+            ddlText = "ALTER " + ddlText.substring(7);
+        }
+
+        actionList.add(new SQLDatabasePersistAction("Alter event", ddlText)); // $NON-NLS-2$
     }
 
     @Override

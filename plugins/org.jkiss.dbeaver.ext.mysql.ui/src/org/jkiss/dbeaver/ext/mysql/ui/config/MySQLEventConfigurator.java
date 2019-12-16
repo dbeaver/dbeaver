@@ -37,7 +37,7 @@ public class MySQLEventConfigurator implements DBEObjectConfigurator<MySQLEvent>
                 return null;
             }
             event.setName(editPage.getEntityName());
-            event.setObjectDefinitionText("SELECT 1");
+            event.setEventDefinition("SELECT 1");
             return event;
         });
     }
