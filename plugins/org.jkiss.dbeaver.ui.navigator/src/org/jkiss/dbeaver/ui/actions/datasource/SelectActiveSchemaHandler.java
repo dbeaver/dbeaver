@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -147,22 +146,16 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         }
                     });
                 }
-                DBSObjectContainer schemaObject = null;
-                DBSObject curObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
-                for (DBSObject parent = curObject; parent != null; parent = parent.getParentObject()) {
-                    if (parent instanceof DBSObjectContainer) {
-                        schemaObject = (DBSObjectContainer) parent;
-                        if (parent.getParentObject() instanceof DBSObjectSelector) {
-                            break;
+                DBCExecutionContext executionContext = ((IDatabaseEditorInput) editorInput).getExecutionContext();
+                if (executionContext != null) {
+                    DBSObject schemaObject = DBUtils.getSelectedObject(executionContext);
+                    if (schemaObject != null && DBUtils.getPublicObjectContainer(schemaObject) != dataSource) {
+                        DBSObject schemaParent = schemaObject.getParentObject();
+                        if (schemaParent instanceof DBSObjectContainer && !(schemaParent instanceof DBPDataSource)) {
+                            schemaName = schemaObject.getName() + "@" + schemaParent.getName();
+                        } else {
+                            schemaName = schemaObject.getName();
                         }
-                    }
-                }
-                if (schemaObject != null && DBUtils.getPublicObjectContainer(schemaObject) != dataSource) {
-                    DBSObject schemaParent = schemaObject.getParentObject();
-                    if (schemaParent instanceof DBSObjectContainer && !(schemaParent instanceof DBPDataSource)) {
-                        schemaName = schemaObject.getName() + "@" + schemaParent.getName();
-                    } else {
-                        schemaName = schemaObject.getName();
                     }
                 }
             } else {
@@ -184,48 +177,12 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         schemaName = defaultSchema.getName();
                         schemaIcon = DBIcon.TREE_SCHEMA;
                     }
-                } else {
-                    DBSObject[] defObjects = getSelectedSchema(dataSource);
-                    if (defObjects.length > 0) {
-                        schemaIcon = DBIcon.TREE_SCHEMA;
-                        if (defObjects.length == 1) {
-                            schemaName = defObjects[0].getName();
-                        } else {
-                            schemaName = defObjects[1].getName() + "@" + defObjects[0].getName();
-                        }
-                    }
                 }
             }
         }
         element.setText(schemaName);
         element.setIcon(DBeaverIcons.getImageDescriptor(schemaIcon));
         element.setTooltip(schemaTooltip);
-    }
-
-    @Deprecated
-    private static DBSObject[] getSelectedSchema(DBPDataSourceContainer dataSource) {
-
-        DBSObject firstContainer = null, secondContainer = null;
-        DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-        if (objectSelector != null) {
-            firstContainer = objectSelector.getDefaultObject();
-
-            if (firstContainer instanceof DBSObjectContainer) {
-                // Default object can be object container + object selector (e.g. in PG)
-                DBSObjectSelector objectSelector2 = DBUtils.getAdapter(DBSObjectSelector.class, firstContainer);
-                if (objectSelector2 != null && objectSelector2.supportsDefaultChange()) {
-                    //objectContainer = (DBSObjectContainer) defObject;
-                    secondContainer = objectSelector2.getDefaultObject();
-                }
-            }
-        }
-        if (firstContainer == null && secondContainer == null) {
-            return new DBSObject[0];
-        } else if (secondContainer == null) {
-            return new DBSObject[] { firstContainer };
-        } else {
-            return new DBSObject[]{firstContainer, secondContainer};
-        }
     }
 
     private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, DBCExecutionContext executionContext, @Nullable String curInstanceName, @Nullable String newInstanceName, @Nullable String newSchemaName) {
@@ -394,9 +351,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                     defObjects = new DBSObject[] { contextDefaults.getDefaultCatalog(), contextDefaults.getDefaultSchema() };
                 }
             }
-            if (defObjects == null) {
-                defObjects = getSelectedSchema(dataSourceContainer);
-            }
+            if (defObjects == null) defObjects = new DBSObject[0];
             DBSObject[] finalDefObjects = defObjects;
             for (DBNDatabaseNode node : databaseListReader.nodeList) {
                 menuItems.add(

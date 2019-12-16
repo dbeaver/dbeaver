@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -34,9 +33,9 @@ import java.util.List;
 /**
  * Entity resolver
  */
-public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
+class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
 
-    public SQLEntityResolver()
+    SQLEntityResolver()
     {
         super("table", "Database table");
     }
@@ -70,10 +69,7 @@ public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
             // Find container for specified schema/catalog
             objectContainer = (DBSObjectContainer)DBUtils.getObjectByPath(monitor, executionContext, objectContainer, catalogName, schemaName, null);
         } else {
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, executionContext.getDataSource());
-            if (objectSelector != null) {
-                objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getDefaultObject());
-            }
+            objectContainer = DBUtils.getSelectedObject(executionContext, DBSObjectContainer.class);
         }
         if (objectContainer != null) {
             makeProposalsFromChildren(monitor, objectContainer, entities);
