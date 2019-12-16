@@ -29,6 +29,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
@@ -127,6 +128,7 @@ public class SQLRuleManager extends RuleBasedScanner {
     {
         SQLDialect dialect = syntaxManager.getDialect();
         SQLRuleProvider ruleProvider = GeneralUtils.adapt(dialect, SQLRuleProvider.class);
+        DBPDataSourceContainer dataSourceContainer = dataSource == null ? null : dataSource.getContainer();
 
         boolean minimalRules = SQLEditorBase.isBigScript(editorInput);
 
@@ -169,7 +171,7 @@ public class SQLRuleManager extends RuleBasedScanner {
         List<IRule> rules = new ArrayList<>();
 
         if (ruleProvider != null) {
-            ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.INITIAL);
+            ruleProvider.extendRules(dataSourceContainer, rules, SQLRuleProvider.RulePosition.INITIAL);
         }
 
         // Add rule for single-line comments.
@@ -182,7 +184,7 @@ public class SQLRuleManager extends RuleBasedScanner {
         }
 
         if (ruleProvider != null) {
-            ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.CONTROL);
+            ruleProvider.extendRules(dataSourceContainer, rules, SQLRuleProvider.RulePosition.CONTROL);
         }
 
         if (!minimalRules) {
@@ -228,7 +230,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
         if (ruleProvider != null) {
-            ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.QUOTES);
+            ruleProvider.extendRules(dataSourceContainer, rules, SQLRuleProvider.RulePosition.QUOTES);
         }
 
         // Add rules for multi-line comments
@@ -260,7 +262,7 @@ public class SQLRuleManager extends RuleBasedScanner {
         }
 
         if (ruleProvider != null) {
-            ruleProvider.extendRules(rules, SQLRuleProvider.RulePosition.KEYWORDS);
+            ruleProvider.extendRules(dataSourceContainer, rules, SQLRuleProvider.RulePosition.KEYWORDS);
         }
 
         if (!minimalRules) {

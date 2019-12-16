@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.runtime.sql;
 
 import org.eclipse.jface.text.rules.IRule;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.util.List;
 
@@ -35,6 +37,6 @@ public interface SQLRuleProvider {
         KEYWORDS
     }
 
-    void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position);
+    void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<IRule> rules, @NotNull RulePosition position);
 
 }
