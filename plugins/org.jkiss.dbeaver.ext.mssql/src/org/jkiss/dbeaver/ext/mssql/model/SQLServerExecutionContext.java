@@ -70,7 +70,8 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
     @Override
     public SQLServerSchema getDefaultSchema() {
-        return getDefaultCatalog().getSchema(SQLServerConstants.DEFAULT_SCHEMA_NAME);
+        SQLServerDatabase defaultCatalog = getDefaultCatalog();
+        return defaultCatalog == null ? null : defaultCatalog.getSchema(SQLServerConstants.DEFAULT_SCHEMA_NAME);
     }
 
     @Override

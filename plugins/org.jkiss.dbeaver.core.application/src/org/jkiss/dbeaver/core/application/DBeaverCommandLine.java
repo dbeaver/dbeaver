@@ -23,6 +23,8 @@ import org.apache.commons.cli.Options;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
@@ -141,10 +143,27 @@ public class DBeaverCommandLine
     /**
      * @return true if called should exit after CLI processing
      */
-    static boolean executeCommandLineCommands(CommandLine commandLine, IInstanceController controller, boolean uiActivated) throws Exception {
+    static boolean executeCommandLineCommands(@NotNull CommandLine commandLine, @Nullable IInstanceController controller, boolean uiActivated) throws Exception {
         if (commandLine == null) {
             return false;
         }
+
+        if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
+            if (DBeaverApplication.instance != null) {
+                DBeaverApplication.instance.reuseWorkspace = true;
+            }
+        }
+
+        // Reuse workspace if custom parameters are specified
+        for (ParameterDescriptor param : customParameters.values()) {
+            if (param.reuseWorkspace && commandLine.hasOption(param.name)) {
+                if (DBeaverApplication.instance != null) {
+                    DBeaverApplication.instance.reuseWorkspace = true;
+                }
+                break;
+            }
+        }
+
         if (controller == null) {
             return false;
         }
@@ -198,22 +217,6 @@ public class DBeaverCommandLine
             exitAfterExecute = true;
         }
 
-        if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
-            if (DBeaverApplication.instance != null) {
-                DBeaverApplication.instance.reuseWorkspace = true;
-            }
-        }
-
-        // Reuse workspace if custom parameters are specified
-        for (ParameterDescriptor param : customParameters.values()) {
-            if (param.reuseWorkspace && commandLine.hasOption(param.name)) {
-                if (DBeaverApplication.instance != null) {
-                    DBeaverApplication.instance.reuseWorkspace = true;
-                }
-                break;
-            }
-        }
-
         return exitAfterExecute;
     }
 
@@ -251,11 +254,6 @@ public class DBeaverCommandLine
         } catch (Exception e) {
             // its ok
             log.debug("Error detecting DBeaver running instance: " + e.getMessage());
-        }
-        if (controller == null) {
-            // Can't execute commands as there is no remote instance
-            log.debug("No running DBeaver instance found");
-            return false;
         }
         try {
             return executeCommandLineCommands(commandLine, controller, false);
