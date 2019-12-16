@@ -78,7 +78,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         this.platform = platform;
         this.project = project;
 
-        loadDataSources(false);
+        loadDataSources(true);
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
 
         addDataSourceListener(modelChangeListener);
