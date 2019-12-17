@@ -286,7 +286,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 }
             });
 
-            UIUtils.createDialogButton(ctGroup, CoreMessages.dialog_connection_wizard_final_label_edit, new SelectionAdapter() {
+            UIUtils.createLink(ctGroup, "<a>" + CoreMessages.dialog_connection_wizard_final_label_connection_types_edit + "</a>", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBPConnectionType curConType = connectionTypeCombo.getSelectedItem();
