@@ -1656,17 +1656,13 @@ public final class DBUtils {
     public static DBSObject getDefaultOrActiveObject(@NotNull DBSInstance object)
     {
         DBCExecutionContext defaultContext = getDefaultContext(object, true);
-        return defaultContext == null ? null : getActiveInstanceObject(defaultContext);
+        DBSObject activeObject = defaultContext == null ? null : getActiveInstanceObject(defaultContext);
+        return activeObject == null ? object.getDataSource() : activeObject;
     }
 
     @Nullable
-    public static DBSObject getActiveInstanceObject(@NotNull DBCExecutionContext executionContext)
-    {
-        if (executionContext instanceof DBSObjectContainer) {
-            return getSelectedObject(executionContext);
-        } else {
-            return getSelectedObject(executionContext);
-        }
+    public static DBSObject getActiveInstanceObject(@NotNull DBCExecutionContext executionContext) {
+        return getSelectedObject(executionContext);
     }
 
     @Nullable
