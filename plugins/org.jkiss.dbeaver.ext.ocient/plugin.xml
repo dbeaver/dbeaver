@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="ocient" class="org.jkiss.dbeaver.ext.ocient.model.OcientMetaModel" driverClass="com.ocient.jdbc.JDBCDriver"/>
+    </extension>
+
+</plugin>

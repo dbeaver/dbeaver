@@ -73,6 +73,7 @@
         <module>org.jkiss.dbeaver.ext.mysql</module>
         <module>org.jkiss.dbeaver.ext.mysql.ui</module>
         <module>org.jkiss.dbeaver.ext.netezza</module>
+        <module>org.jkiss.dbeaver.ext.ocient</module>
         <module>org.jkiss.dbeaver.ext.oracle</module>
         <module>org.jkiss.dbeaver.ext.oracle.ui</module>
         <module>org.jkiss.dbeaver.ext.phoenix</module>
