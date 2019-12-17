@@ -267,6 +267,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         final Color connectionTypeColor = UIUtils.getConnectionTypeColor(connectionType);
         if (connectionTypeColor != null) {
             colorPicker.setColorValue(connectionTypeColor.getRGB());
+        } else {
+            colorPicker.setColorValue(colorPicker.getButton().getBackground().getRGB());
         }
 
         typeName.setText(connectionType.getName());
@@ -333,7 +335,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             //item.setBackground(0, connectionColor);
             item.setBackground(1, connectionColor);
             if (connectionColor != null) {
-                colorPicker.setColorValue(connectionColor.getRGB());
+                //colorPicker.setColorValue(connectionColor.getRGB());
             }
         }
         item.setData(connectionType);
