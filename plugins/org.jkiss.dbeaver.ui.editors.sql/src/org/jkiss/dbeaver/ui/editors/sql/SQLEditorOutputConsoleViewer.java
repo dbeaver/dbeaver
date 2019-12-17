@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -33,6 +29,11 @@ import org.eclipse.ui.console.TextConsoleViewer;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 
 public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
 
@@ -49,6 +50,8 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
         this.console = console;
         this.getText().setMargins(5, 5, 5, 5);
         this.console.setWaterMarks(1024*1024*10, 1024*1024*20);
+
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(site, this.getText());
 
         setEditable(false);
 
