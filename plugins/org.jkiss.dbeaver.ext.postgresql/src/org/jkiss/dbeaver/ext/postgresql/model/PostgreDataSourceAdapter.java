@@ -28,7 +28,7 @@ public class PostgreDataSourceAdapter implements IAdapterFactory {
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adapterType == JDBCConnectionConfigurer.class) {
             if (adaptableObject instanceof PostgreDataSource) {
-
+                // TODO: some PG connectivity additions
             }
             return null;
         }
