@@ -743,7 +743,8 @@ public class PostgreDialect extends JDBCSQLDialect {
         // For postgreSQL-specific blocks ($$) we use special rule.
         // BEGIN/END
         return new String[][]{
-            { SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END }
+            { SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END },
+            { "LOOP", "END LOOP" }
         };
     }
 
