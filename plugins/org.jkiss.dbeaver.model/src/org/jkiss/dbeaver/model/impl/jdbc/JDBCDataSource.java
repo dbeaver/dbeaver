@@ -127,8 +127,13 @@ public abstract class JDBCDataSource
         DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
         Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
 
+        final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
+
         // Obtain connection
         try {
+            if (connectionConfigurer != null) {
+                connectionConfigurer.beforeConnection(connectionInfo, connectProps);
+            }
             final String url = getConnectionURL(connectionInfo);
             if (driverInstance != null) {
                 try {
@@ -155,6 +160,14 @@ public abstract class JDBCDataSource
                     }
                 } catch (Exception e) {
                     error[0] = e;
+                } finally {
+                    if (connectionConfigurer != null) {
+                        try {
+                            connectionConfigurer.afterConnection(connectionInfo, connectProps, connection[0], error[0]);
+                        } catch (Exception e) {
+                            log.debug(e);
+                        }
+                    }
                 }
             };
             boolean openTaskFinished;
