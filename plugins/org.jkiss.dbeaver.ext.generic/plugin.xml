@@ -1357,6 +1357,20 @@
                     <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
                 </driver>
 
+                <driver
+                    id="ocient"
+                    label="Ocient"
+                    icon="icons/ocient_icon.png"
+                    iconBig="icons/ocient_icon_big.png"
+                    class="com.ocient.jdbc.JDBCDriver"
+                    sampleURL="jdbc:ocient://{host}:{port}/{database}"
+                    defaultPort="4050"
+                    webURL=""
+                    description="Ocient database driver"
+                    categories="sql,analytic">
+                    <file type="jar" path="maven:/com.ocient:ocient-jdbc:RELEASE"/>
+                </driver>
+
             </drivers>
 
         </datasource>
