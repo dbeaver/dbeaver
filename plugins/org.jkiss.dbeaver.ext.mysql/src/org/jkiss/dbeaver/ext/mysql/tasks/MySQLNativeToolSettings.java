@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
+package org.jkiss.dbeaver.ext.mysql.tasks;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 
-import java.io.Writer;
-import java.util.Locale;
+public abstract class MySQLNativeToolSettings extends AbstractImportExportSettings<DBSObject> {
 
-/**
- * Task handler
- */
-public interface DBTTaskHandler {
-
-    void executeTask(
-        @NotNull DBRRunnableContext runnableContext,
-        @NotNull DBTTask task,
-        @NotNull Locale locale,
-        @NotNull Log log,
-        @NotNull Writer logStream,
-        @NotNull DBTTaskExecutionListener listener)
-        throws DBException;
 
 }

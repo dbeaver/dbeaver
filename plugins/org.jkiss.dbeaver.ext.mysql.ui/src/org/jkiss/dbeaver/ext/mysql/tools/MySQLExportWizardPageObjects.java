@@ -246,7 +246,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     }
 
     public void saveState() {
-        List<MySQLDatabaseExportInfo> objects = wizard.getSettings().getObjects();
+        List<MySQLDatabaseExportInfo> objects = wizard.getSettings().getExportObjects();
         objects.clear();
         for (TableItem item : catalogTable.getItems()) {
             if (item.getChecked()) {

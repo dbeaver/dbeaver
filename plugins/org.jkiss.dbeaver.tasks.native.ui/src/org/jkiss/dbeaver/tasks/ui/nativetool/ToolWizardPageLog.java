@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.Date;
 import java.util.List;
 
@@ -67,6 +64,25 @@ public class ToolWizardPageLog extends WizardPage {
         setControl(composite);
     }
 
+    public Writer getLogWriter() {
+        return new Writer() {
+            @Override
+            public void write(char[] cbuf, int off, int len) {
+                appendLog(new String(cbuf, off, len));
+            }
+
+            @Override
+            public void flush() {
+
+            }
+
+            @Override
+            public void close() {
+
+            }
+        };
+    }
+
     public void appendLog(final String line)
     {
         appendLog(line, false);
@@ -77,23 +93,20 @@ public class ToolWizardPageLog extends WizardPage {
         if (getShell().isDisposed()) {
             return;
         }
-        UIUtils.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (ToolWizardPageLog.this) {
-                    if (!dumpLogText.isDisposed()) {
-                        int caretOffset = dumpLogText.getCaretOffset();
-                        dumpLogText.append(line);
-                        //dumpLogText.append(ContentUtils.getDefaultLineSeparator());
-                        dumpLogText.setCaretOffset(dumpLogText.getCharCount());
-                        dumpLogText.showSelection();
-                        if (error) {
-                            StyleRange style1Range = new StyleRange();
-                            style1Range.start = caretOffset;
-                            style1Range.length = line.length();
-                            style1Range.foreground = dumpLogText.getDisplay().getSystemColor(SWT.COLOR_RED);
-                            dumpLogText.setStyleRange(style1Range);
-                        }
+        UIUtils.syncExec(() -> {
+            synchronized (ToolWizardPageLog.this) {
+                if (!dumpLogText.isDisposed()) {
+                    int caretOffset = dumpLogText.getCaretOffset();
+                    dumpLogText.append(line);
+                    //dumpLogText.append(ContentUtils.getDefaultLineSeparator());
+                    dumpLogText.setCaretOffset(dumpLogText.getCharCount());
+                    dumpLogText.showSelection();
+                    if (error) {
+                        StyleRange style1Range = new StyleRange();
+                        style1Range.start = caretOffset;
+                        style1Range.length = line.length();
+                        style1Range.foreground = dumpLogText.getDisplay().getSystemColor(SWT.COLOR_RED);
+                        dumpLogText.setStyleRange(style1Range);
                     }
                 }
             }
@@ -105,13 +118,10 @@ public class ToolWizardPageLog extends WizardPage {
         if (getShell().isDisposed()) {
             return;
         }
-        UIUtils.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (ToolWizardPageLog.this) {
-                    if (!dumpLogText.isDisposed()) {
-                        dumpLogText.setText(""); //$NON-NLS-1$
-                    }
+        UIUtils.syncExec(() -> {
+            synchronized (ToolWizardPageLog.this) {
+                if (!dumpLogText.isDisposed()) {
+                    dumpLogText.setText(""); //$NON-NLS-1$
                 }
             }
         });
@@ -162,15 +172,6 @@ public class ToolWizardPageLog extends WizardPage {
 
             try {
                 InputStream in = input;
-//                if (in instanceof FilterInputStream) {
-//                    try {
-//                        final Field inField = FilterInputStream.class.getDeclaredField("in");
-//                        inField.setAccessible(true);
-//                        in = (InputStream) inField.get(in);
-//                    } catch (Exception e) {
-//                        appendLog(e.getMessage() + lf);
-//                    }
-//                }
                 try (Reader reader = new InputStreamReader(in, GeneralUtils.getDefaultConsoleEncoding())) {
                     StringBuilder buf = new StringBuilder();
                     for (; ; ) {

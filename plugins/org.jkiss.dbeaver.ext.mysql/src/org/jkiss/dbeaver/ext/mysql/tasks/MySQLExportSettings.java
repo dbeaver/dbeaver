@@ -17,16 +17,29 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject> {
+
+    private static final Log log = Log.getLog(MySQLExportSettings.class);
 
     public enum DumpMethod {
         ONLINE,
@@ -46,7 +59,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     private boolean noData;
     private boolean showViews;
 
-    public List<MySQLDatabaseExportInfo> objects = new ArrayList<>();
+    public List<MySQLDatabaseExportInfo> exportObjects = new ArrayList<>();
 
     public DumpMethod getMethod() {
         return method;
@@ -136,12 +149,17 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         this.showViews = showViews;
     }
 
-    public void setObjects(List<MySQLDatabaseExportInfo> objects) {
-        this.objects = objects;
+    public void setExportObjects(List<MySQLDatabaseExportInfo> exportObjects) {
+        this.exportObjects = exportObjects;
     }
 
-    public List<MySQLDatabaseExportInfo> getObjects() {
-        return objects;
+    public List<MySQLDatabaseExportInfo> getExportObjects() {
+        return exportObjects;
+    }
+
+    @Override
+    public MySQLServerHome findNativeClientHome(String clientHomeId) {
+        return MySQLDataSourceProvider.getServerHome(clientHomeId);
     }
 
     @Override
@@ -161,6 +179,55 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
             // Backward compatibility
             setExtraCommandArgs(store.getString("MySQL.export.extraArgs"));
         }
+
+        if (store instanceof DBPPreferenceMap) {
+            // Save input objects to task properties
+            List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject("exportObjects");
+            if (!CommonUtils.isEmpty(objectList)) {
+                for (Map<String, Object> object : objectList) {
+                    String catalogId = CommonUtils.toString(object.get("catalog"));
+                    if (!CommonUtils.isEmpty(catalogId)) {
+                        List<String> tableNames = (List<String>) object.get("tables");
+                        MySQLDatabaseExportInfo exportInfo = loadDatabaseExportInfo(runnableContext, catalogId, tableNames);
+                        if (exportInfo != null) {
+                            exportObjects.add(exportInfo);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private MySQLDatabaseExportInfo loadDatabaseExportInfo(DBRRunnableContext runnableContext, String catalogId, List<String> tableNames) {
+        MySQLDatabaseExportInfo[] exportInfo = new MySQLDatabaseExportInfo[1];
+        try {
+            runnableContext.run(false, true, monitor -> {
+                try {
+                    MySQLCatalog catalog = (MySQLCatalog) DBUtils.findObjectById(monitor, getProject(), catalogId);
+                    if (catalog == null) {
+                        throw new DBException("Catalog " + catalogId + " not found");
+                    }
+                    List<MySQLTableBase> tables = null;
+                    if (!CommonUtils.isEmpty(tableNames)) {
+                        tables = new ArrayList<>();
+                        for (String tableName : tableNames) {
+                            MySQLTableBase table = catalog.getTableCache().getObject(monitor, catalog, tableName);
+                            if (table != null) {
+                                tables.add(table);
+                            }
+                        }
+                    }
+                    exportInfo[0] = new MySQLDatabaseExportInfo(catalog, tables);
+                } catch (Throwable e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            log.error("Error loading objects configuration", e);
+        } catch (InterruptedException e) {
+            // Ignore
+        }
+        return exportInfo[0];
     }
 
     @Override
@@ -176,6 +243,25 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         store.setValue("MySQL.export.binariesInHex", binariesInHex);
         store.setValue("MySQL.export.noData", noData);
         store.setValue("MySQL.export.showViews", showViews);
+
+        if (store instanceof DBPPreferenceMap && !CommonUtils.isEmpty(exportObjects)) {
+            // Save input objects to task properties
+            List<Map<String, Object>> objectList = new ArrayList<>();
+            for (MySQLDatabaseExportInfo object : exportObjects) {
+                Map<String, Object> objInfo = new LinkedHashMap<>();
+                objInfo.put("catalog", DBUtils.getObjectFullId(object.getDatabase()));
+                if (!CommonUtils.isEmpty(object.getTables())) {
+                    List<String> tableList = new ArrayList<>();
+                    for (MySQLTableBase table : object.getTables()) {
+                        tableList.add(table.getName());
+                    }
+                    objInfo.put("tables", tableList);
+                }
+                objectList.add(objInfo);
+            }
+
+            ((DBPPreferenceMap) store).getPropertyMap().put("exportObjects", objectList);
+        }
     }
 
 }

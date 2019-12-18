@@ -8,6 +8,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.data.gis,
+ org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tasks.native,
  com.google.gson
 Bundle-ActivationPolicy: lazy

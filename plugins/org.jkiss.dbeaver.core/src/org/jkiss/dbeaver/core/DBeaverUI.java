@@ -223,12 +223,14 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public void showMessageBox(String title, String message, boolean error) {
-        UIUtils.showMessageBox(
-            UIUtils.getActiveWorkbenchShell(),
-            title,
-            message,
-            error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+    public void showMessageBox(@NotNull String title, String message, boolean error) {
+        UIUtils.syncExec(() -> {
+            UIUtils.showMessageBox(
+                UIUtils.getActiveWorkbenchShell(),
+                title,
+                message,
+                error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+            });
     }
 
     @Override

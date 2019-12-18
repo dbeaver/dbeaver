@@ -84,7 +84,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 Log.setLogWriter(logStream);
                 try {
                     monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
-                    executeTask(new LoggingProgressMonitor(monitor));
+                    executeTask(new LoggingProgressMonitor(monitor), new PrintWriter(logStream, true));
                 } catch (Throwable e) {
                     taskError = e;
                     taskLog.error("Task fatal error", e);
@@ -115,10 +115,10 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         return Status.OK_STATUS;
     }
 
-    private void executeTask(DBRProgressMonitor monitor) throws DBException {
+    private void executeTask(DBRProgressMonitor monitor, Writer logWriter) throws DBException {
         activeMonitor = monitor;
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        taskHandler.executeTask(this, task, locale, taskLog, executionListener);
+        taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
     }
 
     @Override
