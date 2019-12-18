@@ -114,6 +114,11 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
+    protected boolean isLogInputStream() {
+        return false;
+    }
+
+    @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLExportSettings settings, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process, Log log) {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         String outFileName = GeneralUtils.replaceVariables(settings.getOutputFilePattern(), name -> {

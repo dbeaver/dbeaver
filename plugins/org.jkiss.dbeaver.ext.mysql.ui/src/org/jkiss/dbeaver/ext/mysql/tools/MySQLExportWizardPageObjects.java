@@ -41,8 +41,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 
 class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWizard>
@@ -53,6 +53,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     private Map<MySQLCatalog, Set<MySQLTableBase>> checkedObjects = new HashMap<>();
 
     private MySQLCatalog curCatalog;
+    private Button exportViewsCheck;
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
@@ -104,7 +105,6 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             createCheckButtons(buttonsPanel, catalogTable);
         }
 
-        final Button exportViewsCheck;
         {
             Composite tablesPanel = UIUtils.createComposite(sash, 1);
             tablesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -133,6 +133,19 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             exportViewsCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, tablesTable);
         }
+
+        loadSettings();
+        setControl(composite);
+    }
+
+    @Override
+    public void activatePage() {
+        loadSettings();
+    }
+
+    private void loadSettings() {
+        checkedObjects.clear();
+        catalogTable.removeAll();
 
         MySQLDataSource dataSource = null;
         Set<MySQLCatalog> activeCatalogs = new LinkedHashSet<>();
@@ -176,7 +189,6 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             }
         }
         updateState();
-        setControl(composite);
     }
 
     private void updateCheckedTables() {
