@@ -44,6 +44,7 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     public TaskPreferenceStore(Map<String, Object> properties) {
+        this.parentStore = DBWorkbench.getPlatform().getPreferenceStore();
         this.task = null;
         this.properties = properties;
     }
