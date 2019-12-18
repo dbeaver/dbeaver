@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext.mysql.task;
+package org.jkiss.dbeaver.ext.mysql.tasks;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;

@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
-import org.jkiss.dbeaver.ext.mysql.task.MySQLDatabaseExportInfo;
+import org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportInfo;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;

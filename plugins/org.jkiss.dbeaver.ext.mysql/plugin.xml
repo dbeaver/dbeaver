@@ -347,14 +347,14 @@
     <extension point="org.jkiss.dbeaver.task">
         <category id="mysql" name="MySQL" description="MySQL database task"/>
 
-        <task id="mysqlDatabaseBackup" name="Database export" description="Database export task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.task.DatabaseExportHandler">
+        <task id="mysqlDatabaseBackup" name="Database export" description="Database export task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.DatabaseExportHandler">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
         </task>
-        <task id="mysqlDatabaseRestore" name="Database import" description="Database import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.task.DatabaseImportHandler">
+        <task id="mysqlDatabaseRestore" name="Database import" description="Database import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.DatabaseImportHandler">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>
-        <task id="mysqlScriptExecute" name="SQL script" description="SQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.task.ScriptExecuteHandler">
+        <task id="mysqlScriptExecute" name="SQL script" description="SQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.ScriptExecuteHandler">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
     </extension>
