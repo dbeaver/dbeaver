@@ -31,6 +31,7 @@ import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -79,7 +80,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             task.getTaskStatsFolder(true);
             File logFile = task.getRunLog(taskRun);
 
-            try (OutputStream logStream = new FileOutputStream(logFile)) {
+            try (Writer logStream = new OutputStreamWriter(new FileOutputStream(logFile), StandardCharsets.UTF_8)) {
                 taskLog = Log.getLog(TaskRunJob.class);
                 Log.setLogWriter(logStream);
                 try {

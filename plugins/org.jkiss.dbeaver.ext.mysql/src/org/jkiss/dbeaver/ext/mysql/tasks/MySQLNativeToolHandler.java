@@ -39,8 +39,14 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             cmd.add("--port=" + connectionInfo.getHostPort());
         }
-        cmd.add("-u");
-        cmd.add(settings.getToolUserName());
+        String toolUserName = settings.getToolUserName();
+        if (CommonUtils.isEmpty(toolUserName)) {
+            toolUserName = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserName();
+        }
+        if (!CommonUtils.isEmpty(toolUserName)) {
+            cmd.add("-u");
+            cmd.add(toolUserName);
+        }
         // Password is passed in env variable (#1004)
 //        if (!CommonUtils.isEmpty(toolWizard.getToolUserPassword())) {
 //            cmd.add("--password=" + toolWizard.getToolUserPassword());

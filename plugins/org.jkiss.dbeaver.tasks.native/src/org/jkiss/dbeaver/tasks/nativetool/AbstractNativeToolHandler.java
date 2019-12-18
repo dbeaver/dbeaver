@@ -52,10 +52,13 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 monitor.beginTask(task.getType().getName(), 1);
                 monitor.subTask(task.getType().getName());
 
+                Log.setLogWriter(logStream);
                 try {
                     doExecute(monitor, task, settings, log);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
+                } finally {
+                    Log.setLogWriter(null);
                 }
 
                 monitor.worked(1);
@@ -173,7 +176,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 try {
                     final int exitCode = process.exitValue();
                     if (exitCode != 0) {
-                        throw new IOException("Process error code: " + exitCode);
+                        log.error("Process exit code: " + exitCode);
+                        return false;
                     }
                 } catch (IllegalThreadStateException e) {
                     // Still running
