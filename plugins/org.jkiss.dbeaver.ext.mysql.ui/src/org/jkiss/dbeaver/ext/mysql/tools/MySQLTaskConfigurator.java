@@ -26,20 +26,23 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
-import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
+import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -71,9 +74,11 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
 
         private final DBRRunnableContext runnableContext;
         private final DBTTaskType taskType;
+        private AbstractImportExportWizard<?, ?> ieWizard;
         private ClientHomesSelector homesSelector;
         private MySQLCatalog selectedCatalog;
         private DBPDataSource curDataSource;
+        private DatabaseObjectsSelectorPanel selectorPanel;
 
         public ConfigPanel(DBRRunnableContext runnableContext, DBTTaskType taskType) {
             this.runnableContext = runnableContext;
@@ -82,10 +87,11 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
 
         @Override
         public void createControl(Object parent, Object wizard, Runnable propertyChangeListener) {
+            ieWizard = (AbstractImportExportWizard) wizard;
             {
                 Group databasesGroup = UIUtils.createControlGroup((Composite) parent, "Select target database", 1, GridData.FILL_BOTH, 0);
 
-                DatabaseObjectsSelectorPanel selectorPanel = new DatabaseObjectsSelectorPanel(
+                selectorPanel = new DatabaseObjectsSelectorPanel(
                     databasesGroup,
                     false,
                     this.runnableContext) {
@@ -123,6 +129,7 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
                         return driverId.contains("mysql") || driverId.contains("mariadb");
                     }
 
+
                 };
             }
 
@@ -143,6 +150,32 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
 
         @Override
         public void loadSettings() {
+            List<DBSObject> databaseObjects = ieWizard.getSettings().getDatabaseObjects();
+            if (!CommonUtils.isEmpty(databaseObjects)) {
+                for (DBSObject obj : databaseObjects) {
+                    if (obj instanceof MySQLCatalog) {
+                        selectedCatalog = (MySQLCatalog) obj;
+                    }
+                }
+            }
+
+            if (selectorPanel != null && selectedCatalog != null) {
+                try {
+                    DBNDatabaseNode[] catalogNode = new DBNDatabaseNode[1];
+                    ieWizard.getRunnableContext().run(true, true, monitor -> {
+                        catalogNode[0] = DBNUtils.getNodeByObject(monitor, selectedCatalog, false);
+                    });
+                    if (catalogNode[0] != null) {
+                        List<DBNNode> selCatalogs = Collections.singletonList(catalogNode[0]);
+                        //selectorPanel.checkNodes(selCatalogs, true);
+                        selectorPanel.setSelection(selCatalogs);
+                    }
+                } catch (InvocationTargetException e) {
+                    DBWorkbench.getPlatformUI().showError("Catalogs", " Error loading catalog list", e.getTargetException());
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
         }
 
         @Override
