@@ -117,7 +117,7 @@ public class RuntimeUtils {
         if (!dumpBinary.exists()) {
             dumpBinary = new File(home.getPath(), binName);
             if (!dumpBinary.exists()) {
-                throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "'");
+                throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "' (" + home.getPath().getAbsolutePath() + ")");
             }
         }
         return dumpBinary;

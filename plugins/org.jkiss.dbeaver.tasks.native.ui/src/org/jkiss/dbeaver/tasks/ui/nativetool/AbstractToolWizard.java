@@ -38,12 +38,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -257,12 +259,39 @@ public abstract class AbstractToolWizard<SETTINGS extends AbstractNativeToolSett
         // Save settings
         settings.saveSettings(getRunnableContext(), getPreferenceStore());
 
+        if (!validateClientFiles()) {
+            return false;
+        }
+
+        if (isRunTaskOnFinish()) {
+            return super.performFinish();
+        }
+
         if (getContainer().getCurrentPage() != logPage) {
             getContainer().showPage(logPage);
         }
 
-        if (!validateClientFiles()) {
-            return false;
+        if (getCurrentTask() == null) {
+            try {
+                DBTTaskHandler handler = null;
+                try {
+                    handler = getTaskType().createHandler();
+                } catch (Throwable e) {
+                    // No handler
+                }
+                if (handler != null) {
+                    // Execute directly - without task serialize/deserialize
+                    // We need it because some data producers cannot be serialized properly (e.g. ResultSetDatacontainer - see #7342)
+                    DBTTask temporaryTask = getProject().getTaskManager().createTemporaryTask(getTaskType(), getTaskType().getName());
+                    saveConfigurationToTask(temporaryTask);
+                    TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), temporaryTask, log, logPage.getLogWriter());
+                    executor.executeTask();
+                    return false;
+                }
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError(e.getMessage(), "Error running task", e);
+                return false;
+            }
         }
 
         long startTime = System.currentTimeMillis();

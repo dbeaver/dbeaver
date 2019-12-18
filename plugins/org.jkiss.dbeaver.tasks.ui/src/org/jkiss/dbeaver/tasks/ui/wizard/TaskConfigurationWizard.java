@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -43,11 +44,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class TaskConfigurationWizard extends BaseWizard implements IWorkbenchWizard {
+
+    private static final Log log = Log.getLog(TaskConfigurationWizard.class);
 
     private DBTTask currentTask;
     private IStructuredSelection currentSelection;
@@ -176,7 +180,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             }
             // Run task thru task manager
             // Pass executor to visualize task progress in UI
-            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task);
+            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, new PrintWriter(System.out));
             if (getCurrentTask() == null) {
                 // Execute directly in wizard
                 executor.executeTask();

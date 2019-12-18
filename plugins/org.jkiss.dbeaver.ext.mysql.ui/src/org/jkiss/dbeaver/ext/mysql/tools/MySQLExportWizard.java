@@ -77,7 +77,14 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLExportSettings, 
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
+        objectsPage.saveState();
+        settingsPage.updateState();
         getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
+    }
+
+    @Override
+    public boolean isRunTaskOnFinish() {
+        return getCurrentTask() != null;
     }
 
     @Override
@@ -177,6 +184,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLExportSettings, 
     @Override
     public boolean performFinish() {
         objectsPage.saveState();
+        settingsPage.updateState();
 
         return super.performFinish();
     }
@@ -189,7 +197,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLExportSettings, 
 
     @Override
     public List<MySQLDatabaseExportInfo> getRunInfo() {
-        return getSettings().getObjects();
+        return getSettings().getExportObjects();
     }
 
     @Override
