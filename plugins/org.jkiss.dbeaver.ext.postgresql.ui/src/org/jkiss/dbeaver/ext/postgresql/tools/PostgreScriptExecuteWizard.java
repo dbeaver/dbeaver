@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteSettings;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -33,7 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreDatabase, PostgreDatabase> {
+class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScriptExecuteSettings, PostgreDatabase, PostgreDatabase> {
 
     private boolean isImport;
     private PostgreScriptExecuteWizardPageSettings mainPage;
@@ -64,6 +65,11 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreData
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
         // TODO: implement
+    }
+
+    @Override
+    protected PostgreScriptExecuteSettings createSettings() {
+        return new PostgreScriptExecuteSettings();
     }
 
     @Override

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mysql.tools;
+package org.jkiss.dbeaver.ext.mysql.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;

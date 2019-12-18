@@ -34,7 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSource,OracleDataSource> {
+class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleScriptExecuteSettings, OracleDataSource,OracleDataSource> {
 
     private OracleScriptExecuteWizardPageSettings mainPage;
 
@@ -52,6 +52,11 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
         // TODO: implement
+    }
+
+    @Override
+    protected OracleScriptExecuteSettings createSettings() {
+        return new OracleScriptExecuteSettings();
     }
 
     @Override

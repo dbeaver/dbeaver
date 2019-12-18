@@ -23,6 +23,7 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreRestoreSettings;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -38,9 +39,6 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
 
     private PostgreRestoreWizardPageSettings settingsPage;
     private PostgreDatabaseRestoreInfo restoreInfo;
-
-    String inputFile;
-    boolean cleanFirst;
 
     PostgreRestoreWizard(PostgreDatabase database) {
         super(Collections.singletonList(database), PostgreMessages.wizard_restore_title);
@@ -104,7 +102,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
     public void fillProcessParameters(List<String> cmd, PostgreDatabaseRestoreInfo arg) throws IOException {
         super.fillProcessParameters(cmd, arg);
 
-        if (cleanFirst) {
+        if (getSettings().isCleanFirst()) {
             cmd.add("-c");
         }
     }
@@ -117,7 +115,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
         }
         cmd.add("--dbname=" + arg.getDatabase().getName());
         if (format == ExportFormat.DIRECTORY) {
-            cmd.add(inputFile);
+            cmd.add(getSettings().getInputFile());
         }
 
         return cmd;
@@ -137,7 +135,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
     protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process) {
         super.startProcessHandler(monitor, arg, processBuilder, process);
         if (format != ExportFormat.DIRECTORY) {
-            new BinaryFileTransformerJob(monitor, new File(inputFile), process.getOutputStream()).start();
+            new BinaryFileTransformerJob(monitor, new File(getSettings().getInputFile()), process.getOutputStream()).start();
         }
     }
 

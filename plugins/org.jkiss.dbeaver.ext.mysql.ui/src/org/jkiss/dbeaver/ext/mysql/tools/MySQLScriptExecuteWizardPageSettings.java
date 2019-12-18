@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ext.mysql.task.MySQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -92,7 +93,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
                 composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
         logLevelCombo = UIUtils.createLabelCombo(
                 settingsGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_log_level, SWT.DROP_DOWN | SWT.READ_ONLY);
-        for (MySQLScriptExecuteWizard.LogLevel logLevel : MySQLScriptExecuteWizard.LogLevel.values()) {
+        for (MySQLScriptExecuteSettings.LogLevel logLevel : MySQLScriptExecuteSettings.LogLevel.values()) {
             logLevelCombo.add(logLevel.name());
         }
         logLevelCombo.select(wizard.getLogLevel().ordinal());
@@ -100,7 +101,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                wizard.setLogLevel(MySQLScriptExecuteWizard.LogLevel.valueOf(logLevelCombo.getText()));
+                wizard.getSettings().setLogLevel(MySQLScriptExecuteSettings.LogLevel.valueOf(logLevelCombo.getText()));
             }
         });
         createExtraArgsInput(settingsGroup);

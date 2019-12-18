@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.task.MySQLScriptExecuteSettings;
+import org.jkiss.dbeaver.ext.mysql.task.MySQLTasks;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -33,34 +35,24 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.util.*;
 
-class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog, MySQLCatalog> {
+class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptExecuteSettings, MySQLCatalog, MySQLCatalog> {
 
-    enum LogLevel {
-        Normal,
-        Verbose,
-        Debug
-    }
-
-    private LogLevel logLevel = LogLevel.Normal;
-    private boolean noBeep = true;
-
-    private boolean isImport;
     private MySQLScriptExecuteWizardPageSettings mainPage = new MySQLScriptExecuteWizardPageSettings(this);
 
     public MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport)
     {
         super(Collections.singleton(catalog), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
-        this.isImport = isImport;
+        this.getSettings().setImport(isImport);
     }
 
     public MySQLScriptExecuteWizard(DBTTask task, boolean isImport) {
         super(new ArrayList<>(), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
-        this.isImport = isImport;
+        this.getSettings().setImport(isImport);
     }
 
     @Override
     public String getTaskTypeId() {
-        return isImport ? MySQLTasks.TASK_DATABASE_RESTORE : MySQLTasks.TASK_SCRIPT_EXECUTE;
+        return getSettings().isImport() ? MySQLTasks.TASK_DATABASE_RESTORE : MySQLTasks.TASK_SCRIPT_EXECUTE;
     }
 
     @Override
@@ -68,25 +60,25 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
         // TODO: implement
     }
 
-    public LogLevel getLogLevel()
+    public MySQLScriptExecuteSettings.LogLevel getLogLevel()
     {
-        return logLevel;
-    }
-
-    public void setLogLevel(LogLevel logLevel)
-    {
-        this.logLevel = logLevel;
+        return getSettings().getLogLevel();
     }
 
     public boolean isImport()
     {
-        return isImport;
+        return getSettings().isImport();
     }
 
     @Override
     public boolean isVerbose()
     {
-        return logLevel == LogLevel.Verbose || logLevel == LogLevel.Debug;
+        return getSettings().isVerbose();
+    }
+
+    @Override
+    protected MySQLScriptExecuteSettings createSettings() {
+        return new MySQLScriptExecuteSettings();
     }
 
     @Override
@@ -101,10 +93,10 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
     {
         String dumpPath = RuntimeUtils.getNativeClientBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
-        if (logLevel == LogLevel.Debug) {
+        if (getSettings().getLogLevel() == MySQLScriptExecuteSettings.LogLevel.Debug) {
             cmd.add("--debug-info"); //$NON-NLS-1$
         }
-        if (noBeep) {
+        if (getSettings().isNoBeep()) {
             cmd.add("--no-beep"); //$NON-NLS-1$
         }
         getSettings().addExtraCommandArgs(cmd);
@@ -141,7 +133,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
      */
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, final MySQLCatalog arg, ProcessBuilder processBuilder, Process process) {
-        if (isImport) {
+        if (getSettings().isImport()) {
             logPage.startLogReader(
                 processBuilder,
                 process.getInputStream());

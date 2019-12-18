@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.core.application.rpc;
 
 import org.jkiss.dbeaver.Log;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.rmi.registry.LocateRegistry;
 import java.util.Properties;
 
@@ -41,7 +43,7 @@ public class InstanceClient {
                 props.load(is);
             }
             String rmiPort = props.getProperty("port");
-            return (IInstanceController) LocateRegistry.getRegistry(Integer.parseInt(rmiPort)).lookup(IInstanceController.CONTROLLER_ID);
+            return (IInstanceController) LocateRegistry.getRegistry("localhost", Integer.parseInt(rmiPort)).lookup(IInstanceController.CONTROLLER_ID);
         } catch (Exception e) {
             log.error("Error reading RMI config", e);
         }
