@@ -60,7 +60,7 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
             extraCommandArgsText,
             new TextContentAdapter(),
             new SimpleContentProposalProvider(new String[]{}));
-        extraCommandArgsText.addModifyListener(e -> wizard.setExtraCommandArgs(extraCommandArgsText.getText()));
+        extraCommandArgsText.addModifyListener(e -> wizard.getSettings().setExtraCommandArgs(extraCommandArgsText.getText()));
 
     }
 

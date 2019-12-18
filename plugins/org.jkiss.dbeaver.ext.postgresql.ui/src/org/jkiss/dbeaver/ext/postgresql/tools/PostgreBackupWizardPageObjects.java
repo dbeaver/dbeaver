@@ -126,7 +126,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             exportViewsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    wizard.showViews = exportViewsCheck.getSelection();
+                    wizard.getSettings().setShowViews(exportViewsCheck.getSelection());
                     loadTables(null);
                 }
             });
@@ -151,7 +151,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                 Set<PostgreTableBase> tables = checkedObjects.computeIfAbsent(schema, k -> new HashSet<>());
                 tables.add((PostgreTableBase) object);
                 if (((PostgreTableBase) object).isView()) {
-                    wizard.showViews = true;
+                    wizard.getSettings().setShowViews(true);
                     exportViewsCheck.setSelection(true);
                 }
             } else if (object.getDataSource() instanceof PostgreDataSource) {
@@ -234,7 +234,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                             objects.add((PostgreTableBase) table);
                         }
                     }
-                    if (wizard.showViews) {
+                    if (wizard.getSettings().isShowViews()) {
                         objects.addAll(curSchema.getViews(monitor));
                     }
                     objects.sort(DBUtils.nameComparator());

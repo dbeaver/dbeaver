@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -30,7 +31,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-abstract class PostgreBackupRestoreWizard<PROCESS_ARG extends PostgreDatabaseBackupRestoreInfo> extends AbstractImportExportWizard<PROCESS_ARG> implements IExportWizard {
+abstract class PostgreBackupRestoreWizard<SETTINGS extends AbstractImportExportSettings<DBSObject>, PROCESS_ARG extends PostgreDatabaseBackupRestoreInfo> extends AbstractImportExportWizard<SETTINGS, PROCESS_ARG> implements IExportWizard {
 
     public enum ExportFormat {
         PLAIN("p", "Plain"),
@@ -69,7 +70,7 @@ abstract class PostgreBackupRestoreWizard<PROCESS_ARG extends PostgreDatabaseBac
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
 
-        addExtraCommandArgs(cmd);
+        getSettings().addExtraCommandArgs(cmd);
     }
 
     @Override

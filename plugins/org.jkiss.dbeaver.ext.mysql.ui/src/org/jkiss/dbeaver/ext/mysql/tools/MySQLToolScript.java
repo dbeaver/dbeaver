@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizard;
 import org.jkiss.dbeaver.tasks.ui.nativetool.ToolWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
@@ -51,8 +52,8 @@ public class MySQLToolScript implements IUserInterfaceTool
         }
     }
 
-    public static <BASE_OBJECT extends DBSObject, PROCESS_ARG> List<String> getMySQLToolCommandLine(
-        AbstractToolWizard<BASE_OBJECT, PROCESS_ARG> toolWizard, PROCESS_ARG arg) throws IOException
+    public static <SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG> List<String> getMySQLToolCommandLine(
+        AbstractToolWizard<SETTINGS, BASE_OBJECT, PROCESS_ARG> toolWizard, PROCESS_ARG arg) throws IOException
     {
         java.util.List<String> cmd = new ArrayList<>();
         toolWizard.fillProcessParameters(cmd, arg);

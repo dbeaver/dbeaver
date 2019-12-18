@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -50,7 +51,6 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -58,25 +58,16 @@ import java.util.List;
 /**
  * Abstract wizard
  */
-public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
+public abstract class AbstractToolWizard<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
     extends TaskConfigurationWizard {
 
     private static final Log log = Log.getLog(AbstractToolWizard.class);
 
-    private final String PROP_NAME_EXTRA_ARGS = "tools.wizard." + getClass().getSimpleName() + ".extraArgs";
-
     private final DBPPreferenceStore preferenceStore;
-
-    private final List<BASE_OBJECT> databaseObjects;
-    private DBPNativeClientLocation clientHome;
-    private DBPDataSourceContainer dataSourceContainer;
-    private DBPConnectionConfiguration connectionInfo;
-    private String toolUserName;
-    private String toolUserPassword;
-    private String extraCommandArgs;
+    private final SETTINGS settings;
 
     protected String taskTitle;
-    protected final DatabaseWizardPageLog logPage;
+    protected final ToolWizardPageLog logPage;
     private boolean finished;
     protected boolean transferFinished;
     private boolean refreshObjects;
@@ -84,22 +75,25 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private String errorMessage;
 
     protected AbstractToolWizard(@NotNull Collection<BASE_OBJECT> databaseObjects, @NotNull String taskTitle) {
-        this.databaseObjects = new ArrayList<>(databaseObjects);
-        this.taskTitle = taskTitle;
-        this.logPage = new DatabaseWizardPageLog(taskTitle);
         this.preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-
-        loadToolSettings();
+        this.settings = createSettings();
+        this.settings.getDatabaseObjects().addAll(databaseObjects);
+        this.taskTitle = taskTitle;
+        this.logPage = new ToolWizardPageLog(taskTitle);
     }
 
     public AbstractToolWizard(@NotNull DBTTask task) {
         super(task);
-        this.databaseObjects = new ArrayList<>();
-        this.taskTitle = task.getType().getName();
-        this.logPage = new DatabaseWizardPageLog(taskTitle);
         this.preferenceStore = new TaskPreferenceStore(task);
+        this.settings = createSettings();
+        this.taskTitle = task.getType().getName();
+        this.logPage = new ToolWizardPageLog(taskTitle);
+    }
 
-        loadToolSettings();
+    protected abstract SETTINGS createSettings();
+
+    public SETTINGS getSettings() {
+        return settings;
     }
 
     @NotNull
@@ -108,87 +102,10 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     }
 
     public DBPProject getProject() {
-        if (dataSourceContainer != null) {
-            return dataSourceContainer.getProject();
+        if (settings.getDataSourceContainer() != null) {
+            return settings.getDataSourceContainer().getProject();
         }
         return super.getProject();
-    }
-
-    private void loadToolSettings() {
-        if (getCurrentTask() != null) {
-            String projectName = preferenceStore.getString("project");
-            DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-            if (project == null) {
-                if (!CommonUtils.isEmpty(projectName)) {
-                    log.error("Can't find project '" + projectName + "' for tool configuration");
-                }
-                project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-            }
-            String dsID = preferenceStore.getString("dataSource");
-            if (!CommonUtils.isEmpty(dsID)) {
-                dataSourceContainer = project.getDataSourceRegistry().getDataSource(dsID);
-                if (dataSourceContainer == null) {
-                    log.error("Can't find datasource '" + dsID+ "' in project '" + project.getName() + "' for tool configuration");
-                }
-            }
-            {
-                List<String> databaseObjectList = (List<String>) ((TaskPreferenceStore)preferenceStore).getProperties().get("databaseObjects");
-                if (!CommonUtils.isEmpty(databaseObjectList)) {
-                    DBPProject finalProject = project;
-                    try {
-                        getRunnableContext().run(false, true, monitor -> {
-                            for (String objectId : databaseObjectList) {
-                                try {
-                                    DBSObject object = DBUtils.findObjectById(monitor, finalProject, objectId);
-                                    if (object != null) {
-                                        databaseObjects.add((BASE_OBJECT) object);
-                                    }
-                                } catch (Throwable e) {
-                                    log.error("Can't find database object '" + objectId + "' in project '" + finalProject.getName() + "' for task configuration");
-                                }
-                            }
-                        });
-                    } catch (InvocationTargetException e) {
-                        log.error("Error loading objects configuration", e);
-                    } catch (InterruptedException e) {
-                        // Ignore
-                    }
-                }
-            }
-        } else {
-            for (BASE_OBJECT object : this.databaseObjects) {
-                if (dataSourceContainer != null && dataSourceContainer != object.getDataSource().getContainer()) {
-                    throw new IllegalArgumentException("Objects from different data sources");
-                }
-                dataSourceContainer = object.getDataSource().getContainer();
-            }
-        }
-        connectionInfo = dataSourceContainer == null ? null : dataSourceContainer.getActualConnectionConfiguration();
-
-        extraCommandArgs = getPreferenceStore().getString(PROP_NAME_EXTRA_ARGS);
-    }
-
-    private void saveToolSettings() {
-        preferenceStore.setValue(PROP_NAME_EXTRA_ARGS, extraCommandArgs);
-
-        if (getCurrentTask() != null) {
-            preferenceStore.setValue("project", getProject().getName());
-            if (dataSourceContainer != null) {
-                preferenceStore.setValue("dataSource", dataSourceContainer.getId());
-            }
-
-            // Save input objects to task properties
-            List<String> objectList = new ArrayList<>();
-            for (BASE_OBJECT object : databaseObjects) {
-                objectList.add(DBUtils.getObjectFullId(object));
-            }
-            ((TaskPreferenceStore)preferenceStore).getProperties().put("databaseObjects", objectList);
-        }
-        try {
-            preferenceStore.save();
-        } catch (IOException e) {
-            log.error("Error saving tool settings");
-        }
     }
 
     @Override
@@ -220,49 +137,43 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     }
 
     public List<BASE_OBJECT> getDatabaseObjects() {
-        return databaseObjects;
+        return settings.getDatabaseObjects();
     }
 
     public DBPConnectionConfiguration getConnectionInfo() {
-        return connectionInfo;
+        DBPDataSourceContainer ds = settings.getDataSourceContainer();
+        if (ds != null) {
+            return ds.getConnectionConfiguration();
+        }
+        return null;
     }
 
     public DBPNativeClientLocation getClientHome() {
-        return clientHome;
+        return settings.getClientHome();
     }
 
     public String getToolUserName() {
-        return toolUserName;
+        return settings.getToolUserName();
     }
 
     public void setToolUserName(String toolUserName) {
-        this.toolUserName = toolUserName;
+        this.settings.setToolUserName(toolUserName);
     }
 
     public String getToolUserPassword() {
-        return toolUserPassword;
+        return settings.getToolUserPassword();
     }
 
     public void setToolUserPassword(String toolUserPassword) {
-        this.toolUserPassword = toolUserPassword;
+        this.settings.setToolUserPassword(toolUserPassword);
     }
 
     public String getExtraCommandArgs() {
-        return extraCommandArgs;
-    }
-
-    public void setExtraCommandArgs(String extraCommandArgs) {
-        this.extraCommandArgs = extraCommandArgs;
-    }
-
-    protected void addExtraCommandArgs(List<String> cmd) {
-        if (!CommonUtils.isEmptyTrimmed(extraCommandArgs)) {
-            Collections.addAll(cmd, extraCommandArgs.split(" "));
-        }
+        return settings.getExtraCommandArgs();
     }
 
     public DBPDataSourceContainer getDataSourceContainer() {
-        return dataSourceContainer;
+        return settings.getDataSourceContainer();
     }
 
     public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
@@ -277,6 +188,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
     @Override
     public void createPageControls(Composite pageContainer) {
+        settings.loadSettings(getRunnableContext(), getPreferenceStore());
+
         super.createPageControls(pageContainer);
 
         updateErrorMessage();
@@ -286,26 +199,27 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         WizardPage currentPage = (WizardPage) getStartingPage();
 
         if (isNativeClientHomeRequired()) {
-            String clientHomeId = dataSourceContainer.getConnectionConfiguration().getClientHomeId();
-            List<DBPNativeClientLocation> nativeClientLocations = dataSourceContainer.getDriver().getNativeClientLocations();
+            String clientHomeId = getDataSourceContainer().getConnectionConfiguration().getClientHomeId();
+            List<DBPNativeClientLocation> nativeClientLocations = getDataSourceContainer().getDriver().getNativeClientLocations();
             if (clientHomeId == null) {
                 if (nativeClientLocations != null && !nativeClientLocations.isEmpty()) {
-                    clientHome = nativeClientLocations.get(0);
+                    settings.setClientHome(nativeClientLocations.get(0));
                 } else {
-                    clientHome = null;
+                    settings.setClientHome(null);
                 }
-                if (clientHome == null) {
+                if (settings.getClientHome() == null) {
                     currentPage.setErrorMessage(TaskNativeUIMessages.tools_wizard_message_no_client_home);
                     getContainer().updateMessage();
                     return;
                 }
             } else {
-                clientHome = DBUtils.findObject(nativeClientLocations, clientHomeId);
+                DBPNativeClientLocation clientHome = DBUtils.findObject(nativeClientLocations, clientHomeId);
                 if (clientHome == null) {
                     clientHome = findNativeClientHome(clientHomeId);
                 }
+                settings.setClientHome(clientHome);
             }
-            if (clientHome == null) {
+            if (settings.getClientHome() == null) {
                 currentPage.setErrorMessage(NLS.bind(TaskNativeUIMessages.tools_wizard_message_client_home_not_found, clientHomeId));
             } else {
                 currentPage.setErrorMessage(null);
@@ -315,13 +229,13 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     }
 
     private boolean validateClientFiles() {
-        if (!isNativeClientHomeRequired() || clientHome == null) {
+        if (!isNativeClientHomeRequired() || settings.getClientHome() == null) {
             return true;
         }
         try {
             UIUtils.run(getContainer(), true, true, monitor -> {
                 try {
-                    clientHome.validateFilesPresence(monitor);
+                    settings.getClientHome().validateFilesPresence(monitor);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -341,7 +255,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     @Override
     public boolean performFinish() {
         // Save settings
-        saveToolSettings();
+        settings.saveSettings(getRunnableContext(), getPreferenceStore());
 
         if (getContainer().getCurrentPage() != logPage) {
             getContainer().showPage(logPage);
@@ -387,7 +301,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
     public String getObjectsName() {
         StringBuilder str = new StringBuilder();
-        for (BASE_OBJECT object : databaseObjects) {
+        for (BASE_OBJECT object : settings.getDatabaseObjects()) {
             if (str.length() > 0) str.append(",");
             str.append(object.getName());
         }
@@ -647,8 +561,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 refreshObjects = isSuccess && !monitor.isCanceled();
                 if (refreshObjects && needsModelRefresh()) {
                     // Refresh navigator node (script execution can change everything inside)
-                    for (BASE_OBJECT object : databaseObjects) {
-                        final DBNDatabaseNode node = dataSourceContainer.getPlatform().getNavigatorModel().findNode(object);
+                    for (BASE_OBJECT object : settings.getDatabaseObjects()) {
+                        final DBNDatabaseNode node = settings.getDataSourceContainer().getPlatform().getNavigatorModel().findNode(object);
                         if (node != null) {
                             node.refreshNode(monitor, AbstractToolWizard.this);
                         }

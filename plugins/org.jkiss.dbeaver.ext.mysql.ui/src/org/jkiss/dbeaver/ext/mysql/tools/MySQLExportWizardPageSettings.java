@@ -82,27 +82,27 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         methodCombo.add(MySQLUIMessages.tools_db_export_wizard_page_settings_combo_item_online_backup);
         methodCombo.add(MySQLUIMessages.tools_db_export_wizard_page_settings_combo_item_lock_tables);
         methodCombo.add(MySQLUIMessages.tools_db_export_wizard_page_settings_combo_item_normal);
-        methodCombo.select(wizard.method.ordinal());
+        methodCombo.select(wizard.getSettings().getMethod().ordinal());
         methodCombo.addSelectionListener(changeListener);
 
         Group settingsGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_settings, 3, GridData.FILL_HORIZONTAL, 0);
-        noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.noCreateStatements);
+        noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.getSettings().isNoCreateStatements());
         noCreateStatementsCheck.addSelectionListener(changeListener);
-        addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.addDropStatements);
+        addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.getSettings().isAddDropStatements());
         addDropStatementsCheck.addSelectionListener(changeListener);
-        disableKeysCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_disable_keys, wizard.disableKeys);
+        disableKeysCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_disable_keys, wizard.getSettings().isDisableKeys());
         disableKeysCheck.addSelectionListener(changeListener);
-        extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_ext_inserts, wizard.extendedInserts);
+        extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_ext_inserts, wizard.getSettings().isExtendedInserts());
         extendedInsertsCheck.addSelectionListener(changeListener);
-        dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_dump_events, wizard.dumpEvents);
+        dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_dump_events, wizard.getSettings().isDumpEvents());
         dumpEventsCheck.addSelectionListener(changeListener);
-        commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.comments);
+        commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.getSettings().isComments());
         commentsCheck.addSelectionListener(changeListener);
-        removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.removeDefiner);
+        removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.getSettings().isRemoveDefiner());
         removeDefiner.addSelectionListener(changeListener);
-        binaryInHex = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_binary_hex, wizard.binariesInHex);
+        binaryInHex = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_binary_hex, wizard.getSettings().isBinariesInHex());
         binaryInHex.addSelectionListener(changeListener);
-        noData = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_data, wizard.noData);
+        noData = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_data, wizard.getSettings().isNoData());
         noData.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
@@ -125,7 +125,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
                 GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TIMESTAMP),
                 }
             ));
-        outputFileText.addModifyListener(e -> wizard.setOutputFilePattern(outputFileText.getText()));
+        outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
 
         createExtraArgsInput(outputGroup);
 
@@ -145,24 +145,26 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     @Override
     protected void updateState()
     {
+        MySQLExportSettings settings = wizard.getSettings();
+
         String fileName = outputFolderText.getText();
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
-        wizard.setOutputFilePattern(outputFileText.getText());
-        wizard.setExtraCommandArgs(extraCommandArgsText.getText());
+        settings.setOutputFilePattern(outputFileText.getText());
+        wizard.getSettings().setExtraCommandArgs(extraCommandArgsText.getText());
         switch (methodCombo.getSelectionIndex()) {
-            case 0: wizard.method = MySQLExportWizard.DumpMethod.ONLINE; break;
-            case 1: wizard.method = MySQLExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
-            default: wizard.method = MySQLExportWizard.DumpMethod.NORMAL; break;
+            case 0: settings.setMethod(MySQLExportSettings.DumpMethod.ONLINE); break;
+            case 1: settings.setMethod(MySQLExportSettings.DumpMethod.LOCK_ALL_TABLES); break;
+            default: settings.setMethod(MySQLExportSettings.DumpMethod.NORMAL); break;
         }
-        wizard.noCreateStatements = noCreateStatementsCheck.getSelection();
-        wizard.addDropStatements = addDropStatementsCheck.getSelection();
-        wizard.disableKeys = disableKeysCheck.getSelection();
-        wizard.extendedInserts = extendedInsertsCheck.getSelection();
-        wizard.dumpEvents = dumpEventsCheck.getSelection();
-        wizard.comments = commentsCheck.getSelection();
-        wizard.removeDefiner = removeDefiner.getSelection();
-        wizard.binariesInHex = binaryInHex.getSelection();
-        wizard.noData = noData.getSelection();
+        settings.setNoCreateStatements(noCreateStatementsCheck.getSelection());
+        settings.setAddDropStatements(addDropStatementsCheck.getSelection());
+        settings.setDisableKeys(disableKeysCheck.getSelection());
+        settings.setExtendedInserts(extendedInsertsCheck.getSelection());
+        settings.setDumpEvents(dumpEventsCheck.getSelection());
+        settings.setComments(commentsCheck.getSelection());
+        settings.setRemoveDefiner(removeDefiner.getSelection());
+        settings.setBinariesInHex(binaryInHex.getSelection());
+        settings.setNoData(noData.getSelection());
 
         getContainer().updateButtons();
     }

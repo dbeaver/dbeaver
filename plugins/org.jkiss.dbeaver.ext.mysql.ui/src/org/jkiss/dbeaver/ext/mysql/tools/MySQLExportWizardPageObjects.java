@@ -26,10 +26,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -125,7 +125,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             exportViewsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    wizard.showViews = exportViewsCheck.getSelection();
+                    wizard.getSettings().setShowViews(exportViewsCheck.getSelection());
                     loadTables(null);
                 }
             });
@@ -150,7 +150,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                 }
                 tables.add((MySQLTableBase) object);
                 if (((MySQLTableBase) object).isView()) {
-                    wizard.showViews = true;
+                    wizard.getSettings().setShowViews(true);
                     exportViewsCheck.setSelection(true);
                 }
             } else if (object.getDataSource() instanceof MySQLDataSource) {
@@ -222,7 +222,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                 try {
                     final List<MySQLTableBase> objects = new ArrayList<>();
                     objects.addAll(curCatalog.getTables(monitor));
-                    if (wizard.showViews) {
+                    if (wizard.getSettings().isShowViews()) {
                         objects.addAll(curCatalog.getViews(monitor));
                     }
                     objects.sort(DBUtils.nameComparator());
@@ -245,12 +245,13 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     }
 
     public void saveState() {
-        wizard.objects.clear();
+        List<MySQLDatabaseExportInfo> objects = wizard.getSettings().getObjects();
+        objects.clear();
         for (TableItem item : catalogTable.getItems()) {
             if (item.getChecked()) {
                 MySQLCatalog catalog = (MySQLCatalog) item.getData();
                 MySQLDatabaseExportInfo info = new MySQLDatabaseExportInfo(catalog, checkedObjects.get(catalog));
-                wizard.objects.add(info);
+                objects.add(info);
             }
         }
     }

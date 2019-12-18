@@ -27,8 +27,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -105,7 +105,11 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
         });
         createExtraArgsInput(settingsGroup);
 
-        createSecurityGroup(composite);
+        Composite extraGroup = UIUtils.createComposite(composite, 2);
+        createSecurityGroup(extraGroup);
+        Group taskGroup = UIUtils.createControlGroup(
+            extraGroup, "Task", 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        wizard.createTaskSaveButtons(taskGroup, false, 1);
 
         setControl(composite);
 

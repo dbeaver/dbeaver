@@ -36,12 +36,12 @@ import java.util.Date;
 import java.util.List;
 
 
-public class DatabaseWizardPageLog extends WizardPage {
+public class ToolWizardPageLog extends WizardPage {
 
     private StyledText dumpLogText;
     private String task;
 
-    public DatabaseWizardPageLog(String task)
+    public ToolWizardPageLog(String task)
     {
         super(NLS.bind(TaskNativeUIMessages.tools_wizard_page_log_task_progress, task));
         this.task = task;
@@ -80,7 +80,7 @@ public class DatabaseWizardPageLog extends WizardPage {
         UIUtils.syncExec(new Runnable() {
             @Override
             public void run() {
-                synchronized (DatabaseWizardPageLog.this) {
+                synchronized (ToolWizardPageLog.this) {
                     if (!dumpLogText.isDisposed()) {
                         int caretOffset = dumpLogText.getCaretOffset();
                         dumpLogText.append(line);
@@ -108,7 +108,7 @@ public class DatabaseWizardPageLog extends WizardPage {
         UIUtils.syncExec(new Runnable() {
             @Override
             public void run() {
-                synchronized (DatabaseWizardPageLog.this) {
+                synchronized (ToolWizardPageLog.this) {
                     if (!dumpLogText.isDisposed()) {
                         dumpLogText.setText(""); //$NON-NLS-1$
                     }
