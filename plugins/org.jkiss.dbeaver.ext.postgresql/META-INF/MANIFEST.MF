@@ -9,6 +9,7 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis;visibility:=reexport,
  org.jkiss.bundle.gis;visibility:=reexport,
+ org.jkiss.dbeaver.tasks.native;visibility:=reexport,
  net.sf.opencsv;visibility:=reexport,
  com.google.gson,
  org.eclipse.jface
@@ -26,7 +27,8 @@ Export-Package: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.model.lock,
  org.jkiss.dbeaver.ext.postgresql.model.net,
  org.jkiss.dbeaver.ext.postgresql.model.plan,
- org.jkiss.dbeaver.ext.postgresql.model.session
+ org.jkiss.dbeaver.ext.postgresql.model.session,
+ org.jkiss.dbeaver.ext.postgresql.tasks
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.postgresql
 

@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.io.File;
 import java.util.Collection;
 
-public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
-        extends AbstractToolWizard<AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT, PROCESS_ARG> implements IImportWizard
+public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
+        extends AbstractToolWizard<SETTINGS, BASE_OBJECT, PROCESS_ARG> implements IImportWizard
 {
     protected File inputFile;
 
@@ -43,9 +43,7 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
 	}
 
     @Override
-    protected AbstractScriptExecuteSettings<BASE_OBJECT> createSettings() {
-        return new AbstractScriptExecuteSettings<>();
-    }
+    protected abstract SETTINGS createSettings();
 
     @Override
     protected boolean isSingleTimeWizard() {

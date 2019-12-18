@@ -15,12 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.tools;
+package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 
 public class PostgreRestoreSettings extends AbstractImportExportSettings<DBSObject> {
 
+    private String inputFile;
+    private boolean cleanFirst;
 
+    public String getInputFile() {
+        return inputFile;
+    }
+
+    public void setInputFile(String inputFile) {
+        this.inputFile = inputFile;
+    }
+
+    public boolean isCleanFirst() {
+        return cleanFirst;
+    }
+
+    public void setCleanFirst(boolean cleanFirst) {
+        this.cleanFirst = cleanFirst;
+    }
 }

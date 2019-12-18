@@ -42,7 +42,7 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && !CommonUtils.isEmpty(wizard.inputFile);
+        return super.isPageComplete() && !CommonUtils.isEmpty(wizard.getSettings().getInputFile());
     }
 
     @Override
@@ -86,8 +86,8 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
     protected void updateState()
     {
         wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
-        wizard.inputFile = inputFileText.getText();
-        wizard.cleanFirst = cleanFirstButton.getSelection();
+        wizard.getSettings().setInputFile(inputFileText.getText());
+        wizard.getSettings().setCleanFirst(cleanFirstButton.getSelection());
 
         inputFileText.setOpenFolder(wizard.format == PostgreBackupRestoreWizard.ExportFormat.DIRECTORY);
 

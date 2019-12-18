@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mysql.tools;
+package org.jkiss.dbeaver.ext.postgresql.tasks;
 
-public class MySQLTasks {
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 
-    public static final String TASK_DATABASE_BACKUP = "mysqlDatabaseBackup";
-    public static final String TASK_DATABASE_RESTORE = "mysqlDatabaseRestore";
-    public static final String TASK_SCRIPT_EXECUTE = "mysqlScriptExecute";
+public class PostgreScriptExecuteSettings extends AbstractScriptExecuteSettings<PostgreDatabase> {
+
 
 }
