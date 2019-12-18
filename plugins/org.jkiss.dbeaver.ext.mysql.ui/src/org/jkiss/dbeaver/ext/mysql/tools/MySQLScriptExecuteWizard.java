@@ -60,7 +60,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
 
     @Override
     public String getTaskTypeId() {
-        return MySQLTasks.TASK_SCRIPT_EXECUTE;
+        return isImport ? MySQLTasks.TASK_DATABASE_RESTORE : MySQLTasks.TASK_SCRIPT_EXECUTE;
     }
 
     @Override
@@ -107,7 +107,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
         if (noBeep) {
             cmd.add("--no-beep"); //$NON-NLS-1$
         }
-        addExtraCommandArgs(cmd);
+        getSettings().addExtraCommandArgs(cmd);
     }
 
     @Override

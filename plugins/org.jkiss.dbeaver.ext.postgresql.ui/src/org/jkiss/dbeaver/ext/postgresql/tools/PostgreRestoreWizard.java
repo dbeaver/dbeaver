@@ -34,7 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRestoreInfo> implements IExportWizard {
+class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSettings, PostgreDatabaseRestoreInfo> implements IExportWizard {
 
     private PostgreRestoreWizardPageSettings settingsPage;
     private PostgreDatabaseRestoreInfo restoreInfo;
@@ -121,6 +121,11 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
         }
 
         return cmd;
+    }
+
+    @Override
+    protected PostgreRestoreSettings createSettings() {
+        return new PostgreRestoreSettings();
     }
 
     @Override

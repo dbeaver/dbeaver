@@ -146,6 +146,7 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
 
         @Override
         public void saveSettings() {
+
         }
 
         @Override

@@ -32,7 +32,7 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
     private Combo formatCombo;
     private Button cleanFirstButton;
 
-    protected PostgreRestoreWizardPageSettings(PostgreRestoreWizard wizard)
+    PostgreRestoreWizardPageSettings(PostgreRestoreWizard wizard)
     {
         super(wizard, PostgreMessages.wizard_restore_page_setting_title_setting);
         setTitle(PostgreMessages.wizard_restore_page_setting_title);
@@ -71,7 +71,7 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
 
         Group inputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_restore_page_setting_label_input, 2, GridData.FILL_HORIZONTAL, 0);
         UIUtils.createControlLabel(inputGroup, PostgreMessages.wizard_restore_page_setting_label_backup_file);
-        inputFileText = new TextWithOpenFile(inputGroup, PostgreMessages.wizard_restore_page_setting_label_choose_backup_file, new String[] {"*.backup","*"});
+        inputFileText = new TextWithOpenFile(inputGroup, PostgreMessages.wizard_restore_page_setting_label_choose_backup_file, new String[] {"*.backup","*.sql","*"});
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
 

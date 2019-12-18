@@ -24,6 +24,7 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -32,7 +33,7 @@ import java.io.File;
 import java.util.Collection;
 
 public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
-        extends AbstractToolWizard<BASE_OBJECT, PROCESS_ARG> implements IImportWizard
+        extends AbstractToolWizard<AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT, PROCESS_ARG> implements IImportWizard
 {
     protected File inputFile;
 
@@ -40,6 +41,11 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
         super(dbObject, task);
         this.inputFile = null;
 	}
+
+    @Override
+    protected AbstractScriptExecuteSettings<BASE_OBJECT> createSettings() {
+        return new AbstractScriptExecuteSettings<>();
+    }
 
     @Override
     protected boolean isSingleTimeWizard() {

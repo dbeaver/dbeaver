@@ -136,7 +136,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
                 GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATE),
                 GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TIMESTAMP),
             }));
-        outputFileText.addModifyListener(e -> wizard.setOutputFilePattern(outputFileText.getText()));
+        outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
         if (wizard.getOutputFolder() != null) {
             outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
         }
@@ -152,14 +152,14 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
     {
         String fileName = outputFolderText.getText();
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
-        wizard.setOutputFilePattern(outputFileText.getText());
+        wizard.getSettings().setOutputFilePattern(outputFileText.getText());
 
         wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
-        wizard.compression = compressCombo.getText();
-        wizard.encoding = encodingCombo.getText();
-        wizard.useInserts = useInsertsCheck.getSelection();
-        wizard.noPrivileges = noPrivilegesCheck.getSelection();
-        wizard.noOwner = noOwnerCheck.getSelection();
+        wizard.getSettings().setCompression(compressCombo.getText());
+        wizard.getSettings().setEncoding(encodingCombo.getText());
+        wizard.getSettings().setUseInserts(useInsertsCheck.getSelection());
+        wizard.getSettings().setNoPrivileges(noPrivilegesCheck.getSelection());
+        wizard.getSettings().setNoOwner(noOwnerCheck.getSelection());
 
         getContainer().updateButtons();
     }

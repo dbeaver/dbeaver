@@ -25,11 +25,9 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -39,14 +37,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBackupInfo> implements IExportWizard {
+class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettings, PostgreDatabaseBackupInfo> implements IExportWizard {
 
-    String compression;
-    String encoding;
-    boolean showViews;
-    boolean useInserts;
-    boolean noPrivileges;
-    boolean noOwner;
     public List<PostgreDatabaseBackupInfo> objects = new ArrayList<>();
 
     private PostgreBackupWizardPageObjects objectsPage;
@@ -54,13 +46,6 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
 
     public PostgreBackupWizard(Collection<DBSObject> objects) {
         super(objects, PostgreMessages.wizard_backup_title);
-
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        this.outputFilePattern = store.getString("Postgre.export.outputFilePattern");
-        if (CommonUtils.isEmpty(this.outputFilePattern)) {
-            this.outputFilePattern = "dump-${database}-${timestamp}.backup";
-        }
-        showViews = CommonUtils.getBoolean(store.getString("Postgre.export.showViews"), false);
     }
 
     @Override
@@ -110,7 +95,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
             PostgreMessages.wizard_backup_msgbox_success_title,
             NLS.bind(PostgreMessages.wizard_backup_msgbox_success_description, CommonUtils.truncateString(getObjectsName(), 255)),
             SWT.ICON_INFORMATION);
-        UIUtils.launchProgram(outputFolder.getAbsolutePath());
+        UIUtils.launchProgram(getSettings().getOutputFolder().getAbsolutePath());
 	}
 
     @Override
@@ -119,19 +104,19 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
         super.fillProcessParameters(cmd, arg);
 
         cmd.add("--format=" + format.getId());
-        if (!CommonUtils.isEmpty(compression)) {
-            cmd.add("--compress=" + compression);
+        if (!CommonUtils.isEmpty(getSettings().getCompression())) {
+            cmd.add("--compress=" + getSettings().getCompression());
         }
-        if (!CommonUtils.isEmpty(encoding)) {
-            cmd.add("--encoding=" + encoding);
+        if (!CommonUtils.isEmpty(getSettings().getEncoding())) {
+            cmd.add("--encoding=" + getSettings().getEncoding());
         }
-        if (useInserts) {
+        if (getSettings().isUseInserts()) {
             cmd.add("--inserts");
         }
-        if (noPrivileges) {
+        if (getSettings().isNoPrivileges()) {
             cmd.add("--no-privileges");
         }
-        if (noOwner) {
+        if (getSettings().isNoOwner()) {
             cmd.add("--no-owner");
         }
 
@@ -170,11 +155,12 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     public boolean performFinish() {
         objectsPage.saveState();
 
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue("Postgre.export.outputFilePattern", this.outputFilePattern);
-        store.setValue("Postgre.export.showViews", showViews);
-
         return super.performFinish();
+    }
+
+    @Override
+    protected PostgreBackupSettings createSettings() {
+        return new PostgreBackupSettings();
     }
 
     @Override
@@ -187,7 +173,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     {
         super.startProcessHandler(monitor, arg, processBuilder, process);
 
-        String outFileName = GeneralUtils.replaceVariables(outputFilePattern, name -> {
+        String outFileName = GeneralUtils.replaceVariables(getSettings().getOutputFilePattern(), name -> {
             switch (name) {
                 case VARIABLE_DATABASE:
                     return arg.getDatabase().getName();
@@ -210,7 +196,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
             return null;
         });
 
-        File outFile = new File(outputFolder, outFileName);
+        File outFile = new File(getSettings().getOutputFolder(), outFileName);
         Thread job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile);
         job.start();
     }

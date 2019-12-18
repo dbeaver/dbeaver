@@ -56,7 +56,7 @@ public class ToolWizardDialog extends TaskConfigurationWizardDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        if (getWizard() instanceof AbstractToolWizard<?, ?>) {
+        if (getWizard() instanceof AbstractToolWizard<?, ?, ?>) {
             boolean nativeClientRequired = ((AbstractToolWizard) getWizard()).isNativeClientHomeRequired();
             if (nativeClientRequired) {
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
