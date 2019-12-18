@@ -25,18 +25,4 @@ public class OcientSQLDialect extends GenericSQLDialect {
     public OcientSQLDialect() {
         super("Ocient SQL");
     }
-
-    @Override
-    public boolean supportsOrderByIndex() {
-        return false;
-    }
-
-    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-        super.initDriverSettings(dataSource, metaData);
-    }
-
-    @Override
-    public boolean supportsAliasInSelect() {
-        return true;
-    }
 }
