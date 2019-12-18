@@ -107,26 +107,34 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         return project;
     }
 
-    public void setSelection(Collection<DBNNode> nodes) {
+    public void setSelection(List<DBNNode> nodes) {
+//        for (DBNNode node : nodes) {
+//            dataSourceTree.getViewer().reveal(node);
+//        }
         dataSourceTree.getViewer().setSelection(
             new StructuredSelection(nodes), true);
     }
 
     public void checkNodes(Collection<DBNNode> nodes, boolean revealAll) {
+        TreeViewer treeViewer = dataSourceTree.getViewer();
         boolean first = true;
         for (DBNNode node : nodes) {
             if (revealAll) {
-                dataSourceTree.getViewer().reveal(node);
+                treeViewer.reveal(node);
             } else if (first) {
                 DBNDataSource dsNode = DBNDataSource.getDataSourceNode(node);
                 if (dsNode != null) {
-                    dataSourceTree.getViewer().reveal(dsNode);
+                    treeViewer.reveal(dsNode);
                 }
                 first = false;
             }
-            ((CheckboxTreeViewer) dataSourceTree.getViewer()).setChecked(node, true);
+            if (treeViewer instanceof CheckboxTreeViewer) {
+                ((CheckboxTreeViewer) treeViewer).setChecked(node, true);
+            }
         }
-        checkboxTreeManager.updateCheckStates();
+        if (treeViewer instanceof CheckboxTreeViewer) {
+            checkboxTreeManager.updateCheckStates();
+        }
     }
 
     public boolean hasCheckedNodes() {
