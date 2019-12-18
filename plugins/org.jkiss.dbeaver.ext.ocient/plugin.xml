@@ -3,8 +3,36 @@
 
 <plugin>
 
+        <!--
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="ocient" class="org.jkiss.dbeaver.ext.ocient.model.OcientMetaModel" driverClass="com.ocient.jdbc.JDBCDriver"/>
+-        <meta id="ocient" class="org.jkiss.dbeaver.ext.ocient.model.OcientMetaModel" driverClass="com.ocient.jdbc.JDBCDriver"/>
+    </extension>
+        -->
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.ocient.OcientDataSourceProvider"
+                description="%datasource.bq.description"
+                id="ocient"
+                parent="generic"
+                label="Ocient DB"
+                icon="icons/ocient_icon.png">
+            <drivers managable="true">
+                <driver
+                        id="ociend_jdbc"
+                        label="Ocient"
+                        class="com.ocient.jdbc.JDBCDriver"
+                        icon="icons/ocient_icon.png"
+                        iconBig="icons/ocient_icon_big.png"
+                        sampleURL="jdbc:ocient://{host}[:port]/?[db={database}]"
+                        defaultPort="4050"
+                        description="Ocient JDBC driver"
+                        webURL=""
+                        categories="sql,analytic">
+                    <replace provider="generic" driver="ocient_generic"/>
+                    <file type="jar" path="https://s3-us-west-2.amazonaws.com/ocient.com/ocient-jdbc4-1.0.jar"/>
+                </driver>
+             </drivers>
+        </datasource>
     </extension>
 
 </plugin>
