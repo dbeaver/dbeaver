@@ -24,10 +24,8 @@ import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -53,8 +51,9 @@ public class Log
     }
 
     private final String name;
-    private static ThreadLocal<PrintStream> logWriter = new ThreadLocal<>();
+    private static ThreadLocal<PrintWriter> logWriter = new ThreadLocal<>();
     private static boolean quietMode;
+    private static final PrintWriter DEFAULT_DEBUG_WRITER = new PrintWriter(System.err);;
 
     public static Log getLog(Class<?> forClass) {
         return new Log(forClass.getName());
@@ -64,20 +63,15 @@ public class Log
         return quietMode;
     }
 
-    public static PrintStream getLogWriter() {
+    public static PrintWriter getLogWriter() {
         return logWriter.get();
     }
 
-    public static void setLogWriter(OutputStream logWriter) {
+    public static void setLogWriter(Writer logWriter) {
         if (logWriter == null) {
             Log.logWriter.remove();
         } else {
-            PrintStream printStream;
-            try {
-                printStream = new PrintStream(logWriter, true, StandardCharsets.UTF_8.toString());
-            } catch (UnsupportedEncodingException e) {
-                printStream = new PrintStream(logWriter, true);
-            }
+            PrintWriter printStream = new PrintWriter(logWriter, true);
             Log.logWriter.set(printStream);
         }
     }
@@ -116,7 +110,7 @@ public class Log
     }
 
     public void flush() {
-        PrintStream logStream = logWriter.get();
+        PrintWriter logStream = logWriter.get();
         if (logStream != null) {
             logStream.flush();
         }
@@ -180,8 +174,8 @@ public class Log
     }
 
     private void debugMessage(Object message, Throwable t) {
-        PrintStream logStream = logWriter.get();
-        PrintStream debugWriter = logStream != null ? logStream : (quietMode ? null : System.err);
+        PrintWriter logStream = logWriter.get();
+        PrintWriter debugWriter = logStream != null ? logStream : (quietMode ? null : DEFAULT_DEBUG_WRITER);
         if (debugWriter == null) {
             return;
         }

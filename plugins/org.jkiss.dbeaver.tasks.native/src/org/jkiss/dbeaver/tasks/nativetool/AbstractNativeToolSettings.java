@@ -115,9 +115,13 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
         }
         if (!CommonUtils.isEmpty(toolUserName)) {
             preferenceStore.setValue("toolUserName", toolUserName);
+        } else {
+            preferenceStore.setToDefault("toolUserName");
         }
         if (!CommonUtils.isEmpty(toolUserPassword)) {
             preferenceStore.setValue("toolUserPassword", toolUserPassword);
+        } else {
+            preferenceStore.setToDefault("toolUserPassword");
         }
     }
 
