@@ -115,8 +115,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2932,7 +2932,8 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public DBSObject getParentObject()
         {
-            return getDataSourceContainer();
+            DBCExecutionContext executionContext = getExecutionContext();
+            return executionContext == null ? null : executionContext.getOwnerInstance();
         }
 
         @Nullable
