@@ -17,8 +17,32 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extends AbstractNativeToolSettings<BASE_OBJECT> {
+    private String inputFile;
 
+    public String getInputFile() {
+        return inputFile;
+    }
+
+    public void setInputFile(String inputFile) {
+        this.inputFile = inputFile;
+    }
+
+    @Override
+    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
+        super.loadSettings(runnableContext, preferenceStore);
+
+        inputFile = preferenceStore.getString("inputFile");
+    }
+
+    @Override
+    public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
+        super.saveSettings(runnableContext, preferenceStore);
+
+        preferenceStore.setValue("inputFile", inputFile);
+    }
 }
