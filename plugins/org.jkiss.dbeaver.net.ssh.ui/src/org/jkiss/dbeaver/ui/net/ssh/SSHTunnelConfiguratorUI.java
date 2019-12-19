@@ -82,8 +82,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
 
-            hostText = UIUtils.createLabelText(settingsGroup, SSHUIMessages.model_ssh_configurator_label_host_ip, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL)); //$NON-NLS-2$
-            portText = UIUtils.createLabelSpinner(settingsGroup, SSHUIMessages.model_ssh_configurator_label_port, SSHConstants.DEFAULT_SSH_PORT, StandardConstants.MIN_PORT_VALUE, StandardConstants.MAX_PORT_VALUE);
+            UIUtils.createControlLabel(settingsGroup, SSHUIMessages.model_ssh_configurator_label_host_ip);
+            Composite hostPortComp = UIUtils.createComposite(settingsGroup, 3);
+            hostPortComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            hostText = new Text(hostPortComp, SWT.BORDER); //$NON-NLS-2$
+            hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            portText = UIUtils.createLabelSpinner(hostPortComp, SSHUIMessages.model_ssh_configurator_label_port, SSHConstants.DEFAULT_SSH_PORT, StandardConstants.MIN_PORT_VALUE, StandardConstants.MAX_PORT_VALUE);
+
             userNameText = UIUtils.createLabelText(settingsGroup, SSHUIMessages.model_ssh_configurator_label_user_name, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL)); //$NON-NLS-2$
 
             authMethodCombo = UIUtils.createLabelCombo(settingsGroup, SSHUIMessages.model_ssh_configurator_combo_auth_method, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -134,6 +139,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             remotePortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_port_description);
 
             UIUtils.createHorizontalLine(advancedGroup, 4, 0);
+
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             keepAliveText = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
             keepAliveText.setLayoutData(gd);
