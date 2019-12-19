@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.tasks.ui.nativetool;
 
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -28,8 +27,9 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
-public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> extends WizardPage {
+public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> extends ActiveWizardPage {
 
     protected final WIZARD wizard;
 
@@ -46,7 +46,6 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
     {
         return wizard.getClientHome() != null && super.isPageComplete();
     }
-
 
     protected void createCheckButtons(Composite buttonsPanel, final Table table) {
         UIUtils.createDialogButton(buttonsPanel, "All", new CheckListener(table, true));

@@ -196,6 +196,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
         if (initFrom != null) {
+            ((PostgreExecutionContext)context).setDefaultsFrom((PostgreExecutionContext) initFrom);
             final PostgreSchema activeSchema = ((PostgreExecutionContext)initFrom).getDefaultSchema();
             if (activeSchema != null) {
                 ((PostgreExecutionContext)context).setDefaultSchema(monitor, activeSchema);

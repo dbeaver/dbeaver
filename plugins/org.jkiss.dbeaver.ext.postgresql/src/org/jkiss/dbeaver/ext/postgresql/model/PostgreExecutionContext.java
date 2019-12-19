@@ -84,6 +84,12 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return true;
     }
 
+    void setDefaultsFrom(@NotNull PostgreExecutionContext initFrom) {
+        this.activeUser = initFrom.activeUser;
+        this.searchPath.clear();
+        this.defaultSearchPath = new ArrayList<>(initFrom.defaultSearchPath);
+    }
+
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, PostgreDatabase catalog, PostgreSchema schema) throws DBCException {
         PostgreDataSource dataSource = getDefaultCatalog().getDataSource();

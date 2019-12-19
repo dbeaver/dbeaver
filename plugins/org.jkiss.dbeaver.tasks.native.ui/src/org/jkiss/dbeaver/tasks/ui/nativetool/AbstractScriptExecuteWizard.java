@@ -35,11 +35,8 @@ import java.util.Collection;
 public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
         extends AbstractToolWizard<SETTINGS, BASE_OBJECT, PROCESS_ARG> implements IImportWizard
 {
-    protected File inputFile;
-
     public AbstractScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task) {
         super(dbObject, task);
-        this.inputFile = null;
 	}
 
     @Override
@@ -52,12 +49,12 @@ public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScrip
 
     public File getInputFile()
     {
-        return inputFile;
+        return new File(getSettings().getInputFile());
     }
 
     public void setInputFile(File inputFile)
     {
-        this.inputFile = inputFile;
+        getSettings().setInputFile(inputFile.getAbsolutePath());
     }
 
     @Override
@@ -86,7 +83,7 @@ public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScrip
         logPage.startLogReader(
             processBuilder,
             process.getInputStream());
-        new TextFileTransformerJob(monitor, inputFile, process.getOutputStream(), getInputCharset(), getOutputCharset()).start();
+        new TextFileTransformerJob(monitor, getInputFile(), process.getOutputStream(), getInputCharset(), getOutputCharset()).start();
     }
 
     @Override

@@ -109,6 +109,10 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
                     protected void onSelectionChange(Object element) {
                         selectedCatalog = element instanceof DBNDatabaseItem && ((DBNDatabaseItem) element).getObject() instanceof MySQLCatalog ?
                             (MySQLCatalog) ((DBNDatabaseItem) element).getObject() : null;
+                        ieWizard.getDatabaseObjects().clear();
+                        if (selectedCatalog != null) {
+                            ieWizard.getDatabaseObjects().add(selectedCatalog);
+                        }
                         updateHomeSelector();
                         propertyChangeListener.run();
                     }

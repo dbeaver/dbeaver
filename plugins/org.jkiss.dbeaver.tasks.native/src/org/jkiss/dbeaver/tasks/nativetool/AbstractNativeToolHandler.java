@@ -146,8 +146,17 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     protected void setupProcessParameters(SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
     }
 
+    protected boolean isLogInputStream() {
+        return true;
+    }
+
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process, Log log) {
-        new LogReaderJob(task, settings, processBuilder, process.getErrorStream()).start();
+        LogReaderJob logReaderJob = new LogReaderJob(
+            task,
+            settings,
+            processBuilder,
+            isLogInputStream() ? process.getInputStream() : process.getErrorStream());
+        logReaderJob.start();
     }
 
     public boolean executeProcess(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, PROCESS_ARG arg, Log log) throws IOException, InterruptedException {
