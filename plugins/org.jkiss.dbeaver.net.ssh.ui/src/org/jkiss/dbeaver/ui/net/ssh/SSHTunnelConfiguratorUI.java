@@ -57,7 +57,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private TextWithOpen privateKeyText;
     private Label pwdLabel;
     private Text passwordText;
-    private Label savePasswordLabel;
     private Button savePasswordCheckbox;
     private Label privateKeyLabel;
     private Combo tunnelImplCombo;
@@ -108,12 +107,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
             {
                 pwdLabel = UIUtils.createControlLabel(settingsGroup, SSHUIMessages.model_ssh_configurator_label_password);
-                passwordText = new Text(settingsGroup, SWT.BORDER | SWT.PASSWORD);
+                Composite passComp = UIUtils.createComposite(settingsGroup, 2);
+                passComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+                passwordText = new Text(passComp, SWT.BORDER | SWT.PASSWORD);
                 passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                savePasswordLabel = UIUtils.createControlLabel(settingsGroup, SSHUIMessages.model_ssh_configurator_checkbox_save_pass);
-                savePasswordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                savePasswordCheckbox = UIUtils.createCheckbox(settingsGroup, false);
+                savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
                 savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             }
         }
@@ -367,8 +367,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     }
 
     private void showSavePasswordCheckbox(boolean show) {
-        ((GridData)savePasswordLabel.getLayoutData()).exclude = !show;
-        savePasswordLabel.setVisible(show);
         ((GridData)savePasswordCheckbox.getLayoutData()).exclude = !show;
         savePasswordCheckbox.setVisible(show);
     }
