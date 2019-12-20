@@ -210,7 +210,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_NAMED_PARAMETERS_PREFIX, String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX));
         PrefUtils.setDefaultPreferenceValue(store, SQL_CONTROL_COMMAND_PREFIX, String.valueOf(SQLConstants.DEFAULT_CONTROL_COMMAND_PREFIX));
         PrefUtils.setDefaultPreferenceValue(store, SQL_VARIABLES_ENABLED, true);
-        PrefUtils.setDefaultPreferenceValue(store, SQL_FILTER_FORCE_SUBSELECT, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FILTER_FORCE_SUBSELECT, true);
 
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_KEYWORD_CASE, "");
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_LF_BEFORE_COMMA, false);
