@@ -126,7 +126,12 @@ public class SSHTunnelImpl implements DBWTunnel {
                 try {
                     implementation.invalidateTunnel(monitor1);
                 } catch (Exception e) {
-                    log.debug("Error invalidating SSH tunnel", e);
+                    log.debug("Error invalidating SSH tunnel. Closing.", e);
+                    try {
+                        closeTunnel(monitor);
+                    } catch (Exception e1) {
+                        log.error("Error closing broken tunnel", e1);
+                    }
                 }
             },
             "Ping SSH tunnel " + dataSource.getContainer().getName(),
