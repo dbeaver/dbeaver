@@ -164,12 +164,12 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                         dbStat.setString(1, ((OracleServerSession) serverSession).getSqlId());
                         dbStat.setLong(2, ((OracleServerSession) serverSession).getSqlChildNumber());
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) 
-                        {		
-							List<OracleServerExecutePlan> ExecutePlan = new ArrayList<>();
+                        {
+							List<OracleServerExecutePlan> planItems = new ArrayList<>();
 							while (dbResult.next()) {
-                                ExecutePlan.add(new OracleServerExecutePlan(dbResult));
+                                planItems.add(new OracleServerExecutePlan(dbResult));
                             }
-							return ExecutePlan;
+							return planItems;
 						}
                     }							
                 } catch (SQLException e) {

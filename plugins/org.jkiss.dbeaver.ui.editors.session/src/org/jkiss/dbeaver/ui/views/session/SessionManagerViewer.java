@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.views.session;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -38,8 +39,10 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionDetails;
@@ -59,6 +62,7 @@ import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -200,8 +204,20 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                                 extDetailsItem.setToolTipText(detailsInfo.getDetailsTooltip());
                             }
 
-                            DetailsListControl detailsProps = new DetailsListControl(detailsFolder, workbenchPart.getSite(), detailsInfo);
-                            extDetailsItem.setControl(detailsProps);
+                            Class<?> detailsType = detailsInfo.getDetailsType();
+                            if (DBPObjectWithDescription.class.isAssignableFrom(detailsType)) {
+                                StyledText text = new StyledText(detailsFolder, SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL);
+                                text.setForeground(UIStyles.getDefaultTextForeground());
+                                text.setBackground(UIStyles.getDefaultTextBackground());
+                                text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+                                text.setData(detailsInfo);
+                                extDetailsItem.setControl(text);
+                            } else if (DBPObject.class.isAssignableFrom(detailsType)) {
+                                DetailsListControl detailsProps = new DetailsListControl(detailsFolder, workbenchPart.getSite(), detailsInfo);
+                                extDetailsItem.setControl(detailsProps);
+                            } else {
+                                extDetailsItem.setControl(UIUtils.createLabel(detailsFolder, "Unsupported details type: " + detailsType));
+                            }
                         }
                     }
                 }
@@ -213,8 +229,14 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                         CTabItem item = detailsFolder.getItem(detailsFolder.getSelectionIndex());
                         Object data = item.getData();
                         if (data instanceof DBAServerSessionDetails) {
-                            DetailsListControl detailsViewer = (DetailsListControl) item.getControl();
-                            detailsViewer.loadData();
+                            Class<?> detailsType = ((DBAServerSessionDetails) data).getDetailsType();
+                            if (DBPObjectWithDescription.class.isAssignableFrom(detailsType)) {
+                                StyledText styledText = (StyledText) item.getControl();
+                                loadPlainTextDetails((DBAServerSessionDetails) data, styledText);
+                            } else {
+                                DetailsListControl detailsViewer = (DetailsListControl) item.getControl();
+                                detailsViewer.loadData();
+                            }
                         }
                     }
                 });
@@ -224,6 +246,25 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         sashMain.setWeights(new int[]{700, 300});
+    }
+
+    private void loadPlainTextDetails(DBAServerSessionDetails data, StyledText styledText) {
+        SessionDetailsLoadService loadingService = new SessionDetailsLoadService(data);
+        LoadingJob.createService(
+            loadingService,
+            new ProgressLoaderVisualizer<Collection<DBPObject>>(loadingService, styledText) {
+                @Override
+                public void completeLoading(Collection<DBPObject> dbpObjects) {
+                    StringBuilder text = new StringBuilder();
+                    for (DBPObject item : dbpObjects) {
+                        if (item instanceof DBPObjectWithDescription) {
+                            text.append(((DBPObjectWithDescription) item).getDescription());
+                            text.append(GeneralUtils.getDefaultLineSeparator());
+                        }
+                    }
+                    styledText.setText(text.toString());
+                }
+            }).schedule();
     }
 
     private void updatePreview() {
@@ -249,8 +290,13 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             CTabItem detailsItem = detailsFolder.getItem(detailsFolder.getSelectionIndex());
             Object data = detailsItem.getData();
             if (data instanceof DBAServerSessionDetails) {
-                DetailsListControl detailsListControl = (DetailsListControl) detailsItem.getControl();
-                detailsListControl.loadData();
+                if (detailsItem.getControl() instanceof StyledText) {
+                    StyledText styledText = (StyledText) detailsItem.getControl();
+                    loadPlainTextDetails((DBAServerSessionDetails) data, styledText);
+                } else {
+                    DetailsListControl detailsListControl = (DetailsListControl) detailsItem.getControl();
+                    detailsListControl.loadData();
+                }
             }
         }
     }
@@ -499,11 +545,12 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
         private DBAServerSessionDetails sessionDetails;
 
-        protected DetailsListControl(Composite parent, IWorkbenchSite site, DBAServerSessionDetails sessionDetails) {
+        DetailsListControl(Composite parent, IWorkbenchSite site, DBAServerSessionDetails sessionDetails) {
             super(parent, SWT.SHEET, site, new ListContentProvider());
             this.sessionDetails = sessionDetails;
         }
 
+        @NotNull
         @Override
         protected String getListConfigId(List<Class<?>> classList) {
             return "SessionDetails/" + sessionManager.getDataSource().getContainer().getDriver().getId() + "/" + sessionDetails.getDetailsTitle();
@@ -526,7 +573,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
         private DBAServerSessionDetails sessionDetails;
 
-        public SessionDetailsLoadService(DBAServerSessionDetails sessionDetails) {
+        SessionDetailsLoadService(DBAServerSessionDetails sessionDetails) {
             super("Load session details " + sessionDetails.getDetailsTitle(), sessionManager.getDataSource());
             this.sessionDetails = sessionDetails;
         }
