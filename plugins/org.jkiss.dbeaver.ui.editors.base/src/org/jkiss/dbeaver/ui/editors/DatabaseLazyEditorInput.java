@@ -56,6 +56,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
     private static final Log log = Log.getLog(DatabaseLazyEditorInput.class);
 
     private final String nodePath;
+    private DBPProject project;
     private String nodeName;
     private final String activePageId;
     private final String activeFolderId;
@@ -85,6 +86,8 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
         final String inputClass = memento.getString(DatabaseEditorInputFactory.TAG_CLASS);
         nodePath = memento.getString(DatabaseEditorInputFactory.TAG_NODE);
         nodeName = memento.getString(DatabaseEditorInputFactory.TAG_NODE_NAME);
+        String projectName = memento.getString(DatabaseEditorInputFactory.TAG_PROJECT);
+        project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
         dataSourceId = memento.getString(DatabaseEditorInputFactory.TAG_DATA_SOURCE);
         if (nodePath == null || inputClass == null || dataSourceId == null) {
             log.error("Corrupted memento"); //$NON-NLS-2$
@@ -209,12 +212,19 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
     public IDatabaseEditorInput initializeRealInput(final DBRProgressMonitor monitor) throws DBException
     {
         // Get the node path.
-        dataSource = DBUtils.findDataSource(dataSourceId);
+        if (project != null) {
+            dataSource = project.getDataSourceRegistry().getDataSource(dataSourceId);
+        }
+        if (dataSource == null) {
+            dataSource = DBUtils.findDataSource(dataSourceId);
+        }
         if (dataSource == null) {
             log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
         }
-        final DBPProject project = dataSource.getRegistry().getProject();
+        if (project == null) {
+            project = dataSource.getRegistry().getProject();
+        }
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
         navigatorModel.ensureProjectLoaded(project);
         //dataSourceContainer, project, nodePath, nodeName, activePageId, activeFolderId

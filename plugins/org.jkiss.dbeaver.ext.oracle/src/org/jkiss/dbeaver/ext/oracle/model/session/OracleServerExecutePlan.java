@@ -16,7 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -25,7 +26,7 @@ import java.sql.ResultSet;
 /**
  * Plan
  */
-public class OracleServerExecutePlan implements DBPObject {
+public class OracleServerExecutePlan implements DBPObjectWithDescription {
 
 
     private String plan;
@@ -36,6 +37,12 @@ public class OracleServerExecutePlan implements DBPObject {
 
     @Property(viewable = true, order = 1)
     public String getPlan() {
+        return plan;
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
         return plan;
     }
 }

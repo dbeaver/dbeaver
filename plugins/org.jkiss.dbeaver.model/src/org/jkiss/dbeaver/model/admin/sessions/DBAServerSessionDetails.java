@@ -37,5 +37,5 @@ public interface DBAServerSessionDetails {
 
     List<? extends DBPObject> getSessionDetails(DBCSession session, DBAServerSession serverSession) throws DBException;
 
-    Class<? extends DBPObject> getDetailsType();
+    Class<?> getDetailsType();
 }
