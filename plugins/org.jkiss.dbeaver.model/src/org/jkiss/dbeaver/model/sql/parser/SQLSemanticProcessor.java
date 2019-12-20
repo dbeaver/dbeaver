@@ -71,7 +71,7 @@ public class SQLSemanticProcessor {
     // It is configurable
     public static String addFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         boolean supportSubqueries = dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries();
-        if (!dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT)) {
+        if (supportSubqueries && !dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT)) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(sqlQuery);
                 if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
