@@ -24,6 +24,7 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -35,9 +36,13 @@ import java.util.Collection;
 public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
         extends AbstractToolWizard<SETTINGS, BASE_OBJECT, PROCESS_ARG> implements IImportWizard
 {
-    public AbstractScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task) {
+    protected AbstractScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task) {
         super(dbObject, task);
 	}
+
+    protected AbstractScriptExecuteWizard(DBTTask task) {
+        super(task);
+    }
 
     @Override
     protected abstract SETTINGS createSettings();
@@ -54,7 +59,7 @@ public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScrip
 
     public void setInputFile(File inputFile)
     {
-        getSettings().setInputFile(inputFile.getAbsolutePath());
+        getSettings().setInputFile(inputFile == null ? null : inputFile.getAbsolutePath());
     }
 
     @Override
@@ -65,7 +70,7 @@ public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScrip
 
     @Override
     public void addPages() {
-        super.addPages();
+        //super.addPages(); // Do not add base wizard pages. They can be added explicitly thru addTaskConfigPages
         addPage(logPage);
     }
 

@@ -61,16 +61,21 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLScriptExecuteSettings settings, MySQLCatalog arg, ProcessBuilder processBuilder, Process process, Log log) {
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLScriptExecuteSettings settings, MySQLCatalog arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+        File inputFile = new File(settings.getInputFile());
+        if (!inputFile.exists()) {
+            throw new IOException("File '" + inputFile.getAbsolutePath() + "' doesn't exist");
+        }
         if (settings.isImport()) {
             super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
             new BinaryFileTransformerJob(
                 monitor,
                 task,
-                new File(settings.getInputFile()),
+                inputFile,
                 process.getOutputStream(), log).start();
         } else {
             super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
+            new TextFileTransformerJob(monitor, task, inputFile, process.getOutputStream(), getInputCharset(), getOutputCharset(), log).start();
         }
     }
 
