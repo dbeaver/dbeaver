@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupRestoreSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreInfo;
-import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreRestoreSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -40,7 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSettings, PostgreDatabaseRestoreInfo> implements IExportWizard {
+class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRestoreSettings, PostgreDatabaseRestoreInfo> implements IExportWizard {
 
     private PostgreRestoreWizardPageSettings settingsPage;
 
@@ -119,7 +119,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
     @Override
     protected List<String> getCommandLine(PostgreDatabaseRestoreInfo arg) throws IOException {
         List<String> cmd = super.getCommandLine(arg);
-        PostgreRestoreSettings settings = getSettings();
+        PostgreDatabaseRestoreSettings settings = getSettings();
         if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.PLAIN) {
             cmd.add("--format=" + settings.getFormat().getId());
         }
@@ -132,8 +132,8 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
     }
 
     @Override
-    protected PostgreRestoreSettings createSettings() {
-        return new PostgreRestoreSettings();
+    protected PostgreDatabaseRestoreSettings createSettings() {
+        return new PostgreDatabaseRestoreSettings();
     }
 
     @Override

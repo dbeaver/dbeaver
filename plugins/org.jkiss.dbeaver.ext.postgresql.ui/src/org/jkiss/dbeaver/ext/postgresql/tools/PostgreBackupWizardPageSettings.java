@@ -25,7 +25,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -74,7 +74,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         Group formatGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_setting, 2, GridData.FILL_HORIZONTAL, 0);
         formatCombo = UIUtils.createLabelCombo(formatGroup, PostgreMessages.wizard_backup_page_setting_label_format, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        for (PostgreBackupSettings.ExportFormat format : PostgreBackupSettings.ExportFormat.values()) {
+        for (PostgreDatabaseBackupSettings.ExportFormat format : PostgreDatabaseBackupSettings.ExportFormat.values()) {
             formatCombo.add(format.getTitle());
         }
         formatCombo.select(wizard.getSettings().getFormat().ordinal());
@@ -170,7 +170,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         wizard.getSettings().setOutputFilePattern(outputFileText.getText());
 
-        wizard.getSettings().setFormat(PostgreBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);
+        wizard.getSettings().setFormat(PostgreDatabaseBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);
         wizard.getSettings().setCompression(compressCombo.getText());
         wizard.getSettings().setEncoding(encodingCombo.getText());
         wizard.getSettings().setUseInserts(useInsertsCheck.getSelection());

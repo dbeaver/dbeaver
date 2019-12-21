@@ -27,9 +27,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class PostgreRestoreSettings extends PostgreBackupRestoreSettings {
+public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings {
 
-    private static final Log log = Log.getLog(PostgreRestoreSettings.class);
+    private static final Log log = Log.getLog(PostgreDatabaseRestoreSettings.class);
 
     private String inputFile;
     private boolean cleanFirst;
