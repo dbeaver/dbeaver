@@ -56,7 +56,7 @@ public class BasicSQLDialect implements SQLDialect {
         }
     };
     protected static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
-        SQLConstants.KEYWORD_SELECT, "WITH",
+        SQLConstants.KEYWORD_SELECT,
         "EXPLAIN", "DESCRIBE", "DESC", "USE", "SET", "COMMIT", "ROLLBACK"};
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
@@ -451,13 +451,13 @@ public class BasicSQLDialect implements SQLDialect {
             // anyhow it shouldn't be transactional
             return false;
         }
-        String[] ntk = getNonTransactionKeywords();
-        for (int i = 0; i < ntk.length; i++) {
-            if (queryString.startsWith(ntk[i])) {
-                return false;
+        String[] ntk = getDDLKeywords();
+        for (String keyword : ntk) {
+            if (queryString.startsWith(keyword)) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     @NotNull
