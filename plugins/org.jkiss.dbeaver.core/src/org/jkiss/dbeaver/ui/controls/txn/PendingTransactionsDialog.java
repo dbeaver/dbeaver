@@ -48,8 +48,8 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     private Button commitButton;
     private Button rollbackButton;
 
-    public PendingTransactionsDialog(Shell parentShell, IWorkbenchPart activePart) {
-        super(parentShell, activePart);
+    private PendingTransactionsDialog(Shell parentShell, IWorkbenchPart activePart) {
+        super(parentShell, "Pending transactions", activePart);
     }
 
     @Override
@@ -70,8 +70,6 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Pending transactions");
-
         Composite composite = (Composite) super.createDialogArea(parent);
 
         contextTree = new Tree(composite, SWT.FULL_SELECTION | SWT.BORDER);
@@ -99,6 +97,8 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 logViewer.refresh();
             }
         });
+
+        closeOnFocusLost(contextTree);
 
         {
             Composite controlPanel = UIUtils.createPlaceholder(composite, 3, 5);
@@ -129,6 +129,8 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                     endTransaction(false);
                 }
             });
+
+            closeOnFocusLost(showAllCheck, commitButton, rollbackButton);
         }
 
         super.createTransactionLogPanel(composite);
@@ -206,6 +208,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 "No active part.");
         } else {
             final PendingTransactionsDialog dialog = new PendingTransactionsDialog(shell, activePart);
+            dialog.setModeless(true);
             dialog.open();
         }
     }
