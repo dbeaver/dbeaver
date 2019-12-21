@@ -17,26 +17,36 @@
  */
 package org.jkiss.dbeaver.tasks.ui.nativetool;
 
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.TextConsoleViewer;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 
 
 public class ToolWizardPageLog extends WizardPage {
 
-    private StyledText dumpLogText;
+    private static final Log log = Log.getLog(ToolWizardPageLog.class);
+
+    private TextConsoleViewer consoleViewer;
     private String task;
+    private OutputStreamWriter writer;
+    private MessageConsole console;
 
     public ToolWizardPageLog(String task)
     {
@@ -55,32 +65,21 @@ public class ToolWizardPageLog extends WizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = new Composite(parent, SWT.BORDER);
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        composite.setLayout(new FillLayout());
 
-        dumpLogText = new StyledText(composite, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        dumpLogText.setLayoutData(gd);
+        console = new MessageConsole("tool-log-console", null);
+        consoleViewer = new LogConsoleViewer(composite);
+        console.setWaterMarks(1024*1024*3, 1024*1024*4);
+
+        writer = new OutputStreamWriter(console.newMessageStream(), StandardCharsets.UTF_8);
 
         setControl(composite);
     }
 
     public Writer getLogWriter() {
-        return new Writer() {
-            @Override
-            public void write(char[] cbuf, int off, int len) {
-                appendLog(new String(cbuf, off, len));
-            }
-
-            @Override
-            public void flush() {
-
-            }
-
-            @Override
-            public void close() {
-
-            }
-        };
+        return writer;
     }
 
     public void appendLog(final String line)
@@ -93,24 +92,11 @@ public class ToolWizardPageLog extends WizardPage {
         if (getShell().isDisposed()) {
             return;
         }
-        UIUtils.syncExec(() -> {
-            synchronized (ToolWizardPageLog.this) {
-                if (!dumpLogText.isDisposed()) {
-                    int caretOffset = dumpLogText.getCaretOffset();
-                    dumpLogText.append(line);
-                    //dumpLogText.append(ContentUtils.getDefaultLineSeparator());
-                    dumpLogText.setCaretOffset(dumpLogText.getCharCount());
-                    dumpLogText.showSelection();
-                    if (error) {
-                        StyleRange style1Range = new StyleRange();
-                        style1Range.start = caretOffset;
-                        style1Range.length = line.length();
-                        style1Range.foreground = dumpLogText.getDisplay().getSystemColor(SWT.COLOR_RED);
-                        dumpLogText.setStyleRange(style1Range);
-                    }
-                }
-            }
-        });
+        try {
+            writer.write(line);
+        } catch (IOException e) {
+            log.debug(e);
+        }
     }
 
     public void clearLog()
@@ -120,9 +106,7 @@ public class ToolWizardPageLog extends WizardPage {
         }
         UIUtils.syncExec(() -> {
             synchronized (ToolWizardPageLog.this) {
-                if (!dumpLogText.isDisposed()) {
-                    dumpLogText.setText(""); //$NON-NLS-1$
-                }
+                console.clearConsole();
             }
         });
     }
@@ -140,7 +124,7 @@ public class ToolWizardPageLog extends WizardPage {
     private class LogReaderJob extends Thread {
         private ProcessBuilder processBuilder;
         private InputStream input;
-        protected LogReaderJob(ProcessBuilder processBuilder, InputStream stream)
+        LogReaderJob(ProcessBuilder processBuilder, InputStream stream)
         {
             super(NLS.bind(TaskNativeUIMessages.tools_wizard_page_log_task_log_reader, task));
 
@@ -222,4 +206,30 @@ public class ToolWizardPageLog extends WizardPage {
         }
     }
 
+    private class LogConsoleViewer extends TextConsoleViewer implements IDocumentListener {
+        LogConsoleViewer(Composite composite) {
+            super(composite, ToolWizardPageLog.this.console);
+        }
+
+        @Override
+        public void setDocument(IDocument document) {
+            IDocument oldDocument= getDocument();
+            super.setDocument(document);
+            if (oldDocument != null) {
+                oldDocument.removeDocumentListener(this);
+            }
+            if (document != null) {
+                document.addDocumentListener(this);
+            }
+        }
+
+        @Override
+        public void documentAboutToBeChanged(DocumentEvent event) {
+        }
+
+        @Override
+        public void documentChanged(DocumentEvent event) {
+            revealEndOfDocument();
+        }
+    }
 }
