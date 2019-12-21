@@ -157,6 +157,25 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         return exportObjects;
     }
 
+    public void fillExportObjectsFromInput() {
+        Map<MySQLCatalog, List<MySQLTableBase>> objMap = new LinkedHashMap<>();
+        for (DBSObject object : getDatabaseObjects()) {
+            MySQLCatalog catalog = null;
+            if (object instanceof MySQLCatalog) {
+                catalog = (MySQLCatalog) object;
+            } else if (object instanceof MySQLTableBase) {
+                catalog = ((MySQLTableBase) object).getContainer();
+            }
+            List<MySQLTableBase> tables = objMap.computeIfAbsent(catalog, mySQLCatalog -> new ArrayList<>());
+            if (object instanceof MySQLTableBase) {
+                tables.add((MySQLTableBase) object);
+            }
+        }
+        for (Map.Entry<MySQLCatalog, List<MySQLTableBase>> entry : objMap.entrySet()) {
+            getExportObjects().add(new MySQLDatabaseExportInfo(entry.getKey(), entry.getValue()));
+        }
+    }
+
     @Override
     public MySQLServerHome findNativeClientHome(String clientHomeId) {
         return MySQLDataSourceProvider.getServerHome(clientHomeId);

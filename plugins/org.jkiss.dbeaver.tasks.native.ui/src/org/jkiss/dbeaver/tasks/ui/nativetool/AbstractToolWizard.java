@@ -190,7 +190,7 @@ public abstract class AbstractToolWizard<SETTINGS extends AbstractNativeToolSett
 
     @Override
     public void createPageControls(Composite pageContainer) {
-        settings.loadSettings(getRunnableContext(), getPreferenceStore());
+        settings.loadSettings(UIUtils.getDefaultRunnableContext(), getPreferenceStore());
 
         super.createPageControls(pageContainer);
 

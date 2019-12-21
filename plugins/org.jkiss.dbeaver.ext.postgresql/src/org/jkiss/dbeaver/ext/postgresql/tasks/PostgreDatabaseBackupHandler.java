@@ -1,0 +1,155 @@
+package org.jkiss.dbeaver.ext.postgresql.tasks;
+
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<PostgreBackupSettings, DBSObject, PostgreDatabaseBackupInfo> {
+
+    @Override
+    public Collection<PostgreDatabaseBackupInfo> getRunInfo(PostgreBackupSettings settings) {
+        return settings.getExportObjects();
+    }
+
+    @Override
+    protected PostgreBackupSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
+        PostgreBackupSettings settings = new PostgreBackupSettings();
+        settings.loadSettings(context, new TaskPreferenceStore(task));
+        return settings;
+    }
+
+    @Override
+    protected boolean validateTaskParameters(DBTTask task, PostgreBackupSettings settings, Log log) {
+        if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_BACKUP)) {
+            final File dir = settings.getOutputFolder();
+            if (!dir.exists()) {
+                if (!dir.mkdirs()) {
+                    log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    protected boolean needsModelRefresh() {
+        return false;
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return true;
+    }
+
+    @Override
+    protected boolean isLogInputStream() {
+        return false;
+    }
+
+    @Override
+    protected boolean isExportWizard() {
+        return true;
+    }
+
+    @Override
+    public void fillProcessParameters(PostgreBackupSettings settings, PostgreDatabaseBackupInfo arg, List<String> cmd) throws IOException {
+        super.fillProcessParameters(settings, arg, cmd);
+
+        cmd.add("--format=" + settings.getFormat().getId());
+        if (!CommonUtils.isEmpty(settings.getCompression())) {
+            cmd.add("--compress=" + settings.getCompression());
+        }
+        if (!CommonUtils.isEmpty(settings.getEncoding())) {
+            cmd.add("--encoding=" + settings.getEncoding());
+        }
+        if (settings.isUseInserts()) {
+            cmd.add("--inserts");
+        }
+        if (settings.isNoPrivileges()) {
+            cmd.add("--no-privileges");
+        }
+        if (settings.isNoOwner()) {
+            cmd.add("--no-owner");
+        }
+
+        // Objects
+        if (settings.getExportObjects().isEmpty()) {
+            // no dump
+        } else if (!CommonUtils.isEmpty(arg.getTables())) {
+            for (PostgreTableBase table : arg.getTables()) {
+                cmd.add("-t");
+                // Use explicit quotes in case of quoted identifiers (#5950)
+                cmd.add(escapeCLIIdentifier(table.getSchema().getName() + "." + table.getName()));
+            }
+        }
+        if (!CommonUtils.isEmpty(arg.getSchemas())) {
+            for (PostgreSchema schema : arg.getSchemas()) {
+                cmd.add("-n");
+                // Use explicit quotes in case of quoted identifiers (#5950)
+                cmd.add(escapeCLIIdentifier(schema.getName()));
+            }
+        }
+    }
+
+    private static String escapeCLIIdentifier(String name) {
+        return "\"" + name.replace("\"", "\\\"") + "\"";
+    }
+
+    @Override
+    protected List<String> getCommandLine(PostgreBackupSettings settings, PostgreDatabaseBackupInfo arg) throws IOException {
+        List<String> cmd = new ArrayList<>();
+        fillProcessParameters(settings, arg, cmd);
+        cmd.add(arg.getDatabase().getName());
+
+        return cmd;
+    }
+
+    @Override
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+        super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
+
+        String outFileName = GeneralUtils.replaceVariables(settings.getOutputFilePattern(), name -> {
+            switch (name) {
+                case VARIABLE_DATABASE:
+                    return arg.getDatabase().getName();
+                case VARIABLE_HOST:
+                    return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
+                case VARIABLE_TABLE:
+                    final Iterator<PostgreTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
+                    if (iterator != null && iterator.hasNext()) {
+                        return iterator.next().getName();
+                    } else {
+                        return "null";
+                    }
+                case VARIABLE_TIMESTAMP:
+                    return RuntimeUtils.getCurrentTimeStamp();
+                case VARIABLE_DATE:
+                    return RuntimeUtils.getCurrentDate();
+                default:
+                    System.getProperty(name);
+            }
+            return null;
+        });
+
+        File outFile = new File(settings.getOutputFolder(), outFileName);
+        DumpCopierJob job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile, log);
+        job.start();
+    }
+
+}

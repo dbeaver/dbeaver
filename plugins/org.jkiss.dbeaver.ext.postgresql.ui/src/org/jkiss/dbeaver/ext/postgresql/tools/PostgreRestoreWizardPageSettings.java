@@ -20,13 +20,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreRestoreSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.utils.CommonUtils;
 
 
-class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<PostgreRestoreWizard>
-{
+class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<PostgreRestoreWizard> {
 
     private TextWithOpenFile inputFileText;
     private Combo formatCombo;
@@ -55,10 +56,10 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
         Group formatGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_restore_page_setting_label_setting, 2, GridData.FILL_HORIZONTAL, 0);
         formatCombo = UIUtils.createLabelCombo(formatGroup, PostgreMessages.wizard_restore_page_setting_label_format, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        for (PostgreBackupWizard.ExportFormat format : PostgreBackupWizard.ExportFormat.values()) {
+        for (PostgreBackupSettings.ExportFormat format : PostgreBackupSettings.ExportFormat.values()) {
             formatCombo.add(format.getTitle());
         }
-        formatCombo.select(wizard.format.ordinal());
+        formatCombo.select(wizard.getSettings().getFormat().ordinal());
         formatCombo.addListener(SWT.Selection, updateListener);
 
         cleanFirstButton = UIUtils.createCheckbox(formatGroup,
@@ -87,11 +88,12 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
     @Override
     protected void updateState()
     {
-        wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
-        wizard.getSettings().setInputFile(inputFileText.getText());
-        wizard.getSettings().setCleanFirst(cleanFirstButton.getSelection());
+        PostgreRestoreSettings settings = wizard.getSettings();
+        settings.setFormat(PostgreBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);
+        settings.setInputFile(inputFileText.getText());
+        settings.setCleanFirst(cleanFirstButton.getSelection());
 
-        inputFileText.setOpenFolder(wizard.format == PostgreBackupRestoreWizard.ExportFormat.DIRECTORY);
+        inputFileText.setOpenFolder(settings.getFormat() == PostgreBackupSettings.ExportFormat.DIRECTORY);
 
         getContainer().updateButtons();
     }

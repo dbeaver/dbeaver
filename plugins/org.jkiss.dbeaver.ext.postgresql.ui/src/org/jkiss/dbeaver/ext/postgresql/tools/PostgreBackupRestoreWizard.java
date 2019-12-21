@@ -20,9 +20,10 @@ import org.eclipse.ui.IExportWizard;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupRestoreSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupRestoreInfo;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -32,33 +33,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-abstract class PostgreBackupRestoreWizard<SETTINGS extends AbstractImportExportSettings<DBSObject>, PROCESS_ARG extends PostgreDatabaseBackupRestoreInfo>
+abstract class PostgreBackupRestoreWizard<SETTINGS extends PostgreBackupRestoreSettings, PROCESS_ARG extends PostgreDatabaseBackupRestoreInfo>
     extends AbstractImportExportWizard<SETTINGS, PROCESS_ARG> implements IExportWizard {
 
-    public enum ExportFormat {
-        PLAIN("p", "Plain"),
-        CUSTOM("c", "Custom"),
-        DIRECTORY("d", "Directory"),
-        TAR("t", "Tar");
-
-        private final String id;
-        private String title;
-
-        ExportFormat(String id, String title) {
-            this.id = id;
-            this.title = title;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-    }
-
-    ExportFormat format = ExportFormat.CUSTOM;
 
     public PostgreBackupRestoreWizard(DBTTask task) {
         super(task);

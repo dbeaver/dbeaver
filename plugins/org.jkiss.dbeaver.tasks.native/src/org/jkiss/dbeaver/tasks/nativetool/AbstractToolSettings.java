@@ -84,8 +84,10 @@ public abstract class AbstractToolSettings<BASE_OBJECT extends DBSObject> {
             if (!CommonUtils.isEmpty(databaseObjectList)) {
                 DBPProject finalProject = dataSourceContainer.getProject();
                 try {
-                    runnableContext.run(false, true, monitor -> {
+                    runnableContext.run(true, true, monitor -> {
+                        monitor.beginTask("Load database object list", databaseObjectList.size());
                         for (String objectId : databaseObjectList) {
+                            monitor.subTask("Load " + objectId);
                             try {
                                 DBSObject object = DBUtils.findObjectById(monitor, finalProject, objectId);
                                 if (object != null) {
@@ -94,7 +96,9 @@ public abstract class AbstractToolSettings<BASE_OBJECT extends DBSObject> {
                             } catch (Throwable e) {
                                 log.error("Can't find database object '" + objectId + "' in project '" + finalProject.getName() + "' for task configuration");
                             }
+                            monitor.worked(1);
                         }
+                        monitor.done();
                     });
                 } catch (InvocationTargetException e) {
                     log.error("Error loading objects configuration", e);

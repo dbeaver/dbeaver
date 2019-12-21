@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteSettings;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -64,7 +65,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
 
     @Override
     public String getTaskTypeId() {
-        return "postgresScriptExecute";
+        return PostgreSQLTasks.TASK_SCRIPT_EXECUTE;
     }
 
     @Override

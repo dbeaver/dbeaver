@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.tools;
+package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -22,31 +22,38 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
 * PostgreDatabaseBackupInfo
 */
 public class PostgreDatabaseBackupInfo extends PostgreDatabaseBackupRestoreInfo {
-    @NotNull
-    private Collection<PostgreSchema> schemas;
     @Nullable
-    private Collection<PostgreTableBase> tables;
+    private List<PostgreSchema> schemas;
+    @Nullable
+    private List<PostgreTableBase> tables;
 
-    public PostgreDatabaseBackupInfo(@NotNull PostgreDatabase database, @NotNull Collection<PostgreSchema> schemas, @Nullable Collection<PostgreTableBase> tables) {
+    public PostgreDatabaseBackupInfo(@NotNull PostgreDatabase database, @Nullable List<PostgreSchema> schemas, @Nullable List<PostgreTableBase> tables) {
         super(database);
         this.schemas = schemas;
         this.tables = tables;
     }
 
-    @NotNull
-    public Collection<PostgreSchema> getSchemas() {
+    @Nullable
+    public List<PostgreSchema> getSchemas() {
         return schemas;
     }
 
+    public void setSchemas(@Nullable List<PostgreSchema> schemas) {
+        this.schemas = schemas;
+    }
+
     @Nullable
-    public Collection<PostgreTableBase> getTables() {
+    public List<PostgreTableBase> getTables() {
         return tables;
     }
 
+    public void setTables(@Nullable List<PostgreTableBase> tables) {
+        this.tables = tables;
+    }
 }

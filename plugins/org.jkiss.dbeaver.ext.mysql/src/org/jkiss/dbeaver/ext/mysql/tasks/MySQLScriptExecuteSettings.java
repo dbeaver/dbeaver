@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 
@@ -59,6 +61,11 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
 
     public boolean isVerbose() {
         return logLevel == LogLevel.Verbose || logLevel == LogLevel.Debug;
+    }
+
+    @Override
+    public MySQLServerHome findNativeClientHome(String clientHomeId) {
+        return MySQLDataSourceProvider.getServerHome(clientHomeId);
     }
 
 }
