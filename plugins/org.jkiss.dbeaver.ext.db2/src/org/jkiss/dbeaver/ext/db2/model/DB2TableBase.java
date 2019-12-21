@@ -220,6 +220,11 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     }
 
     @Override
+    protected String getTruncateTableQuery() {
+        return "TRUNCATE TABLE " + getFullyQualifiedName(DBPEvaluationContext.DML) + " IMMEDIATE";
+    }
+
+    @Override
     @Property(viewable = true, editable = false, order = 2)
     public DB2Schema getSchema()
     {
