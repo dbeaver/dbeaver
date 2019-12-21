@@ -56,9 +56,8 @@ public class QMMStatementExecuteInfo extends QMMObject {
         if (sqlDialect != null && queryString != null) {
             this.transactional = sqlDialect.isTransactionModifyingQuery(queryString);
         } else {
-            this.transactional = true;
+            this.transactional = false;
         }
-
     }
 
     public QMMStatementExecuteInfo(long openTime, long closeTime, QMMStatementInfo stmt, String queryString, long rowCount, int errorCode, String errorMessage, long fetchBeginTime, long fetchEndTime, boolean transactional) {
@@ -84,6 +83,9 @@ public class QMMStatementExecuteInfo extends QMMObject {
             this.transactional = true;
         }
         this.updateRowCount = rowCount;
+        if (!transactional) {
+            this.transactional = this.updateRowCount >= 0;
+        }
         super.close();
     }
 
