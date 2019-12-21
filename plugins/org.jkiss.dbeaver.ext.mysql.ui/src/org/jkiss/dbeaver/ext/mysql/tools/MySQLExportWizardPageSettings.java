@@ -142,7 +142,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     }
 
     @Override
-    protected void saveState() {
+    public void saveState() {
         super.saveState();
 
         MySQLExportSettings settings = wizard.getSettings();

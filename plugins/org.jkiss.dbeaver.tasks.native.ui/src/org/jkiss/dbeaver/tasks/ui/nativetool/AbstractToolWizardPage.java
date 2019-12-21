@@ -63,7 +63,7 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
 
     }
 
-    protected void saveState() {
+    public void saveState() {
         if (extraCommandArgsText != null) {
             wizard.getSettings().setExtraCommandArgs(extraCommandArgsText.getText());
         }

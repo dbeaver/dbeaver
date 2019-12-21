@@ -141,9 +141,4 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptEx
         }
     }
 
-    @Override
-    public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null;
-    }
-
 }

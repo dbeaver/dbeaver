@@ -54,7 +54,7 @@ public abstract class AbstractImportExportWizard<SETTINGS extends AbstractImport
 
     @Override
     public boolean isRunTaskOnFinish() {
-        return true;
+        return getCurrentTask() != null;
     }
 
     public File getOutputFolder() {

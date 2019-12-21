@@ -167,6 +167,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     public boolean executeProcess(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, PROCESS_ARG arg, Log log) throws IOException, InterruptedException {
         monitor.beginTask(task.getType().getName(), 1);
         try {
+            monitor.subTask("Start native tool");
             final List<String> commandLine = getCommandLine(settings, arg);
             final File execPath = new File(commandLine.get(0));
 
@@ -180,6 +181,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
             startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
 
+            monitor.subTask("Executing");
             Thread.sleep(100);
 
             for (; ; ) {

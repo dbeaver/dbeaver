@@ -126,7 +126,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     }
 
     @Override
-    protected void saveState() {
+    public void saveState() {
         super.saveState();
 
         MySQLScriptExecuteSettings settings = wizard.getSettings();

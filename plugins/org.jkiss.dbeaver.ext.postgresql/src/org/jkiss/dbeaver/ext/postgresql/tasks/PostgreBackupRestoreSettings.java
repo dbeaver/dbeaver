@@ -65,10 +65,10 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
     }
 
     @Override
-    public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
-        super.saveSettings(runnableContext, preferenceStore);
+    public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
+        super.saveSettings(runnableContext, store);
 
-        preferenceStore.setValue("pg.format", format == null ? null : format.name());
+        store.setValue("pg.format", format == null ? null : format.name());
     }
 
 }

@@ -85,16 +85,17 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
             // Notify agent
             boolean hasErrors = error != null;
             DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
+            String completeMessage = this.task.getType().getName() + " task completed (" + RuntimeUtils.formatExecutionTime(elapsedTime) + ")";
             if (elapsedTime > platformUI.getLongOperationTimeout() * 1000) {
                 platformUI.notifyAgent(
-                    "Data transfer completed", !hasErrors ? IStatus.INFO : IStatus.ERROR);
+                    completeMessage, !hasErrors ? IStatus.INFO : IStatus.ERROR);
             }
             if (isShowFinalMessage() && !hasErrors) {
                 // Show message box
                 DBeaverNotifications.showNotification(
                     "task",
                     this.task.getName(),
-                    this.task.getType().getName() + " task completed (" + RuntimeUtils.formatExecutionTime(elapsedTime) + ")",
+                    completeMessage,
                     DBPMessageType.INFORMATION,
                     null);
             } else if (error != null) {

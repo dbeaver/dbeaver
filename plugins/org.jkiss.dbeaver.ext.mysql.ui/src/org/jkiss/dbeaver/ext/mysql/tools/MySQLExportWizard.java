@@ -84,11 +84,6 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLExportSettings, 
     }
 
     @Override
-    public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null;
-    }
-
-    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         super.init(workbench, selection);
         objectsPage = new MySQLExportWizardPageObjects(this);
