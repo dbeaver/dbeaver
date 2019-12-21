@@ -28,25 +28,28 @@ import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptExecuteSettings, MySQLCatalog, MySQLCatalog> {
 
     private MySQLScriptExecuteWizardPageSettings mainPage = new MySQLScriptExecuteWizardPageSettings(this);
 
-    public MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport)
-    {
+    public MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport) {
         super(Collections.singleton(catalog), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
         this.getSettings().setImport(isImport);
     }
 
     public MySQLScriptExecuteWizard(DBTTask task, boolean isImport) {
-        super(new ArrayList<>(), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
+        super(task);
         this.getSettings().setImport(isImport);
     }
 
@@ -57,22 +60,20 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptEx
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
-        // TODO: implement
+        mainPage.saveState();
+        getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
-    public MySQLScriptExecuteSettings.LogLevel getLogLevel()
-    {
+    public MySQLScriptExecuteSettings.LogLevel getLogLevel() {
         return getSettings().getLogLevel();
     }
 
-    public boolean isImport()
-    {
+    public boolean isImport() {
         return getSettings().isImport();
     }
 
     @Override
-    public boolean isVerbose()
-    {
+    public boolean isVerbose() {
         return getSettings().isVerbose();
     }
 
@@ -82,15 +83,14 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptEx
     }
 
     @Override
-    public void addPages()
-    {
+    public void addPages() {
+        addTaskConfigPages();
         addPage(mainPage);
         super.addPages();
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd, MySQLCatalog arg) throws IOException
-    {
+    public void fillProcessParameters(List<String> cmd, MySQLCatalog arg) throws IOException {
         String dumpPath = RuntimeUtils.getNativeClientBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
         if (getSettings().getLogLevel() == MySQLScriptExecuteSettings.LogLevel.Debug) {
@@ -110,8 +110,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptEx
     }
 
     @Override
-    public MySQLServerHome findNativeClientHome(String clientHomeId)
-    {
+    public MySQLServerHome findNativeClientHome(String clientHomeId) {
         return MySQLDataSourceProvider.getServerHome(clientHomeId);
     }
 
@@ -121,8 +120,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptEx
     }
 
     @Override
-    protected List<String> getCommandLine(MySQLCatalog arg) throws IOException
-    {
+    protected List<String> getCommandLine(MySQLCatalog arg) throws IOException {
         List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this, arg);
         cmd.add(arg.getName());
         return cmd;
@@ -141,6 +139,11 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptEx
         } else {
             super.startProcessHandler(monitor, arg, processBuilder, process);
         }
+    }
+
+    @Override
+    public boolean isRunTaskOnFinish() {
+        return getCurrentTask() != null;
     }
 
 }

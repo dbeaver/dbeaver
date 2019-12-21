@@ -347,18 +347,16 @@
     <extension point="org.jkiss.dbeaver.task">
         <category id="mysql" name="MySQL" description="MySQL database task"/>
 
-        <task id="mysqlDatabaseBackup" name="Database export" description="Database export task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
+        <task id="mysqlDatabaseBackup" name="MySQL dump" description="MySQL database export task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
         </task>
-<!--
-        <task id="mysqlDatabaseRestore" name="Database import" description="Database import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.DatabaseImportHandler">
+        <task id="mysqlDatabaseRestore" name="MySQL restore" description="MySQL database import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>
-        <task id="mysqlScriptExecute" name="SQL script" description="SQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
+        <task id="mysqlScriptExecute" name="MySQL script" description="MySQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
--->
     </extension>
 
 </plugin>

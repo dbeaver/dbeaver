@@ -86,11 +86,12 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
         });
 
         if (wizard.getInputFile() != null) {
-            inputFileText.setText(wizard.getInputFile().getName());
+            inputFileText.setText(wizard.getInputFile().getAbsolutePath());
         }
 
         Group settingsGroup = UIUtils.createControlGroup(
                 composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+        settingsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         logLevelCombo = UIUtils.createLabelCombo(
                 settingsGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_log_level, SWT.DROP_DOWN | SWT.READ_ONLY);
         for (MySQLScriptExecuteSettings.LogLevel logLevel : MySQLScriptExecuteSettings.LogLevel.values()) {
@@ -101,16 +102,18 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                wizard.getSettings().setLogLevel(MySQLScriptExecuteSettings.LogLevel.valueOf(logLevelCombo.getText()));
+                wizard.getSettings().setLogLevel(CommonUtils.valueOf(MySQLScriptExecuteSettings.LogLevel.class, logLevelCombo.getText()));
             }
         });
         createExtraArgsInput(settingsGroup);
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
-        Group taskGroup = UIUtils.createControlGroup(
-            extraGroup, "Task", 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        wizard.createTaskSaveButtons(taskGroup, false, 1);
+        {
+            Group taskGroup = UIUtils.createControlGroup(
+                extraGroup, "Task", 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            wizard.createTaskSaveButtons(taskGroup, false, 1);
+        }
 
         setControl(composite);
 
@@ -127,11 +130,20 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     }
 
     @Override
+    protected void saveState() {
+        super.saveState();
+
+        MySQLScriptExecuteSettings settings = wizard.getSettings();
+
+        String fileName = inputFileText.getText();
+        settings.setInputFile(fileName);
+        settings.setLogLevel(CommonUtils.valueOf(MySQLScriptExecuteSettings.LogLevel.class, logLevelCombo.getText()));
+    }
+
+    @Override
     protected void updateState()
     {
-        String fileName = inputFileText.getText();
-        wizard.setInputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
-
+        saveState();
         getContainer().updateButtons();
     }
 

@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
@@ -74,7 +74,7 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
 
         private final DBRRunnableContext runnableContext;
         private final DBTTaskType taskType;
-        private AbstractImportExportWizard<?, ?> ieWizard;
+        private AbstractToolWizard ieWizard;
         private ClientHomesSelector homesSelector;
         private MySQLCatalog selectedCatalog;
         private DBPDataSource curDataSource;
@@ -87,7 +87,7 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
 
         @Override
         public void createControl(Object parent, Object wizard, Runnable propertyChangeListener) {
-            ieWizard = (AbstractImportExportWizard) wizard;
+            ieWizard = (AbstractToolWizard) wizard;
             {
                 Group databasesGroup = UIUtils.createControlGroup((Composite) parent, "Select target database", 1, GridData.FILL_BOTH, 0);
 
@@ -166,9 +166,8 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
             if (selectorPanel != null && selectedCatalog != null) {
                 try {
                     DBNDatabaseNode[] catalogNode = new DBNDatabaseNode[1];
-                    ieWizard.getRunnableContext().run(true, true, monitor -> {
-                        catalogNode[0] = DBNUtils.getNodeByObject(monitor, selectedCatalog, false);
-                    });
+                    ieWizard.getRunnableContext().run(true, true, monitor ->
+                        catalogNode[0] = DBNUtils.getNodeByObject(monitor, selectedCatalog, false));
                     if (catalogNode[0] != null) {
                         List<DBNNode> selCatalogs = Collections.singletonList(catalogNode[0]);
                         //selectorPanel.checkNodes(selCatalogs, true);

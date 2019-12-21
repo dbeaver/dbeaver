@@ -53,11 +53,16 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 monitor.subTask(task.getType().getName());
 
                 Log.setLogWriter(logStream);
+                listener.taskStarted(task);
+                Throwable error = null;
                 try {
                     doExecute(monitor, task, settings, log);
                 } catch (Exception e) {
+                    error = e;
                     throw new InvocationTargetException(e);
                 } finally {
+                    listener.taskFinished(settings, error);
+
                     Log.setLogWriter(null);
                 }
 
@@ -150,7 +155,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         return true;
     }
 
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process, Log log) {
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
         LogReaderJob logReaderJob = new LogReaderJob(
             task,
             settings,
@@ -537,6 +542,14 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 // just skip
             }
         }
+    }
+
+    protected String getInputCharset() {
+        return GeneralUtils.UTF8_ENCODING;
+    }
+
+    protected String getOutputCharset() {
+        return GeneralUtils.UTF8_ENCODING;
     }
 
 }
