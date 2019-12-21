@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
@@ -42,7 +43,6 @@ import java.util.Map;
 class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSettings, PostgreDatabaseRestoreInfo> implements IExportWizard {
 
     private PostgreRestoreWizardPageSettings settingsPage;
-    private PostgreDatabaseRestoreInfo restoreInfo;
 
     PostgreRestoreWizard(DBTTask task) {
         super(task);
@@ -50,7 +50,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
 
     PostgreRestoreWizard(PostgreDatabase database) {
         super(Collections.singletonList(database), PostgreMessages.wizard_restore_title);
-        restoreInfo = new PostgreDatabaseRestoreInfo(database);
+        getSettings().setRestoreInfo(new PostgreDatabaseRestoreInfo(database));
     }
 
     @Override
@@ -60,7 +60,9 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
-        // TODO: implement
+        settingsPage.saveState();
+
+        getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
     @Override
@@ -136,7 +138,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
 
     @Override
     public Collection<PostgreDatabaseRestoreInfo> getRunInfo() {
-        return Collections.singleton(restoreInfo);
+        return Collections.singleton(getSettings().getRestoreInfo());
     }
 
     @Override

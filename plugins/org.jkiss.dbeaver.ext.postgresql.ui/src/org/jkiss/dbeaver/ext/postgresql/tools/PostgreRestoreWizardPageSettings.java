@@ -86,14 +86,19 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
     }
 
     @Override
-    protected void updateState()
+    public void saveState()
     {
         PostgreRestoreSettings settings = wizard.getSettings();
         settings.setFormat(PostgreBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);
         settings.setInputFile(inputFileText.getText());
         settings.setCleanFirst(cleanFirstButton.getSelection());
+    }
 
-        inputFileText.setOpenFolder(settings.getFormat() == PostgreBackupSettings.ExportFormat.DIRECTORY);
+    @Override
+    protected void updateState() {
+        saveState();
+
+        inputFileText.setOpenFolder(wizard.getSettings().getFormat() == PostgreBackupSettings.ExportFormat.DIRECTORY);
 
         getContainer().updateButtons();
     }

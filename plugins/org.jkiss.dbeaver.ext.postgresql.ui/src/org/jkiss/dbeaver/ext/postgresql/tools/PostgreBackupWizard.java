@@ -217,9 +217,4 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettin
         job.start();
     }
 
-    @Override
-    public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null;
-    }
-
 }
