@@ -25,8 +25,8 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupInfo;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -45,7 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettings, PostgreDatabaseBackupInfo> implements IExportWizard {
+class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBackupSettings, PostgreDatabaseBackupInfo> implements IExportWizard {
 
     private PostgreBackupWizardPageObjects objectsPage;
     private PostgreBackupWizardPageSettings settingsPage;
@@ -175,8 +175,8 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettin
     }
 
     @Override
-    protected PostgreBackupSettings createSettings() {
-        return new PostgreBackupSettings();
+    protected PostgreDatabaseBackupSettings createSettings() {
+        return new PostgreDatabaseBackupSettings();
     }
 
     @Override

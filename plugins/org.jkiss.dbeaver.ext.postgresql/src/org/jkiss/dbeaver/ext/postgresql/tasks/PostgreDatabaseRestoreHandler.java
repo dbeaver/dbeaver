@@ -14,22 +14,22 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<PostgreRestoreSettings, DBSObject, PostgreDatabaseRestoreInfo> {
+public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<PostgreDatabaseRestoreSettings, DBSObject, PostgreDatabaseRestoreInfo> {
 
     @Override
-    public Collection<PostgreDatabaseRestoreInfo> getRunInfo(PostgreRestoreSettings settings) {
+    public Collection<PostgreDatabaseRestoreInfo> getRunInfo(PostgreDatabaseRestoreSettings settings) {
         return Collections.singletonList(settings.getRestoreInfo());
     }
 
     @Override
-    protected PostgreRestoreSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
-        PostgreRestoreSettings settings = new PostgreRestoreSettings();
+    protected PostgreDatabaseRestoreSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
+        PostgreDatabaseRestoreSettings settings = new PostgreDatabaseRestoreSettings();
         settings.loadSettings(context, new TaskPreferenceStore(task));
         return settings;
     }
 
     @Override
-    protected boolean validateTaskParameters(DBTTask task, PostgreRestoreSettings settings, Log log) {
+    protected boolean validateTaskParameters(DBTTask task, PostgreDatabaseRestoreSettings settings, Log log) {
         if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_BACKUP)) {
             final File dir = settings.getOutputFolder();
             if (!dir.exists()) {
@@ -53,7 +53,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     }
 
     @Override
-    public void fillProcessParameters(PostgreRestoreSettings settings, PostgreDatabaseRestoreInfo arg, List<String> cmd) throws IOException {
+    public void fillProcessParameters(PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg, List<String> cmd) throws IOException {
         super.fillProcessParameters(settings, arg, cmd);
 
         if (settings.isCleanFirst()) {
@@ -67,7 +67,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     }
 
     @Override
-    protected List<String> getCommandLine(PostgreRestoreSettings settings, PostgreDatabaseRestoreInfo arg) throws IOException {
+    protected List<String> getCommandLine(PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg) throws IOException {
         List<String> cmd = new ArrayList<>();
         fillProcessParameters(settings, arg, cmd);
 
@@ -88,7 +88,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreRestoreSettings settings, PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             new BinaryFileTransformerJob(monitor, task, new File(settings.getInputFile()), process.getOutputStream(), log).start();

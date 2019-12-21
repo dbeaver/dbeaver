@@ -57,8 +57,7 @@ public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScrip
         return new File(getSettings().getInputFile());
     }
 
-    public void setInputFile(File inputFile)
-    {
+    public void setInputFile(File inputFile) {
         getSettings().setInputFile(inputFile == null ? null : inputFile.getAbsolutePath());
     }
 

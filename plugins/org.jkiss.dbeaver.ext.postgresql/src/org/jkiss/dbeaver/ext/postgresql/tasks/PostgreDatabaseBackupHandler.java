@@ -19,22 +19,22 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<PostgreBackupSettings, DBSObject, PostgreDatabaseBackupInfo> {
+public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<PostgreDatabaseBackupSettings, DBSObject, PostgreDatabaseBackupInfo> {
 
     @Override
-    public Collection<PostgreDatabaseBackupInfo> getRunInfo(PostgreBackupSettings settings) {
+    public Collection<PostgreDatabaseBackupInfo> getRunInfo(PostgreDatabaseBackupSettings settings) {
         return settings.getExportObjects();
     }
 
     @Override
-    protected PostgreBackupSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
-        PostgreBackupSettings settings = new PostgreBackupSettings();
+    protected PostgreDatabaseBackupSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
+        PostgreDatabaseBackupSettings settings = new PostgreDatabaseBackupSettings();
         settings.loadSettings(context, new TaskPreferenceStore(task));
         return settings;
     }
 
     @Override
-    protected boolean validateTaskParameters(DBTTask task, PostgreBackupSettings settings, Log log) {
+    protected boolean validateTaskParameters(DBTTask task, PostgreDatabaseBackupSettings settings, Log log) {
         if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_BACKUP)) {
             final File dir = settings.getOutputFolder();
             if (!dir.exists()) {
@@ -68,7 +68,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     }
 
     @Override
-    public void fillProcessParameters(PostgreBackupSettings settings, PostgreDatabaseBackupInfo arg, List<String> cmd) throws IOException {
+    public void fillProcessParameters(PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, List<String> cmd) throws IOException {
         super.fillProcessParameters(settings, arg, cmd);
 
         cmd.add("--format=" + settings.getFormat().getId());
@@ -112,7 +112,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     }
 
     @Override
-    protected List<String> getCommandLine(PostgreBackupSettings settings, PostgreDatabaseBackupInfo arg) throws IOException {
+    protected List<String> getCommandLine(PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg) throws IOException {
         List<String> cmd = new ArrayList<>();
         fillProcessParameters(settings, arg, cmd);
         cmd.add(arg.getDatabase().getName());
@@ -121,7 +121,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
 
         String outFileName = GeneralUtils.replaceVariables(settings.getOutputFilePattern(), name -> {

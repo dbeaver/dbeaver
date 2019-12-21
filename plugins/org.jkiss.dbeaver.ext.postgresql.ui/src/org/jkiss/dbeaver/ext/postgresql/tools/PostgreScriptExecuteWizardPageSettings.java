@@ -74,7 +74,7 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSet
         });
 
         if (wizard.getInputFile() != null) {
-            inputFileText.setText(wizard.getInputFile().getName());
+            inputFileText.setText(wizard.getInputFile().getAbsolutePath());
         }
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
@@ -93,10 +93,15 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSet
     }
 
     @Override
-    protected void updateState() {
+    public void saveState() {
         String fileName = inputFileText.getText();
         wizard.setInputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+    }
 
+
+    @Override
+    protected void updateState() {
+        saveState();
         getContainer().updateButtons();
     }
 

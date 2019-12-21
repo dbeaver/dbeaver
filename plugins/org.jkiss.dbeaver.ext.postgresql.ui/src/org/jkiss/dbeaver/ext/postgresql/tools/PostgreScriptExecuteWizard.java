@@ -27,7 +27,9 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteSettings;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -38,7 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScriptExecuteSettings, PostgreDatabase, PostgreDatabase> {
+class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScriptExecuteSettings, DBSObject, PostgreDatabase> {
 
     private PostgreScriptExecuteWizardPageSettings mainPage;
 
@@ -49,6 +51,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
     PostgreScriptExecuteWizard(PostgreDatabase catalog)
     {
         super(Collections.singleton(catalog), PostgreMessages.wizard_script_title_execute_script);
+        getSettings().setDatabase(catalog);
     }
 
     @Override
@@ -70,7 +73,9 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
-        // TODO: implement
+        mainPage.saveState();
+
+        getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
     @Override
@@ -111,7 +116,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
 
     @Override
     public Collection<PostgreDatabase> getRunInfo() {
-        return getDatabaseObjects();
+        return Collections.singletonList(getSettings().getDatabase());
     }
 
     @Override

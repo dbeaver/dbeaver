@@ -35,9 +35,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PostgreBackupSettings extends PostgreBackupRestoreSettings {
+public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings {
 
-    private static final Log log = Log.getLog(PostgreBackupSettings.class);
+    private static final Log log = Log.getLog(PostgreDatabaseBackupSettings.class);
 
     private List<PostgreDatabaseBackupInfo> exportObjects = new ArrayList<>();
 
