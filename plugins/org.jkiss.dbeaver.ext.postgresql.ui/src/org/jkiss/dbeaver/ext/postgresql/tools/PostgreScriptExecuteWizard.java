@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
@@ -24,6 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteSettings;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -36,19 +39,21 @@ import java.util.Map;
 
 class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScriptExecuteSettings, PostgreDatabase, PostgreDatabase> {
 
-    private boolean isImport;
     private PostgreScriptExecuteWizardPageSettings mainPage;
 
-    PostgreScriptExecuteWizard(PostgreDatabase catalog, boolean isImport)
-    {
-        super(Collections.singleton(catalog), isImport ? PostgreMessages.wizard_script_title_import_db : PostgreMessages.wizard_script_title_execute_script);
-        this.isImport = isImport;
-        this.mainPage = new PostgreScriptExecuteWizardPageSettings(this);
+    PostgreScriptExecuteWizard(DBTTask task) {
+        super(task);
     }
 
-    public boolean isImport()
+    PostgreScriptExecuteWizard(PostgreDatabase catalog)
     {
-        return isImport;
+        super(Collections.singleton(catalog), PostgreMessages.wizard_script_title_execute_script);
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        super.init(workbench, selection);
+        this.mainPage = new PostgreScriptExecuteWizardPageSettings(this);
     }
 
     @Override

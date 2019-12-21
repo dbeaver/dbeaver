@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.mysql.tools;
+package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.layout.GridData;
@@ -23,9 +23,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
+import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -46,11 +46,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * MySQL task configurator
+ * PostgreSQL task configurator
  */
-public class MySQLTaskConfigurator implements DBTTaskConfigurator {
+public class PostgreSQLTaskConfigurator implements DBTTaskConfigurator {
 
-    private static final Log log = Log.getLog(MySQLTaskConfigurator.class);
+    private static final Log log = Log.getLog(PostgreSQLTaskConfigurator.class);
 
     @Override
     public ConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
@@ -60,12 +60,12 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
     @Override
     public IWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
         switch (taskConfiguration.getType().getId()) {
-            case MySQLTasks.TASK_DATABASE_BACKUP:
-                return new MySQLExportWizard(taskConfiguration);
-            case MySQLTasks.TASK_DATABASE_RESTORE:
-                return new MySQLScriptExecuteWizard(taskConfiguration, true);
-            case MySQLTasks.TASK_SCRIPT_EXECUTE:
-                return new MySQLScriptExecuteWizard(taskConfiguration, false);
+            case PostgreSQLTasks.TASK_DATABASE_BACKUP:
+                return new PostgreBackupWizard(taskConfiguration);
+            case PostgreSQLTasks.TASK_DATABASE_RESTORE:
+                return new PostgreRestoreWizard(taskConfiguration);
+            case PostgreSQLTasks.TASK_SCRIPT_EXECUTE:
+                return new PostgreScriptExecuteWizard(taskConfiguration);
         }
         return null;
     }
@@ -76,7 +76,7 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
         private final DBTTaskType taskType;
         private AbstractToolWizard ieWizard;
         private ClientHomesSelector homesSelector;
-        private MySQLCatalog selectedCatalog;
+        private PostgreDatabase selectedDatabase;
         private DBPDataSource curDataSource;
         private DatabaseObjectsSelectorPanel selectorPanel;
 
@@ -97,21 +97,21 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
                     this.runnableContext) {
                     @Override
                     protected boolean isDatabaseFolderVisible(DBNDatabaseFolder folder) {
-                        return folder.getChildrenClass() == MySQLCatalog.class;
+                        return folder.getChildrenClass() == PostgreDatabase.class;
                     }
 
                     @Override
                     protected boolean isDatabaseObjectVisible(DBSObject obj) {
-                        return obj instanceof MySQLCatalog;
+                        return obj instanceof PostgreDatabase;
                     }
 
                     @Override
                     protected void onSelectionChange(Object element) {
-                        selectedCatalog = element instanceof DBNDatabaseItem && ((DBNDatabaseItem) element).getObject() instanceof MySQLCatalog ?
-                            (MySQLCatalog) ((DBNDatabaseItem) element).getObject() : null;
+                        selectedDatabase = element instanceof DBNDatabaseItem && ((DBNDatabaseItem) element).getObject() instanceof PostgreDatabase ?
+                            (PostgreDatabase) ((DBNDatabaseItem) element).getObject() : null;
                         ieWizard.getDatabaseObjects().clear();
-                        if (selectedCatalog != null) {
-                            ieWizard.getDatabaseObjects().add(selectedCatalog);
+                        if (selectedDatabase != null) {
+                            ieWizard.getDatabaseObjects().add(selectedDatabase);
                         }
                         updateHomeSelector();
                         propertyChangeListener.run();
@@ -129,9 +129,8 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
 
                     @Override
                     protected boolean isDataSourceVisible(DBNDataSource dataSource) {
-                        return dataSource.getDataSourceContainer().getDriver().getDataSourceProvider() instanceof MySQLDataSourceProvider;
+                        return dataSource.getDataSourceContainer().getDriver().getDataSourceProvider() instanceof PostgreDataSourceProvider;
                     }
-
                 };
             }
 
@@ -143,7 +142,7 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
         }
 
         private void updateHomeSelector() {
-            DBPDataSource newDataSource = selectedCatalog != null ? selectedCatalog.getDataSource() : null;
+            DBPDataSource newDataSource = selectedDatabase != null ? selectedDatabase.getDataSource() : null;
             if (newDataSource != null && curDataSource != newDataSource) {
                 homesSelector.populateHomes(newDataSource.getContainer().getDriver(), newDataSource.getContainer().getConnectionConfiguration().getClientHomeId(), true);
             }
@@ -155,17 +154,17 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
             List<DBSObject> databaseObjects = ieWizard.getSettings().getDatabaseObjects();
             if (!CommonUtils.isEmpty(databaseObjects)) {
                 for (DBSObject obj : databaseObjects) {
-                    if (obj instanceof MySQLCatalog) {
-                        selectedCatalog = (MySQLCatalog) obj;
+                    if (obj instanceof PostgreDatabase) {
+                        selectedDatabase = (PostgreDatabase) obj;
                     }
                 }
             }
 
-            if (selectorPanel != null && selectedCatalog != null) {
+            if (selectorPanel != null && selectedDatabase != null) {
                 try {
                     DBNDatabaseNode[] catalogNode = new DBNDatabaseNode[1];
                     ieWizard.getRunnableContext().run(true, true, monitor ->
-                        catalogNode[0] = DBNUtils.getNodeByObject(monitor, selectedCatalog, false));
+                        catalogNode[0] = DBNUtils.getNodeByObject(monitor, selectedDatabase, false));
                     if (catalogNode[0] != null) {
                         List<DBNNode> selCatalogs = Collections.singletonList(catalogNode[0]);
                         //selectorPanel.checkNodes(selCatalogs, true);
@@ -186,7 +185,7 @@ public class MySQLTaskConfigurator implements DBTTaskConfigurator {
 
         @Override
         public boolean isComplete() {
-            return homesSelector.getSelectedHome() != null && selectedCatalog != null;
+            return homesSelector.getSelectedHome() != null && selectedDatabase != null;
         }
     }
 

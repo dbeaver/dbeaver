@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupSettings;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -44,6 +45,10 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettin
 
     private PostgreBackupWizardPageObjects objectsPage;
     private PostgreBackupWizardPageSettings settingsPage;
+
+    public PostgreBackupWizard(DBTTask task) {
+        super(task);
+    }
 
     public PostgreBackupWizard(Collection<DBSObject> objects) {
         super(objects, PostgreMessages.wizard_backup_title);

@@ -77,7 +77,9 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
 
         createExtraArgsInput(inputGroup);
 
-        createSecurityGroup(composite);
+        Composite extraGroup = UIUtils.createComposite(composite, 2);
+        createSecurityGroup(extraGroup);
+        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
     }

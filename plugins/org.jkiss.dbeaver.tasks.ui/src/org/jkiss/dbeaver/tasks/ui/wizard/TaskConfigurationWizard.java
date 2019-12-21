@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
@@ -234,6 +235,11 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         }
     }
 
+    public void createTaskSaveGroup(Composite parent) {
+        Group taskGroup = UIUtils.createControlGroup(
+            parent, "Task", 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        createTaskSaveButtons(taskGroup, false, 1);
+    }
 
     public void createTaskSaveButtons(Composite parent, boolean horizontal, int hSpan) {
         Composite panel = new Composite(parent, SWT.NONE);
