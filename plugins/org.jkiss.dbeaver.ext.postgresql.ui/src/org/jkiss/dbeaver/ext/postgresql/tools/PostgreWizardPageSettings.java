@@ -65,8 +65,6 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
                 }
             }
 
-            wizard.setToolUserName(authUser == null ? connectionInfo.getUserName() : authUser);
-            wizard.setToolUserPassword(authPassword == null ? connectionInfo.getUserPassword() : authPassword);
             final boolean savePassword = authUser != null;
             Group securityGroup = UIUtils.createControlGroup(
                 parent, PostgreMessages.wizard_backup_page_setting_group_security, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);

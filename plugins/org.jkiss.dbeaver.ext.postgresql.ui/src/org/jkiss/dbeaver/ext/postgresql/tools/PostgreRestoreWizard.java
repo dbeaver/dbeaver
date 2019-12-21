@@ -23,7 +23,10 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupRestoreSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreInfo;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreRestoreSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -52,7 +55,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
 
     @Override
     public String getTaskTypeId() {
-        return "postgresDatabaseRestore";
+        return PostgreSQLTasks.TASK_DATABASE_RESTORE;
     }
 
     @Override
@@ -114,12 +117,13 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
     @Override
     protected List<String> getCommandLine(PostgreDatabaseRestoreInfo arg) throws IOException {
         List<String> cmd = super.getCommandLine(arg);
-        if (format != ExportFormat.PLAIN) {
-            cmd.add("--format=" + format.getId());
+        PostgreRestoreSettings settings = getSettings();
+        if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.PLAIN) {
+            cmd.add("--format=" + settings.getFormat().getId());
         }
         cmd.add("--dbname=" + arg.getDatabase().getName());
-        if (format == ExportFormat.DIRECTORY) {
-            cmd.add(getSettings().getInputFile());
+        if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+            cmd.add(settings.getInputFile());
         }
 
         return cmd;
@@ -138,7 +142,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process) {
         super.startProcessHandler(monitor, arg, processBuilder, process);
-        if (format != ExportFormat.DIRECTORY) {
+        if (getSettings().getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             new BinaryFileTransformerJob(monitor, new File(getSettings().getInputFile()), process.getOutputStream()).start();
         }
     }

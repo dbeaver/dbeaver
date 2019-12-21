@@ -26,10 +26,13 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupInfo;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -37,31 +40,36 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettings, PostgreDatabaseBackupInfo> implements IExportWizard {
-
-    public List<PostgreDatabaseBackupInfo> objects = new ArrayList<>();
 
     private PostgreBackupWizardPageObjects objectsPage;
     private PostgreBackupWizardPageSettings settingsPage;
 
-    public PostgreBackupWizard(DBTTask task) {
+    PostgreBackupWizard(DBTTask task) {
         super(task);
     }
 
-    public PostgreBackupWizard(Collection<DBSObject> objects) {
+    PostgreBackupWizard(Collection<DBSObject> objects) {
         super(objects, PostgreMessages.wizard_backup_title);
+        getSettings().fillExportObjectsFromInput();
     }
 
     @Override
     public String getTaskTypeId() {
-        return "postgresDatabaseBackup";
+        return PostgreSQLTasks.TASK_DATABASE_BACKUP;
     }
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
-        // TODO: implement
+        objectsPage.saveState();
+        settingsPage.saveState();
+
+        getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
     @Override
@@ -73,6 +81,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettin
 
     @Override
     public void addPages() {
+        addTaskConfigPages();
         addPage(objectsPage);
         addPage(settingsPage);
         super.addPages();
@@ -109,7 +118,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettin
     {
         super.fillProcessParameters(cmd, arg);
 
-        cmd.add("--format=" + format.getId());
+        cmd.add("--format=" + getSettings().getFormat().getId());
         if (!CommonUtils.isEmpty(getSettings().getCompression())) {
             cmd.add("--compress=" + getSettings().getCompression());
         }
@@ -127,7 +136,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettin
         }
 
         // Objects
-        if (objects.isEmpty()) {
+        if (getSettings().getExportObjects().isEmpty()) {
             // no dump
         } else if (!CommonUtils.isEmpty(arg.getTables())) {
             for (PostgreTableBase table : arg.getTables()) {
@@ -160,6 +169,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettin
     @Override
     public boolean performFinish() {
         objectsPage.saveState();
+        settingsPage.updateState();
 
         return super.performFinish();
     }
@@ -171,7 +181,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettin
 
     @Override
     public Collection<PostgreDatabaseBackupInfo> getRunInfo() {
-        return objects;
+        return getSettings().getExportObjects();
     }
 
     @Override
@@ -207,5 +217,9 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreBackupSettin
         job.start();
     }
 
+    @Override
+    public boolean isRunTaskOnFinish() {
+        return getCurrentTask() != null;
+    }
 
 }

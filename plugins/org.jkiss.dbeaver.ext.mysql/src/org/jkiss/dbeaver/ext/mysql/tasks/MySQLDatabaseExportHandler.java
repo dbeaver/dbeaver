@@ -109,6 +109,11 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
+    protected boolean needsModelRefresh() {
+        return false;
+    }
+
+    @Override
     public boolean isVerbose() {
         return true;
     }

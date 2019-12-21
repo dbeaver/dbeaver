@@ -64,7 +64,9 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
     }
 
     protected void saveState() {
-        wizard.getSettings().setExtraCommandArgs(extraCommandArgsText.getText());
+        if (extraCommandArgsText != null) {
+            wizard.getSettings().setExtraCommandArgs(extraCommandArgsText.getText());
+        }
     }
 
     protected void updateState() {

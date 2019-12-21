@@ -48,9 +48,9 @@ import java.util.List;
 /**
  * PostgreSQL task configurator
  */
-public class PostgreSQLTaskConfigurator implements DBTTaskConfigurator {
+public class PostgreTaskConfigurator implements DBTTaskConfigurator {
 
-    private static final Log log = Log.getLog(PostgreSQLTaskConfigurator.class);
+    private static final Log log = Log.getLog(PostgreTaskConfigurator.class);
 
     @Override
     public ConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {

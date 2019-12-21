@@ -14,21 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.tools;
+package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-
-import java.util.Collection;
 
 /**
-* PostgreDatabaseRestoreInfo
+* PostgreDatabaseBackupRestoreInfo
 */
-public class PostgreDatabaseRestoreInfo extends PostgreDatabaseBackupRestoreInfo {
-    public PostgreDatabaseRestoreInfo(@NotNull PostgreDatabase database) {
-        super(database);
+public class PostgreDatabaseBackupRestoreInfo {
+    @NotNull
+    private PostgreDatabase database;
+
+    public PostgreDatabaseBackupRestoreInfo(@NotNull PostgreDatabase database) {
+        this.database = database;
     }
+
+    @NotNull
+    public PostgreDatabase getDatabase() {
+        return database;
+    }
+
 }

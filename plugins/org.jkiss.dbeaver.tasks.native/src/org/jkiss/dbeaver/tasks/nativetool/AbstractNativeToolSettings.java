@@ -17,10 +17,12 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
@@ -29,6 +31,8 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> extends AbstractToolSettings<BASE_OBJECT> {
+
+    private static final Log log = Log.getLog(AbstractNativeToolSettings.class);
 
     private final String PROP_NAME_EXTRA_ARGS = "tools.wizard." + getClass().getSimpleName() + ".extraArgs";
 
@@ -102,8 +106,17 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
 
         extraCommandArgs = preferenceStore.getString(PROP_NAME_EXTRA_ARGS);
         clientHomeName = preferenceStore.getString("clientHomeName");
-        toolUserName  = preferenceStore.getString("toolUserName");
-        toolUserPassword = preferenceStore.getString("toolUserPassword");
+        toolUserName  = preferenceStore.getString("tool.user");
+        toolUserPassword = preferenceStore.getString("tool.password");
+
+        try {
+            final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
+            if (!CommonUtils.isEmpty(toolUserName)) toolUserName = encrypter.decrypt(toolUserName);
+            if (!CommonUtils.isEmpty(toolUserPassword)) toolUserPassword = encrypter.decrypt(toolUserPassword);
+        } catch (Exception e) {
+            log.debug(e);
+        }
+
     }
 
     @Override
@@ -113,15 +126,22 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
         if (clientHomeName != null) {
             preferenceStore.setValue("clientHomeName", clientHomeName);
         }
-        if (!CommonUtils.isEmpty(toolUserName)) {
-            preferenceStore.setValue("toolUserName", toolUserName);
-        } else {
-            preferenceStore.setToDefault("toolUserName");
-        }
-        if (!CommonUtils.isEmpty(toolUserPassword)) {
-            preferenceStore.setValue("toolUserPassword", toolUserPassword);
-        } else {
-            preferenceStore.setToDefault("toolUserPassword");
+
+        try {
+            final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
+
+            if (!CommonUtils.isEmpty(toolUserName)) {
+                preferenceStore.setValue("tool.user", encrypter.encrypt(toolUserName));
+            } else {
+                preferenceStore.setToDefault("tool.user");
+            }
+            if (!CommonUtils.isEmpty(toolUserPassword)) {
+                preferenceStore.setValue("tool.password", encrypter.encrypt(toolUserPassword));
+            } else {
+                preferenceStore.setToDefault("tool.password");
+            }
+        } catch (Exception e) {
+            log.debug(e);
         }
     }
 

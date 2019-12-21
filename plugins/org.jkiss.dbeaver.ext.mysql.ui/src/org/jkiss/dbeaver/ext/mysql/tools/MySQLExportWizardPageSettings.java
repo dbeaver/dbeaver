@@ -36,8 +36,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportWizard>
-{
+class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportWizard> {
 
     private Text outputFolderText;
     private Text outputFileText;
@@ -126,13 +125,14 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
                 GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TIMESTAMP),
                 }
             ));
-        outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
 
         createExtraArgsInput(outputGroup);
 
         if (wizard.getOutputFolder() != null) {
             outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
         }
+
+        outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
@@ -150,7 +150,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         String fileName = outputFolderText.getText();
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         settings.setOutputFilePattern(outputFileText.getText());
-        wizard.getSettings().setExtraCommandArgs(extraCommandArgsText.getText());
+
         switch (methodCombo.getSelectionIndex()) {
             case 0:
                 settings.setMethod(MySQLExportSettings.DumpMethod.ONLINE);

@@ -17,10 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
-
-public class PostgreRestoreSettings extends AbstractImportExportSettings<DBSObject> {
+public class PostgreRestoreSettings extends PostgreBackupRestoreSettings {
 
     private String inputFile;
     private boolean cleanFirst;

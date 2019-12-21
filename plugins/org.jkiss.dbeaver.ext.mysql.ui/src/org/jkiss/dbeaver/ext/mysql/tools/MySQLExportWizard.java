@@ -59,6 +59,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLExportSettings, 
 
     public MySQLExportWizard(Collection<DBSObject> objects) {
         super(objects, MySQLUIMessages.tools_db_export_wizard_task_name);
+        getSettings().fillExportObjectsFromInput();
     }
 
     public MySQLExportWizard(DBTTask task) {
