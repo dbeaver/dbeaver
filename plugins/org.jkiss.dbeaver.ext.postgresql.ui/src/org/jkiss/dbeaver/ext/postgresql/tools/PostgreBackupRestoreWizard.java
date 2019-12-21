@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -31,7 +32,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-abstract class PostgreBackupRestoreWizard<SETTINGS extends AbstractImportExportSettings<DBSObject>, PROCESS_ARG extends PostgreDatabaseBackupRestoreInfo> extends AbstractImportExportWizard<SETTINGS, PROCESS_ARG> implements IExportWizard {
+abstract class PostgreBackupRestoreWizard<SETTINGS extends AbstractImportExportSettings<DBSObject>, PROCESS_ARG extends PostgreDatabaseBackupRestoreInfo>
+    extends AbstractImportExportWizard<SETTINGS, PROCESS_ARG> implements IExportWizard {
 
     public enum ExportFormat {
         PLAIN("p", "Plain"),
@@ -57,6 +59,10 @@ abstract class PostgreBackupRestoreWizard<SETTINGS extends AbstractImportExportS
     }
 
     ExportFormat format = ExportFormat.CUSTOM;
+
+    public PostgreBackupRestoreWizard(DBTTask task) {
+        super(task);
+    }
 
     public PostgreBackupRestoreWizard(Collection<DBSObject> objects, String title) {
         super(objects, title);

@@ -136,16 +136,15 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
-        Group taskGroup = UIUtils.createControlGroup(
-            extraGroup, "Task", 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        wizard.createTaskSaveButtons(taskGroup, false, 1);
+        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
     }
 
     @Override
-    protected void updateState()
-    {
+    protected void saveState() {
+        super.saveState();
+
         MySQLExportSettings settings = wizard.getSettings();
 
         String fileName = outputFolderText.getText();
@@ -153,9 +152,15 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         settings.setOutputFilePattern(outputFileText.getText());
         wizard.getSettings().setExtraCommandArgs(extraCommandArgsText.getText());
         switch (methodCombo.getSelectionIndex()) {
-            case 0: settings.setMethod(MySQLExportSettings.DumpMethod.ONLINE); break;
-            case 1: settings.setMethod(MySQLExportSettings.DumpMethod.LOCK_ALL_TABLES); break;
-            default: settings.setMethod(MySQLExportSettings.DumpMethod.NORMAL); break;
+            case 0:
+                settings.setMethod(MySQLExportSettings.DumpMethod.ONLINE);
+                break;
+            case 1:
+                settings.setMethod(MySQLExportSettings.DumpMethod.LOCK_ALL_TABLES);
+                break;
+            default:
+                settings.setMethod(MySQLExportSettings.DumpMethod.NORMAL);
+                break;
         }
         settings.setNoCreateStatements(noCreateStatementsCheck.getSelection());
         settings.setAddDropStatements(addDropStatementsCheck.getSelection());
@@ -166,7 +171,12 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         settings.setRemoveDefiner(removeDefiner.getSelection());
         settings.setBinariesInHex(binaryInHex.getSelection());
         settings.setNoData(noData.getSelection());
+    }
 
+    @Override
+    protected void updateState()
+    {
+        saveState();
         getContainer().updateButtons();
     }
 

@@ -45,7 +45,7 @@ public class PostgreToolScript implements IUserInterfaceTool
             if (object instanceof PostgreDatabase) {
                 ToolWizardDialog dialog = new ToolWizardDialog(
                     window,
-                    new PostgreScriptExecuteWizard((PostgreDatabase) object, false));
+                    new PostgreScriptExecuteWizard((PostgreDatabase) object));
                 dialog.open();
             }
         }

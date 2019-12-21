@@ -109,11 +109,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
         createSecurityGroup(extraGroup);
-        {
-            Group taskGroup = UIUtils.createControlGroup(
-                extraGroup, "Task", 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            wizard.createTaskSaveButtons(taskGroup, false, 1);
-        }
+        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
 

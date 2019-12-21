@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreRestoreSettings;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
@@ -40,11 +41,14 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreRestoreSett
     private PostgreRestoreWizardPageSettings settingsPage;
     private PostgreDatabaseRestoreInfo restoreInfo;
 
+    PostgreRestoreWizard(DBTTask task) {
+        super(task);
+    }
+
     PostgreRestoreWizard(PostgreDatabase database) {
         super(Collections.singletonList(database), PostgreMessages.wizard_restore_title);
         restoreInfo = new PostgreDatabaseRestoreInfo(database);
     }
-
 
     @Override
     public String getTaskTypeId() {
