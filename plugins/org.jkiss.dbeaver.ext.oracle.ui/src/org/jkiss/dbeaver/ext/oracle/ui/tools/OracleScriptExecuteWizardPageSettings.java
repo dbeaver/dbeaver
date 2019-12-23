@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizardPage;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -42,7 +41,7 @@ class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPage<Oracl
 
     @Override
     public boolean isPageComplete() {
-        return super.isPageComplete() && wizard.getInputFile() != null;
+        return super.isPageComplete() && wizard.getSettings().getInputFile() != null;
     }
 
     @Override
@@ -63,8 +62,8 @@ class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPage<Oracl
 
     @Override
     public void activatePage() {
-        if (wizard.getInputFile() != null) {
-            inputFileText.setText(wizard.getInputFile().getAbsolutePath());
+        if (wizard.getSettings().getInputFile() != null) {
+            inputFileText.setText(wizard.getSettings().getInputFile());
         }
 
         updateState();
@@ -82,7 +81,7 @@ class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPage<Oracl
 
         OracleScriptExecuteSettings settings = wizard.getSettings();
         List<DBSObject> selectedConnections = settings.getDatabaseObjects();
-        settings.setDataSourceContainer(selectedConnections.isEmpty() ? null : (DBPDataSourceContainer) selectedConnections.get(0));
+        settings.setDataSourceContainer(selectedConnections.isEmpty() ? null : selectedConnections.get(0).getDataSource().getContainer());
         settings.setInputFile(inputFileText.getText());
     }
 

@@ -26,7 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
+import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -35,7 +35,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreBackupWizard> {
+class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<PostgreBackupWizard> {
 
     private Text outputFolderText;
     private Text outputFileText;
@@ -56,7 +56,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && wizard.getOutputFolder() != null;
+        return super.isPageComplete() && wizard.getSettings().getOutputFolder() != null;
     }
 
     @Override
@@ -121,27 +121,27 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         outputFolderText = DialogUtils.createOutputFolderChooser(
             outputGroup,
             PostgreMessages.wizard_backup_page_setting_label_output_folder,
-            wizard.getOutputFolder() != null ? wizard.getOutputFolder().getAbsolutePath() : null,
+            wizard.getSettings().getOutputFolder() != null ? wizard.getSettings().getOutputFolder().getAbsolutePath() : null,
             e -> updateState());
         outputFileText = UIUtils.createLabelText(
             outputGroup,
             PostgreMessages.wizard_backup_page_setting_label_file_name_pattern,
-            wizard.getOutputFilePattern());
+            wizard.getSettings().getOutputFilePattern());
         UIUtils.setContentProposalToolTip(outputFileText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output,
-            AbstractImportExportWizard.VARIABLE_HOST,
-            AbstractImportExportWizard.VARIABLE_DATABASE,
-            AbstractImportExportWizard.VARIABLE_TABLE,
-            AbstractImportExportWizard.VARIABLE_DATE,
-            AbstractImportExportWizard.VARIABLE_TIMESTAMP);
+            NativeToolUtils.VARIABLE_HOST,
+            NativeToolUtils.VARIABLE_DATABASE,
+            NativeToolUtils.VARIABLE_TABLE,
+            NativeToolUtils.VARIABLE_DATE,
+            NativeToolUtils.VARIABLE_TIMESTAMP);
         UIUtils.installContentProposal(
             outputFileText,
             new TextContentAdapter(),
             new SimpleContentProposalProvider(new String[]{
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_HOST),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATABASE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TABLE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TIMESTAMP),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_HOST),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATABASE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TABLE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP),
             }));
         outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
 
@@ -167,7 +167,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         super.saveState();
 
         String fileName = outputFolderText.getText();
-        wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+        wizard.getSettings().setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         wizard.getSettings().setOutputFilePattern(outputFileText.getText());
 
         wizard.getSettings().setFormat(PostgreDatabaseBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);

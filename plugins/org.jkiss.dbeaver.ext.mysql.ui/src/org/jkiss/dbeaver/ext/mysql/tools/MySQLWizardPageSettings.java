@@ -33,22 +33,22 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
 
 
-public abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD>
+abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD>
 {
 
-    public MySQLWizardPageSettings(WIZARD wizard, String title)
+    MySQLWizardPageSettings(WIZARD wizard, String title)
     {
         super(wizard, title);
     }
 
     public void createSecurityGroup(Composite parent)
     {
-        final DBPConnectionConfiguration connectionInfo = wizard.getConnectionInfo();
+        final DBPConnectionConfiguration connectionInfo = wizard.getSettings().getDataSourceContainer().getActualConnectionConfiguration();
         if (connectionInfo != null) {
             Group securityGroup = UIUtils.createControlGroup(
                 parent, "Security", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             Label infoLabel = new Label(securityGroup, SWT.NONE);
-            infoLabel.setText("Override user credentials (" + wizard.getConnectionInfo().getUserName() +
+            infoLabel.setText("Override user credentials (" + connectionInfo.getUserName() +
                 ") for objects '" + wizard.getObjectsName() + "'.\nExternal tools like 'mysqldump' may require different set of permissions.");
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
@@ -59,12 +59,12 @@ public abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard>
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", false, true);
-                    authDialog.setUserName(wizard.getToolUserName());
-                    authDialog.setUserPassword(wizard.getToolUserPassword());
+                    authDialog.setUserName(wizard.getSettings().getToolUserName());
+                    authDialog.setUserPassword(wizard.getSettings().getToolUserPassword());
                     authDialog.setSavePassword(true);
                     if (authDialog.open() == IDialogConstants.OK_ID) {
-                        wizard.setToolUserName(authDialog.getUserName());
-                        wizard.setToolUserPassword(authDialog.getUserPassword());
+                        wizard.getSettings().setToolUserName(authDialog.getUserName());
+                        wizard.getSettings().setToolUserPassword(authDialog.getUserPassword());
                     }
                 }
             });
@@ -74,8 +74,8 @@ public abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard>
             resetButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    wizard.setToolUserName(connectionInfo.getUserName());
-                    wizard.setToolUserPassword(connectionInfo.getUserPassword());
+                    wizard.getSettings().setToolUserName(null);
+                    wizard.getSettings().setToolUserPassword(null);
                 }
             });
         }

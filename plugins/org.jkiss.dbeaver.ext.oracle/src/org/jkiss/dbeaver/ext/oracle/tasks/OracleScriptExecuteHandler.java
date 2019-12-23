@@ -2,8 +2,8 @@ package org.jkiss.dbeaver.ext.oracle.tasks;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -20,11 +20,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<OracleScriptExecuteSettings, DBSObject, DBPDataSourceContainer> {
+public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<OracleScriptExecuteSettings, DBSObject, OracleDataSource> {
 
     @Override
-    public Collection<DBPDataSourceContainer> getRunInfo(OracleScriptExecuteSettings settings) {
-        return Collections.singletonList(settings.getDataSourceContainer());
+    public Collection<OracleDataSource> getRunInfo(OracleScriptExecuteSettings settings) {
+        return Collections.singletonList((OracleDataSource) settings.getDataSourceContainer().getDataSource());
     }
 
     @Override
@@ -45,7 +45,7 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
     }
 
     @Override
-    public void fillProcessParameters(OracleScriptExecuteSettings settings, DBPDataSourceContainer arg, List<String> cmd) throws IOException {
+    public void fillProcessParameters(OracleScriptExecuteSettings settings, OracleDataSource arg, List<String> cmd) throws IOException {
         String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus"); //$NON-NLS-1$
         File sqlPlusBinary = new File(settings.getClientHome().getPath(), "bin/" + sqlPlusExec); //$NON-NLS-1$
         if (!sqlPlusBinary.exists()) {
@@ -59,7 +59,7 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
     }
 
     @Override
-    protected List<String> getCommandLine(OracleScriptExecuteSettings settings, DBPDataSourceContainer arg) throws IOException {
+    protected List<String> getCommandLine(OracleScriptExecuteSettings settings, OracleDataSource arg) throws IOException {
         List<String> cmd = new ArrayList<>();
         fillProcessParameters(settings, arg, cmd);
         DBPConnectionConfiguration conInfo = settings.getDataSourceContainer().getActualConnectionConfiguration();
@@ -99,7 +99,7 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, OracleScriptExecuteSettings settings, DBPDataSourceContainer arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, OracleScriptExecuteSettings settings, OracleDataSource arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         new BinaryFileTransformerJob(monitor, task, new File(settings.getInputFile()), process.getOutputStream(), log).start();
     }

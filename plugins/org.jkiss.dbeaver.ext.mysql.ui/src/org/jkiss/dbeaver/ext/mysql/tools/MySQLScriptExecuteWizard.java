@@ -18,37 +18,28 @@
 
 package org.jkiss.dbeaver.ext.mysql.tools;
 
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractScriptExecuteWizard;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptExecuteSettings, MySQLCatalog, MySQLCatalog> {
 
     private MySQLScriptExecuteWizardPageSettings mainPage = new MySQLScriptExecuteWizardPageSettings(this);
 
-    public MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport) {
+    MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport) {
         super(Collections.singleton(catalog), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
         this.getSettings().setImport(isImport);
     }
 
-    public MySQLScriptExecuteWizard(DBTTask task, boolean isImport) {
+    MySQLScriptExecuteWizard(DBTTask task, boolean isImport) {
         super(task);
         this.getSettings().setImport(isImport);
     }
@@ -87,58 +78,6 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptEx
         addTaskConfigPages();
         addPage(mainPage);
         super.addPages();
-    }
-
-    @Override
-    public void fillProcessParameters(List<String> cmd, MySQLCatalog arg) throws IOException {
-        String dumpPath = RuntimeUtils.getNativeClientBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysql").getAbsolutePath(); //$NON-NLS-1$
-        cmd.add(dumpPath);
-        if (getSettings().getLogLevel() == MySQLScriptExecuteSettings.LogLevel.Debug) {
-            cmd.add("--debug-info"); //$NON-NLS-1$
-        }
-        if (getSettings().isNoBeep()) {
-            cmd.add("--no-beep"); //$NON-NLS-1$
-        }
-        getSettings().addExtraCommandArgs(cmd);
-    }
-
-    @Override
-    protected void setupProcessParameters(ProcessBuilder process) {
-        if (!CommonUtils.isEmpty(getToolUserPassword())) {
-            process.environment().put(MySQLConstants.ENV_VARIABLE_MYSQL_PWD, getToolUserPassword());
-        }
-    }
-
-    @Override
-    public MySQLServerHome findNativeClientHome(String clientHomeId) {
-        return MySQLDataSourceProvider.getServerHome(clientHomeId);
-    }
-
-    @Override
-    public Collection<MySQLCatalog> getRunInfo() {
-        return getDatabaseObjects();
-    }
-
-    @Override
-    protected List<String> getCommandLine(MySQLCatalog arg) throws IOException {
-        List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this, arg);
-        cmd.add(arg.getName());
-        return cmd;
-    }
-
-    /**
-     * Use binary file transform job (#2863)
-     */
-    @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, final MySQLCatalog arg, ProcessBuilder processBuilder, Process process) {
-        if (getSettings().isImport()) {
-            logPage.startLogReader(
-                processBuilder,
-                process.getInputStream());
-            new BinaryFileTransformerJob(monitor, getInputFile(), process.getOutputStream()).start();
-        } else {
-            super.startProcessHandler(monitor, arg, processBuilder, process);
-        }
     }
 
 }

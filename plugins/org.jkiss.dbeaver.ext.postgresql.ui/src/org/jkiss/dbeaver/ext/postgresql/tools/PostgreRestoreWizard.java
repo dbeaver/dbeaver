@@ -23,21 +23,15 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupRestoreSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreInfo;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRestoreSettings, PostgreDatabaseRestoreInfo> implements IExportWizard {
@@ -109,45 +103,8 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd, PostgreDatabaseRestoreInfo arg) throws IOException {
-        super.fillProcessParameters(cmd, arg);
-
-        if (getSettings().isCleanFirst()) {
-            cmd.add("-c");
-        }
-    }
-
-    @Override
-    protected List<String> getCommandLine(PostgreDatabaseRestoreInfo arg) throws IOException {
-        List<String> cmd = super.getCommandLine(arg);
-        PostgreDatabaseRestoreSettings settings = getSettings();
-        if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.PLAIN) {
-            cmd.add("--format=" + settings.getFormat().getId());
-        }
-        cmd.add("--dbname=" + arg.getDatabase().getName());
-        if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
-            cmd.add(settings.getInputFile());
-        }
-
-        return cmd;
-    }
-
-    @Override
     protected PostgreDatabaseRestoreSettings createSettings() {
         return new PostgreDatabaseRestoreSettings();
-    }
-
-    @Override
-    public Collection<PostgreDatabaseRestoreInfo> getRunInfo() {
-        return Collections.singleton(getSettings().getRestoreInfo());
-    }
-
-    @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process) {
-        super.startProcessHandler(monitor, arg, processBuilder, process);
-        if (getSettings().getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
-            new BinaryFileTransformerJob(monitor, new File(getSettings().getInputFile()), process.getOutputStream()).start();
-        }
     }
 
 }

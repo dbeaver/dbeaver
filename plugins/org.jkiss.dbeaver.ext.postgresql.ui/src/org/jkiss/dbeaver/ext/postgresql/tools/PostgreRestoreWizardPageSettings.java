@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.utils.CommonUtils;
 
 
-class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<PostgreRestoreWizard> {
+class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<PostgreRestoreWizard> {
 
     private TextWithOpenFile inputFileText;
     private Combo formatCombo;

@@ -85,7 +85,7 @@ public class ToolWizardDialog extends TaskConfigurationWizardDialog {
 
     private void openClientConfiguration() {
         AbstractToolWizard toolWizard = (AbstractToolWizard) getWizard();
-        DBPDataSourceContainer dataSource = toolWizard.getDataSourceContainer();
+        DBPDataSourceContainer dataSource = toolWizard.getSettings().getDataSourceContainer();
         if (dataSource != null) {
             NativeClientConfigDialog dialog = new NativeClientConfigDialog(getShell(), dataSource);
             if (dialog.open() == IDialogConstants.OK_ID) {

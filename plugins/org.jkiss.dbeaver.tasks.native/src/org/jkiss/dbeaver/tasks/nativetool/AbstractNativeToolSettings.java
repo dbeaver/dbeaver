@@ -45,7 +45,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
     private String toolUserPassword;
     private String extraCommandArgs;
 
-    protected DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
+    public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
         return null;
     }
 

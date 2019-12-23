@@ -21,21 +21,14 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizard;
 import org.jkiss.dbeaver.tasks.ui.nativetool.ToolWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
- * Database import
+ * MySQLToolScript
  */
 public class MySQLToolScript implements IUserInterfaceTool
 {
@@ -52,27 +45,4 @@ public class MySQLToolScript implements IUserInterfaceTool
         }
     }
 
-    public static <SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG> List<String> getMySQLToolCommandLine(
-        AbstractToolWizard<SETTINGS, BASE_OBJECT, PROCESS_ARG> toolWizard, PROCESS_ARG arg) throws IOException
-    {
-        java.util.List<String> cmd = new ArrayList<>();
-        toolWizard.fillProcessParameters(cmd, arg);
-
-        if (toolWizard.isVerbose()) {
-            cmd.add("-v");
-        }
-        DBPConnectionConfiguration connectionInfo = toolWizard.getConnectionInfo();
-        cmd.add("--host=" + connectionInfo.getHostName());
-        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-            cmd.add("--port=" + connectionInfo.getHostPort());
-        }
-        cmd.add("-u");
-        cmd.add(toolWizard.getToolUserName());
-        // Password is passed in env variable (#1004)
-//        if (!CommonUtils.isEmpty(toolWizard.getToolUserPassword())) {
-//            cmd.add("--password=" + toolWizard.getToolUserPassword());
-//        }
-
-        return cmd;
-    }
 }

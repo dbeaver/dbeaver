@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
+import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -128,20 +129,20 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         String outFileName = GeneralUtils.replaceVariables(settings.getOutputFilePattern(), name -> {
             switch (name) {
-                case VARIABLE_DATABASE:
+                case NativeToolUtils.VARIABLE_DATABASE:
                     return arg.getDatabase().getName();
-                case VARIABLE_HOST:
+                case NativeToolUtils.VARIABLE_HOST:
                     return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
-                case VARIABLE_TABLE:
+                case NativeToolUtils.VARIABLE_TABLE:
                     final Iterator<MySQLTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
                     if (iterator != null && iterator.hasNext()) {
                         return iterator.next().getName();
                     } else {
                         return "null";
                     }
-                case VARIABLE_TIMESTAMP:
+                case NativeToolUtils.VARIABLE_TIMESTAMP:
                     return RuntimeUtils.getCurrentTimeStamp();
-                case VARIABLE_DATE:
+                case NativeToolUtils.VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
                 default:
                     System.getProperty(name);
