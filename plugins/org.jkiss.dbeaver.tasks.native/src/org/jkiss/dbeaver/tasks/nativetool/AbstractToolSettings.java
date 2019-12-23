@@ -58,7 +58,9 @@ public abstract class AbstractToolSettings<BASE_OBJECT extends DBSObject> {
 
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
         if (dataSourceContainer == null && !CommonUtils.isEmpty(databaseObjects)) {
-            dataSourceContainer = databaseObjects.get(0).getDataSource().getContainer();
+            BASE_OBJECT baseObject = databaseObjects.get(0);
+            dataSourceContainer = baseObject instanceof DBPDataSourceContainer ?
+                (DBPDataSourceContainer) baseObject : baseObject.getDataSource().getContainer();
         }
 
         if (dataSourceContainer == null) {

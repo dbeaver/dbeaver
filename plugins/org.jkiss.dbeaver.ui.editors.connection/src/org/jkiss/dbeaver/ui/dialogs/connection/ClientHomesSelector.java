@@ -28,14 +28,15 @@ import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
+import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * ClientHomesSelector
@@ -103,21 +104,26 @@ public class ClientHomesSelector
         this.homesCombo.removeAll();
         this.homeIds.clear();
 
-        Set<DBPNativeClientLocation> homes = new LinkedHashSet<>();
-        homes.addAll(driver.getNativeClientLocations());
+        Map<String, DBPNativeClientLocation> homes = new LinkedHashMap<>();
+        for (DBPNativeClientLocation ncl : driver.getNativeClientLocations()) {
+            homes.put(ncl.getName(), ncl);
+        }
 
         DBPNativeClientLocationManager clientManager = driver.getNativeClientManager();
         if (clientManager != null) {
             for (DBPNativeClientLocation location : clientManager.findLocalClientLocations()) {
-                if (!homes.contains(location)) {
-                    homes.add(location);
+                if (!homes.containsKey(location.getName())) {
+                    homes.put(location.getName(), location);
                 }
             }
+        }
+        if (!CommonUtils.isEmpty(currentHome) && !homes.containsKey(currentHome)) {
+            homes.put(currentHome, new LocalNativeClientLocation(currentHome, currentHome));
         }
 
         this.homesCombo.add("");
         this.homeIds.add(null);
-        for (DBPNativeClientLocation location : homes) {
+        for (DBPNativeClientLocation location : homes.values()) {
             homesCombo.add(location.getDisplayName());
             homeIds.add(location.getName());
             if (currentHomeId != null && location.getName().equals(currentHomeId)) {
@@ -127,6 +133,7 @@ public class ClientHomesSelector
         if (selectDefault && homesCombo.getItemCount() > 1 && homesCombo.getSelectionIndex() == -1) {
             // Select first
             homesCombo.select(1);
+            currentHomeId = homesCombo.getItem(1);
         }
         this.homesCombo.add(UIConnectionMessages.controls_client_home_selector_browse);
 

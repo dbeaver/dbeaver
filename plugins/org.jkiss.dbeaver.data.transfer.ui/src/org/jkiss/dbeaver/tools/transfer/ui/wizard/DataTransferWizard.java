@@ -419,11 +419,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         state.put("configuration", saveConfiguration(new LinkedHashMap<>()));
     }
 
-    @Override
-    public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null;
-    }
-
     private Map<String, Object> saveConfiguration(Map<String, Object> config) {
         config.put("maxJobCount", settings.getMaxJobCount());
         config.put("showFinalMessage", settings.isShowFinalMessage());

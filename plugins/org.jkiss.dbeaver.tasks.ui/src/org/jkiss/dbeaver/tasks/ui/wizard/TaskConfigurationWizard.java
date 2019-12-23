@@ -76,7 +76,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     public abstract void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state);
 
     public boolean isRunTaskOnFinish() {
-        return false;
+        return getCurrentTask() != null;
     }
 
     public IStructuredSelection getCurrentSelection() {

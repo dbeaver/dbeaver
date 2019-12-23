@@ -523,7 +523,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="postgresql" name="PostgreSQL" description="MySQL database task" icon="icons/postgresql_icon.png"/>
+        <category id="postgresql" name="PostgreSQL" description="PostgreSQL database tasks" icon="icons/postgresql_icon.png"/>
 
         <task id="pgDatabaseBackup" name="PostgreSQL dump" description="PostgreSQL database dump task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupHandler">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>

@@ -15,12 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.ui.tools;
+package org.jkiss.dbeaver.ext.oracle.tasks;
 
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
-import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
+public class OracleTasks {
 
-public class OracleScriptExecuteSettings extends AbstractScriptExecuteSettings<OracleDataSource> {
-
+    public static final String TASK_SCRIPT_EXECUTE = "oracleScriptExecute";
 
 }

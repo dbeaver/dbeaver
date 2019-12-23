@@ -18,15 +18,23 @@
 
 package org.jkiss.dbeaver.ext.oracle.ui.tools;
 
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
+import org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteSettings;
+import org.jkiss.dbeaver.ext.oracle.tasks.OracleTasks;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -34,24 +42,35 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleScriptExecuteSettings, OracleDataSource,OracleDataSource> {
+class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleScriptExecuteSettings, DBSObject, DBPDataSourceContainer> {
 
     private OracleScriptExecuteWizardPageSettings mainPage;
 
-    public OracleScriptExecuteWizard(OracleDataSource oracleSchema)
-    {
+    OracleScriptExecuteWizard(DBTTask task) {
+        super(task);
+    }
+
+    OracleScriptExecuteWizard(OracleDataSource oracleSchema) {
         super(Collections.singleton(oracleSchema), OracleUIMessages.tools_script_execute_wizard_page_name);
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        super.init(workbench, selection);
+
         this.mainPage = new OracleScriptExecuteWizardPageSettings(this);
     }
 
     @Override
     public String getTaskTypeId() {
-        return "oracleScriptExecute";
+        return OracleTasks.TASK_SCRIPT_EXECUTE;
     }
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
-        // TODO: implement
+        mainPage.saveState();
+
+        getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
     @Override
@@ -60,15 +79,14 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleScript
     }
 
     @Override
-    public void addPages()
-    {
+    public void addPages() {
+        addTaskConfigPages();
         addPage(mainPage);
         super.addPages();
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd, OracleDataSource arg) throws IOException
-    {
+    public void fillProcessParameters(List<String> cmd, DBPDataSourceContainer arg) throws IOException {
         String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus"); //$NON-NLS-1$
         File sqlPlusBinary = new File(getClientHome().getPath(), "bin/" + sqlPlusExec); //$NON-NLS-1$
         if (!sqlPlusBinary.exists()) {
@@ -82,27 +100,24 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleScript
     }
 
     @Override
-    public OracleHomeDescriptor findNativeClientHome(String clientHomeId)
-    {
+    public OracleHomeDescriptor findNativeClientHome(String clientHomeId) {
         return OCIUtils.getOraHome(clientHomeId);
     }
 
     @Override
-    public Collection<OracleDataSource> getRunInfo() {
-        return getDatabaseObjects();
+    public Collection<DBPDataSourceContainer> getRunInfo() {
+        return Collections.singletonList(getSettings().getDataSourceContainer());
     }
 
     @Override
-    protected List<String> getCommandLine(OracleDataSource arg) throws IOException
-    {
+    protected List<String> getCommandLine(DBPDataSourceContainer arg) throws IOException {
         List<String> cmd = new ArrayList<>();
         fillProcessParameters(cmd, arg);
         DBPConnectionConfiguration conInfo = getConnectionInfo();
         String url;
         if ("TNS".equals(conInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE))) { //$NON-NLS-1$
             url = conInfo.getServerName();
-        }
-        else {
+        } else {
             boolean isSID = OracleConnectionType.SID.name().equals(conInfo.getProviderProperty(OracleConstants.PROP_SID_SERVICE));
             String port = conInfo.getHostPort();
             if (isSID) {

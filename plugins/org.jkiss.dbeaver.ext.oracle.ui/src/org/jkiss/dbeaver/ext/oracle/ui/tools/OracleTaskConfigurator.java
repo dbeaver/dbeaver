@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.tools;
+package org.jkiss.dbeaver.ext.oracle.ui.tools;
 
 import org.eclipse.jface.wizard.IWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
+import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
+import org.jkiss.dbeaver.ext.oracle.tasks.OracleTasks;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
@@ -30,11 +30,11 @@ import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolConfigPanel;
 
 /**
- * PostgreSQL task configurator
+ * Oracle task configurator
  */
-public class PostgreTaskConfigurator implements DBTTaskConfigurator {
+public class OracleTaskConfigurator implements DBTTaskConfigurator {
 
-    private static final Log log = Log.getLog(PostgreTaskConfigurator.class);
+    private static final Log log = Log.getLog(OracleTaskConfigurator.class);
 
     @Override
     public ConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
@@ -44,19 +44,15 @@ public class PostgreTaskConfigurator implements DBTTaskConfigurator {
     @Override
     public IWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
         switch (taskConfiguration.getType().getId()) {
-            case PostgreSQLTasks.TASK_DATABASE_BACKUP:
-                return new PostgreBackupWizard(taskConfiguration);
-            case PostgreSQLTasks.TASK_DATABASE_RESTORE:
-                return new PostgreRestoreWizard(taskConfiguration);
-            case PostgreSQLTasks.TASK_SCRIPT_EXECUTE:
-                return new PostgreScriptExecuteWizard(taskConfiguration);
+            case OracleTasks.TASK_SCRIPT_EXECUTE:
+                return new OracleScriptExecuteWizard(taskConfiguration);
         }
         return null;
     }
 
-    private static class ConfigPanel extends NativeToolConfigPanel<PostgreDatabase> {
+    private static class ConfigPanel extends NativeToolConfigPanel<DBPDataSourceContainer> {
         ConfigPanel(DBRRunnableContext runnableContext, DBTTaskType taskType) {
-            super(runnableContext, taskType, PostgreDatabase.class, PostgreDataSourceProvider.class);
+            super(runnableContext, taskType, DBPDataSourceContainer.class, OracleDataSourceProvider.class);
         }
     }
 

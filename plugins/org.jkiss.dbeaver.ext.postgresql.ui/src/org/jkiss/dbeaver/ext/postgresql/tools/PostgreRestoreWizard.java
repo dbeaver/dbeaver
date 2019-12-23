@@ -78,6 +78,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
 
     @Override
     public void addPages() {
+        addTaskConfigPages();
         addPage(settingsPage);
         super.addPages();
     }

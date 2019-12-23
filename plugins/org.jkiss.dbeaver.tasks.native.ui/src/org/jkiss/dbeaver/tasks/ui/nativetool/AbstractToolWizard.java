@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -203,7 +204,7 @@ public abstract class AbstractToolWizard<SETTINGS extends AbstractNativeToolSett
         if (isNativeClientHomeRequired()) {
             String clientHomeId = getDataSourceContainer().getConnectionConfiguration().getClientHomeId();
             List<DBPNativeClientLocation> nativeClientLocations = getDataSourceContainer().getDriver().getNativeClientLocations();
-            if (clientHomeId == null) {
+            if (CommonUtils.isEmpty(clientHomeId)) {
                 if (nativeClientLocations != null && !nativeClientLocations.isEmpty()) {
                     settings.setClientHome(nativeClientLocations.get(0));
                 } else {
@@ -218,6 +219,10 @@ public abstract class AbstractToolWizard<SETTINGS extends AbstractNativeToolSett
                 DBPNativeClientLocation clientHome = DBUtils.findObject(nativeClientLocations, clientHomeId);
                 if (clientHome == null) {
                     clientHome = findNativeClientHome(clientHomeId);
+                }
+                if (clientHome == null) {
+                    // Make local client home from location
+                    clientHome = new LocalNativeClientLocation(clientHomeId, clientHomeId);
                 }
                 settings.setClientHome(clientHome);
             }

@@ -597,6 +597,9 @@ public final class DBUtils {
             }
         }
         if (sc != null) {
+            if (names.length == 1) {
+                return sc;
+            }
             String objectName = names[names.length - 1];
             DBSObject object = sc.getChild(monitor, objectName);
             if (object == null) {
