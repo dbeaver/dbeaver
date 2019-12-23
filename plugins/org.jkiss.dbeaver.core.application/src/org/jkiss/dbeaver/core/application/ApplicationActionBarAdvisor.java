@@ -335,8 +335,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void fillStatusLine(IStatusLineManager statusLine) {
         {
             StatusLineContributionItemEx tzItem = new StatusLineContributionItemEx("Time Zone");
-            tzItem.setText(TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT));
-            tzItem.setToolTip(TimeZone.getDefault().getDisplayName(true, TimeZone.LONG));
+            TimeZone tzDefault = TimeZone.getDefault();
+            tzItem.setText(tzDefault.getDisplayName(false, TimeZone.SHORT));
+            tzItem.setToolTip(tzDefault.getDisplayName(false, TimeZone.LONG));
             tzItem.setDoubleClickListener(() -> {
                 UIUtils.showMessageBox(null, "Time zone", "You can change time zone by adding parameter\n" +
                     "-D" + StandardConstants.ENV_USER_TIMEZONE  + "=<TimeZone>\n" +
