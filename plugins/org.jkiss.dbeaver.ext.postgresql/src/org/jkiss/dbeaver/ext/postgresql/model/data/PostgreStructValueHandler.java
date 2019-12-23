@@ -77,7 +77,8 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     {
         PostgreDataType structType = PostgreUtils.findDataType(session, (PostgreDataSource)session.getDataSource(), type);
         if (structType == null) {
-            throw new DBCException("Can't resolve struct type '" + type.getTypeName() + "'");
+            log.debug("Can't resolve struct type '" + type.getTypeName() + "'");
+            return object;
         }
         try {
             if (object == null) {
