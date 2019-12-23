@@ -873,9 +873,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                         break;
                     case N:
                         valueType = Types.NUMERIC;
+                        // Kind of a hack (#7459). Don't know any better way to distinguish floats from integers
+                        String outputF = JDBCUtils.safeGetString(dbResult, "typoutput");
                         if (name.equals("numeric")) {
                             valueType = Types.NUMERIC;
-                        } else if (name.startsWith("float")) {
+                        } else if (outputF != null && outputF.startsWith("float")) {
                             switch (typeLength) {
                                 case 4:
                                     valueType = Types.FLOAT;

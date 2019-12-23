@@ -484,25 +484,29 @@ public class PostgreUtils {
         if (CommonUtils.isEmpty(string)) {
             return convertStringToSimpleValue(session, itemType, string);
         }
-        switch (itemType.getTypeID()) {
-            case Types.BOOLEAN:
-                return string.length() > 0 && Character.toLowerCase(string.charAt(0)) == 't';
-            case Types.TINYINT:
-                return Byte.parseByte(string);
-            case Types.SMALLINT:
-                return Short.parseShort(string);
-            case Types.INTEGER:
-                return Integer.parseInt(string);
-            case Types.BIGINT:
-                return Long.parseLong(string);
-            case Types.FLOAT:
-                return Float.parseFloat(string);
-            case Types.REAL:
-            case Types.DOUBLE:
-                return Double.parseDouble(string);
-            default: {
-                return convertStringToSimpleValue(session, itemType, string);
+        try {
+            switch (itemType.getTypeID()) {
+                case Types.BOOLEAN:
+                    return string.length() > 0 && Character.toLowerCase(string.charAt(0)) == 't';
+                case Types.TINYINT:
+                    return Byte.parseByte(string);
+                case Types.SMALLINT:
+                    return Short.parseShort(string);
+                case Types.INTEGER:
+                    return Integer.parseInt(string);
+                case Types.BIGINT:
+                    return Long.parseLong(string);
+                case Types.FLOAT:
+                    return Float.parseFloat(string);
+                case Types.REAL:
+                case Types.DOUBLE:
+                    return Double.parseDouble(string);
+                default: {
+                    return convertStringToSimpleValue(session, itemType, string);
+                }
             }
+        } catch (NumberFormatException e) {
+            return string;
         }
     }
 
