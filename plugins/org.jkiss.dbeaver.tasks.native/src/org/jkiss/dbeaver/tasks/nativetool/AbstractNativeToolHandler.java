@@ -18,7 +18,6 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -27,12 +26,6 @@ import java.text.NumberFormat;
 import java.util.*;
 
 public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler {
-
-    public static final String VARIABLE_HOST = "host";
-    public static final String VARIABLE_DATABASE = "database";
-    public static final String VARIABLE_TABLE = "table";
-    public static final String VARIABLE_DATE = "date";
-    public static final String VARIABLE_TIMESTAMP = "timestamp";
 
     @Override
     public void executeTask(
@@ -284,13 +277,6 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         return isSuccess;
     }
 
-    public boolean isSecureString(SETTINGS settings, String string) {
-        String userPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
-        String toolUserPassword = settings.getToolUserPassword();
-        return !CommonUtils.isEmpty(toolUserPassword) && string.contains(toolUserPassword) ||
-            !CommonUtils.isEmpty(userPassword) && string.contains(userPassword);
-    }
-
     public static abstract class DumpJob extends Thread {
         protected DBRProgressMonitor monitor;
         protected InputStream input;
@@ -474,7 +460,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             // Dump command line
             StringBuilder cmdString = new StringBuilder();
             for (String cmd : command) {
-                if (isSecureString(settings, cmd)) {
+                if (NativeToolUtils.isSecureString(settings, cmd)) {
                     cmd = "******";
                 }
                 if (cmdString.length() > 0) cmdString.append(' ');

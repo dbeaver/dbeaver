@@ -40,7 +40,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     private Text inputFileText;
     private Combo logLevelCombo;
 
-    public MySQLScriptExecuteWizardPageSettings(MySQLScriptExecuteWizard wizard)
+    MySQLScriptExecuteWizardPageSettings(MySQLScriptExecuteWizard wizard)
     {
         super(wizard, wizard.isImport() ?
                 MySQLUIMessages.tools_script_execute_wizard_page_settings_import_configuration :
@@ -56,7 +56,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && wizard.getInputFile() != null;
+        return super.isPageComplete() && wizard.getSettings().getInputFile() != null;
     }
 
     @Override
@@ -85,8 +85,8 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
             }
         });
 
-        if (wizard.getInputFile() != null) {
-            inputFileText.setText(wizard.getInputFile().getAbsolutePath());
+        if (wizard.getSettings().getInputFile() != null) {
+            inputFileText.setText(wizard.getSettings().getInputFile());
         }
 
         Group settingsGroup = UIUtils.createControlGroup(

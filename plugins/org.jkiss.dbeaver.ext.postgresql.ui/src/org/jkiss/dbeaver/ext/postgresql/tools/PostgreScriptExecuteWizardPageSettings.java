@@ -31,12 +31,11 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 
 
-public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSettings<PostgreScriptExecuteWizard> {
+public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPageSettings<PostgreScriptExecuteWizard> {
     private Text inputFileText;
 
     PostgreScriptExecuteWizardPageSettings(PostgreScriptExecuteWizard wizard) {
@@ -47,7 +46,7 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSet
 
     @Override
     public boolean isPageComplete() {
-        return super.isPageComplete() && wizard.getInputFile() != null;
+        return super.isPageComplete() && wizard.getSettings().getInputFile() != null;
     }
 
     @Override
@@ -73,8 +72,8 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSet
             }
         });
 
-        if (wizard.getInputFile() != null) {
-            inputFileText.setText(wizard.getInputFile().getAbsolutePath());
+        if (wizard.getSettings().getInputFile() != null) {
+            inputFileText.setText(wizard.getSettings().getInputFile());
         }
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
@@ -94,8 +93,8 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSet
 
     @Override
     public void saveState() {
-        String fileName = inputFileText.getText();
-        wizard.setInputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+        super.saveState();
+        wizard.getSettings().setInputFile(inputFileText.getText());
     }
 
 

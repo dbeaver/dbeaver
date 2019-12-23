@@ -27,7 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLExportSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
+import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -61,7 +61,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && wizard.getOutputFolder() != null;
+        return super.isPageComplete() && wizard.getSettings().getOutputFolder() != null;
     }
 
     @Override
@@ -107,29 +107,29 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_label_out_text, e -> updateState());
-        outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getOutputFilePattern());
+        outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getSettings().getOutputFilePattern());
         UIUtils.setContentProposalToolTip(outputFileText, "Output file name pattern",
-            AbstractImportExportWizard.VARIABLE_HOST,
-            AbstractImportExportWizard.VARIABLE_DATABASE,
-            AbstractImportExportWizard.VARIABLE_TABLE,
-            AbstractImportExportWizard.VARIABLE_DATE,
-            AbstractImportExportWizard.VARIABLE_TIMESTAMP);
+            NativeToolUtils.VARIABLE_HOST,
+            NativeToolUtils.VARIABLE_DATABASE,
+            NativeToolUtils.VARIABLE_TABLE,
+            NativeToolUtils.VARIABLE_DATE,
+            NativeToolUtils.VARIABLE_TIMESTAMP);
         UIUtils.installContentProposal(
             outputFileText,
             new TextContentAdapter(),
             new SimpleContentProposalProvider(new String[] {
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_HOST),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATABASE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TABLE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TIMESTAMP),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_HOST),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATABASE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TABLE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP),
                 }
             ));
 
         createExtraArgsInput(outputGroup);
 
-        if (wizard.getOutputFolder() != null) {
-            outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
+        if (wizard.getSettings().getOutputFolder() != null) {
+            outputFolderText.setText(wizard.getSettings().getOutputFolder().getAbsolutePath());
         }
 
         outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
@@ -148,7 +148,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         MySQLExportSettings settings = wizard.getSettings();
 
         String fileName = outputFolderText.getText();
-        wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+        wizard.getSettings().setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         settings.setOutputFilePattern(outputFileText.getText());
 
         switch (methodCombo.getSelectionIndex()) {

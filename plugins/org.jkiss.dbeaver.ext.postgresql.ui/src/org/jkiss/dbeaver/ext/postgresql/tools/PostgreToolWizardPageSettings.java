@@ -37,10 +37,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
 
 
-public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD>
+public abstract class PostgreToolWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD>
 {
 
-    public PostgreWizardPageSettings(WIZARD wizard, String title)
+    public PostgreToolWizardPageSettings(WIZARD wizard, String title)
     {
         super(wizard, title);
     }
@@ -49,7 +49,7 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
     {
         try {
             final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
-            final DBPConnectionConfiguration connectionInfo = wizard.getConnectionInfo();
+            final DBPConnectionConfiguration connectionInfo = wizard.getSettings().getDataSourceContainer().getActualConnectionConfiguration();
             final String authProperty = DBConstants.INTERNAL_PROP_PREFIX + "-auth-" + wizard.getObjectsName() + "@";
             String authUser = null;
             String authPassword = null;
@@ -69,7 +69,7 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
             Group securityGroup = UIUtils.createControlGroup(
                 parent, PostgreMessages.wizard_backup_page_setting_group_security, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             Label infoLabel = new Label(securityGroup, SWT.NONE);
-            infoLabel.setText(NLS.bind(PostgreMessages.wizard_backup_page_setting_group_security_label_info, wizard.getConnectionInfo().getUserName(),
+            infoLabel.setText(NLS.bind(PostgreMessages.wizard_backup_page_setting_group_security_label_info, connectionInfo.getUserName(),
            		 wizard.getObjectsName()));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
@@ -81,21 +81,12 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
                 public void widgetSelected(SelectionEvent e)
                 {
                     BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication, false, true);
-                    authDialog.setUserName(wizard.getToolUserName());
-                    authDialog.setUserPassword(wizard.getToolUserPassword());
+                    authDialog.setUserName(wizard.getSettings().getToolUserName());
+                    authDialog.setUserPassword(wizard.getSettings().getToolUserPassword());
                     authDialog.setSavePassword(savePassword);
                     if (authDialog.open() == IDialogConstants.OK_ID) {
-                        wizard.setToolUserName(authDialog.getUserName());
-                        wizard.setToolUserPassword(authDialog.getUserPassword());
-                        if (authDialog.isSavePassword()) {
-                            try {
-                                connectionInfo.setProviderProperty(
-                                    authProperty,
-                                    encrypter.encrypt(wizard.getToolUserName() + ':' + wizard.getToolUserPassword()));
-                            } catch (EncryptionException e1) {
-                                // Never be here
-                            }
-                        }
+                        wizard.getSettings().setToolUserName(authDialog.getUserName());
+                        wizard.getSettings().setToolUserPassword(authDialog.getUserPassword());
                     }
                 }
             });
@@ -107,8 +98,8 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
                 public void widgetSelected(SelectionEvent e)
                 {
                     connectionInfo.getProviderProperties().remove(authProperty);
-                    wizard.setToolUserName(connectionInfo.getUserName());
-                    wizard.setToolUserPassword(connectionInfo.getUserPassword());
+                    wizard.getSettings().setToolUserName(null);
+                    wizard.getSettings().setToolUserPassword(null);
                 }
             });
         } catch (EncryptionException e) {

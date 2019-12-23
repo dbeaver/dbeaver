@@ -30,7 +30,7 @@ public class OracleScriptExecuteSettings extends AbstractScriptExecuteSettings<D
     private static final Log log = Log.getLog(OracleScriptExecuteSettings.class);
 
     @Override
-    protected DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
+    public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
         return OCIUtils.getOraHome(clientHomeId);
     }
 

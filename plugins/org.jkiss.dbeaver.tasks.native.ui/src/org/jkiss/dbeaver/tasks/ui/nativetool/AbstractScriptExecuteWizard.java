@@ -22,15 +22,12 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.File;
 import java.util.Collection;
 
 public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
@@ -52,15 +49,6 @@ public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScrip
         return false;
     }
 
-    public File getInputFile()
-    {
-        return new File(getSettings().getInputFile());
-    }
-
-    public void setInputFile(File inputFile) {
-        getSettings().setInputFile(inputFile == null ? null : inputFile.getAbsolutePath());
-    }
-
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(taskTitle);
@@ -69,7 +57,8 @@ public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScrip
 
     @Override
     public void addPages() {
-        //super.addPages(); // Do not add base wizard pages. They can be added explicitly thru addTaskConfigPages
+        // Do not add base wizard pages. They can be added explicitly thru addTaskConfigPages
+        //super.addPages();
         addPage(logPage);
     }
 
@@ -80,28 +69,5 @@ public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScrip
                 NLS.bind(TaskNativeUIMessages.tools_script_execute_wizard_task_completed, taskTitle, getObjectsName()) , //$NON-NLS-1$
                         SWT.ICON_INFORMATION);
 	}
-
-    @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process)
-    {
-        logPage.startLogReader(
-            processBuilder,
-            process.getInputStream());
-        new TextFileTransformerJob(monitor, getInputFile(), process.getOutputStream(), getInputCharset(), getOutputCharset()).start();
-    }
-
-    @Override
-    protected boolean isMergeProcessStreams()
-    {
-        return true;
-    }
-
-    protected String getInputCharset() {
-        return GeneralUtils.UTF8_ENCODING;
-    }
-
-    protected String getOutputCharset() {
-        return GeneralUtils.UTF8_ENCODING;
-    }
 
 }

@@ -19,30 +19,21 @@
 package org.jkiss.dbeaver.ext.oracle.ui.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
-import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
-import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
-import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleTasks;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractScriptExecuteWizard;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
 
-class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleScriptExecuteSettings, DBSObject, DBPDataSourceContainer> {
+class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleScriptExecuteSettings, DBSObject, OracleDataSource> {
 
     private OracleScriptExecuteWizardPageSettings mainPage;
 
@@ -85,61 +76,4 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleScript
         super.addPages();
     }
 
-    @Override
-    public void fillProcessParameters(List<String> cmd, DBPDataSourceContainer arg) throws IOException {
-        String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus"); //$NON-NLS-1$
-        File sqlPlusBinary = new File(getClientHome().getPath(), "bin/" + sqlPlusExec); //$NON-NLS-1$
-        if (!sqlPlusBinary.exists()) {
-            sqlPlusBinary = new File(getClientHome().getPath(), sqlPlusExec);
-        }
-        if (!sqlPlusBinary.exists()) {
-            throw new IOException(NLS.bind(OracleUIMessages.tools_script_execute_wizard_error_sqlplus_not_found, getClientHome().getDisplayName()));
-        }
-        String dumpPath = sqlPlusBinary.getAbsolutePath();
-        cmd.add(dumpPath);
-    }
-
-    @Override
-    public OracleHomeDescriptor findNativeClientHome(String clientHomeId) {
-        return OCIUtils.getOraHome(clientHomeId);
-    }
-
-    @Override
-    public Collection<DBPDataSourceContainer> getRunInfo() {
-        return Collections.singletonList(getSettings().getDataSourceContainer());
-    }
-
-    @Override
-    protected List<String> getCommandLine(DBPDataSourceContainer arg) throws IOException {
-        List<String> cmd = new ArrayList<>();
-        fillProcessParameters(cmd, arg);
-        DBPConnectionConfiguration conInfo = getConnectionInfo();
-        String url;
-        if ("TNS".equals(conInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE))) { //$NON-NLS-1$
-            url = conInfo.getServerName();
-        } else {
-            boolean isSID = OracleConnectionType.SID.name().equals(conInfo.getProviderProperty(OracleConstants.PROP_SID_SERVICE));
-            String port = conInfo.getHostPort();
-            if (isSID) {
-                url = "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=" + conInfo.getHostName() + ")(Port=" + port + "))(CONNECT_DATA=(SID=" + conInfo.getDatabaseName() + ")))";
-            } else {
-                url = "//" + conInfo.getHostName() + (port != null ? ":" + port : "") + "/" + conInfo.getDatabaseName(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-            }
-        }
-        final String role = conInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
-        if (role != null) {
-            url += (" AS " + role);
-        }
-        cmd.add(conInfo.getUserName() + "/" + conInfo.getUserPassword() + "@" + url); //$NON-NLS-1$ //$NON-NLS-2$
-/*
-
-        if (toolWizard.isVerbose()) {
-            cmd.add("-v");
-        }
-        cmd.add("-q");
-
-        cmd.add(toolWizard.getDatabaseObjects().getName());
-*/
-        return cmd;
-    }
 }

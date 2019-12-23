@@ -571,6 +571,9 @@ public final class DBUtils {
                 return null;
             }
         }
+        if (names.length == 1) {
+            return dataSourceContainer;
+        }
         if (!dataSourceContainer.isConnected()) {
             dataSourceContainer.connect(monitor, true, true);
         }
@@ -597,9 +600,6 @@ public final class DBUtils {
             }
         }
         if (sc != null) {
-            if (names.length == 1) {
-                return sc;
-            }
             String objectName = names[names.length - 1];
             DBSObject object = sc.getChild(monitor, objectName);
             if (object == null) {

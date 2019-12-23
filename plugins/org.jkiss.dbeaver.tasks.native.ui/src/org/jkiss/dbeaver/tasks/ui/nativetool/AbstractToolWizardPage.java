@@ -44,7 +44,7 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
     @Override
     public boolean isPageComplete()
     {
-        return wizard.getClientHome() != null && super.isPageComplete();
+        return wizard.getSettings().getClientHome() != null && super.isPageComplete();
     }
 
     protected void createCheckButtons(Composite buttonsPanel, final Table table) {
@@ -53,7 +53,7 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
     }
 
     protected void createExtraArgsInput(Composite outputGroup) {
-        extraCommandArgsText = UIUtils.createLabelText(outputGroup, "Extra command args", wizard.getExtraCommandArgs());
+        extraCommandArgsText = UIUtils.createLabelText(outputGroup, "Extra command args", wizard.getSettings().getExtraCommandArgs());
         extraCommandArgsText.setToolTipText("Set extra command args for tool executable.");
         UIUtils.installContentProposal(
             extraCommandArgsText,

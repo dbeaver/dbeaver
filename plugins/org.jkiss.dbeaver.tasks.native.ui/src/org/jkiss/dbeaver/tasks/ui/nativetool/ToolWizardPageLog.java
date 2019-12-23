@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -143,7 +144,7 @@ public class ToolWizardPageLog extends WizardPage {
             // Dump command line
             StringBuilder cmdString = new StringBuilder();
             for (String cmd : command) {
-                if (wizard.isSecureString(cmd)) {
+                if (NativeToolUtils.isSecureString(wizard.getSettings(), cmd)) {
                     cmd = "******";
                 }
                 if (cmdString.length() > 0) cmdString.append(' ');
