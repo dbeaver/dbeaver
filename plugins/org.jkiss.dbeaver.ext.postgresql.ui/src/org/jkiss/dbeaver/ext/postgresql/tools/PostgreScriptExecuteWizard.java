@@ -48,8 +48,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
         super(task);
     }
 
-    PostgreScriptExecuteWizard(PostgreDatabase catalog)
-    {
+    PostgreScriptExecuteWizard(PostgreDatabase catalog) {
         super(Collections.singleton(catalog), PostgreMessages.wizard_script_title_execute_script);
         getSettings().setDatabase(catalog);
     }
@@ -61,8 +60,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
     }
 
     @Override
-    public boolean isVerbose()
-    {
+    public boolean isVerbose() {
         return false;
     }
 
@@ -84,15 +82,14 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
     }
 
     @Override
-    public void addPages()
-    {
+    public void addPages() {
+        addTaskConfigPages();
         addPage(mainPage);
         super.addPages();
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd, PostgreDatabase arg) throws IOException
-    {
+    public void fillProcessParameters(List<String> cmd, PostgreDatabase arg) throws IOException {
         String dumpPath = RuntimeUtils.getNativeClientBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "psql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
         if (arg.getDataSource().isServerVersionAtLeast(9, 5)) {
@@ -109,8 +106,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
     }
 
     @Override
-    public PostgreServerHome findNativeClientHome(String clientHomeId)
-    {
+    public PostgreServerHome findNativeClientHome(String clientHomeId) {
         return PostgreDataSourceProvider.getServerHome(clientHomeId);
     }
 
@@ -120,8 +116,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
     }
 
     @Override
-    protected List<String> getCommandLine(PostgreDatabase arg) throws IOException
-    {
+    protected List<String> getCommandLine(PostgreDatabase arg) throws IOException {
         List<String> cmd = PostgreToolScript.getPostgreToolCommandLine(this, arg);
         cmd.add(arg.getName());
         return cmd;

@@ -9,7 +9,9 @@ Require-Bundle: org.eclipse.core.runtime,
  com.github.jsqlparser,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.model.sql
+ org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.tasks.native;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.oracle.model,
  org.jkiss.dbeaver.ext.oracle.model.dict,
@@ -18,7 +20,8 @@ Export-Package: org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.oracle.model.session,
  org.jkiss.dbeaver.ext.oracle.model.source,
  org.jkiss.dbeaver.ext.oracle.oci,
- org.jkiss.dbeaver.ext.oracle.data
+ org.jkiss.dbeaver.ext.oracle.data,
+ org.jkiss.dbeaver.ext.oracle.tasks
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor

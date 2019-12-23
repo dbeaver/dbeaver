@@ -52,11 +52,6 @@ public abstract class AbstractImportExportWizard<SETTINGS extends AbstractImport
         return false;
     }
 
-    @Override
-    public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null;
-    }
-
     public File getOutputFolder() {
         return getSettings().getOutputFolder();
     }
