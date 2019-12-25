@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tasks.ui.nativetool;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -41,6 +42,8 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> implements DBTTaskConfigPanel {
+
+    private static final Log log = Log.getLog(NativeToolConfigPanel.class);
 
     private final DBRRunnableContext runnableContext;
     private final DBTTaskType taskType;
@@ -114,7 +117,12 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
 
                 @Override
                 protected boolean isDataSourceVisible(DBNDataSource dataSource) {
-                    return providerClass.isInstance(dataSource.getDataSourceContainer().getDriver().getDataSourceProvider());
+                    try {
+                        return providerClass.isInstance(dataSource.getDataSourceContainer().getDriver().getDataSourceProvider());
+                    } catch (Exception e) {
+                        log.debug(e);
+                        return false;
+                    }
                 }
 
             };
