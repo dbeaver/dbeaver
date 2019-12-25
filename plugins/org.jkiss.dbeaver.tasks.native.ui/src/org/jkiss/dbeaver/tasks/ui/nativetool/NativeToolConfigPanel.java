@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
@@ -87,10 +89,14 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
                 protected void onSelectionChange(Object element) {
                     selectedObject = element instanceof DBSWrapper && objectClass.isInstance(((DBSWrapper) element).getObject()) ?
                         objectClass.cast(((DBSWrapper) element).getObject()) : null;
-                    List databaseObjects = ieWizard.getSettings().getDatabaseObjects();
+                    AbstractNativeToolSettings settings = ieWizard.getSettings();
+                    List databaseObjects = settings.getDatabaseObjects();
                     databaseObjects.clear();
                     if (selectedObject != null) {
                         databaseObjects.add(selectedObject);
+                    }
+                    if (settings instanceof AbstractImportExportSettings) {
+                        ((AbstractImportExportSettings) settings).fillExportObjectsFromInput();
                     }
                     updateHomeSelector();
                     propertyChangeListener.run();

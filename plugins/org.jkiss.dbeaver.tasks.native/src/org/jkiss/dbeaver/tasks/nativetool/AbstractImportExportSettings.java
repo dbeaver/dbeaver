@@ -46,6 +46,10 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
         this.outputFilePattern = outputFilePattern;
     }
 
+    public void fillExportObjectsFromInput() {
+
+    }
+
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
         super.loadSettings(runnableContext, store);
