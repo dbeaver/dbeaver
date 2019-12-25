@@ -32,7 +32,6 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core.application";
-    private static final Log log = Log.getLog(CoreApplicationActivator.class);
 
     // The shared instance
     private static CoreApplicationActivator plugin;
@@ -71,7 +70,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                     }
                 }
                 if (message != null) {
-                    log.debug(message);
+                    System.err.println(message);
                 }
             }, null);
             //context.addBundleListener(new BundleLoadListener());

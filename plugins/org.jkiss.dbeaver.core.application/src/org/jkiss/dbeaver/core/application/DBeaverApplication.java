@@ -160,7 +160,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
         {
             String defaultHomePath = getDefaultInstanceLocation();
             if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
-                log.debug("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
+                System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
                 return IApplication.EXIT_OK;
             }
         }
@@ -196,13 +196,13 @@ public class DBeaverApplication extends BaseApplicationImpl {
             headlessMode = false;
         }
 
+        initDebugWriter();
+
         updateSplashHandler();
 
         final Runtime runtime = Runtime.getRuntime();
 
         // Init Core plugin and mark it as standalone version
-
-        initDebugWriter();
 
         log.debug(GeneralUtils.getProductName() + " " + GeneralUtils.getProductVersion() + " is starting"); //$NON-NLS-1$
         log.debug("OS: " + System.getProperty(StandardConstants.ENV_OS_NAME) + " " + System.getProperty(StandardConstants.ENV_OS_VERSION) + " (" + System.getProperty(StandardConstants.ENV_OS_ARCH) + ")");
