@@ -53,7 +53,7 @@ public class Log
     private final String name;
     private static ThreadLocal<PrintWriter> logWriter = new ThreadLocal<>();
     private static boolean quietMode;
-    private static final PrintWriter DEFAULT_DEBUG_WRITER = new PrintWriter(System.err);;
+    private static PrintWriter DEFAULT_DEBUG_WRITER;
 
     public static Log getLog(Class<?> forClass) {
         return new Log(forClass.getName());
@@ -175,11 +175,15 @@ public class Log
 
     private void debugMessage(Object message, Throwable t) {
         PrintWriter logStream = logWriter.get();
-        PrintWriter debugWriter = logStream != null ? logStream : (quietMode ? null : DEFAULT_DEBUG_WRITER);
-        if (debugWriter == null) {
-            return;
-        }
         synchronized (Log.class) {
+            if (DEFAULT_DEBUG_WRITER == null) {
+                DEFAULT_DEBUG_WRITER = new PrintWriter(System.err, true);
+            }
+            PrintWriter debugWriter = logStream != null ? logStream : (quietMode ? null : DEFAULT_DEBUG_WRITER);
+            if (debugWriter == null) {
+                return;
+            }
+
             debugWriter.print(sdf.format(new Date()) + " - "); //$NON-NLS-1$
             if (message != null) {
                 debugWriter.println(message);
