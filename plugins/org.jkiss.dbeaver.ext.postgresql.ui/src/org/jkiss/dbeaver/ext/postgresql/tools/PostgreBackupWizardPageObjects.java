@@ -45,8 +45,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 
 class PostgreBackupWizardPageObjects extends AbstractToolWizardPage<PostgreBackupWizard>
@@ -138,9 +138,15 @@ class PostgreBackupWizardPageObjects extends AbstractToolWizardPage<PostgreBacku
             createCheckButtons(buttonsPanel, tablesTable);
         }
 
-        loadSettings();
-        updateState();
         setControl(composite);
+    }
+
+    @Override
+    public void activatePage() {
+        super.activatePage();
+        loadSettings();
+
+        updateState();
     }
 
     private void loadSettings() {
