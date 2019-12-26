@@ -8,7 +8,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.model,
- org.eclipse.core.resources
+ org.eclipse.core.resources,
+ org.junit,
+ org.eclipse.swtbot.swt.finder,
+ org.eclipse.swtbot.junit4_x,
+ org.eclipse.swtbot.eclipse.finder
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
