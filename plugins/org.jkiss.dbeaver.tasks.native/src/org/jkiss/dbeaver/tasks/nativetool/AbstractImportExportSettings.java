@@ -57,6 +57,7 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
             this.outputFilePattern = "dump-${database}-${timestamp}.sql";
         }
+        outputFolder = new File(CommonUtils.toString(store.getString("export.outputFolder"), outputFolder.getAbsolutePath()));
     }
 
     @Override
