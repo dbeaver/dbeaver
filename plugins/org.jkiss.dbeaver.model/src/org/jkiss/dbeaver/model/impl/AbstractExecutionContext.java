@@ -78,6 +78,10 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         return null;
     }
 
+    @NotNull
+    protected DBPConnectionBootstrap getBootstrapSettings() {
+        return getDataSource().getContainer().getActualConnectionConfiguration().getBootstrap();
+    }
 
     /**
      * Context boot procedure.
@@ -90,7 +94,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommit);
 
         // Execute bootstrap queries
-        DBPConnectionBootstrap bootstrap = dataSource.getContainer().getConnectionConfiguration().getBootstrap();
+        DBPConnectionBootstrap bootstrap = getBootstrapSettings();
         List<String> initQueries = bootstrap.getInitQueries();
         if (!CommonUtils.isEmpty(initQueries)) {
             monitor.subTask("Run bootstrap queries");

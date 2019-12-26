@@ -96,6 +96,8 @@ public class RegistryConstants {
     public static final String ATTR_AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
     public static final String ATTR_TXN_ISOLATION = "txnIsolation"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_OBJECT = "defaultObject"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_CATALOG = "defaultCatalog"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_SCHEMA = "defaultSchema"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_EXECUTE = "confirmExecute"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_DATA_CHANGE = "confirmDataChange"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$

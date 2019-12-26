@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -131,9 +132,16 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         // Check default active schema
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Get context active schema")) {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Read context defaults")) {
+            if (useBootstrapSettings) {
+                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
+                    setSearchPath(monitor, bootstrap.getDefaultSchemaName());
+                }
+            }
+
             try (JDBCPreparedStatement stat = session.prepareStatement("SELECT current_schema(),session_user")) {
                 try (JDBCResultSet rs = stat.executeQuery()) {
                     if (rs.nextRow()) {
@@ -178,21 +186,23 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     private void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema) throws DBCException {
         // Construct search path from current search path but put default schema first
+        setSearchPath(monitor, schema.getName());
+    }
+
+    private void setSearchPath(DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
         List<String> newSearchPath = new ArrayList<>(getDefaultSearchPath());
-        {
-            String defSchemaName = schema.getName();
-            int schemaIndex = newSearchPath.indexOf(defSchemaName);
-            if (schemaIndex == 0) {
-                // Already default schema
-            } else {
-                if (schemaIndex > 0) {
-                    // Remove from previous position
-                    newSearchPath.remove(schemaIndex);
-                }
-                // Add it first
-                newSearchPath.add(0, defSchemaName);
+        int schemaIndex = newSearchPath.indexOf(defSchemaName);
+        if (schemaIndex == 0) {
+            // Already default schema
+        } else {
+            if (schemaIndex > 0) {
+                // Remove from previous position
+                newSearchPath.remove(schemaIndex);
             }
+            // Add it first
+            newSearchPath.add(0, defSchemaName);
         }
+
         StringBuilder spString = new StringBuilder();
         for (String sp : newSearchPath) {
             if (spString.length() > 0) spString.append(",");

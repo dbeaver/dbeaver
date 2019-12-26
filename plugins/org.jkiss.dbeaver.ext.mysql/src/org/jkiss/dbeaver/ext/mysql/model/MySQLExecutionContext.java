@@ -107,7 +107,7 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         // Check default active schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active database")) {
             activeDatabaseName = MySQLUtils.determineCurrentDatabase(session);
