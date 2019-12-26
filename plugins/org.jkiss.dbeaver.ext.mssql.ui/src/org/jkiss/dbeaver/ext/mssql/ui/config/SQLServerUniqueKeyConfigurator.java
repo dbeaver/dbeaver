@@ -37,12 +37,16 @@ public class SQLServerUniqueKeyConfigurator implements DBEObjectConfigurator<SQL
             EditConstraintPage editPage = new EditConstraintPage(
                 "Create constraint",
                 primaryKey,
-                new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
+                new DBSEntityConstraintType[] {
+                        DBSEntityConstraintType.PRIMARY_KEY,
+                        DBSEntityConstraintType.UNIQUE_KEY});
             if (!editPage.edit()) {
                 return null;
             }
-            primaryKey.setConstraintType(editPage.getConstraintType());
+
             primaryKey.setName(editPage.getConstraintName());
+            primaryKey.setConstraintType(editPage.getConstraintType());
+
             int colIndex = 1;
             for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                 primaryKey.addColumn(
@@ -51,6 +55,7 @@ public class SQLServerUniqueKeyConfigurator implements DBEObjectConfigurator<SQL
                         (SQLServerTableColumn) tableColumn,
                         colIndex++));
             }
+
             return primaryKey;
         });
     }

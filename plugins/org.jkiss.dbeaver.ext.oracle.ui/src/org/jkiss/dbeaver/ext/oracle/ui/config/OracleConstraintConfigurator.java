@@ -40,11 +40,12 @@ public class OracleConstraintConfigurator implements DBEObjectConfigurator<Oracl
                 OracleUIMessages.edit_oracle_constraint_manager_dialog_title,
                 constraint,
                 new DBSEntityConstraintType[] {
-                    DBSEntityConstraintType.PRIMARY_KEY,
-                    DBSEntityConstraintType.UNIQUE_KEY });
+                        DBSEntityConstraintType.PRIMARY_KEY,
+                        DBSEntityConstraintType.UNIQUE_KEY});
             if (!editPage.edit()) {
                 return null;
             }
+
             constraint.setName(editPage.getConstraintName());
             constraint.setConstraintType(editPage.getConstraintType());
 

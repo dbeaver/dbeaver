@@ -41,14 +41,15 @@ public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLT
                 MySQLUIMessages.edit_constraint_manager_title,
                 constraint,
                 new DBSEntityConstraintType[] {
-                    DBSEntityConstraintType.PRIMARY_KEY,
-                    DBSEntityConstraintType.UNIQUE_KEY });
+                        DBSEntityConstraintType.PRIMARY_KEY,
+                        DBSEntityConstraintType.UNIQUE_KEY});
             if (!editPage.edit()) {
                 return null;
             }
 
             constraint.setName(editPage.getConstraintName());
             constraint.setConstraintType(editPage.getConstraintType());
+
             int colIndex = 1;
             for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                 constraint.addColumn(
@@ -57,6 +58,7 @@ public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLT
                         (MySQLTableColumn) tableColumn,
                         colIndex++));
             }
+
             return constraint;
         });
     }

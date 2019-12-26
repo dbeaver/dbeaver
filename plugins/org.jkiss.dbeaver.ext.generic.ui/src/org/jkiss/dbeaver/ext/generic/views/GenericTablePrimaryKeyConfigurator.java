@@ -41,13 +41,16 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
                 EditConstraintPage editPage = new EditConstraintPage(
                     "Create unique constraint",
                     primaryKey,
-                    new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
+                    new DBSEntityConstraintType[] {
+                            DBSEntityConstraintType.PRIMARY_KEY,
+                            DBSEntityConstraintType.UNIQUE_KEY});
                 if (!editPage.edit()) {
                     return null;
                 }
 
-                primaryKey.setConstraintType(editPage.getConstraintType());
                 primaryKey.setName(editPage.getConstraintName());
+                primaryKey.setConstraintType(editPage.getConstraintType());
+
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     primaryKey.addColumn(
@@ -56,6 +59,7 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
                             (GenericTableColumn) tableColumn,
                             colIndex++));
                 }
+
                 return primaryKey;
             }
         }.execute();
