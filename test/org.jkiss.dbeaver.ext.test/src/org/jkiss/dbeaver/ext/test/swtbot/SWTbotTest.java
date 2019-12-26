@@ -4,15 +4,9 @@ package org.jkiss.dbeaver.ext.test.swtbot;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.swt.finder.finders.ContextMenuHelper;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
 
 public class SWTbotTest {
     private static SWTWorkbenchBot bot;
