@@ -40,6 +40,6 @@ public interface DBCExecutionContextDefaults<CATALOG extends DBSCatalog, SCHEMA 
 
     void setDefaultSchema(DBRProgressMonitor monitor, SCHEMA schema) throws DBCException;
 
-    boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException;
+    boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException;
 
 }

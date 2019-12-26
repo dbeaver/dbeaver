@@ -208,7 +208,7 @@ public class MySQLDataSource extends JDBCDataSource {
                 ((MySQLExecutionContext)context).setCurrentDatabase(monitor, object);
             }
         } else {
-            ((MySQLExecutionContext)context).refreshDefaults(monitor);
+            ((MySQLExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 

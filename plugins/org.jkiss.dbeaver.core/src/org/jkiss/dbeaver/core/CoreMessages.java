@@ -400,10 +400,12 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_label_connection_folder;
 	public static String dialog_connection_wizard_final_label_connection;
 	public static String dialog_connection_wizard_final_label_isolation_level;
+	public static String dialog_connection_wizard_final_label_default_database;
+	public static String dialog_connection_wizard_final_label_default_database_tooltip;
 	public static String dialog_connection_wizard_final_label_default_schema;
+	public static String dialog_connection_wizard_final_label_default_schema_tooltip;
 	public static String dialog_connection_wizard_final_label_keepalive;
 	public static String dialog_connection_wizard_final_label_isolation_level_tooltip;
-	public static String dialog_connection_wizard_final_label_default_schema_tooltip;
 	public static String dialog_connection_wizard_final_label_keepalive_tooltip;
 	public static String dialog_connection_wizard_final_label_bootstrap_query;
 	public static String dialog_connection_wizard_configure;

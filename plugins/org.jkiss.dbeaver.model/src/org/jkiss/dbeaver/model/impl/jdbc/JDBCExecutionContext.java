@@ -130,16 +130,14 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             try {
                 this.initContextBootstrap(monitor, autoCommit);
             } catch (DBCException e) {
-                log.error("Error while running context bootstrap", e);
+                log.warn("Error while running context bootstrap", e);
             }
 
             try {
-                // Copy context state
+                // Init (or copy) context state
                 this.dataSource.initializeContextState(monitor, this, initFrom);
-            } catch (DBCException e) {
-                log.error("Error while initializing context state", e);
             } catch (DBException e) {
-                e.printStackTrace();
+                log.warn("Error while initializing context state", e);
             }
 
             try {

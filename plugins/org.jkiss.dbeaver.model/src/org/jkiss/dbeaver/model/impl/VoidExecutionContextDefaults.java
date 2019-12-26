@@ -60,7 +60,7 @@ public class VoidExecutionContextDefaults implements DBCExecutionContextDefaults
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 }

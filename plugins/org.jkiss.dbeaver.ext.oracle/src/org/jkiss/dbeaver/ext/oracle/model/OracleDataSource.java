@@ -215,7 +215,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
         if (initFrom != null) {
             ((OracleExecutionContext)context).setCurrentSchema(monitor, ((OracleExecutionContext)initFrom).getDefaultSchema());
         } else {
-            ((OracleExecutionContext)context).refreshDefaults(monitor);
+            ((OracleExecutionContext)context).refreshDefaults(monitor, true);
         }
 
         {

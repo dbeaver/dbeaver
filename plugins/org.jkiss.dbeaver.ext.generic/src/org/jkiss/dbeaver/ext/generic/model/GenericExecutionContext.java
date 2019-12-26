@@ -284,7 +284,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
 
         String oldEntityName = selectedEntityName;
         DBSObject oldDefaultObject = getDefaultObject();

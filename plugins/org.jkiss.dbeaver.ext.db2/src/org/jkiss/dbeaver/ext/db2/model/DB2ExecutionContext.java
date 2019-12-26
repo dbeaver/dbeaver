@@ -105,7 +105,7 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         // Check default active schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active schema")) {
             // Get active schema

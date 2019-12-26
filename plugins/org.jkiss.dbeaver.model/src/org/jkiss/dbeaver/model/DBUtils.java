@@ -1716,7 +1716,7 @@ public final class DBUtils {
         try {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-            if (contextDefaults.refreshDefaults(monitor)) {
+            if (contextDefaults.refreshDefaults(monitor, false)) {
                 fireObjectSelectionChange(defaultCatalog, contextDefaults.getDefaultCatalog());
                 fireObjectSelectionChange(defaultSchema, contextDefaults.getDefaultSchema());
             }
@@ -1736,19 +1736,19 @@ public final class DBUtils {
         }
     }
 
-    public static DBSObjectContainer getChangeableObjectContainer(DBPDataSource dataSource, DBSObjectContainer root) {
-        DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
-        DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+    public static DBSObjectContainer getChangeableObjectContainer(DBCExecutionContextDefaults contextDefaults, DBSObjectContainer root, Class<? extends DBSObject> childType) {
         if (contextDefaults == null) {
             return null;
         }
-        if (contextDefaults.supportsCatalogChange()) {
+        if (childType == DBSCatalog.class && contextDefaults.supportsCatalogChange()) {
             return root;
         }
-        if (contextDefaults.supportsSchemaChange()) {
+        if (childType == DBSSchema.class && contextDefaults.supportsSchemaChange()) {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             if (defaultCatalog != null) {
                 return defaultCatalog;
+            } else {
+                return root;
             }
         }
         return null;

@@ -196,7 +196,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         if (initFrom != null) {
             ((DB2ExecutionContext)context).setCurrentSchema(monitor, ((DB2ExecutionContext)initFrom).getDefaultSchema());
         } else {
-            ((DB2ExecutionContext)context).refreshDefaults(monitor);
+            ((DB2ExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 
