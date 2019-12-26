@@ -59,7 +59,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         }
         Class<?> objectClass = getObjectClass(config.getAttribute("sampleClass"));
         try {
-            sample = (DBDDataFormatterSample)objectClass.newInstance();
+            sample = (DBDDataFormatterSample)objectClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             log.error("Can't instantiate data formatter '" + getId() + "' sample");
         }

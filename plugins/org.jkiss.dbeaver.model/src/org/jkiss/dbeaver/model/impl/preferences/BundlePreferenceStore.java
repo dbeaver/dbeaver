@@ -172,7 +172,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
             props.putDouble(name, value);
         }
         dirty = true;
-        firePropertyChangeEvent(name, new Double(oldValue), new Double(value));
+        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override
@@ -187,7 +187,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
             props.putFloat(name, value);
         }
         dirty = true;
-        firePropertyChangeEvent(name, new Float(oldValue), new Float(value));
+        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override
@@ -202,7 +202,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
             props.putInt(name, value);
         }
         dirty = true;
-        firePropertyChangeEvent(name, new Integer(oldValue), new Integer(value));
+        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override
@@ -217,7 +217,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
             props.putLong(name, value);
         }
         dirty = true;
-        firePropertyChangeEvent(name, new Long(oldValue), new Long(value));
+        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override

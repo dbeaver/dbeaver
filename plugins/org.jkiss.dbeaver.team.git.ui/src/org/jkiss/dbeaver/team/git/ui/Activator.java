@@ -18,26 +18,14 @@
 
 package org.jkiss.dbeaver.team.git.ui;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Plugin;
-import org.jkiss.dbeaver.Log;
 import org.osgi.framework.BundleContext;
 
 public class Activator extends Plugin {
     
-    //private static final Log log = Log.getLog(Activator.class);
-
-
-    @Override
-    public void startup() throws CoreException {
-        //super.startup();
-        //log.info("Activator git startup");
-    }
-
     @Override
     public void start(BundleContext context) throws Exception {
-        //super.start(context);
-        //log.info("Activator git start");
+        super.start(context);
     }
 
 }

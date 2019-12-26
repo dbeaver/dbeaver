@@ -1,11 +1,11 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
-import java.util.List;
-import java.util.Vector;
-
 import com.jcraft.jsch.Buffer;
 import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSchException;
+
+import java.util.List;
+import java.util.Vector;
 
 public class DBeaverIdentityRepository implements IdentityRepository {
     
@@ -18,7 +18,7 @@ public class DBeaverIdentityRepository implements IdentityRepository {
     }
 
     @Override
-    public Vector getIdentities() {
+    public Vector<?> getIdentities() {
         Vector<com.jcraft.jsch.Identity> result = new Vector<com.jcraft.jsch.Identity>(); 
 
         for (SSHAgentIdentity identity : identities) {

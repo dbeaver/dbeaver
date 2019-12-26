@@ -89,7 +89,7 @@ public class GenericMetaModelDescriptor extends AbstractDescriptor {
             throw new DBException("Can't create generic meta model instance '" + implType.getImplName() + "'");
         }
         try {
-            instance = implClass.newInstance();
+            instance = implClass.getDeclaredConstructor().newInstance();
         } catch (Throwable e) {
             throw new DBException("Can't instantiate meta model", e);
         }

@@ -115,7 +115,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     {
         implType.checkObjectClass(IDataTransferNode.class);
         try {
-            return implType.getObjectClass(IDataTransferNode.class).newInstance();
+            return implType.getObjectClass(IDataTransferNode.class).getDeclaredConstructor().newInstance();
         } catch (Throwable e) {
             throw new DBException("Can't create data transformer node", e);
         }
@@ -125,7 +125,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     {
         settingsType.checkObjectClass(IDataTransferSettings.class);
         try {
-            return settingsType.getObjectClass(IDataTransferSettings.class).newInstance();
+            return settingsType.getObjectClass(IDataTransferSettings.class).getDeclaredConstructor().newInstance();
         } catch (Throwable e) {
             throw new DBException("Can't create node settings", e);
         }
