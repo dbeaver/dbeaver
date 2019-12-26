@@ -135,11 +135,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
             entityName = defaultCatalog.getName();
         } else if (context.supportsSchemaChange()) {
             GenericSchema defaultSchema = context.getDefaultSchema();
-            entityName = defaultSchema.getName();
+            entityName = defaultSchema == null ? null : defaultSchema.getName();
         }
-        if (entityName == null) {
-            log.error("Can't determine default entity type");
-        } else {
+        if (entityName != null) {
             GenericDataSource dataSource = getDataSource();
             try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
                 if (dataSource.isSelectedEntityFromAPI()) {
