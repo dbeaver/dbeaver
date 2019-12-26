@@ -100,10 +100,11 @@ public class DBPConnectionBootstrap {
     public boolean hasData() {
         return
                 defaultAutoCommit != null ||
-                        defaultTransactionIsolation != null ||
-                        !CommonUtils.isEmpty(defaultCatalogName) ||
-                        ignoreErrors ||
-                        !CommonUtils.isEmpty(initQueries);
+                defaultTransactionIsolation != null ||
+                !CommonUtils.isEmpty(defaultCatalogName) ||
+                !CommonUtils.isEmpty(defaultSchemaName) ||
+                ignoreErrors ||
+                !CommonUtils.isEmpty(initQueries);
     }
 
     @Override
@@ -114,9 +115,10 @@ public class DBPConnectionBootstrap {
         DBPConnectionBootstrap source = (DBPConnectionBootstrap) obj;
         return
                 CommonUtils.equalObjects(this.defaultCatalogName, source.defaultCatalogName) &&
-                        CommonUtils.equalObjects(this.defaultAutoCommit, source.defaultAutoCommit) &&
-                        CommonUtils.equalObjects(this.defaultTransactionIsolation, source.defaultTransactionIsolation) &&
-                        CommonUtils.equalObjects(this.initQueries, source.initQueries) &&
-                        this.ignoreErrors == source.ignoreErrors;
+                CommonUtils.equalObjects(this.defaultSchemaName, source.defaultSchemaName) &&
+                CommonUtils.equalObjects(this.defaultAutoCommit, source.defaultAutoCommit) &&
+                CommonUtils.equalObjects(this.defaultTransactionIsolation, source.defaultTransactionIsolation) &&
+                CommonUtils.equalObjects(this.initQueries, source.initQueries) &&
+                this.ignoreErrors == source.ignoreErrors;
     }
 }
