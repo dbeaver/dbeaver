@@ -24,8 +24,9 @@ public class SWTbotTest {
  
     @Test
     public void testSampleMenu() {
-
-
+		bot.toolbarDropDownButtonWithTooltip("Новое соединение").menuItem("PostgreSQL").click();
+		bot.tabItem("Общее").activate();
+		bot.button("Finish").click();
     }
     
 }
