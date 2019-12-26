@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.tools;
 
+import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
@@ -32,7 +33,7 @@ import java.util.Map;
 
 class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptExecuteSettings, MySQLCatalog, MySQLCatalog> {
 
-    private MySQLScriptExecuteWizardPageSettings mainPage = new MySQLScriptExecuteWizardPageSettings(this);
+    private MySQLScriptExecuteWizardPageSettings settingsPage = new MySQLScriptExecuteWizardPageSettings(this);
 
     MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport) {
         super(Collections.singleton(catalog), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
@@ -51,7 +52,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptEx
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
-        mainPage.saveState();
+        settingsPage.saveState();
         getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
@@ -76,8 +77,16 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLScriptEx
     @Override
     public void addPages() {
         addTaskConfigPages();
-        addPage(mainPage);
+        addPage(settingsPage);
         super.addPages();
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        if (page == settingsPage) {
+            return null;
+        }
+        return super.getNextPage(page);
     }
 
 }
