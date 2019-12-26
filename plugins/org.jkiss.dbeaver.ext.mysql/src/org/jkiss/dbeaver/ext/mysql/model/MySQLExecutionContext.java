@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -110,6 +111,13 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
     public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         // Check default active schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active database")) {
+            if (useBootstrapSettings) {
+                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName())) {
+                    setCurrentDatabaseName(monitor, bootstrap.getDefaultCatalogName());
+                }
+            }
+
             activeDatabaseName = MySQLUtils.determineCurrentDatabase(session);
         } catch (DBException e) {
             throw new DBCException(e, getDataSource());
@@ -123,11 +131,16 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
             log.debug("Null current database");
             return false;
         }
+        String databaseName = object.getName();
+        return setCurrentDatabaseName(monitor, databaseName);
+    }
+
+    private boolean setCurrentDatabaseName(DBRProgressMonitor monitor, String databaseName) throws DBCException {
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(object))) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(getDataSource(), databaseName))) {
                 dbStat.execute();
             }
-            this.activeDatabaseName = object.getName();
+            this.activeDatabaseName = databaseName;
             return true;
         } catch (SQLException e) {
             throw new DBCException(e, getDataSource());
