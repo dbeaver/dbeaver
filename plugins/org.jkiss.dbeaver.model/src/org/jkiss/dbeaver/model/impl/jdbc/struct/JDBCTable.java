@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -318,7 +319,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
                 StringBuilder query = new StringBuilder(200);
                 query
-                    .append(useUpsert(session) ? "UPSERT" : "INSERT")
+                    .append(useUpsert(session) ? SQLConstants.KEYWORD_UPSERT : SQLConstants.KEYWORD_INSERT)
                     .append(" INTO ").append(tableName).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
                 allNulls = true;

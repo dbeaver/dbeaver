@@ -381,25 +381,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDefaultAutoCommit(final boolean autoCommit, @Nullable DBCExecutionContext updateContext, boolean updateConnection, @Nullable final Runnable onFinish) throws DBException {
-        if (updateContext != null) {
-            final DBCTransactionManager txnManager = DBUtils.getTransactionManager(updateContext);
-            if (updateConnection && txnManager != null) {
-                TasksJob.runTask("Set auto-commit mode", monitor -> {
-                    try {
-                        // Change auto-commit mode
-                        txnManager.setAutoCommit(monitor, autoCommit);
-                    } catch (DBCException e) {
-                        throw new InvocationTargetException(e);
-                    } finally {
-                        monitor.done();
-                        if (onFinish != null) {
-                            onFinish.run();
-                        }
-                    }
-                });
-            }
-        }
+    public void setDefaultAutoCommit(final boolean autoCommit) {
         // Save in preferences
         if (autoCommit == getConnectionConfiguration().getConnectionType().isAutocommit()) {
             connectionInfo.getBootstrap().setDefaultAutoCommit(null);
