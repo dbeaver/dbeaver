@@ -17,8 +17,10 @@
 
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 /**
  * DB2 data source info
@@ -34,4 +36,8 @@ class DB2DataSourceInfo extends JDBCDataSourceInfo {
         return true;
     }
 
+    @Override
+    public DBSObjectType[] getSupportedObjectTypes() {
+        return DB2ObjectType.values();
+    }
 }

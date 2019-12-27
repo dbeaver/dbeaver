@@ -330,13 +330,13 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             if (!newObject.isPersisted()) {
                 String objectName = newObject.getName();
                 if (CommonUtils.isEmpty(objectName)) {
-                    throw new DBException("Empty object name");
+                    throw new DBException("Empty " + DBUtils.getObjectTypeName(newObject).toLowerCase() + " name");
                 }
                 DBSObjectCache<? extends DBSObject, OBJECT_TYPE> objectsCache = getObjectsCache(newObject);
                 if (objectsCache != null) {
                     OBJECT_TYPE cachedObject = DBUtils.findObject(objectsCache.getCachedObjects(), objectName);
                     if (cachedObject != null && cachedObject != newObject) {
-                        throw new DBException("Object '" + objectName + "' already exists");
+                        throw new DBException(DBUtils.getObjectTypeName(newObject) + " '" + objectName + "' already exists");
                     }
                 }
             }
