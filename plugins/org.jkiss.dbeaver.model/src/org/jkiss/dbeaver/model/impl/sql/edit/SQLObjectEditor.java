@@ -328,11 +328,15 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
             OBJECT_TYPE newObject = getObject();
             if (!newObject.isPersisted()) {
+                String objectName = newObject.getName();
+                if (CommonUtils.isEmpty(objectName)) {
+                    throw new DBException("Empty object name");
+                }
                 DBSObjectCache<? extends DBSObject, OBJECT_TYPE> objectsCache = getObjectsCache(newObject);
                 if (objectsCache != null) {
-                    OBJECT_TYPE cachedObject = DBUtils.findObject(objectsCache.getCachedObjects(), newObject.getName());
+                    OBJECT_TYPE cachedObject = DBUtils.findObject(objectsCache.getCachedObjects(), objectName);
                     if (cachedObject != null && cachedObject != newObject) {
-                        throw new DBException("Object '" + newObject.getName() + "' already exists");
+                        throw new DBException("Object '" + objectName + "' already exists");
                     }
                 }
             }
