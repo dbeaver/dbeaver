@@ -2639,7 +2639,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, SQLQueryContainer {
+    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, SQLQueryContainer, ISmartTransactionManager {
 
         private final QueryProcessor queryProcessor;
         private final ResultSetViewer viewer;
@@ -3015,6 +3015,16 @@ public class SQLEditor extends SQLEditorBase implements
         public SQLScriptElement getQuery() {
             return query;
         }
+
+        @Override
+        public boolean isSmartAutoCommit() {
+            return SQLEditor.this.isSmartAutoCommit();
+        }
+
+        @Override
+        public void setSmartAutoCommit(boolean smartAutoCommit) {
+            SQLEditor.this.setSmartAutoCommit(smartAutoCommit);
+        }
     }
 
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
@@ -3073,6 +3083,9 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void onStartQuery(DBCSession session, final SQLQuery query) {
             try {
+                if (isSmartAutoCommit()) {
+                    DBExecUtils.checkSmartAutoCommit(session, query.getText());
+                }
                 boolean isInExecute = getTotalQueryRunning() > 0;
                 if (!isInExecute) {
                     UIUtils.asyncExec(() -> {

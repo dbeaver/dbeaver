@@ -3632,6 +3632,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             };
+
             return persister.applyChanges(monitor, false, settings, applyListener);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
