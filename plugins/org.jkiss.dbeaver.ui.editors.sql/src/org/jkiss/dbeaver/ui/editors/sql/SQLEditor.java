@@ -115,8 +115,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -130,7 +130,8 @@ public class SQLEditor extends SQLEditorBase implements
     ISaveablePart2,
     DBPDataSourceTask,
     DBPDataSourceHandler,
-    DBPPreferenceListener
+    DBPPreferenceListener,
+    ISmartTransactionManager
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_PARALLEL_QUERIES_NO_WARN = 1;
@@ -516,6 +517,21 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public boolean isActiveTask() {
         return getTotalQueryRunning() > 0;
+    }
+
+    @Override
+    public boolean isSmartAutoCommit() {
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SMART_AUTO_COMMIT);
+    }
+
+    @Override
+    public void setSmartAutoCommit(boolean smartAutoCommit) {
+        getActivePreferenceStore().setValue(SQLPreferenceConstants.EDITOR_SMART_AUTO_COMMIT, smartAutoCommit);
+        try {
+            getActivePreferenceStore().save();
+        } catch (IOException e) {
+            log.error("Error saving smart auto-commit option", e);
+        }
     }
 
     private class OutputLogWriter extends Writer {

@@ -174,7 +174,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel) throws DBException {
+    public void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel) {
 
     }
 
