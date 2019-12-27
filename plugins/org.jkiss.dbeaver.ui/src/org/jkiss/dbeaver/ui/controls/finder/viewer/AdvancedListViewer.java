@@ -97,14 +97,13 @@ public class AdvancedListViewer extends StructuredViewer {
 
         IStructuredContentProvider contentProvider = (IStructuredContentProvider) getContentProvider();
         ILabelProvider labelProvider = (ILabelProvider) getLabelProvider();
-        IToolTipProvider toolTipProvider = labelProvider instanceof IToolTipProvider ? (IToolTipProvider) labelProvider : null;
+        //IToolTipProvider toolTipProvider = labelProvider instanceof IToolTipProvider ? (IToolTipProvider) labelProvider : null;
         Object[] elements = contentProvider.getElements(element);
         for (ViewerFilter filter : getFilters()) {
             elements = filter.filter(this, (Object)null, elements);
         }
         for (Object item : elements) {
-            AdvancedListItem listItem = new AdvancedListItem(control, item, labelProvider);
-            listItem.setData(item);
+            new AdvancedListItem(control, item, labelProvider);
         }
 
         if (true) {

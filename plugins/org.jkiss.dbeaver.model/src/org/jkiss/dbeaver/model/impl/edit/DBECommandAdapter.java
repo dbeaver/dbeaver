@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandListener;
 public abstract class DBECommandAdapter implements DBECommandListener {
 
     @Override
-    public void onCommandChange(DBECommand command)
+    public void onCommandChange(DBECommand<?> command)
     {
     }
 
@@ -40,12 +40,12 @@ public abstract class DBECommandAdapter implements DBECommandListener {
     }
 
     @Override
-    public void onCommandDo(DBECommand command)
+    public void onCommandDo(DBECommand<?> command)
     {
     }
 
     @Override
-    public void onCommandUndo(DBECommand command)
+    public void onCommandUndo(DBECommand<?> command)
     {
     }
 }
