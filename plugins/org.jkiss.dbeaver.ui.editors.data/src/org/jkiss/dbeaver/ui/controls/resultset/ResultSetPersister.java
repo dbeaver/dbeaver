@@ -580,9 +580,24 @@ class ResultSetPersister {
 
         private Throwable executeStatements(DBRProgressMonitor monitor) {
             try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.USER, ResultSetMessages.controls_resultset_viewer_job_update)) {
+
                 monitor.beginTask(
                     ResultSetMessages.controls_resultset_viewer_monitor_aply_changes,
                     ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
+
+                if (!generateScript) {
+                    IResultSetContainer container = viewer.getContainer();
+                    if (container instanceof ISmartTransactionManager) {
+                        if (((ISmartTransactionManager) container).isSmartAutoCommit()) {
+                            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                            if (txnManager != null) {
+                                monitor.subTask("Disable auto-commit mode");
+                                txnManager.setAutoCommit(monitor, false);
+                            }
+                        }
+                    }
+                }
+
                 Throwable[] error = new Throwable[1];
                 DBExecUtils.tryExecuteRecover(monitor, session.getDataSource(), param -> {
                     error[0] = executeStatements(session);

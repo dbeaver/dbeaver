@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
@@ -267,4 +269,20 @@ public class DBExecUtils {
         }
     }
 
+    public static void checkSmartAutoCommit(DBCSession session, String queryText) {
+        SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(session.getDataSource());
+        if (!sqlDialect.isTransactionModifyingQuery(queryText)) {
+            return;
+        }
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+        if (txnManager != null) {
+            try {
+                if (txnManager.isAutoCommit()) {
+                    txnManager.setAutoCommit(session.getProgressMonitor(), false);
+                }
+            } catch (DBCException e) {
+                log.warn(e);
+            }
+        }
+    }
 }
