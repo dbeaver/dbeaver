@@ -326,18 +326,14 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             // No changes anyway
             return;
         }
-        try {
-            dataSource.setDefaultAutoCommit(autocommit.getSelection());
-            if (txnOptionsLoaded) {
-                int levelIndex = isolationLevel.getSelectionIndex();
-                if (levelIndex <= 0) {
-                    dataSource.setDefaultTransactionsIsolation(null);
-                } else {
-                    dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex - 1));
-                }
+        dataSource.setDefaultAutoCommit(autocommit.getSelection());
+        if (txnOptionsLoaded) {
+            int levelIndex = isolationLevel.getSelectionIndex();
+            if (levelIndex <= 0) {
+                dataSource.setDefaultTransactionsIsolation(null);
+            } else {
+                dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex - 1));
             }
-        } catch (DBException e) {
-            log.error(e);
         }
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
         DBPConnectionBootstrap bootstrap = confConfig.getBootstrap();

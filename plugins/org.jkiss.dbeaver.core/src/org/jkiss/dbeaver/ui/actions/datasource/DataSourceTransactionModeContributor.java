@@ -16,58 +16,54 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.menus.CommandContributionItem;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
-public class DataSourceTransactionModeContributor extends DataSourceMenuContributor
-{
+public class DataSourceTransactionModeContributor extends DataSourceMenuContributor {
     private static final Log log = Log.getLog(DataSourceTransactionModeContributor.class);
 
     @Override
-    protected void fillContributionItems(final List<IContributionItem> menuItems)
-    {
-        IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-        if (window == null) {
-            return;
-        }
-        IEditorPart activePart = window.getActivePage().getActiveEditor();
-        DBPDataSourceContainer container = AbstractDataSourceHandler.getDataSourceContainer(activePart);
+    protected void fillContributionItems(final List<IContributionItem> menuItems) {
+        IEditorPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        DBCExecutionContext executionContext = AbstractDataSourceHandler.getExecutionContext(activePart);
 
         DBPDataSource dataSource = null;
-        if (container != null) {
-            dataSource = container.getDataSource();
+        if (executionContext != null) {
+            dataSource = executionContext.getDataSource();
         }
         if (dataSource == null) {
             return;
         }
         final DBPDataSourceInfo dsInfo = dataSource.getInfo();
 
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(dataSource, false));
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
         if (txnManager != null) {
-            menuItems.add(ActionUtils.makeCommandContribution(
-                window,
-                CoreCommands.CMD_TOGGLE_AUTOCOMMIT,
-                CommandContributionItem.STYLE_CHECK));
-
-            menuItems.add(new Separator());
-
+            boolean autoCommit = false;
+            try {
+                autoCommit = txnManager.isAutoCommit();
+            } catch (DBCException e) {
+                log.warn("Can't determine current auto-commit mode", e);
+            }
             // Transactions
             DBPTransactionIsolation txnLevelCurrent = null;
             try {
@@ -75,61 +71,155 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             } catch (DBCException ex) {
                 log.warn("Can't determine current transaction isolation level", ex);
             }
+
+            menuItems.add(ActionUtils.makeActionContribution(
+                    new TransactionAutoCommitAction(executionContext, true, autoCommit, txnLevelCurrent),
+                    true));
+            menuItems.add(ActionUtils.makeActionContribution(
+                    new TransactionAutoCommitAction(executionContext, false, !autoCommit, txnLevelCurrent),
+                    true));
+            if (activePart instanceof ISmartTransactionManager) {
+                menuItems.add(ActionUtils.makeActionContribution(
+                        new SmartAutoCommitAction((ISmartTransactionManager)activePart),
+                        true));
+            }
+
+            menuItems.add(new Separator());
+
             for (DBPTransactionIsolation txi : CommonUtils.safeCollection(dsInfo.getSupportedTransactionsIsolation())) {
                 if (!txi.isEnabled()) {
                     continue;
                 }
                 menuItems.add(ActionUtils.makeActionContribution(
-                    new TransactionIsolationAction(dataSource, txi, txi.equals(txnLevelCurrent)),
-                    true));
+                        new TransactionIsolationAction(executionContext, txi, txi.equals(txnLevelCurrent)),
+                        true));
             }
         }
     }
 
-    private static class TransactionIsolationAction extends Action
-    {
+    private static class TransactionAutoCommitAction extends Action {
+        private final DBCExecutionContext executionContext;
+        private final boolean autoCommit;
+        private final DBPTransactionIsolation isolation;
 
-        private final DBPDataSource dataSource;
-        private final DBPTransactionIsolation level;
-        private final boolean checked;
-        public TransactionIsolationAction(DBPDataSource dataSource, DBPTransactionIsolation level, boolean checked)
-        {
-            this.dataSource = dataSource;
-            this.level = level;
-            this.checked = checked;
+        public TransactionAutoCommitAction(DBCExecutionContext executionContext, boolean autoCommit, boolean enabled, DBPTransactionIsolation isolation) {
+            this.executionContext = executionContext;
+            this.autoCommit = autoCommit;
+            this.isolation = isolation;
+            setChecked(enabled);
         }
 
         @Override
-        public int getStyle()
-        {
+        public int getStyle() {
             return AS_RADIO_BUTTON;
         }
 
         @Override
-        public boolean isChecked()
-        {
-            return checked;
+        public String getText() {
+            String isolationName = isolation == null ? "?" : isolation.getTitle();
+            return autoCommit ? CoreMessages.action_menu_transaction_autocommit_description : NLS.bind(CoreMessages.action_menu_transaction_manualcommit_description, isolationName);
         }
 
         @Override
-        public String getText()
-        {
+        public void run() {
+            if (!isChecked()) {
+                return;
+            }
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
+            if (txnManager != null) {
+                new AbstractJob("Set auto-commit") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
+                        monitor.beginTask("Change connection auto-commit to " + autoCommit, 1);
+                        try {
+                            monitor.subTask("Change context '" + executionContext.getContextName() + "' auto-commit state");
+                            txnManager.setAutoCommit(monitor, autoCommit);
+                        } catch (Exception e) {
+                            return GeneralUtils.makeExceptionStatus(e);
+                        } finally {
+                            monitor.done();
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule();
+            }
+        }
+    }
+
+    private static class SmartAutoCommitAction extends Action {
+        private final ISmartTransactionManager smartTransactionManager;
+
+        public SmartAutoCommitAction(ISmartTransactionManager smartTransactionManager) {
+            this.smartTransactionManager = smartTransactionManager;
+            setChecked(smartTransactionManager.isSmartAutoCommit());
+        }
+
+        @Override
+        public int getStyle() {
+            return AS_CHECK_BOX;
+        }
+
+        @Override
+        public String getText() {
+            return CoreMessages.action_menu_transaction_smart_auto_commit;
+        }
+
+        @Override
+        public boolean isChecked() {
+            return smartTransactionManager.isSmartAutoCommit();
+        }
+
+        @Override
+        public void run() {
+            smartTransactionManager.setSmartAutoCommit(!smartTransactionManager.isSmartAutoCommit());
+        }
+    }
+
+    private static class TransactionIsolationAction extends Action {
+        private final DBCExecutionContext executionContext;
+        private final DBPTransactionIsolation level;
+
+        public TransactionIsolationAction(DBCExecutionContext executionContext, DBPTransactionIsolation level, boolean checked) {
+            this.executionContext = executionContext;
+            this.level = level;
+            setChecked(checked);
+        }
+
+        @Override
+        public int getStyle() {
+            return AS_RADIO_BUTTON;
+        }
+
+        @Override
+        public String getText() {
             return level.getTitle();
         }
 
         @Override
-        public void run()
-        {
-            try {
-                dataSource.getContainer().setDefaultTransactionsIsolation(level);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError(
-                        "Transactions Isolation",
-                    "Can't set transaction isolation level to '" + level + "'",
-                    e);
+        public void run() {
+            if (!isChecked()) {
                 return;
             }
-            dataSource.getContainer().persistConfiguration();
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
+            if (txnManager != null) {
+                new AbstractJob("Set transaction isolation level") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
+                        monitor.beginTask("Change transaction isolation level to " + level.getTitle(), 1);
+                        try {
+                            monitor.subTask("Change context '" + executionContext.getContextName() + "' transaction isolation level");
+                            txnManager.setTransactionIsolation(monitor, level);
+                            executionContext.getDataSource().getContainer().setDefaultTransactionsIsolation(level);
+                            executionContext.getDataSource().getContainer().persistConfiguration();
+                        } catch (Exception e) {
+                            return GeneralUtils.makeExceptionStatus(e);
+                        } finally {
+                            monitor.done();
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule();
+            }
         }
     }
 

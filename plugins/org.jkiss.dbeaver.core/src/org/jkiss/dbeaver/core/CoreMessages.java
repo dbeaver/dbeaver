@@ -42,6 +42,7 @@ public class CoreMessages extends NLS {
 	public static String action_menu_transaction_autocommit_name;
 	public static String action_menu_transaction_manualcommit_description;
 	public static String action_menu_transaction_autocommit_description;
+	public static String action_menu_transaction_smart_auto_commit;
 	public static String action_menu_tools_find_in_navigator;
 
 	public static String action_menu_transactionMonitor_totalStatement;

@@ -109,8 +109,7 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     @Nullable
     Integer getDefaultTransactionsIsolation();
 
-    void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel)
-        throws DBException;
+    void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
 
     /**
      * Search for object filter which corresponds specified object type and parent object.
