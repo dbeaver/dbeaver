@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
@@ -50,7 +51,7 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException {
         if (object != null) {
             String className = object.getClass().getName();
             if (className.startsWith(OracleConstants.TIMESTAMP_CLASS_NAME)) {

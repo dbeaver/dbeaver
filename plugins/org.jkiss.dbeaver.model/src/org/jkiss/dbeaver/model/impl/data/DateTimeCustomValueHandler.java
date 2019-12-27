@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -54,12 +53,16 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
         } else if (object instanceof Date) {
             return copy ? ((Date)object).clone() : object;
         } else if (object instanceof String) {
+            String strValue = (String)object;
+            if (strValue.isEmpty()) {
+                // NULL date
+                return null;
+            }
             if (session != null && session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT)) {
                 // Do not use formatter for native format
                 return object;
             }
 
-            String strValue = (String)object;
             try {
                 return getFormatter(type).parseValue(strValue, null);
             } catch (ParseException e) {
