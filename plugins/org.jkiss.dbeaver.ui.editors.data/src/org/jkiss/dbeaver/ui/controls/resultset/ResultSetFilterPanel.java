@@ -381,21 +381,23 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         {
             String displayName = getActiveSourceQuery();
-            if (prevQuery == null || !prevQuery.equals(displayName)) {
-                loadFiltersHistory(displayName);
-                prevQuery = displayName;
-            }
-            Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
-            Matcher m = mlCommentsPattern.matcher(displayName);
-            if (m.find()) {
-                displayName = m.replaceAll("");
-            }
+            if (displayName != null) {
+                if (prevQuery == null || !prevQuery.equals(displayName)) {
+                    loadFiltersHistory(displayName);
+                    prevQuery = displayName;
+                }
+                Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
+                Matcher m = mlCommentsPattern.matcher(displayName);
+                if (m.find()) {
+                    displayName = m.replaceAll("");
+                }
 
-            displayName = displayName.replaceAll("--.+", "");
-            displayName = CommonUtils.compactWhiteSpaces(displayName);
-            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
-            if (CommonUtils.isEmpty(activeDisplayName)) {
-                activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
+                displayName = displayName.replaceAll("--.+", "");
+                displayName = CommonUtils.compactWhiteSpaces(displayName);
+                activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
+                if (CommonUtils.isEmpty(activeDisplayName)) {
+                    activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
+                }
             }
         }
 
