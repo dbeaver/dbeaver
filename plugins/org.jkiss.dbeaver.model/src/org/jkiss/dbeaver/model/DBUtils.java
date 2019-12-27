@@ -2034,4 +2034,15 @@ public final class DBUtils {
             ((DBPQualifiedObject)entity).getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(entity);
     }
 
+    public static String getObjectTypeName(DBSObject object) {
+        DBSObjectType[] objectTypes = object.getDataSource().getInfo().getSupportedObjectTypes();
+        for (DBSObjectType ot : objectTypes) {
+            Class<? extends DBSObject> typeClass = ot.getTypeClass();
+            if (typeClass != null && typeClass != DBSObject.class && typeClass.isInstance(object)) {
+                return ot.getTypeName();
+            }
+        }
+        return "Object";
+    }
+
 }
