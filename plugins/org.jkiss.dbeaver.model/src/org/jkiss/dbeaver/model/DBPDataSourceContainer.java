@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -102,8 +101,7 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isDefaultAutoCommit();
 
-    void setDefaultAutoCommit(boolean autoCommit, @Nullable  DBCExecutionContext updateContext, boolean updateConnection, @Nullable  Runnable onFinish)
-        throws DBException;
+    void setDefaultAutoCommit(boolean autoCommit);
 
     @Nullable
     DBPTransactionIsolation getActiveTransactionsIsolation();

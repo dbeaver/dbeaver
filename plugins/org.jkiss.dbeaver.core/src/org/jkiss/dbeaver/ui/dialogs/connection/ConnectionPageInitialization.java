@@ -327,7 +327,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             return;
         }
         try {
-            dataSource.setDefaultAutoCommit(autocommit.getSelection(), null, true, null);
+            dataSource.setDefaultAutoCommit(autocommit.getSelection());
             if (txnOptionsLoaded) {
                 int levelIndex = isolationLevel.getSelectionIndex();
                 if (levelIndex <= 0) {

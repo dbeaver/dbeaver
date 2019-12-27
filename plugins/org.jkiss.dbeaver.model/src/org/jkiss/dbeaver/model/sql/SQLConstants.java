@@ -31,8 +31,14 @@ public class SQLConstants {
     public static final String ML_COMMENT_END = "*/";
     public static final String SL_COMMENT = "--";
 
-    public static final String KEYWORD_UPDATE = "UPDATE";
     public static final String KEYWORD_SELECT = "SELECT";
+    public static final String KEYWORD_INSERT = "INSERT";
+    public static final String KEYWORD_UPDATE = "UPDATE";
+    public static final String KEYWORD_DELETE = "DELETE";
+    public static final String KEYWORD_MERGE = "MERGE";
+    public static final String KEYWORD_UPSERT = "UPSERT";
+    public static final String KEYWORD_TRUNCATE = "TRUNCATE";
+
     public static final String KEYWORD_FROM = "FROM";
     public static final String KEYWORD_INTO = "INTO";
     public static final String KEYWORD_JOIN = "JOIN";
@@ -123,7 +129,7 @@ public class SQLConstants {
         "DEC",
         "DECLARE",
         "DEFAULT",
-        "DELETE",
+        KEYWORD_DELETE,
         "DENSE_RANK",
         "DEREF",
         "DESCRIBE",
@@ -172,7 +178,7 @@ public class SQLConstants {
         "INNER",
         "INOUT",
         "INSENSITIVE",
-        "INSERT",
+        KEYWORD_INSERT,
         "INTERSECT",
         "INTERSECTION",
         "INTERVAL",
@@ -190,7 +196,7 @@ public class SQLConstants {
         "LOCALTIMESTAMP",
         "MATCH",
         "MEMBER",
-        "MERGE",
+        KEYWORD_MERGE,
         "METHOD",
         "MINUTE",
         "MOD",
@@ -291,7 +297,7 @@ public class SQLConstants {
         "UNIQUE",
         "UNKNOWN",
         "UNNEST",
-        "UPDATE",
+        KEYWORD_UPDATE,
         "USER",
         "USING",
         //"VALUE", // too common for column names

@@ -61,6 +61,13 @@ public class BasicSQLDialect implements SQLDialect {
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
     };
+    protected static final String[] TRANSACTIONAL_KEYWORDS = new String[]{
+            SQLConstants.KEYWORD_INSERT,
+            SQLConstants.KEYWORD_DELETE,
+            SQLConstants.KEYWORD_UPDATE,
+            SQLConstants.KEYWORD_MERGE,
+            SQLConstants.KEYWORD_UPSERT,
+            SQLConstants.KEYWORD_TRUNCATE};
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
 
@@ -451,13 +458,22 @@ public class BasicSQLDialect implements SQLDialect {
             // anyhow it shouldn't be transactional
             return false;
         }
-        String[] ntk = getDDLKeywords();
-        for (String keyword : ntk) {
+        for (String keyword : getDDLKeywords()) {
+            if (queryString.startsWith(keyword)) {
+                return !ArrayUtils.contains(getNonTransactionKeywords(), keyword);
+            }
+        }
+        for (String keyword : getTransactionKeywords()) {
             if (queryString.startsWith(keyword)) {
                 return true;
             }
         }
         return false;
+    }
+
+    @NotNull
+    protected String[] getTransactionKeywords() {
+        return isStandardSQL() ? TRANSACTIONAL_KEYWORDS : new String[0];
     }
 
     @NotNull
