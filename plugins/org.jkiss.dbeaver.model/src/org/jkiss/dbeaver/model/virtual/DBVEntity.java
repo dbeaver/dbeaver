@@ -501,9 +501,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return result;
     }
 
-    public static String getDefaultDescriptionColumn(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn)
-        throws DBException {
-        assert keyColumn.getParentObject() != null;
+    public static String getDefaultDescriptionColumn(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn) throws DBException {
 
         Collection<? extends DBSEntityAttribute> allColumns = keyColumn.getParentObject().getAttributes(monitor);
         if (allColumns == null || allColumns.isEmpty()) {
@@ -572,12 +570,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (colorOverrides == null) {
             colorOverrides = new ArrayList<>();
         } else {
-            for (Iterator<DBVColorOverride> iterator = colorOverrides.iterator(); iterator.hasNext(); ) {
-                DBVColorOverride c = iterator.next();
-                if (c.matches(attrName, DBCLogicalOperator.EQUALS, co.getAttributeValues())) {
-                    iterator.remove();
-                }
-            }
+            colorOverrides.removeIf(c -> c.matches(attrName, DBCLogicalOperator.EQUALS, co.getAttributeValues()));
         }
         colorOverrides.add(co);
     }

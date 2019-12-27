@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2001, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -783,9 +783,7 @@ public class TabbedFolderList extends Composite {
 			 * that the navigation elements fit.
 			 */
             int ret = getBounds().height - 20;
-            return (ret > tabHeight) ? tabHeight
-                : (ret < 5) ? 5
-                : ret;
+            return (ret > tabHeight) ? tabHeight : Math.max(ret, 5);
         }
         return tabHeight;
     }
