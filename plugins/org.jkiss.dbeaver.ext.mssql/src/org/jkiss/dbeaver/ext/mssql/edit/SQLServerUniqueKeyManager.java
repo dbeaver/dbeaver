@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey;
@@ -54,15 +53,6 @@ public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTab
             DBSEntityConstraintType.INDEX,
             null,
             false);
-    }
-
-    @NotNull
-    protected String getAddConstraintTypeClause(SQLServerTableUniqueKey constraint) {
-        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
-            return "UNIQUE";
-        } else {
-            return super.getAddConstraintTypeClause(constraint);
-        }
     }
 
 }

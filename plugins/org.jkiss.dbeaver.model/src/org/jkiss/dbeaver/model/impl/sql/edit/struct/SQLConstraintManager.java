@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.util.List;
 import java.util.Locale;
@@ -124,6 +125,9 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
 
     @NotNull
     protected String getAddConstraintTypeClause(OBJECT_TYPE constraint) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
+            return "UNIQUE"; //$NON-NLS-1$
+        }
         return constraint.getConstraintType().getName().toUpperCase(Locale.ENGLISH);
     }
 
