@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -121,12 +120,4 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
         }
     }
 
-    @NotNull
-    protected String getAddConstraintTypeClause(DB2TableUniqueKey constraint)
-    {
-        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
-            return "UNIQUE"; //$NON-NLS-1$
-        }
-        return super.getAddConstraintTypeClause(constraint);
-    }
 }
