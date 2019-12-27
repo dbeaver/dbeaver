@@ -885,11 +885,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     private static class ScriptBlockInfo {
         final ScriptBlockInfo parent;
+        final String togglePattern;
         boolean isHeader; // block started by DECLARE, FUNCTION, etc
 
         public ScriptBlockInfo(ScriptBlockInfo parent, boolean isHeader) {
             this.parent = parent;
+            this.togglePattern = null;
             this.isHeader = isHeader;
+        }
+
+        public ScriptBlockInfo(ScriptBlockInfo parent, String togglePattern) {
+            this.parent = parent;
+            this.togglePattern = togglePattern;
         }
     }
 
@@ -907,7 +914,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         boolean hasValuableTokens = false;
         ScriptBlockInfo curBlock = null;
         boolean hasBlocks = false;
-        String blockTogglePattern = null;
         int lastTokenLineFeeds = 0;
         int prevNotEmptyTokenType = SQLToken.T_UNKNOWN;
         String lastKeyword = null;
@@ -975,12 +981,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     }
                     // Second toggle pattern must be the same as first one.
                     // Toggles can be nested (PostgreSQL) and we need to count only outer
-                    if (curBlock != null && curBlock.parent == null && togglePattern.equals(blockTogglePattern)) {
+                    if (curBlock != null && curBlock.parent == null && togglePattern.equals(curBlock.togglePattern)) {
                         curBlock = curBlock.parent;
-                        blockTogglePattern = null;
-                    } else if (curBlock == null && blockTogglePattern == null) {
-                        curBlock = new ScriptBlockInfo(curBlock, false);
-                        blockTogglePattern = togglePattern;
+                    } else if (curBlock == null) {
+                        curBlock = new ScriptBlockInfo(curBlock, togglePattern);
                     } else {
                         log.debug("Block toggle token inside another block. Can't process it");
                     }
@@ -988,15 +992,26 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 } else if (tokenType == SQLToken.T_BLOCK_BEGIN) {
                     if (curBlock == null || !curBlock.isHeader) {
                         curBlock = new ScriptBlockInfo(curBlock, false);
-                    } else if (curBlock != null) {
+                    } else {
                         curBlock.isHeader = false;
                     }
                     hasBlocks = true;
-                } else if (curBlock != null && tokenType == SQLToken.T_BLOCK_END) {
+                } else if (tokenType == SQLToken.T_BLOCK_END) {
                     // Sometimes query contains END clause without BEGIN. E.g. CASE, IF, etc.
                     // This END doesn't mean block
                     if (curBlock != null) {
-                        curBlock = curBlock.parent;
+                        if (!CommonUtils.isEmpty(curBlock.togglePattern)) {
+                            // Block end inside of block toggle (#7460).
+                            // Actually it is a result of some wrong SQL parse (e.g. we didn't recognize block begin correctly).
+                            // However block toggle has higher priority. At the moment it is PostgreSQL specific.
+                            try {
+                                log.debug("Block end '" + document.get(tokenOffset, tokenLength) + "' inside of named block toggle '" + curBlock.togglePattern + "'. Ignore.");
+                            } catch (Throwable e) {
+                                log.debug(e);
+                            }
+                        } else {
+                            curBlock = curBlock.parent;
+                        }
                     }
                 } else if (isDelimiter && curBlock != null) {
                     // Delimiter in some brackets - ignore it
