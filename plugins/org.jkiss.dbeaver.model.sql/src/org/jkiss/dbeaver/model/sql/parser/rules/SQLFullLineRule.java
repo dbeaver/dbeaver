@@ -14,38 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.syntax.rules;
+package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.eclipse.jface.text.rules.EndOfLineRule;
-import org.eclipse.jface.text.rules.ICharacterScanner;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.Token;
+
+import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
+import org.jkiss.dbeaver.model.text.parser.rules.EndOfLineRule;
 
 /**
 * Rule which starts in the beginning of line
 */
 public class SQLFullLineRule extends EndOfLineRule {
 
-    public SQLFullLineRule(String startSequence, IToken token) {
+    public SQLFullLineRule(String startSequence, TPToken token) {
         super(startSequence, token);
     }
 
-    public SQLFullLineRule(String startSequence, IToken token, char escapeCharacter) {
+    public SQLFullLineRule(String startSequence, TPToken token, char escapeCharacter) {
         super(startSequence, token, escapeCharacter);
     }
 
-    public SQLFullLineRule(String startSequence, IToken token, char escapeCharacter, boolean escapeContinuesLine) {
+    public SQLFullLineRule(String startSequence, TPToken token, char escapeCharacter, boolean escapeContinuesLine) {
         super(startSequence, token, escapeCharacter, escapeContinuesLine);
     }
 
     @Override
-    public IToken evaluate(ICharacterScanner scanner) {
+    public TPToken evaluate(TPCharacterScanner scanner) {
         // Must be in the beginning of line
         {
             scanner.unread();
             int prevChar = scanner.read();
-            if (prevChar != ICharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {
-                return Token.UNDEFINED;
+            if (prevChar != TPCharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {
+                return TPTokenAbstract.UNDEFINED;
             }
         }
         return super.evaluate(scanner);

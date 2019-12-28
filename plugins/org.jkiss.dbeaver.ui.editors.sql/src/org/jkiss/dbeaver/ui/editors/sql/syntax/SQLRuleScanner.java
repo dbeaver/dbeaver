@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.Position;
-import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -29,34 +28,23 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
-import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLDelimiterRule;
+import org.jkiss.dbeaver.model.text.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.*;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
-import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.*;
 
 /**
- * SQLSyntaxManager.
+ * SQLRuleScanner.
  *
  * Contains information about some concrete datasource underlying database syntax.
  * Support runtime change of datasource (reloads syntax information)
  */
-public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScanner {
+public class SQLRuleScanner extends RuleBasedScanner implements TPEvalScanner {
 
     @NotNull
     private final IThemeManager themeManager;
@@ -67,13 +55,21 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
     private Set<SQLScriptPosition> addedPositions = new HashSet<>();
     private Set<SQLScriptPosition> removedPositions = new HashSet<>();
 
+    private final Map<TPToken, IToken> tokenMap = new IdentityHashMap<>();
+
     private boolean evalMode;
+    private int keywordStyle = SWT.NORMAL;
 
     public SQLRuleScanner(@NotNull SQLSyntaxManager syntaxManager) {
         this.syntaxManager = syntaxManager;
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
     }
 
+    public int getKeywordStyle() {
+        return keywordStyle;
+    }
+
+    @Override
     public boolean isEvalMode() {
         return evalMode;
     }
@@ -86,8 +82,8 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         this.evalMode = false;
         if (fRules != null) {
             for (IRule rule : fRules) {
-                if (rule instanceof SQLDelimiterRule) {
-                    ((SQLDelimiterRule) rule).changeDelimiter(null);
+                if (rule instanceof SimpleRuleAdapter && ((SimpleRuleAdapter) rule).rule instanceof SQLDelimiterRule) {
+                    ((SQLDelimiterRule) ((SimpleRuleAdapter) rule).rule).changeDelimiter(null);
                 }
             }
         }
@@ -120,200 +116,96 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
     }
 
     public void refreshRules(@Nullable DBPDataSource dataSource, @Nullable IEditorInput editorInput) {
-        SQLDialect dialect = syntaxManager.getDialect();
-        SQLRuleProvider ruleProvider = GeneralUtils.adapt(dialect, SQLRuleProvider.class);
-        DBPDataSourceContainer dataSourceContainer = dataSource == null ? null : dataSource.getContainer();
+        tokenMap.clear();
 
         boolean minimalRules = SQLEditorBase.isBigScript(editorInput);
 
         boolean boldKeywords = dataSource == null ?
                 DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) :
                 dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
-        int keywordStyle = boldKeywords ? SWT.BOLD : SWT.NORMAL;
+        keywordStyle = boldKeywords ? SWT.BOLD : SWT.NORMAL;
 
-        /*final Color backgroundColor = null;unassigned || dataSource != null ?
-            getColor(SQLConstants.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE) :
-            getColor(SQLConstants.CONFIG_COLOR_DISABLED, SWT.COLOR_WIDGET_LIGHT_SHADOW);*/
-        final IToken keywordToken = new Token(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
-        final IToken typeToken = new Token(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DATATYPE), null, keywordStyle));
-        final IToken stringToken = new Token(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_STRING), null, SWT.NORMAL));
-        final IToken quotedToken = new Token(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DATATYPE), null, SWT.NORMAL));
-        final IToken numberToken = new Token(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_NUMBER), null, SWT.NORMAL));
-        final IToken commentToken = new SQLCommentToken(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMENT), null, SWT.NORMAL));
-        final SQLDelimiterToken delimiterToken = new SQLDelimiterToken(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED), null, SWT.NORMAL));
-        final SQLParameterToken parameterToken = new SQLParameterToken(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), null, keywordStyle));
-        final SQLVariableToken variableToken = new SQLVariableToken(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), null, keywordStyle));
-        final IToken otherToken = new Token(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_TEXT), null, SWT.NORMAL));
-        final SQLBlockHeaderToken blockHeaderToken = new SQLBlockHeaderToken(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
-        final SQLBlockBeginToken blockBeginToken = new SQLBlockBeginToken(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
-        final SQLBlockEndToken blockEndToken = new SQLBlockEndToken(
-                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.refreshRules(dataSource, minimalRules);
+        TPRule[] allRules = ruleManager.getAllRules();
 
-        setDefaultReturnToken(otherToken);
-        List<IRule> rules = new ArrayList<>();
-
-        if (ruleProvider != null) {
-            ruleProvider.extendRules(dataSourceContainer, rules, SQLRuleProvider.RulePosition.INITIAL);
+        IRule[] result = new IRule[allRules.length];
+        for (int i = 0; i < allRules.length; i++) {
+            result[i] = adaptRule(allRules[i]);
         }
-
-        // Add rule for single-line comments.
-        for (String lineComment : dialect.getSingleLineComments()) {
-            if (lineComment.startsWith("^")) {
-                rules.add(new LineCommentRule(lineComment, commentToken)); //$NON-NLS-1$
-            } else {
-                rules.add(new EndOfLineRule(lineComment, commentToken)); //$NON-NLS-1$
-            }
-        }
-
-        if (ruleProvider != null) {
-            ruleProvider.extendRules(dataSourceContainer, rules, SQLRuleProvider.RulePosition.CONTROL);
-        }
-
-        if (!minimalRules) {
-            final SQLControlToken controlToken = new SQLControlToken(
-                    new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, keywordStyle));
-
-            String commandPrefix = syntaxManager.getControlCommandPrefix();
-
-            // Control rules
-            for (SQLCommandHandlerDescriptor controlCommand : SQLCommandsRegistry.getInstance().getCommandHandlers()) {
-                rules.add(new SQLCommandRule(commandPrefix, controlCommand, controlToken)); //$NON-NLS-1$
-            }
-        }
-        {
-            if (!minimalRules && syntaxManager.isVariablesEnabled()) {
-                // Variable rule
-                rules.add(new SQLVariableRule(parameterToken));
-            }
-        }
-
-        if (!minimalRules) {
-            // Add rules for delimited identifiers and string literals.
-            char escapeChar = syntaxManager.getEscapeChar();
-            String[][] identifierQuoteStrings = syntaxManager.getIdentifierQuoteStrings();
-            String[][] stringQuoteStrings = syntaxManager.getStringQuoteStrings();
-
-            boolean hasDoubleQuoteRule = false;
-            if (!ArrayUtils.isEmpty(identifierQuoteStrings)) {
-                for (String[] quotes : identifierQuoteStrings) {
-                    rules.add(new SingleLineRule(quotes[0], quotes[1], quotedToken, escapeChar));
-                    if (quotes[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quotes[0].equals(quotes[1])) {
-                        hasDoubleQuoteRule = true;
-                    }
-                }
-            }
-            if (!ArrayUtils.isEmpty(stringQuoteStrings)) {
-                for (String[] quotes : stringQuoteStrings) {
-                    rules.add(new MultiLineRule(quotes[0], quotes[1], stringToken, escapeChar));
-                }
-            }
-            if (!hasDoubleQuoteRule) {
-                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar));
-            }
-        }
-        if (ruleProvider != null) {
-            ruleProvider.extendRules(dataSourceContainer, rules, SQLRuleProvider.RulePosition.QUOTES);
-        }
-
-        // Add rules for multi-line comments
-        Pair<String, String> multiLineComments = dialect.getMultiLineComments();
-        if (multiLineComments != null) {
-            rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
-        }
-
-        if (!minimalRules) {
-            // Add generic whitespace rule.
-            rules.add(new WhitespaceRule(new TextWhiteSpaceDetector()));
-
-            // Add numeric rule
-            rules.add(new NumberRule(numberToken));
-        }
-
-        SQLDelimiterRule delimRule = new SQLDelimiterRule(syntaxManager.getStatementDelimiters(), delimiterToken);
-        rules.add(delimRule);
-
-        {
-            // Delimiter redefine
-            String delimRedefine = dialect.getScriptDelimiterRedefiner();
-            if (!CommonUtils.isEmpty(delimRedefine)) {
-                final SQLSetDelimiterToken setDelimiterToken = new SQLSetDelimiterToken(
-                        new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, keywordStyle));
-
-                rules.add(new SQLDelimiterSetRule(delimRedefine, setDelimiterToken, delimRule));
-            }
-        }
-
-        if (ruleProvider != null) {
-            ruleProvider.extendRules(dataSourceContainer, rules, SQLRuleProvider.RulePosition.KEYWORDS);
-        }
-
-        if (!minimalRules) {
-
-            // Add word rule for keywords, types, and constants.
-            SQLWordRule wordRule = new SQLWordRule(delimRule, otherToken);
-            for (String reservedWord : dialect.getReservedWords()) {
-                wordRule.addWord(reservedWord, keywordToken);
-            }
-            if (dataSource != null) {
-                for (String function : dialect.getFunctions(dataSource)) {
-                    wordRule.addWord(function, typeToken);
-                }
-                for (String type : dialect.getDataTypes(dataSource)) {
-                    wordRule.addWord(type, typeToken);
-                }
-            }
-            final String[] blockHeaderStrings = dialect.getBlockHeaderStrings();
-            if (!ArrayUtils.isEmpty(blockHeaderStrings)) {
-                for (String bhs : blockHeaderStrings) {
-                    wordRule.addWord(bhs, blockHeaderToken);
-                }
-            }
-            String[][] blockBounds = dialect.getBlockBoundStrings();
-            if (blockBounds != null) {
-                for (String[] block : blockBounds) {
-                    if (block.length != 2) {
-                        continue;
-                    }
-                    wordRule.addWord(block[0], blockBeginToken);
-                    wordRule.addWord(block[1], blockEndToken);
-                }
-            }
-            rules.add(wordRule);
-
-            // Parameter rule
-            for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
-                rules.add(new SQLParameterRule(syntaxManager, parameterToken, npPrefix));
-            }
-        }
-
-        IRule[] result = new IRule[rules.size()];
-        rules.toArray(result);
         setRules(result);
+    }
+
+    private IRule adaptRule(TPRule rule) {
+        if (rule instanceof TPPredicateRule) {
+            return new PredicateRuleAdapter((TPPredicateRule)rule);
+        } else {
+            return new SimpleRuleAdapter(rule);
+        }
+    }
+
+    private IToken adaptToken(TPToken token) {
+        if (token.isEOF()) {
+            return Token.EOF;
+        } else if (token.isUndefined()) {
+            return Token.UNDEFINED;
+        } else if (token.isWhitespace()) {
+            return Token.WHITESPACE;
+        } else {
+            IToken jfToken = tokenMap.get(token);
+            if (jfToken == null) {
+                tokenMap.put(token, jfToken = new SQLTokenAdapter(token, this));
+            }
+            return jfToken;
+        }
     }
 
     public Color getColor(String colorKey) {
         return getColor(colorKey, SWT.COLOR_BLACK);
     }
 
-    public Color getColor(String colorKey, int colorDefault) {
+    private Color getColor(String colorKey, int colorDefault) {
         ITheme currentTheme = themeManager.getCurrentTheme();
         Color color = currentTheme.getColorRegistry().get(colorKey);
         if (color == null) {
             color = Display.getDefault().getSystemColor(colorDefault);
         }
         return color;
+    }
+
+
+
+    private class SimpleRuleAdapter<RULE extends TPRule> implements IRule {
+        protected final RULE rule;
+        SimpleRuleAdapter(RULE rule) {
+            this.rule = rule;
+        }
+
+        @Override
+        public IToken evaluate(ICharacterScanner scanner) {
+            return adaptToken(rule.evaluate((TPCharacterScanner) scanner));
+        }
+    }
+
+    private class PredicateRuleAdapter extends SimpleRuleAdapter<TPPredicateRule> implements IPredicateRule {
+        PredicateRuleAdapter(TPPredicateRule rule) {
+            super(rule);
+        }
+
+        @Override
+        public IToken getSuccessToken() {
+            return adaptToken(rule.getSuccessToken());
+        }
+
+        @Override
+        public IToken evaluate(ICharacterScanner scanner, boolean resume) {
+            return adaptToken(rule.evaluate((TPCharacterScanner) scanner, resume));
+        }
+
+        @Override
+        public IToken evaluate(ICharacterScanner scanner) {
+            return adaptToken(rule.evaluate((TPCharacterScanner) scanner));
+        }
     }
 
 }

@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.text.parser;
+
+package org.jkiss.dbeaver.model.sql.parser.tokens;
+
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 
 /**
- * Token for partition scanner
+ * SQLCommentToken
+ *
+ * @author Serge Rider
  */
-public class TPTokenPartition extends TPTokenAbstract<String> {
+public class SQLCommentToken extends TPTokenDefault {
 
-    /**
-     * Token for partition parser. Data is content type.
-     */
-    public TPTokenPartition(String contentType) {
-        super(T_OTHER, contentType);
+    public SQLCommentToken() {
+        super(SQLTokenType.T_COMMENT);
     }
 
 }

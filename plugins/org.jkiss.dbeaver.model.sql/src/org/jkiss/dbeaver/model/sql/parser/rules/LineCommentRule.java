@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.eclipse.jface.text.rules.EndOfLineRule;
-import org.eclipse.jface.text.rules.ICharacterScanner;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.Token;
+import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
+import org.jkiss.dbeaver.model.text.parser.rules.EndOfLineRule;
 
 /**
  * The same as end-of-line rule but matches word in case-insensitive fashion +
@@ -27,19 +27,19 @@ import org.eclipse.jface.text.rules.Token;
  */
 public class LineCommentRule extends EndOfLineRule
 {
-    public LineCommentRule(String startSequence, IToken token) {
+    public LineCommentRule(String startSequence, TPToken token) {
         super(startSequence, token, (char) 0);
     }
 
-    public LineCommentRule(String startSequence, IToken token, char escapeCharacter) {
+    public LineCommentRule(String startSequence, TPToken token, char escapeCharacter) {
         super(startSequence, token, escapeCharacter);
     }
 
-    public LineCommentRule(String startSequence, IToken token, char escapeCharacter, boolean escapeContinuesLine) {
+    public LineCommentRule(String startSequence, TPToken token, char escapeCharacter, boolean escapeContinuesLine) {
         super(startSequence, token, escapeCharacter, escapeContinuesLine);
     }
 
-    protected IToken doEvaluate(ICharacterScanner scanner, boolean resume) {
+    protected TPToken doEvaluate(TPCharacterScanner scanner, boolean resume) {
 
         if (resume) {
 
@@ -65,26 +65,26 @@ public class LineCommentRule extends EndOfLineRule
         }
 
         scanner.unread();
-        return Token.UNDEFINED;
+        return TPTokenAbstract.UNDEFINED;
     }
 
     @Override
-    public IToken evaluate(ICharacterScanner scanner, boolean resume) {
+    public TPToken evaluate(TPCharacterScanner scanner, boolean resume) {
         if (fColumn == UNDEFINED)
             return doEvaluate(scanner, resume);
 
         int c= scanner.read();
         scanner.unread();
         if (Character.toUpperCase(c) == Character.toUpperCase(fStartSequence[0]))
-            return (fColumn == scanner.getColumn() ? doEvaluate(scanner, resume) : Token.UNDEFINED);
-        return Token.UNDEFINED;
+            return (fColumn == scanner.getColumn() ? doEvaluate(scanner, resume) : TPTokenAbstract.UNDEFINED);
+        return TPTokenAbstract.UNDEFINED;
     }
 
     @Override
-    protected boolean sequenceDetected(ICharacterScanner scanner, char[] sequence, boolean eofAllowed) {
+    protected boolean sequenceDetected(TPCharacterScanner scanner, char[] sequence, boolean eofAllowed) {
         for (int i= 1; i < sequence.length; i++) {
             int c= scanner.read();
-            if (c == ICharacterScanner.EOF && eofAllowed) {
+            if (c == TPCharacterScanner.EOF && eofAllowed) {
                 return true;
             } else if (Character.toUpperCase(c) != Character.toUpperCase(sequence[i])) {
                 // Non-matching character detected, rewind the scanner back to the start.
@@ -100,7 +100,7 @@ public class LineCommentRule extends EndOfLineRule
             // Check for trailing whitespace
             int lastChar = scanner.read();
             scanner.unread();
-            if (lastChar != ICharacterScanner.EOF) {
+            if (lastChar != TPCharacterScanner.EOF) {
                 if (!Character.isWhitespace((char) lastChar)) {
                     return false;
                 }

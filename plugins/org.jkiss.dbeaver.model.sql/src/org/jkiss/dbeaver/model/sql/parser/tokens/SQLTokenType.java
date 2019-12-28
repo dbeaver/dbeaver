@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+package org.jkiss.dbeaver.model.sql.parser.tokens;
 
 import org.jkiss.dbeaver.model.text.parser.TPTokenType;
 
@@ -23,6 +23,12 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenType;
  * SQL token type
  */
 public enum SQLTokenType implements TPTokenType {
+
+    T_KEYWORD(500),
+    T_STRING(501),
+    T_QUOTED(502),
+    T_TYPE(503),
+    T_NUMBER(504),
 
     T_UNKNOWN(1000),
     T_BLOCK_BEGIN(1001),
@@ -35,7 +41,9 @@ public enum SQLTokenType implements TPTokenType {
     T_DELIMITER(1007),
     T_SET_DELIMITER(1008),
     T_PARAMETER(1009),
-    T_VARIABLE(1010);
+    T_VARIABLE(1010),
+
+    T_OTHER(2000);
 
     private final int type;
 

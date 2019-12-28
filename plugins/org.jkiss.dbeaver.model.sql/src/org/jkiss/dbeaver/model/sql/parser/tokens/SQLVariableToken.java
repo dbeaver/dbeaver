@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+package org.jkiss.dbeaver.model.sql.parser.tokens;
+
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 
 /**
  * SQLVariableToken
  */
-public class SQLVariableToken extends SQLToken {
+public class SQLVariableToken extends TPTokenDefault {
 
-    public SQLVariableToken(Object data)
+    public SQLVariableToken()
     {
-        super(T_VARIABLE, data);
+        super(SQLTokenType.T_VARIABLE);
     }
 
 }

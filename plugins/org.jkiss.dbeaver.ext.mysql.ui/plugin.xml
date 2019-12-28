@@ -133,7 +133,7 @@
 
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" class="org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLDialectAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.runtime.sql.SQLRuleProvider"/>
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
         </factory>
     </extension>
 

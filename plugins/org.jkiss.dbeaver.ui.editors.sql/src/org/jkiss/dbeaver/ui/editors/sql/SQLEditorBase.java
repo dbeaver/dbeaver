@@ -54,21 +54,20 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
-import org.jkiss.dbeaver.model.sql.parser.SQLWordDetector;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.text.TextUtils;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
+import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLToken;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -107,7 +106,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @NotNull
     private final SQLSyntaxManager syntaxManager;
     @NotNull
-    private final SQLRuleScanner ruleManager;
+    private final SQLRuleScanner ruleScanner;
     private ProjectionSupport projectionSupport;
 
     private ProjectionAnnotationModel annotationModel;
@@ -132,7 +131,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     public SQLEditorBase() {
         super();
         syntaxManager = new SQLSyntaxManager();
-        ruleManager = new SQLRuleScanner(syntaxManager);
+        ruleScanner = new SQLRuleScanner(syntaxManager);
         themeListener = new IPropertyChangeListener() {
             long lastUpdateTime = 0;
 
@@ -267,8 +266,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @NotNull
-    public SQLRuleScanner getRuleManager() {
-        return ruleManager;
+    public SQLRuleScanner getRuleScanner() {
+        return ruleScanner;
     }
 
     public ProjectionAnnotationModel getAnnotationModel() {
@@ -581,7 +580,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         // Refresh syntax
         SQLDialect dialect = getSQLDialect();
         syntaxManager.init(dialect, getActivePreferenceStore());
-        ruleManager.refreshRules(getDataSource(), getEditorInput());
+        ruleScanner.refreshRules(getDataSource(), getEditorInput());
 
         IDocument document = getDocument();
         if (document instanceof IDocumentExtension3) {
@@ -611,8 +610,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         final IVerticalRuler verticalRuler = getVerticalRuler();
 
         /*if (isReadOnly()) {
-            //Color fgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_TEXT);
-            Color bgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_DISABLED);
+            //Color fgColor = ruleScanner.getColor(SQLConstants.CONFIG_COLOR_TEXT);
+            Color bgColor = ruleScanner.getColor(SQLConstants.CONFIG_COLOR_DISABLED);
             TextViewer textViewer = getTextViewer();
             if (textViewer != null) {
                 final StyledText textWidget = textViewer.getTextWidget();
@@ -839,11 +838,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     private void startScriptEvaluation() {
-        ruleManager.startEval();
+        ruleScanner.startEval();
     }
 
     private void endScriptEvaluation() {
-        ruleManager.endEval();
+        ruleScanner.endEval();
     }
 
     public List<SQLScriptElement> extractScriptQueries(int startOffset, int length, boolean scriptMode, boolean keepDelimiters, boolean parseParameters) {
@@ -909,25 +908,25 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         // Parse range
         boolean useBlankLines = !scriptMode && syntaxManager.isBlankLineDelimiter();
-        ruleManager.setRange(document, startPos, endPos - startPos);
+        ruleScanner.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
         boolean hasValuableTokens = false;
         ScriptBlockInfo curBlock = null;
         boolean hasBlocks = false;
         int lastTokenLineFeeds = 0;
-        int prevNotEmptyTokenType = SQLToken.T_UNKNOWN;
+        SQLTokenType prevNotEmptyTokenType = SQLTokenType.T_UNKNOWN;
         String lastKeyword = null;
         for (; ; ) {
-            IToken token = ruleManager.nextToken();
-            int tokenOffset = ruleManager.getTokenOffset();
-            int tokenLength = ruleManager.getTokenLength();
-            int tokenType = token instanceof SQLToken ? ((SQLToken) token).getType() : SQLToken.T_UNKNOWN;
+            IToken token = ruleScanner.nextToken();
+            int tokenOffset = ruleScanner.getTokenOffset();
+            int tokenLength = ruleScanner.getTokenLength();
+            SQLTokenType tokenType = getSQLTokenType(token);
             if (tokenOffset < startPos) {
                 // This may happen with EOF tokens (bug in jface?)
                 return null;
             }
 
-            boolean isDelimiter = tokenType == SQLToken.T_DELIMITER;
+            boolean isDelimiter = tokenType == SQLTokenType.T_DELIMITER;
             boolean isControl = false;
             String delimiterText = null;
             try {
@@ -960,18 +959,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         log.warn(e);
                     }
                 }
-                if (tokenType == SQLToken.T_BLOCK_BEGIN && prevNotEmptyTokenType == SQLToken.T_BLOCK_END) {
+                if (tokenType == SQLTokenType.T_BLOCK_BEGIN && prevNotEmptyTokenType == SQLTokenType.T_BLOCK_END) {
                     // This is a tricky thing.
                     // In some dialects block end looks like END CASE, END LOOP. It is parsed as
                     // Block end followed by block begin (as CASE and LOOP are block begin tokens)
                     // So let's ignore block begin if previos token was block end and there were no delimtiers.
-                    tokenType = SQLToken.T_UNKNOWN;
+                    tokenType = SQLTokenType.T_UNKNOWN;
                 }
 
-                if (tokenType == SQLToken.T_BLOCK_HEADER) {
+                if (tokenType == SQLTokenType.T_BLOCK_HEADER) {
                     curBlock = new ScriptBlockInfo(curBlock, true);
                     hasBlocks = true;
-                } else if (tokenType == SQLToken.T_BLOCK_TOGGLE) {
+                } else if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
                     String togglePattern;
                     try {
                         togglePattern = document.get(tokenOffset, tokenLength);
@@ -989,14 +988,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         log.debug("Block toggle token inside another block. Can't process it");
                     }
                     hasBlocks = true;
-                } else if (tokenType == SQLToken.T_BLOCK_BEGIN) {
+                } else if (tokenType == SQLTokenType.T_BLOCK_BEGIN) {
                     if (curBlock == null || !curBlock.isHeader) {
                         curBlock = new ScriptBlockInfo(curBlock, false);
                     } else {
                         curBlock.isHeader = false;
                     }
                     hasBlocks = true;
-                } else if (tokenType == SQLToken.T_BLOCK_END) {
+                } else if (tokenType == SQLTokenType.T_BLOCK_END) {
                     // Sometimes query contains END clause without BEGIN. E.g. CASE, IF, etc.
                     // This END doesn't mean block
                     if (curBlock != null) {
@@ -1016,20 +1015,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 } else if (isDelimiter && curBlock != null) {
                     // Delimiter in some brackets - ignore it
                     continue;
-                } else if (tokenType == SQLToken.T_SET_DELIMITER || tokenType == SQLToken.T_CONTROL) {
+                } else if (tokenType == SQLTokenType.T_SET_DELIMITER || tokenType == SQLTokenType.T_CONTROL) {
                     isDelimiter = true;
                     isControl = true;
-                } else if (tokenType == SQLToken.T_COMMENT) {
+                } else if (tokenType == SQLTokenType.T_COMMENT) {
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }
 
                 if (tokenLength > 0 && !token.isWhitespace()) {
                     switch (tokenType) {
-                        case SQLToken.T_BLOCK_BEGIN:
-                        case SQLToken.T_BLOCK_END:
-                        case SQLToken.T_BLOCK_TOGGLE:
-                        case SQLToken.T_BLOCK_HEADER:
-                        case SQLToken.T_UNKNOWN:
+                        case T_BLOCK_BEGIN:
+                        case T_BLOCK_END:
+                        case T_BLOCK_TOGGLE:
+                        case T_BLOCK_HEADER:
+                        case T_UNKNOWN:
                             try {
                                 lastKeyword = document.get(tokenOffset, tokenLength);
                             } catch (BadLocationException e) {
@@ -1055,7 +1054,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             commandId,
                             tokenOffset,
                             tokenLength,
-                            tokenType == SQLToken.T_SET_DELIMITER);
+                            tokenType == SQLTokenType.T_SET_DELIMITER);
                         if (command.isEmptyCommand() ||
                             (command.getCommandId() != null &&
                                 SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId()) != null)) {
@@ -1115,7 +1114,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             }
                         }
                         int queryEndPos = tokenOffset;
-                        if (tokenType == SQLToken.T_DELIMITER) {
+                        if (tokenType == SQLTokenType.T_DELIMITER) {
                             queryEndPos += tokenLength;
                         }
                         // make script line
@@ -1136,7 +1135,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     return null;
                 }
                 if (!hasValuableTokens && !token.isWhitespace() && !isControl) {
-                    if (tokenType == SQLToken.T_COMMENT) {
+                    if (tokenType == SQLTokenType.T_COMMENT) {
                         hasValuableTokens = dialect.supportsCommentQuery();
                     } else {
                         hasValuableTokens = true;
@@ -1148,6 +1147,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
             }
         }
+    }
+
+    private static SQLTokenType getSQLTokenType(IToken token) {
+        if (token instanceof SQLTokenAdapter) {
+            TPToken tpToken = ((SQLTokenAdapter) token).getToken();
+            if (tpToken instanceof TPTokenDefault) {
+                return (SQLTokenType) tpToken.getData();
+            }
+        }
+        return SQLTokenType.T_UNKNOWN;
     }
 
     private static int countLineFeeds(final IDocument document, final int offset, final int length) {
@@ -1170,22 +1179,19 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         boolean execQuery = false;
         boolean ddlQuery = false;
         List<SQLQueryParameter> parameters = null;
-        ruleManager.setRange(document, queryOffset, queryLength);
+        ruleScanner.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
         for (; ; ) {
-            IToken token = ruleManager.nextToken();
-            final int tokenOffset = ruleManager.getTokenOffset();
-            final int tokenLength = ruleManager.getTokenLength();
+            IToken token = ruleScanner.nextToken();
+            final int tokenOffset = ruleScanner.getTokenOffset();
+            final int tokenLength = ruleScanner.getTokenLength();
             if (token.isEOF() || tokenOffset > queryOffset + queryLength) {
                 break;
             }
             // Handle only parameters which are not in SQL blocks
-            int tokenType = SQLToken.T_UNKNOWN;
-            if (token instanceof SQLToken) {
-                tokenType = ((SQLToken) token).getType();
-            }
-            if (token.isWhitespace() || tokenType == SQLToken.T_COMMENT) {
+            SQLTokenType tokenType = getSQLTokenType(token);
+            if (token.isWhitespace() || tokenType == SQLTokenType.T_COMMENT) {
                 continue;
             }
             if (!supportParamsInDDL) {
@@ -1205,7 +1211,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     firstKeyword = false;
                 }
             }
-            if (tokenType == SQLToken.T_PARAMETER && tokenLength > 0) {
+            if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
                     if (ddlQuery) {
@@ -1450,7 +1456,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 IDocument document = this.getSourceViewer().getDocument();
                 if (document != null) {
                     // Get full word
-                    SQLWordDetector wordDetector = new SQLWordDetector();
+                    TPWordDetector wordDetector = new TPWordDetector();
                     int startPos = selection.getOffset();
                     int endPos = startPos + selection.getLength();
                     try {

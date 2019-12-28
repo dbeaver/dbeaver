@@ -21,12 +21,13 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.rules.*;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
-import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.text.parser.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.Pair;
@@ -41,7 +42,9 @@ import java.util.List;
  * changed. The document partitions are based on tokens that represent comments
  * and SQL code sections.
  */
-public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TPCharacterScanner {
+public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TPPartitionScanner {
+
+    private static final Log log = Log.getLog(SQLPartitionScanner.class);
 
     private final DBPDataSource dataSource;
     // Syntax highlight
@@ -104,16 +107,16 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
     }
 
     private void initRules(SQLDialect dialect) {
-        SQLRuleProvider ruleProvider = GeneralUtils.adapt(dialect, SQLRuleProvider.class);
+        TPRuleProvider ruleProvider = GeneralUtils.adapt(dialect, TPRuleProvider.class);
         if (ruleProvider != null) {
-            List<IRule> partRules = new ArrayList<>();
+            List<TPRule> partRules = new ArrayList<>();
             ruleProvider.extendRules(
                 dataSource == null ? null : dataSource.getContainer(),
                 partRules,
-                SQLRuleProvider.RulePosition.PARTITION);
-            for (IRule pr : partRules) {
-                if (pr instanceof IPredicateRule) {
-                    rules.add((IPredicateRule) pr);
+                TPRuleProvider.RulePosition.PARTITION);
+            for (TPRule pr : partRules) {
+                if (pr instanceof TPPredicateRule) {
+                    rules.add(new PredicateRuleAdapter((TPPredicateRule) pr));
                 }
             }
         }
@@ -195,6 +198,44 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
         }
 
         return regions;
+    }
+
+    private class PredicateRuleAdapter implements IPredicateRule {
+        private final TPPredicateRule rule;
+        PredicateRuleAdapter(TPPredicateRule rule) {
+            this.rule = rule;
+        }
+
+        @Override
+        public IToken getSuccessToken() {
+            return adaptToken(rule.getSuccessToken());
+        }
+
+        @Override
+        public IToken evaluate(ICharacterScanner scanner, boolean resume) {
+            return adaptToken(rule.evaluate((TPCharacterScanner) scanner, resume));
+        }
+
+        @Override
+        public IToken evaluate(ICharacterScanner scanner) {
+            return adaptToken(rule.evaluate((TPCharacterScanner) scanner));
+        }
+    }
+
+    private IToken adaptToken(TPToken token) {
+        if (token instanceof TPTokenDefault) {
+            if (token.getData() instanceof SQLTokenType) {
+                switch (((SQLTokenType) token.getData())) {
+                    case T_STRING:
+                        return sqlStringToken;
+                    case T_QUOTED:
+                        return sqlQuotedToken;
+                    case T_COMMENT:
+                        return multilineCommentToken;
+                }
+            }
+        }
+        return Token.UNDEFINED;
     }
 
 }

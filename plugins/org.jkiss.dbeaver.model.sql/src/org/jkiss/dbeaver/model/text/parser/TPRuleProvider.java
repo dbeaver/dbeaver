@@ -14,33 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.text.parser;
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+
+import java.util.List;
 
 /**
- * SQLControlToken
- *
- * Control tokens are used for local SQL script evaluation.
+ * SQL parser rules provider.
+ * It is an extension for SQL dialect implementors.
  */
-public class SQLControlToken extends SQLToken {
+public interface TPRuleProvider {
 
-    private final String commandId;
-
-    public SQLControlToken(Object data)
-    {
-        this(data, null);
+    enum RulePosition {
+        PARTITION,
+        INITIAL,
+        CONTROL,
+        QUOTES,
+        KEYWORDS
     }
 
-    public SQLControlToken(Object data, String commandId)
-    {
-        super(T_CONTROL, data);
-        this.commandId = commandId;
-    }
+    void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position);
 
-    /**
-     * Command ID or null if command id is in the token itself
-     */
-    public String getCommandId() {
-        return commandId;
-    }
 }

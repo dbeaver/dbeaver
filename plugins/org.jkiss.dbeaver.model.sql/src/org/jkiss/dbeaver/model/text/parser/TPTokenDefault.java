@@ -24,7 +24,7 @@ public class TPTokenDefault extends TPTokenAbstract<TPTokenType> {
     /**
      * Token for main parser. Data is token type, depends on parser but usually refers to some colored type.
      */
-    protected TPTokenDefault(TPTokenType type) {
+    public TPTokenDefault(TPTokenType type) {
         super(type.getTokenType(), type);
     }
 
