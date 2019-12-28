@@ -357,9 +357,9 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
                     additionalInfo.loaded = true;
                 }
             }
-        }
-        catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
         }
 
     }

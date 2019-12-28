@@ -89,9 +89,9 @@ public class PostgreTableForeign extends PostgreTable implements DBPForeignObjec
                         foreignOptions = JDBCUtils.safeGetArray(result, "ftoptions");
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 

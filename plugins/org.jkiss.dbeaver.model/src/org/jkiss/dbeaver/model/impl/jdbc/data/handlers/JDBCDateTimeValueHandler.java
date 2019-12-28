@@ -134,7 +134,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                 log.debug("Can't retrieve datetime object", e1);
                 return null;
             }
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

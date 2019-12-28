@@ -68,7 +68,7 @@ public class PostgreContentJSON extends JDBCContentChars {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

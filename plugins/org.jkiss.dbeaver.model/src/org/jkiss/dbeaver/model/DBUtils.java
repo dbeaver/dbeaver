@@ -2010,9 +2010,9 @@ public final class DBUtils {
             DBWorkbench.getPlatformUI().executeWithProgress(runnable);
             //UIUtils.runInProgressService(runnable);
         } catch (InvocationTargetException e) {
-            throw new DBCException(e.getTargetException(), context.getDataSource());
+            throw new DBCException(e.getTargetException(), context);
         } catch (InterruptedException e) {
-            throw new DBCException(e, context.getDataSource());
+            throw new DBCException(e, context);
         }
 
         Object result = runnable.getResult();

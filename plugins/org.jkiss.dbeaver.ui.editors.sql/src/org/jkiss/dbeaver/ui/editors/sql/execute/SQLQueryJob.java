@@ -773,7 +773,7 @@ public class SQLQueryJob extends DataSourceJob
             if (lastError instanceof DBCException) {
                 throw (DBCException) lastError;
             } else {
-                throw new DBCException(lastError, getExecutionContext().getDataSource());
+                throw new DBCException(lastError, getExecutionContext());
             }
         } else if (result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);

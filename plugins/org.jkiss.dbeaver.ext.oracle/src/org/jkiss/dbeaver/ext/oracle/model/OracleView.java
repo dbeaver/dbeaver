@@ -200,10 +200,9 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
                     }
                     additionalInfo.loaded = true;
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        }
-        catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
 
         if (viewDefinitionText != null) {

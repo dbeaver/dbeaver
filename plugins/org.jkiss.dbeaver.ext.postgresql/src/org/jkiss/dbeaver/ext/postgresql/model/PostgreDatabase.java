@@ -156,11 +156,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         loadInfo(dbResult);
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
-        } catch (DBException e) {
-            e.printStackTrace();
         }
     }
 

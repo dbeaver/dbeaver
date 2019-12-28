@@ -19,8 +19,6 @@
  */
 package org.jkiss.dbeaver.ext.hana.model.data;
 
-import java.sql.SQLException;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.hana.model.data.wkb.HANAWKBParser;
 import org.jkiss.dbeaver.ext.hana.model.data.wkb.HANAWKBParserException;
@@ -38,6 +36,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.locationtech.jts.geom.Geometry;
 
+import java.sql.SQLException;
+
 public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
 
     public static final HANAGeometryValueHandler INSTANCE = new HANAGeometryValueHandler();
@@ -54,7 +54,7 @@ public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
             Geometry g = parser.parse(wkb);
             return new DBGeometry(g);
         } catch (HANAWKBParserException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -80,7 +80,7 @@ public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
             try {
                 statement.setBytes(paramIndex, HANAWKBWriter.write(g, HANAXyzmModeFinder.findXyzmMode(g)));
             } catch (HANAWKBWriterException e) {
-                throw new DBCException(e, session.getDataSource());
+                throw new DBCException(e, session.getExecutionContext());
             }
         } else {
             throw new DBCException("Could not bind the value because the value type is not a known geometry type");
@@ -113,7 +113,7 @@ public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
                 Geometry g = parser.parse(wkb);
                 return new DBGeometry(g);
             } catch (HANAWKBParserException e) {
-                throw new DBCException(e, session.getDataSource());
+                throw new DBCException(e, session.getExecutionContext());
             }
         } else {
             throw new DBCException(

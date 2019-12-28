@@ -300,9 +300,9 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
                     }
                     identityInfo.loaded = true;
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 

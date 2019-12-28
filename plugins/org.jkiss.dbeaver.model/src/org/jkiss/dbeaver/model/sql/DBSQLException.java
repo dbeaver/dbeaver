@@ -17,8 +17,8 @@
 
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 /**
  * SQL control command
@@ -27,8 +27,8 @@ public class DBSQLException extends DBCException {
 
     private final String sqlQuery;
 
-    public DBSQLException(String sqlQuery, Throwable cause, DBPDataSource dataSource) {
-        super(cause, dataSource);
+    public DBSQLException(String sqlQuery, Throwable cause, DBCExecutionContext executionContext) {
+        super(cause, executionContext);
         this.sqlQuery = sqlQuery;
     }
 

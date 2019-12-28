@@ -246,7 +246,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
                 (JDBCSession)session,
                 "SET IDENTITY_INSERT " + getFullyQualifiedName(DBPEvaluationContext.DML) + " " + (enable ? " ON" : "OFF"));
         } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

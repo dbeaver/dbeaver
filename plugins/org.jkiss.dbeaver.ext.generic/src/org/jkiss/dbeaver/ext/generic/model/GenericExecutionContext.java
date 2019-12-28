@@ -157,7 +157,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                     }
                 }
             } catch (SQLException e) {
-                throw new DBCException(e, dataSource);
+                throw new DBCException(e, this);
             }
             selectedEntityName = entityName;
         }
@@ -238,7 +238,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                 }
             }
         } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
         selectedEntityName = catalog.getName();
         dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_CATALOG);
@@ -281,7 +281,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                 }
             }
         } catch (SQLException e) {
-            throw new DBCException(e, dataSource);
+            throw new DBCException(e, this);
         }
         selectedEntityName = schemaName;
         dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_SCHEMA);

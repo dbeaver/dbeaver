@@ -245,23 +245,23 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 try {
                     return makeCollectionFromResultSet(session, array, null);
                 } catch (SQLException e) {
-                    throw new DBCException(e, dataSource); //$NON-NLS-1$
+                    throw new DBCException(e, session.getExecutionContext());
                 }
             }
             try {
                 return makeCollectionFromArray(session, array, elementType);
             } catch (SQLException e) {
                 if (array == null) {
-                    throw new DBCException(e, dataSource); //$NON-NLS-1$
+                    throw new DBCException(e, session.getExecutionContext());
                 }
                 try {
                     return makeCollectionFromResultSet(session, array, elementType);
                 } catch (SQLException e1) {
-                    throw new DBCException(e1, dataSource); //$NON-NLS-1$
+                    throw new DBCException(e1, session.getExecutionContext());
                 }
             }
         } catch (DBException e) {
-            throw new DBCException("Can't extract array data from JDBC array", e); //$NON-NLS-1$
+            throw new DBCException("Can't extract array data from JDBC array", e, session.getExecutionContext()); //$NON-NLS-1$
         }
     }
 

@@ -166,7 +166,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
             defaultSearchPath = new ArrayList<>(searchPath);
         } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
 
         return true;
@@ -211,7 +211,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
             JDBCUtils.executeSQL(session, "SET search_path = " + spString);
         } catch (SQLException e) {
-            throw new DBCException("Error setting search path", e, dataSource);
+            throw new DBCException("Error setting search path", e, this);
         }
     }
 

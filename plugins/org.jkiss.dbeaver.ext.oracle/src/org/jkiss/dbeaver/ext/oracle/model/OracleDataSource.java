@@ -739,7 +739,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
             try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable ") + "DBMS output")) {
                 JDBCUtils.executeSQL((JDBCSession) session, sql);
             } catch (SQLException e) {
-                throw new DBCException(e, OracleDataSource.this);
+                throw new DBCException(e, context);
             }
         }
 
@@ -762,7 +762,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
                         }
                     }
                 } catch (SQLException e) {
-                    throw new DBCException(e, OracleDataSource.this);
+                    throw new DBCException(e, context);
                 }
             }
         }

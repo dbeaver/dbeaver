@@ -119,7 +119,7 @@ public class OracleExecutionContext extends JDBCExecutionContext implements DBCE
                 }
             }
         } catch (Exception e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
 
         return true;
@@ -138,7 +138,7 @@ public class OracleExecutionContext extends JDBCExecutionContext implements DBCE
             OracleUtils.setCurrentSchema(session, activeSchemaName);
             this.activeSchemaName = activeSchemaName;
         } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
     }
 

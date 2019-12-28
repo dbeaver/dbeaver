@@ -130,7 +130,7 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                 }
             }
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         } finally {
             // Rollback changes because EXPLAIN actually executes query and it could be INSERT/UPDATE
             try {

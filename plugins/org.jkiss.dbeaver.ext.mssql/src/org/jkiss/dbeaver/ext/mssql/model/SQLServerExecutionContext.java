@@ -125,7 +125,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
             activeDatabaseName = SQLServerUtils.getCurrentDatabase(session);
         } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
 
         return false;
