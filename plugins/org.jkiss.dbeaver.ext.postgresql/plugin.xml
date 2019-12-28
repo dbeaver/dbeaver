@@ -508,6 +508,19 @@
         </provider>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="postgresql" parent="basic" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" label="PostgreSQL" description="PostgreSQL dialect." icon="icons/postgresql_icon.png">
+            <keywords value=""/>
+            <execKeywords value=""/>
+            <ddlKeywords value=""/>
+            <dmlKeywords value=""/>
+            <functions value=""/>
+            <types value=""/>
+
+            <property name="" value=""/>
+        </dialect>
+    </extension>
+
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" class="org.jkiss.dbeaver.ext.postgresql.sql.PostgreDialectAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>

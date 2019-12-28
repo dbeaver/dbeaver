@@ -48,12 +48,12 @@ public class SQLDialectRegistry
 
     private void loadExtensions(IExtensionRegistry registry)
     {
-        IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQLCommandHandlerDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQLDialectDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extConfigs) {
             // Load functions
             if (TAG_DIALECT.equals(ext.getName())) {
-                SQLDialectDescriptor commandDescriptor = new SQLDialectDescriptor(ext);
-                this.dialects.put(commandDescriptor.getId(), commandDescriptor);
+                SQLDialectDescriptor dialectDescriptor = new SQLDialectDescriptor(ext);
+                this.dialects.put(dialectDescriptor.getId(), dialectDescriptor);
             }
         }
     }
