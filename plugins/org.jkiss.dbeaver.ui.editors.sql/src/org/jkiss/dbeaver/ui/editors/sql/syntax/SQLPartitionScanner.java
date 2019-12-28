@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -40,7 +41,7 @@ import java.util.List;
  * changed. The document partitions are based on tokens that represent comments
  * and SQL code sections.
  */
-public class SQLPartitionScanner extends RuleBasedPartitionScanner {
+public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TPCharacterScanner {
 
     private final DBPDataSource dataSource;
     // Syntax highlight

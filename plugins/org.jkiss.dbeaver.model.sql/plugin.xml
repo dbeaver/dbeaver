@@ -4,6 +4,7 @@
 <plugin>
     <extension-point id="org.jkiss.dbeaver.sqlFormatter" name="%extension-point.org.jkiss.dbeaver.sqlFormatter.name" schema="schema/org.jkiss.dbeaver.sqlFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlDialect" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlDialect.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.model.sql.internal.SQLModelPreferencesInitializer"/>
@@ -21,6 +22,19 @@
         <command id="unset" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandUnset" label="Unset" description="Removes variable/parameter"/>
         <command id="echo" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
         <command id="export" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandExport" label="Export resultset" description="Export results of the next query. Launches data transfer process."/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="basic" class=" org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect" label="Base SQL Dialect" description="Base SQL dialect for all other dialects.">
+            <keywords value=""/>
+            <execKeywords value=""/>
+            <ddlKeywords value="CREATE,ALTER,DROP"/>
+            <dmlKeywords value="INSERT,DELETE,UPDATE,UPSERT,MERGE,TRUNCATE"/>
+            <functions value=""/>
+            <types value=""/>
+
+            <property name="" value=""/>
+        </dialect>
     </extension>
 
 </plugin>

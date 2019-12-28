@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordDetector;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -52,11 +53,11 @@ import java.util.*;
 
 /**
  * SQLSyntaxManager.
- * <p/>
+ *
  * Contains information about some concrete datasource underlying database syntax.
  * Support runtime change of datasource (reloads syntax information)
  */
-public class SQLRuleManager extends RuleBasedScanner {
+public class SQLRuleManager extends RuleBasedScanner implements TPCharacterScanner {
 
     @NotNull
     private final IThemeManager themeManager;
@@ -69,8 +70,7 @@ public class SQLRuleManager extends RuleBasedScanner {
 
     private boolean evalMode;
 
-    public SQLRuleManager(@NotNull SQLSyntaxManager syntaxManager)
-    {
+    public SQLRuleManager(@NotNull SQLSyntaxManager syntaxManager) {
         this.syntaxManager = syntaxManager;
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
     }
@@ -94,19 +94,16 @@ public class SQLRuleManager extends RuleBasedScanner {
         }
     }
 
-    public void dispose()
-    {
+    public void dispose() {
     }
 
     @NotNull
-    public Collection<? extends Position> getPositions(int offset, int length)
-    {
+    public Collection<? extends Position> getPositions(int offset, int length) {
         return positions.subMap(offset, offset + length).values();
     }
 
     @NotNull
-    public synchronized Set<SQLScriptPosition> getRemovedPositions(boolean clear)
-    {
+    public synchronized Set<SQLScriptPosition> getRemovedPositions(boolean clear) {
         Set<SQLScriptPosition> posList = removedPositions;
         if (clear) {
             removedPositions = new HashSet<>();
@@ -115,8 +112,7 @@ public class SQLRuleManager extends RuleBasedScanner {
     }
 
     @NotNull
-    public synchronized Set<SQLScriptPosition> getAddedPositions(boolean clear)
-    {
+    public synchronized Set<SQLScriptPosition> getAddedPositions(boolean clear) {
         Set<SQLScriptPosition> posList = addedPositions;
         if (clear) {
             addedPositions = new HashSet<>();
@@ -124,8 +120,7 @@ public class SQLRuleManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void refreshRules(@Nullable DBPDataSource dataSource, @Nullable IEditorInput editorInput)
-    {
+    public void refreshRules(@Nullable DBPDataSource dataSource, @Nullable IEditorInput editorInput) {
         SQLDialect dialect = syntaxManager.getDialect();
         SQLRuleProvider ruleProvider = GeneralUtils.adapt(dialect, SQLRuleProvider.class);
         DBPDataSourceContainer dataSourceContainer = dataSource == null ? null : dataSource.getContainer();
@@ -133,39 +128,39 @@ public class SQLRuleManager extends RuleBasedScanner {
         boolean minimalRules = SQLEditorBase.isBigScript(editorInput);
 
         boolean boldKeywords = dataSource == null ?
-            DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) :
-            dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
+                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) :
+                dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
         int keywordStyle = boldKeywords ? SWT.BOLD : SWT.NORMAL;
 
         /*final Color backgroundColor = null;unassigned || dataSource != null ?
             getColor(SQLConstants.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE) :
             getColor(SQLConstants.CONFIG_COLOR_DISABLED, SWT.COLOR_WIDGET_LIGHT_SHADOW);*/
         final IToken keywordToken = new Token(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
         final IToken typeToken = new Token(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DATATYPE), null, keywordStyle));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DATATYPE), null, keywordStyle));
         final IToken stringToken = new Token(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_STRING), null, SWT.NORMAL));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_STRING), null, SWT.NORMAL));
         final IToken quotedToken = new Token(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DATATYPE), null, SWT.NORMAL));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DATATYPE), null, SWT.NORMAL));
         final IToken numberToken = new Token(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_NUMBER), null, SWT.NORMAL));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_NUMBER), null, SWT.NORMAL));
         final IToken commentToken = new SQLCommentToken(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMENT), null, SWT.NORMAL));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMENT), null, SWT.NORMAL));
         final SQLDelimiterToken delimiterToken = new SQLDelimiterToken(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED), null, SWT.NORMAL));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED), null, SWT.NORMAL));
         final SQLParameterToken parameterToken = new SQLParameterToken(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), null, keywordStyle));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), null, keywordStyle));
         final SQLVariableToken variableToken = new SQLVariableToken(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), null, keywordStyle));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), null, keywordStyle));
         final IToken otherToken = new Token(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_TEXT), null, SWT.NORMAL));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_TEXT), null, SWT.NORMAL));
         final SQLBlockHeaderToken blockHeaderToken = new SQLBlockHeaderToken(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
         final SQLBlockBeginToken blockBeginToken = new SQLBlockBeginToken(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
         final SQLBlockEndToken blockEndToken = new SQLBlockEndToken(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
+                new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, keywordStyle));
 
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<>();
@@ -255,7 +250,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             String delimRedefine = dialect.getScriptDelimiterRedefiner();
             if (!CommonUtils.isEmpty(delimRedefine)) {
                 final SQLSetDelimiterToken setDelimiterToken = new SQLSetDelimiterToken(
-                    new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, keywordStyle));
+                        new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, keywordStyle));
 
                 rules.add(new SQLDelimiterSetRule(delimRedefine, setDelimiterToken, delimRule));
             }
@@ -309,13 +304,11 @@ public class SQLRuleManager extends RuleBasedScanner {
         setRules(result);
     }
 
-    public Color getColor(String colorKey)
-    {
+    public Color getColor(String colorKey) {
         return getColor(colorKey, SWT.COLOR_BLACK);
     }
 
-    public Color getColor(String colorKey, int colorDefault)
-    {
+    public Color getColor(String colorKey, int colorDefault) {
         ITheme currentTheme = themeManager.getCurrentTheme();
         Color color = currentTheme.getColorRegistry().get(colorKey);
         if (color == null) {
