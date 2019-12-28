@@ -235,7 +235,7 @@ public class BasicSQLDialect implements SQLDialect {
     @NotNull
     @Override
     public String getSearchStringEscape() {
-        return null;
+        return "";
     }
 
     @Override
