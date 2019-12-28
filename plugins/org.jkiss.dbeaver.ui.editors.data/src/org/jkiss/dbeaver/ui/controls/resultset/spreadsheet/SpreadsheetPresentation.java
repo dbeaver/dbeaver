@@ -81,6 +81,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
@@ -109,6 +110,8 @@ import java.util.*;
 public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
+
+    private static final boolean SHOW_BOOLEAN_AS_CHECK = false;
 
     private Spreadsheet spreadsheet;
 
@@ -1641,6 +1644,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Object getCellValue(Object colElement, Object rowElement, boolean formatString)
         {
             DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
+            if (SHOW_BOOLEAN_AS_CHECK && attr.getDataKind() == DBPDataKind.BOOLEAN) {
+                return "";
+            }
             ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
             int rowNum = row.getVisualNumber();
             Object value = controller.getModel().getCellValue(attr, row);
@@ -1678,6 +1684,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public DBPImage getCellImage(Object colElement, Object rowElement)
         {
+            DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
+            if (SHOW_BOOLEAN_AS_CHECK && attr.getDataKind() == DBPDataKind.BOOLEAN) {
+                ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
+                Object cellValue = controller.getModel().getCellValue(attr, row);
+                if (cellValue instanceof Boolean) {
+                    return (Boolean)cellValue ? UIIcon.CHECK_ON : UIIcon.CHECK_OFF;
+                }
+            }
             // TODO: tired from cell icons. But maybe they make some sense - let's keep them commented
 /*
             if (!showCelIcons) {
