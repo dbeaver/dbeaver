@@ -276,9 +276,9 @@ public class OracleUtils {
                         return source.toString();
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, sourceOwner.getDataSource());
         } finally {
             monitor.done();
         }
@@ -361,9 +361,9 @@ public class OracleUtils {
                         return false;
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, object.getDataSource());
         }
     }
 

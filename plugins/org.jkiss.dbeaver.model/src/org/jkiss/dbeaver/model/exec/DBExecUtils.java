@@ -165,7 +165,6 @@ public class DBExecUtils {
                     // Some other error
                     break;
                 }
-                log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
                 DBRProgressMonitor monitor;
                 if (param instanceof DBRProgressMonitor) {
                     monitor = (DBRProgressMonitor) param;
@@ -178,9 +177,19 @@ public class DBExecUtils {
 
                     if (errorType == DBPErrorAssistant.ErrorType.TRANSACTION_ABORTED) {
                         // Transaction aborted
-                        InvalidateJob.invalidateTransaction(monitor, dataSource);
+                        DBCExecutionContext executionContext = null;
+                        if (lastError instanceof DBCException) {
+                            executionContext = ((DBCException) lastError).getExecutionContext();
+                        }
+                        if (executionContext != null) {
+                            log.debug("Invalidate context [" + executionContext.getDataSource().getContainer().getName() + "/" + executionContext.getContextName() + "] transactions");
+                        } else {
+                            log.debug("Invalidate datasource [" + dataSource.getContainer().getName() + "] transactions");
+                        }
+                        InvalidateJob.invalidateTransaction(monitor, dataSource, executionContext);
                     } else {
                         // Do not recover if connection was canceled
+                        log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
                         InvalidateJob.invalidateDataSource(monitor, dataSource, false,
                             () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
                         if (i < tryCount - 1) {

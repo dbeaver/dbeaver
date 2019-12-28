@@ -222,7 +222,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
         catch (Throwable e) {
             throw new DBCException("Error while reading content", e);

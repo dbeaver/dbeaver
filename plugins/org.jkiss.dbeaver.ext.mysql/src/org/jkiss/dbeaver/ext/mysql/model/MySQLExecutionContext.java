@@ -120,7 +120,7 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
 
             activeDatabaseName = MySQLUtils.determineCurrentDatabase(session);
         } catch (DBException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
 
         return true;
@@ -139,11 +139,11 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(getDataSource(), databaseName))) {
                 dbStat.execute();
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
             this.activeDatabaseName = databaseName;
             return true;
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 

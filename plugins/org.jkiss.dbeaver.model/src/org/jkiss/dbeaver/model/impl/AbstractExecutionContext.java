@@ -111,7 +111,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                         if (bootstrap.isIgnoreErrors()) {
                             log.warn(message);
                         } else {
-                            throw new DBCException(message, e, dataSource);
+                            throw new DBCException(message, e, this);
                         }
                     }
                 }

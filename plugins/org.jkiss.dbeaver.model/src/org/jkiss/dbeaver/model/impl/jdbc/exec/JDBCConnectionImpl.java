@@ -194,7 +194,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
             }
         }
         catch (SQLException e) {
-            throw new JDBCException(e, getDataSource());
+            throw new JDBCException(e, getExecutionContext());
         }
     }
 
@@ -693,7 +693,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
             getOriginal().close();
         }
         catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, getExecutionContext());
         }
     }
 

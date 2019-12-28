@@ -192,9 +192,9 @@ public class MySQLPackage
                         throw new DBCException("Package '" + getName() + "' not found");
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 

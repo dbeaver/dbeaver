@@ -119,7 +119,7 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
             // Get active schema
             this.activeSchemaName = determineActiveSchema(session);
         } catch (Exception e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
 
         return true;
@@ -138,7 +138,7 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
             JDBCUtils.executeSQL(session, String.format(SET_CURRENT_SCHEMA, schemaName));
             this.activeSchemaName = schemaName;
         } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
     }
 

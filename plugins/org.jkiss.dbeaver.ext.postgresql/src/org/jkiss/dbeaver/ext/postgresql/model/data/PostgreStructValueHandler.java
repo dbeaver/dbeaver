@@ -95,7 +95,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
                 return convertStringToStruct(session, structType, (String) value);
             }
         } catch (DBException e) {
-            throw new DBCException("Error converting string to composite type", e, session.getDataSource());
+            throw new DBCException("Error converting string to composite type", e, session.getExecutionContext());
         }
     }
 

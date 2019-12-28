@@ -80,7 +80,7 @@ public class WMIStatement implements DBCStatement {
             queryResult = sink.getObjectList();
             return true;
         } catch (WMIException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -106,7 +106,7 @@ public class WMIStatement implements DBCStatement {
         try {
             return new WMIResultSet(session, null, queryResult);
         } catch (WMIException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

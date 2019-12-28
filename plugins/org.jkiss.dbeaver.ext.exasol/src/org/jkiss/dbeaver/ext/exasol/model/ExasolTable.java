@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -182,7 +181,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
                 this.tablecount = JDBCUtils.safeGetLong(dbResult, "TABLE_ROW_COUNT");
             }
         } catch (SQLException e) {
-            throw new DBCException(e,getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     	    
         String sqlTableSize = String.format(readTableSize,
@@ -201,7 +200,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
                 this.sizeCompressed = JDBCUtils.safeGetLong(dbResult, "MEM_OBJECT_SIZE");
             }
         } catch (SQLException e) {
-            throw new DBCException(e,getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
 
         this.hasRead = true;

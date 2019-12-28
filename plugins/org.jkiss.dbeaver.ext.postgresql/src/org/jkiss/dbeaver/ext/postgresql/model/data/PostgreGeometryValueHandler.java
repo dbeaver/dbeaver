@@ -152,7 +152,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             String pgString = value.toString();
             return makeGeometryFromWKT(session, pgString, 2);
         } catch (Throwable e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -193,7 +193,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 return new DBGeometry(wktString, srid);
             }
         } catch (Throwable e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

@@ -183,12 +183,17 @@ public class InvalidateJob extends DataSourceJob
         return invalidateResults;
     }
 
-    public static void invalidateTransaction(DBRProgressMonitor monitor, DBPDataSource dataSource) {
+    public static void invalidateTransaction(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext) {
         // Invalidate transactions
-        monitor.subTask("Invalidate transactions of [" + dataSource.getContainer().getName() + "]");
-        for (DBSInstance instance : dataSource.getAvailableInstances()) {
-            for (DBCExecutionContext context : instance.getAllContexts()) {
-                invalidateTransaction(monitor, context);
+        if (executionContext != null) {
+            monitor.subTask("Invalidate context [" + executionContext.getDataSource().getContainer().getName() + "/" + executionContext.getContextName() + "] transactions");
+            invalidateTransaction(monitor, executionContext);
+        } else {
+            monitor.subTask("Invalidate datasource [" + dataSource.getContainer().getName() + "] transactions");
+            for (DBSInstance instance : dataSource.getAvailableInstances()) {
+                for (DBCExecutionContext context : instance.getAllContexts()) {
+                    invalidateTransaction(monitor, context);
+                }
             }
         }
     }
