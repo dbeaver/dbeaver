@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.ui.sql;
+package org.jkiss.dbeaver.ext.postgresql.sql;
 
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;

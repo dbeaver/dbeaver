@@ -364,7 +364,11 @@
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
         </factory>
+        <factory adaptableType="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" class="org.jkiss.dbeaver.ext.oracle.sql.OracleDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
     </extension>
+
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.ext.oracle.code.compile" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F9"/>
     </extension>

@@ -275,12 +275,6 @@
         <configurator type="postgresql" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" class="org.jkiss.dbeaver.ext.postgresql.ui.sql.PostgreDialectAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
-        </factory>
-    </extension>
-
     <extension point="org.eclipse.ui.preferencePages">
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.postgresql.general" class="org.jkiss.dbeaver.ext.postgresql.ui.PrefPagePostgreSQL" name="PostgreSQL">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
