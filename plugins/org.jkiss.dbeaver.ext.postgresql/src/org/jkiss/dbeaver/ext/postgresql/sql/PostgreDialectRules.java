@@ -14,30 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mysql.ui.internal;
+package org.jkiss.dbeaver.ext.postgresql.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.sql.parser.rules.SQLFullLineRule;
-import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
 import java.util.List;
 
 /**
-* MySQL dialect rules
+* Oracle dialect rules
 */
-class MySQLDialectRules implements TPRuleProvider {
+class PostgreDialectRules implements TPRuleProvider {
 
     @Override
     public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
-        if (position == RulePosition.CONTROL) {
-            final SQLControlToken sourceToken = new SQLControlToken("mysql.source");
-
-            SQLFullLineRule sourceRule2 = new SQLFullLineRule("SOURCE", sourceToken); //$NON-NLS-1$
-            rules.add(sourceRule2);
+        if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
+            rules.add(new PostgreDollarQuoteRule(dataSource, position == RulePosition.PARTITION));
         }
     }
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.mysql.ui.internal;
+package org.jkiss.dbeaver.ext.mysql.sql;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
