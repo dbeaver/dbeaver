@@ -19,16 +19,16 @@ package org.jkiss.dbeaver.ext.postgresql.ui.sql;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
 public class PostgreDialectAdapterFactory implements IAdapterFactory {
 
-    private static final Class<?>[] CLASSES = new Class[] { SQLRuleProvider.class };
+    private static final Class<?>[] CLASSES = new Class[] { TPRuleProvider.class };
     
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adaptableObject instanceof SQLDialect) {
-            if (adapterType == SQLRuleProvider.class) {
+            if (adapterType == TPRuleProvider.class) {
                 return adapterType.cast(new PostgreDialectRules());
             }
         }

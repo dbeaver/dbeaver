@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.model.sql.parser.rules;
 
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLParameterToken;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLParameterToken;
 
 /**
 * SQL parameter rule

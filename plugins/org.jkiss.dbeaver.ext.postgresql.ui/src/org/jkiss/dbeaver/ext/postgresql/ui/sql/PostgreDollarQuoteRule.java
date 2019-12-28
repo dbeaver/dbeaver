@@ -16,29 +16,21 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui.sql;
 
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.ICharacterScanner;
-import org.eclipse.jface.text.rules.IPredicateRule;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.Token;
-import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLBlockToggleToken;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.text.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockToggleToken;
 import org.jkiss.utils.CommonUtils;
 
-class PostgreDollarQuoteRule implements IPredicateRule {
+class PostgreDollarQuoteRule implements TPPredicateRule {
 
     private final boolean partitionRule;
     private final boolean ddPlainIsString;
     private final boolean ddTagIsString;
-    private final IToken partStringToken, partCodeToken;
-    private final IToken stringToken, delimiterToken;
+    private final TPToken stringToken, delimiterToken;
 
     PostgreDollarQuoteRule(DBPDataSourceContainer dataSource, boolean partitionRule) {
         this.partitionRule = partitionRule;
@@ -51,26 +43,22 @@ class PostgreDollarQuoteRule implements IPredicateRule {
             ddTagDefault :
             CommonUtils.getBoolean(dataSource.getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_DD_TAG_STRING), ddTagDefault);
 
-        this.partStringToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
-        this.partCodeToken = new Token(IDocument.DEFAULT_CONTENT_TYPE);
-        this.stringToken = new Token(
-            new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_STRING), null, SWT.NORMAL));
-        this.delimiterToken = new SQLBlockToggleToken(
-            new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.BOLD));
+        this.stringToken = new TPTokenDefault(SQLTokenType.T_STRING);
+        this.delimiterToken = new SQLBlockToggleToken();
     }
 
     @Override
-    public IToken evaluate(ICharacterScanner scanner) {
+    public TPToken evaluate(TPCharacterScanner scanner) {
         return evaluate(scanner, false);
     }
 
     @Override
-    public IToken getSuccessToken() {
-        return partitionRule ? partStringToken : stringToken;
+    public TPToken getSuccessToken() {
+        return stringToken;
     }
 
     @Override
-    public IToken evaluate(ICharacterScanner scanner, boolean resume) {
+    public TPToken evaluate(TPCharacterScanner scanner, boolean resume) {
         int totalRead = 0;
         int c = scanner.read();
         totalRead++;
@@ -129,7 +117,7 @@ class PostgreDollarQuoteRule implements IPredicateRule {
                         }
 */
                         // Find the end of the string
-                        return partitionRule ? partStringToken : stringToken;
+                        return stringToken;
                     }
                     if (!partitionRule) {
                         return delimiterToken;
@@ -142,10 +130,10 @@ class PostgreDollarQuoteRule implements IPredicateRule {
 
         unread(scanner, totalRead);
 
-        return Token.UNDEFINED;
+        return TPTokenAbstract.UNDEFINED;
     }
 
-    private static void unread(ICharacterScanner scanner, int totalRead) {
+    private static void unread(TPCharacterScanner scanner, int totalRead) {
         while (totalRead-- > 0) {
             scanner.unread();
         }

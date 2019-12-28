@@ -89,7 +89,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     {
         super(preferenceStore);
         this.editor = editor;
-        this.ruleManager = editor.getRuleManager();
+        this.ruleManager = editor.getRuleScanner();
         this.hyperlinkDetector = new SQLHyperlinkDetector(editor, editor.getSyntaxManager());
     }
 

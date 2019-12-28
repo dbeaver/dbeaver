@@ -24,7 +24,7 @@ public class TPTokenAbstract<DATA> implements TPToken {
     private static final int T_UNDEFINED    = 0;
     private static final int T_EOF          = 1;
     private static final int T_WHITESPACE   = 2;
-    private static final int T_OTHER        = 3;
+    static final int T_OTHER        = 3;
 
     public static final TPToken UNDEFINED = new TPTokenAbstract(T_UNDEFINED);
     public static final TPToken EOF = new TPTokenAbstract(T_EOF);
@@ -46,6 +46,7 @@ public class TPTokenAbstract<DATA> implements TPToken {
      */
     protected TPTokenAbstract(int type, DATA data) {
         this.type = type;
+        this.data = data;
     }
 
     @Override

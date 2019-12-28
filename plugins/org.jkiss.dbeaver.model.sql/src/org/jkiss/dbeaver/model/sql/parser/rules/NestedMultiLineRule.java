@@ -16,39 +16,40 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.eclipse.jface.text.rules.ICharacterScanner;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.MultiLineRule;
-import org.eclipse.jface.text.rules.Token;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
+
+import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
+import org.jkiss.dbeaver.model.text.parser.TPPartitionScanner;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
+import org.jkiss.dbeaver.model.text.parser.rules.MultiLineRule;
 
 public class NestedMultiLineRule extends MultiLineRule
 {
     protected int _commentNestingDepth = 0;
 
-    public NestedMultiLineRule(String startSequence, String endSequence, IToken token)
+    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token)
     {
         super(startSequence, endSequence, token);
     }
 
-    public NestedMultiLineRule(String startSequence, String endSequence, IToken token, char escapeCharacter)
+    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter)
     {
         super(startSequence, endSequence, token, escapeCharacter);
     }
 
-    public NestedMultiLineRule(String startSequence, String endSequence, IToken token, char escapeCharacter,
+    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter,
         boolean breaksOnEOF)
     {
         super(startSequence, endSequence, token, escapeCharacter, breaksOnEOF);
     }
 
     @Override
-    protected boolean endSequenceDetected(ICharacterScanner scanner)
+    protected boolean endSequenceDetected(TPCharacterScanner scanner)
     {
         int c;
         //char[][] delimiters = scanner.getLegalLineDelimiters();
         //boolean previousWasEscapeCharacter = false;
-        while ((c = scanner.read()) != ICharacterScanner.EOF)
+        while ((c = scanner.read()) != TPCharacterScanner.EOF)
         {
             if (c == fEscapeCharacter)
             {
@@ -86,14 +87,14 @@ public class NestedMultiLineRule extends MultiLineRule
     }
 
     @Override
-    protected IToken doEvaluate(ICharacterScanner scanner, boolean resume)
+    protected TPToken doEvaluate(TPCharacterScanner scanner, boolean resume)
     {
         if (resume)
         {
             _commentNestingDepth = 0;
-            if (scanner instanceof SQLPartitionScanner)
+            if (scanner instanceof TPPartitionScanner)
             {
-                String scanned = ((SQLPartitionScanner) scanner).getScannedPartitionString();
+                String scanned = ((TPPartitionScanner) scanner).getScannedPartitionString();
                 if (scanned != null && scanned.length() > 0)
                 {
                     String startSequence = new String(fStartSequence);
@@ -137,7 +138,7 @@ public class NestedMultiLineRule extends MultiLineRule
         }
 
         scanner.unread();
-        return Token.UNDEFINED;
+        return TPTokenAbstract.UNDEFINED;
 
     }
 }

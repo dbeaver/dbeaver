@@ -16,17 +16,17 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.eclipse.jface.text.rules.EndOfLineRule;
-import org.eclipse.jface.text.rules.ICharacterScanner;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
+import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
+import org.jkiss.dbeaver.model.text.parser.rules.EndOfLineRule;
 
 public class SQLCommandRule extends EndOfLineRule {
     public SQLCommandRule(String commandPrefix, SQLCommandHandlerDescriptor controlCommand, SQLControlToken controlToken) {
         super(commandPrefix + controlCommand.getId() + ' ', controlToken);
     }
 
-    protected boolean sequenceDetected(ICharacterScanner scanner, char[] sequence, boolean eofAllowed) {
+    protected boolean sequenceDetected(TPCharacterScanner scanner, char[] sequence, boolean eofAllowed) {
         for (int i= 1; i < sequence.length; i++) {
             int c= scanner.read();
             char seqChar = sequence[i];

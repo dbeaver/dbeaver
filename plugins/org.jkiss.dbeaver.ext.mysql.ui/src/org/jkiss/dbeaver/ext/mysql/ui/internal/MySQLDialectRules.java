@@ -16,31 +16,25 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.internal;
 
-import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.rules.IRule;
-import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLFullLineRule;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLFullLineRule;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
 import java.util.List;
 
 /**
 * MySQL dialect rules
 */
-class MySQLDialectRules implements SQLRuleProvider {
+class MySQLDialectRules implements TPRuleProvider {
 
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<IRule> rules, @NotNull RulePosition position) {
+    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.CONTROL) {
-            final SQLControlToken sourceToken = new SQLControlToken(
-                    new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD),
-                    "mysql.source");
+            final SQLControlToken sourceToken = new SQLControlToken("mysql.source");
 
             SQLFullLineRule sourceRule2 = new SQLFullLineRule("SOURCE", sourceToken); //$NON-NLS-1$
             rules.add(sourceRule2);

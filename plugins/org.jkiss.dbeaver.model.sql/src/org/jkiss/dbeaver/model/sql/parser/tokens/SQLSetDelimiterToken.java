@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+package org.jkiss.dbeaver.model.sql.parser.tokens;
+
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 
 /**
- * SQLBlockHeaderToken
+ * SQLSetDelimiterToken
+ *
+ * @author Serge Rider
  */
-public class SQLBlockHeaderToken extends SQLToken {
+public class SQLSetDelimiterToken extends TPTokenDefault {
 
-    public SQLBlockHeaderToken(Object data)
-    {
-        super(T_BLOCK_HEADER, data);
+    public SQLSetDelimiterToken() {
+        super(SQLTokenType.T_SET_DELIMITER);
     }
 
 }

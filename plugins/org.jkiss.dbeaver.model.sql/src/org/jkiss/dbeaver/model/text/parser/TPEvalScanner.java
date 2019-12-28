@@ -14,21 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.parser;
+package org.jkiss.dbeaver.model.text.parser;
+
 
 /**
- * Determines whether a given character is valid as part of an SQL keyword in
- * the current context.
+ * Partition scanner
  */
-public class SQLWordDetector
-{
+public interface TPEvalScanner extends TPCharacterScanner {
 
-    public boolean isWordStart(char c) {
-        return Character.isUnicodeIdentifierStart(c);
-    }
-
-    public boolean isWordPart(char c) {
-        return Character.isUnicodeIdentifierPart(c) || c == '$';
-    }
+    boolean isEvalMode();
 
 }

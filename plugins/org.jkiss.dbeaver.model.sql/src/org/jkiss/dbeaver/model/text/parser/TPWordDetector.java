@@ -14,29 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.sql;
-
-import org.eclipse.jface.text.rules.IRule;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-
-import java.util.List;
+package org.jkiss.dbeaver.model.text.parser;
 
 /**
- * SQL parser rules provider.
- * It is an extension for SQL dialect implementors.
+ * Determines whether a given character is valid as part of an SQL keyword in
+ * the current context.
  */
-public interface SQLRuleProvider {
+public class TPWordDetector
+{
 
-    enum RulePosition {
-        PARTITION,
-        INITIAL,
-        CONTROL,
-        QUOTES,
-        KEYWORDS
+    public boolean isWordStart(char c) {
+        return Character.isUnicodeIdentifierStart(c);
     }
 
-    void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<IRule> rules, @NotNull RulePosition position);
+    public boolean isWordPart(char c) {
+        return Character.isUnicodeIdentifierPart(c) || c == '$';
+    }
 
 }

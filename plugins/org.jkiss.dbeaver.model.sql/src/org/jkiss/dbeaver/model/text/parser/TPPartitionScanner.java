@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.text.parser;
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
 
 /**
- * SQLBlockEndToken
+ * Partition scanner
  */
-public class SQLBlockEndToken extends SQLToken {
+public interface TPPartitionScanner extends TPCharacterScanner {
 
-    public SQLBlockEndToken(Object data)
-    {
-        super(T_BLOCK_END, data);
-    }
+    String getScannedPartitionString();
 
 }

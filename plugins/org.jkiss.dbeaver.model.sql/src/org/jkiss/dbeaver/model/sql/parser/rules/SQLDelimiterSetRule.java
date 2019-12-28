@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.syntax.rules;
+package org.jkiss.dbeaver.model.sql.parser.rules;
 
 import org.eclipse.jface.text.rules.ICharacterScanner;
-import org.eclipse.jface.text.rules.IRule;
-import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.Token;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLSetDelimiterToken;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLSetDelimiterToken;
+import org.jkiss.dbeaver.model.text.parser.*;
 
 /**
 * Delimiter redefine rule
 */
-public class SQLDelimiterSetRule implements IRule {
+public class SQLDelimiterSetRule implements TPRule {
 
     private final String setDelimiterWord;
     private final SQLSetDelimiterToken setDelimiterToken;
@@ -39,13 +36,13 @@ public class SQLDelimiterSetRule implements IRule {
     }
 
     @Override
-    public IToken evaluate(ICharacterScanner scanner) {
+    public TPToken evaluate(TPCharacterScanner scanner) {
         // Must be in the beginning of line
         {
             scanner.unread();
             int prevChar = scanner.read();
             if (prevChar != ICharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {
-                return Token.UNDEFINED;
+                return TPTokenAbstract.UNDEFINED;
             }
         }
 
@@ -57,7 +54,7 @@ public class SQLDelimiterSetRule implements IRule {
                 for (int k = 0; k <= i; k++) {
                     scanner.unread();
                 }
-                return Token.UNDEFINED;
+                return TPTokenAbstract.UNDEFINED;
             }
         }
         StringBuilder delimBuffer = new StringBuilder();
@@ -72,7 +69,7 @@ public class SQLDelimiterSetRule implements IRule {
                 for (int k = 0; k < setDelimiterWord.length() + 1; k++) {
                     scanner.unread();
                 }
-                return Token.UNDEFINED;
+                return TPTokenAbstract.UNDEFINED;
             }
             // Get everything till the end of line
             for (; ; ) {
@@ -86,7 +83,7 @@ public class SQLDelimiterSetRule implements IRule {
             }
             scanner.unread();
         }
-        if (scanner instanceof SQLRuleScanner && ((SQLRuleScanner) scanner).isEvalMode()) {
+        if (scanner instanceof TPEvalScanner && ((TPEvalScanner) scanner).isEvalMode()) {
             final String newDelimiter = delimLength <= 0 ?
                 delimBuffer.toString().trim() : delimBuffer.substring(0, delimLength).trim();
             delimiterRule.changeDelimiter(newDelimiter);

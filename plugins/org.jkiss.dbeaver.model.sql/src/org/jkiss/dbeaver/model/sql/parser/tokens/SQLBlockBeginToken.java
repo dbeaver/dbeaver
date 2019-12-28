@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+package org.jkiss.dbeaver.model.sql.parser.tokens;
+
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 
 /**
- * SQLBlockToggleToken
+ * SQLBlockBeginToken
  */
-public class SQLBlockToggleToken extends SQLToken {
+public class SQLBlockBeginToken extends TPTokenDefault {
 
-    public SQLBlockToggleToken(Object data)
-    {
-        super(T_BLOCK_TOGGLE, data);
+    public SQLBlockBeginToken() {
+        super(SQLTokenType.T_BLOCK_BEGIN);
     }
 
 }

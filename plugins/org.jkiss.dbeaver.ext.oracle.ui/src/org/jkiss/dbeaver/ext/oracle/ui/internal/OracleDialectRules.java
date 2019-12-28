@@ -16,46 +16,36 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.internal;
 
-import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.rules.*;
-import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.text.parser.*;
 
 import java.util.List;
 
 /**
 * Oracle dialect rules
 */
-class OracleDialectRules implements SQLRuleProvider {
+class OracleDialectRules implements TPRuleProvider {
 
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<IRule> rules, @NotNull RulePosition position) {
+    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-            rules.add(new QStringRule(position == RulePosition.PARTITION));
+            rules.add(new QStringRule());
         }
     }
 
-    private static class QStringRule implements IPredicateRule {
+    private static class QStringRule implements TPPredicateRule {
 
-        private final IToken stringToken;
+        private final TPToken stringToken;
         private char quoteStartChar = (char) -1;
 
-        public QStringRule(boolean isPartitionRule) {
-            if (isPartitionRule) {
-                stringToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
-            } else {
-                stringToken = new Token(
-                    new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_STRING), null, SWT.NORMAL));
-            }
+        QStringRule() {
+            stringToken = new TPTokenDefault(SQLTokenType.T_STRING);
         }
 
-        private IToken doEvaluate(ICharacterScanner scanner, boolean resume) {
+        private TPToken doEvaluate(TPCharacterScanner scanner, boolean resume) {
             int c = resume ? 'q' : scanner.read();
             if (c == 'Q' || c == 'q') {
                 c = resume ? '\'' : scanner.read();
@@ -82,7 +72,7 @@ class OracleDialectRules implements SQLRuleProvider {
                                 if (c == '\'') {
                                     break;
                                 }
-                            } else if (c == ICharacterScanner.EOF) {
+                            } else if (c == TPCharacterScanner.EOF) {
                                 isQuote = false;
                                 break;
                             }
@@ -106,7 +96,7 @@ class OracleDialectRules implements SQLRuleProvider {
             } else {
                 scanner.unread();
             }
-            return Token.UNDEFINED;
+            return TPTokenAbstract.UNDEFINED;
         }
 
         private static char getQuoteEndChar(char startChar) {
@@ -120,17 +110,17 @@ class OracleDialectRules implements SQLRuleProvider {
         }
 
         @Override
-        public IToken getSuccessToken() {
+        public TPToken getSuccessToken() {
             return stringToken;
         }
 
         @Override
-        public IToken evaluate(ICharacterScanner scanner) {
+        public TPToken evaluate(TPCharacterScanner scanner) {
             return doEvaluate(scanner, false);
         }
 
         @Override
-        public IToken evaluate(ICharacterScanner scanner, boolean resume) {
+        public TPToken evaluate(TPCharacterScanner scanner, boolean resume) {
             return doEvaluate(scanner, resume);
         }
     }

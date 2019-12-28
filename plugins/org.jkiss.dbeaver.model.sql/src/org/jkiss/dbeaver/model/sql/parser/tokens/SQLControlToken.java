@@ -14,18 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.text.parser;
+
+package org.jkiss.dbeaver.model.sql.parser.tokens;
+
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 
 /**
- * Token for partition scanner
+ * SQLControlToken
+ * <p>
+ * Control tokens are used for local SQL script evaluation.
  */
-public class TPTokenPartition extends TPTokenAbstract<String> {
+public class SQLControlToken extends TPTokenDefault {
 
-    /**
-     * Token for partition parser. Data is content type.
-     */
-    public TPTokenPartition(String contentType) {
-        super(T_OTHER, contentType);
+    private final String commandId;
+
+    public SQLControlToken() {
+        this(null);
     }
 
+    public SQLControlToken(String commandId) {
+        super(SQLTokenType.T_CONTROL);
+        this.commandId = commandId;
+    }
+
+    /**
+     * Command ID or null if command id is in the token itself
+     */
+    public String getCommandId() {
+        return commandId;
+    }
 }

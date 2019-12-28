@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.syntax.tokens;
+package org.jkiss.dbeaver.model.sql.parser.tokens;
+
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 
 /**
- * SQLParameterToken
- *
- * @author Serge Rider
+ * SQLBlockToggleToken
  */
-public class SQLParameterToken extends SQLToken {
+public class SQLBlockToggleToken extends TPTokenDefault {
 
-    public SQLParameterToken(Object data)
+    public SQLBlockToggleToken()
     {
-        super(T_PARAMETER, data);
+        super(SQLTokenType.T_BLOCK_TOGGLE);
     }
 
 }
