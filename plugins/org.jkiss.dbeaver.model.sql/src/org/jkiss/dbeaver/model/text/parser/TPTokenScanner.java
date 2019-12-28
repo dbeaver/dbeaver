@@ -14,30 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.ui.editors.sql.convert;
+package org.jkiss.dbeaver.model.text.parser;
 
 import org.eclipse.jface.text.IDocument;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
-
-import java.util.Map;
 
 /**
- * SQL code converter
+ * Token scanner
  */
-public interface ISQLTextConverter {
+public interface TPTokenScanner {
 
-    @NotNull
-    String convertText(
-            @NotNull SQLDialect dialect,
-            @NotNull SQLSyntaxManager syntaxManager,
-            @NotNull SQLRuleScanner ruleManager,
-            @NotNull IDocument document,
-            int startPos,
-            int length,
-            @NotNull Map<String, Object> options);
+	/**
+	 * Configures the scanner by providing access to the document range that should
+	 * be scanned.
+	 */
+	void setRange(IDocument document, int offset, int length);
 
+	/**
+	 * Returns the next token in the document.
+	 *
+	 * @return the next token in the document
+	 */
+	TPToken nextToken();
+
+	/**
+	 * Returns the offset of the last token read by this scanner.
+	 *
+	 * @return the offset of the last token read by this scanner
+	 */
+	int getTokenOffset();
+
+	/**
+	 * Returns the length of the last token read by this scanner.
+	 *
+	 * @return the length of the last token read by this scanner
+	 */
+	int getTokenLength();
 }

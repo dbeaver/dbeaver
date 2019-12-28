@@ -63,7 +63,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
      * The editor with which this configuration is associated.
      */
     private SQLEditorBase editor;
-    private SQLRuleManager ruleManager;
+    private SQLRuleScanner ruleManager;
 
     private IContentAssistProcessor completionProcessor;
     private IHyperlinkDetector hyperlinkDetector;

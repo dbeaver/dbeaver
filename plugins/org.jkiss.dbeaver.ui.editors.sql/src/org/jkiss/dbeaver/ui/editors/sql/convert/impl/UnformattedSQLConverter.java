@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.convert.ISQLTextConverter;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -43,7 +43,7 @@ public class UnformattedSQLConverter implements ISQLTextConverter {
     public String convertText(
             @NotNull SQLDialect dialect,
             @NotNull SQLSyntaxManager syntaxManager,
-            @NotNull SQLRuleManager ruleManager,
+            @NotNull SQLRuleScanner ruleManager,
             @NotNull IDocument document,
             int startPos,
             int length,
