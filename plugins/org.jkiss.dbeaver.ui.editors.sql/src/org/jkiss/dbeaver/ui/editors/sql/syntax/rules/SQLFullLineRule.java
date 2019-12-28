@@ -16,9 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax.rules;
 
-import org.eclipse.jface.text.rules.*;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLSetDelimiterToken;
+import org.eclipse.jface.text.rules.EndOfLineRule;
+import org.eclipse.jface.text.rules.ICharacterScanner;
+import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.Token;
 
 /**
 * Rule which starts in the beginning of line

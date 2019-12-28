@@ -20,11 +20,11 @@ import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLSetDelimiterToken;
 
 /**
-* Delimiter redefien rule
+* Delimiter redefine rule
 */
 public class SQLDelimiterSetRule implements IRule {
 
@@ -86,7 +86,7 @@ public class SQLDelimiterSetRule implements IRule {
             }
             scanner.unread();
         }
-        if (scanner instanceof SQLRuleManager && ((SQLRuleManager) scanner).isEvalMode()) {
+        if (scanner instanceof SQLRuleScanner && ((SQLRuleScanner) scanner).isEvalMode()) {
             final String newDelimiter = delimLength <= 0 ?
                 delimBuffer.toString().trim() : delimBuffer.substring(0, delimLength).trim();
             delimiterRule.changeDelimiter(newDelimiter);

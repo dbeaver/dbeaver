@@ -66,7 +66,7 @@ import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLToken;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
@@ -107,7 +107,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @NotNull
     private final SQLSyntaxManager syntaxManager;
     @NotNull
-    private final SQLRuleManager ruleManager;
+    private final SQLRuleScanner ruleManager;
     private ProjectionSupport projectionSupport;
 
     private ProjectionAnnotationModel annotationModel;
@@ -132,7 +132,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     public SQLEditorBase() {
         super();
         syntaxManager = new SQLSyntaxManager();
-        ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager = new SQLRuleScanner(syntaxManager);
         themeListener = new IPropertyChangeListener() {
             long lastUpdateTime = 0;
 
@@ -267,7 +267,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @NotNull
-    public SQLRuleManager getRuleManager() {
+    public SQLRuleScanner getRuleManager() {
         return ruleManager;
     }
 

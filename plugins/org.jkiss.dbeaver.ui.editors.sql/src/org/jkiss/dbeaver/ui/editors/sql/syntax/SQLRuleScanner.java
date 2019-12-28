@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.parser.SQLWordDetector;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
@@ -57,7 +56,7 @@ import java.util.*;
  * Contains information about some concrete datasource underlying database syntax.
  * Support runtime change of datasource (reloads syntax information)
  */
-public class SQLRuleManager extends RuleBasedScanner implements TPCharacterScanner {
+public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScanner {
 
     @NotNull
     private final IThemeManager themeManager;
@@ -70,7 +69,7 @@ public class SQLRuleManager extends RuleBasedScanner implements TPCharacterScann
 
     private boolean evalMode;
 
-    public SQLRuleManager(@NotNull SQLSyntaxManager syntaxManager) {
+    public SQLRuleScanner(@NotNull SQLSyntaxManager syntaxManager) {
         this.syntaxManager = syntaxManager;
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
     }
@@ -315,51 +314,6 @@ public class SQLRuleManager extends RuleBasedScanner implements TPCharacterScann
             color = Display.getDefault().getSystemColor(colorDefault);
         }
         return color;
-    }
-
-    private static IWordDetector getWordOrSymbolDetector(String word) {
-        if (Character.isLetterOrDigit(word.charAt(0))) {
-            return new WordDetectorAdapter(new SQLWordDetector());
-        } else {
-            // Default delim rule
-            return new SymbolSequenceDetector(word);
-        }
-    }
-
-    private static class WordDetectorAdapter implements IWordDetector {
-        private final SQLWordDetector wordDetector;
-
-        private WordDetectorAdapter(SQLWordDetector wordDetector) {
-            this.wordDetector = wordDetector;
-        }
-
-        @Override
-        public boolean isWordStart(char c) {
-            return wordDetector.isWordStart(c);
-        }
-
-        @Override
-        public boolean isWordPart(char c) {
-            return wordDetector.isWordPart(c);
-        }
-    }
-
-    private static class SymbolSequenceDetector implements IWordDetector {
-        private final String delimiter;
-
-        public SymbolSequenceDetector(String delimiter) {
-            this.delimiter = delimiter;
-        }
-
-        @Override
-        public boolean isWordStart(char c) {
-            return delimiter.charAt(0) == c;
-        }
-
-        @Override
-        public boolean isWordPart(char c) {
-            return delimiter.indexOf(c) != -1;
-        }
     }
 
 }
