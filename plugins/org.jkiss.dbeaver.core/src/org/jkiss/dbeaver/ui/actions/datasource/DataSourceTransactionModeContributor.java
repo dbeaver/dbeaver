@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class DataSourceTransactionModeContributor extends DataSourceMenuContributor {
@@ -133,7 +135,13 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
                         monitor.beginTask("Change connection auto-commit to " + autoCommit, 1);
                         try {
                             monitor.subTask("Change context '" + executionContext.getContextName() + "' auto-commit state");
-                            txnManager.setAutoCommit(monitor, autoCommit);
+                            DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
+                                try {
+                                    txnManager.setAutoCommit(monitor, autoCommit);
+                                } catch (DBCException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                            });
                         } catch (Exception e) {
                             return GeneralUtils.makeExceptionStatus(e);
                         } finally {
@@ -208,7 +216,13 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
                         monitor.beginTask("Change transaction isolation level to " + level.getTitle(), 1);
                         try {
                             monitor.subTask("Change context '" + executionContext.getContextName() + "' transaction isolation level");
-                            txnManager.setTransactionIsolation(monitor, level);
+                            DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
+                                try {
+                                    txnManager.setTransactionIsolation(monitor, level);
+                                } catch (DBCException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                            });
                             executionContext.getDataSource().getContainer().setDefaultTransactionsIsolation(level);
                             executionContext.getDataSource().getContainer().persistConfiguration();
                         } catch (Exception e) {
