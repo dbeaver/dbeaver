@@ -384,7 +384,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    protected String[] getNonTransactionKeywords() {
+    public String[] getNonTransactionKeywords() {
         return ORACLE_NON_TRANSACTIONAL_KEYWORDS;
     }
 

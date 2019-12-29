@@ -254,8 +254,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     public SQLDialect getSQLDialect() {
         DBPDataSource dataSource = getDataSource();
         // Refresh syntax
-        if (dataSource instanceof SQLDataSource) {
-            return ((SQLDataSource) dataSource).getSQLDialect();
+        if (dataSource != null) {
+            return dataSource.getSQLDialect();
         }
         return BasicSQLDialect.INSTANCE;
     }

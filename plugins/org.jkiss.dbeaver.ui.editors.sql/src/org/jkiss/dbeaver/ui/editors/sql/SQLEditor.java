@@ -1699,11 +1699,11 @@ public class SQLEditor extends SQLEditorBase implements
         try {
             if (transformer != null) {
                 DBPDataSource dataSource = getDataSource();
-                if (dataSource instanceof SQLDataSource) {
+                if (dataSource != null) {
                     List<SQLScriptElement> xQueries = new ArrayList<>(elements.size());
                     for (SQLScriptElement element : elements) {
                         if (element instanceof SQLQuery) {
-                            SQLQuery query = transformer.transformQuery((SQLDataSource) dataSource, getSyntaxManager(), (SQLQuery) element);
+                            SQLQuery query = transformer.transformQuery(dataSource, getSyntaxManager(), (SQLQuery) element);
                             if (!CommonUtils.isEmpty(query.getParameters())) {
                                 query.setParameters(parseParameters(query.getText()));
                             }
@@ -2885,14 +2885,14 @@ public class SQLEditor extends SQLEditorBase implements
                 return dataContainer.countData(source, session, dataFilter, DBSDataContainer.FLAG_NONE);
             }
             DBPDataSource dataSource = getDataSource();
-            if (!(dataSource instanceof SQLDataSource)) {
+            if (dataSource == null) {
                 throw new DBCException("Query transform is not supported by datasource");
             }
             if (!(query instanceof SQLQuery)) {
                 throw new DBCException("Can't count rows for control command");
             }
             try {
-                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery((SQLDataSource) dataSource, getSyntaxManager(), (SQLQuery) query);
+                SQLQuery countQuery = new SQLQueryTransformerCount().transformQuery(dataSource, getSyntaxManager(), (SQLQuery) query);
                 if (!CommonUtils.isEmpty(countQuery.getParameters())) {
                     countQuery.setParameters(parseParameters(countQuery.getText()));
                 }

@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -109,8 +108,8 @@ public class EditConstraintPage extends AttributesSelectorPage {
     }
 
     private void addTypePrefix(DBSEntityConstraintType type, String prefix) {
-        if (entity.getDataSource() instanceof SQLDataSource) {
-            prefix = ((SQLDataSource) entity.getDataSource()).getSQLDialect().storesUnquotedCase().transform(prefix);
+        if (entity.getDataSource() != null) {
+            prefix = entity.getDataSource().getSQLDialect().storesUnquotedCase().transform(prefix);
         }
         TYPE_PREFIX.put(type, prefix);
     }

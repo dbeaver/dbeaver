@@ -28,7 +28,9 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -73,6 +75,11 @@ public class StreamDataSource implements DBPDataSource, DBSInstance, DBDValueHan
     @Override
     public Object getDataSourceFeature(String featureId) {
         return null;
+    }
+
+    @Override
+    public SQLDialect getSQLDialect() {
+        return BasicSQLDialect.INSTANCE;
     }
 
     @Override

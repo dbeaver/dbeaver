@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLParameterToken;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
@@ -53,12 +52,12 @@ public class SQLParameterRule implements TPRule {
             return TPTokenAbstract.UNDEFINED;
         }
         int c = scanner.read();
-        if (c != ICharacterScanner.EOF && (c == anonymousParameterMark || c == namedParameterPrefix.charAt(0))) {
+        if (c != TPCharacterScanner.EOF && (c == anonymousParameterMark || c == namedParameterPrefix.charAt(0))) {
             buffer.setLength(0);
             do {
                 buffer.append((char) c);
                 c = scanner.read();
-            } while (c != ICharacterScanner.EOF && Character.isJavaIdentifierPart(c));
+            } while (c != TPCharacterScanner.EOF && Character.isJavaIdentifierPart(c));
             scanner.unread();
 
             // Check for parameters

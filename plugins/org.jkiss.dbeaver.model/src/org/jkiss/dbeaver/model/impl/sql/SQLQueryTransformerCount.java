@@ -25,7 +25,11 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -43,7 +47,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     private static final String COUNT_WRAP_POSTFIX = "\n) dbvrcnt";
 
     @Override
-    public SQLQuery transformQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
+    public SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
         try {
             if (!dataSource.getSQLDialect().supportsSubqueries()) {
                 return tryInjectCount(dataSource, query);
@@ -55,7 +59,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         return wrapSourceQuery(dataSource, syntaxManager, query);
     }
 
-    private SQLQuery wrapSourceQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
+    private SQLQuery wrapSourceQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
         String queryText = null;
         try {
             // Remove orderings (#4652)
@@ -81,7 +85,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         return new SQLQuery(dataSource, countQuery, query, false);
     }
 
-    private SQLQuery tryInjectCount(SQLDataSource dataSource, SQLQuery query) throws DBException {
+    private SQLQuery tryInjectCount(DBPDataSource dataSource, SQLQuery query) throws DBException {
         try {
             Statement statement = CCJSqlParserUtil.parse(query.getText());
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {

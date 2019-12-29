@@ -472,12 +472,12 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @NotNull
-    protected String[] getTransactionKeywords() {
+    public String[] getTransactionKeywords() {
         return isStandardSQL() ? TRANSACTIONAL_KEYWORDS : new String[0];
     }
 
     @NotNull
-    protected String[] getNonTransactionKeywords() {
+    public String[] getNonTransactionKeywords() {
         return isStandardSQL() ? NON_TRANSACTIONAL_KEYWORDS : CORE_NON_TRANSACTIONAL_KEYWORDS;
     }
 

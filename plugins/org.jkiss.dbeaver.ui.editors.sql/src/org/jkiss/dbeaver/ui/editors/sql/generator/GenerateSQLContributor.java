@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
@@ -911,9 +910,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
                 Collection<? extends DBSProcedureParameter> parameters = proc.getParameters(monitor);
                 DBPDataSource dataSource = proc.getDataSource();
-                if (dataSource instanceof SQLDataSource) {
-                    SQLDataSource sqlDataSource = (SQLDataSource) dataSource;
-                    SQLDialect sqlDialect = sqlDataSource.getSQLDialect();
+                {
+                    SQLDialect sqlDialect = dataSource.getSQLDialect();
                     sqlDialect.generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
                 }
             }

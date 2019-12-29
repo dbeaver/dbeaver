@@ -20,17 +20,17 @@
  */
 package org.jkiss.dbeaver.ext.h2gis.model;
 
-import java.sql.SQLException;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.h2.model.H2DataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.SQLException;
 
 /**
  * Used to create an H2GIS datasource that initializes the H2GIS spatial
@@ -47,7 +47,7 @@ public class H2GISDataSource extends H2DataSource {
     }
 
     @Override
-    public void initialize(DBRProgressMonitor monitor) throws DBException {
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load H2GIS function")) {
             try (JDBCStatement dbStat = session.createStatement()) {

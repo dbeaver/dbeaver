@@ -794,7 +794,7 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    protected String[] getNonTransactionKeywords() {
+    public String[] getNonTransactionKeywords() {
         return POSTGRE_NON_TRANSACTIONAL_KEYWORDS;
     }
 }

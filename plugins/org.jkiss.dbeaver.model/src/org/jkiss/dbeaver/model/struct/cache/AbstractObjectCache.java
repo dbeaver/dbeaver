@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.BeanUtils;
 
@@ -240,8 +239,8 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     protected void detectCaseSensitivity(DBSObject object) {
         if (this.caseSensitive) {
             DBPDataSource dataSource = object.getDataSource();
-            if (dataSource instanceof SQLDataSource &&
-                ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED)
+            if (dataSource != null &&
+                dataSource.getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED)
             {
                 this.caseSensitive = false;
             }
