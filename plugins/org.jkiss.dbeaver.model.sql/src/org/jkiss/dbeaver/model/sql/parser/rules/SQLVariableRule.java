@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
@@ -56,7 +55,7 @@ public class SQLVariableRule implements TPRule {
                 int varLength = 0;
                 for (;;) {
                     c = scanner.read();
-                    if (c == '}' || Character.isWhitespace(c) || c == ICharacterScanner.EOF) {
+                    if (c == '}' || Character.isWhitespace(c) || c == TPCharacterScanner.EOF) {
                         break;
                     }
                     varLength++;

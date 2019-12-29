@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -45,7 +44,7 @@ import java.util.Collections;
 /**
  * WMIDataSource
  */
-public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionContext, SQLDataSource, IAdaptable
+public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionContext, IAdaptable
 {
     private final DBPDataSourceContainer container;
     private WMINamespace rootNamespace;

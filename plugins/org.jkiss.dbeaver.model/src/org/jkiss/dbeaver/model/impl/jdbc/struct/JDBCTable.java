@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
@@ -141,8 +140,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         // (e.g. structured attributes in Oracle requires table alias)
         String tableAlias = null;
         if ((dataFilter != null && dataFilter.hasConditions()) || rowIdAttribute != null) {
-            if (dataSource instanceof SQLDataSource) {
-                if (((SQLDataSource) dataSource).getSQLDialect().supportsAliasInSelect()) {
+            {
+                if (dataSource.getSQLDialect().supportsAliasInSelect()) {
                     tableAlias = DEFAULT_TABLE_ALIAS;
                 }
             }
@@ -406,7 +405,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             @Override
             protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
                 String tableAlias = null;
-                SQLDialect dialect = ((SQLDataSource) session.getDataSource()).getSQLDialect();
+                SQLDialect dialect = session.getDataSource().getSQLDialect();
                 if (dialect.supportsAliasInUpdate()) {
                     tableAlias = DEFAULT_TABLE_ALIAS;
                 }
@@ -483,7 +482,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             @Override
             protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
                 String tableAlias = null;
-                SQLDialect dialect = ((SQLDataSource) session.getDataSource()).getSQLDialect();
+                SQLDialect dialect = session.getDataSource().getSQLDialect();
                 if (dialect.supportsAliasInUpdate()) {
                     tableAlias = DEFAULT_TABLE_ALIAS;
                 }
@@ -866,8 +865,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     // Utils
 
     private boolean useUpsert(@NotNull DBCSession session) {
-        SQLDialect dialect = session.getDataSource() instanceof SQLDataSource ?
-            ((SQLDataSource) session.getDataSource()).getSQLDialect() : null;
+        SQLDialect dialect = session.getDataSource().getSQLDialect();
         return dialect instanceof JDBCSQLDialect && ((JDBCSQLDialect) dialect).supportsUpsertStatement();
     }
 

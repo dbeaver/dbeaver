@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLSetDelimiterToken;
 import org.jkiss.dbeaver.model.text.parser.*;
 
@@ -41,7 +40,7 @@ public class SQLDelimiterSetRule implements TPRule {
         {
             scanner.unread();
             int prevChar = scanner.read();
-            if (prevChar != ICharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {
+            if (prevChar != TPCharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {
                 return TPTokenAbstract.UNDEFINED;
             }
         }
@@ -61,7 +60,7 @@ public class SQLDelimiterSetRule implements TPRule {
         int delimLength = 0;
 
         int next = scanner.read();
-        if (next == ICharacterScanner.EOF || next == '\n' || next == '\r') {
+        if (next == TPCharacterScanner.EOF || next == '\n' || next == '\r') {
             // Empty delimiter
             scanner.unread();
         } else {
@@ -74,7 +73,7 @@ public class SQLDelimiterSetRule implements TPRule {
             // Get everything till the end of line
             for (; ; ) {
                 next = scanner.read();
-                if (next == ICharacterScanner.EOF || next == '\n' || next == '\r') {
+                if (next == TPCharacterScanner.EOF || next == '\n' || next == '\r') {
                     break;
                 } else if (delimLength == 0 && delimBuffer.length() > 0 && Character.isWhitespace(next)) {
                     delimLength = delimBuffer.length();

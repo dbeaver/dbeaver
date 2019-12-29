@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -635,12 +634,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                             break;
                         }
                         case NATIVE: {
-                            if (dataSource instanceof SQLDataSource) {
+                            if (dataSource != null) {
                                 ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
                                 IOUtils.copyStream(stream, buffer);
 
                                 final byte[] bytes = buffer.toByteArray();
-                                final String binaryString = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
+                                final String binaryString = dataSource.getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
                                 writer.write(binaryString);
                                 break;
                             }

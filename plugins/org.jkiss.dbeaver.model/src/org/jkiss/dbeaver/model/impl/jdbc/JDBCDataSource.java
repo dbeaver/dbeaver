@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -65,7 +64,6 @@ import java.util.Properties;
 public abstract class JDBCDataSource
     implements
         DBPDataSource,
-        SQLDataSource,
         DBPDataTypeProvider,
         DBPErrorAssistant,
         DBPRefreshableObject,

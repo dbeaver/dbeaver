@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -251,8 +250,8 @@ public final class DBValueFormatting {
 
     public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data, @NotNull DBDDisplayFormat format, boolean forceLimit) {
         DBDBinaryFormatter formatter;
-        if (format == DBDDisplayFormat.NATIVE && dataSource instanceof SQLDataSource) {
-            formatter = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter();
+        if (format == DBDDisplayFormat.NATIVE) {
+            formatter = dataSource.getSQLDialect().getNativeBinaryFormatter();
         } else {
             formatter = getBinaryPresentation(dataSource);
         }

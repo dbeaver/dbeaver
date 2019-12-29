@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
@@ -53,7 +52,7 @@ public class SQLWordRule implements TPRule {
     @Override
     public TPToken evaluate(TPCharacterScanner scanner) {
         int c = scanner.read();
-        if (c != ICharacterScanner.EOF && Character.isUnicodeIdentifierStart(c)) {
+        if (c != TPCharacterScanner.EOF && Character.isUnicodeIdentifierStart(c)) {
             fBuffer.setLength(0);
             delimiters = delimRule.getDelimiters();
             do {
@@ -93,7 +92,7 @@ public class SQLWordRule implements TPRule {
                 for (int i = 1; i < wordDelimiter.length; i++) {
                     int c2 = scanner.read();
                     charsRead++;
-                    if (c2 == ICharacterScanner.EOF) {
+                    if (c2 == TPCharacterScanner.EOF) {
                         break;
                     }
                     if (c2 != wordDelimiter[i]) {

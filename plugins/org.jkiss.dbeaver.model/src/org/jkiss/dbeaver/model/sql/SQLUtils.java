@@ -213,19 +213,13 @@ public final class SQLUtils {
 
     public static String escapeString(DBPDataSource dataSource, String string)
     {
-        @NotNull
-        SQLDialect dialect = dataSource instanceof SQLDataSource ?
-            ((SQLDataSource) dataSource).getSQLDialect() : BasicSQLDialect.INSTANCE;
-        return dialect.escapeString(string);
+        return dataSource.getSQLDialect().escapeString(string);
     }
 
     public static String unQuoteString(DBPDataSource dataSource, String string)
     {
         if (string.length() > 1 && string.charAt(0) == '\'' && string.charAt(string.length() - 1) == '\'') {
-            @NotNull
-            SQLDialect dialect = dataSource instanceof SQLDataSource ?
-                    ((SQLDataSource) dataSource).getSQLDialect() : BasicSQLDialect.INSTANCE;
-            return dialect.unEscapeString(string.substring(1, string.length() - 1));
+            return dataSource.getSQLDialect().unEscapeString(string.substring(1, string.length() - 1));
         }
         return string;
     }
@@ -417,10 +411,7 @@ public final class SQLUtils {
 
     @NotNull
     public static SQLDialect getDialectFromDataSource(DBPDataSource dataSource) {
-        if (dataSource instanceof SQLDataSource) {
-            return ((SQLDataSource) dataSource).getSQLDialect();
-        }
-        return BasicSQLDialect.INSTANCE;
+        return dataSource.getSQLDialect();
     }
 
     public static void appendConditionString(
@@ -615,18 +606,16 @@ public final class SQLUtils {
 
         String strValue;
 
-        if (value instanceof DBDContent && dataSource instanceof SQLDataSource) {
-            strValue = convertStreamToSQL(attribute, (DBDContent) value, valueHandler, (SQLDataSource) dataSource);
+        if (value instanceof DBDContent) {
+            strValue = convertStreamToSQL(attribute, (DBDContent) value, valueHandler, dataSource);
         } else {
             strValue = valueHandler.getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE);
         }
         if (value instanceof Number) {
             return strValue;
         }
-        SQLDialect sqlDialect = null;
-        if (dataSource instanceof SQLDataSource) {
-            sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
-        }
+        SQLDialect sqlDialect = dataSource.getSQLDialect();
+
         switch (attribute.getDataKind()) {
             case BOOLEAN:
             case NUMERIC:
@@ -653,7 +642,7 @@ public final class SQLUtils {
         }
     }
 
-    public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, SQLDataSource dataSource) {
+    public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, DBPDataSource dataSource) {
         try {
             DBRProgressMonitor monitor = new VoidProgressMonitor();
             if (ContentUtils.isTextContent(content)) {
@@ -674,11 +663,10 @@ public final class SQLUtils {
         if (column == null) {
             return null;
         }
-        if (!(dataSource instanceof SQLDataSource)) {
+        if (dataSource == null) {
             return null;
         }
-        SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
-        return dialect.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
+        return dataSource.getSQLDialect().getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
     public static String getScriptDescripion(@NotNull String sql) {
@@ -765,8 +753,8 @@ public final class SQLUtils {
     public static String generateCommentLine(DBPDataSource dataSource, String comment)
     {
         String slComment = SQLConstants.ML_COMMENT_END;
-        if (dataSource instanceof SQLDataSource) {
-            String[] slComments = ((SQLDataSource) dataSource).getSQLDialect().getSingleLineComments();
+        if (dataSource != null) {
+            String[] slComments = dataSource.getSQLDialect().getSingleLineComments();
             if (!ArrayUtils.isEmpty(slComments)) {
                 slComment = slComments[0];
             }

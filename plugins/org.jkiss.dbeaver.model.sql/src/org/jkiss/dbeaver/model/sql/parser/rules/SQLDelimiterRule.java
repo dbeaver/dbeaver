@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
@@ -57,7 +56,7 @@ public class SQLDelimiterRule implements TPRule {
         for (int i = 0; ; i++) {
             int c = scanner.read();
             boolean matches = false;
-            if (c != ICharacterScanner.EOF) {
+            if (c != TPCharacterScanner.EOF) {
                 c = Character.toUpperCase(c);
                 for (int k = 0; k < delimiters.length; k++) {
                     if (i < delimiters[k].length && delimiters[k][i] == c) {

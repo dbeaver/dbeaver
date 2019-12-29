@@ -575,7 +575,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         final DBPDataSource dataSource = request.getContext().getDataSource();
-        if (!(dataSource instanceof SQLDataSource)) {
+        if (dataSource == null) {
             return null;
         }
         if (request.getActiveQuery() == null) {

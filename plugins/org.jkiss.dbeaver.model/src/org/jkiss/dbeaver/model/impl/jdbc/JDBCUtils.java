@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -489,8 +488,7 @@ public class JDBCUtils {
         }
 
         // Run ping query
-        final String testSQL = (dataSource instanceof SQLDataSource) ?
-            ((SQLDataSource) dataSource).getSQLDialect().getTestSQL() : null;
+        final String testSQL = dataSource.getSQLDialect().getTestSQL();
         int invalidateTimeout = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
 
         // Invalidate in non-blocking task.

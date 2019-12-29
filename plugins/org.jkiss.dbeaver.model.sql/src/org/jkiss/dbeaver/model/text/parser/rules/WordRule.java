@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.text.parser.rules;
 
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.*;
 
 import java.util.HashMap;
@@ -67,14 +66,14 @@ public class WordRule implements TPRule {
 	@Override
 	public TPToken evaluate(TPCharacterScanner scanner) {
 		int c= scanner.read();
-		if (c != ICharacterScanner.EOF && fDetector.isWordStart((char) c)) {
+		if (c != TPCharacterScanner.EOF && fDetector.isWordStart((char) c)) {
 			if (fColumn == UNDEFINED || (fColumn == scanner.getColumn() - 1)) {
 
 				fBuffer.setLength(0);
 				do {
 					fBuffer.append((char) c);
 					c= scanner.read();
-				} while (c != ICharacterScanner.EOF && fDetector.isWordPart((char) c));
+				} while (c != TPCharacterScanner.EOF && fDetector.isWordPart((char) c));
 				scanner.unread();
 
 				String buffer= fBuffer.toString();

@@ -34,7 +34,10 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryType;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -73,8 +76,8 @@ public final class DBUtils {
 
     public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
-        if (dataSource instanceof SQLDataSource) {
-            final String[][] quoteStrings = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteStrings();
+        {
+            final String[][] quoteStrings = dataSource.getSQLDialect().getIdentifierQuoteStrings();
             if (ArrayUtils.isEmpty(quoteStrings)) {
                 return false;
             }
@@ -90,10 +93,7 @@ public final class DBUtils {
     @NotNull
     public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
-        if (dataSource instanceof SQLDataSource) {
-            str = getUnQuotedIdentifier(str, ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteStrings());
-        }
-        return str;
+        return getUnQuotedIdentifier(str, dataSource.getSQLDialect().getIdentifierQuoteStrings());
     }
 
     @NotNull
@@ -127,15 +127,11 @@ public final class DBUtils {
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
-        if (dataSource instanceof SQLDataSource) {
-            return getQuotedIdentifier((SQLDataSource)dataSource, str, true, false);
-        } else {
-            return str;
-        }
+        return getQuotedIdentifier(dataSource, str, true, false);
     }
 
     @NotNull
-    public static String getQuotedIdentifier(@NotNull SQLDataSource dataSource, @NotNull String str, boolean caseSensitiveNames, boolean quoteAlways)
+    public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str, boolean caseSensitiveNames, boolean quoteAlways)
     {
         if (isQuotedIdentifier(dataSource, str)) {
             // Already quoted
@@ -201,14 +197,14 @@ public final class DBUtils {
     public static String getFullQualifiedName(@Nullable DBPDataSource dataSource, @NotNull DBPNamedObject ... path)
     {
         StringBuilder name = new StringBuilder(20 * path.length);
-        if (!(dataSource instanceof SQLDataSource)) {
+        if (dataSource  == null) {
             // It is not SQL identifier, let's just make it simple then
             for (DBPNamedObject namePart : path) {
                 if (name.length() > 0) { name.append('.'); }
                 name.append(namePart.getName());
             }
         } else {
-            final SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+            final SQLDialect sqlDialect = dataSource.getSQLDialect();
 
             DBPNamedObject parent = null;
             for (DBPNamedObject namePart : path) {

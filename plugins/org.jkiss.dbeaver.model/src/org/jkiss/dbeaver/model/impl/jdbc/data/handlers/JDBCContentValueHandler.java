@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -30,8 +29,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
@@ -40,7 +39,6 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.sql.*;
-import java.util.Locale;
 
 /**
  * JDBC Content value handler.
@@ -260,15 +258,13 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
             if (ContentUtils.isTextContent(object)) {
                 writer.write("'");
                 String strValue = ContentUtils.getContentStringValue(monitor, object);
-                if (dataSource instanceof SQLDataSource) {
-                    strValue = ((SQLDataSource) dataSource).getSQLDialect().escapeString(strValue);
-                }
+                strValue = dataSource.getSQLDialect().escapeString(strValue);
                 writer.write(strValue);
                 writer.write("'");
             } else {
 
-                if (dataSource instanceof SQLDataSource) {
-                    DBDBinaryFormatter binaryFormatter = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter();
+                {
+                    DBDBinaryFormatter binaryFormatter = dataSource.getSQLDialect().getNativeBinaryFormatter();
                     ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
                     try (InputStream contentStream = cs.getContentStream()) {
                         IOUtils.copyStream(contentStream, buffer);
@@ -276,9 +272,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                     final byte[] bytes = buffer.toByteArray();
                     final String binaryString = binaryFormatter.toString(bytes, 0, bytes.length);
                     writer.write(binaryString);
-                } else {
-                    // Binary data not supported
-                    writer.write("NULL");
                 }
             }
         } else {
