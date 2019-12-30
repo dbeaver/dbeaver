@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.sql;
 
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLBlockToggleToken;
@@ -79,7 +78,7 @@ class PostgreDollarQuoteRule implements TPPredicateRule {
                         for (;;) {
                             c = scanner.read();
                             totalRead++;
-                            if (c == ICharacterScanner.EOF) {
+                            if (c == TPCharacterScanner.EOF) {
                                 break;
                             }
                             if (c == '$') {
