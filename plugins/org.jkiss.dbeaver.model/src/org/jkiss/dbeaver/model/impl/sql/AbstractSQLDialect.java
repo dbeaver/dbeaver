@@ -426,27 +426,54 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean isTransactionModifyingQuery(String queryString) {
-        queryString = SQLUtils.stripComments(this, queryString.toUpperCase(Locale.ENGLISH)).trim();
+        queryString = SQLUtils.stripComments(this, queryString);
         if (queryString.isEmpty()) {
             // Empty query - must be some metadata reading or something
             // anyhow it shouldn't be transactional
             return false;
         }
-        for (String keyword : getDDLKeywords()) {
-            if (queryString.startsWith(keyword)) {
-                return !ArrayUtils.contains(getNonTransactionKeywords(), keyword);
+        String firstKeyword = SQLUtils.getFirstKeyword(this, queryString);
+        if (firstKeyword.isEmpty()) {
+            return false;
+        }
+        return isTransactionModifyingKeyword(firstKeyword);
+    }
+
+    protected boolean isTransactionModifyingKeyword(String firstKeyword) {
+        if (getKeywordType(firstKeyword) != DBPKeywordType.KEYWORD) {
+            return false;
+        }
+        if (containsKeyword(getDDLKeywords(), firstKeyword) ||
+            containsKeyword(getDMLKeywords(), firstKeyword) ||
+            containsKeyword(getExecuteKeywords(), firstKeyword) ||
+            containsKeyword(getBlockHeaderStrings(), firstKeyword))
+        {
+            return true;
+        }
+        String[][] blockBoundStrings = getBlockBoundStrings();
+        if (blockBoundStrings != null) {
+            for (String[] bb : blockBoundStrings) {
+                if (bb.length > 0 && firstKeyword.equals(bb[0])) {
+                    return true;
+                }
             }
         }
-        for (String keyword : getTransactionKeywords()) {
-            if (queryString.startsWith(keyword)) {
-                return true;
-            }
+
+        return false;
+    }
+
+    private boolean containsKeyword(String[] keywords, String keyword) {
+        if (keywords == null) {
+            return false;
+        }
+        for (int i = 0; i < keywords.length; i++) {
+            if (keyword.equals(keywords[i])) return true;
         }
         return false;
     }
 
     @NotNull
-    public String[] getTransactionKeywords() {
+    public String[] getDMLKeywords() {
         return new String[0];
     }
 

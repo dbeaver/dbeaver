@@ -279,13 +279,18 @@ public class DBExecUtils {
     }
 
     public static void checkSmartAutoCommit(DBCSession session, String queryText) {
-        SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(session.getDataSource());
-        if (!sqlDialect.isTransactionModifyingQuery(queryText)) {
-            return;
-        }
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
         if (txnManager != null) {
             try {
+                if (!txnManager.isAutoCommit()) {
+                    return;
+                }
+
+                SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(session.getDataSource());
+                if (!sqlDialect.isTransactionModifyingQuery(queryText)) {
+                    return;
+                }
+
                 if (txnManager.isAutoCommit()) {
                     txnManager.setAutoCommit(session.getProgressMonitor(), false);
                 }

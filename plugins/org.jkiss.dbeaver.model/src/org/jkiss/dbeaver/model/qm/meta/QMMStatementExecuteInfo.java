@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.sql.SQLException;
@@ -54,7 +55,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
         }
         final SQLDialect sqlDialect = statement.getSession().getSQLDialect();
         if (sqlDialect != null && queryString != null) {
-            this.transactional = sqlDialect.isTransactionModifyingQuery(queryString);
+            this.transactional = statement.getPurpose() != DBCExecutionPurpose.META && sqlDialect.isTransactionModifyingQuery(queryString);
         } else {
             this.transactional = false;
         }
