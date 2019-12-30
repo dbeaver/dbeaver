@@ -447,4 +447,9 @@
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="sqlserver" parent="basic" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialect" label="SQL Server" description="SQL Server SQL dialect." icon="icons/mssql_icon.png">
+        </dialect>
+    </extension>
+
 </plugin>
