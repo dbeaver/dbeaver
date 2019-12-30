@@ -13,7 +13,7 @@
                 parent="generic"
                 label="H2GIS"
                 icon="icons/h2gis_icon.png"
-                dialect="h2gis">
+                dialect="h2">
             <drivers managable="true">
 
                 <driver
@@ -63,10 +63,6 @@
         </datasource>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="h2gis" class="org.jkiss.dbeaver.ext.h2gis.model.H2GISMetaModel" driverClass="org.h2.Driver"/>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
                 class="org.jkiss.dbeaver.ext.h2gis.data.H2GISValueHandlerProvider"
@@ -79,11 +75,6 @@
             <type name="GEOMETRY"/>
 
         </provider>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="h2gis" parent="generic" class="org.jkiss.dbeaver.ext.h2gis.model.H2GISSQLDialect" label="H2 GIS" description="H2 GIS SQL dialect." icon="icons/h2gis_icon.png">
-        </dialect>
     </extension>
 
 </plugin>

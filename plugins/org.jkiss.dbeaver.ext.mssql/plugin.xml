@@ -33,7 +33,8 @@
             description="%datasource.mssql.description"
             id="sqlserver"
             label="MS SQL Server"
-            icon="icons/mssql_icon.png">
+            icon="icons/mssql_icon.png"
+            dialect="sqlserver">
 
             <tree path="sqlserver" label="SQL Server data source">
                 <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
@@ -201,7 +202,8 @@
                 id="mssql"
                 parent="generic"
                 label="MS SQL Server (Generic)"
-                icon="icons/mssql_icon.png">
+                icon="icons/mssql_icon.png"
+                dialect="sqlserver">
             <drivers managable="true">
                 <!-- Obsolete -->
                 <driver

@@ -28,14 +28,12 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -51,16 +49,19 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
     private static final Log log = Log.getLog(PrefPageSQLDialects.class);
     private IAdaptable element;
 
-    private SQLDialectDescriptor curDialect;
+    private SQLDialectMetadata curDialect;
     private Text reservedWordsText;
     private Text dataTypesText;
     private Text functionNamesText;
     private Text transactionKeywordsText;
     private Text ddlKeywordsText;
+    private Text dmlKeywordsText;
+    private Text executeKeywordsText;
     private Text blockStatementsText;
     private Text statementDelimiterText;
     private Text dualTableNameText;
     private Text testQueryText;
+    private Text dialectText;
 
     public PrefPageSQLDialects() {
         super();
@@ -78,8 +79,10 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             dialectsGroup.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
             UIUtils.createControlLabel(dialectsGroup, "Dialects", 2);
 
-            Tree dialectTable = new Tree(dialectsGroup, SWT.BORDER | SWT.SINGLE);
-            dialectTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+            Tree dialectTable = new Tree(dialectsGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 200;
+            dialectTable.setLayoutData(gd);
 
             List<SQLDialectDescriptor> dialects = SQLDialectRegistry.getInstance().getRootDialects();
             //dialects.sort(Comparator.comparing(SQLDialectDescriptor::getLabel));
@@ -103,20 +106,31 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
             gd.widthHint = UIUtils.getFontHeight(settingsGroup) * 50;
             settingsGroup.setLayoutData(gd);
-            UIUtils.createControlLabel(settingsGroup, SQLEditorMessages.pref_page_sql_format_label_settings, 2);
 
-            UIUtils.createControlLabel(settingsGroup, "Keywords", 2);
-            reservedWordsText = UIUtils.createLabelTextAdvanced(settingsGroup, "Reserved words", "", SWT.BORDER);
-            dataTypesText = UIUtils.createLabelTextAdvanced(settingsGroup, "Data Types", "", SWT.BORDER);
-            functionNamesText = UIUtils.createLabelTextAdvanced(settingsGroup, "Function names", "", SWT.BORDER);
-            ddlKeywordsText = UIUtils.createLabelTextAdvanced(settingsGroup, "DDL keywords", "", SWT.BORDER);
-            transactionKeywordsText = UIUtils.createLabelTextAdvanced(settingsGroup, "Transaction keywords", "", SWT.BORDER);
-            blockStatementsText = UIUtils.createLabelTextAdvanced(settingsGroup, "Block statements", "", SWT.BORDER);
+            if (!isPrefPage) {
+                Composite nameComp = UIUtils.createComposite(settingsGroup, 2);
+                gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 2;
+                nameComp.setLayoutData(gd);
+                dialectText = UIUtils.createLabelText(nameComp, "Dialect", "", SWT.READ_ONLY);
+            }
+            //UIUtils.createControlLabel(settingsGroup, SQLEditorMessages.pref_page_sql_format_label_settings, 2);
 
-            UIUtils.createControlLabel(settingsGroup, "Miscellaneous", 2);
-            statementDelimiterText = UIUtils.createLabelText(settingsGroup, "Statement delimiter", "", SWT.BORDER);
-            dualTableNameText = UIUtils.createLabelText(settingsGroup, "Dual table name", "", SWT.BORDER);
-            testQueryText = UIUtils.createLabelText(settingsGroup, "Test query", "", SWT.BORDER);
+            Group kwGroup = UIUtils.createControlGroup(settingsGroup, "Keywords", 2, GridData.FILL_HORIZONTAL, 0);
+            ((GridData)kwGroup.getLayoutData()).horizontalSpan = 2;
+            reservedWordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Reserved words", "", SWT.BORDER);
+            dataTypesText = UIUtils.createLabelTextAdvanced(kwGroup, "Data Types", "", SWT.BORDER);
+            functionNamesText = UIUtils.createLabelTextAdvanced(kwGroup, "Function names", "", SWT.BORDER);
+            ddlKeywordsText = UIUtils.createLabelTextAdvanced(kwGroup, "DDL keywords", "", SWT.BORDER);
+            dmlKeywordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Data modify keywords", "", SWT.BORDER);
+            executeKeywordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Execute keywords", "", SWT.BORDER);
+            transactionKeywordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Transaction keywords", "", SWT.BORDER);
+            blockStatementsText = UIUtils.createLabelTextAdvanced(kwGroup, "Block statements", "", SWT.BORDER);
+
+            Group miscGroup = UIUtils.createControlGroup(settingsGroup, "Miscellaneous", 2, GridData.FILL_HORIZONTAL, 0);
+            statementDelimiterText = UIUtils.createLabelText(miscGroup, "Statement delimiter", "", SWT.BORDER);
+            dualTableNameText = UIUtils.createLabelText(miscGroup, "Dual table name", "", SWT.BORDER);
+            testQueryText = UIUtils.createLabelText(miscGroup, "Test query", "", SWT.BORDER);
 
         }
 
@@ -126,7 +140,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
     }
 
     private void createDialectItem(Tree dialectTable, TreeItem parentItem, SQLDialectDescriptor dialect) {
-        TreeItem di = null;
+        TreeItem di;
         if (!dialect.isHidden()) {
             di = parentItem == null ? new TreeItem(dialectTable, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
             di.setText(dialect.getLabel());
@@ -151,10 +165,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         if (element != null) {
             DBPDataSourceContainer dataSource = element.getAdapter(DBPDataSourceContainer.class);
             if (dataSource != null) {
-                SQLDialect scriptDialect = dataSource.getScriptDialect();
-                if (scriptDialect != null) {
-                    curDialect = SQLDialectRegistry.getInstance().getDialect(scriptDialect.getDialectName());
-                }
+                curDialect = dataSource.getScriptDialect();
             }
         }
         loadDialectSettings();
@@ -166,10 +177,15 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         if (curDialect == null) {
             return;
         }
+        if (dialectText != null) {
+            dialectText.setText(curDialect.getLabel());
+        }
         reservedWordsText.setText(String.join(",", curDialect.getReservedWords()));
         dataTypesText.setText(String.join(",", curDialect.getDataTypes()));
         functionNamesText.setText(String.join(",", curDialect.getFunctions()));
         ddlKeywordsText.setText(String.join(",", curDialect.getDDLKeywords()));
+        dmlKeywordsText.setText(String.join(",", curDialect.getDMLKeywords()));
+        executeKeywordsText.setText(String.join(",", curDialect.getExecuteKeywords()));
         transactionKeywordsText.setText(String.join(",", curDialect.getTransactionKeywords()));
         //blockStatementsText.setText(String.join(",", curDialect.getBlockBoundStrings()));
 

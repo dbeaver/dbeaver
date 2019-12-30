@@ -20,14 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.sql.Connection;
 
@@ -40,14 +38,9 @@ public class H2DataSource extends GenericDataSource {
     public static final String H2_URL_PREFIX = "jdbc:h2:";
     public static final String H2_DB_FILE_EXTENSION = ".mv.db";
 
-    public H2DataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel, SQLDialect dialect)
-        throws DBException {
-        super(monitor, container, metaModel, dialect);
-    }
-
     public H2DataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
-            throws DBException {
-        this(monitor, container, metaModel, new GenericSQLDialect());
+        throws DBException {
+        super(monitor, container, metaModel, new H2SQLDialect());
     }
 
     @Override

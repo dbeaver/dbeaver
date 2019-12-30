@@ -57,10 +57,18 @@ public interface SQLDialectMetadata {
     List<String> getDDLKeywords();
 
     @NotNull
+    List<String> getDMLKeywords();
+
+    @NotNull
+    List<String> getExecuteKeywords();
+
+    @NotNull
     List<String> getTransactionKeywords();
 
     @NotNull
     String getScriptDelimiter();
+
+    Object getProperty(String name);
 
     @Nullable
     SQLDialectMetadata getParentDialect();

@@ -13,9 +13,9 @@
              description="%datasource.hana.description"
              id="hana"
              parent="generic"
-             label="HANA">
+             label="HANA"
+             dialect="sap_hana">
 
-             
             <tree path="hana" label="HANA data source">
                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSchema" label="%tree.schemas.node.name" icon="#folder_schema">
                     <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">

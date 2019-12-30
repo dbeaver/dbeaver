@@ -67,7 +67,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final List<DriverDescriptor> drivers = new ArrayList<>();
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
     @NotNull
-    private final SQLDialectMetadata scriptDialect;
+    private SQLDialectMetadata scriptDialect;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -91,10 +91,15 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         if (this.icon == null) {
             this.icon = DBIcon.DATABASE_DEFAULT;
         }
-        String dialectId = CommonUtils.toString(config.getAttribute(RegistryConstants.ATTR_DIALECT), BasicSQLDialect.ID);
+        String dialectId = config.getAttribute(RegistryConstants.ATTR_DIALECT);
+        if (CommonUtils.isEmpty(dialectId)) {
+            log.debug("No SQL dialect specified for data source provider '" + this.id + "'. Use default.");
+            dialectId = BasicSQLDialect.ID;
+        }
         this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(dialectId);
         if (this.scriptDialect == null) {
             log.debug("Script dialect '" + dialectId + "' not found in registry (for data source provider " + id + "). Use default.");
+            this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
         }
 
         {
