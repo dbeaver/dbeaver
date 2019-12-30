@@ -12,7 +12,8 @@
                 id="h2gis"
                 parent="generic"
                 label="H2GIS"
-                icon="icons/h2gis_icon.png">
+                icon="icons/h2gis_icon.png"
+                dialect="h2gis">
             <drivers managable="true">
 
                 <driver
@@ -78,6 +79,11 @@
             <type name="GEOMETRY"/>
 
         </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="h2gis" parent="generic" class="org.jkiss.dbeaver.ext.h2gis.model.H2GISSQLDialect" label="H2 GIS" description="H2 GIS SQL dialect." icon="icons/h2gis_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

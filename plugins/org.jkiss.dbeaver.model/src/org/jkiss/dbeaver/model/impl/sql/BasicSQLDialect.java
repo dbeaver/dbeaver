@@ -43,6 +43,10 @@ import java.util.*;
  */
 public class BasicSQLDialect implements SQLDialect {
 
+    public static final String ID = "basic";
+
+    public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
+
     private static final String[] DEFAULT_LINE_COMMENTS = {SQLConstants.SL_COMMENT};
     private static final String[] EXEC_KEYWORDS = new String[0];
     private static final String[] DDL_KEYWORDS = new String[]{
@@ -82,8 +86,6 @@ public class BasicSQLDialect implements SQLDialect {
     // Comments
     private Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
     private Map<String, Integer> keywordsIndent = new HashMap<>();
-
-    public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
     protected BasicSQLDialect() {
         loadStandardKeywords();

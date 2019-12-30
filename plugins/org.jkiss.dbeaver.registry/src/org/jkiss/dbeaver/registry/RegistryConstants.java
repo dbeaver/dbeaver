@@ -104,6 +104,7 @@ public class RegistryConstants {
     public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
+    public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -50,10 +51,23 @@ public class SQLDialectRegistry
     {
         IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQLDialectDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extConfigs) {
-            // Load functions
             if (TAG_DIALECT.equals(ext.getName())) {
                 SQLDialectDescriptor dialectDescriptor = new SQLDialectDescriptor(ext);
                 this.dialects.put(dialectDescriptor.getId(), dialectDescriptor);
+            }
+        }
+
+        for (IConfigurationElement ext : extConfigs) {
+            if (TAG_DIALECT.equals(ext.getName())) {
+                String dialectId = ext.getAttribute("id");
+                String parentDialectId = ext.getAttribute("parent");
+                if (!CommonUtils.isEmpty(dialectId) && !CommonUtils.isEmpty(parentDialectId)) {
+                    SQLDialectDescriptor dialect = dialects.get(dialectId);
+                    SQLDialectDescriptor parentDialect = dialects.get(parentDialectId);
+                    if (dialect != null && parentDialect != null) {
+                        dialect.setParentDialect(parentDialect);
+                    }
+                }
             }
         }
     }
@@ -71,4 +85,13 @@ public class SQLDialectRegistry
         return dialects.get(id);
     }
 
+    public List<SQLDialectDescriptor> getRootDialects() {
+        List<SQLDialectDescriptor> roots = new ArrayList<>();
+        for (SQLDialectDescriptor dd : dialects.values()) {
+            if (dd.getParentDialect() == null) {
+                roots.add(dd);
+            }
+        }
+        return roots;
+    }
 }

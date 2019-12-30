@@ -132,4 +132,9 @@
         </provider>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="sap_hana" parent="generic" class="org.jkiss.dbeaver.ext.hana.model.HANASQLDialect" label="HANA" description="SAP HANA SQL dialect." icon="icons/sap_hana_icon.png">
+        </dialect>
+    </extension>
+
 </plugin>

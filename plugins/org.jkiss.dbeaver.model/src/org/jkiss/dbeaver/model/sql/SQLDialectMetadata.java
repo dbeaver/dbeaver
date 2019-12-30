@@ -14,38 +14,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.connection;
+
+package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 
 import java.util.List;
 
 /**
- * Data source provider descriptor
+ * SQLDialectMetadata
  */
-public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
+public interface SQLDialectMetadata {
 
     String getId();
+
+    String getLabel();
 
     String getDescription();
 
     DBPImage getIcon();
 
-    boolean isDriversManagable();
-
-    List<? extends DBPDriver> getEnabledDrivers();
-
-    String getPluginId();
-
-    DBXTreeNode getTreeDescriptor();
+    @NotNull
+    SQLDialect createInstance() throws DBException;
 
     @NotNull
-    SQLDialectMetadata getScriptDialect();
+    List<String> getReservedWords();
 
-    boolean isTemporary();
+    @NotNull
+    List<String> getDataTypes();
+
+    @NotNull
+    List<String> getFunctions();
+
+    @NotNull
+    List<String> getDDLKeywords();
+
+    @NotNull
+    List<String> getTransactionKeywords();
+
+    @NotNull
+    String getScriptDelimiter();
+
+    @Nullable
+    SQLDialectMetadata getParentDialect();
+
+    @NotNull
+    List<SQLDialectMetadata> getSubDialects();
 
 }
