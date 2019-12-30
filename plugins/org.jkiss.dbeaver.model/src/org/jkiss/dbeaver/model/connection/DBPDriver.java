@@ -23,9 +23,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 
 import java.util.Collection;
 import java.util.List;
@@ -81,6 +82,9 @@ public interface DBPDriver extends DBPNamedObject
 
     @Nullable
     String getPropertiesWebURL();
+
+    @NotNull
+    SQLDialectMetadata getScriptDialect();
 
     boolean isClientRequired();
 

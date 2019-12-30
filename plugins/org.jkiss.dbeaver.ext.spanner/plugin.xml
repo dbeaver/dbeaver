@@ -13,7 +13,8 @@
                 id="google_spanner"
                 parent="generic"
                 label="Google Spanner"
-                icon="icons/spanner_icon.png">
+                icon="icons/spanner_icon.png"
+                dialect="spanner">
             <drivers managable="true">
 
                 <driver
@@ -36,6 +37,11 @@
             </drivers>
 
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="spanner" parent="generic" class="org.jkiss.dbeaver.ext.spanner.model.SpannerSQLDialect" label="Spanner" description="Google Spanner SQL dialect." icon="icons/spanner_icon.png">
+        </dialect>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceView">

@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ext.generic.model.meta;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,12 +38,14 @@ public class GenericMetaModelDescriptor extends AbstractDescriptor {
     private String id;
     private final Map<String, GenericMetaObject> objects = new HashMap<>();
     private String[] driverClass;
+    private final String dialectId;
 
     public GenericMetaModelDescriptor() {
         super("org.jkiss.dbeaver.ext.generic");
         implType = new ObjectType(GenericMetaModel.class.getName());
         instance = new GenericMetaModel();
         instance.descriptor = this;
+        dialectId = GenericSQLDialect.GENERIC_DIALECT_ID;
     }
 
     public GenericMetaModelDescriptor(IConfigurationElement cfg) {
@@ -63,6 +68,7 @@ public class GenericMetaModelDescriptor extends AbstractDescriptor {
         }
 
         implType = new ObjectType(cfg.getAttribute("class"));
+        dialectId = CommonUtils.toString(cfg.getAttribute("dialect"), GenericSQLDialect.GENERIC_DIALECT_ID);
     }
 
     public String getId()
@@ -78,6 +84,10 @@ public class GenericMetaModelDescriptor extends AbstractDescriptor {
     public GenericMetaObject getObject(String id)
     {
         return objects.get(id);
+    }
+
+    public SQLDialectMetadata getDialect() {
+        return SQLDialectRegistry.getInstance().getDialect(dialectId);
     }
 
     public GenericMetaModel getInstance() throws DBException {

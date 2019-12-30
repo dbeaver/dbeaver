@@ -27,8 +27,10 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -80,13 +82,10 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             Tree dialectTable = new Tree(dialectsGroup, SWT.BORDER | SWT.SINGLE);
             dialectTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            List<SQLDialectDescriptor> dialects = SQLDialectRegistry.getInstance().getDialects();
+            List<SQLDialectDescriptor> dialects = SQLDialectRegistry.getInstance().getRootDialects();
             dialects.sort(Comparator.comparing(SQLDialectDescriptor::getLabel));
             for (SQLDialectDescriptor dialect : dialects) {
-                TreeItem di = new TreeItem(dialectTable, SWT.NONE);
-                di.setText(dialect.getLabel());
-                di.setImage(DBeaverIcons.getImage(dialect.getIcon()));
-                di.setData(dialect);
+                createDialectItem(dialectTable, null, dialect);
             }
             dialectTable.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -125,6 +124,25 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         performDefaults();
 
         return composite;
+    }
+
+    private void createDialectItem(Tree dialectTable, TreeItem parentItem, SQLDialectDescriptor dialect) {
+        TreeItem di = null;
+        if (!BasicSQLDialect.ID.equals(dialect.getId())) {
+            di = parentItem == null ? new TreeItem(dialectTable, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
+            di.setText(dialect.getLabel());
+            di.setImage(DBeaverIcons.getImage(dialect.getIcon()));
+            di.setData(dialect);
+        }
+
+        List<SQLDialectMetadata> subDialects = dialect.getSubDialects();
+        subDialects.sort(Comparator.comparing(SQLDialectMetadata::getLabel));
+        for (SQLDialectMetadata dm : subDialects) {
+            createDialectItem(dialectTable, di, (SQLDialectDescriptor) dm);
+        }
+        if (di != null) {
+            di.setExpanded(true);
+        }
     }
 
     @Override
