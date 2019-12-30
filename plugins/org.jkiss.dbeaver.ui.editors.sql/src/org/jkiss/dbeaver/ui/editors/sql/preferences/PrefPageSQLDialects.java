@@ -18,17 +18,17 @@ package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -50,7 +50,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
     private static final Log log = Log.getLog(PrefPageSQLDialects.class);
     private IAdaptable element;
 
-    private SQLDialect curDialect;
+    private SQLDialectDescriptor curDialect;
     private Text reservedWordsText;
     private Text dataTypesText;
     private Text functionNamesText;
@@ -86,13 +86,24 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
                 TreeItem di = new TreeItem(dialectTable, SWT.NONE);
                 di.setText(dialect.getLabel());
                 di.setImage(DBeaverIcons.getImage(dialect.getIcon()));
+                di.setData(dialect);
             }
+            dialectTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    TreeItem[] selection = dialectTable.getSelection();
+                    if (selection.length == 1) {
+                        curDialect = (SQLDialectDescriptor) selection[0].getData();
+                        loadDialectSettings();
+                    }
+                }
+            });
         }
 
         {
             Composite settingsGroup = UIUtils.createComposite(composite, 2);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
-            gd.widthHint = UIUtils.getFontHeight(settingsGroup) * 30;
+            gd.widthHint = UIUtils.getFontHeight(settingsGroup) * 50;
             settingsGroup.setLayoutData(gd);
             UIUtils.createControlLabel(settingsGroup, SQLEditorMessages.pref_page_sql_format_label_settings, 2);
 
@@ -119,8 +130,13 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
     @Override
     protected void performDefaults() {
         if (element != null) {
-            DBPDataSource dataSource = element.getAdapter(DBPDataSource.class);
-            curDialect = SQLUtils.getDialectFromDataSource(dataSource);
+            DBPDataSourceContainer dataSource = element.getAdapter(DBPDataSourceContainer.class);
+            if (dataSource != null) {
+                SQLDialect scriptDialect = dataSource.getScriptDialect();
+                if (scriptDialect != null) {
+                    curDialect = SQLDialectRegistry.getInstance().getDialect(scriptDialect.getDialectName());
+                }
+            }
         }
         loadDialectSettings();
 
@@ -132,12 +148,10 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             return;
         }
         reservedWordsText.setText(String.join(",", curDialect.getReservedWords()));
-        dataTypesText.setText(String.join(",", curDialect.getDataTypes(null)));
-        functionNamesText.setText(String.join(",", curDialect.getFunctions(null)));
+        dataTypesText.setText(String.join(",", curDialect.getDataTypes()));
+        functionNamesText.setText(String.join(",", curDialect.getFunctions()));
         ddlKeywordsText.setText(String.join(",", curDialect.getDDLKeywords()));
-        if (curDialect instanceof BasicSQLDialect) {
-            transactionKeywordsText.setText(String.join(",", ((BasicSQLDialect)curDialect).getTransactionKeywords()));
-        }
+        transactionKeywordsText.setText(String.join(",", curDialect.getTransactionKeywords()));
         //blockStatementsText.setText(String.join(",", curDialect.getBlockBoundStrings()));
 
         statementDelimiterText.setText(curDialect.getScriptDelimiter());

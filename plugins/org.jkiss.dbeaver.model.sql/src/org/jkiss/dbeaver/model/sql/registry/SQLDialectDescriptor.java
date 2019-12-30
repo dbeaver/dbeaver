@@ -18,10 +18,14 @@
 package org.jkiss.dbeaver.model.sql.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * SQLDialectDescriptor
@@ -61,8 +65,39 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor {
         return icon;
     }
 
+    @NotNull
     public SQLDialect createInstance() throws DBException {
         return implClass.createInstance(SQLDialect.class);
+    }
+
+    @NotNull
+    public List<String> getReservedWords() {
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    public List<String> getDataTypes() {
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    public List<String> getFunctions() {
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    public List<String> getDDLKeywords() {
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    public List<String> getTransactionKeywords() {
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    public String getScriptDelimiter() {
+        return ";";
     }
 
 }
