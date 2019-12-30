@@ -968,7 +968,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
 
                 if (tokenType == SQLTokenType.T_BLOCK_HEADER) {
-                    curBlock = new ScriptBlockInfo(curBlock, true);
+                    if (curBlock == null || !curBlock.isHeader) {
+                        // Check for double block header, e.g. DO, DECLARE
+                        curBlock = new ScriptBlockInfo(curBlock, true);
+                    }
                     hasBlocks = true;
                 } else if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
                     String togglePattern;

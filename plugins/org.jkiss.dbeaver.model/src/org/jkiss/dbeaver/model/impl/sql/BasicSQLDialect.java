@@ -58,7 +58,7 @@ public class BasicSQLDialect extends AbstractSQLDialect {
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
     };
-    protected static final String[] TRANSACTIONAL_KEYWORDS = new String[]{
+    protected static final String[] DML_KEYWORDS = new String[]{
             SQLConstants.KEYWORD_INSERT,
             SQLConstants.KEYWORD_DELETE,
             SQLConstants.KEYWORD_UPDATE,
@@ -276,9 +276,15 @@ public class BasicSQLDialect extends AbstractSQLDialect {
         return false;
     }
 
+    @Override
+    protected boolean isTransactionModifyingKeyword(String firstKeyword) {
+        // Handle "DO" separately
+        return "DO".equals(firstKeyword) || super.isTransactionModifyingKeyword(firstKeyword);
+    }
+
     @NotNull
-    public String[] getTransactionKeywords() {
-        return isStandardSQL() ? TRANSACTIONAL_KEYWORDS : new String[0];
+    public String[] getDMLKeywords() {
+        return isStandardSQL() ? DML_KEYWORDS : new String[0];
     }
 
     @NotNull

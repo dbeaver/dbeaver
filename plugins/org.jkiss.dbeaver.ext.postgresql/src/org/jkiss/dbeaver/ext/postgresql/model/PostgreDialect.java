@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -44,6 +45,10 @@ public class PostgreDialect extends JDBCSQLDialect {
     );
     private static final String[][] PG_STRING_QUOTES = {
         {"'", "'"}
+    };
+    public static final String[][] BLOCK_BOUND_KEYWORDS = {
+        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
+        {"LOOP", "END LOOP"}
     };
 
     //region KeyWords
@@ -740,12 +745,13 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     @Override
     public String[][] getBlockBoundStrings() {
-        // For postgreSQL-specific blocks ($$) we use special rule.
-        // BEGIN/END
-        return new String[][]{
-            { SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END },
-            { "LOOP", "END LOOP" }
-        };
+        return BLOCK_BOUND_KEYWORDS;
+    }
+
+    @Nullable
+    @Override
+    public String[] getBlockHeaderStrings() {
+        return new String[] { "DECLARE" };
     }
 
     @NotNull
