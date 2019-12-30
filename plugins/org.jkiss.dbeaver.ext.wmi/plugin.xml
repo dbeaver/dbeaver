@@ -22,11 +22,12 @@
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.wmi.WMIDataSourceProvider"
-              description="WMI connector"
-              icon="icons/wmi_icon.png"
-              id="wmi"
-              label="WMI">
+            class="org.jkiss.dbeaver.ext.wmi.WMIDataSourceProvider"
+            description="WMI connector"
+            icon="icons/wmi_icon.png"
+            id="wmi"
+            label="WMI"
+            dialect="wmi">
             <tree
                   icon="icons/wmi_icon.png"
                   label="WMI data source"
@@ -110,6 +111,11 @@
             <type name="*"/>
 
         </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="wmi" parent="basic" class="org.jkiss.dbeaver.ext.wmi.model.WMIDialect" label="WMI" description="WMI SQL dialect." icon="icons/wmi_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

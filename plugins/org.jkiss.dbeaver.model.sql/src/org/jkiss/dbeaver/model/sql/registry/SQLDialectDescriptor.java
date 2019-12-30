@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +43,8 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
+    private boolean isAbstract;
+    private boolean isHidden;
     private SQLDialectDescriptor parentDialect;
     private List<SQLDialectDescriptor> subDialects = null;
 
@@ -52,6 +55,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         this.description = config.getAttribute("description");
         this.implClass = new ObjectType(config.getAttribute("class"));
         this.icon = iconToImage(config.getAttribute("icon"));
+
+        this.isAbstract = CommonUtils.getBoolean(config.getAttribute("abstract"));
+        this.isHidden = CommonUtils.getBoolean(config.getAttribute("hidden"));
     }
 
     @Override
@@ -72,6 +78,16 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @Override
     public DBPImage getIcon() {
         return icon;
+    }
+
+    @Override
+    public boolean isAbstract() {
+        return isAbstract;
+    }
+
+    @Override
+    public boolean isHidden() {
+        return isHidden;
     }
 
     @Override
@@ -135,8 +151,23 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
     @NotNull
     @Override
-    public List<SQLDialectMetadata> getSubDialects() {
-        return subDialects == null ? Collections.emptyList() : new ArrayList<>(subDialects);
+    public List<SQLDialectMetadata> getSubDialects(boolean addNested) {
+        if (subDialects == null) {
+            return Collections.emptyList();
+        }
+        List<SQLDialectMetadata> subs = new ArrayList<>();
+        for (SQLDialectDescriptor sd : subDialects) {
+            if (sd.isHidden) {
+                subs.addAll(sd.getSubDialects(false));
+            } else {
+                subs.add(sd);
+            }
+        }
+        return subs;
     }
 
+    @Override
+    public String toString() {
+        return label + " (" + id + ")";
+    }
 }

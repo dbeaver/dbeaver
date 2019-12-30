@@ -27,7 +27,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
@@ -83,7 +82,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             dialectTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             List<SQLDialectDescriptor> dialects = SQLDialectRegistry.getInstance().getRootDialects();
-            dialects.sort(Comparator.comparing(SQLDialectDescriptor::getLabel));
+            //dialects.sort(Comparator.comparing(SQLDialectDescriptor::getLabel));
             for (SQLDialectDescriptor dialect : dialects) {
                 createDialectItem(dialectTable, null, dialect);
             }
@@ -128,14 +127,16 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
 
     private void createDialectItem(Tree dialectTable, TreeItem parentItem, SQLDialectDescriptor dialect) {
         TreeItem di = null;
-        if (!BasicSQLDialect.ID.equals(dialect.getId())) {
+        if (!dialect.isHidden()) {
             di = parentItem == null ? new TreeItem(dialectTable, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
             di.setText(dialect.getLabel());
             di.setImage(DBeaverIcons.getImage(dialect.getIcon()));
             di.setData(dialect);
+        } else {
+            di = parentItem;
         }
 
-        List<SQLDialectMetadata> subDialects = dialect.getSubDialects();
+        List<SQLDialectMetadata> subDialects = dialect.getSubDialects(true);
         subDialects.sort(Comparator.comparing(SQLDialectMetadata::getLabel));
         for (SQLDialectMetadata dm : subDialects) {
             createDialectItem(dialectTable, di, (SQLDialectDescriptor) dm);

@@ -37,6 +37,10 @@ public interface SQLDialectMetadata {
 
     DBPImage getIcon();
 
+    boolean isAbstract();
+
+    boolean isHidden();
+
     @NotNull
     SQLDialect createInstance() throws DBException;
 
@@ -62,6 +66,6 @@ public interface SQLDialectMetadata {
     SQLDialectMetadata getParentDialect();
 
     @NotNull
-    List<SQLDialectMetadata> getSubDialects();
+    List<SQLDialectMetadata> getSubDialects(boolean addNested);
 
 }
