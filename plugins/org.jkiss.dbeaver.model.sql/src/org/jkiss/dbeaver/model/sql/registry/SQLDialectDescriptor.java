@@ -27,9 +27,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * SQLDialectDescriptor
@@ -48,6 +46,16 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private SQLDialectDescriptor parentDialect;
     private List<SQLDialectDescriptor> subDialects = null;
 
+    private Map<String, Object> properties;
+
+    private List<String> keywords;
+    private List<String> ddlKeywords;
+    private List<String> dmlKeywords;
+    private List<String> execKeywords;
+    private List<String> txnKeywords;
+    private List<String> types;
+    private List<String> functions;
+
     SQLDialectDescriptor(IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
@@ -58,6 +66,52 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
         this.isAbstract = CommonUtils.getBoolean(config.getAttribute("abstract"));
         this.isHidden = CommonUtils.getBoolean(config.getAttribute("hidden"));
+
+        for (IConfigurationElement propElement : config.getChildren("property")) {
+            String propName = propElement.getAttribute("name");
+            String propValue = propElement.getAttribute("value");
+            if (propName == null || CommonUtils.isEmpty(propValue)) {
+                continue;
+            }
+            switch (propName) {
+                case "keywords":
+                    this.keywords = loadList(propValue);
+                    break;
+                case "ddlKeywords":
+                    this.ddlKeywords = loadList(propValue);
+                    break;
+                case "dmlKeywords":
+                    this.dmlKeywords = loadList(propValue);
+                    break;
+                case "execKeywords":
+                    this.execKeywords = loadList(propValue);
+                    break;
+                case "txnKeywords":
+                    this.txnKeywords = loadList(propValue);
+                    break;
+                case "types":
+                    this.types = loadList(propValue);
+                    break;
+                case "functions":
+                    this.functions = loadList(propValue);
+                    break;
+                default:
+                    if (properties == null) {
+                        properties = new LinkedHashMap<>();
+                    }
+                    this.properties.put(propName, propValue);
+                    break;
+            }
+        }
+
+    }
+
+    private List<String> loadList(String str) {
+        List<String> list = Arrays.asList(str.split(","));
+        for (int i = 0; i < list.size(); i++) {
+            list.set(i, list.get(i).toUpperCase(Locale.ENGLISH));
+        }
+        return list;
     }
 
     @Override
@@ -99,37 +153,54 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @Override
     @NotNull
     public List<String> getReservedWords() {
-        return Collections.emptyList();
+        return CommonUtils.safeList(keywords);
     }
 
     @Override
     @NotNull
     public List<String> getDataTypes() {
-        return Collections.emptyList();
+        return CommonUtils.safeList(types);
     }
 
     @Override
     @NotNull
     public List<String> getFunctions() {
-        return Collections.emptyList();
+        return CommonUtils.safeList(functions);
     }
 
     @Override
     @NotNull
     public List<String> getDDLKeywords() {
-        return Collections.emptyList();
+        return CommonUtils.safeList(ddlKeywords);
+    }
+
+    @NotNull
+    @Override
+    public List<String> getDMLKeywords() {
+        return CommonUtils.safeList(dmlKeywords);
+    }
+
+    @NotNull
+    @Override
+    public List<String> getExecuteKeywords() {
+        return CommonUtils.safeList(execKeywords);
     }
 
     @Override
     @NotNull
     public List<String> getTransactionKeywords() {
-        return Collections.emptyList();
+        return CommonUtils.safeList(txnKeywords);
     }
 
     @Override
     @NotNull
     public String getScriptDelimiter() {
         return ";";
+    }
+
+    @Override
+    public Object getProperty(String name) {
+        return properties == null ? null : properties.get(name);
     }
 
     @Nullable

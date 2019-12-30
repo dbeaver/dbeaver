@@ -17,7 +17,8 @@
                 id="snowflake"
                 parent="generic"
                 label="Snowflake"
-                icon="icons/snowflake_icon.png">
+                icon="icons/snowflake_icon.png"
+                dialect="basic">
             <drivers managable="true">
 
                 <driver

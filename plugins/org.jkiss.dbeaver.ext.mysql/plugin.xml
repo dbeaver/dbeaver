@@ -21,11 +21,12 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
-              description="MySQL connector"
-              icon="icons/mysql_icon.png"
-              id="mysql"
-              label="MySQL">
+            class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
+            description="MySQL connector"
+            icon="icons/mysql_icon.png"
+            id="mysql"
+            label="MySQL"
+            dialect="mysql">
             <tree
                   icon="icons/mysql_icon.png"
                   label="MySQL data source"

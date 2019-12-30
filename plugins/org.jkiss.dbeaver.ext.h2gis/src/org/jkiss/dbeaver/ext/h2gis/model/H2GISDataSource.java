@@ -43,7 +43,7 @@ public class H2GISDataSource extends H2DataSource {
 
     public H2GISDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
             throws DBException {
-        super(monitor, container, metaModel, new H2GISSQLDialect());
+        super(monitor, container, metaModel);
     }
 
     @Override

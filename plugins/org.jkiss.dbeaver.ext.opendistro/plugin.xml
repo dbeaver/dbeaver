@@ -13,7 +13,8 @@
                 id="open-distro-elasticsearch"
                 parent="generic"
                 label="Open Distro Elasticsearch"
-                icon="icons/opendistro_icon.png">
+                icon="icons/opendistro_icon.png"
+                dialect="basic">
             <drivers managable="true">
 
                 <driver

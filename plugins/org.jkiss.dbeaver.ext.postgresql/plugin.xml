@@ -83,7 +83,8 @@
                 description="%datasource.postgresql.description"
                 id="postgresql"
                 label="PostgreSQL"
-                icon="icons/postgresql_icon.png">
+                icon="icons/postgresql_icon.png"
+                dialect="postgresql">
             <tree path="postgresql" label="PostgreSQL data source">
                 <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="%tree.schemas.node.tip">

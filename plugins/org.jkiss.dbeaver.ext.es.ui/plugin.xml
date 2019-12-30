@@ -13,7 +13,8 @@
                 id="elasticsearch"
                 parent="generic"
                 label="Elasticsearch"
-                icon="icons/elasticsearch_icon.png">
+                icon="icons/elasticsearch_icon.png"
+                dialect="basic">
             <drivers managable="true">
 
                 <driver

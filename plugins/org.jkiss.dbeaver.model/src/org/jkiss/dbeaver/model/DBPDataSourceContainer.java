@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
@@ -200,7 +200,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     Date getConnectTime();
 
-    SQLDialect getScriptDialect();
+    @NotNull
+    SQLDialectMetadata getScriptDialect();
 
     /**
      * Make variable resolver for datasource properties.
