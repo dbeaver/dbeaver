@@ -724,16 +724,18 @@ public final class SQLUtils {
 
         StringBuilder buf = new StringBuilder();
         boolean prevNonLetter = true;
+        char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
             if (!Character.isLetter(c)) {
                 prevNonLetter = true;
             } else {
-                if (prevNonLetter) {
+                if (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
                     buf.append(c);
                 }
                 prevNonLetter = false;
             }
+            prevChar = c;
         }
         String alias = buf.toString().toLowerCase(Locale.ENGLISH);
 
