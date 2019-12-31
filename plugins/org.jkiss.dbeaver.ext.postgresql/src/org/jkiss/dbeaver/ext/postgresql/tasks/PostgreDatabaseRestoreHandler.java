@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -22,9 +23,10 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     }
 
     @Override
-    protected PostgreDatabaseRestoreSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
+    protected PostgreDatabaseRestoreSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
         PostgreDatabaseRestoreSettings settings = new PostgreDatabaseRestoreSettings();
         settings.loadSettings(context, new TaskPreferenceStore(task));
+
         return settings;
     }
 

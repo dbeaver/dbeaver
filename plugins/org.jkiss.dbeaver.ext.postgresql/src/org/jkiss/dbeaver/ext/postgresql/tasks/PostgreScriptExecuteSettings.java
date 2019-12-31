@@ -44,7 +44,7 @@ public class PostgreScriptExecuteSettings extends AbstractScriptExecuteSettings<
     }
 
     @Override
-    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
+    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         super.loadSettings(runnableContext, store);
         String databaseId = store.getString("pg.script.database");
 

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -101,7 +102,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
     }
 
     @Override
-    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
+    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
         super.loadSettings(runnableContext, preferenceStore);
 
         extraCommandArgs = preferenceStore.getString(PROP_NAME_EXTRA_ARGS);
@@ -114,7 +115,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
             if (!CommonUtils.isEmpty(toolUserName)) toolUserName = encrypter.decrypt(toolUserName);
             if (!CommonUtils.isEmpty(toolUserPassword)) toolUserPassword = encrypter.decrypt(toolUserPassword);
         } catch (Exception e) {
-            log.debug(e);
+            throw new DBException("Error decrypting user credentials", e);
         }
 
     }

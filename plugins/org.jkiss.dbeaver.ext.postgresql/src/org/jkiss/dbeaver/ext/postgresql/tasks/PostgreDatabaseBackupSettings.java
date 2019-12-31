@@ -145,7 +145,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     }
 
     @Override
-    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
+    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         super.loadSettings(runnableContext, store);
 
         compression = store.getString("pg.export.compression");

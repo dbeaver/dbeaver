@@ -131,7 +131,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         return Collections.emptyList();
     }
 
-    protected abstract SETTINGS createTaskSettings(DBRRunnableContext context, DBTTask task);
+    protected abstract SETTINGS createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException;
 
     protected boolean validateTaskParameters(DBTTask task, SETTINGS settings, Log log) {
         return true;

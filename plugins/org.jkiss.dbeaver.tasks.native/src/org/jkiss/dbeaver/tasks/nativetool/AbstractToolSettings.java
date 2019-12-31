@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -63,7 +64,7 @@ public abstract class AbstractToolSettings<BASE_OBJECT extends DBSObject> {
         }
     }
 
-    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
+    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
         if (dataSourceContainer == null && !CommonUtils.isEmpty(databaseObjects)) {
             BASE_OBJECT baseObject = databaseObjects.get(0);
             dataSourceContainer = baseObject instanceof DBPDataSourceContainer ?
@@ -94,23 +95,27 @@ public abstract class AbstractToolSettings<BASE_OBJECT extends DBSObject> {
                 DBPProject finalProject = dataSourceContainer.getProject();
                 try {
                     runnableContext.run(true, true, monitor -> {
-                        monitor.beginTask("Load database object list", databaseObjectList.size());
-                        for (String objectId : databaseObjectList) {
-                            monitor.subTask("Load " + objectId);
-                            try {
-                                DBSObject object = DBUtils.findObjectById(monitor, finalProject, objectId);
-                                if (object != null) {
-                                    databaseObjects.add((BASE_OBJECT) object);
+                        try {
+                            monitor.beginTask("Load database object list", databaseObjectList.size());
+                            for (String objectId : databaseObjectList) {
+                                monitor.subTask("Load " + objectId);
+                                try {
+                                    DBSObject object = DBUtils.findObjectById(monitor, finalProject, objectId);
+                                    if (object != null) {
+                                        databaseObjects.add((BASE_OBJECT) object);
+                                    }
+                                } catch (Throwable e) {
+                                    throw new DBException("Can't find database object '" + objectId + "' in project '" + finalProject.getName() + "' for task configuration", e);
                                 }
-                            } catch (Throwable e) {
-                                log.error("Can't find database object '" + objectId + "' in project '" + finalProject.getName() + "' for task configuration");
+                                monitor.worked(1);
                             }
-                            monitor.worked(1);
+                            monitor.done();
+                        } catch (Exception e) {
+                            throw new InvocationTargetException(e);
                         }
-                        monitor.done();
                     });
                 } catch (InvocationTargetException e) {
-                    log.error("Error loading objects configuration", e);
+                    throw new DBException("Error loading objects configuration", e.getTargetException());
                 } catch (InterruptedException e) {
                     // Ignore
                 }

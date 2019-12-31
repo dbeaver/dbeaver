@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
@@ -22,11 +23,12 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
     }
 
     @Override
-    protected MySQLScriptExecuteSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
+    protected MySQLScriptExecuteSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
         MySQLScriptExecuteSettings settings = new MySQLScriptExecuteSettings();
         boolean isImport = task.getType().getId().equals(MySQLTasks.TASK_DATABASE_RESTORE);
         settings.setImport(isImport);
         settings.loadSettings(context, new TaskPreferenceStore(task));
+
         return settings;
     }
 

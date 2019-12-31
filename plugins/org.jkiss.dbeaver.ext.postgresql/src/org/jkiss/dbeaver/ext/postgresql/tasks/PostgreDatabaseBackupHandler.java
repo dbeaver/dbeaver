@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -28,9 +29,10 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     }
 
     @Override
-    protected PostgreDatabaseBackupSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
+    protected PostgreDatabaseBackupSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
         PostgreDatabaseBackupSettings settings = new PostgreDatabaseBackupSettings();
         settings.loadSettings(context, new TaskPreferenceStore(task));
+
         return settings;
     }
 
