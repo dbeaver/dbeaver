@@ -17,10 +17,14 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
+import org.jkiss.utils.CommonUtils;
 
 public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<MySQLCatalog> {
 
@@ -68,4 +72,21 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
         return MySQLDataSourceProvider.getServerHome(clientHomeId);
     }
 
+    @Override
+    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
+        super.loadSettings(runnableContext, preferenceStore);
+
+        isImport = CommonUtils.toBoolean(preferenceStore.getString("MySQL.script.import"));
+        logLevel = CommonUtils.valueOf(LogLevel.class, preferenceStore.getString("MySQL.script.logLevel"), LogLevel.Normal);
+        noBeep = CommonUtils.toBoolean(preferenceStore.getString("MySQL.script.noBeep"));
+    }
+
+    @Override
+    public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
+        super.saveSettings(runnableContext, preferenceStore);
+
+        preferenceStore.setValue("MySQL.script.import", isImport);
+        preferenceStore.setValue("MySQL.script.logLevel", logLevel.name());
+        preferenceStore.setValue("MySQL.script.noBeep", noBeep);
+    }
 }
