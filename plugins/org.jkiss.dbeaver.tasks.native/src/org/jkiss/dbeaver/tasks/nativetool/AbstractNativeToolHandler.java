@@ -185,8 +185,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 try {
                     final int exitCode = process.exitValue();
                     if (exitCode != 0) {
-                        log.error("Process exit code: " + exitCode);
-                        return false;
+                        throw new IOException("Process exit code: " + exitCode);
                     }
                 } catch (IllegalThreadStateException e) {
                     // Still running
