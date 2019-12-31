@@ -202,18 +202,27 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
                 return info.toString().trim();
 
             }
-        } else if (element instanceof DBNDatabaseNode) {
-            final String description = ((DBNDatabaseNode) element).getNodeDescription();
+        } else if (element instanceof DBNNode) {
+            final String description = ((DBNNode) element).getNodeDescription();
             if (!CommonUtils.isEmptyTrimmed(description)) {
                 return description;
             }
+            return ((DBNNode) element).getNodeName();
+        }
+        return null;
+    }
+
+    @Override
+    public Image getToolTipImage(Object element) {
+        if (element instanceof DBNNode) {
+            return DBeaverIcons.getImage(((DBNNode) element).getNodeIconDefault());
         }
         return null;
     }
 
     @Override
     public int getToolTipDisplayDelayTime(Object object) {
-        return 500;
+        return 0;
     }
 
     @Override
