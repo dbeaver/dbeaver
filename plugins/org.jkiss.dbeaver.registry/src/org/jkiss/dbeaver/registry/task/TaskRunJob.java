@@ -79,6 +79,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 0, null, null);
             task.getTaskStatsFolder(true);
             File logFile = task.getRunLog(taskRun);
+            task.addNewRun(taskRun);
 
             try (Writer logStream = new OutputStreamWriter(new FileOutputStream(logFile), StandardCharsets.UTF_8)) {
                 taskLog = Log.getLog(TaskRunJob.class);
@@ -107,7 +108,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     taskError.printStackTrace(new PrintWriter(buf, true));
                     taskRun.setErrorStackTrace(buf.toString());
                 }
-                task.addNewRun(taskRun);
+                task.updateRun(taskRun);
             }
         } catch (Throwable e) {
             return GeneralUtils.makeExceptionStatus(e);

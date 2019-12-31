@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.FileReader;
@@ -220,6 +221,22 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
             stats.runs.add(taskRun);
             while (stats.runs.size() > MAX_RUNS_IN_STATS) {
                 stats.runs.remove(0);
+            }
+            flushRunStatistics(stats);
+        }
+        TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(this, DBTTaskEvent.Action.TASK_UPDATE));
+    }
+
+    void updateRun(TaskRunImpl taskRun) {
+        synchronized (this) {
+            RunStatistics stats = loadRunStatistics();
+            List<TaskRunImpl> runs = stats.runs;
+            for (int i = 0; i < runs.size(); i++) {
+                TaskRunImpl run = runs.get(i);
+                if (CommonUtils.equalObjects(run.getId(), taskRun.getId())) {
+                    runs.set(i, taskRun);
+                    break;
+                }
             }
             flushRunStatistics(stats);
         }
