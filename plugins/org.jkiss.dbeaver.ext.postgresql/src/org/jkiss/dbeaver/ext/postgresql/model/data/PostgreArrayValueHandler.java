@@ -54,6 +54,11 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     {
         if (object != null) {
             String className = object.getClass().getName();
+            if (className.equals(PostgreConstants.PG_ARRAY_CLASS)) {
+                // Convert arrays to string representation (#7468)
+                // Otherwise we may have problems with domain types decoding (as they come in form of PgObject)
+                object = object.toString();
+            }
             if (object instanceof String || className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
                 final PostgreDataType arrayType = PostgreUtils.findDataType(session, (PostgreDataSource) session.getDataSource(), type);
                 if (arrayType == null) {
