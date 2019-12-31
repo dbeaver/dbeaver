@@ -166,6 +166,10 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
             } else if (object instanceof MySQLTableBase) {
                 catalog = ((MySQLTableBase) object).getContainer();
             }
+            if (catalog == null) {
+                log.error("Can't determine export catalog");
+                continue;
+            }
             List<MySQLTableBase> tables = objMap.computeIfAbsent(catalog, mySQLCatalog -> new ArrayList<>());
             if (object instanceof MySQLTableBase) {
                 tables.add((MySQLTableBase) object);
