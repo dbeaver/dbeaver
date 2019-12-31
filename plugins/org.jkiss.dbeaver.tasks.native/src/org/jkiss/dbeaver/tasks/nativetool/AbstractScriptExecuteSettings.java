@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -33,7 +34,7 @@ public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extend
     }
 
     @Override
-    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
+    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
         super.loadSettings(runnableContext, preferenceStore);
 
         inputFile = preferenceStore.getString("inputFile");

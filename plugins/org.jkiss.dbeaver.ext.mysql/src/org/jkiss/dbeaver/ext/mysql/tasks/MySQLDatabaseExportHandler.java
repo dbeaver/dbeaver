@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
@@ -30,9 +31,10 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
-    protected MySQLExportSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
+    protected MySQLExportSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
         MySQLExportSettings settings = new MySQLExportSettings();
         settings.loadSettings(context, new TaskPreferenceStore(task));
+
         return settings;
     }
 

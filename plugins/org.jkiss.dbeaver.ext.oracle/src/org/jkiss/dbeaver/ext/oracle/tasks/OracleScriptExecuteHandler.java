@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
@@ -28,9 +29,10 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
     }
 
     @Override
-    protected OracleScriptExecuteSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
+    protected OracleScriptExecuteSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
         OracleScriptExecuteSettings settings = new OracleScriptExecuteSettings();
         settings.loadSettings(context, new TaskPreferenceStore(task));
+
         return settings;
     }
 

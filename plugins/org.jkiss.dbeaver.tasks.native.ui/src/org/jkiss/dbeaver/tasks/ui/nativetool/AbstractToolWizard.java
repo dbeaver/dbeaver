@@ -125,7 +125,11 @@ public abstract class AbstractToolWizard<SETTINGS extends AbstractNativeToolSett
 
     @Override
     public void createPageControls(Composite pageContainer) {
-        settings.loadSettings(UIUtils.getDefaultRunnableContext(), getPreferenceStore());
+        try {
+            settings.loadSettings(UIUtils.getDefaultRunnableContext(), getPreferenceStore());
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Settings load", "Error loading wizard settings", e);
+        }
 
         super.createPageControls(pageContainer);
 

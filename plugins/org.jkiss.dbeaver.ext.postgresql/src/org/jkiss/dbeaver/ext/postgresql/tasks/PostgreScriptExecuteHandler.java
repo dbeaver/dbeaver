@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -23,9 +24,10 @@ public class PostgreScriptExecuteHandler extends PostgreNativeToolHandler<Postgr
     }
 
     @Override
-    protected PostgreScriptExecuteSettings createTaskSettings(DBRRunnableContext context, DBTTask task) {
+    protected PostgreScriptExecuteSettings createTaskSettings(DBRRunnableContext context, DBTTask task) throws DBException {
         PostgreScriptExecuteSettings settings = new PostgreScriptExecuteSettings();
         settings.loadSettings(context, new TaskPreferenceStore(task));
+
         return settings;
     }
 

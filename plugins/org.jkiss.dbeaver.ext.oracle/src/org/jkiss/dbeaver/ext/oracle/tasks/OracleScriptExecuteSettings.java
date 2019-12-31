@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
@@ -35,7 +36,7 @@ public class OracleScriptExecuteSettings extends AbstractScriptExecuteSettings<D
     }
 
     @Override
-    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
+    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         super.loadSettings(runnableContext, store);
     }
 

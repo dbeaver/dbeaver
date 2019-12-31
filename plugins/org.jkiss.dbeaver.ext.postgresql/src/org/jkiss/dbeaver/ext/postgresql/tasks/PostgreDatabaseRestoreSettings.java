@@ -61,7 +61,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
     }
 
     @Override
-    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
+    public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         super.loadSettings(runnableContext, store);
 
         inputFile = store.getString("pg.restore.inputFile");

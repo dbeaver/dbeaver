@@ -110,7 +110,6 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 task.addNewRun(taskRun);
             }
         } catch (Throwable e) {
-            taskLog.error("Error running task", e);
             return GeneralUtils.makeExceptionStatus(e);
         }
         return Status.OK_STATUS;
