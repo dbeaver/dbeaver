@@ -174,6 +174,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         for (Map.Entry<MySQLCatalog, List<MySQLTableBase>> entry : objMap.entrySet()) {
             getExportObjects().add(new MySQLDatabaseExportInfo(entry.getKey(), entry.getValue()));
         }
+        updateDataSourceContainer();
     }
 
     @Override

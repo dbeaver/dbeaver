@@ -140,6 +140,8 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
             }
         }
         getExportObjects().addAll(objMap.values());
+
+        updateDataSourceContainer();
     }
 
     @Override
