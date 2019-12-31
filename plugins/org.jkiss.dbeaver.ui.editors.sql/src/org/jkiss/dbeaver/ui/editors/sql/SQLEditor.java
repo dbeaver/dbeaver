@@ -3423,9 +3423,14 @@ public class SQLEditor extends SQLEditorBase implements
                 serverOutputs.clear();
             }
 
+            if (outputs.isEmpty()) {
+                return;
+            }
+            PrintWriter outputWriter = outputViewer.getOutputWriter();
+
             for (ServerOutputInfo info : outputs) {
                 try {
-                    info.outputReader.readServerOutput(monitor, info.executionContext, info.result, null, outputViewer.getOutputWriter());
+                    info.outputReader.readServerOutput(monitor, info.executionContext, info.result, null, outputWriter);
                 } catch (Exception e) {
                     log.error(e);
                 }
@@ -3447,7 +3452,7 @@ public class SQLEditor extends SQLEditorBase implements
                             DBCStatement statement = queryJob.getCurrentStatement();
                             if (statement != null) {
                                 try {
-                                    outputReader.readServerOutput(monitor, executionContext, null, statement, outputViewer.getOutputWriter());
+                                    outputReader.readServerOutput(monitor, executionContext, null, statement, outputWriter);
                                 } catch (DBCException e) {
                                     log.error(e);
                                 }
@@ -3456,6 +3461,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
+            outputWriter.flush();
             UIUtils.asyncExec(() -> {
                 if (outputViewer!=null) {
                     if (outputViewer.getControl()!=null) {
