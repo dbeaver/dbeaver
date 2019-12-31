@@ -813,7 +813,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 curPos = curElement.getOffset() - 1;
                 while (curPos >= 0) {
                     char c = document.getChar(curPos);
-                    if (!Character.isWhitespace(c)) {
+                    if (Character.isLetter(c)) {
                         break;
                     }
                     curPos--;
