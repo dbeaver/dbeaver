@@ -103,6 +103,7 @@ public abstract class AbstractToolSettings<BASE_OBJECT extends DBSObject> {
                                     DBSObject object = DBUtils.findObjectById(monitor, finalProject, objectId);
                                     if (object != null) {
                                         databaseObjects.add((BASE_OBJECT) object);
+                                        dataSourceContainer = object.getDataSource().getContainer();
                                     }
                                 } catch (Throwable e) {
                                     throw new DBException("Can't find database object '" + objectId + "' in project '" + finalProject.getName() + "' for task configuration", e);

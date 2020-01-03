@@ -63,6 +63,11 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
     }
 
     @Override
+    protected boolean isMergeProcessStreams() {
+        return true;
+    }
+
+    @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLScriptExecuteSettings settings, MySQLCatalog arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
         File inputFile = new File(settings.getInputFile());
         if (!inputFile.exists()) {
