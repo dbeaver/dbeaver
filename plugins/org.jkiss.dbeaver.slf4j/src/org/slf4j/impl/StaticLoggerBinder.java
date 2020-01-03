@@ -17,6 +17,12 @@ public class StaticLoggerBinder implements LoggerFactoryBinder, ILoggerFactory {
 
     private static final Log log = Log.getLog(StaticLoggerBinder.class);
 
+    private static final StaticLoggerBinder SINGLETON = new StaticLoggerBinder();
+
+    public static StaticLoggerBinder getSingleton() {
+        return SINGLETON;
+    }
+
     public ILoggerFactory getLoggerFactory() {
         return this;
     }
@@ -101,27 +107,27 @@ public class StaticLoggerBinder implements LoggerFactoryBinder, ILoggerFactory {
 
             @Override
             public void debug(String s) {
-                log.debug(s);
+                //log.debug(s);
             }
 
             @Override
             public void debug(String s, Object o) {
-                log.debug(s);
+                //log.debug(s);
             }
 
             @Override
             public void debug(String s, Object o, Object o1) {
-                log.debug(s);
+                //log.debug(s);
             }
 
             @Override
             public void debug(String s, Object... objects) {
-                log.debug(s);
+                //log.debug(s);
             }
 
             @Override
             public void debug(String s, Throwable throwable) {
-                log.debug(s, throwable);
+                //log.debug(s, throwable);
             }
 
             @Override
