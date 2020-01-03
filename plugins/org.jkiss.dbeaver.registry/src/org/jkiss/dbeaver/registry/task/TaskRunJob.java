@@ -67,51 +67,44 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
-        try {
-            Date startTime = new Date();
+        Date startTime = new Date();
 
-            String taskId = TaskManagerImpl.systemDateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
-            TaskRunImpl taskRun = new TaskRunImpl(
-                taskId,
-                new Date(),
-                System.getProperty(StandardConstants.ENV_USER_NAME),
-                GeneralUtils.getProductTitle(),
-                0, null, null);
-            task.getTaskStatsFolder(true);
-            File logFile = task.getRunLog(taskRun);
-            task.addNewRun(taskRun);
+        String taskId = TaskManagerImpl.systemDateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
+        TaskRunImpl taskRun = new TaskRunImpl(
+            taskId,
+            new Date(),
+            System.getProperty(StandardConstants.ENV_USER_NAME),
+            GeneralUtils.getProductTitle(),
+            0, null, null);
+        task.getTaskStatsFolder(true);
+        File logFile = task.getRunLog(taskRun);
+        task.addNewRun(taskRun);
 
-            try (Writer logStream = new OutputStreamWriter(new FileOutputStream(logFile), StandardCharsets.UTF_8)) {
-                taskLog = Log.getLog(TaskRunJob.class);
-                Log.setLogWriter(logStream);
-                try {
-                    monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
-                    executeTask(new LoggingProgressMonitor(monitor), new PrintWriter(logStream, true));
-                } catch (Throwable e) {
-                    taskError = e;
-                    taskLog.error("Task fatal error", e);
-                    throw e;
-                } finally {
-                    monitor.done();
-                    Log.setLogWriter(null);
-                    taskLog.flush();
-                }
-            } finally {
-                taskRun.setRunDuration(elapsedTime);
-                if (taskError != null) {
-                    String errorMessage = taskError.getMessage();
-                    if (CommonUtils.isEmpty(errorMessage)) {
-                        errorMessage = taskError.getClass().getName();
-                    }
-                    taskRun.setErrorMessage(errorMessage);
-                    StringWriter buf = new StringWriter();
-                    taskError.printStackTrace(new PrintWriter(buf, true));
-                    taskRun.setErrorStackTrace(buf.toString());
-                }
-                task.updateRun(taskRun);
-            }
+        try (Writer logStream = new OutputStreamWriter(new FileOutputStream(logFile), StandardCharsets.UTF_8)) {
+            taskLog = Log.getLog(TaskRunJob.class);
+            Log.setLogWriter(logStream);
+            monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
+            executeTask(new LoggingProgressMonitor(monitor), new PrintWriter(logStream, true));
         } catch (Throwable e) {
-            return GeneralUtils.makeExceptionStatus(e);
+            taskError = e;
+            taskLog.error("Task fatal error", e);
+        } finally {
+            monitor.done();
+            Log.setLogWriter(null);
+            taskLog.flush();
+
+            taskRun.setRunDuration(elapsedTime);
+            if (taskError != null) {
+                String errorMessage = taskError.getMessage();
+                if (CommonUtils.isEmpty(errorMessage)) {
+                    errorMessage = taskError.getClass().getName();
+                }
+                taskRun.setErrorMessage(errorMessage);
+                StringWriter buf = new StringWriter();
+                taskError.printStackTrace(new PrintWriter(buf, true));
+                taskRun.setErrorStackTrace(buf.toString());
+            }
+            task.updateRun(taskRun);
         }
         return Status.OK_STATUS;
     }
