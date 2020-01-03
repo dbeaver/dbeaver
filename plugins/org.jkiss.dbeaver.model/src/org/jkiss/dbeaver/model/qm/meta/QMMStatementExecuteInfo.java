@@ -32,7 +32,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     private String queryString;
 
     private long fetchRowCount;
-    private long updateRowCount;
+    private long updateRowCount = -1;
 
     private int errorCode;
     private String errorMessage;
