@@ -162,7 +162,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         }
     }
 
-    public PropertyDescriptor(String category, Object id, String name, String description, Class<?> type, boolean required, String defaultValue, String[] validValues, boolean editable) {
+    public PropertyDescriptor(String category, Object id, String name, String description, Class<?> type, boolean required, Object defaultValue, String[] validValues, boolean editable) {
         this.category = category;
         this.id = id;
         this.name = name;
