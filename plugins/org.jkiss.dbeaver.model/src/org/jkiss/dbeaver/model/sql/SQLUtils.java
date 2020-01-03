@@ -410,7 +410,7 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static SQLDialect getDialectFromDataSource(DBPDataSource dataSource) {
+    public static SQLDialect getDialectFromDataSource(@NotNull DBPDataSource dataSource) {
         return dataSource.getSQLDialect();
     }
 
