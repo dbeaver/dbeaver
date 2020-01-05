@@ -55,6 +55,9 @@ public class OcientDataSourceProvider extends GenericDataSourceProvider {
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());
         }
+        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            url.append("/").append(connectionInfo.getDatabaseName());
+        }
         return url.toString();
     }
 }

@@ -23,7 +23,7 @@
                         class="com.ocient.jdbc.JDBCDriver"
                         icon="icons/ocient_icon.png"
                         iconBig="icons/ocient_icon_big.png"
-                        sampleURL="jdbc:ocient://{host}[:port]/?[db={database}]"
+                        sampleURL="jdbc:ocient://{host}:{port}/{database}"
                         defaultPort="4050"
                         description="Ocient JDBC driver"
                         webURL=""
