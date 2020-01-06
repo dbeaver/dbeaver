@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -56,6 +57,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -65,7 +67,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private static final Log log = Log.getLog(DatabaseTasksView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.tasks";
-    public static final String TASKS_VIEW_MENU_ID = VIEW_ID + ".menu";
+    private static final String TASKS_VIEW_MENU_ID = VIEW_ID + ".menu";
 
     public static final String CREATE_TASK_CMD_ID = "org.jkiss.dbeaver.task.create";
     public static final String EDIT_TASK_CMD_ID = "org.jkiss.dbeaver.task.edit";
@@ -81,47 +83,12 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private final List<DBTTask> allTasks = new ArrayList<>();
 
-    //private final SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
+    private boolean groupByProject = false;
+    private boolean groupByType = false;
+    private boolean groupByCategory = false;
+
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
     private Color colorError;
-
-    private static class TreeListContentProvider implements ITreeContentProvider {
-
-        @Override
-        public Object[] getElements(Object inputElement) {
-            return ((Collection) inputElement).toArray();
-        }
-
-        @Override
-        public Object[] getChildren(Object parentElement) {
-            return new Object[0];
-        }
-
-        @Override
-        public Object getParent(Object element) {
-            return null;
-        }
-
-        @Override
-        public boolean hasChildren(Object element) {
-            return false;
-        }
-    }
-
-    public class NamedObjectPatternFilter extends PatternFilter {
-        NamedObjectPatternFilter() {
-            setIncludeLeadingWildcard(true);
-        }
-
-        protected boolean isLeafMatch(Viewer viewer, Object element) {
-            if (element instanceof DBTTask) {
-                return wordMatches(((DBTTask) element).getName());
-            } else if (element instanceof DBTTaskRun) {
-                return wordMatches(element.toString());
-            }
-            return true;
-        }
-    }
 
     @Override
     public void createPartControl(Composite parent) {
@@ -136,6 +103,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         sashForm.setWeights(new int[]{700, 300});
 
+        loadViewConfig();
         loadTasks();
     }
 
@@ -150,104 +118,149 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskColumnController = new ViewerColumnController("tasks", filteredTree.getViewer());
         taskColumnController.addColumn("Name", "Task name", SWT.LEFT, true, true, new TaskLabelProvider() {
             @Override
-            protected String getCellText(DBTTask task) {
-                return task.getName();
+            protected String getCellText(Object element) {
+                if (element instanceof DBPProject) {
+                    return ((DBPProject) element).getName();
+                } else if (element instanceof DBTTask) {
+                    return ((DBTTask) element).getName();
+                } else {
+                    return element.toString();
+                }
             }
 
             @Override
-            protected DBPImage getCellImage(DBTTask task) {
-                DBPImage icon = task.getType().getIcon();
-                return icon != null ? icon : DBIcon.TREE_TASK;
+            protected DBPImage getCellImage(Object element) {
+                if (element instanceof DBPProject) {
+                    return DBIcon.PROJECT;
+                } else if (element instanceof DBTTask) {
+                    return ((DBTTask) element).getType().getIcon();
+                } else if (element instanceof TaskCategoryNode) {
+                    return ((TaskCategoryNode) element).category.getIcon();
+                } else if (element instanceof TaskTypeNode) {
+                    return ((TaskTypeNode) element).type.getIcon();
+                }
+                return null;
             }
 
             @Override
             public String getToolTipText(Object element) {
-                String description = ((DBTTask) element).getDescription();
-                if (CommonUtils.isEmpty(description)) {
-                    description = ((DBTTask) element).getName();
+                if (element instanceof DBTTask) {
+                    String description = ((DBTTask) element).getDescription();
+                    if (CommonUtils.isEmpty(description)) {
+                        description = ((DBTTask) element).getName();
+                    }
+                    return description;
                 }
-                return description;
+                return null;
             }
         });
         taskColumnController.addColumn("Created", "Task create time", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
-            protected String getCellText(DBTTask task) {
-                return dateFormat.format(task.getCreateTime());
+            protected String getCellText(Object element) {
+                if (element instanceof DBTTask) {
+                    return dateFormat.format(((DBTTask) element).getCreateTime());
+                } else {
+                    return null;
+                }
             }
         });
         taskColumnController.addColumn("Last Run", "Task last start time", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            protected String getCellText(DBTTask task) {
-                DBTTaskRun lastRun = task.getLastRun();
-                if (lastRun == null) {
-                    return "N/A";
-                } else {
-                    return dateFormat.format(lastRun.getStartTime());
+            protected String getCellText(Object element) {
+                if (element instanceof DBTTask) {
+                    DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
+                    if (lastRun == null) {
+                        return "N/A";
+                    } else {
+                        return dateFormat.format(lastRun.getStartTime());
+                    }
                 }
+                return null;
             }
         });
         taskColumnController.addColumn("Last Duration", "Task last run duration", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
-            protected String getCellText(DBTTask task) {
-                DBTTaskRun lastRun = task.getLastRun();
-                if (lastRun == null) {
-                    return "N/A";
-                } else {
-                    return RuntimeUtils.formatExecutionTime(lastRun.getRunDuration());
+            protected String getCellText(Object element) {
+                if (element instanceof DBTTask) {
+                    DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
+                    if (lastRun == null) {
+                        return "N/A";
+                    } else {
+                        return RuntimeUtils.formatExecutionTime(lastRun.getRunDuration());
+                    }
                 }
+                return null;
             }
         });
         taskColumnController.addColumn("Last Result", "Task last result", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            protected String getCellText(DBTTask task) {
-                DBTTaskRun lastRun = task.getLastRun();
-                if (lastRun == null) {
-                    return "N/A";
-                } else {
-                    if (lastRun.isRunSuccess()) {
-                        return "Success";
+            protected String getCellText(Object element) {
+                if (element instanceof DBTTask) {
+                    DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
+                    if (lastRun == null) {
+                        return "N/A";
                     } else {
-                        return CommonUtils.notEmpty(lastRun.getErrorMessage());
+                        if (lastRun.isRunSuccess()) {
+                            return "Success";
+                        } else {
+                            return CommonUtils.notEmpty(lastRun.getErrorMessage());
+                        }
                     }
                 }
+                return null;
             }
         });
         DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
         if (scheduler != null) {
             taskColumnController.addColumn("Next Run", "Task next scheduled run", SWT.LEFT, true, false, new TaskLabelProvider() {
                 @Override
-                protected String getCellText(DBTTask task) {
-                    DBTTaskScheduleInfo scheduledTask = scheduler.getScheduledTaskInfo(task);
-                    if (scheduledTask == null) {
-                        return "";
-                    } else {
-                        return scheduledTask.getNextRunInfo();
+                protected String getCellText(Object element) {
+                    if (element instanceof DBTTask) {
+                        DBTTaskScheduleInfo scheduledTask = scheduler.getScheduledTaskInfo((DBTTask) element);
+                        if (scheduledTask == null) {
+                            return "";
+                        } else {
+                            return scheduledTask.getNextRunInfo();
+                        }
                     }
+                    return null;
                 }
             });
         }
         taskColumnController.addColumn("Description", "Task description", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
-            protected String getCellText(DBTTask task) {
-                return CommonUtils.notEmpty(task.getDescription());
+            protected String getCellText(Object element) {
+                if (element instanceof DBTTask) {
+                    return CommonUtils.notEmpty(((DBTTask) element).getDescription());
+                }
+                return null;
             }
         });
         taskColumnController.addColumn("Type", "Task type", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            protected String getCellText(DBTTask task) {
-                return task.getType().getName();
+            protected String getCellText(Object element) {
+                if (element instanceof DBTTask) {
+                    return ((DBTTask) element).getType().getName();
+                }
+                return null;
             }
         });
         taskColumnController.addColumn("Category", "Task category", SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
-            protected String getCellText(DBTTask task) {
-                return task.getType().getCategory().getName();
+            protected String getCellText(Object element) {
+                if (element instanceof DBTTask) {
+                    return ((DBTTask) element).getType().getCategory().getName();
+                }
+                return null;
             }
         });
         taskColumnController.addColumn("Project", "Task container project", SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
-            protected String getCellText(DBTTask task) {
-                return task.getProject().getName();
+            protected String getCellText(Object element) {
+                if (element instanceof DBTTask) {
+                    return ((DBTTask) element).getProject().getName();
+                }
+                return null;
             }
         });
         taskColumnController.createColumns(true);
@@ -421,6 +434,53 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         });
     }
 
+    public boolean isGroupByProject() {
+        return groupByProject;
+    }
+
+    public void setGroupByProject(boolean groupByProject) {
+        this.groupByProject = groupByProject;
+        saveViewConfig();
+    }
+
+    public boolean isGroupByType() {
+        return groupByType;
+    }
+
+    public void setGroupByType(boolean groupByType) {
+        this.groupByType = groupByType;
+        saveViewConfig();
+    }
+
+    public boolean isGroupByCategory() {
+        return groupByCategory;
+    }
+
+    public void setGroupByCategory(boolean groupByCategory) {
+        this.groupByCategory = groupByCategory;
+        saveViewConfig();
+    }
+
+    private void loadViewConfig() {
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        groupByProject = preferenceStore.getBoolean("dbeaver.tasks.view.groupByProject");
+        groupByCategory = preferenceStore.getBoolean("dbeaver.tasks.view.groupByCategory");
+        groupByType = preferenceStore.getBoolean("dbeaver.tasks.view.groupByType");
+
+    }
+
+    private void saveViewConfig() {
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        preferenceStore.setValue("dbeaver.tasks.view.groupByProject", groupByProject);
+        preferenceStore.setValue("dbeaver.tasks.view.groupByCategory", groupByCategory);
+        preferenceStore.setValue("dbeaver.tasks.view.groupByType", groupByType);
+        try {
+            preferenceStore.save();
+        } catch (IOException e) {
+            log.debug(e);
+        }
+    }
+
     public void refresh() {
         refreshTasks();
         refreshScheduledTasks();
@@ -433,24 +493,79 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         refreshTasks();
         refreshScheduledTasks();
 
-        taskViewer.setInput(allTasks);
-        taskColumnController.repackColumns();
+        regroupTasks();
+    }
+
+    public void regroupTasks() {
+        taskViewer.getTree().setRedraw(false);
+        try {
+            List<Object> rootObjects = new ArrayList<>();
+            if (groupByProject) {
+                rootObjects.addAll(getTaskProjects(allTasks));
+            } else if (groupByCategory) {
+                for (DBTTaskCategory category : getTaskCategories(null, null, allTasks)) {
+                    rootObjects.add(new TaskCategoryNode(null, null, category));
+                }
+            } else if (groupByType) {
+                for (DBTTaskType type : getTaskTypes(null, null, allTasks)) {
+                    rootObjects.add(new TaskTypeNode(null, null, type));
+                }
+            } else {
+                rootObjects.addAll(allTasks);
+            }
+
+            taskViewer.setInput(rootObjects);
+            taskViewer.expandAll();
+            taskColumnController.repackColumns();
+        } finally {
+            taskViewer.getTree().setRedraw(true);
+        }
+    }
+
+    private List<DBPProject> getTaskProjects(List<DBTTask> tasks) {
+        Set<DBPProject> projects = new LinkedHashSet<>();
+        tasks.forEach(task -> projects.add(task.getProject()));
+        return new ArrayList<>(projects);
+    }
+
+    private static List<DBTTaskCategory> getTaskCategories(DBPProject project, DBTTaskCategory parentCategory, List<DBTTask> tasks) {
+        Set<DBTTaskCategory> categories = new LinkedHashSet<>();
+        tasks.forEach(task -> {
+            if (project == null || project == task.getProject()) {
+                DBTTaskCategory category = task.getType().getCategory();
+                if (parentCategory == category.getParent()) {
+                    categories.add(category);
+                }
+            }
+        });
+
+        return new ArrayList<>(categories);
+    }
+
+    private static List<DBTTaskType> getTaskTypes(DBPProject project, DBTTaskCategory category, List<DBTTask> tasks) {
+        Set<DBTTaskType> types = new LinkedHashSet<>();
+        tasks.forEach(task -> {
+            if (project == null || project == task.getProject()) {
+                if (category == null || category == task.getType().getCategory()) {
+                    types.add(task.getType());
+                }
+            }
+        });
+        return new ArrayList<>(types);
     }
 
     private void refreshTasks() {
         allTasks.clear();
 
-        List<DBPProject> projectsWithTasks = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             DBTTaskManager taskManager = project.getTaskManager();
             DBTTask[] tasks = taskManager.getAllTasks();
             if (tasks.length == 0) {
                 continue;
             }
-            projectsWithTasks.add(project);
             Collections.addAll(allTasks, tasks);
         }
-        allTasks.sort(Comparator.comparing(DBTTask::getCreateTime));
+        allTasks.sort((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()));
     }
 
     private void refreshScheduledTasks() {
@@ -487,32 +602,170 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         }
     }
 
-    private abstract class TaskLabelProvider extends ColumnLabelProvider {
+    private class TreeListContentProvider implements ITreeContentProvider {
+
         @Override
-        public final void update(ViewerCell cell) {
-            DBTTask task = (DBTTask) cell.getElement();
-            DBTTaskRun lastRun = task.getLastRun();
-            if (lastRun != null && !lastRun.isRunSuccess()) {
-                cell.setBackground(colorError);
-            } else {
-                cell.setBackground(null);
-            }
-            cell.setText(getCellText(task));
-            DBPImage cellImage = getCellImage(task);
-            if (cellImage != null) {
-                cell.setImage(DBeaverIcons.getImage(cellImage));
-            }
+        public Object[] getElements(Object inputElement) {
+            return ((Collection) inputElement).toArray();
         }
 
-        protected DBPImage getCellImage(DBTTask task) {
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            List<Object> children = new ArrayList<>();
+            if (parentElement instanceof DBPProject) {
+                DBPProject project = (DBPProject) parentElement;
+                if (groupByCategory) {
+                    for (DBTTaskCategory category : getTaskCategories(project, null, allTasks)) {
+                        children.add(new TaskCategoryNode(project, null, category));
+                    }
+                } else if (groupByType) {
+                    for (DBTTaskType type : getTaskTypes(project, null, allTasks)) {
+                        children.add(new TaskTypeNode(project, null, type));
+                    }
+                } else {
+                    for (DBTTask task : allTasks) {
+                        if (task.getProject() == parentElement) {
+                            children.add(task);
+                        }
+                    }
+                }
+            } else if (parentElement instanceof TaskCategoryNode) {
+                // Child categories
+                TaskCategoryNode parentCat = (TaskCategoryNode) parentElement;
+                for (DBTTaskCategory childCat : getTaskCategories(parentCat.project, parentCat.category, allTasks)) {
+                    children.add(new TaskCategoryNode(parentCat.project, parentCat, childCat));
+                }
+
+                if (groupByType) {
+                    // Task types
+                    for (DBTTaskType type : getTaskTypes(parentCat.project, parentCat.category, allTasks)) {
+                        children.add(new TaskTypeNode(parentCat.project, parentCat, type));
+                    }
+                } else {
+                    // Tasks
+                    for (DBTTask task : allTasks) {
+                        if ((parentCat.project == null || task.getProject() == parentCat.project) && task.getType().getCategory() == parentCat.category) {
+                            children.add(task);
+                        }
+                    }
+                }
+            } else if (parentElement instanceof TaskTypeNode) {
+                // Child tasks
+                TaskTypeNode parentType = (TaskTypeNode) parentElement;
+                for (DBTTask task : allTasks) {
+                    if ((parentType.project == null || task.getProject() == parentType.project) && task.getType() == parentType.type) {
+                        children.add(task);
+                    }
+                }
+            } else {
+
+            }
+
+            return children.toArray();
+        }
+
+        @Override
+        public Object getParent(Object element) {
+            if (element instanceof TaskTypeNode) {
+                if (((TaskTypeNode) element).parent != null) {
+                    return ((TaskTypeNode) element).parent;
+                } else {
+                    return ((TaskTypeNode) element).project;
+                }
+            } else if (element instanceof TaskCategoryNode) {
+                if (((TaskCategoryNode) element).parent != null) {
+                    return ((TaskCategoryNode) element).parent;
+                } else {
+                    return ((TaskCategoryNode) element).project;
+                }
+            }
             return null;
         }
 
-        protected abstract String getCellText(DBTTask task);
+        @Override
+        public boolean hasChildren(Object parentElement) {
+            return !(parentElement instanceof DBTTask);
+        }
+    }
+
+    public class NamedObjectPatternFilter extends PatternFilter {
+        NamedObjectPatternFilter() {
+            setIncludeLeadingWildcard(true);
+        }
+
+        protected boolean isLeafMatch(Viewer viewer, Object element) {
+            if (element instanceof DBTTask) {
+                return wordMatches(((DBTTask) element).getName());
+            } else if (element instanceof DBTTaskRun) {
+                return wordMatches(element.toString());
+            }
+            return true;
+        }
+    }
+
+    private static class TaskCategoryNode {
+        final DBPProject project;
+        final TaskCategoryNode parent;
+        final DBTTaskCategory category;
+
+        TaskCategoryNode(DBPProject project, TaskCategoryNode parent, DBTTaskCategory category) {
+            this.project = project;
+            this.parent = parent;
+            this.category = category;
+        }
+
+        @Override
+        public String toString() {
+            return category.getName();
+        }
+    }
+
+    private static class TaskTypeNode {
+        final DBPProject project;
+        final TaskCategoryNode parent;
+        final DBTTaskType type;
+
+        TaskTypeNode(DBPProject project, TaskCategoryNode parent, DBTTaskType type) {
+            this.project = project;
+            this.parent = parent;
+            this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return type.getName();
+        }
+    }
+
+    private abstract class TaskLabelProvider extends ColumnLabelProvider {
+        @Override
+        public final void update(ViewerCell cell) {
+            Object element = cell.getElement();
+            if (element instanceof DBTTask) {
+                DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
+                if (lastRun != null && !lastRun.isRunSuccess()) {
+                    cell.setBackground(colorError);
+                } else {
+                    cell.setBackground(null);
+                }
+            }
+            cell.setText(CommonUtils.notEmpty(getCellText(element)));
+            DBPImage cellImage = getCellImage(element);
+            if (cellImage != null) {
+                cell.setImage(DBeaverIcons.getImage(cellImage));
+            }
+
+        }
+
+        protected DBPImage getCellImage(Object element) {
+            return null;
+        }
+
+        protected abstract String getCellText(Object element);
 
         @Override
         public String getText(Object element) {
-            return getCellText((DBTTask) element);
+            return getCellText(element);
         }
     }
 
