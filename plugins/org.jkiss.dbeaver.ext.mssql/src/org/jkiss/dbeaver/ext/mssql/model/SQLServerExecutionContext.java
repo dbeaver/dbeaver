@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -55,9 +54,9 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         return (SQLServerDataSource) super.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public SQLServerExecutionContext getContextDefaults() {
         return this;
     }
 

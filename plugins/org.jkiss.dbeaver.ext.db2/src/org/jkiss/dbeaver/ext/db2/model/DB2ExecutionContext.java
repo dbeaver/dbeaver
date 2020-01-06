@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -58,9 +57,9 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
         return (DB2DataSource) super.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public DB2ExecutionContext getContextDefaults() {
         return this;
     }
 

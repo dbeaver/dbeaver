@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
@@ -56,9 +55,9 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
         return (MySQLDataSource) super.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public MySQLExecutionContext getContextDefaults() {
         return this;
     }
 

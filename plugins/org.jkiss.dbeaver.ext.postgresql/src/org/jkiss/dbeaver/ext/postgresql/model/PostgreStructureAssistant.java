@@ -42,7 +42,7 @@ import java.util.List;
 /**
  * PostgreStructureAssistant
  */
-public class PostgreStructureAssistant extends JDBCStructureAssistant
+public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExecutionContext>
 {
     private final PostgreDataSource dataSource;
 
@@ -88,11 +88,16 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    protected void findObjectsByMask(PostgreExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         PostgreSchema ownerSchema = parentObject instanceof PostgreSchema ? (PostgreSchema) parentObject : null;
         final PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
-        PostgreDatabase database = parentObject instanceof PostgreObject ? ((PostgreObject) parentObject).getDatabase() : dataSource.getDefaultInstance();
+
+        PostgreDatabase database = parentObject instanceof PostgreObject ? ((PostgreObject) parentObject).getDatabase() :
+            executionContext.getDefaultCatalog();
+        if (database == null) {
+            database = dataSource.getDefaultInstance();
+        }
         List<PostgreSchema> nsList = new ArrayList<>();
         if (ownerSchema != null) {
             nsList.add(0, ownerSchema);

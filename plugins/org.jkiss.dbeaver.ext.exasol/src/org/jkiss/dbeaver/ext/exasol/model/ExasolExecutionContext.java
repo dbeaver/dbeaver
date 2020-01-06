@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -57,9 +56,9 @@ public class ExasolExecutionContext extends JDBCExecutionContext implements DBCE
         return (ExasolDataSource) super.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public ExasolExecutionContext getContextDefaults() {
         return this;
     }
 

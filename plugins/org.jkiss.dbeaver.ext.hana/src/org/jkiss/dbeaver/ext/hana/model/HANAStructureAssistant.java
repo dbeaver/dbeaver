@@ -16,22 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
-import java.sql.SQLException;
-import java.util.List;
-
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
@@ -40,7 +33,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
-public class HANAStructureAssistant extends JDBCStructureAssistant {
+import java.sql.SQLException;
+import java.util.List;
+
+public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecutionContext> {
 
     private HANADataSource dataSource;
 
@@ -63,7 +59,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
        };
     }
 
-    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject,
+    protected void findObjectsByMask(JDBCExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject,
             String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults,
             List<DBSObjectReference> result) throws DBException, SQLException {
         GenericSchema parentSchema = parentObject instanceof GenericSchema ? (GenericSchema) parentObject : null;

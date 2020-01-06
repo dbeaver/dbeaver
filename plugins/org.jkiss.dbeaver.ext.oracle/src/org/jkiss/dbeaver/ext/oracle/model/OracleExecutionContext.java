@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -53,9 +52,9 @@ public class OracleExecutionContext extends JDBCExecutionContext implements DBCE
         return (OracleDataSource) super.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public OracleExecutionContext getContextDefaults() {
         return this;
     }
 

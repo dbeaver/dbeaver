@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -42,7 +42,7 @@ import java.util.List;
 /**
  * OracleStructureAssistant
  */
-public class OracleStructureAssistant implements DBSStructureAssistant
+public class OracleStructureAssistant implements DBSStructureAssistant<OracleExecutionContext>
 {
     static protected final Log log = Log.getLog(OracleStructureAssistant.class);
 
@@ -105,7 +105,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     @Override
     public List<DBSObjectReference> findObjectsByMask(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext, DBSObject parentObject,
+        @NotNull OracleExecutionContext executionContext,
+        DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
         boolean caseSensitive,
@@ -113,7 +114,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         OracleSchema schema = parentObject instanceof OracleSchema ? (OracleSchema) parentObject : null;
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
+
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
             // Search all objects
@@ -124,7 +126,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                 findConstraintsByMask(session, schema, objectNameMask, objectTypes, maxResults, objects);
             }
             // Sort objects. Put ones in the current schema first
-            final OracleSchema activeSchema = dataSource.getDefaultSchema();
+            final OracleSchema activeSchema = executionContext.getContextDefaults().getDefaultSchema();
             objects.sort((o1, o2) -> {
                 if (CommonUtils.equalObjects(o1.getContainer(), o2.getContainer())) {
                     return o1.getName().compareTo(o2.getName());
