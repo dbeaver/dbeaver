@@ -150,7 +150,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         try {
             supportsBatchUpdates = metaData.supportsBatchUpdates();
         } catch (Throwable e) {
-            log.debug(e);
+            log.debug(e.getMessage());
         }
 
         try {
