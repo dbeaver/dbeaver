@@ -39,6 +39,7 @@ public class SQLParserContext {
     private final SQLRuleManager ruleManager;
     @NotNull
     private final IDocument document;
+    private TPRuleBasedScanner scanner;
 
     public SQLParserContext(@NotNull DBPDataSource dataSource, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
         this.dataSource = dataSource;
@@ -71,13 +72,24 @@ public class SQLParserContext {
         return SQLUtils.getDialectFromDataSource(dataSource);
     }
 
-    public TPRuleBasedScanner createScanner() {
-        TPRuleBasedScanner scanner = new TPRuleBasedScanner();
-        scanner.setRules(ruleManager.getAllRules());
+    public TPRuleBasedScanner getScanner() {
+        if (scanner == null) {
+            scanner = new TPRuleBasedScanner();
+            scanner.setRules(ruleManager.getAllRules());
+        }
         return scanner;
     }
 
     public DBPPreferenceStore getPreferenceStore() {
         return dataSource.getContainer().getPreferenceStore();
     }
+
+    void startScriptEvaluation() {
+        scanner.startEval();
+    }
+
+    void endScriptEvaluation() {
+        scanner.endEval();
+    }
+
 }

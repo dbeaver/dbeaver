@@ -129,7 +129,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     public SQLEditorBase() {
         super();
         syntaxManager = new SQLSyntaxManager();
-        ruleScanner = new SQLRuleScanner(syntaxManager);
+        ruleScanner = new SQLRuleScanner();
         themeListener = new IPropertyChangeListener() {
             long lastUpdateTime = 0;
 
@@ -706,46 +706,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return SQLScriptParser.extractNextQuery(parserContext, offset, next);
     }
 
-    private void startScriptEvaluation() {
-        ruleScanner.startEval();
-    }
-
-    private void endScriptEvaluation() {
-        ruleScanner.endEval();
-    }
-
     public List<SQLScriptElement> extractScriptQueries(int startOffset, int length, boolean scriptMode, boolean keepDelimiters, boolean parseParameters) {
-        List<SQLScriptElement> queryList = new ArrayList<>();
-
-        IDocument document = getDocument();
-        if (document == null) {
-            return queryList;
-        }
-
-        this.startScriptEvaluation();
-        try {
-            for (int queryOffset = startOffset; ; ) {
-                SQLScriptElement query = SQLScriptParser.parseQuery(
-                    parserContext, queryOffset, startOffset + length, queryOffset, scriptMode, keepDelimiters);
-                if (query == null) {
-                    break;
-                }
-                queryList.add(query);
-                queryOffset = query.getOffset() + query.getLength();
-            }
-        } finally {
-            this.endScriptEvaluation();
-        }
-
-        if (parseParameters && getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
-            // Parse parameters
-            for (SQLScriptElement query : queryList) {
-                if (query instanceof SQLQuery) {
-                    ((SQLQuery) query).setParameters(parseParameters((SQLQuery) query));
-                }
-            }
-        }
-        return queryList;
+        return SQLScriptParser.extractScriptQueries(parserContext, startOffset, length, scriptMode, keepDelimiters, parseParameters);
     }
 
     public SQLCompletionContext getCompletionContext() {

@@ -61,7 +61,7 @@ public class SQLScriptParser
         SQLDialect dialect = context.getDialect();
 
         // Parse range
-        TPRuleBasedScanner ruleScanner = context.createScanner();
+        TPRuleBasedScanner ruleScanner = context.getScanner();
         boolean useBlankLines = !scriptMode && context.getSyntaxManager().isBlankLineDelimiter();
         ruleScanner.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
@@ -590,6 +590,41 @@ public class SQLScriptParser
             }
         }
         return null;
+    }
+
+    public static List<SQLScriptElement> extractScriptQueries(SQLParserContext parserContext, int startOffset, int length, boolean scriptMode, boolean keepDelimiters, boolean parseParameters) {
+        List<SQLScriptElement> queryList = new ArrayList<>();
+
+        IDocument document = parserContext.getDocument();
+        if (document.getLength() == 0) {
+            return queryList;
+        }
+
+        parserContext.startScriptEvaluation();
+        try {
+            for (int queryOffset = startOffset; ; ) {
+                SQLScriptElement query = parseQuery(
+                    parserContext, queryOffset, startOffset + length, queryOffset, scriptMode, keepDelimiters);
+                if (query == null) {
+                    break;
+                }
+                queryList.add(query);
+                queryOffset = query.getOffset() + query.getLength();
+            }
+        } finally {
+            parserContext.endScriptEvaluation();
+        }
+
+        if (parseParameters && parserContext.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
+            // Parse parameters
+            for (SQLScriptElement element : queryList) {
+                if (element instanceof SQLQuery) {
+                    SQLQuery query = (SQLQuery) element;
+                    (query).setParameters(parseParameters(parserContext, query.getOffset(), query.getLength()));
+                }
+            }
+        }
+        return queryList;
     }
 
     private static class ScriptBlockInfo {
