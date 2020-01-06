@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -104,7 +105,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
+    public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, DBSObject parentObject,
                                                       DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException
     {
         List<DB2ObjectType> db2ObjectTypes = new ArrayList<>(objectTypes.length);

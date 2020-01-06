@@ -91,7 +91,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
     {
         MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
         if (catalog == null && !globalSearch) {
-            catalog = dataSource.getDefaultDatabase();
+            catalog = ((MySQLExecutionContext)session.getExecutionContext()).getDefaultCatalog();
         }
         if (objectType == RelationalObjectType.TYPE_TABLE) {
             findTablesByMask(session, catalog, objectNameMask, maxResults, references);

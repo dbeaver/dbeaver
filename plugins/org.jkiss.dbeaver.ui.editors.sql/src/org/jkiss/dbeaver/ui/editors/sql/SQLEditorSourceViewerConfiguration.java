@@ -68,9 +68,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
      */
     private SQLEditorBase editor;
     private SQLRuleScanner ruleManager;
+    private SQLContextInformer contextInformer;
 
     private IContentAssistProcessor completionProcessor;
-    private IHyperlinkDetector hyperlinkDetector;
+    private SQLHyperlinkDetector hyperlinkDetector;
 
     /**
      * This class implements a single token scanner.
@@ -92,7 +93,16 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         super(preferenceStore);
         this.editor = editor;
         this.ruleManager = editor.getRuleScanner();
-        this.hyperlinkDetector = new SQLHyperlinkDetector(editor, editor.getSyntaxManager());
+        this.contextInformer = new SQLContextInformer(editor, editor.getSyntaxManager());
+        this.hyperlinkDetector = new SQLHyperlinkDetector(editor, this.contextInformer);
+    }
+
+    public SQLContextInformer getContextInformer() {
+        return contextInformer;
+    }
+
+    public SQLHyperlinkDetector getHyperlinkDetector() {
+        return hyperlinkDetector;
     }
 
     @Override
@@ -327,7 +337,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
         // Register information provider
-        IInformationProvider provider = new SQLInformationProvider(getSQLEditor());
+        IInformationProvider provider = new SQLInformationProvider(getSQLEditor(), contextInformer);
         String[] contentTypes = getConfiguredContentTypes(sourceViewer);
         for (String contentType : contentTypes) {
             presenter.setInformationProvider(provider, contentType);
@@ -357,9 +367,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
 
     void onDataSourceChange() {
-        if (hyperlinkDetector instanceof IHyperlinkDetectorExtension) {
-            ((IHyperlinkDetectorExtension) hyperlinkDetector).dispose();
-        }
+        contextInformer.refresh(editor.getSyntaxManager());
+        ((IHyperlinkDetectorExtension) hyperlinkDetector).dispose();
     }
 
     public IReconciler getReconciler(ISourceViewer sourceViewer) {

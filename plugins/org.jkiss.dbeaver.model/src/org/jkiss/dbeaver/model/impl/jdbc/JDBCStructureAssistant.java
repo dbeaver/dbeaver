@@ -19,7 +19,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -68,8 +69,8 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
     @NotNull
     @Override
     public List<DBSObjectReference> findObjectsByMask(
-        DBRProgressMonitor monitor,
-        DBSObject parentObject,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext, DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
         boolean caseSensitive,
@@ -78,7 +79,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         List<DBSObjectReference> references = new ArrayList<>();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), ModelMessages.model_jdbc_find_objects_by_name)) {
+        try (JDBCSession session = ((JDBCExecutionContext)executionContext).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name)) {
             for (DBSObjectType type : objectTypes) {
                 findObjectsByMask(session, type, parentObject, objectNameMask, caseSensitive, globalSearch, maxResults - references.size(), references);
                 if (references.size() >= maxResults) {

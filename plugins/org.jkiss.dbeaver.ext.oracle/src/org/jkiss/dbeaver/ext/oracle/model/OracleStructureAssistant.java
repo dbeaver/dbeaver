@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -103,8 +104,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     @NotNull
     @Override
     public List<DBSObjectReference> findObjectsByMask(
-        DBRProgressMonitor monitor,
-        DBSObject parentObject,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext, DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
         boolean caseSensitive,

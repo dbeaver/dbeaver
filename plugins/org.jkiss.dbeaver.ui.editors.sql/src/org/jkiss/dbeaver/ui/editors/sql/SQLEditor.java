@@ -1998,6 +1998,9 @@ public class SQLEditor extends SQLEditorBase implements
 
         DatabaseEditorUtils.setPartBackground(this, resultTabs);
 
+        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
+            ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
+        }
 
         DBCExecutionContext executionContext = getExecutionContext();
         if (syntaxLoaded && lastExecutionContext == executionContext) {
