@@ -21,6 +21,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
@@ -54,6 +56,8 @@ public class GroupingPanel implements IResultSetPanel {
     private IDialogSettings panelSettings;
 
     private GroupingResultsContainer resultsContainer;
+    private Composite groupingPlaceholder;
+    private IResultSetListener ownerListener;
 
     public GroupingPanel() {
     }
@@ -65,49 +69,59 @@ public class GroupingPanel implements IResultSetPanel {
 
         loadSettings();
 
-        this.resultsContainer = new GroupingResultsContainer(parent, presentation);
+        this.groupingPlaceholder = new Composite(parent, SWT.NONE);
+        this.groupingPlaceholder.setLayout(new FillLayout());
 
-        IResultSetController groupingViewer = this.resultsContainer.getResultSetController();
-
-        IResultSetListener ownerListener = new ResultSetListenerAdapter() {
+        this.ownerListener = new ResultSetListenerAdapter() {
             @Override
             public void handleResultSetLoad() {
                 // Here we can refresh grouping (makes sense if source query was modified with some conditions)
                 // Or just clear it (if brand new query was executed)
+                GroupingResultsContainer groupingResultsContainer = getGroupingResultsContainer();
                 if (presentation.getController().getModel().isMetadataChanged()) {
-                    resultsContainer.clearGrouping();
+                    groupingResultsContainer.clearGrouping();
                 } else {
                     try {
-                        resultsContainer.rebuildGrouping();
+                        groupingResultsContainer.rebuildGrouping();
                     } catch (DBException e) {
                         DBWorkbench.getPlatformUI().showError("Grouping error", "Can't refresh grouping query", e);
                     }
                 }
             }
         };
-
         this.presentation.getController().addListener(ownerListener);
-        groupingViewer.getControl().addDisposeListener(e ->
-            this.presentation.getController().removeListener(ownerListener));
 
-        IResultSetListener groupingResultsListener = new ResultSetListenerAdapter() {
-            @Override
-            public void handleResultSetLoad() {
-                updateControls();
-            }
-            @Override
-            public void handleResultSetSelectionChange(SelectionChangedEvent event) {
-                updateControls();
-            }
-        };
-        groupingViewer.addListener(groupingResultsListener);
-
-        return groupingViewer.getControl();
+        return groupingPlaceholder;
     }
 
+    private GroupingResultsContainer getGroupingResultsContainer() {
+        if (resultsContainer == null) {
+            this.resultsContainer = new GroupingResultsContainer(groupingPlaceholder, presentation);
+
+            IResultSetController groupingViewer = this.resultsContainer.getResultSetController();
+
+            groupingViewer.getControl().addDisposeListener(e ->
+                this.presentation.getController().removeListener(ownerListener));
+
+            IResultSetListener groupingResultsListener = new ResultSetListenerAdapter() {
+                @Override
+                public void handleResultSetLoad() {
+                    updateControls();
+                }
+
+                @Override
+                public void handleResultSetSelectionChange(SelectionChangedEvent event) {
+                    updateControls();
+                }
+            };
+            groupingViewer.addListener(groupingResultsListener);
+        }
+
+        return resultsContainer;
+    }
     @Override
     public boolean isDirty() {
-        return !resultsContainer.getGroupAttributes().isEmpty();
+        return !getGroupingResultsContainer().getGroupAttributes().isEmpty();
     }
 
     private void updateControls() {
@@ -147,18 +161,18 @@ public class GroupingPanel implements IResultSetPanel {
         contributionManager.add(new DefaultSortingAction());
         contributionManager.add(new DuplicatesOnlyAction());
         contributionManager.add(new Separator());
-        contributionManager.add(new EditColumnsAction(resultsContainer));
-        contributionManager.add(new DeleteColumnAction(resultsContainer));
+        contributionManager.add(new EditColumnsAction(getGroupingResultsContainer()));
+        contributionManager.add(new DeleteColumnAction(getGroupingResultsContainer()));
         contributionManager.add(new Separator());
-        contributionManager.add(new ClearGroupingAction(resultsContainer));
+        contributionManager.add(new ClearGroupingAction(getGroupingResultsContainer()));
     }
 
     abstract static class GroupingAction extends Action {
-        final GroupingResultsContainer resultsContainer;
+        final GroupingResultsContainer groupingResultsContainer;
 
-        GroupingAction(GroupingResultsContainer resultsContainer, String text, ImageDescriptor image) {
+        GroupingAction(GroupingResultsContainer groupingResultsContainer, String text, ImageDescriptor image) {
             super(text, image);
-            this.resultsContainer = resultsContainer;
+            this.groupingResultsContainer = groupingResultsContainer;
         }
     }
 
@@ -169,10 +183,10 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public void run() {
-            GroupingConfigDialog dialog = new GroupingConfigDialog(resultsContainer.getResultSetController().getControl().getShell(), resultsContainer);
+            GroupingConfigDialog dialog = new GroupingConfigDialog(groupingResultsContainer.getResultSetController().getControl().getShell(), groupingResultsContainer);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 try {
-                    resultsContainer.rebuildGrouping();
+                    groupingResultsContainer.rebuildGrouping();
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping settings", e);
                 }
@@ -187,17 +201,17 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public boolean isEnabled() {
-            return !resultsContainer.getResultSetController().getSelection().isEmpty();
+            return !groupingResultsContainer.getResultSetController().getSelection().isEmpty();
         }
 
         @Override
         public void run() {
-            DBDAttributeBinding currentAttribute = resultsContainer.getResultSetController().getActivePresentation().getCurrentAttribute();
+            DBDAttributeBinding currentAttribute = groupingResultsContainer.getResultSetController().getActivePresentation().getCurrentAttribute();
             if (currentAttribute != null) {
                 List<String> attributes = Collections.singletonList(currentAttribute.getFullyQualifiedName(DBPEvaluationContext.UI));
-                if (resultsContainer.removeGroupingAttribute(attributes) || resultsContainer.removeGroupingFunction(attributes)) {
+                if (groupingResultsContainer.removeGroupingAttribute(attributes) || groupingResultsContainer.removeGroupingFunction(attributes)) {
                     try {
-                        resultsContainer.rebuildGrouping();
+                        groupingResultsContainer.rebuildGrouping();
                     } catch (DBException e) {
                         DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping query", e);
                     }
@@ -213,13 +227,13 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public boolean isEnabled() {
-            return !resultsContainer.getGroupAttributes().isEmpty();
+            return !groupingResultsContainer.getGroupAttributes().isEmpty();
         }
 
         @Override
         public void run() {
-            resultsContainer.clearGrouping();
-            resultsContainer.getOwnerPresentation().getController().updatePanelActions();
+            groupingResultsContainer.clearGrouping();
+            groupingResultsContainer.getOwnerPresentation().getController().updatePanelActions();
         }
     }
 
@@ -253,7 +267,7 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public boolean isChecked() {
-            DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+            DBPDataSource dataSource = getGroupingResultsContainer().getDataContainer().getDataSource();
             if (dataSource == null) {
                 return false;
             }
@@ -270,14 +284,14 @@ public class GroupingPanel implements IResultSetPanel {
         @Override
         public void run() {
             String newValue = descending == null ? "" : (descending ? "DESC" : "ASC");
-            DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+            DBPDataSource dataSource = getGroupingResultsContainer().getDataContainer().getDataSource();
             if (dataSource == null) {
                 return;
             }
             dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING, newValue);
             dataSource.getContainer().getRegistry().flushConfig();
             try {
-                resultsContainer.rebuildGrouping();
+                getGroupingResultsContainer().rebuildGrouping();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change sort order", e);
             }
@@ -296,20 +310,20 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public boolean isChecked() {
-            DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+            DBPDataSource dataSource = getGroupingResultsContainer().getDataContainer().getDataSource();
             return dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
         }
 
         @Override
         public void run() {
             boolean newValue = !isChecked();
-            DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+            DBPDataSource dataSource = getGroupingResultsContainer().getDataContainer().getDataSource();
             if (dataSource == null) {
                 return;
             }
             dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY, newValue);
             try {
-                resultsContainer.rebuildGrouping();
+                getGroupingResultsContainer().rebuildGrouping();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change duplicates presentation", e);
             }
@@ -331,12 +345,12 @@ public class GroupingPanel implements IResultSetPanel {
         @Override
         public boolean isChecked() {
             return presentationDescriptor.matches(
-                resultsContainer.getResultSetController().getActivePresentation().getClass());
+                getGroupingResultsContainer().getResultSetController().getActivePresentation().getClass());
         }
 
         @Override
         public void run() {
-            ((ResultSetViewer)resultsContainer.getResultSetController()).switchPresentation(presentationDescriptor);
+            ((ResultSetViewer)getGroupingResultsContainer().getResultSetController()).switchPresentation(presentationDescriptor);
         }
     }
 

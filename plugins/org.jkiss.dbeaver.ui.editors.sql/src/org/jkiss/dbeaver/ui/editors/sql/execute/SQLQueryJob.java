@@ -350,6 +350,9 @@ public class SQLQueryJob extends DataSourceJob
 
         final SQLQuery originalQuery = sqlQuery;
 
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        monitor.beginTask("Get data receiver", 1);
+        monitor.subTask("Create results view");
         DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
         try {
             if (dataReceiver instanceof DBDDataReceiverInteractive) {
@@ -364,6 +367,7 @@ public class SQLQueryJob extends DataSourceJob
                 ((DBDDataReceiverInteractive) dataReceiver).setDataReceivePaused(false);
             }
         }
+        monitor.done();
 
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
@@ -389,7 +393,7 @@ public class SQLQueryJob extends DataSourceJob
 
             // Check and invalidate connection
             if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
-                executionContext.invalidateContext(session.getProgressMonitor(), true);
+                executionContext.invalidateContext(monitor, true);
                 connectionInvalidated = true;
             }
 
@@ -436,7 +440,7 @@ public class SQLQueryJob extends DataSourceJob
             if (fireEvents && listener != null && startQueryAlerted) {
                 // Notify query end
                 try {
-                    listener.onEndQuery(session, curResult);
+                    listener.onEndQuery(session, curResult, statistics);
                 } catch (Exception e) {
                     log.error(e);
                 }
@@ -476,7 +480,8 @@ public class SQLQueryJob extends DataSourceJob
 
         // Execute statement
         try {
-            session.getProgressMonitor().subTask("Execute query");
+            DBRProgressMonitor monitor = session.getProgressMonitor();
+            monitor.subTask("Execute query");
 
             boolean hasResultSet = dbcStatement.executeStatement();
 

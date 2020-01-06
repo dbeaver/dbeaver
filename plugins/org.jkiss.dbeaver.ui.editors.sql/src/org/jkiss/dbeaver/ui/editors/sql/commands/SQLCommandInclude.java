@@ -117,7 +117,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
 
         @Override
-        public void onEndQuery(DBCSession session, SQLQueryResult result) {
+        public void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics) {
 
         }
 
