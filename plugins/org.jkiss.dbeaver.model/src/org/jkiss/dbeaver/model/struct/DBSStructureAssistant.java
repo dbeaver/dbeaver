@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public interface DBSStructureAssistant
     /**
      * Search objects matching specified mask.
      * @param monitor           monitor
+     * @param executionContext
      * @param parentObject      parent (schema or catalog)
      * @param objectTypes       type of objects to search
      * @param objectNameMask    name mask
@@ -52,7 +54,8 @@ public interface DBSStructureAssistant
      */
     @NotNull
     List<DBSObjectReference> findObjectsByMask(
-        DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
         @Nullable DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.exasol.editors.ExasolObjectType;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -100,7 +101,7 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
+    public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, DBSObject parentObject,
                                                       DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch,
                                                       int maxResults) throws DBException {
         LOG.debug(objectNameMask);

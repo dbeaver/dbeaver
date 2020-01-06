@@ -505,12 +505,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         if (structureAssistant != null) {
                             Collection<DBSObjectReference> references = structureAssistant.findObjectsByMask(
                                 monitor,
+                                request.getContext().getExecutionContext(),
                                 null,
                                 structureAssistant.getAutoCompleteObjectTypes(),
                                 request.getWordDetector().removeQuotes(token),
                                 request.getWordDetector().isQuoted(token),
-                                false,
-                                2);
+                                false, 2);
                             if (!references.isEmpty()) {
                                 childObject = references.iterator().next().resolveObject(monitor);
                             }
@@ -782,12 +782,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     {
         Collection<DBSObjectReference> references = assistant.findObjectsByMask(
             monitor,
+            request.getContext().getExecutionContext(),
             rootSC,
             objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
             makeObjectNameMask(request.getWordDetector().removeQuotes(objectName)),
             request.getWordDetector().isQuoted(objectName),
-            request.getContext().isSearchGlobally(),
-            100);
+            request.getContext().isSearchGlobally(), 100);
         for (DBSObjectReference reference : references) {
             proposals.add(makeProposalsFromObject(
                 reference,
