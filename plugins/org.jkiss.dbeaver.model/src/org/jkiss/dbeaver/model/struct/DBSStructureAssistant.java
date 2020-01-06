@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * DBSStructureAssistant
  */
-public interface DBSStructureAssistant
+public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext>
 {
 
     DBSObjectType[] getSupportedObjectTypes();
@@ -42,7 +42,7 @@ public interface DBSStructureAssistant
     /**
      * Search objects matching specified mask.
      * @param monitor           monitor
-     * @param executionContext
+     * @param executionContext  execution context
      * @param parentObject      parent (schema or catalog)
      * @param objectTypes       type of objects to search
      * @param objectNameMask    name mask
@@ -55,7 +55,7 @@ public interface DBSStructureAssistant
     @NotNull
     List<DBSObjectReference> findObjectsByMask(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
+        @NotNull CONTEXT executionContext,
         @Nullable DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,

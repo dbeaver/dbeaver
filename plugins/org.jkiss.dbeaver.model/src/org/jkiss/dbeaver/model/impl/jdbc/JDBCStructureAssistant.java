@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
@@ -37,7 +36,7 @@ import java.util.List;
 /**
  * JDBCStructureAssistant
  */
-public abstract class JDBCStructureAssistant implements DBSStructureAssistant 
+public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContext> implements DBSStructureAssistant<CONTEXT>
 {
     static protected final Log log = Log.getLog(JDBCStructureAssistant.class);
 
@@ -70,7 +69,8 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
     @Override
     public List<DBSObjectReference> findObjectsByMask(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext, DBSObject parentObject,
+        @NotNull CONTEXT executionContext,
+        DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
         boolean caseSensitive,
@@ -79,9 +79,9 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         List<DBSObjectReference> references = new ArrayList<>();
-        try (JDBCSession session = ((JDBCExecutionContext)executionContext).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name)) {
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name)) {
             for (DBSObjectType type : objectTypes) {
-                findObjectsByMask(session, type, parentObject, objectNameMask, caseSensitive, globalSearch, maxResults - references.size(), references);
+                findObjectsByMask(executionContext, session, type, parentObject, objectNameMask, caseSensitive, globalSearch, maxResults - references.size(), references);
                 if (references.size() >= maxResults) {
                     break;
                 }
@@ -94,6 +94,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
     }
 
     protected abstract void findObjectsByMask(
+        CONTEXT executionContext,
         JDBCSession session,
         DBSObjectType objectType,
         DBSObject parentObject,
