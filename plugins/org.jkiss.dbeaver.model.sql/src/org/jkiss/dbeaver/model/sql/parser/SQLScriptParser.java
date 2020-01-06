@@ -21,6 +21,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IDocumentPartitioner;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.sql.*;
@@ -464,6 +465,52 @@ public class SQLScriptParser
             log.warn(e);
             return null;
         }
+    }
+
+    @Nullable
+    public static SQLScriptElement extractActiveQuery(SQLParserContext context, int selOffset, int selLength) {
+        String selText = null;
+        if (selOffset >= 0 && selLength > 0) {
+            try {
+                selText = context.getDocument().get(selOffset, selLength);
+            } catch (BadLocationException e) {
+                log.debug(e);
+            }
+        }
+
+        if (selText != null && context.getPreferenceStore().getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)) {
+            SQLSyntaxManager syntaxManager = context.getSyntaxManager();
+            selText = SQLUtils.trimQueryStatement(syntaxManager, selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
+        }
+
+        SQLScriptElement element;
+        if (!CommonUtils.isEmpty(selText)) {
+            SQLScriptElement parsedElement = SQLScriptParser.parseQuery(
+                context,
+                selOffset, selOffset + selLength, selOffset, false, false);
+            if (parsedElement instanceof SQLControlCommand) {
+                // This is a command
+                element = parsedElement;
+            } else {
+                // Use selected query as is
+                selText = SQLUtils.fixLineFeeds(selText);
+                element = new SQLQuery(context.getDataSource(), selText, selOffset, selLength);
+            }
+        } else if (selOffset >= 0) {
+            element = extractQueryAtPos(context, selOffset);
+        } else {
+            element = null;
+        }
+        // Check query do not ends with delimiter
+        // (this may occur if user selected statement including delimiter)
+        if (element == null || CommonUtils.isEmpty(element.getText())) {
+            return null;
+        }
+        if (element instanceof SQLQuery && context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
+            SQLQuery query = (SQLQuery) element;
+            query.setParameters(parseParameters(context, query.getOffset(), query.getLength()));
+        }
+        return element;
     }
 
     public static List<SQLQueryParameter> parseParameters(SQLParserContext context, int queryOffset, int queryLength) {

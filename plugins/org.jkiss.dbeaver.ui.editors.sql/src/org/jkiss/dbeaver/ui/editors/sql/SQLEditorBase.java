@@ -31,7 +31,6 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -44,7 +43,6 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -85,8 +83,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
 
     public static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
-
-    protected final static char[] BRACKETS = {'{', '}', '(', ')', '[', ']', '<', '>'};
 
     static {
         // SQL editor preferences. Do this here because it initializes display
@@ -404,7 +400,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
-        char[] matchChars = BRACKETS; //which brackets to match
+        char[] matchChars = SQLConstants.BRACKETS; //which brackets to match
         try {
             characterPairMatcher = new SQLCharacterPairMatcher(this, matchChars,
                 SQLParserPartitions.SQL_PARTITIONING,
@@ -416,6 +412,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         support.setCharacterPairMatcher(characterPairMatcher);
         support.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
         super.configureSourceViewerDecorationSupport(support);
+    }
+
+    public ICharacterPairMatcher getCharacterPairMatcher() {
+        return characterPairMatcher;
     }
 
     @NotNull
@@ -661,39 +661,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Nullable
     public SQLScriptElement extractActiveQuery() {
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-        String selText = selection.getText();
-
-        if (getActivePreferenceStore().getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)) {
-            selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
-        }
-
-        SQLScriptElement element;
-        if (!CommonUtils.isEmpty(selText)) {
-            SQLScriptElement parsedElement = SQLScriptParser.parseQuery(
-                parserContext,
-                selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false, false);
-            if (parsedElement instanceof SQLControlCommand) {
-                // This is a command
-                element = parsedElement;
-            } else {
-                // Use selected query as is
-                selText = SQLUtils.fixLineFeeds(selText);
-                element = new SQLQuery(getDataSource(), selText, selection.getOffset(), selection.getLength());
-            }
-        } else if (selection.getOffset() >= 0) {
-            element = extractQueryAtPos(selection.getOffset());
-        } else {
-            element = null;
-        }
-        // Check query do not ends with delimiter
-        // (this may occur if user selected statement including delimiter)
-        if (element == null || CommonUtils.isEmpty(element.getText())) {
-            return null;
-        }
-        if (element instanceof SQLQuery && getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
-            ((SQLQuery) element).setParameters(parseParameters((SQLQuery) element));
-        }
-        return element;
+        return SQLScriptParser.extractActiveQuery(parserContext, selection.getOffset(), selection.getLength());
     }
 
     public SQLScriptElement extractQueryAtPos(int currentPos) {
@@ -712,10 +680,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     public SQLCompletionContext getCompletionContext() {
         return completionContext;
-    }
-
-    protected List<SQLQueryParameter> parseParameters(SQLQuery query) {
-        return SQLScriptParser.parseParameters(parserContext, query.getOffset(), query.getLength());
     }
 
     protected List<SQLQueryParameter> parseQueryParameters(SQLQuery query) {
@@ -1223,102 +1187,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     ////////////////////////////////////////////////////////
     // Brackets
-
-    // copied from JDT code
-    public void gotoMatchingBracket() {
-
-        ISourceViewer sourceViewer = getSourceViewer();
-        IDocument document = sourceViewer.getDocument();
-        if (document == null)
-            return;
-
-        IRegion selection = getSignedSelection(sourceViewer);
-
-        IRegion region = characterPairMatcher.match(document, selection.getOffset());
-        if (region == null) {
-            return;
-        }
-        int offset = region.getOffset();
-        int length = region.getLength();
-
-        if (length < 1)
-            return;
-
-        int anchor = characterPairMatcher.getAnchor();
-        // http://dev.eclipse.org/bugs/show_bug.cgi?id=34195
-        int targetOffset = (ICharacterPairMatcher.RIGHT == anchor) ? offset + 1 : offset + length - 1;
-
-        boolean visible = false;
-        if (sourceViewer instanceof ITextViewerExtension5) {
-            ITextViewerExtension5 extension = (ITextViewerExtension5) sourceViewer;
-            visible = (extension.modelOffset2WidgetOffset(targetOffset) > -1);
-        } else {
-            IRegion visibleRegion = sourceViewer.getVisibleRegion();
-            // http://dev.eclipse.org/bugs/show_bug.cgi?id=34195
-            visible = (targetOffset >= visibleRegion.getOffset() && targetOffset <= visibleRegion.getOffset() + visibleRegion.getLength());
-        }
-
-        if (!visible) {
-            return;
-        }
-
-        int adjustment = getOffsetAdjustment(document, selection.getOffset() + selection.getLength(), selection.getLength());
-        targetOffset += adjustment;
-        int direction = Integer.compare(selection.getLength(), 0);
-
-        sourceViewer.setSelectedRange(targetOffset, direction);
-        sourceViewer.revealRange(targetOffset, direction);
-    }
-
-    // copied from JDT code
-    private static IRegion getSignedSelection(ISourceViewer sourceViewer) {
-        Point viewerSelection = sourceViewer.getSelectedRange();
-
-        StyledText text = sourceViewer.getTextWidget();
-        Point selection = text.getSelectionRange();
-        if (text.getCaretOffset() == selection.x) {
-            viewerSelection.x = viewerSelection.x + viewerSelection.y;
-            viewerSelection.y = -viewerSelection.y;
-        }
-
-        return new Region(viewerSelection.x, viewerSelection.y);
-    }
-
-    // copied from JDT code
-    private static int getOffsetAdjustment(IDocument document, int offset, int length) {
-        if (length == 0 || Math.abs(length) > 1)
-            return 0;
-        try {
-            if (length < 0) {
-                if (isOpeningBracket(document.getChar(offset))) {
-                    return 1;
-                }
-            } else {
-                if (isClosingBracket(document.getChar(offset - 1))) {
-                    return -1;
-                }
-            }
-        } catch (BadLocationException e) {
-            //do nothing
-        }
-        return 0;
-    }
-
-    private static boolean isOpeningBracket(char character) {
-        for (int i = 0; i < BRACKETS.length; i += 2) {
-            if (character == BRACKETS[i])
-                return true;
-        }
-        return false;
-    }
-
-    private static boolean isClosingBracket(char character) {
-        for (int i = 1; i < BRACKETS.length; i += 2) {
-            if (character == BRACKETS[i])
-                return true;
-        }
-        return false;
-    }
 
     protected class ShowPreferencesAction extends Action {
         public ShowPreferencesAction() {

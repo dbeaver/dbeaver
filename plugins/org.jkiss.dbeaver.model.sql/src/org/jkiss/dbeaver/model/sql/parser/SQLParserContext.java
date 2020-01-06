@@ -85,11 +85,11 @@ public class SQLParserContext {
     }
 
     void startScriptEvaluation() {
-        scanner.startEval();
+        getScanner().startEval();
     }
 
     void endScriptEvaluation() {
-        scanner.endEval();
+        getScanner().endEval();
     }
 
 }
