@@ -23,7 +23,6 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.FastPartitioner;
-import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.source.*;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
@@ -53,13 +52,10 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
-import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
-import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
-import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
-import org.jkiss.dbeaver.model.text.TextUtils;
-import org.jkiss.dbeaver.model.text.parser.TPToken;
-import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -67,17 +63,18 @@ import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.io.File;
 import java.util.*;
-import java.util.regex.Matcher;
 
 /**
  * SQL Executor
@@ -107,6 +104,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private final SQLSyntaxManager syntaxManager;
     @NotNull
     private final SQLRuleScanner ruleScanner;
+    private SQLParserContext parserContext;
     private ProjectionSupport projectionSupport;
 
     private ProjectionAnnotationModel annotationModel;
@@ -579,10 +577,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     public void reloadSyntaxRules() {
         // Refresh syntax
         SQLDialect dialect = getSQLDialect();
-        syntaxManager.init(dialect, getActivePreferenceStore());
-        ruleScanner.refreshRules(getDataSource(), getEditorInput());
-
         IDocument document = getDocument();
+
+        syntaxManager.init(dialect, getActivePreferenceStore());
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(getDataSource(), SQLEditorBase.isBigScript(getEditorInput()));
+
+        ruleScanner.refreshRules(getDataSource(), ruleManager);
+        parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
+
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
                 new SQLPartitionScanner(getDataSource(), dialect),
@@ -657,15 +660,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Nullable
     public SQLScriptElement extractActiveQuery() {
-        SQLScriptElement element;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText();
 
         if (getActivePreferenceStore().getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)) {
             selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
         }
+
+        SQLScriptElement element;
         if (!CommonUtils.isEmpty(selText)) {
-            SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false, false);
+            SQLScriptElement parsedElement = SQLScriptParser.parseQuery(
+                parserContext,
+                selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false, false);
             if (parsedElement instanceof SQLControlCommand) {
                 // This is a command
                 element = parsedElement;
@@ -685,156 +691,19 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             return null;
         }
         if (element instanceof SQLQuery && getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
-            ((SQLQuery) element).setParameters(parseParameters(getDocument(), (SQLQuery) element));
+            ((SQLQuery) element).setParameters(parseParameters((SQLQuery) element));
         }
         return element;
     }
 
     public SQLScriptElement extractQueryAtPos(int currentPos) {
-        IDocument document = getDocument();
-        if (document == null || document.getLength() == 0) {
-            return null;
-        }
-        final int docLength = document.getLength();
-        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 ? ((IDocumentExtension3)document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING) : null;
-        if (partitioner != null) {
-            // Move to default partition. We don't want to be in the middle of multi-line comment or string
-            while (currentPos < docLength && isMultiCommentPartition(partitioner, currentPos)) {
-                currentPos++;
-            }
-        }
-        // Extract part of document between empty lines
-        int startPos = 0;
-        boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
-        final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
-        int lastPos = currentPos >= docLength ? docLength - 1 : currentPos;
-
-        try {
-            int currentLine = document.getLineOfOffset(currentPos);
-            if (useBlankLines) {
-                if (TextUtils.isEmptyLine(document, currentLine)) {
-                    if (currentLine == 0) {
-                        return null;
-                    }
-                    currentLine--;
-                    if (TextUtils.isEmptyLine(document, currentLine)) {
-                        // Prev line empty too. No chance.
-                        return null;
-                    }
-                }
-            }
-
-            int lineOffset = document.getLineOffset(currentLine);
-            int firstLine = currentLine;
-            while (firstLine > 0) {
-                if (useBlankLines) {
-                    if (TextUtils.isEmptyLine(document, firstLine) &&
-                        isDefaultPartition(partitioner, document.getLineOffset(firstLine))) {
-                        break;
-                    }
-                }
-                if (currentLine == firstLine) {
-                    for (String delim : statementDelimiters) {
-                        if (Character.isLetterOrDigit(delim.charAt(0))) {
-                            // Skip literal delimiters
-                            continue;
-                        }
-                        final int offset = TextUtils.getOffsetOf(document, firstLine, delim);
-                        if (offset >= 0 ) {
-                            int delimOffset = document.getLineOffset(firstLine) + offset + delim.length();
-                            if (isDefaultPartition(partitioner, delimOffset)) {
-                                if (currentPos > startPos) {
-                                    if (docLength > delimOffset) {
-                                        boolean hasValuableChars = false;
-                                        for (int i = delimOffset; i <= lastPos; i++) {
-                                            if (!Character.isWhitespace(document.getChar(i))) {
-                                                hasValuableChars = true;
-                                                break;
-                                            }
-                                        }
-                                        if (hasValuableChars) {
-                                            startPos = delimOffset;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                firstLine--;
-            }
-            if (startPos == 0) {
-                startPos = document.getLineOffset(firstLine);
-            }
-
-            // Move currentPos at line begin
-            currentPos = lineOffset;
-        } catch (BadLocationException e) {
-            log.warn(e);
-        }
-        return parseQuery(document, startPos, document.getLength(), currentPos, false, false);
+        return SQLScriptParser.extractQueryAtPos(parserContext, currentPos);
     }
 
     public SQLScriptElement extractNextQuery(boolean next) {
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         int offset = selection.getOffset();
-        SQLScriptElement curElement = extractQueryAtPos(offset);
-        if (curElement == null) {
-            return null;
-        }
-
-        IDocument document = getDocument();
-        if (document == null) {
-            return null;
-        }
-        try {
-            int docLength = document.getLength();
-            int curPos;
-            if (next) {
-                final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
-                curPos = curElement.getOffset() + curElement.getLength();
-                while (curPos < docLength) {
-                    char c = document.getChar(curPos);
-                    if (!Character.isWhitespace(c)) {
-                        boolean isDelimiter = false;
-                        for (String delim : statementDelimiters) {
-                            if (delim.indexOf(c) != -1) {
-                                isDelimiter = true;
-                            }
-                        }
-                        if (!isDelimiter) {
-                            break;
-                        }
-                    }
-                    curPos++;
-                }
-            } else {
-                curPos = curElement.getOffset() - 1;
-                while (curPos >= 0) {
-                    char c = document.getChar(curPos);
-                    if (Character.isLetter(c)) {
-                        break;
-                    }
-                    curPos--;
-                }
-            }
-            if (curPos <= 0 || curPos >= docLength) {
-                return null;
-            }
-            return extractQueryAtPos(curPos);
-        } catch (BadLocationException e) {
-            log.warn(e);
-            return null;
-        }
-    }
-
-    private static boolean isDefaultPartition(IDocumentPartitioner partitioner, int currentPos) {
-        return partitioner == null || IDocument.DEFAULT_CONTENT_TYPE.equals(partitioner.getContentType(currentPos));
-    }
-
-    private static boolean isMultiCommentPartition(IDocumentPartitioner partitioner, int currentPos) {
-        return partitioner != null && SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
+        return SQLScriptParser.extractNextQuery(parserContext, offset, next);
     }
 
     private void startScriptEvaluation() {
@@ -856,7 +725,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         this.startScriptEvaluation();
         try {
             for (int queryOffset = startOffset; ; ) {
-                SQLScriptElement query = parseQuery(document, queryOffset, startOffset + length, queryOffset, scriptMode, keepDelimiters);
+                SQLScriptElement query = SQLScriptParser.parseQuery(
+                    parserContext, queryOffset, startOffset + length, queryOffset, scriptMode, keepDelimiters);
                 if (query == null) {
                     break;
                 }
@@ -871,7 +741,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             // Parse parameters
             for (SQLScriptElement query : queryList) {
                 if (query instanceof SQLQuery) {
-                    ((SQLQuery) query).setParameters(parseParameters(getDocument(), (SQLQuery) query));
+                    ((SQLQuery) query).setParameters(parseParameters((SQLQuery) query));
                 }
             }
         }
@@ -882,429 +752,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return completionContext;
     }
 
-    private static class ScriptBlockInfo {
-        final ScriptBlockInfo parent;
-        final String togglePattern;
-        boolean isHeader; // block started by DECLARE, FUNCTION, etc
-
-        public ScriptBlockInfo(ScriptBlockInfo parent, boolean isHeader) {
-            this.parent = parent;
-            this.togglePattern = null;
-            this.isHeader = isHeader;
-        }
-
-        public ScriptBlockInfo(ScriptBlockInfo parent, String togglePattern) {
-            this.parent = parent;
-            this.togglePattern = togglePattern;
-        }
+    protected List<SQLQueryParameter> parseParameters(SQLQuery query) {
+        return SQLScriptParser.parseParameters(parserContext, query.getOffset(), query.getLength());
     }
 
-    protected SQLScriptElement parseQuery(final IDocument document, final int startPos, final int endPos, final int currentPos, final boolean scriptMode, final boolean keepDelimiters) {
-        int length = endPos - startPos;
-        if (length <= 0 || length > document.getLength()) {
-            return null;
-        }
-        SQLDialect dialect = getSQLDialect();
-
-        // Parse range
-        boolean useBlankLines = !scriptMode && syntaxManager.isBlankLineDelimiter();
-        ruleScanner.setRange(document, startPos, endPos - startPos);
-        int statementStart = startPos;
-        boolean hasValuableTokens = false;
-        ScriptBlockInfo curBlock = null;
-        boolean hasBlocks = false;
-        int lastTokenLineFeeds = 0;
-        SQLTokenType prevNotEmptyTokenType = SQLTokenType.T_UNKNOWN;
-        String lastKeyword = null;
-        for (; ; ) {
-            IToken token = ruleScanner.nextToken();
-            int tokenOffset = ruleScanner.getTokenOffset();
-            int tokenLength = ruleScanner.getTokenLength();
-            SQLTokenType tokenType = getSQLTokenType(token);
-            if (tokenOffset < startPos) {
-                // This may happen with EOF tokens (bug in jface?)
-                return null;
-            }
-
-            boolean isDelimiter = tokenType == SQLTokenType.T_DELIMITER;
-            boolean isControl = false;
-            String delimiterText = null;
-            try {
-                if (isDelimiter) {
-                    // Save delimiter text
-                    try {
-                        delimiterText = document.get(tokenOffset, tokenLength);
-                    } catch (BadLocationException e) {
-                        log.debug(e);
-                    }
-                } else if (useBlankLines && token.isWhitespace() && tokenLength >= 1) {
-                    // Check for blank line delimiter
-                    if (lastTokenLineFeeds + countLineFeeds(document, tokenOffset, tokenLength) >= 2) {
-                        isDelimiter = true;
-                    }
-                }
-                lastTokenLineFeeds = 0;
-                if (tokenLength == 1) {
-                    // Check for bracket block begin/end
-                    try {
-                        char aChar = document.getChar(tokenOffset);
-                        if (aChar == '(' || aChar == '{' || aChar == '[') {
-                            curBlock = new ScriptBlockInfo(curBlock, false);
-                        } else if (aChar == ')' || aChar == '}' || aChar == ']') {
-                            if (curBlock != null) {
-                                curBlock = curBlock.parent;
-                            }
-                        }
-                    } catch (BadLocationException e) {
-                        log.warn(e);
-                    }
-                }
-                if (tokenType == SQLTokenType.T_BLOCK_BEGIN && prevNotEmptyTokenType == SQLTokenType.T_BLOCK_END) {
-                    // This is a tricky thing.
-                    // In some dialects block end looks like END CASE, END LOOP. It is parsed as
-                    // Block end followed by block begin (as CASE and LOOP are block begin tokens)
-                    // So let's ignore block begin if previos token was block end and there were no delimtiers.
-                    tokenType = SQLTokenType.T_UNKNOWN;
-                }
-
-                if (tokenType == SQLTokenType.T_BLOCK_HEADER) {
-                    if (curBlock == null || !curBlock.isHeader) {
-                        // Check for double block header, e.g. DO, DECLARE
-                        curBlock = new ScriptBlockInfo(curBlock, true);
-                    }
-                    hasBlocks = true;
-                } else if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
-                    String togglePattern;
-                    try {
-                        togglePattern = document.get(tokenOffset, tokenLength);
-                    } catch (BadLocationException e) {
-                        log.warn(e);
-                        togglePattern = "";
-                    }
-                    // Second toggle pattern must be the same as first one.
-                    // Toggles can be nested (PostgreSQL) and we need to count only outer
-                    if (curBlock != null && curBlock.parent == null && togglePattern.equals(curBlock.togglePattern)) {
-                        curBlock = curBlock.parent;
-                    } else if (curBlock == null) {
-                        curBlock = new ScriptBlockInfo(curBlock, togglePattern);
-                    } else {
-                        log.debug("Block toggle token inside another block. Can't process it");
-                    }
-                    hasBlocks = true;
-                } else if (tokenType == SQLTokenType.T_BLOCK_BEGIN) {
-                    if (curBlock == null || !curBlock.isHeader) {
-                        curBlock = new ScriptBlockInfo(curBlock, false);
-                    } else {
-                        curBlock.isHeader = false;
-                    }
-                    hasBlocks = true;
-                } else if (tokenType == SQLTokenType.T_BLOCK_END) {
-                    // Sometimes query contains END clause without BEGIN. E.g. CASE, IF, etc.
-                    // This END doesn't mean block
-                    if (curBlock != null) {
-                        if (!CommonUtils.isEmpty(curBlock.togglePattern)) {
-                            // Block end inside of block toggle (#7460).
-                            // Actually it is a result of some wrong SQL parse (e.g. we didn't recognize block begin correctly).
-                            // However block toggle has higher priority. At the moment it is PostgreSQL specific.
-                            try {
-                                log.debug("Block end '" + document.get(tokenOffset, tokenLength) + "' inside of named block toggle '" + curBlock.togglePattern + "'. Ignore.");
-                            } catch (Throwable e) {
-                                log.debug(e);
-                            }
-                        } else {
-                            curBlock = curBlock.parent;
-                        }
-                    }
-                } else if (isDelimiter && curBlock != null) {
-                    // Delimiter in some brackets - ignore it
-                    continue;
-                } else if (tokenType == SQLTokenType.T_SET_DELIMITER || tokenType == SQLTokenType.T_CONTROL) {
-                    isDelimiter = true;
-                    isControl = true;
-                } else if (tokenType == SQLTokenType.T_COMMENT) {
-                    lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
-                }
-
-                if (tokenLength > 0 && !token.isWhitespace()) {
-                    switch (tokenType) {
-                        case T_BLOCK_BEGIN:
-                        case T_BLOCK_END:
-                        case T_BLOCK_TOGGLE:
-                        case T_BLOCK_HEADER:
-                        case T_UNKNOWN:
-                            try {
-                                lastKeyword = document.get(tokenOffset, tokenLength);
-                            } catch (BadLocationException e) {
-                                log.error("Error getting first keyword", e);
-                            }
-                            break;
-                    }
-                }
-
-                boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
-                if (isControl && (scriptMode || cursorInsideToken) && !hasValuableTokens) {
-                    // Control query
-                    try {
-                        String controlText = document.get(tokenOffset, tokenLength);
-                        String commandId = null;
-                        if (token instanceof SQLControlToken) {
-                            commandId = ((SQLControlToken) token).getCommandId();
-                        }
-                        SQLControlCommand command = new SQLControlCommand(
-                            getDataSource(),
-                            syntaxManager,
-                            controlText.trim(),
-                            commandId,
-                            tokenOffset,
-                            tokenLength,
-                            tokenType == SQLTokenType.T_SET_DELIMITER);
-                        if (command.isEmptyCommand() ||
-                            (command.getCommandId() != null &&
-                                SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId()) != null)) {
-                            return command;
-                        }
-                        // This is not a valid command
-                        isControl = false;
-                    } catch (BadLocationException e) {
-                        log.warn("Can't extract control statement", e); //$NON-NLS-1$
-                        return null;
-                    }
-                }
-                if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
-                    if (tokenOffset > endPos) {
-                        tokenOffset = endPos;
-                    }
-                    if (tokenOffset >= document.getLength()) {
-                        // Sometimes (e.g. when comment finishing script text)
-                        // last token offset is beyond document range
-                        tokenOffset = document.getLength();
-                    }
-                    assert (tokenOffset >= currentPos);
-                    try {
-
-                        // remove leading spaces
-                        while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
-                            statementStart++;
-                        }
-                        // remove trailing spaces
-/*
-                        while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
-                            tokenOffset--;
-                            tokenLength++;
-                        }
-*/
-                        if (tokenOffset == statementStart) {
-                            // Empty statement
-                            if (token.isEOF()) {
-                                return null;
-                            }
-                            statementStart = tokenOffset + tokenLength;
-                            continue;
-                        }
-                        String queryText = document.get(statementStart, tokenOffset - statementStart);
-                        queryText = SQLUtils.fixLineFeeds(queryText);
-
-                        if (isDelimiter && (keepDelimiters ||
-                            (hasBlocks && dialect.isDelimiterAfterQuery()) ||
-                            (dialect.isDelimiterAfterBlock() && SQLConstants.BLOCK_END.equals(lastKeyword))))
-                        {
-                            if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
-                                // Add delimiter in the end of query. Do this only for semicolon delimiters.
-                                // For SQL server add it in the end of query. For Oracle only after END clause
-                                // Quite dirty workaround needed for Oracle and SQL Server.
-                                // TODO: move this transformation into SQLDialect
-                                queryText += delimiterText;
-                            }
-                        }
-                        int queryEndPos = tokenOffset;
-                        if (tokenType == SQLTokenType.T_DELIMITER) {
-                            queryEndPos += tokenLength;
-                        }
-                        // make script line
-                        return new SQLQuery(
-                            getDataSource(),
-                            queryText,
-                            statementStart,
-                            queryEndPos - statementStart);
-                    } catch (BadLocationException ex) {
-                        log.warn("Can't extract query", ex); //$NON-NLS-1$
-                        return null;
-                    }
-                }
-                if (isDelimiter) {
-                    statementStart = tokenOffset + tokenLength;
-                }
-                if (token.isEOF()) {
-                    return null;
-                }
-                if (!hasValuableTokens && !token.isWhitespace() && !isControl) {
-                    if (tokenType == SQLTokenType.T_COMMENT) {
-                        hasValuableTokens = dialect.supportsCommentQuery();
-                    } else {
-                        hasValuableTokens = true;
-                    }
-                }
-            } finally {
-                if (!token.isWhitespace() && !token.isEOF()) {
-                    prevNotEmptyTokenType = tokenType;
-                }
-            }
-        }
-    }
-
-    private static SQLTokenType getSQLTokenType(IToken token) {
-        if (token instanceof SQLTokenAdapter) {
-            TPToken tpToken = ((SQLTokenAdapter) token).getToken();
-            if (tpToken instanceof TPTokenDefault) {
-                return (SQLTokenType) tpToken.getData();
-            }
-        }
-        return SQLTokenType.T_UNKNOWN;
-    }
-
-    private static int countLineFeeds(final IDocument document, final int offset, final int length) {
-        int lfCount = 0;
-        try {
-            for (int i = offset; i < offset + length; i++) {
-                if (document.getChar(i) == '\n') {
-                    lfCount++;
-                }
-            }
-        } catch (BadLocationException e) {
-            log.error(e);
-        }
-        return lfCount;
-    }
-
-    protected List<SQLQueryParameter> parseParameters(IDocument document, int queryOffset, int queryLength) {
-        final SQLDialect sqlDialect = getSQLDialect();
-        boolean supportParamsInDDL = getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
-        boolean execQuery = false;
-        boolean ddlQuery = false;
-        List<SQLQueryParameter> parameters = null;
-        ruleScanner.setRange(document, queryOffset, queryLength);
-
-        boolean firstKeyword = true;
-        for (; ; ) {
-            IToken token = ruleScanner.nextToken();
-            final int tokenOffset = ruleScanner.getTokenOffset();
-            final int tokenLength = ruleScanner.getTokenLength();
-            if (token.isEOF() || tokenOffset > queryOffset + queryLength) {
-                break;
-            }
-            // Handle only parameters which are not in SQL blocks
-            SQLTokenType tokenType = getSQLTokenType(token);
-            if (token.isWhitespace() || tokenType == SQLTokenType.T_COMMENT) {
-                continue;
-            }
-            if (!supportParamsInDDL) {
-                if (firstKeyword) {
-                    // Detect query type
-                    try {
-                        String tokenText = document.get(tokenOffset, tokenLength);
-                        if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
-                            // DDL doesn't support parameters
-                            ddlQuery = true;
-                        } else {
-                            execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
-                        }
-                    } catch (BadLocationException e) {
-                        log.warn(e);
-                    }
-                    firstKeyword = false;
-                }
-            }
-            if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
-                try {
-                    String paramName = document.get(tokenOffset, tokenLength);
-                    if (ddlQuery) {
-                        continue;
-                    }
-                    if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
-                        // Skip ? parameters for stored procedures (they have special meaning? [DB2])
-                        continue;
-                    }
-
-                    if (parameters == null) {
-                        parameters = new ArrayList<>();
-                    }
-
-                    SQLQueryParameter parameter = new SQLQueryParameter(
-                        syntaxManager,
-                        parameters.size(),
-                        paramName,
-                        tokenOffset - queryOffset,
-                        tokenLength);
-
-                    parameter.setPrevious(getPreviousParameter(parameters, parameter));
-                    parameters.add(parameter);
-                } catch (BadLocationException e) {
-                    log.warn("Can't extract query parameter", e);
-                }
-            }
-        }
-
-        if (syntaxManager.isVariablesEnabled()) {
-            try {
-                // Find variables in strings, comments, etc
-                // Use regex
-                String query = document.get(queryOffset, queryLength);
-
-                Matcher matcher = SQLQueryParameter.getVariablePattern().matcher(query);
-                int position = 0;
-                while (matcher.find(position)) {
-                    {
-                        int start = matcher.start();
-                        int orderPos = 0;
-                        SQLQueryParameter param = null;
-                        if (parameters != null) {
-                            for (SQLQueryParameter p : parameters) {
-                                if (p.getTokenOffset() == start) {
-                                    param = p;
-                                    break;
-                                } else if (p.getTokenOffset() < start) {
-                                    orderPos++;
-                                }
-                            }
-                        }
-
-                        if (param == null) {
-                            param = new SQLQueryParameter(syntaxManager, orderPos, matcher.group(0), start, matcher.end() - matcher.start());
-                            if (parameters == null) {
-                                parameters = new ArrayList<>();
-                            }
-                            param.setPrevious(getPreviousParameter(parameters, param));
-                            parameters.add(param.getOrdinalPosition(), param);
-                        }
-                    }
-                    position = matcher.end();
-                }
-            } catch (BadLocationException e) {
-                log.warn("Error parsing variables", e);
-            }
-        }
-
-        return parameters;
-    }
-
-    private static SQLQueryParameter getPreviousParameter(List<SQLQueryParameter> parameters, SQLQueryParameter parameter) {
-        String varName = parameter.getVarName();
-        if (parameter.isNamed()) {
-            for (int i = parameters.size(); i > 0; i--) {
-                if (parameters.get(i - 1).getVarName().equals(varName)) {
-                    return parameters.get(i - 1);
-                }
-            }
-        }
-        return null;
-    }
-
-    protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
-        return parseParameters(document, query.getOffset(), query.getLength());
-    }
-
-    protected List<SQLQueryParameter> parseParameters(String query) {
-        return parseParameters(new Document(query), 0, query.length());
+    protected List<SQLQueryParameter> parseQueryParameters(SQLQuery query) {
+        SQLParserContext context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+        return SQLScriptParser.parseParameters(context, 0, query.getLength());
     }
 
     public boolean isDisposed() {

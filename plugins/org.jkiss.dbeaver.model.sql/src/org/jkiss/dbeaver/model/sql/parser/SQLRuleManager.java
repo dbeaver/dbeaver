@@ -59,7 +59,7 @@ public class SQLRuleManager {
         return allRules;
     }
 
-    public void refreshRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {
+    public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {
         SQLDialect dialect = syntaxManager.getDialect();
         TPRuleProvider ruleProvider = GeneralUtils.adapt(dialect, TPRuleProvider.class);
         DBPDataSourceContainer dataSourceContainer = dataSource == null ? null : dataSource.getContainer();
