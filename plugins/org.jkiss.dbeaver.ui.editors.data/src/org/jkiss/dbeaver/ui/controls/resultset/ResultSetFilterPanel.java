@@ -398,6 +398,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
                 }
             }
+            if (enableFilters && !CommonUtils.equalObjects(prevQuery, displayName)) {
+                filtersHistory.clear();
+            }
         }
 
         filterComposite.layout();
@@ -481,6 +484,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private void loadFiltersHistory(String query) {
         filtersHistory.clear();
         try {
+            if (ResultSetViewer.DEFAULT_QUERY_TEXT.equals(query)) {
+                return;
+            }
             final Collection<String> history = viewer.getFilterManager().getQueryFilterHistory(query);
             filtersHistory.addAll(history);
         } catch (Throwable e) {
