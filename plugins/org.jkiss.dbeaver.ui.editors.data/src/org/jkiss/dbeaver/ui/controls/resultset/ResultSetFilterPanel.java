@@ -383,7 +383,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             String displayName = getActiveSourceQuery();
             if (displayName != null) {
                 if (prevQuery == null || !prevQuery.equals(displayName)) {
-                    loadFiltersHistory(displayName);
                     prevQuery = displayName;
                 }
                 Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
@@ -879,6 +878,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         private Table createFilterHistoryPanel(final Shell popup) {
             final Table historyTable = new Table(popup, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
             new TableColumn(historyTable, SWT.NONE);
+
+            if (filtersHistory.isEmpty()) {
+                loadFiltersHistory(activeDisplayName);
+            }
 
             if (filtersHistory.isEmpty()) {
                 // nothing

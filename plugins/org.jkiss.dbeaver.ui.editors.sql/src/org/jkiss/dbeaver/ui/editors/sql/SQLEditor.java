@@ -2619,24 +2619,23 @@ public class SQLEditor extends SQLEditorBase implements
                 return null;
             }
             final QueryResultsContainer resultsProvider = resultContainers.get(resultSetNumber);
-            // Open new results processor in UI thread
-            UIUtils.syncExec(() -> {
-                if (statement != null && !resultTabs.isDisposed()) {
-                    resultsProvider.query = statement;
-                    resultsProvider.lastGoodQuery = statement;
-                    String tabName = null;
-                    String toolTip = CommonUtils.truncateString(statement.getText(), 1000);
-                    // Special statements (not real statements) have their name in data
-                    if (isStatsResult) {
-                        tabName = "Statistics";
-                        int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
-                        if (queryIndex > 0) {
-                            tabName += " - " + (queryIndex + 1);
-                        }
+
+            if (statement != null && !resultTabs.isDisposed()) {
+                resultsProvider.query = statement;
+                resultsProvider.lastGoodQuery = statement;
+                String tabName = null;
+                String toolTip = CommonUtils.truncateString(statement.getText(), 1000);
+                // Special statements (not real statements) have their name in data
+                if (isStatsResult) {
+                    tabName = "Statistics";
+                    int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
+                    if (queryIndex > 0) {
+                        tabName += " - " + (queryIndex + 1);
                     }
-                    resultsProvider.updateResultsName(tabName, toolTip);
                 }
-            });
+                String finalTabName = tabName;
+                UIUtils.asyncExec(() -> resultsProvider.updateResultsName(finalTabName, toolTip));
+            }
             ResultSetViewer rsv = resultsProvider.getResultSetController();
             return rsv == null ? null : rsv.getDataReceiver();
         }
@@ -3070,7 +3069,7 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 lastUIUpdateTime = -1;
                 scriptMode = true;
-                UIUtils.syncExec(() -> {
+                UIUtils.asyncExec(() -> {
                     if (isDisposed()) {
                         return;
                     }
@@ -3101,7 +3100,7 @@ public class SQLEditor extends SQLEditorBase implements
                     runningQueries.add(query);
                 }
                 if (lastUIUpdateTime < 0 || System.currentTimeMillis() - lastUIUpdateTime > SCRIPT_UI_UPDATE_PERIOD) {
-                    UIUtils.syncExec(() -> {
+                    UIUtils.asyncExec(() -> {
                         TextViewer textViewer = getTextViewer();
                         if (textViewer != null) {
                             topOffset = textViewer.getTopIndexStartOffset();
@@ -3119,7 +3118,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndQuery(final DBCSession session, final SQLQueryResult result) {
+        public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
             try {
                 synchronized (runningQueries) {
                     runningQueries.remove(result.getStatement());
@@ -3137,16 +3136,16 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 UIUtils.runUIJob("Process SQL query result", monitor -> {
                     // Finish query
-                    processQueryResult(session, result);
+                    processQueryResult(monitor, result, statistics);
                     // Update dirty flag
                     updateDirtyFlag();
                 });
             } finally {
-                if (extListener != null) extListener.onEndQuery(session, result);
+                if (extListener != null) extListener.onEndQuery(session, result, statistics);
             }
         }
 
-        private void processQueryResult(DBCSession session, SQLQueryResult result) {
+        private void processQueryResult(DBRProgressMonitor monitor, SQLQueryResult result, DBCStatistics statistics) {
             dumpQueryServerOutput(result);
             if (!scriptMode) {
                 runPostExecuteActions(result);
@@ -3155,7 +3154,7 @@ public class SQLEditor extends SQLEditorBase implements
             Throwable error = result.getError();
             if (error != null) {
                 setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
-                if (!scrollCursorToError(session.getProgressMonitor(), query, error)) {
+                if (!scrollCursorToError(monitor, query, error)) {
                     int errorQueryOffset = query.getOffset();
                     int errorQueryLength = query.getLength();
                     if (errorQueryOffset >= 0 && errorQueryLength > 0) {
@@ -3187,6 +3186,10 @@ public class SQLEditor extends SQLEditorBase implements
                             SQLQueryResult.ExecuteResult executeResult = result.getExecuteResults(resultsIndex, true);
                             String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, executeResult.getResultSetName());
                             results.updateResultsName(resultSetName, null);
+                            ResultSetViewer resultSetViewer = results.getResultSetController();
+                            if (resultSetViewer != null) {
+                                resultSetViewer.getModel().setStatistics(statistics);
+                            }
                         }
                         resultsIndex++;
                     }
@@ -3194,12 +3197,10 @@ public class SQLEditor extends SQLEditorBase implements
             }
             // Close tab on error
             if (closeTabOnError && error != null) {
-                UIUtils.asyncExec(() -> {
-                    CTabItem tabItem = queryProcessor.getFirstResults().getTabItem();
-                    if (tabItem != null && tabItem.getShowClose()) {
-                        tabItem.dispose();
-                    }
-                });
+                CTabItem tabItem = queryProcessor.getFirstResults().getTabItem();
+                if (tabItem != null && tabItem.getShowClose()) {
+                    tabItem.dispose();
+                }
             }
             // Beep
             if (dataSourceContainer != null && !scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)) {
@@ -3220,7 +3221,7 @@ public class SQLEditor extends SQLEditorBase implements
                     return;
                 }
                 runPostExecuteActions(null);
-                UIUtils.syncExec(() -> {
+                UIUtils.asyncExec(() -> {
                     if (isDisposed()) {
                         // Editor closed
                         return;

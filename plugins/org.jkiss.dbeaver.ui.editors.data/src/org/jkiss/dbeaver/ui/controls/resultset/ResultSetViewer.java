@@ -1992,7 +1992,7 @@ public class ResultSetViewer extends Viewer
                     newRecordMode = (rows.size() <= 1);
                 }
                 if (newRecordMode != recordMode) {
-                    toggleMode();
+                    UIUtils.asyncExec(this::toggleMode);
                 }
             }
         }
@@ -2002,9 +2002,11 @@ public class ResultSetViewer extends Viewer
     {
         model.appendData(rows, resetOldRows);
 
-        setStatus(NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
+        UIUtils.asyncExec(() -> {
+            setStatus(NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
-        updateEditControls();
+            updateEditControls();
+        });
     }
 
     @Override
@@ -3452,7 +3454,7 @@ public class ResultSetViewer extends Viewer
                 model.setUpdateInProgress(true);
                 model.setStatistics(null);
                 if (filtersPanel != null) {
-                    UIUtils.syncExec(() -> filtersPanel.enableFilters(false));
+                    UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
                 }
             }
 
