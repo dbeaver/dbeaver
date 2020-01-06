@@ -59,6 +59,10 @@ public class Log
         return new Log(forClass.getName());
     }
 
+    public static Log getLog(String name) {
+        return new Log(name);
+    }
+
     public static boolean isQuietMode() {
         return quietMode;
     }
