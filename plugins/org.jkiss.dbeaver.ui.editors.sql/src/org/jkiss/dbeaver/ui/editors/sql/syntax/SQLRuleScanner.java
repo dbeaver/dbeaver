@@ -21,7 +21,6 @@ import org.eclipse.jface.text.rules.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -33,7 +32,6 @@ import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDelimiterRule;
 import org.jkiss.dbeaver.model.text.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
 import java.util.*;
@@ -115,18 +113,15 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPEvalScanner {
         return posList;
     }
 
-    public void refreshRules(@Nullable DBPDataSource dataSource, @Nullable IEditorInput editorInput) {
+    public void refreshRules(@Nullable DBPDataSource dataSource, SQLRuleManager ruleManager) {
         tokenMap.clear();
 
-        boolean minimalRules = SQLEditorBase.isBigScript(editorInput);
 
         boolean boldKeywords = dataSource == null ?
                 DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) :
                 dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
         keywordStyle = boldKeywords ? SWT.BOLD : SWT.NORMAL;
 
-        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.refreshRules(dataSource, minimalRules);
         TPRule[] allRules = ruleManager.getAllRules();
 
         IRule[] result = new IRule[allRules.length];
