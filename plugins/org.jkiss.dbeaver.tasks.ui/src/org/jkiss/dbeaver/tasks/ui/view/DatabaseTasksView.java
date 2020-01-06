@@ -34,6 +34,7 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
@@ -72,6 +73,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     public static final String CREATE_TASK_CMD_ID = "org.jkiss.dbeaver.task.create";
     public static final String EDIT_TASK_CMD_ID = "org.jkiss.dbeaver.task.edit";
     public static final String RUN_TASK_CMD_ID = "org.jkiss.dbeaver.task.run";
+    public static final String GROUP_TASK_CMD_ID = "org.jkiss.dbeaver.task.group";
 
     private static final ArrayList<Object> EMPTY_TASK_RUN_LIST = new ArrayList<>();
 
@@ -329,6 +331,15 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, "Delete task", null));
             manager.add(new Separator());
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            manager.add(new Separator());
+            for (TaskHandlerGroupBy.GroupBy gb : TaskHandlerGroupBy.GroupBy.values()) {
+                manager.add(ActionUtils.makeCommandContribution(
+                    getSite(),
+                    GROUP_TASK_CMD_ID,
+                    CommandContributionItem.STYLE_CHECK,
+                    null, null, null, true, Collections.singletonMap("group", gb.name())));
+            }
+            manager.add(new Separator());
             taskColumnController.fillConfigMenu(manager);
         });
 
