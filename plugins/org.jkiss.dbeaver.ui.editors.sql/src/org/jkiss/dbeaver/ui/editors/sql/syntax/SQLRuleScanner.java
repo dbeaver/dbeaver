@@ -27,10 +27,11 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
-import org.jkiss.dbeaver.model.sql.parser.rules.SQLDelimiterRule;
-import org.jkiss.dbeaver.model.text.parser.*;
+import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
+import org.jkiss.dbeaver.model.text.parser.TPPredicateRule;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
@@ -42,12 +43,10 @@ import java.util.*;
  * Contains information about some concrete datasource underlying database syntax.
  * Support runtime change of datasource (reloads syntax information)
  */
-public class SQLRuleScanner extends RuleBasedScanner implements TPEvalScanner {
+public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScanner {
 
     @NotNull
     private final IThemeManager themeManager;
-    @NotNull
-    private SQLSyntaxManager syntaxManager;
     @NotNull
     private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<>();
     private Set<SQLScriptPosition> addedPositions = new HashSet<>();
@@ -58,33 +57,12 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPEvalScanner {
     private boolean evalMode;
     private int keywordStyle = SWT.NORMAL;
 
-    public SQLRuleScanner(@NotNull SQLSyntaxManager syntaxManager) {
-        this.syntaxManager = syntaxManager;
+    public SQLRuleScanner() {
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
     }
 
     public int getKeywordStyle() {
         return keywordStyle;
-    }
-
-    @Override
-    public boolean isEvalMode() {
-        return evalMode;
-    }
-
-    public void startEval() {
-        this.evalMode = true;
-    }
-
-    public void endEval() {
-        this.evalMode = false;
-        if (fRules != null) {
-            for (IRule rule : fRules) {
-                if (rule instanceof SimpleRuleAdapter && ((SimpleRuleAdapter) rule).rule instanceof SQLDelimiterRule) {
-                    ((SQLDelimiterRule) ((SimpleRuleAdapter) rule).rule).changeDelimiter(null);
-                }
-            }
-        }
     }
 
     public void dispose() {

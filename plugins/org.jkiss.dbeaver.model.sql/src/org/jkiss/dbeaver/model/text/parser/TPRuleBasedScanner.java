@@ -20,12 +20,13 @@ package org.jkiss.dbeaver.model.text.parser;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLDelimiterRule;
 
 
 /**
  * Rule based text scanner
  */
-public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner {
+public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, TPEvalScanner {
 
 	/** The list of rules of this scanner */
 	private TPRule[] fRules;
@@ -45,6 +46,8 @@ public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner {
 	private int fColumn;
 	/** Internal setting for the un-initialized column cache. */
 	private static final int UNDEFINED= -1;
+
+	private boolean evalMode;
 
 	/**
 	 * Creates a new rule based scanner which does not have any rule.
@@ -190,6 +193,30 @@ public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner {
 		--fOffset;
 		fColumn= UNDEFINED;
 	}
+
+	//////////////////////////////////////////////////////
+	// Eval
+
+	@Override
+	public boolean isEvalMode() {
+		return evalMode;
+	}
+
+	public void startEval() {
+		this.evalMode = true;
+	}
+
+	public void endEval() {
+		this.evalMode = false;
+		if (fRules != null) {
+			for (TPRule rule : fRules) {
+				if (rule instanceof SQLDelimiterRule) {
+					((SQLDelimiterRule)rule).changeDelimiter(null);
+				}
+			}
+		}
+	}
+
 }
 
 
