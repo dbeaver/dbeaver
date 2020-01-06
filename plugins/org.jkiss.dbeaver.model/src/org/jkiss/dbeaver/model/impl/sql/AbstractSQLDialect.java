@@ -436,6 +436,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (firstKeyword.isEmpty()) {
             return false;
         }
+        firstKeyword = firstKeyword.toUpperCase(Locale.ENGLISH);
         return isTransactionModifyingKeyword(firstKeyword);
     }
 
