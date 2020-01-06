@@ -571,7 +571,11 @@ public final class DBUtils {
             return dataSourceContainer;
         }
         if (!dataSourceContainer.isConnected()) {
-            dataSourceContainer.connect(monitor, true, true);
+            try {
+                dataSourceContainer.connect(monitor, true, true);
+            } catch (DBException e) {
+                throw new DBException("Error connecting to datasource '" + dataSourceContainer.getName() + "'", e);
+            }
         }
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (dataSource == null) {
