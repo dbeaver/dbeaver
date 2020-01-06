@@ -122,7 +122,11 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
                 }
             }
 
-            activeDatabaseName = SQLServerUtils.getCurrentDatabase(session);
+            String currentDatabase = SQLServerUtils.getCurrentDatabase(session);
+            if (!CommonUtils.equalObjects(currentDatabase, activeDatabaseName)) {
+                activeDatabaseName = currentDatabase;
+                return true;
+            }
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
