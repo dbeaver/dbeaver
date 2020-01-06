@@ -38,7 +38,7 @@ public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor
     private final String id;
     private final List<DataTransferPageDescriptor> pageTypes = new ArrayList<>();
 
-    public DataTransferNodeConfiguratorDescriptor(IConfigurationElement config)
+    DataTransferNodeConfiguratorDescriptor(IConfigurationElement config)
     {
         super(config);
 
@@ -58,7 +58,7 @@ public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor
         return id;
     }
 
-    public List<DataTransferPageDescriptor> patPageDescriptors() {
+    List<DataTransferPageDescriptor> patPageDescriptors() {
         return pageTypes;
     }
 
@@ -71,7 +71,7 @@ public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor
         return null;
     }
 
-    public IWizardPage[] createWizardPages(boolean consumerOptional, boolean producerOptional, boolean settingsPage)
+    public IWizardPage[] createWizardPages(IWizardPage[] existingPages, boolean consumerOptional, boolean producerOptional, boolean settingsPage)
     {
         List<IWizardPage> pages = new ArrayList<>();
         for (DataTransferPageDescriptor page : pageTypes) {
@@ -81,7 +81,21 @@ public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor
             try {
                 ObjectType type = page.getPageClass();
                 type.checkObjectClass(IWizardPage.class);
-                pages.add(type.getObjectClass(IWizardPage.class).newInstance());
+
+                Class<?> pageClass = type.getObjectClass();
+                boolean added = false;
+                if (!ArrayUtils.isEmpty(existingPages)) {
+                    for (IWizardPage ep : existingPages) {
+                        if (pageClass == ep.getClass()) {
+                            pages.add(ep);
+                            added = true;
+                            break;
+                        }
+                    }
+                }
+                if (!added) {
+                    pages.add(type.createInstance(IWizardPage.class));
+                }
             } catch (Throwable e) {
                 log.error("Can't create wizard page", e);
             }

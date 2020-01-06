@@ -94,11 +94,11 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         IWizardPage[] pages;
         IWizardPage settingsPage;
 
-        private NodePageSettings(DataTransferNodeDescriptor sourceNode, DataTransferNodeConfiguratorDescriptor nodeConfigurator, boolean consumerOptional, boolean producerOptional) {
+        private NodePageSettings(IWizardPage[] existingPages, DataTransferNodeDescriptor sourceNode, DataTransferNodeConfiguratorDescriptor nodeConfigurator, boolean consumerOptional, boolean producerOptional) {
             this.sourceNode = sourceNode;
             this.nodeConfigurator = nodeConfigurator;
-            this.pages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(consumerOptional, producerOptional, false);
-            IWizardPage[] sPages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(consumerOptional, producerOptional, true);
+            this.pages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(existingPages, consumerOptional, producerOptional, false);
+            IWizardPage[] sPages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(existingPages, consumerOptional, producerOptional, true);
             // There can be only one settings page per node
             this.settingsPage = sPages.length == 0 ? null : sPages[0];
         }
@@ -320,7 +320,8 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         }
 
         DataTransferNodeConfiguratorDescriptor configurator = DataTransferConfiguratorRegistry.getInstance().getConfigurator(node.getId());
-        nodeSettings.put(nodeClass, new NodePageSettings(node, configurator, settings.isConsumerOptional(), settings.isProducerOptional()));
+        NodePageSettings newNodeSettings = new NodePageSettings(getPages(), node, configurator, settings.isConsumerOptional(), settings.isProducerOptional());
+        nodeSettings.put(nodeClass, newNodeSettings);
     }
 
     private void addWizardPages(DataTransferWizard wizard) {
