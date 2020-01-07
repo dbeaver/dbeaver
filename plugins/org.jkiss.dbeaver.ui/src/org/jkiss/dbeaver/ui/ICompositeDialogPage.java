@@ -26,6 +26,6 @@ import org.jkiss.code.Nullable;
 public interface ICompositeDialogPage extends IDialogPage {
 
     @Nullable
-    IDialogPage[] getSubPages(boolean extrasOnly);
+    IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate);
 
 }

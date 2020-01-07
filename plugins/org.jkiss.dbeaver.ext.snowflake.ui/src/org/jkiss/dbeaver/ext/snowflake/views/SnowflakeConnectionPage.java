@@ -320,7 +320,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly)
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             new DriverPropertiesDialogPage(this)

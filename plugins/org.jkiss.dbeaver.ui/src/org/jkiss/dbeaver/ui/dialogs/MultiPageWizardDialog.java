@@ -29,7 +29,6 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -41,7 +40,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -191,7 +189,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         // Ad sub pages
         if (page instanceof ICompositeDialogPage) {
-            IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(true);
+            IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(true, resizeHasOccurred);
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage subPage : subPages) {
                     addPage(item, subPage, maxSize);

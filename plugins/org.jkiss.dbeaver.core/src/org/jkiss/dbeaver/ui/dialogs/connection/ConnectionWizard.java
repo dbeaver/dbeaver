@@ -328,8 +328,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
                     ((IDataSourceConnectionTester) page).testConnection(session);
                 }
             }
-            if (page instanceof ICompositeDialogPage) {
-                for (IDialogPage subPage : ArrayUtils.safeArray(((ICompositeDialogPage) page).getSubPages(false))) {
+            if (page instanceof ICompositeDialogPage && isPageActive(page)) {
+                for (IDialogPage subPage : ArrayUtils.safeArray(((ICompositeDialogPage) page).getSubPages(false, false))) {
                     testInPage(session, subPage);
                 }
             }
