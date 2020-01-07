@@ -233,6 +233,13 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
         panel.setLayoutData(gd);
 
+        DataSourceDescriptor dataSource = (DataSourceDescriptor)getSite().getActiveDataSource();
+        savePasswordCheck = UIUtils.createCheckbox(panel,
+            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
+            dataSource == null || dataSource.isSavePassword());
+        savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally);
+        //savePasswordCheck.setLayoutData(gd);
+
         if (supportsPasswordView) {
             userManagementToolbar = new ToolBar(panel, SWT.HORIZONTAL);
             ToolItem showPasswordLabel = new ToolItem(userManagementToolbar, SWT.NONE);
@@ -246,12 +253,6 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             });
         }
 
-        DataSourceDescriptor dataSource = (DataSourceDescriptor)getSite().getActiveDataSource();
-        savePasswordCheck = UIUtils.createCheckbox(panel,
-            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
-            dataSource == null || dataSource.isSavePassword());
-        savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally);
-        //savePasswordCheck.setLayoutData(gd);
     }
 
     private void showPasswordText(UIServiceSecurity serviceSecurity, Text passwordText) {
