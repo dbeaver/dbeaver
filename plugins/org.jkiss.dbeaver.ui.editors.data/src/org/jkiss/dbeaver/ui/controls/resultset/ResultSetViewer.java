@@ -617,6 +617,8 @@ public class ResultSetViewer extends Viewer
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Presentation activate", "Can't instantiate data view '" + newPresentation.getLabel() + "'", e);
                     }
+                } else {
+                    showEmptyPresentation();
                 }
             }
         } finally {
