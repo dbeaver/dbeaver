@@ -258,7 +258,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly) {
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]{
             new DriverPropertiesDialogPage(this)
         };

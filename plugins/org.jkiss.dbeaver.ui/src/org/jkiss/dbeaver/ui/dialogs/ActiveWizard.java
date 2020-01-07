@@ -17,14 +17,10 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.IPreferencePageContainer;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 
 import java.util.ArrayList;
@@ -81,7 +77,7 @@ public abstract class ActiveWizard extends BaseWizard
         for (WizardPrefPage prefPage : pages) {
             savePageSettings(prefPage);
 
-            WizardPrefPage[] subPages = prefPage.getSubPages(false);
+            WizardPrefPage[] subPages = prefPage.getSubPages(false, true);
             if (subPages != null) {
                 savePrefPageSettings(subPages);
             }
