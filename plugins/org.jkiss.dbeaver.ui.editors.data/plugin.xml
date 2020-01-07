@@ -176,7 +176,7 @@
             type="folder"
             embeddable="false"
             icon="#association">
-            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" if="context.isRelationalObject(object)"/>
         </editor>
     </extension>
 

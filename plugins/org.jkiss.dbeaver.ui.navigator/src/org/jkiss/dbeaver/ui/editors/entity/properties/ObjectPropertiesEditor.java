@@ -658,6 +658,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     }
 
     @Override
+    public boolean isRelationalObject(DBSObject object) {
+        return true;
+    }
+
+    @Override
     public void runPostSaveCommands() {
         for (ISaveablePart sp : nestedSaveable) {
             if (sp instanceof TabbedFolderPageEditor) {
