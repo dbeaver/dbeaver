@@ -1118,4 +1118,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
+    @Override
+    public boolean isRelationalObject(DBSObject object) {
+        return true;
+    }
+
 }
