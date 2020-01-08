@@ -209,7 +209,7 @@ public class OracleUtils {
             "ALTER SESSION SET CURRENT_SCHEMA=" + schema.getName(),
             DBEPersistAction.ActionType.INITIALIZER));
         OracleSchema defaultSchema = object.getDataSource().getDefaultSchema();
-        if (schema != defaultSchema) {
+        if (schema != defaultSchema && defaultSchema != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Set current schema",
                 "ALTER SESSION SET CURRENT_SCHEMA=" + defaultSchema.getName(),
