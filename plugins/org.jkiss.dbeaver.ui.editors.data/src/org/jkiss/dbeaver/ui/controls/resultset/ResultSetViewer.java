@@ -3536,7 +3536,11 @@ public class ResultSetViewer extends Viewer
                                 // Update status (update execution statistics)
                                 updateStatusMessage();
                             }
-                            fireResultSetLoad();
+                            try {
+                                fireResultSetLoad();
+                            } catch (Throwable e) {
+                                log.debug("Error handling resulset load", e);
+                            }
                         }
                         updateFiltersText(true);
                         updateToolbar();
