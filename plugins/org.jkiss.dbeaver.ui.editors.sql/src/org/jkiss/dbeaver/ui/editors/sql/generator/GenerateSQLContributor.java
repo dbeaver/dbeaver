@@ -695,10 +695,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             @Override
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
                 sql.append("SELECT ");
-                if (!columnList) {
-                    sql.append("* ");
-                } else {
-                    boolean hasAttr = false;
+                boolean hasAttr = false;
+                if (columnList) {
                     for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
                         if (DBUtils.isHiddenObject(attr)) {
                             continue;
@@ -707,7 +705,12 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                         hasAttr = true;
                     }
-                    sql.append(getLineSeparator());
+                    if (hasAttr) {
+                        sql.append(getLineSeparator());
+                    }
+                }
+                if (!hasAttr) {
+                    sql.append("* ");
                 }
                 sql.append("FROM ").append(getEntityName(object));
                 sql.append(";\n");
