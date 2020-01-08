@@ -187,7 +187,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             GenericExecutionContext metaContext = (GenericExecutionContext) initFrom;
             ((GenericExecutionContext) context).initDefaultsFrom(monitor, metaContext);
         } else {
-            ((GenericExecutionContext)context).determineSelectedEntity(monitor);
+            ((GenericExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 
