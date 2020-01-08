@@ -153,7 +153,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         //gd.horizontalSpan = 2;
         controlGroup.setLayoutData(gd);
 
-        Button testButton = UIUtils.createPushButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, null, new SelectionAdapter() {
+        Button testButton = UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 testTunnelConnection();
@@ -339,45 +339,30 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         boolean isPublicKey = authMethodCombo.getSelectionIndex() == 1;
         boolean isAgent = authMethodCombo.getSelectionIndex() == 2;
 
-        if (isPublicKey) { // privateKeyLabel, privateKeyText, pwdLabel, passwordText, savePasswordCheckbox
+        if (isPublicKey) {
             showPrivateKeyField(true);
             showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_passphrase);
-            showSavePasswordCheckbox(true);
         } else if (isAgent) {
             showPrivateKeyField(false);
             showPasswordField(false, null);
-            showSavePasswordCheckbox(false);
         } else if (isPassword) {
             showPrivateKeyField(false);
             showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_password);
-            showSavePasswordCheckbox(true);
         }
 
-//        pwdControlGroup.setVisible(isPassword);
-//        ((GridData)pwdControlGroup.getLayoutData()).exclude = !isPassword;
-//        pwdLabel.setVisible(isPassword);
-//        ((GridData)pwdLabel.getLayoutData()).exclude = !isPassword;
-//
-//        if (!isPassword) {
-//            savePasswordCheckbox.setSelection(true);
-//        }
-//        pwdLabel.setText(isPassword ? SSHUIMessages.model_ssh_configurator_label_password : SSHUIMessages.model_ssh_configurator_label_passphrase);
-
-        UIUtils.asyncExec(() -> hostText.getParent().getParent().layout(true, true));
-    }
-
-    private void showSavePasswordCheckbox(boolean show) {
-        ((GridData)savePasswordCheckbox.getLayoutData()).exclude = !show;
-        savePasswordCheckbox.setVisible(show);
+        hostText.getParent().getParent().getParent().layout(true, true);
     }
 
     private void showPasswordField(boolean show, String pwdLabelText) {
         ((GridData)pwdLabel.getLayoutData()).exclude = !show;
         pwdLabel.setVisible(show);
-        ((GridData)passwordText.getLayoutData()).exclude = !show;
-        passwordText.setVisible(show);
-        if (show)
+
+        Composite passComp = passwordText.getParent();
+        ((GridData)passComp.getLayoutData()).exclude = !show;
+        passComp.setVisible(show);
+        if (pwdLabelText != null) {
             pwdLabel.setText(pwdLabelText);
+        }
     }
 
     private void showPrivateKeyField(boolean show) {
