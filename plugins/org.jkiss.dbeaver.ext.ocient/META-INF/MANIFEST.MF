@@ -12,3 +12,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.ocient
+Import-Package: com.google.gson
