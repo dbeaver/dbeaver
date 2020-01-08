@@ -75,6 +75,9 @@ public class GroupingPanel implements IResultSetPanel {
         this.ownerListener = new ResultSetListenerAdapter() {
             @Override
             public void handleResultSetLoad() {
+                if (resultsContainer == null) {
+                    return;
+                }
                 // Here we can refresh grouping (makes sense if source query was modified with some conditions)
                 // Or just clear it (if brand new query was executed)
                 GroupingResultsContainer groupingResultsContainer = getGroupingResultsContainer();
