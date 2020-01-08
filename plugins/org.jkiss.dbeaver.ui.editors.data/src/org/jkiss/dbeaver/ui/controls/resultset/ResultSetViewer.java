@@ -3498,8 +3498,15 @@ public class ResultSetViewer extends Viewer
                             if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {
                                 DBWorkbench.getPlatformUI().showError("Error executing query", "Query execution failed", error);
                             } else {
-                                showErrorPresentation(sqlText, CommonUtils.isEmpty(errorMessage) ? "Error executing query" : errorMessage, error);
-                                log.error("Error executing query", error);
+                                if (CommonUtils.isEmpty(errorMessage)) {
+                                    if (error.getCause() instanceof InterruptedException) {
+                                        errorMessage = "Query execution was interrupted";
+                                    } else {
+                                        errorMessage = "Error executing query";
+                                    }
+                                }
+                                showErrorPresentation(sqlText, errorMessage, error);
+                                log.error(errorMessage, error);
                             }
                         } else {
                             if (!metadataChanged) {
