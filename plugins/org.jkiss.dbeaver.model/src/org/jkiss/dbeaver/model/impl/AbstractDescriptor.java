@@ -310,7 +310,7 @@ public abstract class AbstractDescriptor {
         try {
             objectClass = fromBundle.loadClass(className);
         } catch (Throwable ex) {
-            log.error("Can't determine object class '" + className + "'", ex);
+            log.error("Can't determine object class '" + className + "': " + ex.getMessage());
             return null;
         }
 

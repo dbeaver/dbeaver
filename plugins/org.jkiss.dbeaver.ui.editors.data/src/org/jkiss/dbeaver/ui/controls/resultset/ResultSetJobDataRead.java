@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -121,7 +120,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
                     throw new InvocationTargetException(e);
                 }
             });
-        } catch (DBException e) {
+        } catch (Throwable e) {
             error = e;
         } finally {
             visualizer.completeLoading(null);
