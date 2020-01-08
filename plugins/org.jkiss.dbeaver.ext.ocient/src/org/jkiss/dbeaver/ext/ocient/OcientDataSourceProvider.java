@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.ocient.model.OcientDataSource;
 import org.jkiss.dbeaver.ext.ocient.model.OcientSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -29,9 +30,15 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.utils.CommonUtils;
 
 public class OcientDataSourceProvider extends GenericDataSourceProvider {
+
+    public OcientDataSourceProvider() {
+        super();
+    }
 
     @Override
     public void init(@NotNull DBPPlatform platform) {
@@ -45,9 +52,9 @@ public class OcientDataSourceProvider extends GenericDataSourceProvider {
         @NotNull DBPDataSourceContainer container)
         throws DBException
     {
-        return new GenericDataSource(monitor, container, new GenericMetaModel(), new OcientSQLDialect());
+        return new OcientDataSource(monitor, container);
     }
-
+    
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         StringBuilder url = new StringBuilder();
