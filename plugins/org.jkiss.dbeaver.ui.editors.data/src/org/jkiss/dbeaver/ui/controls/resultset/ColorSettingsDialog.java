@@ -104,7 +104,11 @@ class ColorSettingsDialog extends BaseDialog {
         this.resultSetViewer = resultSetViewer;
         this.attribute = attr;
         this.row = row;
-        this.vEntitySrc = DBVUtils.getVirtualEntity(resultSetViewer.getDataContainer(), true);
+
+        ResultSetModel model = resultSetViewer.getModel();
+        this.vEntitySrc = model.isSingleSource() ?
+            DBVUtils.getVirtualEntity(model.getSingleSource(), true) :
+            DBVUtils.getVirtualEntity(resultSetViewer.getDataContainer(), true);
         this.vEntity = new DBVEntity(vEntitySrc.getContainer(), vEntitySrc, vEntitySrc.getModel());
 
         DEFAULT_RGB = resultSetViewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND).getRGB();

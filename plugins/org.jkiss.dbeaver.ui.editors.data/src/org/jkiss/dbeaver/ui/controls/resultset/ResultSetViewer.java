@@ -4460,7 +4460,10 @@ public class ResultSetViewer extends Viewer
         DBVEntity getVirtualEntity(DBDAttributeBinding binding)
             throws IllegalStateException
         {
-            return DBVUtils.getVirtualEntity(binding, true);
+            DBSEntity singleSource = model.getSingleSource();
+            return singleSource != null ?
+                DBVUtils.getVirtualEntity(singleSource, true) :
+                DBVUtils.getVirtualEntity(binding, true);
         }
 
         void updateColors(DBVEntity entity) {
