@@ -205,7 +205,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 int paramsAssigned = 0;
                 for (int i = params.size() - 1; i >= 0; i--) {
                     DBSProcedureParameterKind parameterKind = params.get(i).getParameterKind();
-                    if (parameterKind == DBSProcedureParameterKind.OUT || parameterKind == DBSProcedureParameterKind.RETURN) {
+                    if (parameterKind == DBSProcedureParameterKind.OUT || parameterKind == DBSProcedureParameterKind.TABLE || parameterKind == DBSProcedureParameterKind.RETURN) {
                         continue;
                     }
                     params.get(i).setDefaultValue(argDefaults[argDefaults.length - 1 - paramsAssigned]);

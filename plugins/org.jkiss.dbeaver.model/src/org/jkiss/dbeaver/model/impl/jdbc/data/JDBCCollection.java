@@ -245,23 +245,23 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 try {
                     return makeCollectionFromResultSet(session, array, null);
                 } catch (SQLException e) {
-                    throw new DBCException(e, dataSource); //$NON-NLS-1$
+                    throw new DBCException(e, session.getExecutionContext());
                 }
             }
             try {
                 return makeCollectionFromArray(session, array, elementType);
             } catch (SQLException e) {
                 if (array == null) {
-                    throw new DBCException(e, dataSource); //$NON-NLS-1$
+                    throw new DBCException(e, session.getExecutionContext());
                 }
                 try {
                     return makeCollectionFromResultSet(session, array, elementType);
                 } catch (SQLException e1) {
-                    throw new DBCException(e1, dataSource); //$NON-NLS-1$
+                    throw new DBCException(e1, session.getExecutionContext());
                 }
             }
         } catch (DBException e) {
-            throw new DBCException("Can't extract array data from JDBC array", e); //$NON-NLS-1$
+            throw new DBCException("Can't extract array data from JDBC array", e, session.getExecutionContext()); //$NON-NLS-1$
         }
     }
 
@@ -404,14 +404,14 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     @NotNull
     public static DBDCollection makeCollectionFromString(@NotNull JDBCSession session, String value) throws DBCException {
         String stringType = DBUtils.getDefaultDataTypeName(session.getDataSource(), DBPDataKind.STRING);
-        if (stringType == null) {
-            throw new DBCException("String data type not supported by database");
-        }
         DBSDataType dataType = DBUtils.getLocalDataType(session.getDataSource(), stringType);
+        DBDValueHandler valueHandler;
         if (dataType == null) {
-            throw new DBCException("String data type '" + stringType + "' not supported by database");
+            log.debug("String data type '" + stringType + "' not supported by database");
+            valueHandler = session.getDataSource().getContainer().getDefaultValueHandler();
+        } else {
+            valueHandler = DBUtils.findValueHandler(session, dataType);
         }
-        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, dataType);
 
         // Try to divide on string elements
         if (!CommonUtils.isEmpty(value)) {

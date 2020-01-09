@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.utils.CommonUtils;
@@ -94,7 +94,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             }
             return row.getValue(properties.get(index).getName());
         } catch (WMIException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -104,7 +104,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         try {
             return row.getValue(name);
         } catch (WMIException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

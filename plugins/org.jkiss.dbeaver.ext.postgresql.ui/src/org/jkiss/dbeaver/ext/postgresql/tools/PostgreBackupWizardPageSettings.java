@@ -25,7 +25,8 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
+import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -34,8 +35,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreBackupWizard>
-{
+class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<PostgreBackupWizard> {
 
     private Text outputFolderText;
     private Text outputFileText;
@@ -56,7 +56,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && wizard.getOutputFolder() != null;
+        return super.isPageComplete() && wizard.getSettings().getOutputFolder() != null;
     }
 
     @Override
@@ -74,10 +74,10 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         Group formatGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_setting, 2, GridData.FILL_HORIZONTAL, 0);
         formatCombo = UIUtils.createLabelCombo(formatGroup, PostgreMessages.wizard_backup_page_setting_label_format, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        for (PostgreBackupWizard.ExportFormat format : PostgreBackupWizard.ExportFormat.values()) {
+        for (PostgreDatabaseBackupSettings.ExportFormat format : PostgreDatabaseBackupSettings.ExportFormat.values()) {
             formatCombo.add(format.getTitle());
         }
-        formatCombo.select(wizard.format.ordinal());
+        formatCombo.select(wizard.getSettings().getFormat().ordinal());
         formatCombo.addSelectionListener(changeListener);
 
         compressCombo = UIUtils.createLabelCombo(formatGroup, PostgreMessages.wizard_backup_page_setting_label_compression, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -118,31 +118,38 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         noOwnerCheck.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_output, 2, GridData.FILL_HORIZONTAL, 0);
-        outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, PostgreMessages.wizard_backup_page_setting_label_output_folder, e -> updateState());
-        outputFileText = UIUtils.createLabelText(outputGroup, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern, wizard.getOutputFilePattern());
+        outputFolderText = DialogUtils.createOutputFolderChooser(
+            outputGroup,
+            PostgreMessages.wizard_backup_page_setting_label_output_folder,
+            wizard.getSettings().getOutputFolder() != null ? wizard.getSettings().getOutputFolder().getAbsolutePath() : null,
+            e -> updateState());
+        outputFileText = UIUtils.createLabelText(
+            outputGroup,
+            PostgreMessages.wizard_backup_page_setting_label_file_name_pattern,
+            wizard.getSettings().getOutputFilePattern());
         UIUtils.setContentProposalToolTip(outputFileText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output,
-            AbstractImportExportWizard.VARIABLE_HOST,
-            AbstractImportExportWizard.VARIABLE_DATABASE,
-            AbstractImportExportWizard.VARIABLE_TABLE,
-            AbstractImportExportWizard.VARIABLE_DATE,
-            AbstractImportExportWizard.VARIABLE_TIMESTAMP);
+            NativeToolUtils.VARIABLE_HOST,
+            NativeToolUtils.VARIABLE_DATABASE,
+            NativeToolUtils.VARIABLE_TABLE,
+            NativeToolUtils.VARIABLE_DATE,
+            NativeToolUtils.VARIABLE_TIMESTAMP);
         UIUtils.installContentProposal(
             outputFileText,
             new TextContentAdapter(),
             new SimpleContentProposalProvider(new String[]{
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_HOST),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATABASE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TABLE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TIMESTAMP),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_HOST),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATABASE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TABLE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP),
             }));
-        outputFileText.addModifyListener(e -> wizard.setOutputFilePattern(outputFileText.getText()));
-        if (wizard.getOutputFolder() != null) {
-            outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
-        }
+        outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
+
         createExtraArgsInput(outputGroup);
 
-        createSecurityGroup(composite);
+        Composite extraGroup = UIUtils.createComposite(composite, 2);
+        createSecurityGroup(extraGroup);
+        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
     }
@@ -150,18 +157,25 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
     @Override
     protected void updateState()
     {
-        String fileName = outputFolderText.getText();
-        wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
-        wizard.setOutputFilePattern(outputFileText.getText());
-
-        wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
-        wizard.compression = compressCombo.getText();
-        wizard.encoding = encodingCombo.getText();
-        wizard.useInserts = useInsertsCheck.getSelection();
-        wizard.noPrivileges = noPrivilegesCheck.getSelection();
-        wizard.noOwner = noOwnerCheck.getSelection();
+        saveState();
 
         getContainer().updateButtons();
+    }
+
+    @Override
+    public void saveState() {
+        super.saveState();
+
+        String fileName = outputFolderText.getText();
+        wizard.getSettings().setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+        wizard.getSettings().setOutputFilePattern(outputFileText.getText());
+
+        wizard.getSettings().setFormat(PostgreDatabaseBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);
+        wizard.getSettings().setCompression(compressCombo.getText());
+        wizard.getSettings().setEncoding(encodingCombo.getText());
+        wizard.getSettings().setUseInserts(useInsertsCheck.getSelection());
+        wizard.getSettings().setNoPrivileges(noPrivilegesCheck.getSelection());
+        wizard.getSettings().setNoOwner(noOwnerCheck.getSelection());
     }
 
 }

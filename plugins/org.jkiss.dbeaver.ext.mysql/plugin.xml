@@ -21,11 +21,12 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
-              description="MySQL connector"
-              icon="icons/mysql_icon.png"
-              id="mysql"
-              label="MySQL">
+            class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
+            description="MySQL connector"
+            icon="icons/mysql_icon.png"
+            id="mysql"
+            label="MySQL"
+            dialect="mysql">
             <tree
                   icon="icons/mysql_icon.png"
                   label="MySQL data source"
@@ -303,6 +304,26 @@
         <command id="mysql.source" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="mysql" parent="basic" class="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" label="MySQL" description="MySQL dialect." icon="icons/mysql_icon.png">
+            <keywords value=""/>
+            <execKeywords value=""/>
+            <ddlKeywords value=""/>
+            <dmlKeywords value=""/>
+            <functions value=""/>
+            <types value=""/>
+
+            <property name="" value=""/>
+        </dialect>
+    </extension>
+
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" class="org.jkiss.dbeaver.ext.mysql.sql.MySQLDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dashboard">
 
         <mapQuery id="mysql.query.status" updatePeriod="1000">SHOW GLOBAL STATUS</mapQuery>
@@ -345,16 +366,16 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="mysql" name="MySQL" description="MySQL database task"/>
+        <category id="mysql" name="MySQL" description="MySQL database task" icon="icons/mysql_icon.png"/>
 
-        <task id="mysqlDatabaseBackup" name="Database export" description="Database export task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.task.DatabaseExportHandler">
+        <task id="mysqlDatabaseBackup" name="MySQL dump" description="MySQL database export task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
         </task>
-        <task id="mysqlDatabaseRestore" name="Database import" description="Database import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.task.DatabaseImportHandler">
+        <task id="mysqlDatabaseRestore" name="MySQL restore" description="MySQL database import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>
-        <task id="mysqlScriptExecute" name="SQL script" description="SQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.task.ScriptExecuteHandler">
+        <task id="mysqlScriptExecute" name="MySQL script" description="MySQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
     </extension>

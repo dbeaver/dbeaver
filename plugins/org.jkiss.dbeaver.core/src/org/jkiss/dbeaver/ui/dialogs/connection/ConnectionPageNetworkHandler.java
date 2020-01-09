@@ -242,10 +242,12 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
-        handlerConfiguration.setProperties(Collections.emptyMap());
-        configurator.saveSettings(handlerConfiguration);
-        dataSource.getConnectionConfiguration().setConfigProfile(activeProfile);
-        dataSource.getConnectionConfiguration().updateHandler(handlerConfiguration);
+        if (handlerConfiguration != null) {
+            handlerConfiguration.setProperties(Collections.emptyMap());
+            configurator.saveSettings(handlerConfiguration);
+            dataSource.getConnectionConfiguration().setConfigProfile(activeProfile);
+            dataSource.getConnectionConfiguration().updateHandler(handlerConfiguration);
+        }
     }
 
     @Override

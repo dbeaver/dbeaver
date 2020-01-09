@@ -20,7 +20,9 @@ import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimElement;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -32,6 +34,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DataSourceToolbarUtils
 {
+
+    public static final String CONNECTION_SELECTOR_TOOLBAR_ID = "dbeaver-connection-selector";
 
     public static DBPDataSourceContainer getCurrentDataSource(IWorkbenchWindow workbenchWindow) {
         if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
@@ -52,7 +56,7 @@ public class DataSourceToolbarUtils
         if (window instanceof WorkbenchWindow) {
             MTrimBar topTrim = ((WorkbenchWindow) window).getTopTrim();
             for (MTrimElement element : topTrim.getChildren()) {
-                if ("dbeaver-connection-selector".equals(element.getElementId())) {
+                if (CONNECTION_SELECTOR_TOOLBAR_ID.equals(element.getElementId())) {
                     boolean showConnectionSelector = false;
                     IEditorPart activeEditor = window.getActivePage().getActiveEditor();
                     DBPDataSourceContainer dataSourceContainer = null;
@@ -65,10 +69,20 @@ public class DataSourceToolbarUtils
                         Object widget = element.getWidget();
                         if (widget instanceof Composite) {
                             Composite controlsPanel = (Composite) widget;
-                            if (dataSourceContainer == null) {
-                                controlsPanel.setBackground(null);
-                            } else {
-                                controlsPanel.setBackground(UIUtils.getConnectionTypeColor(dataSourceContainer.getConnectionConfiguration().getConnectionType()));
+                            Color bgColor = dataSourceContainer == null ?
+                                null :
+                                UIUtils.getConnectionTypeColor(dataSourceContainer.getConnectionConfiguration().getConnectionType());
+                            Control[] childControl = controlsPanel.getChildren();
+                            for (Control cc : childControl) {
+//                                if (bgColor != null) {
+//                                    Color oldBackground = cc.getBackground();
+//                                    if (oldBackground != null) {
+//                                        RGB newBackground = UIUtils.blend(oldBackground.getRGB(), bgColor.getRGB(), 50);
+//                                        cc.setBackground(UIUtils.getSharedColor(newBackground));
+//                                        continue;
+//                                    }
+//                                }
+                                cc.setBackground(bgColor);
                             }
                         }
 

@@ -72,19 +72,16 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             throw new DBException("IO error reading file '" + fileName + "'", e);
         }
         final File finalIncFile = incFile;
-        final boolean statusFlag[] = new boolean[1];
-        UIUtils.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-                final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
-                SQLEditor sqlEditor = OpenHandler.openSQLConsole(
-                        workbenchWindow,
-                        scriptContext.getExecutionContext().getDataSource().getContainer(),
-                        input);
-                final IncludeScriptListener scriptListener = new IncludeScriptListener(workbenchWindow, sqlEditor, statusFlag);
-                sqlEditor.processSQL(false, true, null, scriptListener);
-            }
+        final boolean[] statusFlag = new boolean[1];
+        UIUtils.syncExec(() -> {
+            final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+            final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
+            SQLEditor sqlEditor = OpenHandler.openSQLConsole(
+                    workbenchWindow,
+                    scriptContext.getExecutionContext().getDataSource().getContainer(),
+                    input);
+            final IncludeScriptListener scriptListener = new IncludeScriptListener(workbenchWindow, sqlEditor, statusFlag);
+            sqlEditor.processSQL(false, true, null, scriptListener);
         });
 
         // Wait until script finished
@@ -120,18 +117,13 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
 
         @Override
-        public void onEndQuery(DBCSession session, SQLQueryResult result) {
+        public void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics) {
 
         }
 
         @Override
         public void onEndScript(DBCStatistics statistics, boolean hasErrors) {
-            UIUtils.syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    workbenchWindow.getActivePage().closeEditor(editor, false);
-                }
-            });
+            UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
             statusFlag[0] = true;
         }
     }

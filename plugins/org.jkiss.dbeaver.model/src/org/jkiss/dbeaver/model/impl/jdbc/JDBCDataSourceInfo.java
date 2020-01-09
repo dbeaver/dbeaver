@@ -21,7 +21,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.AbstractDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -148,7 +150,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         try {
             supportsBatchUpdates = metaData.supportsBatchUpdates();
         } catch (Throwable e) {
-            log.debug(e);
+            log.debug(e.getMessage());
         }
 
         try {
@@ -324,6 +326,22 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     @Override
     public boolean isMultipleResultsFetchBroken() {
         return false;
+    }
+
+    @Override
+    public DBSObjectType[] getSupportedObjectTypes() {
+        return new DBSObjectType[] {
+            RelationalObjectType.TYPE_TABLE,
+            RelationalObjectType.TYPE_VIEW,
+            RelationalObjectType.TYPE_TABLE_COLUMN,
+            RelationalObjectType.TYPE_VIEW_COLUMN,
+            RelationalObjectType.TYPE_INDEX,
+            RelationalObjectType.TYPE_CONSTRAINT,
+            RelationalObjectType.TYPE_PROCEDURE,
+            RelationalObjectType.TYPE_SEQUENCE,
+            RelationalObjectType.TYPE_TRIGGER,
+            RelationalObjectType.TYPE_DATA_TYPE
+        };
     }
 
     public void setSupportsResultSetScroll(boolean supportsScroll)

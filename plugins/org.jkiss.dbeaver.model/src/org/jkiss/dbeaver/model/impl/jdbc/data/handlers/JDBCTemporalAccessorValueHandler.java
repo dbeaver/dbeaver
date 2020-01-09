@@ -70,7 +70,7 @@ public class JDBCTemporalAccessorValueHandler extends TemporalAccessorValueHandl
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

@@ -179,7 +179,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="dataTransfer" name="Data transfer" description="Data transfer (import/export) task"/>
+        <category id="dataTransfer" name="Data transfer" description="Data transfer (import/export) task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/table.png"/>
 
         <task id="dataExport" name="Data export" description="Data export task" icon="icons/export.png" type="dataTransfer" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>

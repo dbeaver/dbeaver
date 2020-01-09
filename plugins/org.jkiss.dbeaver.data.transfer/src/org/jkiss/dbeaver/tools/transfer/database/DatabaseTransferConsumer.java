@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -457,20 +456,16 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         monitor.subTask("Create table " + containerMapping.getTargetName());
         StringBuilder sql = new StringBuilder(500);
-        if (!(dataSource instanceof SQLDataSource)) {
-            throw new DBException("Data source doesn't support SQL");
-        }
-        SQLDataSource targetDataSource = (SQLDataSource) dataSource;
 
-        String tableName = DBObjectNameCaseTransformer.transformName(targetDataSource, containerMapping.getTargetName());
+        String tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
         containerMapping.setTargetName(tableName);
         if (containerMapping.getMappingType() == DatabaseMappingType.create) {
             sql.append("CREATE TABLE ");
             if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
                 sql.append(DBUtils.getQuotedIdentifier(schema));
-                sql.append(targetDataSource.getSQLDialect().getCatalogSeparator());
+                sql.append(dataSource.getSQLDialect().getCatalogSeparator());
             }
-            sql.append(DBUtils.getQuotedIdentifier(targetDataSource, tableName)).append("(\n");
+            sql.append(DBUtils.getQuotedIdentifier(dataSource, tableName)).append("(\n");
             Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<>();
             for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
                 if (attr.getMappingType() != DatabaseMappingType.create) {

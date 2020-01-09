@@ -155,7 +155,7 @@ public class OracleExecutionPlan extends AbstractExecutionPlan {
             readPlanNodes(dbStat);
 
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -168,7 +168,7 @@ public class OracleExecutionPlan extends AbstractExecutionPlan {
             readPlanNodes(dbStat);
 
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

@@ -202,7 +202,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly)
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[]{
             new DB2ConnectionTracePage(),

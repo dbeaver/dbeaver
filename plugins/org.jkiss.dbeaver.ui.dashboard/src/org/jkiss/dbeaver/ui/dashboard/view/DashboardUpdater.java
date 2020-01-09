@@ -176,10 +176,10 @@ public class DashboardUpdater {
                             fetchDashboardData(dashboard, dbResults);
                         }
                     }
+                } catch (Exception e) {
+                    throw new DBCException("Error updating dashboard " + dashboard.getDashboardId(), e, session.getExecutionContext());
                 }
             }
-        } catch (Exception e) {
-            throw new DBCException("Error updating dashboard " + dashboard.getDashboardId(), e);
         }
     }
 

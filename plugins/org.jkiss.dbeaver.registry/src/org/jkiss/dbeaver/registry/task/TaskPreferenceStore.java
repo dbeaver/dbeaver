@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -30,7 +31,7 @@ import java.util.Map;
 /**
  * Wrapper over simple properties
  */
-public class TaskPreferenceStore extends AbstractPreferenceStore {
+public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPPreferenceMap {
     private DBPPreferenceStore parentStore;
     private final DBTTask task;
     private Map<String, Object> properties;
@@ -40,6 +41,12 @@ public class TaskPreferenceStore extends AbstractPreferenceStore {
         this.parentStore = DBWorkbench.getPlatform().getPreferenceStore();
         this.task = task;
         this.properties = new LinkedHashMap<>(task.getProperties());
+    }
+
+    public TaskPreferenceStore(Map<String, Object> properties) {
+        this.parentStore = DBWorkbench.getPlatform().getPreferenceStore();
+        this.task = null;
+        this.properties = properties;
     }
 
     public DBPPreferenceStore getParentStore() {
@@ -62,7 +69,9 @@ public class TaskPreferenceStore extends AbstractPreferenceStore {
 
     @Override
     public void save() throws IOException {
-        task.setProperties(properties);
+        if (task != null) {
+            task.setProperties(properties);
+        }
     }
 
     @Override
@@ -260,5 +269,15 @@ public class TaskPreferenceStore extends AbstractPreferenceStore {
         return
             CommonUtils.equalObjects(parentStore, copy.parentStore) &&
                 CommonUtils.equalObjects(properties, copy.properties);
+    }
+
+    @Override
+    public <T> T getObject(String name) {
+        return (T) properties.get(name);
+    }
+
+    @Override
+    public Map<String, Object> getPropertyMap() {
+        return properties;
     }
 }

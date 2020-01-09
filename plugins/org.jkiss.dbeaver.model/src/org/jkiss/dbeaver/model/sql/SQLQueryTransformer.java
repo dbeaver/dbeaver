@@ -18,12 +18,13 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
  * SQLQuery transformer.
  */
 public interface SQLQueryTransformer {
 
-    SQLQuery transformQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException;
+    SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException;
 
 }

@@ -41,14 +41,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLConverterRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLTargetConverterDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
-import org.jkiss.dbeaver.ui.editors.sql.dialogs.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.BaseSQLDialog;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLConverterRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLTargetConverterDescriptor;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -247,7 +247,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
                 result = converter.convertText(
                         editor.getSQLDialect(),
                         editor.getSyntaxManager(),
-                        editor.getRuleManager(),
+                        editor.getRuleScanner(),
                         editor.getDocument(),
                         selection.getOffset(),
                         selection.getLength(),

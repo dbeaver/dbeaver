@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -57,13 +58,11 @@ import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
-import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
 
@@ -381,25 +380,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDefaultAutoCommit(final boolean autoCommit, @Nullable DBCExecutionContext updateContext, boolean updateConnection, @Nullable final Runnable onFinish) throws DBException {
-        if (updateContext != null) {
-            final DBCTransactionManager txnManager = DBUtils.getTransactionManager(updateContext);
-            if (updateConnection && txnManager != null) {
-                TasksJob.runTask("Set auto-commit mode", monitor -> {
-                    try {
-                        // Change auto-commit mode
-                        txnManager.setAutoCommit(monitor, autoCommit);
-                    } catch (DBCException e) {
-                        throw new InvocationTargetException(e);
-                    } finally {
-                        monitor.done();
-                        if (onFinish != null) {
-                            onFinish.run();
-                        }
-                    }
-                });
-            }
-        }
+    public void setDefaultAutoCommit(final boolean autoCommit) {
         // Save in preferences
         if (autoCommit == getConnectionConfiguration().getConnectionType().isAutocommit()) {
             connectionInfo.getBootstrap().setDefaultAutoCommit(null);
@@ -435,25 +416,11 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDefaultTransactionsIsolation(@Nullable final DBPTransactionIsolation isolationLevel) throws DBException {
+    public void setDefaultTransactionsIsolation(@Nullable final DBPTransactionIsolation isolationLevel) {
         if (isolationLevel == null) {
             connectionInfo.getBootstrap().setDefaultTransactionIsolation(null);
         } else {
             connectionInfo.getBootstrap().setDefaultTransactionIsolation(isolationLevel.getCode());
-            if (dataSource != null) {
-                TasksJob.runTask("Set transactions isolation level", monitor -> {
-                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(dataSource.getDefaultInstance(), false));
-                    if (txnManager != null) {
-                        try {
-                            if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
-                                txnManager.setTransactionIsolation(monitor, isolationLevel);
-                            }
-                        } catch (DBCException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    }
-                });
-            }
         }
     }
 
@@ -646,6 +613,12 @@ public class DataSourceDescriptor
 
     public Date getConnectTime() {
         return connectTime;
+    }
+
+    @NotNull
+    @Override
+    public SQLDialectMetadata getScriptDialect() {
+        return driver.getScriptDialect();
     }
 
     public boolean isLocked() {

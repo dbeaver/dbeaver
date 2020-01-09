@@ -20,7 +20,14 @@
  */
 package org.jkiss.dbeaver.ext.h2gis;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.dbeaver.ext.h2.model.H2MetaModel;
+import org.jkiss.dbeaver.ext.h2gis.model.H2GISDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Used to create an H2GIS datasource that loads the H2GIS driver from an
@@ -34,4 +41,9 @@ public class H2GISDataSourceProvider extends GenericDataSourceProvider {
     public H2GISDataSourceProvider() {
     }
 
+    @NotNull
+    @Override
+    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
+        return new H2GISDataSource(monitor, container, new H2MetaModel());
+    }
 }

@@ -610,9 +610,9 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
                         	jobAction = action.toString();
                         }
                     }
+                } catch (SQLException e) {
+                    throw new DBCException(e, session.getExecutionContext());
         		}
-            } catch (SQLException e) {
-                throw new DBCException(e, this.getDataSource());
             } finally {
                 monitor.done();
             }

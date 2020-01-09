@@ -26,7 +26,8 @@
             description="Generic JDBC connector"
             id="generic"
             label="Generic"
-            icon="#database_icon_default">
+            icon="#database_icon_default"
+            dialect="generic">
             <tree path="generic" label="Generic data source">
                 <items label="#catalog" path="catalog" property="catalogs" icon="#database" optional="true">
                     <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
@@ -1534,6 +1535,11 @@
             <scope group="com.qubole"/>
         </repository>
 -->
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="generic" parent="basic" class="org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect" label="Generic" description="Dialect based on JDBC API information." icon="#database_icon_default" hidden="true">
+        </dialect>
     </extension>
 
 </plugin>

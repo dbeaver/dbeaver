@@ -290,8 +290,8 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     if (bootstrap.getDefaultTransactionIsolation() != null) {
                         xml.addAttribute(RegistryConstants.ATTR_TXN_ISOLATION, bootstrap.getDefaultTransactionIsolation());
                     }
-                    if (!CommonUtils.isEmpty(bootstrap.getDefaultObjectName())) {
-                        xml.addAttribute(RegistryConstants.ATTR_DEFAULT_OBJECT, bootstrap.getDefaultObjectName());
+                    if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName())) {
+                        xml.addAttribute(RegistryConstants.ATTR_DEFAULT_OBJECT, bootstrap.getDefaultCatalogName());
                     }
                     if (bootstrap.isIgnoreErrors()) {
                         xml.addAttribute(RegistryConstants.ATTR_IGNORE_ERRORS, true);
@@ -575,7 +575,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                             config.getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(atts.getValue(RegistryConstants.ATTR_TXN_ISOLATION)));
                         }
                         if (!CommonUtils.isEmpty(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT))) {
-                            config.getBootstrap().setDefaultObjectName(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT));
+                            config.getBootstrap().setDefaultCatalogName(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT));
                         }
                         if (atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS) != null) {
                             config.getBootstrap().setIgnoreErrors(CommonUtils.toBoolean(atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS)));
@@ -642,7 +642,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                                 break;
                             case DataSourceRegistry.DEFAULT_ACTIVE_OBJECT:
                                 if (!CommonUtils.isEmpty(propValue)) {
-                                    curDataSource.getConnectionConfiguration().getBootstrap().setDefaultObjectName(propValue);
+                                    curDataSource.getConnectionConfiguration().getBootstrap().setDefaultCatalogName(propValue);
                                 }
                                 break;
                             default:

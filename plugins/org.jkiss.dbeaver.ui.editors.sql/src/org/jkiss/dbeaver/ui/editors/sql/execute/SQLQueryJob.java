@@ -350,6 +350,9 @@ public class SQLQueryJob extends DataSourceJob
 
         final SQLQuery originalQuery = sqlQuery;
 
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        monitor.beginTask("Get data receiver", 1);
+        monitor.subTask("Create results view");
         DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
         try {
             if (dataReceiver instanceof DBDDataReceiverInteractive) {
@@ -364,14 +367,15 @@ public class SQLQueryJob extends DataSourceJob
                 ((DBDDataReceiverInteractive) dataReceiver).setDataReceivePaused(false);
             }
         }
+        monitor.done();
 
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
 
         // Modify query (filters + parameters)
         String queryText = originalQuery.getText();//.trim();
-        if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
-            String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
+        if (dataFilter != null && dataFilter.hasFilters()) {
+            String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
                 dataSource, queryText, dataFilter);
             sqlQuery = new SQLQuery(executionContext.getDataSource(), filteredQueryText, sqlQuery);
         } else {
@@ -389,7 +393,7 @@ public class SQLQueryJob extends DataSourceJob
 
             // Check and invalidate connection
             if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
-                executionContext.invalidateContext(session.getProgressMonitor(), true);
+                executionContext.invalidateContext(monitor, true);
                 connectionInvalidated = true;
             }
 
@@ -436,7 +440,7 @@ public class SQLQueryJob extends DataSourceJob
             if (fireEvents && listener != null && startQueryAlerted) {
                 // Notify query end
                 try {
-                    listener.onEndQuery(session, curResult);
+                    listener.onEndQuery(session, curResult, statistics);
                 } catch (Exception e) {
                     log.error(e);
                 }
@@ -476,7 +480,8 @@ public class SQLQueryJob extends DataSourceJob
 
         // Execute statement
         try {
-            session.getProgressMonitor().subTask("Execute query");
+            DBRProgressMonitor monitor = session.getProgressMonitor();
+            monitor.subTask("Execute query");
 
             boolean hasResultSet = dbcStatement.executeStatement();
 
@@ -773,7 +778,7 @@ public class SQLQueryJob extends DataSourceJob
             if (lastError instanceof DBCException) {
                 throw (DBCException) lastError;
             } else {
-                throw new DBCException(lastError, getExecutionContext().getDataSource());
+                throw new DBCException(lastError, getExecutionContext());
             }
         } else if (result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);

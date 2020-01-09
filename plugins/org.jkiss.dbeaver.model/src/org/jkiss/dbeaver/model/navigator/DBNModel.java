@@ -200,6 +200,9 @@ public class DBNModel implements IResourceChangeListener {
                 log.debug("Error dereferencing virtual entity", e);
             }
         }
+        if (object == null) {
+            return null;
+        }
         DBNDatabaseNode node = getNodeByObject(object);
         if (node != null) {
             return node;

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.format;
 
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.registry.SQLFormatterConfigurationRegistry;
 
@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.sql.registry.SQLFormatterConfigurationRegistry;
  */
 public class SQLFormatUtils {
 
-    public static String formatSQL(SQLDataSource dataSource, String query)
+    public static String formatSQL(DBPDataSource dataSource, String query)
     {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());

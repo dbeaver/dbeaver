@@ -34,7 +34,10 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryType;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -73,8 +76,8 @@ public final class DBUtils {
 
     public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
-        if (dataSource instanceof SQLDataSource) {
-            final String[][] quoteStrings = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteStrings();
+        {
+            final String[][] quoteStrings = dataSource.getSQLDialect().getIdentifierQuoteStrings();
             if (ArrayUtils.isEmpty(quoteStrings)) {
                 return false;
             }
@@ -90,10 +93,7 @@ public final class DBUtils {
     @NotNull
     public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
-        if (dataSource instanceof SQLDataSource) {
-            str = getUnQuotedIdentifier(str, ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteStrings());
-        }
-        return str;
+        return getUnQuotedIdentifier(str, dataSource.getSQLDialect().getIdentifierQuoteStrings());
     }
 
     @NotNull
@@ -127,15 +127,11 @@ public final class DBUtils {
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
-        if (dataSource instanceof SQLDataSource) {
-            return getQuotedIdentifier((SQLDataSource)dataSource, str, true, false);
-        } else {
-            return str;
-        }
+        return getQuotedIdentifier(dataSource, str, true, false);
     }
 
     @NotNull
-    public static String getQuotedIdentifier(@NotNull SQLDataSource dataSource, @NotNull String str, boolean caseSensitiveNames, boolean quoteAlways)
+    public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str, boolean caseSensitiveNames, boolean quoteAlways)
     {
         if (isQuotedIdentifier(dataSource, str)) {
             // Already quoted
@@ -201,14 +197,14 @@ public final class DBUtils {
     public static String getFullQualifiedName(@Nullable DBPDataSource dataSource, @NotNull DBPNamedObject ... path)
     {
         StringBuilder name = new StringBuilder(20 * path.length);
-        if (!(dataSource instanceof SQLDataSource)) {
+        if (dataSource  == null) {
             // It is not SQL identifier, let's just make it simple then
             for (DBPNamedObject namePart : path) {
                 if (name.length() > 0) { name.append('.'); }
                 name.append(namePart.getName());
             }
         } else {
-            final SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+            final SQLDialect sqlDialect = dataSource.getSQLDialect();
 
             DBPNamedObject parent = null;
             for (DBPNamedObject namePart : path) {
@@ -571,8 +567,15 @@ public final class DBUtils {
                 return null;
             }
         }
+        if (names.length == 1) {
+            return dataSourceContainer;
+        }
         if (!dataSourceContainer.isConnected()) {
-            dataSourceContainer.connect(monitor, true, true);
+            try {
+                dataSourceContainer.connect(monitor, true, true);
+            } catch (DBException e) {
+                throw new DBException("Error connecting to datasource '" + dataSourceContainer.getName() + "'", e);
+            }
         }
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (dataSource == null) {
@@ -1713,7 +1716,7 @@ public final class DBUtils {
         try {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-            if (contextDefaults.refreshDefaults(monitor)) {
+            if (contextDefaults.refreshDefaults(monitor, false)) {
                 fireObjectSelectionChange(defaultCatalog, contextDefaults.getDefaultCatalog());
                 fireObjectSelectionChange(defaultSchema, contextDefaults.getDefaultSchema());
             }
@@ -1733,19 +1736,19 @@ public final class DBUtils {
         }
     }
 
-    public static DBSObjectContainer getChangeableObjectContainer(DBPDataSource dataSource, DBSObjectContainer root) {
-        DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
-        DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+    public static DBSObjectContainer getChangeableObjectContainer(DBCExecutionContextDefaults contextDefaults, DBSObjectContainer root, Class<? extends DBSObject> childType) {
         if (contextDefaults == null) {
             return null;
         }
-        if (contextDefaults.supportsCatalogChange()) {
+        if (childType == DBSCatalog.class && contextDefaults.supportsCatalogChange()) {
             return root;
         }
-        if (contextDefaults.supportsSchemaChange()) {
+        if (childType == DBSSchema.class && contextDefaults.supportsSchemaChange()) {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             if (defaultCatalog != null) {
                 return defaultCatalog;
+            } else {
+                return root;
             }
         }
         return null;
@@ -2007,9 +2010,9 @@ public final class DBUtils {
             DBWorkbench.getPlatformUI().executeWithProgress(runnable);
             //UIUtils.runInProgressService(runnable);
         } catch (InvocationTargetException e) {
-            throw new DBCException(e.getTargetException(), context.getDataSource());
+            throw new DBCException(e.getTargetException(), context);
         } catch (InterruptedException e) {
-            throw new DBCException(e, context.getDataSource());
+            throw new DBCException(e, context);
         }
 
         Object result = runnable.getResult();
@@ -2029,6 +2032,17 @@ public final class DBUtils {
     public static String getEntityScriptName(DBSEntity entity, Map<String, Object> options) {
         return CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) && entity instanceof DBPQualifiedObject ?
             ((DBPQualifiedObject)entity).getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(entity);
+    }
+
+    public static String getObjectTypeName(DBSObject object) {
+        DBSObjectType[] objectTypes = object.getDataSource().getInfo().getSupportedObjectTypes();
+        for (DBSObjectType ot : objectTypes) {
+            Class<? extends DBSObject> typeClass = ot.getTypeClass();
+            if (typeClass != null && typeClass != DBSObject.class && typeClass.isInstance(object)) {
+                return ot.getTypeName();
+            }
+        }
+        return "Object";
     }
 
 }

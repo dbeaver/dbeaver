@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 /**
@@ -26,5 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 public interface IEntityEditorContext {
 
     boolean isEntityContainer(DBSObjectContainer object);
+
+    boolean isRelationalObject(DBSObject object);
 
 }

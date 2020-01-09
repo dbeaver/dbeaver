@@ -20,7 +20,8 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,6 +44,7 @@ public class ReferencesPanel implements IResultSetPanel {
     private IResultSetPresentation presentation;
     private IDialogSettings panelSettings;
 
+    private Composite referencesPlaceholder;
     private ReferencesResultsContainer resultsContainer;
 
     public ReferencesPanel() {
@@ -55,7 +57,8 @@ public class ReferencesPanel implements IResultSetPanel {
 
         loadSettings();
 
-        this.resultsContainer = new ReferencesResultsContainer(parent, presentation.getController());
+        this.referencesPlaceholder = new Composite(parent, SWT.NONE);
+        this.referencesPlaceholder.setLayout(new FillLayout());
 
         // Data listener
         ResultSetListenerAdapter dataListener = new ResultSetListenerAdapter() {
@@ -72,13 +75,22 @@ public class ReferencesPanel implements IResultSetPanel {
                 if (presentation.getController().getVisiblePanel() != ReferencesPanel.this) {
                     return;
                 }
-                resultsContainer.refreshReferences();
+                getResultsContainer().refreshReferences();
             };
             ((ISelectionProvider) presentation).addSelectionChangedListener(selectionListener);
             presentation.getControl().addDisposeListener(e -> ((ISelectionProvider) presentation).removeSelectionChangedListener(selectionListener));
         }
 
-        return this.resultsContainer.getControl();
+        return referencesPlaceholder;
+    }
+
+    private ReferencesResultsContainer getResultsContainer() {
+        if (this.resultsContainer == null) {
+            this.resultsContainer = new ReferencesResultsContainer(referencesPlaceholder, presentation.getController());
+            referencesPlaceholder.layout(true, true);
+        }
+
+        return this.resultsContainer;
     }
 
     @Override
@@ -112,7 +124,7 @@ public class ReferencesPanel implements IResultSetPanel {
     @Override
     public void refresh(boolean force) {
         if (presentation.getController().getVisiblePanel() == this) {
-            resultsContainer.refreshReferences();
+            getResultsContainer().refreshReferences();
         }
     }
 

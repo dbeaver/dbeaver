@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.osgi.framework.Version;
 
 import java.util.Collection;
@@ -166,4 +167,6 @@ public interface DBPDataSourceInfo
      * Workaround for broken drivers (#2792)
      */
     boolean isMultipleResultsFetchBroken();
+
+    DBSObjectType[] getSupportedObjectTypes();
 }

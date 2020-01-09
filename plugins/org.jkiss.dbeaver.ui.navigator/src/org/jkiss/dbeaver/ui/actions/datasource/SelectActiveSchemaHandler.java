@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -185,7 +186,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         element.setTooltip(schemaTooltip);
     }
 
-    private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, DBCExecutionContext executionContext, @Nullable String curInstanceName, @Nullable String newInstanceName, @Nullable String newSchemaName) {
+    private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, DBCExecutionContext executionContext, @Nullable String curInstanceName, @Nullable String newInstanceName, @Nullable String newObjectName) {
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             new AbstractJob("Change active database") {
@@ -202,7 +203,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                             contextDefaults = executionContext.getContextDefaults();
                         }
                         if (contextDefaults != null && (contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange())) {
-                            changeDefaultObject(monitor, rootContainer, contextDefaults, newInstanceName, curInstanceName, newSchemaName);
+                            changeDefaultObject(monitor, rootContainer, contextDefaults, newInstanceName, curInstanceName, newObjectName);
                         }
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
@@ -214,7 +215,14 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
     }
 
     @SuppressWarnings("unchecked")
-    private static void changeDefaultObject(DBRProgressMonitor monitor, DBSObjectContainer rootContainer, DBCExecutionContextDefaults contextDefaults, @Nullable String newInstanceName, @Nullable String curInstanceName, @Nullable String newSchemaName) throws DBException {
+    private static void changeDefaultObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer rootContainer,
+        @NotNull DBCExecutionContextDefaults contextDefaults,
+        @Nullable String newInstanceName,
+        @Nullable String curInstanceName,
+        @Nullable String newObjectName) throws DBException
+    {
         DBSCatalog newCatalog = null;
         DBSSchema newSchema = null;
 
@@ -224,19 +232,21 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 newCatalog = (DBSCatalog) newInstance;
             }
         }
-        DBSObject schemaObject = null;
-        if (newSchemaName != null) {
+        DBSObject newObject;
+        if (newObjectName != null) {
             if (newCatalog == null) {
-                schemaObject = rootContainer.getChild(monitor, newSchemaName);
+                newObject = rootContainer.getChild(monitor, newObjectName);
             } else {
-                schemaObject = newCatalog.getChild(monitor, newSchemaName);
+                newObject = newCatalog.getChild(monitor, newObjectName);
             }
-            if (schemaObject instanceof DBSSchema) {
-                newSchema = (DBSSchema) schemaObject;
+            if (newObject instanceof DBSSchema) {
+                newSchema = (DBSSchema) newObject;
+            } else if (newObject instanceof DBSCatalog) {
+                newCatalog = (DBSCatalog) newObject;
             }
         }
 
-        boolean changeCatalog = !CommonUtils.equalObjects(curInstanceName, newInstanceName);
+        boolean changeCatalog = (curInstanceName != null ? !CommonUtils.equalObjects(curInstanceName, newInstanceName) : newCatalog != null);
 
         if (newCatalog != null && newSchema != null && changeCatalog) {
             contextDefaults.setDefaultCatalog(monitor, newCatalog, newSchema);
@@ -287,21 +297,24 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 } else {
                     enabled = true;
 
-                    DBSObject defObject = null;
+                    DBSObjectContainer defObject = null;
                     if (DBSCatalog.class.isAssignableFrom(childType)) {
                         defObject = contextDefaults.getDefaultCatalog();
                     }
                     if (defObject != null) {
-                        currentDatabaseInstanceName = defObject.getName();
-                        if (contextDefaults.supportsSchemaChange()) {
-                            objectContainer = (DBSObjectContainer) defObject;
-                        } else if (!contextDefaults.supportsCatalogChange()) {
-                            // Nothing can be changed
-                            objectContainer = null;
-                        }
-                        DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-                        if (defaultSchema != null) {
-                            defObject = defaultSchema;
+                        Class<? extends DBSObject> catalogChildrenType = defObject.getChildType(monitor);
+                        if (catalogChildrenType != null && DBSSchema.class.isAssignableFrom(catalogChildrenType)) {
+                            currentDatabaseInstanceName = defObject.getName();
+                            if (contextDefaults.supportsSchemaChange()) {
+                                objectContainer = defObject;
+                            } else if (!contextDefaults.supportsCatalogChange()) {
+                                // Nothing can be changed
+                                objectContainer = null;
+                            }
+                            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                            if (defaultSchema != null) {
+                                defObject = defaultSchema;
+                            }
                         }
                     }
                     Collection<? extends DBSObject> children = objectContainer == null ?

@@ -14,7 +14,8 @@
             id="vertica"
             parent="generic"
             label="Vertica"
-            icon="icons/vertica_icon.png">
+            icon="icons/vertica_icon.png"
+            dialect="vertica">
 
             <tree path="vertica" label="Vertica data source">
                 <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Schemas">
@@ -186,5 +187,9 @@
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaProjectionColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="vertica" parent="generic" class="org.jkiss.dbeaver.ext.vertica.model.VerticaSQLDialect" label="Vertica" description="Vertica SQL dialect." icon="icons/vertica_icon.png">
+        </dialect>
+    </extension>
 
 </plugin>

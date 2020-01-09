@@ -59,6 +59,7 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -223,14 +224,18 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         public void loadSettings() {
             DataTransferSettings settings = dtWizard.getSettings();
             List<DBSObject> selectedObjects = new ArrayList<>();
-            for (IDataTransferNode node : ArrayUtils.safeArray(settings.getInitConsumers())) {
-                if (node instanceof DatabaseTransferConsumer) {
-                    selectedObjects.add(((DatabaseTransferConsumer) node).getTargetObject());
+            if (!isExport()) {
+                for (IDataTransferNode node : ArrayUtils.safeArray(settings.getInitConsumers())) {
+                    if (node instanceof DatabaseTransferConsumer) {
+                        selectedObjects.add(((DatabaseTransferConsumer) node).getTargetObject());
+                    }
                 }
             }
-            for (IDataTransferNode node : ArrayUtils.safeArray(settings.getInitProducers())) {
-                if (node instanceof DatabaseTransferProducer) {
-                    selectedObjects.add(((DatabaseTransferProducer) node).getDatabaseObject());
+            if (isExport()) {
+                for (IDataTransferNode node : ArrayUtils.safeArray(settings.getInitProducers())) {
+                    if (node instanceof DatabaseTransferProducer) {
+                        selectedObjects.add(((DatabaseTransferProducer) node).getDatabaseObject());
+                    }
                 }
             }
 
@@ -264,14 +269,13 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             boolean isExport = isExport();
             List<IDataTransferProducer> producers = isExport ? new ArrayList<>() : null;
             List<IDataTransferConsumer> consumers = isExport ? null : new ArrayList<>();
-/*
+
             if (producers == null && settings.getInitProducers() != null) {
                 producers = Arrays.asList(settings.getInitProducers());
             }
             if (consumers == null && settings.getInitConsumers() != null) {
                 consumers = Arrays.asList(settings.getInitConsumers());
             }
-*/
 
             TableItem[] items = objectsTable.getItems();
 

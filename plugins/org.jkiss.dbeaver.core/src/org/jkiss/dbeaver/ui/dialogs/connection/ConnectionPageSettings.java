@@ -199,7 +199,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 this.connectionEditor.setSite(this);
             }
             // init sub pages (if any)
-            IDialogPage[] allSubPages = getSubPages(false);
+            IDialogPage[] allSubPages = getSubPages(false, true);
 
             if (!ArrayUtils.isEmpty(allSubPages)) {
                 // Create tab folder
@@ -349,12 +349,15 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Nullable
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly) {
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
         if (extrasOnly) {
             return extraPages;
         }
         if (subPages != null) {
             return subPages;
+        }
+        if (!forceCreate) {
+            return new IDialogPage[0];
         }
         if (this.connectionEditor == null) {
             this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
@@ -362,7 +365,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         if (connectionEditor instanceof ICompositeDialogPage) {
-            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages(extrasOnly);
+            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages(extrasOnly, true);
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage page : subPages) {
                     if (page instanceof IDataSourceConnectionEditor) {

@@ -189,9 +189,9 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
                         disabled = JDBCUtils.safeGetInt(dbResult, 1);
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
 
     }

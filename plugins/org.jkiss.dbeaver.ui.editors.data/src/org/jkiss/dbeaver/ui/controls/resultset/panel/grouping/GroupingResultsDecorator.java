@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDecoratorBase;
@@ -174,11 +175,13 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                         return;
                     }
                 }
-                try {
-                    container.rebuildGrouping();
-                } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError(ResultSetMessages.results_decorator_error_grouping_error, ResultSetMessages.results_decorator_error_cant_perform_grouping_query, e);
-                }
+                UIUtils.asyncExec(() -> {
+                    try {
+                        container.rebuildGrouping();
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.results_decorator_error_grouping_error, ResultSetMessages.results_decorator_error_cant_perform_grouping_query, e);
+                    }
+                });
             }
         });
     }

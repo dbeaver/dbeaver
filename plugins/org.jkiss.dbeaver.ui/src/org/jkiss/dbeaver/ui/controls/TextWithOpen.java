@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 public class TextWithOpen extends Composite
 {
     private final Text text;
+    private final ToolBar toolbar;
 
     public TextWithOpen(Composite parent)
     {
@@ -48,7 +49,7 @@ public class TextWithOpen extends Composite
         text = new Text(this, SWT.BORDER);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        ToolBar toolbar = new ToolBar(this, SWT.FLAT);
+        toolbar = new ToolBar(this, SWT.FLAT);
         final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
         toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
         toolItem.setToolTipText("Browse");
@@ -87,5 +88,12 @@ public class TextWithOpen extends Composite
 
     public Text getTextControl() {
         return text;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        toolbar.setEnabled(enabled);
+        text.setEnabled(enabled);
     }
 }

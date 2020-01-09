@@ -42,7 +42,7 @@ import java.util.Locale;
 /**
  * MySQLStructureAssistant
  */
-public class MySQLStructureAssistant extends JDBCStructureAssistant
+public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecutionContext>
 {
     private final MySQLDataSource dataSource;
 
@@ -87,11 +87,11 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    protected void findObjectsByMask(MySQLExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
         if (catalog == null && !globalSearch) {
-            catalog = dataSource.getDefaultDatabase();
+            catalog = executionContext.getContextDefaults().getDefaultCatalog();
         }
         if (objectType == RelationalObjectType.TYPE_TABLE) {
             findTablesByMask(session, catalog, objectNameMask, maxResults, references);

@@ -219,7 +219,7 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly)
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             driverPropsPage

@@ -30,11 +30,13 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
@@ -158,7 +160,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setDefaultAutoCommit(boolean autoCommit, @Nullable DBCExecutionContext updateContext, boolean updateConnection, @Nullable Runnable onFinish) throws DBException {
+    public void setDefaultAutoCommit(boolean autoCommit) {
 
     }
 
@@ -175,7 +177,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel) throws DBException {
+    public void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel) {
 
     }
 
@@ -300,6 +302,12 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public Date getConnectTime() {
         return inputFile == null ? new Date() : new Date(inputFile.lastModified());
+    }
+
+    @NotNull
+    @Override
+    public SQLDialectMetadata getScriptDialect() {
+        return SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
     }
 
     @Override

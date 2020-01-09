@@ -13,9 +13,9 @@
              description="%datasource.hana.description"
              id="hana"
              parent="generic"
-             label="HANA">
+             label="HANA"
+             dialect="sap_hana">
 
-             
             <tree path="hana" label="HANA data source">
                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSchema" label="%tree.schemas.node.name" icon="#folder_schema">
                     <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
@@ -130,6 +130,11 @@
             <type name="ST_Geometry"/>
             <type name="ST_Point"/>
         </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="sap_hana" parent="generic" class="org.jkiss.dbeaver.ext.hana.model.HANASQLDialect" label="HANA" description="SAP HANA SQL dialect." icon="icons/sap_hana_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

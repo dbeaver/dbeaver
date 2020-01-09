@@ -238,8 +238,8 @@ public class NavigatorUtils {
                 DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), true);
                 DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
                 if (contextDefaults != null) {
-                    if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange()) ||
-                        (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange()))
+                    if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != selectedObject) ||
+                        (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange() && contextDefaults.getDefaultSchema() != selectedObject))
                     {
                         addSetActive = true;
                     }

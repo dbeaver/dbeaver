@@ -13,7 +13,8 @@
                 id="athena"
                 parent="generic"
                 label="Athena"
-                icon="icons/athena_icon.png">
+                icon="icons/athena_icon.png"
+                dialect="aws_athena">
             <drivers managable="true">
 
                 <!-- Simba JDBC driver -->
@@ -42,6 +43,11 @@
             </drivers>
 
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="aws_athena" parent="generic" class="org.jkiss.dbeaver.ext.athena.model.AthenaSQLDialect" label="Athena" description="AWS Athena dialect." icon="icons/athena_icon.png">
+        </dialect>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceView">

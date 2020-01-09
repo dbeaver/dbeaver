@@ -2,13 +2,15 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
-Bundle-Version: 2.1.96.qualifier
-Bundle-Release-Date: 20191223
+Bundle-Version: 2.1.97.qualifier
+Bundle-Release-Date: 20200106
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis;visibility:=reexport,
  org.jkiss.bundle.gis;visibility:=reexport,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.tasks.native;visibility:=reexport,
  net.sf.opencsv;visibility:=reexport,
  com.google.gson,
  org.eclipse.jface
@@ -26,7 +28,8 @@ Export-Package: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.model.lock,
  org.jkiss.dbeaver.ext.postgresql.model.net,
  org.jkiss.dbeaver.ext.postgresql.model.plan,
- org.jkiss.dbeaver.ext.postgresql.model.session
+ org.jkiss.dbeaver.ext.postgresql.model.session,
+ org.jkiss.dbeaver.ext.postgresql.tasks
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.postgresql
 

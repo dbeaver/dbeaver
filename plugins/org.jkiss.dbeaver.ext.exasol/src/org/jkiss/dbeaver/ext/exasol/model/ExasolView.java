@@ -122,7 +122,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
                 }
                 
             } catch (SQLException e) {
-                throw new DBCException(e,getDataSource());
+                throw new DBCException(e, session.getExecutionContext());
             }
             
         }

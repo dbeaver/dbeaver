@@ -307,7 +307,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
 	    		}
 	    		
 	    	} catch (SQLException e) {
-	    		throw new DBCException(e,getDataSource());
+	    		throw new DBCException(e, session.getExecutionContext());
 			}
     	}
 		

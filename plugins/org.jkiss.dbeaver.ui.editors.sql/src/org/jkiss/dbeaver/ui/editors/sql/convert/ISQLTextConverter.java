@@ -21,7 +21,7 @@ import org.eclipse.jface.text.IDocument;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 
 import java.util.Map;
 
@@ -34,7 +34,7 @@ public interface ISQLTextConverter {
     String convertText(
             @NotNull SQLDialect dialect,
             @NotNull SQLSyntaxManager syntaxManager,
-            @NotNull SQLRuleManager ruleManager,
+            @NotNull SQLRuleScanner ruleManager,
             @NotNull IDocument document,
             int startPos,
             int length,

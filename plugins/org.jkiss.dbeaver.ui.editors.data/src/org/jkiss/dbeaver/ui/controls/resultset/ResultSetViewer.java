@@ -617,6 +617,10 @@ public class ResultSetViewer extends Viewer
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Presentation activate", "Can't instantiate data view '" + newPresentation.getLabel() + "'", e);
                     }
+                } else {
+                    // No presentation for this resulset
+                    log.debug("No presentations for result set [" + resultSet.getClass().getSimpleName() + "]");
+                    showEmptyPresentation();
                 }
             }
         } finally {
@@ -1992,7 +1996,7 @@ public class ResultSetViewer extends Viewer
                     newRecordMode = (rows.size() <= 1);
                 }
                 if (newRecordMode != recordMode) {
-                    toggleMode();
+                    UIUtils.asyncExec(this::toggleMode);
                 }
             }
         }
@@ -2002,9 +2006,11 @@ public class ResultSetViewer extends Viewer
     {
         model.appendData(rows, resetOldRows);
 
-        setStatus(NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
+        UIUtils.asyncExec(() -> {
+            setStatus(NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
-        updateEditControls();
+            updateEditControls();
+        });
     }
 
     @Override
@@ -3452,7 +3458,7 @@ public class ResultSetViewer extends Viewer
                 model.setUpdateInProgress(true);
                 model.setStatistics(null);
                 if (filtersPanel != null) {
-                    UIUtils.syncExec(() -> filtersPanel.enableFilters(false));
+                    UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
                 }
             }
 
@@ -3492,8 +3498,15 @@ public class ResultSetViewer extends Viewer
                             if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {
                                 DBWorkbench.getPlatformUI().showError("Error executing query", "Query execution failed", error);
                             } else {
-                                showErrorPresentation(sqlText, CommonUtils.isEmpty(errorMessage) ? "Error executing query" : errorMessage, error);
-                                log.error("Error executing query", error);
+                                if (CommonUtils.isEmpty(errorMessage)) {
+                                    if (error.getCause() instanceof InterruptedException) {
+                                        errorMessage = "Query execution was interrupted";
+                                    } else {
+                                        errorMessage = "Error executing query";
+                                    }
+                                }
+                                showErrorPresentation(sqlText, errorMessage, error);
+                                log.error(errorMessage, error);
                             }
                         } else {
                             if (!metadataChanged) {
@@ -3530,7 +3543,11 @@ public class ResultSetViewer extends Viewer
                                 // Update status (update execution statistics)
                                 updateStatusMessage();
                             }
-                            fireResultSetLoad();
+                            try {
+                                fireResultSetLoad();
+                            } catch (Throwable e) {
+                                log.debug("Error handling resulset load", e);
+                            }
                         }
                         updateFiltersText(true);
                         updateToolbar();
@@ -3632,6 +3649,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             };
+
             return persister.applyChanges(monitor, false, settings, applyListener);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);

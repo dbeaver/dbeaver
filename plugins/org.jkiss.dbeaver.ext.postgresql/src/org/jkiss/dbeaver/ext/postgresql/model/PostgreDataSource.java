@@ -89,7 +89,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
-        activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        activeDatabaseName = getContainer().getConnectionConfiguration().getBootstrap().getDefaultCatalogName();
+        if (CommonUtils.isEmpty(activeDatabaseName)) {
+            activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        }
         if (CommonUtils.isEmpty(activeDatabaseName)) {
             activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
         }
@@ -196,12 +199,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
         if (initFrom != null) {
+            ((PostgreExecutionContext)context).setDefaultsFrom((PostgreExecutionContext) initFrom);
             final PostgreSchema activeSchema = ((PostgreExecutionContext)initFrom).getDefaultSchema();
             if (activeSchema != null) {
                 ((PostgreExecutionContext)context).setDefaultSchema(monitor, activeSchema);
             }
         } else {
-            ((PostgreExecutionContext)context).refreshDefaults(monitor);
+            ((PostgreExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 

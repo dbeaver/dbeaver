@@ -23,11 +23,12 @@
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider"
-              description="DB2 connector"
-              icon="icons/db2_icon.png"
-              id="db2"
-              label="DB2">
+                class="org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider"
+                description="DB2 connector"
+                icon="icons/db2_icon.png"
+                id="db2"
+                label="DB2"
+                dialect="db2_luw">
             <tree
                   icon="icons/db2_icon.png"
                   label="DB2 data source"
@@ -503,6 +504,11 @@
             <!--<type kind="NUMERIC"/>-->
 
        </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="db2_luw" parent="basic" class="org.jkiss.dbeaver.ext.db2.DB2SQLDialect" label="DB2 LUW" description="IBM DB2 LUW SQL dialect." icon="icons/db2_icon.png">
+        </dialect>
     </extension>
 
     <extension point="org.jkiss.dbeaver.tools">

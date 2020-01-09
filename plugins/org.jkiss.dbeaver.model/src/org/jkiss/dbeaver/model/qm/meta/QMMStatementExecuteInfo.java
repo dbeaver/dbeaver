@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.sql.SQLException;
@@ -31,7 +32,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     private String queryString;
 
     private long fetchRowCount;
-    private long updateRowCount;
+    private long updateRowCount = -1;
 
     private int errorCode;
     private String errorMessage;
@@ -54,11 +55,10 @@ public class QMMStatementExecuteInfo extends QMMObject {
         }
         final SQLDialect sqlDialect = statement.getSession().getSQLDialect();
         if (sqlDialect != null && queryString != null) {
-            this.transactional = sqlDialect.isTransactionModifyingQuery(queryString);
+            this.transactional = statement.getPurpose() != DBCExecutionPurpose.META && sqlDialect.isTransactionModifyingQuery(queryString);
         } else {
-            this.transactional = true;
+            this.transactional = false;
         }
-
     }
 
     public QMMStatementExecuteInfo(long openTime, long closeTime, QMMStatementInfo stmt, String queryString, long rowCount, int errorCode, String errorMessage, long fetchBeginTime, long fetchEndTime, boolean transactional) {
@@ -84,6 +84,9 @@ public class QMMStatementExecuteInfo extends QMMObject {
             this.transactional = true;
         }
         this.updateRowCount = rowCount;
+        if (!transactional) {
+            this.transactional = this.updateRowCount >= 0;
+        }
         super.close();
     }
 

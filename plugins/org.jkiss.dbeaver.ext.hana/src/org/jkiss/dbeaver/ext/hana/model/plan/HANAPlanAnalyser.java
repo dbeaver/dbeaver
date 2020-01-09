@@ -94,7 +94,7 @@ public class HANAPlanAnalyser extends AbstractExecutionPlan {
             }
 
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         } finally {
             //rollback temporary EXPLAIN_PLAN_TABLE content
             try {

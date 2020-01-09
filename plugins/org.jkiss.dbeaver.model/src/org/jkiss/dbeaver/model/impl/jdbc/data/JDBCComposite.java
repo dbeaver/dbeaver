@@ -299,7 +299,10 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
 
         @Override
         public int hashCode() {
-            return (int) (name.hashCode() + valueType + maxLength + scale + precision + typeName.hashCode() + ordinalPosition);
+            return (int) ((name == null ? 0 : name.hashCode()) +
+                valueType + maxLength + CommonUtils.toInt(scale) + CommonUtils.toInt(precision) +
+                (typeName == null ? 0 : typeName.hashCode()) +
+                ordinalPosition);
         }
 
         @Nullable

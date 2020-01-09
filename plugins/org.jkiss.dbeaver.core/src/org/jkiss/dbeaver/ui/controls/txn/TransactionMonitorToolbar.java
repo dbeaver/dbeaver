@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 
@@ -163,6 +164,7 @@ public class TransactionMonitorToolbar {
 
             ColorRegistry colorRegistry = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
 
+            Color colorTransaction = colorRegistry.get(QueryLogViewer.COLOR_TRANSACTION);
             Color colorReverted = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
             Color colorCommitted = colorRegistry.get(QueryLogViewer.COLOR_UNCOMMITTED);
             final RGB COLOR_FULL = colorReverted == null ? getDisplay().getSystemColor(SWT.COLOR_DARK_YELLOW).getRGB() : colorReverted.getRGB();
@@ -171,9 +173,9 @@ public class TransactionMonitorToolbar {
             final int updateCount = txnState == null ? 0 : txnState.getUpdateCount();
 
             if (txnState == null || !txnState.isTransactionMode()) {
-                bg = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+                bg = UIStyles.getDefaultTextBackground();
             } else if (updateCount == 0) {
-                bg = getDisplay().getSystemColor(SWT.COLOR_WHITE);
+                bg = colorTransaction;
             } else {
                 // Use gradient depending on update count
                 ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
@@ -201,6 +203,7 @@ public class TransactionMonitorToolbar {
                 count = "None";
             }
             final Point textSize = e.gc.textExtent(count);
+            e.gc.setForeground(UIStyles.getDefaultTextSelectionForeground());
             e.gc.drawText(count, bounds.x + (bounds.width - textSize.x) / 2 - 2, bounds.y + (bounds.height - textSize.y) / 2 - 1);
         }
 

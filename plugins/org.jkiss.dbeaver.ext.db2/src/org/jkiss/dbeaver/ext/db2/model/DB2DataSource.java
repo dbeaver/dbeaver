@@ -196,7 +196,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         if (initFrom != null) {
             ((DB2ExecutionContext)context).setCurrentSchema(monitor, ((DB2ExecutionContext)initFrom).getDefaultSchema());
         } else {
-            ((DB2ExecutionContext)context).refreshDefaults(monitor);
+            ((DB2ExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 
@@ -415,7 +415,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         try {
             sessionUserSchema = CommonUtils.trim(JDBCUtils.queryString((JDBCSession) session, GET_SESSION_USER));
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
         Boolean ok = DB2Utils.checkExplainTables(monitor, this, sessionUserSchema);
         if (ok) {
@@ -474,7 +474,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
             // Hourra!
             schemaForExplainTables = sessionUserSchema;
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
 
         return sessionUserSchema;

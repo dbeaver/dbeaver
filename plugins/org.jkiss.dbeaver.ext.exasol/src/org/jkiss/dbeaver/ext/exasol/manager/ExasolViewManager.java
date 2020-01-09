@@ -145,7 +145,7 @@ public class ExasolViewManager
         actions.add(
                 new SQLDatabasePersistAction(
                     "Rename View",
-                    "RENAME VIEW " +  DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
+                    "RENAME VIEW " +  DBUtils.getQuotedIdentifier(obj.getSchema()) + "." + DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
                         DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
             );
     }

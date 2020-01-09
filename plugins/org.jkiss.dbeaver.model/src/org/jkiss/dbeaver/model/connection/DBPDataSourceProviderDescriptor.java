@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 
 import java.util.List;
 
@@ -40,6 +42,9 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
     String getPluginId();
 
     DBXTreeNode getTreeDescriptor();
+
+    @NotNull
+    SQLDialectMetadata getScriptDialect();
 
     boolean isTemporary();
 

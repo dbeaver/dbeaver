@@ -321,6 +321,10 @@ public interface SQLDialect {
     @Nullable
     String getDualTableName();
 
+    /**
+     * Returns true if query is definitely transactional. Otherwise returns false, however it still may be transactional.
+     * You need to check query results to ensure that it is not transactional.
+     */
     boolean isTransactionModifyingQuery(String queryString);
 
     @Nullable

@@ -93,12 +93,12 @@ public class SQLSearchUtils
                         String objectNameMask = nameList.get(0);
                         Collection<DBSObjectReference> tables = structureAssistant.findObjectsByMask(
                             monitor,
+                            executionContext,
                             sc,
                             structureAssistant.getAutoCompleteObjectTypes(),
                             identifierDetector.removeQuotes(objectNameMask),
                             identifierDetector.isQuoted(objectNameMask),
-                            false,
-                            2);
+                            false, 2);
                         if (!tables.isEmpty()) {
                             return tables.iterator().next().resolveObject(monitor);
                         }

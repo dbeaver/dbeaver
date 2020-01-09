@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDDataReceiverInteractive;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -168,21 +169,32 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
         final List<Object[]> tmpRows = rows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
-        UIUtils.syncExec(() -> {
+
+        // Push data into viewer
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        monitor.beginTask("Populate data", 1);
+        if (!nextSegmentRead) {
+            monitor.subTask("Set data");
+            resultSetViewer.setData(tmpRows, focusRow);
+        } else {
+            monitor.subTask("Append data");
+            boolean resetOldRows = getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING);
+            resultSetViewer.appendData(tmpRows, resetOldRows);
+        }
+        // Check for more data
+        hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
+        monitor.done();
+
+        UIUtils.asyncExec(() -> {
             // Push data into viewer
             if (!nextSegmentRead) {
                 boolean metadataChanged = resultSetViewer.getModel().isMetadataChanged();
                 resultSetViewer.updatePresentation(resultSet, metadataChanged);
-                resultSetViewer.setData(tmpRows, focusRow);
                 resultSetViewer.getActivePresentation().refreshData(true, false, !metadataChanged);
                 resultSetViewer.updateStatusMessage();
             } else {
-                boolean resetOldRows = getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING);
-                resultSetViewer.appendData(tmpRows, resetOldRows);
                 resultSetViewer.getActivePresentation().refreshData(false, true, true);
             }
-            // Check for more data
-            hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
         });
     }
 

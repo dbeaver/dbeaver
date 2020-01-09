@@ -34,9 +34,4 @@ public class DBCConnectException extends DBCException
         super(message, cause);
     }
 
-    public DBCConnectException(Throwable cause)
-    {
-        super(cause, null);
-    }
-
 }

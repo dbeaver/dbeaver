@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -78,14 +77,6 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
             }
         }
         return super.getNestedDeclaration(monitor, owner, command, options);
-    }
-
-    @NotNull
-    protected String getAddConstraintTypeClause(PostgreTableConstraintBase constraint) {
-        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
-            return "UNIQUE"; //$NON-NLS-1$
-        }
-        return super.getAddConstraintTypeClause(constraint);
     }
 
     @Override

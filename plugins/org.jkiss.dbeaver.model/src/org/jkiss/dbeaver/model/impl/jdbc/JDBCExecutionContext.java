@@ -130,16 +130,14 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             try {
                 this.initContextBootstrap(monitor, autoCommit);
             } catch (DBCException e) {
-                log.error("Error while running context bootstrap", e);
+                log.warn("Error while running context bootstrap", e);
             }
 
             try {
-                // Copy context state
+                // Init (or copy) context state
                 this.dataSource.initializeContextState(monitor, this, initFrom);
-            } catch (DBCException e) {
-                log.error("Error while initializing context state", e);
             } catch (DBException e) {
-                e.printStackTrace();
+                log.warn("Error while initializing context state", e);
             }
 
             try {
@@ -283,7 +281,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             getConnection().setTransactionIsolation(jdbcTIL.getCode());
             transactionIsolationLevel = jdbcTIL.getCode();
         } catch (SQLException e) {
-            throw new JDBCException(e, dataSource);
+            throw new JDBCException(e, this);
         } finally {
             QMUtils.getDefaultHandler().handleTransactionIsolation(this, transactionIsolation);
         }
@@ -317,7 +315,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             connection.setAutoCommit(autoCommit);
             this.autoCommit = connection.getAutoCommit();
         } catch (SQLException e) {
-            throw new JDBCException(e, dataSource);
+            throw new JDBCException(e, this);
         } finally {
             QMUtils.getDefaultHandler().handleTransactionAutocommit(this, autoCommit);
         }
@@ -334,7 +332,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 savepoint = getConnection().setSavepoint(name);
             }
         } catch (SQLException e) {
-            throw new DBCException(e, dataSource);
+            throw new DBCException(e, this);
         }
         return new JDBCSavepointImpl(this, savepoint);
     }
@@ -361,7 +359,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 throw new SQLFeatureNotSupportedException(ModelMessages.model_jdbc_exception_bad_savepoint_object);
             }
         } catch (SQLException e) {
-            throw new JDBCException(e, dataSource);
+            throw new JDBCException(e, this);
         }
     }
 
@@ -371,7 +369,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         try {
             getConnection().commit();
         } catch (SQLException e) {
-            throw new JDBCException(e, dataSource);
+            throw new JDBCException(e, this);
         } finally {
             if (session.isLoggingEnabled()) {
                 QMUtils.getDefaultHandler().handleTransactionCommit(this);
@@ -395,7 +393,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 getConnection().rollback();
             }
         } catch (SQLException e) {
-            throw new JDBCException(e, dataSource);
+            throw new JDBCException(e, this);
         } finally {
             if (session.isLoggingEnabled()) {
                 QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint);

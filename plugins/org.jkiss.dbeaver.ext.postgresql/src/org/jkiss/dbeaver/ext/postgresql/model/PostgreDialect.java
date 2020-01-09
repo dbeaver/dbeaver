@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -24,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.ArrayUtils;
@@ -44,6 +44,12 @@ public class PostgreDialect extends JDBCSQLDialect {
     );
     private static final String[][] PG_STRING_QUOTES = {
         {"'", "'"}
+    };
+
+    // In PgSQL there are no blocks. DO $$ ... $$ queries are processed as strings
+    public static final String[][] BLOCK_BOUND_KEYWORDS = {
+//        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
+//        {"LOOP", "END LOOP"}
     };
 
     //region KeyWords
@@ -740,12 +746,13 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     @Override
     public String[][] getBlockBoundStrings() {
-        // For postgreSQL-specific blocks ($$) we use special rule.
-        // BEGIN/END
-        return new String[][]{
-            { SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END },
-            { "LOOP", "END LOOP" }
-        };
+        return BLOCK_BOUND_KEYWORDS;
+    }
+
+    @Nullable
+    @Override
+    public String[] getBlockHeaderStrings() {
+        return new String[] { "DECLARE" };
     }
 
     @NotNull
@@ -794,7 +801,7 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    protected String[] getNonTransactionKeywords() {
+    public String[] getNonTransactionKeywords() {
         return POSTGRE_NON_TRANSACTIONAL_KEYWORDS;
     }
 }

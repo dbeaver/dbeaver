@@ -42,4 +42,8 @@
             'org.jkiss.dbeaver.erd.diagram.attributes.foreground=255,255,255'
             'org.jkiss.dbeaver.erd.diagram.notes.background=64,64,64'
             'org.jkiss.dbeaver.erd.diagram.notes.foreground=255,255,255'
+
+            'org.jkiss.dbeaver.txn.color.committed.background=11,60,0'
+            'org.jkiss.dbeaver.txn.color.reverted.background=135,19,5'
+            'org.jkiss.dbeaver.txn.color.transaction.background=4,84,113'
 }

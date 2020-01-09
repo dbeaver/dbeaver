@@ -140,7 +140,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 ((SQLServerExecutionContext)context).setCurrentDatabase(monitor, defaultObject);
             }
         } else {
-            ((SQLServerExecutionContext)context).refreshDefaults(monitor);
+            ((SQLServerExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 
