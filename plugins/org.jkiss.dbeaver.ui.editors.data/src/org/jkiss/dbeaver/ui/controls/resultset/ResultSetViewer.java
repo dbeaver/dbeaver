@@ -2311,7 +2311,7 @@ public class ResultSetViewer extends Viewer
 
         if (getDataSource() != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             MenuManager viewMenu = new MenuManager(
-                ResultSetMessages.controls_resultset_viewer_action_column_view,
+                ResultSetMessages.controls_resultset_viewer_action_view_format,
                 null,
                 MENU_ID_VIEW); //$NON-NLS-1$
             viewMenu.setRemoveAllWhenShown(true);
@@ -2327,6 +2327,15 @@ public class ResultSetViewer extends Viewer
             viewMenu.setRemoveAllWhenShown(true);
             viewMenu.addMenuListener(manager1 -> fillVirtualModelMenu(manager1, attr, row, valueController));
             manager.add(viewMenu);
+        }
+
+        {
+            MenuManager layoutMenu = new MenuManager(
+                ResultSetMessages.controls_resultset_viewer_action_layout,
+                null,
+                MENU_ID_LAYOUT); //$NON-NLS-1$
+            fillLayoutMenu(layoutMenu);
+            manager.add(layoutMenu);
         }
 
         manager.add(new Separator());
@@ -2388,6 +2397,9 @@ public class ResultSetViewer extends Viewer
 //                viewMenu.add(new ResetAllColorAction());
 //            }
         }
+        viewMenu.add(new Separator());
+        viewMenu.add(new ColorizeDataTypesToggleAction());
+        viewMenu.add(new DataFormatsPreferencesAction());
     }
 
     private void fillVirtualModelMenu(@NotNull IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
@@ -4112,52 +4124,8 @@ public class ResultSetViewer extends Viewer
     private class ConfigAction extends Action {
         ConfigAction()
         {
-            super(ResultSetMessages.controls_resultset_viewer_action_options, IAction.AS_DROP_DOWN_MENU);
+            super(ResultSetMessages.controls_resultset_viewer_action_options);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-        }
-
-        @Override
-        public IMenuCreator getMenuCreator()
-        {
-            return new MenuCreator(control -> {
-                MenuManager configMenuManager = new MenuManager();
-
-                configMenuManager.add(new Separator());
-                {
-                    MenuManager layoutMenu = new MenuManager(
-                        ResultSetMessages.controls_resultset_viewer_action_layout,
-                        null,
-                        MENU_ID_LAYOUT); //$NON-NLS-1$
-                    fillLayoutMenu(layoutMenu);
-                    configMenuManager.add(layoutMenu);
-                }
-
-                configMenuManager.add(new Separator());
-
-                configMenuManager.add(new ColorizeDataTypesToggleAction());
-                configMenuManager.add(new Action(ResultSetMessages.controls_resultset_viewer_action_data_formats) {
-                    @Override
-                    public void run() {
-                        UIUtils.showPreferencesFor(
-                            getControl().getShell(),
-                            ResultSetViewer.this,
-                            PrefPageDataFormat.PAGE_ID);
-                    }
-                });
-
-                configMenuManager.add(new Separator());
-                configMenuManager.add(new Action("Preferences") {
-                    @Override
-                    public void run()
-                    {
-                        UIUtils.showPreferencesFor(
-                            getControl().getShell(),
-                            ResultSetViewer.this,
-                            PrefPageResultSetMain.PAGE_ID);
-                    }
-                });
-                return configMenuManager;
-            });
         }
 
         @Override
@@ -4169,6 +4137,20 @@ public class ResultSetViewer extends Viewer
                 PrefPageResultSetMain.PAGE_ID);
         }
 
+    }
+
+    private class DataFormatsPreferencesAction extends Action {
+        public DataFormatsPreferencesAction() {
+            super(ResultSetMessages.controls_resultset_viewer_action_data_formats);
+        }
+
+        @Override
+        public void run() {
+            UIUtils.showPreferencesFor(
+                getControl().getShell(),
+                ResultSetViewer.this,
+                PrefPageDataFormat.PAGE_ID);
+        }
     }
 
     private abstract class ToggleConnectionPreferenceAction extends Action {
