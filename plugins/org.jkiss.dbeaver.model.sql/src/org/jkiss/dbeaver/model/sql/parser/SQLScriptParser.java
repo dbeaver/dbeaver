@@ -125,7 +125,7 @@ public class SQLScriptParser
                 }
 
                 if (tokenType == SQLTokenType.T_BLOCK_HEADER) {
-                    if (curBlock == null || !curBlock.isHeader) {
+                    if (curBlock == null) {
                         // Check for double block header, e.g. DO, DECLARE
                         curBlock = new ScriptBlockInfo(curBlock, true);
                     }
