@@ -561,7 +561,6 @@ public class ResultSetModel {
                     documentAttribute = realAttr;
                 }
             }
-            updateColorMapping(false);
         }
     }
 
@@ -594,12 +593,6 @@ public class ResultSetModel {
             }
         }
 
-        // Add new data
-        appendData(rows, true);
-        updateDataFilter();
-
-        this.visibleAttributes.sort(POSITION_SORTER);
-
         {
             // Check single source flag
             DBSEntity sourceTable = null;
@@ -623,8 +616,13 @@ public class ResultSetModel {
                 }
             }
             singleSourceEntity = sourceTable;
-            updateColorMapping(false);
         }
+
+        // Add new data
+        appendData(rows, true);
+        updateDataFilter();
+
+        this.visibleAttributes.sort(POSITION_SORTER);
 
         hasData = true;
     }
@@ -771,6 +769,9 @@ public class ResultSetModel {
                 new ResultSetRow(firstRowNum + i, rows.get(i)));
         }
         curRows.addAll(newRows);
+        if (resetOldRows) {
+            updateColorMapping(true);
+        }
         updateRowColors(false, newRows);
     }
 
