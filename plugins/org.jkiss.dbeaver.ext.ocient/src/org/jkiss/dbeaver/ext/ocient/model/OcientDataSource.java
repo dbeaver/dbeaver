@@ -34,12 +34,12 @@ public class OcientDataSource extends GenericDataSource
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
-    	if (adapter == DBCQueryPlanner.class) {
+        if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new OcientQueryPlaner(this));
         }
         return super.getAdapter(adapter);
     }
-    
+
     @Override
     protected boolean isPopulateClientAppName() {
         return false;
