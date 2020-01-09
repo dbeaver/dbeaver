@@ -35,9 +35,11 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     private final DBCExecutionContext context;
     private final boolean showPreviousTxn;
 
-    public TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IWorkbenchPart activeEditor, boolean showPreviousTxn)
+    private TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IWorkbenchPart activeEditor, boolean showPreviousTxn)
     {
-        super(parentShell, activeEditor);
+        super(parentShell,
+            NLS.bind(CoreMessages.transaction_log_dialog_header_transaction_log, context.getDataSource().getContainer().getName(), context.getContextName()),
+            activeEditor);
         this.context = context;
         this.showPreviousTxn = showPreviousTxn;
     }
@@ -60,8 +62,6 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(NLS.bind(CoreMessages.transaction_log_dialog_header_transaction_log, context.getDataSource().getContainer().getName(), context.getContextName())); //$NON-NLS-2$ //$NON-NLS-3$
-
         Composite composite = (Composite) super.createDialogArea(parent);
 
         super.createTransactionLogPanel(composite);
@@ -88,6 +88,7 @@ public class TransactionLogDialog extends TransactionInfoDialog {
                 CoreMessages.transaction_log_dialog_error_connect_to_a_database);
         } else {
             final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor, showPreviousTxn);
+            dialog.setModeless(true);
             dialog.open();
         }
     }

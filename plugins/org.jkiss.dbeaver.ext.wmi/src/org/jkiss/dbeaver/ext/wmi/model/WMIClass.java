@@ -455,7 +455,7 @@ public class WMIClass extends WMIContainer
             statistics.setRowsFetched(resultCount);
             return statistics;
         } catch (WMIException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

@@ -29,6 +29,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
     public static final String ID_FACTORY = DatabaseEditorInputFactory.class.getName(); //$NON-NLS-1$
 
     static final String TAG_CLASS = "class"; //$NON-NLS-1$
+    static final String TAG_PROJECT = "project"; //$NON-NLS-1$
     static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
     static final String TAG_NODE = "node"; //$NON-NLS-1$
     static final String TAG_NODE_NAME = "node-name"; //$NON-NLS-1$
@@ -69,6 +70,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
 
         final DBNDatabaseNode node = input.getNavigatorNode();
         memento.putString(TAG_CLASS, input.getClass().getName());
+        memento.putString(TAG_PROJECT, context.getDataSource().getContainer().getProject().getName());
         memento.putString(TAG_DATA_SOURCE, context.getDataSource().getContainer().getId());
         memento.putString(TAG_NODE, node.getNodeItemPath());
         memento.putString(TAG_NODE_NAME, node.getNodeName());

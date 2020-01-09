@@ -26,19 +26,20 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportInfo;
+import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
@@ -52,6 +53,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     private Map<MySQLCatalog, Set<MySQLTableBase>> checkedObjects = new HashMap<>();
 
     private MySQLCatalog curCatalog;
+    private Button exportViewsCheck;
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
@@ -103,7 +105,6 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             createCheckButtons(buttonsPanel, catalogTable);
         }
 
-        final Button exportViewsCheck;
         {
             Composite tablesPanel = UIUtils.createComposite(sash, 1);
             tablesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -125,7 +126,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             exportViewsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    wizard.showViews = exportViewsCheck.getSelection();
+                    wizard.getSettings().setShowViews(exportViewsCheck.getSelection());
                     loadTables(null);
                 }
             });
@@ -133,29 +134,39 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             createCheckButtons(buttonsPanel, tablesTable);
         }
 
+        loadSettings();
+        setControl(composite);
+    }
+
+    @Override
+    public void activatePage() {
+        loadSettings();
+    }
+
+    private void loadSettings() {
+        checkedObjects.clear();
+        catalogTable.removeAll();
+
+        boolean hasViews = false;
         MySQLDataSource dataSource = null;
         Set<MySQLCatalog> activeCatalogs = new LinkedHashSet<>();
-        for (DBSObject object : wizard.getDatabaseObjects()) {
-            if (object instanceof MySQLCatalog) {
-                activeCatalogs.add((MySQLCatalog) object);
-                dataSource = ((MySQLCatalog) object).getDataSource();
-            } else if (object instanceof MySQLTableBase) {
-                MySQLCatalog catalog = ((MySQLTableBase) object).getContainer();
-                dataSource = catalog.getDataSource();
-                activeCatalogs.add(catalog);
-                Set<MySQLTableBase> tables = checkedObjects.get(catalog);
-                if (tables == null) {
-                    tables = new HashSet<>();
-                    checkedObjects.put(catalog, tables);
+        for (MySQLDatabaseExportInfo info : wizard.getSettings().getExportObjects()) {
+            activeCatalogs.add(info.getDatabase());
+            dataSource = info.getDatabase().getDataSource();
+            if (!CommonUtils.isEmpty(info.getTables())) {
+                Set<MySQLTableBase> tables = checkedObjects.computeIfAbsent(
+                    info.getDatabase(), k -> new HashSet<>());
+                for (MySQLTableBase table : info.getTables()) {
+                    tables.add(table);
+                    if (table.isView()) {
+                        hasViews = true;
+                    }
                 }
-                tables.add((MySQLTableBase) object);
-                if (((MySQLTableBase) object).isView()) {
-                    wizard.showViews = true;
-                    exportViewsCheck.setSelection(true);
-                }
-            } else if (object.getDataSource() instanceof MySQLDataSource) {
-                dataSource = (MySQLDataSource) object.getDataSource();
             }
+        }
+        if (hasViews) {
+            wizard.getSettings().setShowViews(true);
+            exportViewsCheck.setSelection(true);
         }
         if (dataSource != null) {
             boolean tablesLoaded = false;
@@ -175,7 +186,6 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             }
         }
         updateState();
-        setControl(composite);
     }
 
     private void updateCheckedTables() {
@@ -222,7 +232,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                 try {
                     final List<MySQLTableBase> objects = new ArrayList<>();
                     objects.addAll(curCatalog.getTables(monitor));
-                    if (wizard.showViews) {
+                    if (wizard.getSettings().isShowViews()) {
                         objects.addAll(curCatalog.getViews(monitor));
                     }
                     objects.sort(DBUtils.nameComparator());
@@ -245,12 +255,13 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     }
 
     public void saveState() {
-        wizard.objects.clear();
+        List<MySQLDatabaseExportInfo> objects = wizard.getSettings().getExportObjects();
+        objects.clear();
         for (TableItem item : catalogTable.getItems()) {
             if (item.getChecked()) {
                 MySQLCatalog catalog = (MySQLCatalog) item.getData();
                 MySQLDatabaseExportInfo info = new MySQLDatabaseExportInfo(catalog, checkedObjects.get(catalog));
-                wizard.objects.add(info);
+                objects.add(info);
             }
         }
     }

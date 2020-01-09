@@ -45,7 +45,7 @@ class QueryTransformerFetchAll implements DBCQueryTransformer {
         try {
             ((Statement)statement).setFetchSize(100000);
         } catch (SQLException e) {
-            throw new DBCException(e, statement.getSession().getDataSource());
+            throw new DBCException(e, statement.getSession().getExecutionContext());
         }
     }
 }

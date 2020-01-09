@@ -26,12 +26,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -43,11 +45,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class TaskConfigurationWizard extends BaseWizard implements IWorkbenchWizard {
+
+    private static final Log log = Log.getLog(TaskConfigurationWizard.class);
 
     private DBTTask currentTask;
     private IStructuredSelection currentSelection;
@@ -71,7 +76,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     public abstract void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state);
 
     public boolean isRunTaskOnFinish() {
-        return false;
+        return getCurrentTask() != null;
     }
 
     public IStructuredSelection getCurrentSelection() {
@@ -176,7 +181,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             }
             // Run task thru task manager
             // Pass executor to visualize task progress in UI
-            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task);
+            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, new PrintWriter(System.out));
             if (getCurrentTask() == null) {
                 // Execute directly in wizard
                 executor.executeTask();
@@ -230,6 +235,11 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         }
     }
 
+    public void createTaskSaveGroup(Composite parent) {
+        Group taskGroup = UIUtils.createControlGroup(
+            parent, "Task", 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        createTaskSaveButtons(taskGroup, false, 1);
+    }
 
     public void createTaskSaveButtons(Composite parent, boolean horizontal, int hSpan) {
         Composite panel = new Composite(parent, SWT.NONE);

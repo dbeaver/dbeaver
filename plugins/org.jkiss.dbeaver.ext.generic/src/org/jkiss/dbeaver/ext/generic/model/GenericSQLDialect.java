@@ -32,6 +32,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class GenericSQLDialect extends JDBCSQLDialect {
 
+    public static final String GENERIC_DIALECT_ID = "generic";
+
     private static String[] EXEC_KEYWORDS =  { "EXEC", "CALL" };
 
     private String scriptDelimiter;

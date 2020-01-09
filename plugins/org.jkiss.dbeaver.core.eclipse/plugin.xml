@@ -107,30 +107,6 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.entity"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute" name="%pref.page.name.sql.execute">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.format" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat" name="%pref.page.name.sql.format">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.resources" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLResources" name="%pref.page.name.sql.resources">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.templates" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLTemplates" name="%pref.page.name.sql.templates">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.completion" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion" name="%pref.page.name.sql.completion">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
         <page category="org.jkiss.dbeaver.preferences.main.resultset.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>

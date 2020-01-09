@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -134,11 +135,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
             entityName = defaultCatalog.getName();
         } else if (context.supportsSchemaChange()) {
             GenericSchema defaultSchema = context.getDefaultSchema();
-            entityName = defaultSchema.getName();
+            entityName = defaultSchema == null ? null : defaultSchema.getName();
         }
-        if (entityName == null) {
-            log.error("Can't determine default entity type");
-        } else {
+        if (entityName != null) {
             GenericDataSource dataSource = getDataSource();
             try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
                 if (dataSource.isSelectedEntityFromAPI()) {
@@ -158,7 +157,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                     }
                 }
             } catch (SQLException e) {
-                throw new DBCException(e, dataSource);
+                throw new DBCException(e, this);
             }
             selectedEntityName = entityName;
         }
@@ -239,7 +238,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                 }
             }
         } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
         selectedEntityName = catalog.getName();
         dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_CATALOG);
@@ -257,25 +256,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
             return;
 
         }
-        GenericDataSource dataSource = getDataSource();
         GenericSchema oldSelectedSchema = getDefaultSchema();
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
-            if (dataSource.isSelectedEntityFromAPI()) {
-                session.setSchema(schema.getName());
-            } else {
-                if (CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
-                    throw new DBCException("Active schema can't be changed for this kind of datasource!");
-                }
-                String changeQuery = dataSource.getQuerySetActiveDB().replaceFirst("\\?", Matcher.quoteReplacement(schema.getName()));
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(changeQuery)) {
-                    dbStat.execute();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBCException(e, dataSource);
-        }
-        selectedEntityName = schema.getName();
-        dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_SCHEMA);
+
+        setDefaultSchema(monitor, schema.getName());
 
         if (oldSelectedSchema != null) {
             DBUtils.fireObjectSelect(oldSelectedSchema, false);
@@ -283,8 +266,36 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         DBUtils.fireObjectSelect(schema, true);
     }
 
+    private void setDefaultSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
+        GenericDataSource dataSource = getDataSource();
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
+            if (dataSource.isSelectedEntityFromAPI()) {
+                session.setSchema(schemaName);
+            } else {
+                if (CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
+                    throw new DBCException("Active schema can't be changed for this kind of datasource!");
+                }
+                String changeQuery = dataSource.getQuerySetActiveDB().replaceFirst("\\?", Matcher.quoteReplacement(schemaName));
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(changeQuery)) {
+                    dbStat.execute();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, this);
+        }
+        selectedEntityName = schemaName;
+        dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_SCHEMA);
+    }
+
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
+
+        if (useBootstrapSettings) {
+            DBPConnectionBootstrap bootstrap = getBootstrapSettings();
+            if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
+                setDefaultSchema(monitor, bootstrap.getDefaultSchemaName());
+            }
+        }
 
         String oldEntityName = selectedEntityName;
         DBSObject oldDefaultObject = getDefaultObject();

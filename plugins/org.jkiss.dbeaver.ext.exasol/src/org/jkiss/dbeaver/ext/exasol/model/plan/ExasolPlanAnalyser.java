@@ -102,7 +102,7 @@ public class ExasolPlanAnalyser extends AbstractExecutionPlan {
             }
 
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         } finally {
 
             //rollback changes because profile actually executes query and it could be INSERT/UPDATE

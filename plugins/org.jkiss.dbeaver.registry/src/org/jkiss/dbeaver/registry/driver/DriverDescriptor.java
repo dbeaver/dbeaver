@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.NativeClientDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -615,6 +616,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public String getPropertiesWebURL() {
         return propertiesWebURL;
+    }
+
+    @NotNull
+    @Override
+    public SQLDialectMetadata getScriptDialect() {
+        return providerDescriptor.getScriptDialect();
     }
 
     @Override

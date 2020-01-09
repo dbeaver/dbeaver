@@ -17,63 +17,43 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.tools;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizardPage;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 
-import java.io.File;
+import java.util.List;
 
 
-public class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPage<OracleScriptExecuteWizard>
-{
-    private Text inputFileText;
+class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPage<OracleScriptExecuteWizard> {
+    private TextWithOpenFile inputFileText;
 
-    public OracleScriptExecuteWizardPageSettings(OracleScriptExecuteWizard wizard)
-    {
+    OracleScriptExecuteWizardPageSettings(OracleScriptExecuteWizard wizard) {
         super(wizard, OracleUIMessages.tools_script_execute_wizard_page_settings_page_name);
         setTitle(OracleUIMessages.tools_script_execute_wizard_page_settings_page_name);
         setDescription(OracleUIMessages.tools_script_execute_wizard_page_settings_page_description);
     }
 
     @Override
-    public boolean isPageComplete()
-    {
-        return super.isPageComplete() && wizard.getInputFile() != null;
+    public boolean isPageComplete() {
+        return super.isPageComplete() && wizard.getSettings().getInputFile() != null;
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         Group outputGroup = UIUtils.createControlGroup(composite, OracleUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
-        inputFileText = UIUtils.createLabelText(outputGroup, OracleUIMessages.tools_script_execute_wizard_page_settings_label_input_file, null); //$NON-NLS-2$
-        Button browseButton = new Button(outputGroup, SWT.PUSH);
-        browseButton.setText(OracleUIMessages.tools_script_execute_wizard_page_settings_button_browse);
-        browseButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                File file = DialogUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                if (file != null) {
-                    inputFileText.setText(file.getAbsolutePath());
-                }
-                updateState();
-            }
-        });
-        if (wizard.getInputFile() != null) {
-            inputFileText.setText(wizard.getInputFile().getName());
-        }
+        outputGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        inputFileText = new TextWithOpenFile(outputGroup, OracleUIMessages.tools_script_execute_wizard_page_settings_label_input_file, new String[] { "*.sql", "*.txt", "*" } );
+        inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        wizard.createTaskSaveGroup(composite);
 
         setControl(composite);
 
@@ -81,10 +61,33 @@ public class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPag
     }
 
     @Override
-    protected void updateState()
-    {
-        String fileName = inputFileText.getText();
-        wizard.setInputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+    public void activatePage() {
+        if (wizard.getSettings().getInputFile() != null) {
+            inputFileText.setText(wizard.getSettings().getInputFile());
+        }
+
+        updateState();
+    }
+
+    @Override
+    public void deactivatePage() {
+        super.deactivatePage();
+        saveState();
+    }
+
+    @Override
+    public void saveState() {
+        super.saveState();
+
+        OracleScriptExecuteSettings settings = wizard.getSettings();
+        List<DBSObject> selectedConnections = settings.getDatabaseObjects();
+        settings.setDataSourceContainer(selectedConnections.isEmpty() ? null : selectedConnections.get(0).getDataSource().getContainer());
+        settings.setInputFile(inputFileText.getText());
+    }
+
+    @Override
+    protected void updateState() {
+        saveState();
 
         getContainer().updateButtons();
     }

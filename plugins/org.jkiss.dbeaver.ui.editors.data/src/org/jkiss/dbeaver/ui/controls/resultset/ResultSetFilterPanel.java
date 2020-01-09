@@ -381,21 +381,25 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         {
             String displayName = getActiveSourceQuery();
-            if (prevQuery == null || !prevQuery.equals(displayName)) {
-                loadFiltersHistory(displayName);
-                prevQuery = displayName;
-            }
-            Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
-            Matcher m = mlCommentsPattern.matcher(displayName);
-            if (m.find()) {
-                displayName = m.replaceAll("");
-            }
+            if (displayName != null) {
+                if (prevQuery == null || !prevQuery.equals(displayName)) {
+                    prevQuery = displayName;
+                }
+                Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
+                Matcher m = mlCommentsPattern.matcher(displayName);
+                if (m.find()) {
+                    displayName = m.replaceAll("");
+                }
 
-            displayName = displayName.replaceAll("--.+", "");
-            displayName = CommonUtils.compactWhiteSpaces(displayName);
-            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
-            if (CommonUtils.isEmpty(activeDisplayName)) {
-                activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
+                displayName = displayName.replaceAll("--.+", "");
+                displayName = CommonUtils.compactWhiteSpaces(displayName);
+                activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
+                if (CommonUtils.isEmpty(activeDisplayName)) {
+                    activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
+                }
+            }
+            if (enableFilters && !CommonUtils.equalObjects(prevQuery, displayName)) {
+                filtersHistory.clear();
             }
         }
 
@@ -480,6 +484,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private void loadFiltersHistory(String query) {
         filtersHistory.clear();
         try {
+            if (ResultSetViewer.DEFAULT_QUERY_TEXT.equals(query)) {
+                return;
+            }
             final Collection<String> history = viewer.getFilterManager().getQueryFilterHistory(query);
             filtersHistory.addAll(history);
         } catch (Throwable e) {
@@ -877,6 +884,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         private Table createFilterHistoryPanel(final Shell popup) {
             final Table historyTable = new Table(popup, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
             new TableColumn(historyTable, SWT.NONE);
+
+            if (filtersHistory.isEmpty()) {
+                loadFiltersHistory(activeDisplayName);
+            }
 
             if (filtersHistory.isEmpty()) {
                 // nothing

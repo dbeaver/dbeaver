@@ -207,6 +207,8 @@ public class MySQLView extends MySQLTableBase implements DBSView
                         additionalInfo.setUpdatable("YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_UPDATABLE)));
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
@@ -229,11 +231,10 @@ public class MySQLView extends MySQLTableBase implements DBSView
 
                     }
                 }
-
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
             additionalInfo.loaded = true;
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 

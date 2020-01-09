@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -53,8 +52,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     public long getMakerOptions(DBPDataSource dataSource)
     {
         long options = FEATURE_EDITOR_ON_CREATE;
-        if (dataSource instanceof SQLDataSource) {
-            if (((SQLDataSource) dataSource).getSQLDialect().supportsTableDropCascade()) {
+        {
+            if (dataSource.getSQLDialect().supportsTableDropCascade()) {
                 options |= FEATURE_DELETE_CASCADE;
             }
         }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -55,4 +56,10 @@ class SQLServerDataSourceInfo extends JDBCDataSourceInfo {
         String serverVersion = dataSource.getServerVersion();
         return CommonUtils.isEmpty(serverVersion) ? super.getDatabaseProductVersion() : super.getDatabaseProductVersion() + "\n" + serverVersion;
     }
+
+    @Override
+    public DBSObjectType[] getSupportedObjectTypes() {
+        return SQLServerObjectType.values();
+    }
+
 }

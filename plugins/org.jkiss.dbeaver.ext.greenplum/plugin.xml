@@ -17,7 +17,8 @@
                 id="greenplum"
                 parent="postgresql"
                 label="Greenplum"
-                icon="icons/greenplum_icon.png">
+                icon="icons/greenplum_icon.png"
+                dialect="greenplum">
 
             <treeInjection path="postgresql/database/schema/table"
                            changeFolderType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable"/>
@@ -82,4 +83,18 @@
         <manager class="org.jkiss.dbeaver.ext.greenplum.edit.GreenplumFunctionManager"
                  objectType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumFunction"/>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="greenplum" parent="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" label="Greenplum" description="Greenplum dialect." icon="icons/greenplum_icon.png">
+            <keywords value=""/>
+            <execKeywords value=""/>
+            <ddlKeywords value=""/>
+            <dmlKeywords value=""/>
+            <functions value=""/>
+            <types value=""/>
+
+            <property name="" value=""/>
+        </dialect>
+    </extension>
+
 </plugin>

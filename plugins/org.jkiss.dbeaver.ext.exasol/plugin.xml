@@ -7,7 +7,8 @@
                 description="%datasource.exasol.description"
                 icon="icons/exasol_icon.png"
                 id="exasol"
-                label="%datasource.exasol.label">
+                label="%datasource.exasol.label"
+                dialect="exasol">
             <tree icon="icons/Exasol_icon.png" label="Exasol data source" path="exasol">
                 <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema" label="%tree.schemas.node.name"
                         icon="#folder_schemas" description="%tree.schemas.node.description">
@@ -566,7 +567,7 @@
 
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect" class="org.jkiss.dbeaver.ext.exasol.editors.ExasolDialectAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.runtime.sql.SQLRuleProvider"/>
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
         </factory>
     </extension>
 
@@ -607,6 +608,11 @@
             <type name="TIMESTAMP"/>
             <type name="GEOMETRY"/>
        </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="exasol" parent="basic" class="org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect" label="Exasol" description="Exasol SQL dialect." icon="icons/exasol_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

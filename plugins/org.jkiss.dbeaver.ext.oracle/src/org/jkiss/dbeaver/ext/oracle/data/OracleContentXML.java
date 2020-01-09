@@ -20,8 +20,8 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentXML;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
@@ -68,7 +68,7 @@ public class OracleContentXML extends JDBCContentXML {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
         catch (IOException e) {
             throw new DBCException("IO error while reading XML", e);
@@ -84,7 +84,7 @@ public class OracleContentXML extends JDBCContentXML {
                 new Class[] {java.sql.Connection.class, java.io.InputStream.class},
                 new Object[] {session.getOriginal(), stream});
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         } catch (Throwable e) {
             throw new DBCException("Internal error when creating XMLType", e, session.getDataSource());
         }

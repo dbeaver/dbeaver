@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -220,10 +218,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         if (getParentObject() == null) {
             return DBUtils.getQuotedIdentifier(dataSource, getName());
         }
-        char structSeparator = SQLConstants.STRUCT_SEPARATOR;
-        if (dataSource instanceof SQLDataSource) {
-            structSeparator = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
-        }
+        char structSeparator = dataSource.getSQLDialect().getStructSeparator();
+
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
         for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParentObject()) {

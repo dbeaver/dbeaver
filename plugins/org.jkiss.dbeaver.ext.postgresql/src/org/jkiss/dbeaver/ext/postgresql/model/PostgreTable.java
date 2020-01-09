@@ -280,9 +280,9 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                                     true));
                         }
                     }
+                } catch (SQLException e) {
+                    throw new DBCException(e, session.getExecutionContext());
                 }
-            } catch (SQLException e) {
-                throw new DBCException(e, getDataSource());
             }
             if (superTables == null) {
                 superTables = Collections.emptyList();
@@ -330,9 +330,9 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                                     true));
                         }
                     }
+                } catch (SQLException e) {
+                    throw new DBCException(e, session.getExecutionContext());
                 }
-            } catch (SQLException e) {
-                throw new DBCException(e, getDataSource());
             }
             DBUtils.orderObjects(tables);
             this.subTables = tables;

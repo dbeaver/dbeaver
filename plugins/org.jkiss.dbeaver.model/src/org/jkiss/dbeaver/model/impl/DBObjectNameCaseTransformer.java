@@ -18,14 +18,13 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ModelPreferences;
 
 /**
  * Object name case transformer
@@ -49,11 +48,8 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
         if (value == null) {
             return null;
         }
-        if (!(dataSource instanceof SQLDataSource)) {
-            return value;
-        }
 
-        final SQLDialect dialect = ((SQLDataSource)dataSource).getSQLDialect();
+        final SQLDialect dialect = dataSource.getSQLDialect();
         final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CASE_SENSITIVE) ||
             dialect.storesUnquotedCase() == DBPIdentifierCase.MIXED;
         if (isNameCaseSensitive) {

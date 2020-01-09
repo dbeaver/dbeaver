@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolObjectType;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ExasolStructureAssistant implements DBSStructureAssistant {
+public class ExasolStructureAssistant implements DBSStructureAssistant<ExasolExecutionContext> {
 
 
     private static final Log LOG = Log.getLog(ExasolStructureAssistant.class);
@@ -100,9 +100,10 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
-                                                      DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch,
-                                                      int maxResults) throws DBException {
+    public List<DBSObjectReference> findObjectsByMask(
+        @NotNull DBRProgressMonitor monitor, @NotNull ExasolExecutionContext executionContext, DBSObject parentObject,
+        DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch,
+        int maxResults) throws DBException {
         LOG.debug(objectNameMask);
 
 
@@ -111,11 +112,12 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
             exasolObjectTypes.add((ExasolObjectType) dbsObjectType);
         }
 
-
         ExasolSchema schema = parentObject instanceof ExasolSchema ? (ExasolSchema) parentObject : null;
+        if (schema == null) {
+            schema = executionContext.getContextDefaults().getDefaultSchema();
+        }
 
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             return searchAllObjects(session, schema, objectNameMask, exasolObjectTypes, caseSensitive, maxResults);
         } catch (SQLException ex) {
             throw new DBException(ex, dataSource);

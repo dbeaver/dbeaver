@@ -17,96 +17,67 @@
 
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteSettings;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractScriptExecuteWizard;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
-class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreDatabase, PostgreDatabase> {
+class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScriptExecuteSettings, DBSObject, PostgreDatabase> {
 
-    private boolean isImport;
     private PostgreScriptExecuteWizardPageSettings mainPage;
 
-    PostgreScriptExecuteWizard(PostgreDatabase catalog, boolean isImport)
-    {
-        super(Collections.singleton(catalog), isImport ? PostgreMessages.wizard_script_title_import_db : PostgreMessages.wizard_script_title_execute_script);
-        this.isImport = isImport;
-        this.mainPage = new PostgreScriptExecuteWizardPageSettings(this);
+    PostgreScriptExecuteWizard(DBTTask task) {
+        super(task);
     }
 
-    public boolean isImport()
-    {
-        return isImport;
+    PostgreScriptExecuteWizard(PostgreDatabase catalog) {
+        super(Collections.singleton(catalog), PostgreMessages.wizard_script_title_execute_script);
+        getSettings().setDatabase(catalog);
     }
 
     @Override
-    public boolean isVerbose()
-    {
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        super.init(workbench, selection);
+        this.mainPage = new PostgreScriptExecuteWizardPageSettings(this);
+    }
+
+    @Override
+    public boolean isVerbose() {
         return false;
     }
 
     @Override
     public String getTaskTypeId() {
-        return "postgresScriptExecute";
+        return PostgreSQLTasks.TASK_SCRIPT_EXECUTE;
     }
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
-        // TODO: implement
+        mainPage.saveState();
+
+        getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
     @Override
-    public void addPages()
-    {
+    protected PostgreScriptExecuteSettings createSettings() {
+        return new PostgreScriptExecuteSettings();
+    }
+
+    @Override
+    public void addPages() {
+        addTaskConfigPages();
         addPage(mainPage);
         super.addPages();
     }
 
-    @Override
-    public void fillProcessParameters(List<String> cmd, PostgreDatabase arg) throws IOException
-    {
-        String dumpPath = RuntimeUtils.getNativeClientBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "psql").getAbsolutePath(); //$NON-NLS-1$
-        cmd.add(dumpPath);
-        if (arg.getDataSource().isServerVersionAtLeast(9, 5)) {
-            cmd.add("--echo-errors"); //$NON-NLS-1$
-        }
-    }
-
-    @Override
-    protected void setupProcessParameters(ProcessBuilder process) {
-        super.setupProcessParameters(process);
-        if (!CommonUtils.isEmpty(getToolUserPassword())) {
-            process.environment().put("PGPASSWORD", getToolUserPassword());
-        }
-    }
-
-    @Override
-    public PostgreServerHome findNativeClientHome(String clientHomeId)
-    {
-        return PostgreDataSourceProvider.getServerHome(clientHomeId);
-    }
-
-    @Override
-    public Collection<PostgreDatabase> getRunInfo() {
-        return getDatabaseObjects();
-    }
-
-    @Override
-    protected List<String> getCommandLine(PostgreDatabase arg) throws IOException
-    {
-        List<String> cmd = PostgreToolScript.getPostgreToolCommandLine(this, arg);
-        cmd.add(arg.getName());
-        return cmd;
-    }
 }

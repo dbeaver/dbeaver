@@ -32,7 +32,10 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -215,7 +218,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
         if (initFrom != null) {
             ((OracleExecutionContext)context).setCurrentSchema(monitor, ((OracleExecutionContext)initFrom).getDefaultSchema());
         } else {
-            ((OracleExecutionContext)context).refreshDefaults(monitor);
+            ((OracleExecutionContext)context).refreshDefaults(monitor, true);
         }
 
         {
@@ -282,7 +285,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
-        return new JDBCDataSourceInfo(metaData);
+        return new OracleDataSourceInfo(this, metaData);
     }
 
     @Override
@@ -736,7 +739,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
             try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable ") + "DBMS output")) {
                 JDBCUtils.executeSQL((JDBCSession) session, sql);
             } catch (SQLException e) {
-                throw new DBCException(e, OracleDataSource.this);
+                throw new DBCException(e, context);
             }
         }
 
@@ -759,7 +762,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
                         }
                     }
                 } catch (SQLException e) {
-                    throw new DBCException(e, OracleDataSource.this);
+                    throw new DBCException(e, context);
                 }
             }
         }

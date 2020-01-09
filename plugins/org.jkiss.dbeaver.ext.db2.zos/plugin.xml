@@ -13,7 +13,8 @@
                 id="db2_zos"
                 parent="generic"
                 label="DB2 for z/OS"
-                icon="icons/db2_zos_icon.png">
+                icon="icons/db2_zos_icon.png"
+                dialect="db2_zos">
             <drivers managable="true">
 
                 <driver
@@ -179,6 +180,11 @@
                 <column id="FILTER_CONDITION" index="13"/>
             </object>
         </meta>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="db2_zos" parent="generic" class="org.jkiss.dbeaver.ext.db2.zos.model.DB2ZOSSQLDialect" label="DB2 for z/OS" description="IBM DB2 z/OS SQL dialect." icon="icons/db2_zos_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

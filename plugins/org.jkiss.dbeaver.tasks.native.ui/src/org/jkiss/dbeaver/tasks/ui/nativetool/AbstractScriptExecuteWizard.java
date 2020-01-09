@@ -22,38 +22,31 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.File;
 import java.util.Collection;
 
-public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
-        extends AbstractToolWizard<BASE_OBJECT, PROCESS_ARG> implements IImportWizard
+public abstract class AbstractScriptExecuteWizard<SETTINGS extends AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
+        extends AbstractToolWizard<SETTINGS, BASE_OBJECT, PROCESS_ARG> implements IImportWizard
 {
-    protected File inputFile;
-
-    public AbstractScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task) {
+    protected AbstractScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task) {
         super(dbObject, task);
-        this.inputFile = null;
 	}
+
+    protected AbstractScriptExecuteWizard(DBTTask task) {
+        super(task);
+    }
+
+    @Override
+    protected abstract SETTINGS createSettings();
 
     @Override
     protected boolean isSingleTimeWizard() {
         return false;
-    }
-
-    public File getInputFile()
-    {
-        return inputFile;
-    }
-
-    public void setInputFile(File inputFile)
-    {
-        this.inputFile = inputFile;
     }
 
     @Override
@@ -64,7 +57,8 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
 
     @Override
     public void addPages() {
-        super.addPages();
+        // Do not add base wizard pages. They can be added explicitly thru addTaskConfigPages
+        //super.addPages();
         addPage(logPage);
     }
 
@@ -75,28 +69,5 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
                 NLS.bind(TaskNativeUIMessages.tools_script_execute_wizard_task_completed, taskTitle, getObjectsName()) , //$NON-NLS-1$
                         SWT.ICON_INFORMATION);
 	}
-
-    @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process)
-    {
-        logPage.startLogReader(
-            processBuilder,
-            process.getInputStream());
-        new TextFileTransformerJob(monitor, inputFile, process.getOutputStream(), getInputCharset(), getOutputCharset()).start();
-    }
-
-    @Override
-    protected boolean isMergeProcessStreams()
-    {
-        return true;
-    }
-
-    protected String getInputCharset() {
-        return GeneralUtils.UTF8_ENCODING;
-    }
-
-    protected String getOutputCharset() {
-        return GeneralUtils.UTF8_ENCODING;
-    }
 
 }

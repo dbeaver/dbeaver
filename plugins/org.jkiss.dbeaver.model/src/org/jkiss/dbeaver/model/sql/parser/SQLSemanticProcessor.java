@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -70,21 +69,31 @@ public class SQLSemanticProcessor {
     // Solution - always wrap query in subselect + add patched WHERE and ORDER
     // It is configurable
     public static String addFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
-        boolean supportSubqueries = dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries();
-        if (!dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT)) {
-            try {
-                Statement statement = CCJSqlParserUtil.parse(sqlQuery);
-                if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-                    PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                    if (patchSelectQuery(dataSource, select, dataFilter)) {
-                        return statement.toString();
-                    }
-                }
-            } catch (Throwable e) {
-                log.debug("SQL parse error", e);
-            }
+        boolean supportSubqueries = dataSource.getSQLDialect().supportsSubqueries();
+        if (supportSubqueries && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT)) {
+            return wrapQuery(dataSource, sqlQuery, dataFilter);
         }
-        return wrapQuery(dataSource, sqlQuery, dataFilter);
+        String newQuery = injectFiltersToQuery(dataSource, sqlQuery, dataFilter);
+        if (newQuery == null) {
+            // Let's try subquery though.
+            return wrapQuery(dataSource, sqlQuery, dataFilter);
+        }
+        return newQuery;
+    }
+
+    public static String injectFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
+        try {
+            Statement statement = CCJSqlParserUtil.parse(sqlQuery);
+            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+                PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
+                if (patchSelectQuery(dataSource, select, dataFilter)) {
+                    return statement.toString();
+                }
+            }
+        } catch (Throwable e) {
+            log.debug("SQL parse error", e);
+        }
+        return null;
     }
 
     public static String wrapQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {

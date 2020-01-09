@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceMenuContributor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -60,19 +61,23 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
             return;
         }
         DBSObject selectedObject = null;
-        final ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
-        if (selectionProvider != null) {
-            ISelection selection = selectionProvider.getSelection();
-            if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-                selectedObject = RuntimeUtils.getObjectAdapter(((IStructuredSelection) selection).getFirstElement(), DBSObject.class);
+        if (activePart instanceof INavigatorModelView) {
+            final ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
+            if (selectionProvider != null) {
+                ISelection selection = selectionProvider.getSelection();
+                if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+                    selectedObject = RuntimeUtils.getObjectAdapter(((IStructuredSelection) selection).getFirstElement(), DBSObject.class);
 
-                List<ToolDescriptor> tools = ToolsRegistry.getInstance().getTools((IStructuredSelection) selection);
-                fillToolsMenu(menuItems, tools, selection);
+                    List<ToolDescriptor> tools = ToolsRegistry.getInstance().getTools((IStructuredSelection) selection);
+                    fillToolsMenu(menuItems, tools, selection);
+                }
             }
         } else if (activePart instanceof IEditorPart) {
             IEditorInput editorInput = ((IEditorPart) activePart).getEditorInput();
             if (editorInput instanceof IDatabaseEditorInput) {
                 selectedObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
+            } else if (activePart instanceof IDataSourceContainerProvider) {
+                selectedObject = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
             }
         }
 

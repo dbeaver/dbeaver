@@ -88,7 +88,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_CLASS = new DBIcon("class", "tree/class.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_ASSOCIATION = new DBIcon("association", "tree/association.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SERVER = new DBIcon("server", "tree/server.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_SERVERS = new DBIcon("servers", "tree/servers.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_SERVERS = new DBIcon("folder_server", "tree/servers.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_RECYCLE_BIN = new DBIcon("recycle_bin", "tree/recycle_bin.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_EVENT = new DBIcon("event", "tree/event.png"); //$NON-NLS-1$ //$NON-NLS-2$
 

@@ -78,7 +78,7 @@ public class DBWorkbench {
     public static <T> T getService(@NotNull Class<T> serviceType) {
         T service = ServiceRegistry.getInstance().getService(serviceType);
         if (service == null) {
-            log.error("Service '" + serviceType.getName() + "' not found");
+            log.debug("Service '" + serviceType.getName() + "' not found");
         }
         return service;
     }

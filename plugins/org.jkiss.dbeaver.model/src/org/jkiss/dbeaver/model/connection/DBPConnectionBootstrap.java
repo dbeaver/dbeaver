@@ -18,29 +18,30 @@ package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Connection bootstrap info.
  * Bootstrap properties are applied to each opened connection after data-source initialization.
  */
-public class DBPConnectionBootstrap
-{
-    private String defaultObjectName;
+public class DBPConnectionBootstrap {
+    private String defaultCatalogName;
+    private String defaultSchemaName;
     private Boolean defaultAutoCommit;
     private Integer defaultTransactionIsolation;
     private final List<String> initQueries;
     private boolean ignoreErrors;
 
-    public DBPConnectionBootstrap()
-    {
+    public DBPConnectionBootstrap() {
         this.initQueries = new ArrayList<>();
         this.ignoreErrors = false;
     }
 
-    public DBPConnectionBootstrap(DBPConnectionBootstrap info)
-    {
-        this.defaultObjectName = info.defaultObjectName;
+    public DBPConnectionBootstrap(DBPConnectionBootstrap info) {
+        this.defaultCatalogName = info.defaultCatalogName;
+        this.defaultSchemaName = info.defaultSchemaName;
         this.defaultAutoCommit = info.defaultAutoCommit;
         this.defaultTransactionIsolation = info.defaultTransactionIsolation;
         this.initQueries = new ArrayList<>(info.initQueries);
@@ -56,12 +57,20 @@ public class DBPConnectionBootstrap
         initQueries.addAll(queries);
     }
 
-    public String getDefaultObjectName() {
-        return defaultObjectName;
+    public String getDefaultCatalogName() {
+        return defaultCatalogName;
     }
 
-    public void setDefaultObjectName(String defaultObjectName) {
-        this.defaultObjectName = defaultObjectName;
+    public void setDefaultCatalogName(String defaultCatalogName) {
+        this.defaultCatalogName = defaultCatalogName;
+    }
+
+    public String getDefaultSchemaName() {
+        return defaultSchemaName;
+    }
+
+    public void setDefaultSchemaName(String defaultSchemaName) {
+        this.defaultSchemaName = defaultSchemaName;
     }
 
     public Boolean getDefaultAutoCommit() {
@@ -90,11 +99,12 @@ public class DBPConnectionBootstrap
 
     public boolean hasData() {
         return
-            defaultAutoCommit != null ||
-            defaultTransactionIsolation != null ||
-            !CommonUtils.isEmpty(defaultObjectName) ||
-            ignoreErrors ||
-            !CommonUtils.isEmpty(initQueries);
+                defaultAutoCommit != null ||
+                defaultTransactionIsolation != null ||
+                !CommonUtils.isEmpty(defaultCatalogName) ||
+                !CommonUtils.isEmpty(defaultSchemaName) ||
+                ignoreErrors ||
+                !CommonUtils.isEmpty(initQueries);
     }
 
     @Override
@@ -102,12 +112,13 @@ public class DBPConnectionBootstrap
         if (!(obj instanceof DBPConnectionBootstrap)) {
             return false;
         }
-        DBPConnectionBootstrap source = (DBPConnectionBootstrap)obj;
+        DBPConnectionBootstrap source = (DBPConnectionBootstrap) obj;
         return
-            CommonUtils.equalObjects(this.defaultObjectName, source.defaultObjectName) &&
-            CommonUtils.equalObjects(this.defaultAutoCommit, source.defaultAutoCommit) &&
-            CommonUtils.equalObjects(this.defaultTransactionIsolation, source.defaultTransactionIsolation) &&
-            CommonUtils.equalObjects(this.initQueries, source.initQueries) &&
-            this.ignoreErrors == source.ignoreErrors;
+                CommonUtils.equalObjects(this.defaultCatalogName, source.defaultCatalogName) &&
+                CommonUtils.equalObjects(this.defaultSchemaName, source.defaultSchemaName) &&
+                CommonUtils.equalObjects(this.defaultAutoCommit, source.defaultAutoCommit) &&
+                CommonUtils.equalObjects(this.defaultTransactionIsolation, source.defaultTransactionIsolation) &&
+                CommonUtils.equalObjects(this.initQueries, source.initQueries) &&
+                this.ignoreErrors == source.ignoreErrors;
     }
 }

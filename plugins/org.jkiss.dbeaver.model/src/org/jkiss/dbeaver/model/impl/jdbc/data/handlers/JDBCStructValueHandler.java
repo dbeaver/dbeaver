@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDComposite;
@@ -119,7 +119,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
                 typeName = type.getTypeName();
             }
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
         DBSDataType dataType = null;
         try {

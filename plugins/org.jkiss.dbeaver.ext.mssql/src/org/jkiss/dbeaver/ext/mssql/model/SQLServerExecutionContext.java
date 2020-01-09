@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -53,9 +54,9 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         return (SQLServerDataSource) super.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public SQLServerExecutionContext getContextDefaults() {
         return this;
     }
 
@@ -111,12 +112,23 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         // Check default active schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active database")) {
-            activeDatabaseName = SQLServerUtils.getCurrentDatabase(session);
+            if (useBootstrapSettings) {
+                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
+                    setCurrentDatabase(monitor, bootstrap.getDefaultCatalogName());
+                }
+            }
+
+            String currentDatabase = SQLServerUtils.getCurrentDatabase(session);
+            if (!CommonUtils.equalObjects(currentDatabase, activeDatabaseName)) {
+                activeDatabaseName = currentDatabase;
+                return true;
+            }
         } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
 
         return false;
@@ -127,9 +139,14 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
             log.debug("Null current schema");
             return false;
         }
+        String databaseName = object.getName();
+        return setCurrentDatabase(monitor, databaseName);
+    }
+
+    private boolean setCurrentDatabase(DBRProgressMonitor monitor, String databaseName) {
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active database")) {
-            SQLServerUtils.setCurrentDatabase(session, object.getName());
-            activeDatabaseName = object.getName();
+            SQLServerUtils.setCurrentDatabase(session, databaseName);
+            activeDatabaseName = databaseName;
             return true;
         } catch (SQLException e) {
             log.error(e);

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
@@ -144,7 +143,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return original.getObject(index + 1);
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -155,7 +154,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return original.getObject(name);
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -177,7 +176,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return this.next();
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -191,7 +190,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return this.absolute(position);
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -204,7 +203,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             try {
                 metaData = createMetaDataImpl();
             } catch (SQLException e) {
-                throw new DBCException(e, session.getDataSource());
+                throw new DBCException(e, session.getExecutionContext());
             }
         }
         return metaData;
@@ -220,7 +219,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return original.getCursorName();
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

@@ -205,7 +205,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             return execute();
         }
         catch (SQLException e) {
-            throw new DBSQLException(query, e, connection.getDataSource());
+            throw new DBSQLException(query, e, connection.getExecutionContext());
         }
     }
 
@@ -216,7 +216,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             addBatch();
         }
         catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
     }
 

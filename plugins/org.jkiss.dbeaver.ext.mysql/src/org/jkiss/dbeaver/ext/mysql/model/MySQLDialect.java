@@ -151,7 +151,7 @@ class MySQLDialect extends JDBCSQLDialect {
     }
 
     @NotNull
-    protected String[] getNonTransactionKeywords() {
+    public String[] getNonTransactionKeywords() {
         return MYSQL_NON_TRANSACTIONAL_KEYWORDS;
     }
 

@@ -199,7 +199,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, dataSource);
+            throw new DBCException(e, session.getExecutionContext());
         }
         catch (Throwable e) {
             throw new DBCException("IO error while binding content", e);

@@ -23,7 +23,7 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
  */
 public class SQLContentAssistant extends ContentAssistant {
     public SQLContentAssistant() {
-        super(false); // Sync. Maybe we should make it async
+        super(); // Sync. Maybe we should make it async
     }
 
     @Override

@@ -40,7 +40,7 @@ public class AdvancedListItem extends Canvas {
     final TextLayout textLayout;
 
     public AdvancedListItem(AdvancedList list, Object item, ILabelProvider labelProvider) {
-        super(list.getContainer(), SWT.DOUBLE_BUFFERED);
+        super(list.getContainer(), SWT.NONE);
         this.labelProvider = labelProvider;
         this.list = list;
         this.list.addItem(this);

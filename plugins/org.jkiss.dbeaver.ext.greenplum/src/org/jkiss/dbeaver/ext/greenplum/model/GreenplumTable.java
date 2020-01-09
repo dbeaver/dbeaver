@@ -136,9 +136,9 @@ public class GreenplumTable extends PostgreTableRegular {
                         }
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 
@@ -152,9 +152,9 @@ public class GreenplumTable extends PostgreTableRegular {
                         return false;
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 

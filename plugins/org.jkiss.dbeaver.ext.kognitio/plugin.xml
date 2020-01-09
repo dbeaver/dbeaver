@@ -9,7 +9,8 @@
                 id="kognitio"
                 parent="generic"
                 label="Kognitio"
-                icon="icons/kognitio_icon.png">
+                icon="icons/kognitio_icon.png"
+                dialect="basic">
             <drivers managable="true">
                 <driver
                         id="kognitio"

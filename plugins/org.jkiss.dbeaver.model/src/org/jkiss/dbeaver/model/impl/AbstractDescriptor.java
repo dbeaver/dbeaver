@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -191,8 +192,8 @@ public abstract class AbstractDescriptor {
                 throw new DBException("Can't load class '" + getImplName() + "'");
             }
             try {
-                return objectClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+                return objectClass.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
             }
         }
@@ -309,7 +310,7 @@ public abstract class AbstractDescriptor {
         try {
             objectClass = fromBundle.loadClass(className);
         } catch (Throwable ex) {
-            log.error("Can't determine object class '" + className + "'", ex);
+            log.error("Can't determine object class '" + className + "': " + ex.getMessage());
             return null;
         }
 

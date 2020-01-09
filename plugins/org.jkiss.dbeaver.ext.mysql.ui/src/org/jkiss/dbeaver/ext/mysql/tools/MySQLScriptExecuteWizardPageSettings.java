@@ -24,11 +24,12 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -39,7 +40,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     private Text inputFileText;
     private Combo logLevelCombo;
 
-    public MySQLScriptExecuteWizardPageSettings(MySQLScriptExecuteWizard wizard)
+    MySQLScriptExecuteWizardPageSettings(MySQLScriptExecuteWizard wizard)
     {
         super(wizard, wizard.isImport() ?
                 MySQLUIMessages.tools_script_execute_wizard_page_settings_import_configuration :
@@ -55,7 +56,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && wizard.getInputFile() != null;
+        return super.isPageComplete() && wizard.getSettings().getInputFile() != null;
     }
 
     @Override
@@ -84,15 +85,16 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
             }
         });
 
-        if (wizard.getInputFile() != null) {
-            inputFileText.setText(wizard.getInputFile().getName());
+        if (wizard.getSettings().getInputFile() != null) {
+            inputFileText.setText(wizard.getSettings().getInputFile());
         }
 
         Group settingsGroup = UIUtils.createControlGroup(
                 composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+        settingsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         logLevelCombo = UIUtils.createLabelCombo(
                 settingsGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_log_level, SWT.DROP_DOWN | SWT.READ_ONLY);
-        for (MySQLScriptExecuteWizard.LogLevel logLevel : MySQLScriptExecuteWizard.LogLevel.values()) {
+        for (MySQLScriptExecuteSettings.LogLevel logLevel : MySQLScriptExecuteSettings.LogLevel.values()) {
             logLevelCombo.add(logLevel.name());
         }
         logLevelCombo.select(wizard.getLogLevel().ordinal());
@@ -100,12 +102,14 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                wizard.setLogLevel(MySQLScriptExecuteWizard.LogLevel.valueOf(logLevelCombo.getText()));
+                wizard.getSettings().setLogLevel(CommonUtils.valueOf(MySQLScriptExecuteSettings.LogLevel.class, logLevelCombo.getText()));
             }
         });
         createExtraArgsInput(settingsGroup);
 
-        createSecurityGroup(composite);
+        Composite extraGroup = UIUtils.createComposite(composite, 2);
+        createSecurityGroup(extraGroup);
+        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
 
@@ -122,11 +126,20 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     }
 
     @Override
+    public void saveState() {
+        super.saveState();
+
+        MySQLScriptExecuteSettings settings = wizard.getSettings();
+
+        String fileName = inputFileText.getText();
+        settings.setInputFile(fileName);
+        settings.setLogLevel(CommonUtils.valueOf(MySQLScriptExecuteSettings.LogLevel.class, logLevelCombo.getText()));
+    }
+
+    @Override
     protected void updateState()
     {
-        String fileName = inputFileText.getText();
-        wizard.setInputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
-
+        saveState();
         getContainer().updateButtons();
     }
 

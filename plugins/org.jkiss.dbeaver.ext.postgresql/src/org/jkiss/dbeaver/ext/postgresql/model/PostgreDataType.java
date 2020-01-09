@@ -436,11 +436,13 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             return constraintText;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read domain constraint value")) {
+            try {
             this.constraintText = JDBCUtils.queryString(
                 session,
                 "SELECT pg_catalog.pg_get_constraintdef((SELECT oid FROM pg_catalog.pg_constraint WHERE contypid = " + getObjectId() + "), true)");
-        } catch (SQLException e) {
-            throw new DBCException("Error reading domain constraint value", e, getDataSource());
+            } catch (SQLException e) {
+                throw new DBCException("Error reading domain constraint value", e, session.getExecutionContext());
+            }
         }
         return this.constraintText;
     }
@@ -873,9 +875,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                         break;
                     case N:
                         valueType = Types.NUMERIC;
+                        // Kind of a hack (#7459). Don't know any better way to distinguish floats from integers
+                        String outputF = JDBCUtils.safeGetString(dbResult, "typoutput");
                         if (name.equals("numeric")) {
                             valueType = Types.NUMERIC;
-                        } else if (name.startsWith("float")) {
+                        } else if (outputF != null && outputF.startsWith("float")) {
                             switch (typeLength) {
                                 case 4:
                                     valueType = Types.FLOAT;

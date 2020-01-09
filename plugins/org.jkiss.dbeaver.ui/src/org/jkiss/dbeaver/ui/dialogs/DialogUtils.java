@@ -23,10 +23,10 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -130,8 +130,12 @@ public class DialogUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label,
-        @Nullable ModifyListener changeListener)
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, changeListener);
+    }
+
+    @NotNull
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable ModifyListener changeListener)
     {
         final String message = label != null ? label : UIMessages.output_label_directory;
         UIUtils.createControlLabel(parent, message);
@@ -156,6 +160,9 @@ public class DialogUtils {
             }
         };
         directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (value != null) {
+            directoryText.getTextControl().setText(value);
+        }
         if (changeListener != null) {
             directoryText.getTextControl().addModifyListener(changeListener);
         }

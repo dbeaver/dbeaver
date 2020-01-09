@@ -66,8 +66,8 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         DBPDataSource dataSource = session.getDataSource();
         SQLQuery sqlQuery = query;
         String queryText = sqlQuery.getOriginalText();//.trim();
-        if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
-            String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
+        if (dataFilter != null && dataFilter.hasFilters()) {
+            String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
                 dataSource, queryText, dataFilter);
             sqlQuery = new SQLQuery(dataSource, filteredQueryText, sqlQuery);
         } else {

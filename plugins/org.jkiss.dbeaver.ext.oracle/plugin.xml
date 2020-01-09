@@ -23,11 +23,12 @@
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider"
-              description="Oracle connector"
-              icon="icons/oracle_icon.png"
-              id="oracle"
-              label="Oracle">
+            class="org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider"
+            description="Oracle connector"
+            icon="icons/oracle_icon.png"
+            id="oracle"
+            label="Oracle"
+            dialect="oracle">
             <tree
                   icon="icons/oracle_icon.png"
                   label="Oracle data source"
@@ -364,7 +365,11 @@
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
         </factory>
+        <factory adaptableType="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" class="org.jkiss.dbeaver.ext.oracle.sql.OracleDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
     </extension>
+
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.ext.oracle.code.compile" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F9"/>
     </extension>
@@ -373,12 +378,25 @@
         <initializer class="org.jkiss.dbeaver.ext.oracle.internal.OraclePreferencesInitializer"/>
     </extension>
 
-<!--
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="oracle-maven-repo" name="Oracle Repository" url="https://maven.oracle.com/" order="10">
-            <scope group="com.oracle.jdbc"/>
-        </repository>
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="oracle" parent="basic" class="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" label="Oracle" description="Oracle SQL dialect." icon="icons/oracle_icon.png">
+        </dialect>
     </extension>
--->
+
+    <!--
+        <extension point="org.jkiss.dbeaver.mavenRepository">
+            <repository id="oracle-maven-repo" name="Oracle Repository" url="https://maven.oracle.com/" order="10">
+                <scope group="com.oracle.jdbc"/>
+            </repository>
+        </extension>
+    -->
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="oracle" name="Oracle" description="Oracle database task" icon="icons/oracle_icon.png"/>
+
+        <task id="oracleScriptExecute" name="Oracle SQL*Plus script" description="Oracle SQL*Plus script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="oracle" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteHandler">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+        </task>
+    </extension>
 
 </plugin>

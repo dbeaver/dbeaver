@@ -31,6 +31,7 @@ import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -66,59 +67,52 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
-        try {
-            Date startTime = new Date();
+        Date startTime = new Date();
 
-            String taskId = TaskManagerImpl.systemDateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
-            TaskRunImpl taskRun = new TaskRunImpl(
-                taskId,
-                new Date(),
-                System.getProperty(StandardConstants.ENV_USER_NAME),
-                GeneralUtils.getProductTitle(),
-                0, null, null);
-            task.getTaskStatsFolder(true);
-            File logFile = task.getRunLog(taskRun);
+        String taskId = TaskManagerImpl.systemDateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
+        TaskRunImpl taskRun = new TaskRunImpl(
+            taskId,
+            new Date(),
+            System.getProperty(StandardConstants.ENV_USER_NAME),
+            GeneralUtils.getProductTitle(),
+            0, null, null);
+        task.getTaskStatsFolder(true);
+        File logFile = task.getRunLog(taskRun);
+        task.addNewRun(taskRun);
 
-            try (OutputStream logStream = new FileOutputStream(logFile)) {
-                taskLog = Log.getLog(TaskRunJob.class);
-                Log.setLogWriter(logStream);
-                try {
-                    monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
-                    executeTask(new LoggingProgressMonitor(monitor));
-                } catch (Throwable e) {
-                    taskError = e;
-                    taskLog.error("Task fatal error", e);
-                    throw e;
-                } finally {
-                    monitor.done();
-                    Log.setLogWriter(null);
-                    taskLog.flush();
-                }
-            } finally {
-                taskRun.setRunDuration(elapsedTime);
-                if (taskError != null) {
-                    String errorMessage = taskError.getMessage();
-                    if (CommonUtils.isEmpty(errorMessage)) {
-                        errorMessage = taskError.getClass().getName();
-                    }
-                    taskRun.setErrorMessage(errorMessage);
-                    StringWriter buf = new StringWriter();
-                    taskError.printStackTrace(new PrintWriter(buf, true));
-                    taskRun.setErrorStackTrace(buf.toString());
-                }
-                task.addNewRun(taskRun);
-            }
+        try (Writer logStream = new OutputStreamWriter(new FileOutputStream(logFile), StandardCharsets.UTF_8)) {
+            taskLog = Log.getLog(TaskRunJob.class);
+            Log.setLogWriter(logStream);
+            monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
+            executeTask(new LoggingProgressMonitor(monitor), new PrintWriter(logStream, true));
         } catch (Throwable e) {
-            taskLog.error("Error running task", e);
-            return GeneralUtils.makeExceptionStatus(e);
+            taskError = e;
+            taskLog.error("Task fatal error", e);
+        } finally {
+            monitor.done();
+            Log.setLogWriter(null);
+            taskLog.flush();
+
+            taskRun.setRunDuration(elapsedTime);
+            if (taskError != null) {
+                String errorMessage = taskError.getMessage();
+                if (CommonUtils.isEmpty(errorMessage)) {
+                    errorMessage = taskError.getClass().getName();
+                }
+                taskRun.setErrorMessage(errorMessage);
+                StringWriter buf = new StringWriter();
+                taskError.printStackTrace(new PrintWriter(buf, true));
+                taskRun.setErrorStackTrace(buf.toString());
+            }
+            task.updateRun(taskRun);
         }
         return Status.OK_STATUS;
     }
 
-    private void executeTask(DBRProgressMonitor monitor) throws DBException {
+    private void executeTask(DBRProgressMonitor monitor, Writer logWriter) throws DBException {
         activeMonitor = monitor;
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        taskHandler.executeTask(this, task, locale, taskLog, executionListener);
+        taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
     }
 
     @Override

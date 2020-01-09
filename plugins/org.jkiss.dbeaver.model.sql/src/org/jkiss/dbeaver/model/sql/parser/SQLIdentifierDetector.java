@@ -21,15 +21,14 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.utils.ArrayUtils;
+import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
 
 /**
  * Determines whether a given character is valid as part of an SQL identifier.
  */
-public class SQLIdentifierDetector extends SQLWordDetector {
+public class SQLIdentifierDetector extends TPWordDetector {
     protected SQLDialect dialect;
     private char structSeparator;
     @NotNull

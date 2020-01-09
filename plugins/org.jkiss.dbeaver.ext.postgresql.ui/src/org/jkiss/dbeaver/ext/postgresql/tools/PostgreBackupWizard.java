@@ -23,54 +23,44 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupInfo;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 
-class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBackupInfo> implements IExportWizard {
-
-    String compression;
-    String encoding;
-    boolean showViews;
-    boolean useInserts;
-    boolean noPrivileges;
-    boolean noOwner;
-    public List<PostgreDatabaseBackupInfo> objects = new ArrayList<>();
+class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBackupSettings, PostgreDatabaseBackupInfo> implements IExportWizard {
 
     private PostgreBackupWizardPageObjects objectsPage;
     private PostgreBackupWizardPageSettings settingsPage;
 
-    public PostgreBackupWizard(Collection<DBSObject> objects) {
-        super(objects, PostgreMessages.wizard_backup_title);
+    PostgreBackupWizard(DBTTask task) {
+        super(task);
+    }
 
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        this.outputFilePattern = store.getString("Postgre.export.outputFilePattern");
-        if (CommonUtils.isEmpty(this.outputFilePattern)) {
-            this.outputFilePattern = "dump-${database}-${timestamp}.backup";
-        }
-        showViews = CommonUtils.getBoolean(store.getString("Postgre.export.showViews"), false);
+    PostgreBackupWizard(Collection<DBSObject> objects) {
+        super(objects, PostgreMessages.wizard_backup_title);
+        getSettings().fillExportObjectsFromInput();
     }
 
     @Override
     public String getTaskTypeId() {
-        return "postgresDatabaseBackup";
+        return PostgreSQLTasks.TASK_DATABASE_BACKUP;
     }
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
-        // TODO: implement
+        objectsPage.saveState();
+        settingsPage.saveState();
+
+        getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
     @Override
@@ -82,6 +72,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
 
     @Override
     public void addPages() {
+        addTaskConfigPages();
         addPage(objectsPage);
         addPage(settingsPage);
         super.addPages();
@@ -110,110 +101,12 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
             PostgreMessages.wizard_backup_msgbox_success_title,
             NLS.bind(PostgreMessages.wizard_backup_msgbox_success_description, CommonUtils.truncateString(getObjectsName(), 255)),
             SWT.ICON_INFORMATION);
-        UIUtils.launchProgram(outputFolder.getAbsolutePath());
+        UIUtils.launchProgram(getSettings().getOutputFolder().getAbsolutePath());
 	}
 
     @Override
-    public void fillProcessParameters(List<String> cmd, PostgreDatabaseBackupInfo arg) throws IOException
-    {
-        super.fillProcessParameters(cmd, arg);
-
-        cmd.add("--format=" + format.getId());
-        if (!CommonUtils.isEmpty(compression)) {
-            cmd.add("--compress=" + compression);
-        }
-        if (!CommonUtils.isEmpty(encoding)) {
-            cmd.add("--encoding=" + encoding);
-        }
-        if (useInserts) {
-            cmd.add("--inserts");
-        }
-        if (noPrivileges) {
-            cmd.add("--no-privileges");
-        }
-        if (noOwner) {
-            cmd.add("--no-owner");
-        }
-
-        // Objects
-        if (objects.isEmpty()) {
-            // no dump
-        } else if (!CommonUtils.isEmpty(arg.getTables())) {
-            for (PostgreTableBase table : arg.getTables()) {
-                cmd.add("-t");
-                // Use explicit quotes in case of quoted identifiers (#5950)
-                cmd.add(escapeCLIIdentifier(table.getSchema().getName() + "." + table.getName()));
-            }
-        }
-        if (!CommonUtils.isEmpty(arg.getSchemas())) {
-            for (PostgreSchema schema : arg.getSchemas()) {
-                cmd.add("-n");
-                // Use explicit quotes in case of quoted identifiers (#5950)
-                cmd.add(escapeCLIIdentifier(schema.getName()));
-            }
-        }
+    protected PostgreDatabaseBackupSettings createSettings() {
+        return new PostgreDatabaseBackupSettings();
     }
-
-    private static String escapeCLIIdentifier(String name) {
-        return "\"" + name.replace("\"", "\\\"") + "\"";
-    }
-
-    @Override
-    protected List<String> getCommandLine(PostgreDatabaseBackupInfo arg) throws IOException {
-        List<String> cmd = PostgreToolScript.getPostgreToolCommandLine(this, arg);
-        cmd.add(arg.getDatabase().getName());
-
-        return cmd;
-    }
-
-    @Override
-    public boolean performFinish() {
-        objectsPage.saveState();
-
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue("Postgre.export.outputFilePattern", this.outputFilePattern);
-        store.setValue("Postgre.export.showViews", showViews);
-
-        return super.performFinish();
-    }
-
-    @Override
-    public Collection<PostgreDatabaseBackupInfo> getRunInfo() {
-        return objects;
-    }
-
-    @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process)
-    {
-        super.startProcessHandler(monitor, arg, processBuilder, process);
-
-        String outFileName = GeneralUtils.replaceVariables(outputFilePattern, name -> {
-            switch (name) {
-                case VARIABLE_DATABASE:
-                    return arg.getDatabase().getName();
-                case VARIABLE_HOST:
-                    return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
-                case VARIABLE_TABLE:
-                    final Iterator<PostgreTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
-                    if (iterator != null && iterator.hasNext()) {
-                        return iterator.next().getName();
-                    } else {
-                        return "null";
-                    }
-                case VARIABLE_TIMESTAMP:
-                    return RuntimeUtils.getCurrentTimeStamp();
-                case VARIABLE_DATE:
-                    return RuntimeUtils.getCurrentDate();
-                default:
-                    System.getProperty(name);
-            }
-            return null;
-        });
-
-        File outFile = new File(outputFolder, outFileName);
-        Thread job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile);
-        job.start();
-    }
-
 
 }

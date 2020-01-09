@@ -87,7 +87,7 @@ public class JDBCCompositeDynamic extends JDBCComposite {
         } catch (DBException e) {
             throw new DBCException("Can't obtain attributes meta information", e);
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

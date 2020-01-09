@@ -87,6 +87,10 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
         return executionContext;
     }
 
+    public EXEC_CONTEXT getDefaultContext() {
+        return executionContext;
+    }
+
     @NotNull
     @Override
     public DBCExecutionContext[] getAllContexts() {

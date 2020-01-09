@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
@@ -54,8 +55,6 @@ import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
-import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -63,9 +62,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * TabbedFolderPageProperties
@@ -107,48 +105,41 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 //        scrolled.setLayout(new GridLayout(1, false));
 
         propertiesGroup = new Composite(parent, SWT.NONE);
-        CSSUtils.setCSSClass(propertiesGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
-        //propertiesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-//        scrolled.setContent(propertiesGroup);
-//        scrolled.setExpandHorizontal(true);
-//        scrolled.setExpandVertical(true);
-//
-//        scrolled.addListener( SWT.Resize, event -> {
-//            int width = scrolled.getClientArea().width;
-//            scrolled.setMinSize( propertiesGroup.computeSize( width, SWT.DEFAULT ) );
-//        } );
-
+        //CSSUtils.setCSSClass(propertiesGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         curPropertySource = input.getPropertySource();
 
-        input.getCommandContext().addCommandListener(new DBECommandAdapter() {
-            @Override
-            public void onCommandChange(DBECommand command) {
-                UIUtils.asyncExec(() -> {
-                    updateEditButtonsState();
-                    if (command instanceof DBECommandProperty) {
-                        // We need to exclude current prop from update
-                        // Simple value compare on update is not enough because value can be transformed (e.g. uppercased)
-                        // and it will differ from the value in edit control
-                        Object propId = ((DBECommandProperty) command).getHandler().getId();
-                        updateOtherPropertyValues(propId);
-                    }
-                });
-            }
+        DBECommandContext commandContext = input.getCommandContext();
+        if (commandContext != null) {
+            commandContext.addCommandListener(new DBECommandAdapter() {
+                @Override
+                public void onCommandChange(DBECommand<?> command) {
+                    UIUtils.asyncExec(() -> {
+                        updateEditButtonsState();
+                        if (command instanceof DBECommandProperty) {
+                            // We need to exclude current prop from update
+                            // Simple value compare on update is not enough because value can be transformed (e.g. uppercased)
+                            // and it will differ from the value in edit control
+                            Object propId = ((DBECommandProperty<?>) command).getHandler().getId();
+                            updateOtherPropertyValues(propId);
+                        }
+                    });
+                }
 
-            @Override
-            public void onSave() {
-                UIUtils.asyncExec(() -> updateEditButtonsState());
-            }
+                @Override
+                public void onSave() {
+                    UIUtils.asyncExec(() -> updateEditButtonsState());
+                }
 
-            @Override
-            public void onReset() {
-                UIUtils.asyncExec(() -> {
-                    refreshProperties();
-                    updateEditButtonsState();
-                });
-            }
-        });
+                @Override
+                public void onReset() {
+                    UIUtils.asyncExec(() -> {
+                        refreshProperties();
+                        updateEditButtonsState();
+                    });
+                }
+            });
+        }
 
         propertiesGroup.addDisposeListener(e -> dispose());
 
@@ -159,7 +150,8 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (saveButton == null || saveButton.isDisposed()) {
             return;
         }
-        boolean isDirty = input.getCommandContext().isDirty();
+        DBECommandContext commandContext = input.getCommandContext();
+        boolean isDirty = commandContext != null && commandContext.isDirty();
         saveButton.setEnabled(isDirty);
         revertButton.setEnabled(isDirty);
         scriptButton.setEnabled(isDirty);
@@ -242,7 +234,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
 
             Composite primaryGroup = new Composite(propertiesGroup, SWT.NONE);
-            CSSUtils.setCSSClass(primaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            //CSSUtils.setCSSClass(primaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
             primaryGroup.setLayout(new GridLayout(2, false));
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = maxGroupWidth;
@@ -253,7 +245,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             if (hasSecondaryProps) {
                 secondaryGroup = new Composite(propertiesGroup, SWT.NONE);
                 secondaryGroup.setLayout(new GridLayout(2, false));
-                CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                //CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 gd = new GridData(GridData.FILL_BOTH);
                 gd.widthHint = maxGroupWidth;
                 secondaryGroup.setLayoutData(gd);
@@ -263,7 +255,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             if (hasSpecificProps) {
                 specificGroup = new Composite(propertiesGroup, SWT.NONE);
                 specificGroup.setLayout(new GridLayout(2, false));
-                CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                //CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 gd = new GridData(GridData.FILL_BOTH);
                 gd.widthHint = maxGroupWidth;
                 specificGroup.setLayoutData(gd);
@@ -364,7 +356,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             LoadingJob.createService(
                 new DatabaseLoadService<Map<DBPPropertyDescriptor, Object>>("Load main properties", databaseObject.getDataSource()) {
                     @Override
-                    public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) {
                         DBPPropertySource propertySource = TabbedFolderPageForm.this.curPropertySource;
                         monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(propertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
                         Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
@@ -678,7 +670,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     final Object[] enumConstants = propertyType.getEnumConstants();
                     final String[] strings = new String[enumConstants.length];
                     for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
-                        strings[i] = ((Enum) enumConstants[i]).name();
+                        strings[i] = ((Enum<?>) enumConstants[i]).name();
                     }
                     combo.setItems(strings);
                 }
@@ -704,7 +696,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (value instanceof DBPNamedObject) {
             return ((DBPNamedObject) value).getName();
         } else if (value instanceof Enum) {
-            return ((Enum) value).name();
+            return ((Enum<?>) value).name();
         } else {
             return DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.EDIT);
         }

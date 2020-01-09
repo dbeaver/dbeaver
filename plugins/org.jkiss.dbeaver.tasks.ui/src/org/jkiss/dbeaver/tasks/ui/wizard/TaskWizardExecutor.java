@@ -24,13 +24,18 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.Writer;
 import java.util.Locale;
 
 public class TaskWizardExecutor extends TaskProcessorUI {
-    private static final Log log = Log.getLog(TaskWizardExecutor.class);
 
-    public TaskWizardExecutor(@NotNull DBRRunnableContext staticContext, @NotNull DBTTask task) {
+    private final Log log;
+    private Writer logWriter;
+
+    public TaskWizardExecutor(@NotNull DBRRunnableContext staticContext, @NotNull DBTTask task, @NotNull Log log, @NotNull Writer logWriter) {
         super(staticContext, task);
+        this.log = log;
+        this.logWriter = logWriter;
     }
 
     @Override
@@ -41,7 +46,7 @@ public class TaskWizardExecutor extends TaskProcessorUI {
     @Override
     protected void runTask() throws DBException {
         DBTTaskHandler handlerTransfer = getTask().getType().createHandler();
-        handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, this);
+        handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, logWriter, this);
     }
 
 }

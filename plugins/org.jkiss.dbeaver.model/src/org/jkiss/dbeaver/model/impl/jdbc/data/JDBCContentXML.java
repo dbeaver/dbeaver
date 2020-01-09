@@ -152,10 +152,10 @@ public class JDBCContentXML extends JDBCContentLOB {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, dataSource);
+            throw new DBCException(e, session.getExecutionContext());
         }
         catch (IOException e) {
-            throw new DBCException("IO error while reading content", e);
+            throw new DBCException("IO error while reading content", e, session.getExecutionContext());
         }
     }
 

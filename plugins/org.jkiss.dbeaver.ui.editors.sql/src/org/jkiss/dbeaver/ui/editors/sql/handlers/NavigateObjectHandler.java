@@ -63,7 +63,7 @@ public class NavigateObjectHandler extends AbstractHandler {
 
     private IHyperlink getCurrentHyperlink(SQLEditorBase editor)
     {
-        SQLHyperlinkDetector hyperlinkDetector = new SQLHyperlinkDetector(editor, editor.getSyntaxManager());
+        SQLHyperlinkDetector hyperlinkDetector = editor.getViewerConfiguration().getHyperlinkDetector();
         ITextSelection selection = (ITextSelection) editor.getTextViewer().getSelection();
 
         IRegion curRegion = new Region(selection.getOffset(), 0);

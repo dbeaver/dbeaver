@@ -22,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
@@ -36,8 +35,6 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Locale;
 
 /**
  * SpannerConnectionPage
@@ -149,7 +146,7 @@ public class SpannerConnectionPage extends ConnectionPageAbstract implements ICo
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly)
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             driverPropsPage

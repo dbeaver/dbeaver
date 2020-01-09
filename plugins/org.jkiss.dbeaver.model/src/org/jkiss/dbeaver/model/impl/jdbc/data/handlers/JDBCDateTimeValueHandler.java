@@ -56,7 +56,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException {
         Object value = super.getValueFromObject(session, type, object, copy);
         if (value instanceof Date) {
             switch (type.getTypeID()) {
@@ -134,7 +134,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                 log.debug("Can't retrieve datetime object", e1);
                 return null;
             }
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.completion;
 
 import org.eclipse.jface.text.IDocument;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 
 public class SQLCompletionRequest {

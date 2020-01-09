@@ -360,7 +360,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		if (initFrom != null) {
 			((ExasolExecutionContext)context).setCurrentSchema(monitor, ((ExasolExecutionContext)initFrom).getDefaultSchema());
 		} else {
-			((ExasolExecutionContext)context).refreshDefaults(monitor);
+			((ExasolExecutionContext)context).refreshDefaults(monitor, true);
 		}
 	}
 

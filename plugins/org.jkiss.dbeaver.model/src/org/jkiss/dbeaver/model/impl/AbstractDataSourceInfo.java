@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.Collection;
 import java.util.Map;
@@ -102,6 +103,11 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     @Override
     public boolean isMultipleResultsFetchBroken() {
         return false;
+    }
+
+    @Override
+    public DBSObjectType[] getSupportedObjectTypes() {
+        return new DBSObjectType[0];
     }
 
     @Override

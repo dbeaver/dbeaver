@@ -498,7 +498,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly)
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             new OracleConnectionExtraPage(),

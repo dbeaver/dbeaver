@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.qm.meta;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
 
@@ -57,9 +56,7 @@ public class QMMSessionInfo extends QMMObject {
         this.connectionConfiguration = context.getDataSource().getContainer().getConnectionConfiguration();
         this.instanceId = context.getOwnerInstance().getName();
         this.contextName = context.getContextName();
-        if (context.getDataSource() instanceof SQLDataSource) {
-            this.sqlDialect = ((SQLDataSource) context.getDataSource()).getSQLDialect();
-        }
+        this.sqlDialect = context.getDataSource().getSQLDialect();
         this.transactional = transactional;
         if (transactional) {
             this.transaction = new QMMTransactionInfo(this, null);

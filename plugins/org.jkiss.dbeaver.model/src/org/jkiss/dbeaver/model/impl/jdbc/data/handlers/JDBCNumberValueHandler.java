@@ -313,7 +313,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         } else if (object instanceof Number) {
             return object;
         } else if (object instanceof String) {
-            return DBValueFormatting.convertStringToNumber((String) object, getNumberType(type), formatter);
+            String strValue = (String) object;
+            if (strValue.isEmpty()) {
+                // Empty string means NULL value
+                return null;
+            }
+            return DBValueFormatting.convertStringToNumber(strValue, getNumberType(type), formatter);
         } else if (object instanceof Boolean) {
             return (Boolean) object ? 1 : 0;
         } else {

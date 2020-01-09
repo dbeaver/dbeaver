@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -155,10 +154,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             Matcher matcher = EXEC_PATTERN.matcher(queryString);
             if (matcher.find()) {
                 String procName = matcher.group(1);
-                char divChar = 0;
-                if (dataSource instanceof SQLDataSource) {
-                    divChar = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
-                }
+                char divChar = dataSource.getSQLDialect().getStructSeparator();
                 if (procName.indexOf(divChar) != -1) {
                     return findProcedureByNames(session, procName.split("\\" + divChar));
                 } else {

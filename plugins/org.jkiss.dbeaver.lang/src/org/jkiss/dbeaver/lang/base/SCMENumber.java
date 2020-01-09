@@ -34,7 +34,7 @@ public class SCMENumber extends SCMLeafNode {
     }
 
     public Number getNumberValue() {
-        return new Double(getPlainValue());
+        return Double.parseDouble(getPlainValue());
     }
 
 }

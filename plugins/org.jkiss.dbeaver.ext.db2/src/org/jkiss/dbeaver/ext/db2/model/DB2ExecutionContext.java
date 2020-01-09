@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -56,9 +57,9 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
         return (DB2DataSource) super.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public DB2ExecutionContext getContextDefaults() {
         return this;
     }
 
@@ -105,13 +106,19 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         // Check default active schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active schema")) {
+            if (useBootstrapSettings) {
+                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
+                    setCurrentSchema(monitor, bootstrap.getDefaultSchemaName());
+                }
+            }
             // Get active schema
             this.activeSchemaName = determineActiveSchema(session);
         } catch (Exception e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
 
         return true;
@@ -122,11 +129,15 @@ public class DB2ExecutionContext extends JDBCExecutionContext implements DBCExec
             log.debug("Null current schema");
             return;
         }
+        setCurrentSchema(monitor, object.getName());
+    }
+
+    private void setCurrentSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
-            JDBCUtils.executeSQL(session, String.format(SET_CURRENT_SCHEMA, object.getName()));
-            this.activeSchemaName = object.getName();
+            JDBCUtils.executeSQL(session, String.format(SET_CURRENT_SCHEMA, schemaName));
+            this.activeSchemaName = schemaName;
         } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, this);
         }
     }
 

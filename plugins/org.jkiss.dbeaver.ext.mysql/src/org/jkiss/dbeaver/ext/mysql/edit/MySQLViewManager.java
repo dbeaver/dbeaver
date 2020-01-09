@@ -119,7 +119,7 @@ public class MySQLViewManager extends MySQLTableManager {
                 try {
                     schemaView = DBUtils.findObject(view.getParentObject().getViews(session.getProgressMonitor()), view.getName());
                 } catch (DBException e) {
-                    throw new DBCException(e, view.getDataSource());
+                    throw new DBCException(e, session.getExecutionContext());
                 }
                 if (schemaView != view) {
                     throw new DBCException("View with name '" + view.getName() + "' already exists. Choose another name");

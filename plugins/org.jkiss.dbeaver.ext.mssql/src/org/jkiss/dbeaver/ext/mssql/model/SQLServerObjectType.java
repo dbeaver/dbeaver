@@ -54,7 +54,7 @@ public enum SQLServerObjectType implements DBSObjectType {
 	TF ("TF", SQLServerProcedure.class, DBIcon.TREE_FUNCTION, "SQL table-valued-function"),
 	TR ("TR", SQLServerTableTrigger.class, DBIcon.TREE_TRIGGER, "SQL DML trigger"),
 	TT ("TT", null, DBIcon.TREE_DATA_TYPE, "Table type"),
-	U ("U", SQLServerTable.class, DBIcon.TREE_TABLE, "Table (user-defined)"),
+	U ("U", SQLServerTable.class, DBIcon.TREE_TABLE, "Table"),
 	UQ ("UQ", SQLServerTableUniqueKey.class, DBIcon.TREE_CONSTRAINT, "UNIQUE constraint"),
 	V ("V", SQLServerView.class, DBIcon.TREE_VIEW, "View"),
 	X ("X", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "Extended stored procedure");
