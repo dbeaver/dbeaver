@@ -32,9 +32,6 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         java.util.List<String> cmd = new ArrayList<>();
         handler.fillProcessParameters(settings, arg, cmd);
 
-        if (handler.isVerbose()) {
-            cmd.add("-v");
-        }
         DBPConnectionConfiguration connectionInfo = settings.getDataSourceContainer().getActualConnectionConfiguration();
         cmd.add("--host=" + connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {

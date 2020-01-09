@@ -51,6 +51,9 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
         settings.addExtraCommandArgs(cmd);
     }
 
+    public boolean isVerbose() {
+        return false;
+    }
 
     protected abstract boolean isExportWizard();
 

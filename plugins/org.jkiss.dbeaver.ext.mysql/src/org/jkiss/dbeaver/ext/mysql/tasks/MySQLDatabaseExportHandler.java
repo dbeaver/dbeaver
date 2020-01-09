@@ -117,11 +117,6 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
-    public boolean isVerbose() {
-        return true;
-    }
-
-    @Override
     protected boolean isLogInputStream() {
         return false;
     }

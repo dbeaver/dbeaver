@@ -79,10 +79,6 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         return true;
     }
 
-    public boolean isVerbose() {
-        return false;
-    }
-
     private void validateClientHome(DBRProgressMonitor monitor, SETTINGS settings) throws DBCException {
         DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
         if (isNativeClientHomeRequired()) {
