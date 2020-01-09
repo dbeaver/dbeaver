@@ -40,6 +40,10 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
     @Override
     protected List<String> getCommandLine(MySQLScriptExecuteSettings settings, MySQLCatalog arg) throws IOException {
         List<String> cmd = getMySQLToolCommandLine(this, settings, arg);
+        if (settings.isVerbose()) {
+            cmd.add("-v");
+        }
+
         cmd.add(arg.getName());
         return cmd;
     }
@@ -55,11 +59,6 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
             cmd.add("--no-beep"); //$NON-NLS-1$
         }
         settings.addExtraCommandArgs(cmd);
-    }
-
-    @Override
-    public boolean isVerbose() {
-        return true;
     }
 
     @Override
