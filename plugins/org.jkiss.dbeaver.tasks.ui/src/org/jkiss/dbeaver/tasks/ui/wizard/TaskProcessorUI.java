@@ -99,7 +99,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                     DBPMessageType.INFORMATION,
                     null);
             } else if (error != null) {
-                DBWorkbench.getPlatformUI().showError("Data transfer error", "Data transfer failed", error);
+                DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error);
             }
         });
 
