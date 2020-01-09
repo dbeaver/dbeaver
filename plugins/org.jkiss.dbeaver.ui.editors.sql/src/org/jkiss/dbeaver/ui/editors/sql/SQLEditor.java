@@ -1545,7 +1545,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
     }
-    
+
     public void explainQueryPlan() {
         // Notify listeners
         synchronized (listeners) {
@@ -1579,15 +1579,15 @@ public class SQLEditor extends SQLEditorBase implements
         ExplainPlanViewer planView = getPlanView(sqlQuery,planner);
 
         if (planView != null) {
-            planView.explainQueryPlan(sqlQuery, planner); 
+            planView.explainQueryPlan(sqlQuery, planner);
         }
-      
+
     }
 
     private ExplainPlanViewer getPlanView(SQLQuery sqlQuery, DBCQueryPlanner planner) {
-        
+
         // 1. Determine whether planner supports plan extraction
-        
+
         if (planner == null) {
             DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan explain isn't supported by current datasource");
             return null;
@@ -1598,7 +1598,7 @@ public class SQLEditor extends SQLEditorBase implements
                 return null;
             }
         }
-        
+
         ExplainPlanViewer planView = null;
 
         if (sqlQuery != null) {
@@ -3427,16 +3427,15 @@ public class SQLEditor extends SQLEditorBase implements
                 serverOutputs.clear();
             }
 
-            if (outputs.isEmpty()) {
-                return;
-            }
             PrintWriter outputWriter = outputViewer.getOutputWriter();
 
-            for (ServerOutputInfo info : outputs) {
-                try {
-                    info.outputReader.readServerOutput(monitor, info.executionContext, info.result, null, outputWriter);
-                } catch (Exception e) {
-                    log.error(e);
+            if (!outputs.isEmpty()) {
+                for (ServerOutputInfo info : outputs) {
+                    try {
+                        info.outputReader.readServerOutput(monitor, info.executionContext, info.result, null, outputWriter);
+                    } catch (Exception e) {
+                        log.error(e);
+                    }
                 }
             }
 
