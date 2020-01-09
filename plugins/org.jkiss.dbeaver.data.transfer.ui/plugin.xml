@@ -102,6 +102,7 @@
 
     <extension point="org.jkiss.dbeaver.task">
         <configurator type="dataTransfer" class="org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferTaskConfigurator"/>
+        <configurator type="sql" class="org.jkiss.dbeaver.tools.sql.ui.wizard.SQLTaskConfigurator"/>
     </extension>
 
 </plugin>
