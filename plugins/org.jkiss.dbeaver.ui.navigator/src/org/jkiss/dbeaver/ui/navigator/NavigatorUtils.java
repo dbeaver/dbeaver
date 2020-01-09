@@ -59,8 +59,8 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Navigator utils
@@ -191,7 +191,7 @@ public class NavigatorUtils {
             final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
             final DBNNode selectedNode = getSelectedNode(viewer);
             if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
-                addSetActiveObjectAction(workbenchSite, manager, selectedNode);
+                //addSetActiveObjectAction(workbenchSite, manager, selectedNode);
 
             }
 

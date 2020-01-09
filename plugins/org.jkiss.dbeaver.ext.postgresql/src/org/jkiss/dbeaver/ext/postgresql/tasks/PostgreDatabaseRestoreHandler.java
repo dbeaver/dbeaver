@@ -90,6 +90,11 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     }
 
     @Override
+    protected boolean isMergeProcessStreams() {
+        return true;
+    }
+
+    @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
