@@ -32,6 +32,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -53,7 +54,7 @@ public class StatisticsPresentation extends AbstractPresentation {
         super.createPresentation(controller, parent);
         UIUtils.createHorizontalLine(parent);
         table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION);
-        table.setLinesVisible(true);
+        table.setLinesVisible(!UIStyles.isDarkTheme());
         table.setHeaderVisible(true);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
 

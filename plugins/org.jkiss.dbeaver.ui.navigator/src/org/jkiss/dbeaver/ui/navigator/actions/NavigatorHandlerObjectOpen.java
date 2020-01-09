@@ -342,7 +342,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         DBEObjectEditor objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
                             object.getClass(),
                             DBEObjectEditor.class);
-                        actionName = objectManager == null || !objectManager.canEditObject(object) ? UINavigatorMessages.actions_navigator_view : UINavigatorMessages.actions_navigator_edit;
+                        //actionName = objectManager == null || !objectManager.canEditObject(object) ? UINavigatorMessages.actions_navigator_view : UINavigatorMessages.actions_navigator_edit;
+                        actionName = UINavigatorMessages.actions_navigator_view;
                     }
                 }
                 String label;
