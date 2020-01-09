@@ -18,7 +18,7 @@
                 icon="icons/ocient_icon.png">
             <drivers managable="true">
                 <driver
-                        id="ociend_jdbc"
+                        id="ocient_jdbc"
                         label="Ocient"
                         class="com.ocient.jdbc.JDBCDriver"
                         icon="icons/ocient_icon.png"
