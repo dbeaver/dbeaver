@@ -86,7 +86,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
 
     @Override
     protected boolean isLogInputStream() {
-        return false;
+        return true;
     }
 
     @Override

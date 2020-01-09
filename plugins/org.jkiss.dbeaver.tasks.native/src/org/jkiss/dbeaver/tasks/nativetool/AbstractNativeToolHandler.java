@@ -52,10 +52,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                     doExecute(monitor, task, settings, log);
                 } catch (Exception e) {
                     error = e;
-                    throw new InvocationTargetException(e);
                 } finally {
                     listener.taskFinished(settings, error);
-
                     Log.setLogWriter(null);
                 }
 
@@ -63,7 +61,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 monitor.done();
             });
         } catch (InvocationTargetException e) {
-            throw new DBException("Error dumping database", e.getTargetException());
+            throw new DBException("Error executing native tool", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
