@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.DirectObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -280,15 +281,20 @@ public class SQLContextInformer
                 if (!ArrayUtils.isEmpty(containerNames)) {
                     DBSObjectContainer dsContainer = DBUtils.getAdapter(DBSObjectContainer.class, getExecutionContext().getDataSource());
                     if (dsContainer != null) {
+                        DBCExecutionContextDefaults contextDefaults = getExecutionContext().getContextDefaults();
+
                         DBSObject childContainer = dsContainer.getChild(monitor, containerNames[0]);
+                        if (childContainer == null) {
+                             if (contextDefaults != null) {
+                                 if (contextDefaults.getDefaultCatalog() != null) {
+                                     childContainer = contextDefaults.getDefaultCatalog().getChild(monitor, containerNames[0]);
+                                 }
+                             }
+                        }
                         if (childContainer instanceof DBSObjectContainer) {
                             container = (DBSObjectContainer) childContainer;
                         } else {
                             // Check in selected object
-                            DBSObjectContainer activeContainer = DBUtils.getSelectedObject(getExecutionContext(), DBSObjectContainer.class);
-                            if (activeContainer != null) {
-                                childContainer = activeContainer;
-                            }
                             if (childContainer == null && structureAssistant != null) {
                                 // Container is not direct child of schema/catalog. Let's try struct assistant
                                 DBCExecutionContext executionContext = editor.getExecutionContext();
