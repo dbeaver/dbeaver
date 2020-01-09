@@ -21,7 +21,8 @@ import com.jcraft.jsch.agentproxy.Identity;
 import com.jcraft.jsch.agentproxy.USocketFactory;
 import com.jcraft.jsch.agentproxy.connector.PageantConnector;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
-import com.jcraft.jsch.agentproxy.usocket.NCUSocketFactory;
+import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
+
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -119,7 +120,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             }
             if (agentProxy==null) {
                 try {
-                    USocketFactory udsf = new NCUSocketFactory();
+                    USocketFactory udsf = new JNAUSocketFactory();
                     agentProxy = new AgentProxy(new SSHAgentConnector(udsf));
                     log.debug("SSH: Connected with ssh-agent");
                 } catch (Exception e) {
