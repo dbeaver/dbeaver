@@ -41,7 +41,7 @@ import java.util.Map;
 /**
  * PostgreQueryPlaner
  */
-public class OcientQueryPlaner extends AbstractExecutionPlanSerializer implements DBCQueryPlanner 
+public class OcientQueryPlaner extends AbstractExecutionPlanSerializer implements DBCQueryPlanner
 {
     private final DBPDataSource dataSource;
 
@@ -90,7 +90,7 @@ public class OcientQueryPlaner extends AbstractExecutionPlanSerializer implement
             }
         });
     }
-    
+
     private static Map<String, String> getNodeAttributes(JsonObject nodeObject){
         Map<String,String> attributes = new HashMap<>();
 
@@ -116,6 +116,4 @@ public class OcientQueryPlaner extends AbstractExecutionPlanSerializer implement
         }
 
     }
-
-
 }

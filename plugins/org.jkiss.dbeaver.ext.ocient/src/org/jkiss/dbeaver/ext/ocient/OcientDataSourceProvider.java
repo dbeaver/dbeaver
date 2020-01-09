@@ -54,7 +54,7 @@ public class OcientDataSourceProvider extends GenericDataSourceProvider {
     {
         return new OcientDataSource(monitor, container);
     }
-    
+
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         StringBuilder url = new StringBuilder();

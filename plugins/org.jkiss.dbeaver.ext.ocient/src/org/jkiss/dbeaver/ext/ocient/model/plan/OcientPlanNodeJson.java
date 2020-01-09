@@ -79,10 +79,10 @@ public class OcientPlanNodeJson extends OcientPlanNode implements DBPPropertySou
                     nodeProps.put(propName, value.toString());
                 }
             } else {
-            	if ("type".equals(propName)) {
-            		this.name = value.getAsString();
-            	}
-        		nodeProps.put(propName, value.getAsString());
+                if ("type".equals(propName)) {
+                    this.name = value.getAsString();
+                }
+                nodeProps.put(propName, value.getAsString());
             }
         }
     }

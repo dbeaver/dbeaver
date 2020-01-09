@@ -42,15 +42,15 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
     private String query;
     private List<OcientPlanNodeJson> rootNodes;
     private OcientDataSource dataSource;
-    
-    
+
+
     private static final Gson gson = new Gson();
 
     public OcientExecutionPlan(String query)
     {
         this.query = query;
     }
-    
+
     public OcientExecutionPlan(String query, List<OcientPlanNodeJson> rootNodes) {
         this.query = query;
         this.rootNodes = rootNodes;
@@ -75,7 +75,7 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
 
     @Override
     public String getPlanQueryString() {
-    	return "explain json" + query;
+        return "explain json" + query;
     }
 
     @Override
@@ -86,35 +86,32 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
 
     public void explain(DBCSession session) throws DBCException
     {
-    	String explainString = getExplainString(session, getPlanQueryString());
-    	
+        String explainString = getExplainString(session, getPlanQueryString());
+
         JsonObject planObject = gson.fromJson(explainString, JsonObject.class);
         JsonObject planRoot = planObject.getAsJsonObject("rootNode");
-        rootNodes = new ArrayList<>();  
-        
-        OcientPlanNodeJson rootNode = new OcientPlanNodeJson(null, "Root", planRoot);        
-        rootNodes.add(rootNode);     
+        rootNodes = new ArrayList<>();
+
+        OcientPlanNodeJson rootNode = new OcientPlanNodeJson(null, "Root", planRoot);
+        rootNodes.add(rootNode);
     }
-    
+
     private String getExplainString(DBCSession session, String sql) throws DBCException
     {
-        JDBCSession connection = (JDBCSession) session;    
-        String plan = "";     
+        JDBCSession connection = (JDBCSession) session;
+        String plan = "";
         try {
-	        JDBCPreparedStatement dbStat = connection.prepareStatement(getPlanQueryString());
-	        JDBCResultSet dbResult = dbStat.executeQuery();
+            JDBCPreparedStatement dbStat = connection.prepareStatement(getPlanQueryString());
+            JDBCResultSet dbResult = dbStat.executeQuery();
             while (dbResult.next()) {
                 String planLine = dbResult.getString(1);
                 plan += planLine;
             }
             dbResult.close();
-           
+
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
         }
-		return plan;
+        return plan;
     }
-    
-    
-
 }
