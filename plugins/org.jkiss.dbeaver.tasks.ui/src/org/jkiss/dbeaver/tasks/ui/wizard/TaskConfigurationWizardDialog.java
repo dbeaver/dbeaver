@@ -102,18 +102,18 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
             getCurrentPage() instanceof TaskConfigurationWizardPageTask)
         {
             taskEditPage = (TaskConfigurationWizardPageTask) getCurrentPage();
-            if (nestedTaskWizard == null) {
-                // Now we need to create real wizard, initialize it and inject in this dialog
-                try {
-                    nestedTaskWizard = taskEditPage.getTaskWizard();
-                    nestedTaskWizard.addPages();
-                    setWizard(nestedTaskWizard);
-
-                } catch (Exception e) {
-                    setErrorMessage("Configuration error: " + e.getMessage());
-                    log.error("Can't create task " + taskEditPage.getSelectedTaskType().getName() + " configuration wizard", e);
-                    return;
+            try {
+                TaskConfigurationWizard nextTaskWizard = taskEditPage.getTaskWizard();
+                if (nextTaskWizard != nestedTaskWizard) {
+                    // Now we need to create real wizard, initialize it and inject in this dialog
+                        nestedTaskWizard = nextTaskWizard;
+                        nestedTaskWizard.addPages();
+                        setWizard(nestedTaskWizard);
                 }
+            } catch (Exception e) {
+                setErrorMessage("Configuration error: " + e.getMessage());
+                log.error("Can't create task " + taskEditPage.getSelectedTaskType().getName() + " configuration wizard", e);
+                return;
             }
             // Show first page of new wizard
             showPage(nestedTaskWizard.getStartingPage());
