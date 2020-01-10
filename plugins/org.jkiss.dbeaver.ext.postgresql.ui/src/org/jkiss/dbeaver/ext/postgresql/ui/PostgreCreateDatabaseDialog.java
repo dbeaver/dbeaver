@@ -121,7 +121,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                     if (tablespaceCombo.getSelectionIndex() == 0) {
                         tablespace = null;
                     } else {
-                        tablespace = allTablespaces.get(tablespaceCombo.getSelectionIndex());
+                        tablespace = allTablespaces.get(tablespaceCombo.getSelectionIndex() - 1);
                     }
                 }
             });
