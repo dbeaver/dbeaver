@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.sql;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Path;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
@@ -121,4 +123,7 @@ public class SQLScriptExecuteSettings {
         config.put("autoCommit", autoCommit);
     }
 
+    public static IFile getWorkspaceFile(String filePath) {
+        return DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace().getRoot().getFile(new Path(filePath));
+    }
 }
