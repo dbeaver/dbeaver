@@ -203,21 +203,21 @@ public class GeneralUtils {
             } else if (valueType == Boolean.class || valueType == Boolean.TYPE) {
                 return Boolean.valueOf(value);
             } else if (valueType == Long.class) {
-                return Long.valueOf(value);
+                return Long.valueOf(normalizeIntegerString(value));
             } else if (valueType == Long.TYPE) {
-                return Long.parseLong(value);
+                return Long.parseLong(normalizeIntegerString(value));
             } else if (valueType == Integer.class) {
-                return new Integer(value);
+                return Integer.valueOf(normalizeIntegerString(value));
             } else if (valueType == Integer.TYPE) {
-                return Integer.parseInt(value);
+                return Integer.parseInt(normalizeIntegerString(value));
             } else if (valueType == Short.class) {
-                return Short.valueOf(value);
+                return Short.valueOf(normalizeIntegerString(value));
             } else if (valueType == Short.TYPE) {
-                return Short.parseShort(value);
+                return Short.parseShort(normalizeIntegerString(value));
             } else if (valueType == Byte.class) {
-                return Byte.valueOf(value);
+                return Byte.valueOf(normalizeIntegerString(value));
             } else if (valueType == Byte.TYPE) {
-                return Byte.parseByte(value);
+                return Byte.parseByte(normalizeIntegerString(value));
             } else if (valueType == Double.class) {
                 return Double.valueOf(value);
             } else if (valueType == Double.TYPE) {
@@ -227,7 +227,7 @@ public class GeneralUtils {
             } else if (valueType == Float.TYPE) {
                 return Float.parseFloat(value);
             } else if (valueType == BigInteger.class) {
-                return new BigInteger(value);
+                return new BigInteger(normalizeIntegerString(value));
             } else if (valueType == BigDecimal.class) {
                 return new BigDecimal(value);
             } else {
@@ -237,6 +237,11 @@ public class GeneralUtils {
             log.error(e);
             return value;
         }
+    }
+
+    private static String normalizeIntegerString(String value) {
+        int divPos = value.lastIndexOf('.');
+        return divPos == -1 ? value : value.substring(0, divPos);
     }
 
     public static Throwable getRootCause(Throwable ex) {
