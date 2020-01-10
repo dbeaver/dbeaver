@@ -19,17 +19,12 @@ package org.jkiss.dbeaver.ui.data.dialogs;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -70,7 +65,7 @@ public class TextViewDialog extends ValueViewDialog {
     private Label lengthLabel;
     private IHexEditorService hexEditorService;
     private Control hexEditControl;
-    private CTabFolder editorContainer;
+    private TabFolder editorContainer;
     private boolean dirty;
 
     public TextViewDialog(IValueController valueController) {
@@ -96,12 +91,12 @@ public class TextViewDialog extends ValueViewDialog {
         final DBSTypedObject valueType = getValueController().getValueType();
         long maxSize = valueType.getMaxLength();
         if (hexEditorService != null) {
-            editorContainer = new CTabFolder(dialogGroup, SWT.FLAT | SWT.TOP);
+            editorContainer = new TabFolder(dialogGroup, SWT.FLAT | SWT.TOP);
             editorContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            lengthLabel = new Label(editorContainer, SWT.RIGHT);
+            lengthLabel = new Label(dialogGroup, SWT.RIGHT);
             lengthLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            editorContainer.setTopRight(lengthLabel, SWT.FILL);
+            //editorContainer.setTopRight(lengthLabel, SWT.FILL);
         }
 
         int selectedType = 0;
@@ -144,7 +139,7 @@ public class TextViewDialog extends ValueViewDialog {
             StyledTextUtils.fillDefaultStyledTextContextMenu(textEdit);
 
             if (hexEditorService != null) {
-                CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
+                TabItem item = new TabItem(editorContainer, SWT.NO_FOCUS);
                 item.setText("Text");
                 item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_TEXT));
                 item.setControl(textEdit);
@@ -157,7 +152,7 @@ public class TextViewDialog extends ValueViewDialog {
             minSize = hexEditControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
             minSize.x += 50;
             minSize.y += 50;
-            CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
+            TabItem item = new TabItem(editorContainer, SWT.NO_FOCUS);
             item.setText("Hex");
             item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_BINARY));
             item.setControl(hexEditControl);
@@ -267,8 +262,10 @@ public class TextViewDialog extends ValueViewDialog {
     }
 
     @Override
-    public Control getControl()
-    {
+    public Control getControl() {
+        if (getShell() == null || getShell().isDisposed()) {
+            return null;
+        }
         if (isTextEditorActive()) {
             return textEdit;
         } else {
