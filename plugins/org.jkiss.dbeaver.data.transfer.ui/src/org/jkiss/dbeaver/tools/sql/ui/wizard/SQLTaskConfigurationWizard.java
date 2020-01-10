@@ -16,13 +16,28 @@
  */
 package org.jkiss.dbeaver.tools.sql.ui.wizard;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
+import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.sql.SQLTConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
 
 class SQLTaskConfigurationWizard extends TaskConfigurationWizard {
+    private SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
+    private SQLTaskPageSettings pageSettings;
+
+    public SQLTaskConfigurationWizard() {
+    }
+
+    public SQLTaskConfigurationWizard(@NotNull DBTTask task) {
+        super(task);
+        settings.loadConfiguration(UIUtils.getDefaultRunnableContext(), task.getProperties());
+    }
+
     @Override
     protected String getDefaultWindowTitle() {
         return "Script Execute";
@@ -34,7 +49,20 @@ class SQLTaskConfigurationWizard extends TaskConfigurationWizard {
     }
 
     @Override
-    public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
+    public void addPages() {
+        super.addPages();
+        pageSettings = new SQLTaskPageSettings();
+        addPage(pageSettings);
+    }
 
+    @Override
+    public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
+        pageSettings.saveState();
+
+        settings.saveConfiguration(state);
+    }
+
+    public SQLScriptExecuteSettings getSettings() {
+        return settings;
     }
 }

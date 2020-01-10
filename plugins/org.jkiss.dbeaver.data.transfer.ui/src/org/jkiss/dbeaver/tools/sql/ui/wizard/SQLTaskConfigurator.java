@@ -21,10 +21,8 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -34,6 +32,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -41,6 +40,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
@@ -50,6 +50,8 @@ import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * SQL task configurator
@@ -65,7 +67,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
     public IWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
-        return new SQLTaskConfigurationWizard();
+        return new SQLTaskConfigurationWizard(taskConfiguration);
     }
 
     private static class ConfigPanel implements DBTTaskConfigPanel {
@@ -79,6 +81,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
         private DBNResource selectedScript;
         private DBPProject selectedProject;
         private SelectDataSourceCombo dsSelectCombo;
+        private DatabaseNavigatorTree scriptsTree;
 
         ConfigPanel(DBRRunnableContext runnableContext, DBTTaskType taskType) {
             this.runnableContext = runnableContext;
@@ -120,7 +123,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
                     return isResourceApplicable((DBNResource) element);
                 }
             }*/;
-            DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(
+            scriptsTree = new DatabaseNavigatorTree(
                 group,
                 DBWorkbench.getPlatform().getNavigatorModel().getRoot(),
                 SWT.SINGLE | SWT.BORDER,
@@ -128,8 +131,8 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
                 filter);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
-            dataSourceTree.setLayoutData(gd);
-            dataSourceTree.getViewer().addFilter(new ViewerFilter() {
+            scriptsTree.setLayoutData(gd);
+            scriptsTree.getViewer().addFilter(new ViewerFilter() {
                 @Override
                 public boolean select(Viewer viewer, Object parentElement, Object element) {
                     if (element instanceof TreeNodeSpecial) {
@@ -141,7 +144,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
                     return false;
                 }
             });
-            dataSourceTree.getViewer().addSelectionChangedListener(event -> {
+            scriptsTree.getViewer().addSelectionChangedListener(event -> {
                 DBPProject oldSelectedProject = selectedProject;
                 selectedProject = null;
                 selectedScript = null;
@@ -154,12 +157,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
                     }
                 }
                 if (selectedProject != oldSelectedProject) {
-                    dsSelectCombo.removeAll();
-                    if (selectedProject != null) {
-                        for (DBPDataSourceContainer ds : selectedProject.getDataSourceRegistry().getDataSources()) {
-                            dsSelectCombo.addItem(ds);
-                        }
-                    }
+                    fillProjectDataSources();
                 }
                 updateDataSource();
             });
@@ -170,6 +168,15 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
                     return selectedProject == null ? NavigatorUtils.getSelectedProject() : selectedProject;
                 }
             };
+        }
+
+        private void fillProjectDataSources() {
+            dsSelectCombo.removeAll();
+            if (selectedProject != null) {
+                for (DBPDataSourceContainer ds : selectedProject.getDataSourceRegistry().getDataSources()) {
+                    dsSelectCombo.addItem(ds);
+                }
+            }
         }
 
         private boolean isResourceApplicable(DBNResource element) {
@@ -204,10 +211,48 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
 
         @Override
         public void loadSettings() {
+            SQLScriptExecuteSettings settings = sqlWizard.getSettings();
+
+            List<String> scriptFiles = settings.getScriptFiles();
+            if (!scriptFiles.isEmpty()) {
+                String filePath = scriptFiles.get(0);
+                IFile file = DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace().getRoot().getFile(new Path(filePath));
+                if (file != null) {
+                    currentProject = DBWorkbench.getPlatform().getWorkspace().getProject(file.getProject());
+                }
+                if (currentProject != null) {
+                    fillProjectDataSources();
+                    DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject);
+                    if (projectNode != null) {
+                        DBNResource resource = projectNode.findResource(file);
+                        if (resource != null) {
+                            scriptsTree.getViewer().setSelection(new StructuredSelection(resource), true);
+                        }
+                    }
+                }
+            }
+
+            DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
+            if (dataSourceContainer != null) {
+                dsSelectCombo.select(dataSourceContainer);
+            }
         }
 
         @Override
         public void saveSettings() {
+            if (sqlWizard == null) {
+                return;
+            }
+            SQLScriptExecuteSettings settings = sqlWizard.getSettings();
+            settings.setDataSourceContainer(dsSelectCombo.getSelectedItem());
+
+            IResource resource = selectedScript.getResource();
+            if (resource != null) {
+                String filePath = resource.getFullPath().toString();
+                settings.setScriptFiles(Collections.singletonList(filePath));
+            } else {
+                settings.setScriptFiles(Collections.emptyList());
+            }
         }
 
         @Override
