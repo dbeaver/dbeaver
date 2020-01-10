@@ -593,6 +593,12 @@ public class ResultSetModel {
             }
         }
 
+        // Add new data
+        appendData(rows, true);
+        updateDataFilter();
+
+        this.visibleAttributes.sort(POSITION_SORTER);
+
         {
             // Check single source flag
             DBSEntity sourceTable = null;
@@ -618,11 +624,8 @@ public class ResultSetModel {
             singleSourceEntity = sourceTable;
         }
 
-        // Add new data
-        appendData(rows, true);
-        updateDataFilter();
-
-        this.visibleAttributes.sort(POSITION_SORTER);
+        // Update colors (we can do it only after single entity detection)
+        updateColorMapping(true);
 
         hasData = true;
     }
@@ -757,7 +760,7 @@ public class ResultSetModel {
         }
     }
 
-    public void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
+    void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
         if (resetOldRows) {
             curRows.clear();
         }
@@ -769,10 +772,10 @@ public class ResultSetModel {
                 new ResultSetRow(firstRowNum + i, rows.get(i)));
         }
         curRows.addAll(newRows);
-        if (resetOldRows) {
-            updateColorMapping(true);
+
+        if (!resetOldRows) {
+            updateRowColors(false, newRows);
         }
-        updateRowColors(false, newRows);
     }
 
     void clearData() {
