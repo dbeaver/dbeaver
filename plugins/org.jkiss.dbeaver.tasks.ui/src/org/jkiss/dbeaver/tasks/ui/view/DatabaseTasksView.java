@@ -425,12 +425,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             DBTTask task = event.getTask();
             switch (event.getAction()) {
                 case TASK_ADD:
-                    allTasks.add(task);
-                    taskViewer.add(taskViewer.getInput(), task);
+                    refresh();
                     break;
                 case TASK_REMOVE:
-                    allTasks.remove(task);
-                    taskViewer.remove(task);
+                    refresh();
                     break;
                 case TASK_UPDATE:
                     taskViewer.refresh(task);
@@ -729,6 +727,24 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         public String toString() {
             return category.getName();
         }
+
+        @Override
+        public int hashCode() {
+            return (project == null ? 0 : project.hashCode()) +
+                (parent == null ? 0 : parent.hashCode()) +
+                (category == null ? 0 : category.hashCode());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof TaskCategoryNode)) {
+                return false;
+            }
+            TaskCategoryNode cmp = (TaskCategoryNode)obj;
+            return project == cmp.project &&
+                CommonUtils.equalObjects(parent, cmp.parent) &&
+                category == cmp.category;
+        }
     }
 
     private static class TaskTypeNode {
@@ -745,6 +761,24 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         @Override
         public String toString() {
             return type.getName();
+        }
+
+        @Override
+        public int hashCode() {
+            return (project == null ? 0 : project.hashCode()) +
+                (parent == null ? 0 : parent.hashCode()) +
+                (type == null ? 0 : type.hashCode());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof TaskTypeNode)) {
+                return false;
+            }
+            TaskTypeNode cmp = (TaskTypeNode)obj;
+            return project == cmp.project &&
+                CommonUtils.equalObjects(parent, cmp.parent) &&
+                type == cmp.type;
         }
     }
 
