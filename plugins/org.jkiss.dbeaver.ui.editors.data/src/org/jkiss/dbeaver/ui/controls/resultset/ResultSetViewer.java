@@ -2609,7 +2609,7 @@ public class ResultSetViewer extends Viewer
             TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(ResultSetViewer.this, null, true);
             if (settingsDialog.open() == IDialogConstants.OK_ID) {
                 dataSource.getContainer().persistConfiguration();
-                refreshMetaData();
+                refreshData(null);
             }
         }
     }
