@@ -410,8 +410,8 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static SQLDialect getDialectFromDataSource(@NotNull DBPDataSource dataSource) {
-        return dataSource.getSQLDialect();
+    public static SQLDialect getDialectFromDataSource(@Nullable DBPDataSource dataSource) {
+        return dataSource == null ? BasicSQLDialect.INSTANCE : dataSource.getSQLDialect();
     }
 
     public static void appendConditionString(
