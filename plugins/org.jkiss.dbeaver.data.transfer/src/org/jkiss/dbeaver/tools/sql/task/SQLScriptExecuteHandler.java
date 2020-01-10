@@ -16,16 +16,34 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
+import org.jkiss.utils.IOUtils;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -53,53 +71,71 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
 
         log.debug("SQL Script Execute");
 
-/*
-        List<DataTransferPipe> dataPipes = settings.getDataPipes();
+        DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
+        Throwable error = null;
         try {
-            runnableContext.run(true, false, monitor -> {
-                log.debug("Initialize data transfer sources");
-                monitor.beginTask("Initialize pipes", dataPipes.size());
+            runnableContext.run(true, true, monitor -> {
                 try {
-                    for (int i = 0; i < dataPipes.size(); i++) {
-                        DataTransferPipe pipe = dataPipes.get(i);
-                        pipe.initPipe(settings, i, dataPipes.size());
-                        pipe.getConsumer().startTransfer(monitor);
-                        monitor.worked(1);
-                    }
-                } catch (DBException e) {
+                    runScripts(monitor, dataSourceContainer, settings, log);
+                } catch (Exception e) {
                     throw new InvocationTargetException(e);
-                } finally {
-                    monitor.done();
                 }
             });
         } catch (InvocationTargetException e) {
-            throw new DBException("Error starting data transfer", e.getTargetException());
+            error = e.getTargetException();
         } catch (InterruptedException e) {
-            return;
+            log.debug("Task canceled");
         }
 
-        // Schedule jobs for data providers
-        int totalJobs = settings.getDataPipes().size();
-        if (totalJobs > settings.getMaxJobCount()) {
-            totalJobs = settings.getMaxJobCount();
-        }
-        Throwable error = null;
-        for (int i = 0; i < totalJobs; i++) {
-            DataTransferJob job = new DataTransferJob(settings, locale, log, listener);
-            try {
-                runnableContext.run(true, true, job);
-            } catch (InvocationTargetException e) {
-                error = e.getTargetException();
-            } catch (InterruptedException e) {
-                break;
-            }
-            listener.subTaskFinished(error);
-        }
         listener.taskFinished(settings, error);
-*/
-        listener.taskFinished(settings, null);
 
-        log.debug("Data transfer completed");
+        log.debug("SQL script execute completed");
+    }
+
+    private void runScripts(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer, SQLScriptExecuteSettings settings, Log log) throws DBException {
+        if (!dataSourceContainer.isConnected()) {
+            dataSourceContainer.connect(monitor, true, true);
+        }
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        if (dataSource == null) {
+            throw new DBException("Can't obtain data source connection");
+        }
+        DBCExecutionContext executionContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
+
+        for (String filePath : settings.getScriptFiles()) {
+            IFile sqlFile = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
+            try (InputStream sqlStream = sqlFile.getContents(true)) {
+                try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
+                    String sqlScriptContent = IOUtils.readToString(fileReader);
+                    try {
+                        processScript(monitor, dataSource, executionContext, filePath, sqlScriptContent, log);
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            } catch (Exception e) {
+                throw new DBException("Error executing script '" + filePath + "'",
+                    e instanceof InvocationTargetException ? ((InvocationTargetException) e).getTargetException() : e);
+            }
+        }
+    }
+
+    private void processScript(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext, String filePath, String sqlScriptContent, Log log) throws DBException {
+        DBPContextProvider contextProvider = () -> executionContext;
+
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(dataSource);
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(dataSource, false);
+
+        Document sqlDocument = new Document(sqlScriptContent);
+
+        SQLParserContext parserContext = new SQLParserContext(contextProvider, syntaxManager, ruleManager, sqlDocument);
+        List<SQLScriptElement> scriptElements = SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
+        for (SQLScriptElement element : scriptElements) {
+            log.debug("===============================");
+            log.debug(element.toString());
+        }
     }
 
 }

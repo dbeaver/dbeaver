@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
@@ -216,7 +215,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
             List<String> scriptFiles = settings.getScriptFiles();
             if (!scriptFiles.isEmpty()) {
                 String filePath = scriptFiles.get(0);
-                IFile file = DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace().getRoot().getFile(new Path(filePath));
+                IFile file = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
                 if (file != null) {
                     currentProject = DBWorkbench.getPlatform().getWorkspace().getProject(file.getProject());
                 }

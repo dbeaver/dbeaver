@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 /**
- * This page hosts other settings pages
+ * SQL task settings page
  */
 class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
 

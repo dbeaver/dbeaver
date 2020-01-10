@@ -312,7 +312,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskRunColumnController.setForceAutoSize(true);
         taskRunColumnController.createColumns(true);
 
-        taskRunViewer.setContentProvider(new TreeListContentProvider());
+        taskRunViewer.setContentProvider(new TreeRunContentProvider());
 
         MenuManager menuMgr = createTaskRunContextMenu(taskRunViewer);
         getSite().registerContextMenu(menuMgr, taskRunViewer);
@@ -694,6 +694,28 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         @Override
         public boolean hasChildren(Object parentElement) {
             return !(parentElement instanceof DBTTask);
+        }
+    }
+
+    private class TreeRunContentProvider implements ITreeContentProvider {
+        @Override
+        public Object[] getElements(Object inputElement) {
+            return ((Collection) inputElement).toArray();
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            return new Object[0];
+        }
+
+        @Override
+        public Object getParent(Object element) {
+            return null;
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            return false;
         }
     }
 
