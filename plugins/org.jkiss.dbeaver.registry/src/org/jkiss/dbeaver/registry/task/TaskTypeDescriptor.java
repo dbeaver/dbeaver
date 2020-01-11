@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,6 +111,11 @@ public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBT
             }
         }
         return objClasses.toArray(new Class[0]);
+    }
+
+    @Override
+    public boolean supportsVariables() {
+        return CommonUtils.toBoolean(config.getAttribute("supportsVariables"));
     }
 
     @NotNull

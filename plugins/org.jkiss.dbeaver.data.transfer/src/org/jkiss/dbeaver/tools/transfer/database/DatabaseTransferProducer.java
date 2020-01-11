@@ -33,10 +33,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -46,6 +49,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -249,13 +253,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return obj instanceof DatabaseTransferProducer &&
             CommonUtils.equalObjects(dataContainer, ((DatabaseTransferProducer) obj).dataContainer) &&
             CommonUtils.equalObjects(dataFilter, ((DatabaseTransferProducer) obj).dataFilter);
-
     }
 
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, DatabaseTransferProducer object, Map<String, Object> state) {
+        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, DatabaseTransferProducer object, Map<String, Object> state) {
             DBSDataContainer dataContainer = object.dataContainer;
             if (dataContainer instanceof IAdaptable) {
                 DBSDataContainer nestedDataContainer = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);
@@ -277,7 +280,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     state.put("project", dataSource.getProject().getName());
                     state.put("dataSource", dataSource.getId());
                 }
-                state.put("query", queryContainer.getQuery());
+                SQLScriptElement query = queryContainer.getQuery();
+                state.put("query", query.getOriginalText());
             } else {
                 state.put("type", "unknown");
                 log.error("Unsupported producer data container: " + dataContainer);
@@ -319,7 +323,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                     ds.connect(monitor, true, true);
                                 }
                                 SQLQuery query = new SQLQuery(ds.getDataSource(), queryText);
-                                producer.dataContainer = new SQLQueryDataContainer(new DataSourceContextProvider(ds), query, null, log);
+                                SQLScriptContext scriptContext = new SQLScriptContext(null,
+                                    new DataSourceContextProvider(ds), null, new PrintWriter(System.err, true), null);
+                                scriptContext.setVariables(DBTUtils.getVariables(objectContext));
+                                producer.dataContainer = new SQLQueryDataContainer(new DataSourceContextProvider(ds), query, scriptContext, log);
                                 break;
                             }
                             default:

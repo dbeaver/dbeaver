@@ -3019,6 +3019,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
+        public Map<String, Object> getQueryParameters() {
+            return globalScriptContext.getAllParameters();
+        }
+
+        @Override
         public boolean isSmartAutoCommit() {
             return SQLEditor.this.isSmartAutoCommit();
         }

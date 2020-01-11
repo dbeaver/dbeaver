@@ -640,7 +640,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferConsumer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, DatabaseTransferConsumer object, Map<String, Object> state) {
+        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, DatabaseTransferConsumer object, Map<String, Object> state) {
             try {
                 DatabaseMappingContainer targetMapping = object.containerMapping;
                 DBPDataSourceContainer targetDS = object.getDataSourceContainer();

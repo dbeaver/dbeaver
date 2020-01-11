@@ -287,7 +287,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferProducer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, StreamTransferProducer object, Map<String, Object> state) {
+        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferProducer object, Map<String, Object> state) {
             state.put("file", object.inputFile.getAbsolutePath());
             if (object.defaultProcessor != null) {
                 state.put("node", object.defaultProcessor.getNode().getId());

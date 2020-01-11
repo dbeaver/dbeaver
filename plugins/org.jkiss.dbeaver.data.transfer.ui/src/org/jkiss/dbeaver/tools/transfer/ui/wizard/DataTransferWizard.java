@@ -27,6 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskProcessorUI;
 import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -127,6 +129,21 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         this.settings = new DataTransferSettings(runnableContext, producers, consumers, new DialogSettingsMap(getDialogSettings()), true);
 
         loadSettings();
+
+        // Initialize task variables from producers
+        if (producers != null) {
+            for (IDataTransferProducer producer : producers) {
+                if (producer instanceof DatabaseTransferProducer) {
+                    DBSObject databaseObject = producer.getDatabaseObject();
+                    if (databaseObject instanceof SQLQueryContainer) {
+                        Map<String, Object> queryParameters = ((SQLQueryContainer) databaseObject).getQueryParameters();
+                        if (!CommonUtils.isEmpty(queryParameters)) {
+                            getTaskVariables().putAll(queryParameters);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void loadSettings() {
@@ -404,7 +421,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         return null;
     }
 
-    public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
+    public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
         List<IDataTransferNode> producers = new ArrayList<>();
         List<IDataTransferNode> consumers = new ArrayList<>();
         for (DataTransferPipe pipe : settings.getDataPipes()) {
@@ -415,8 +432,8 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
                 consumers.add(pipe.getConsumer());
             }
         }
-        DataTransferSettings.saveNodesLocation(runnableContext, state, producers, "producers");
-        DataTransferSettings.saveNodesLocation(runnableContext, state, consumers, "consumers");
+        DataTransferSettings.saveNodesLocation(runnableContext, task, state, producers, "producers");
+        DataTransferSettings.saveNodesLocation(runnableContext, task, state, consumers, "consumers");
         state.put("configuration", saveConfiguration(new LinkedHashMap<>()));
     }
 
