@@ -78,6 +78,12 @@ public interface SQLDialect {
     String[][] getStringQuoteStrings();
 
     /**
+     * Data query keywords. By default it is SELECT
+     */
+    @NotNull
+    String[] getQueryKeywords();
+
+    /**
      * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
      * @return the list of execute keywords.
      */
