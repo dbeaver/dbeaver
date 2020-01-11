@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -357,6 +358,11 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             DBTTaskRun taskRun = getSelectedTaskRun();
             if (task != null && taskRun != null) {
                 manager.add(new ViewRunLogAction());
+                manager.add(new DeleteRunLogAction());
+            }
+            if (task != null && task.getLastRun() != null) {
+                manager.add(new ClearRunLogAction());
+                manager.add(new OpenRunLogFolderAction());
             }
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             manager.add(new Separator());
@@ -875,4 +881,56 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             }
         }
     }
+
+    private class DeleteRunLogAction extends Action {
+
+        DeleteRunLogAction() {
+            super("Delete run log", DBeaverIcons.getImageDescriptor(UIIcon.DELETE));
+        }
+
+        @Override
+        public void run() {
+            DBTTask task = getSelectedTask();
+            DBTTaskRun taskRun = getSelectedTaskRun();
+            if (task != null && taskRun != null &&
+                UIUtils.confirmAction(
+                    "Remove task run",
+                    "Are you sure you want to delete task '" + task.getName() + "' run at '" + dateFormat.format(taskRun.getStartTime()) + "'?"))
+            {
+                task.removeRunLog(taskRun);
+            }
+        }
+    }
+
+    private class ClearRunLogAction extends Action {
+
+        ClearRunLogAction() {
+            super("Clear logs", DBeaverIcons.getImageDescriptor(UIIcon.ERASE));
+        }
+
+        @Override
+        public void run() {
+            DBTTask task = getSelectedTask();
+            if (task == null || !UIUtils.confirmAction("Clear task runs", "Are you sure you want to delete all log of task '" + task.getName() + "'?")) {
+                return;
+            }
+            task.cleanRunStatistics();
+        }
+    }
+
+    private class OpenRunLogFolderAction extends Action {
+
+        OpenRunLogFolderAction() {
+            super("Open logs folder");
+        }
+
+        @Override
+        public void run() {
+            DBTTask task = getSelectedTask();
+            if (task != null) {
+                DBWorkbench.getPlatformUI().executeShellProgram(task.getRunLogFolder().getAbsolutePath());
+            }
+        }
+    }
+
 }
