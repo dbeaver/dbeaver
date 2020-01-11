@@ -30,4 +30,6 @@ public interface DBTTaskConfigPanel
 
     boolean isComplete();
 
+    String getErrorMessage();
+
 }

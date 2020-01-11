@@ -93,7 +93,7 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
                     selectedObject = element instanceof DBSWrapper && objectClass.isInstance(((DBSWrapper) element).getObject()) ?
                         objectClass.cast(((DBSWrapper) element).getObject()) : null;
                     AbstractNativeToolSettings settings = ieWizard.getSettings();
-                    List databaseObjects = settings.getDatabaseObjects();
+                    List<DBSObject> databaseObjects = settings.getDatabaseObjects();
                     databaseObjects.clear();
                     if (selectedObject != null) {
                         databaseObjects.add(selectedObject);
@@ -131,6 +131,7 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
         {
             Composite clientGroup = UIUtils.createControlGroup((Composite) parent, "Client files", 1, GridData.FILL_HORIZONTAL, 0);
             homesSelector = new ClientHomesSelector(clientGroup, "Native client");
+            homesSelector.addSelectionChangedListener(event -> propertyChangeListener.run());
             homesSelector.getPanel().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
     }
@@ -185,5 +186,16 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
     @Override
     public boolean isComplete() {
         return homesSelector.getSelectedHome() != null && selectedObject != null;
+    }
+
+    @Override
+    public String getErrorMessage() {
+        if (selectedObject == null) {
+            return "No database object selected";
+        }
+        if (CommonUtils.isEmpty(homesSelector.getSelectedHome())) {
+            return "No native client selected";
+        }
+        return null;
     }
 }

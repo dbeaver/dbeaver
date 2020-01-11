@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.model.task.DBTTaskCategory;
 import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
@@ -29,11 +28,11 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
  */
 public class TaskConfiguratorDescriptor extends AbstractContextDescriptor {
 
-    private final TaskCategoryDescriptor type;
+    private final TaskTypeDescriptor type;
     private final IConfigurationElement config;
     private final ObjectType implType;
 
-    TaskConfiguratorDescriptor(TaskCategoryDescriptor type, IConfigurationElement config) {
+    TaskConfiguratorDescriptor(TaskTypeDescriptor type, IConfigurationElement config) {
         super(config);
         this.type = type;
         this.config = config;
@@ -51,7 +50,7 @@ public class TaskConfiguratorDescriptor extends AbstractContextDescriptor {
     }
 
     @NotNull
-    public DBTTaskCategory getType() {
+    public TaskTypeDescriptor getType() {
         return type;
     }
 

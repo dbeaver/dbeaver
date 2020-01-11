@@ -299,6 +299,14 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         public boolean isComplete() {
             return objectsTable.getItemCount() > 0;
         }
+
+        @Override
+        public String getErrorMessage() {
+            if (objectsTable.getItemCount() == 0) {
+                return "No objects selected";
+            }
+            return null;
+        }
     }
 
 }
