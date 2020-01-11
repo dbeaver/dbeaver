@@ -14,21 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.runtime.serialize;
-
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-
-import java.util.Map;
+package org.jkiss.dbeaver.model.task;
 
 /**
- * Object serializer
+ * Task initializer.
  */
-public interface DBPObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
+public interface DBTTaskInitializer {
 
-    void serializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE context, OBJECT_TYPE object, Map<String, Object> state);
-
-    OBJECT_TYPE deserializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE objectContext, Map<String, Object> state) throws DBCException;
+    void initializeTaskSettings(DBTTask task);
 
 }

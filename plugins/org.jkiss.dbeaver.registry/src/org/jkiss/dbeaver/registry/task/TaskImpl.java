@@ -206,6 +206,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         this.properties = new LinkedHashMap<>(properties);
     }
 
+    @NotNull
     @Override
     public File getRunLogFolder() {
         return getTaskStatsFolder(false);

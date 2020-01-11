@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.model.task.DBTUtils;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView;
@@ -58,6 +59,8 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     private IStructuredSelection currentSelection;
     private Button saveAsTaskButton;
 
+    private Map<String, Object> variables;
+
     protected TaskConfigurationWizard() {
     }
 
@@ -73,7 +76,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
 
     public abstract String getTaskTypeId();
 
-    public abstract void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state);
+    public abstract void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state);
 
     public boolean isRunTaskOnFinish() {
         return getCurrentTask() != null;
@@ -226,7 +229,10 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
 
     protected void saveConfigurationToTask(DBTTask theTask) {
         Map<String, Object> state = new LinkedHashMap<>();
-        saveTaskState(getRunnableContext(), state);
+        saveTaskState(getRunnableContext(), theTask, state);
+        if (theTask.getType().supportsVariables()) {
+            DBTUtils.setVariables(state, getTaskVariables());
+        }
         theTask.setProperties(state);
         try {
             theTask.getProject().getTaskManager().updateTaskConfiguration(theTask);
@@ -247,16 +253,25 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = hSpan;
             panel.setLayoutData(gd);
-            //((GridLayout) parent.getLayout()).numColumns++;
         }
-        panel.setLayout(new GridLayout(horizontal ? 2 : 1, false));
+        boolean supportsVariables = getTaskType().supportsVariables();
+        panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
+
+        if (supportsVariables) {
+            UIUtils.createDialogButton(panel, "Task variables ...", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    configureVariables();
+                }
+            });
+        }
+
         saveAsTaskButton = UIUtils.createDialogButton(panel, isTaskEditor() ? "Update configuration in task" : "Save configuration as task", new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 saveTask();
             }
         });
-        //((GridData)UIUtils.createEmptyLabel(panel, 1, 1).getLayoutData()).grabExcessHorizontalSpace = true;
         Link tasksLink = UIUtils.createLink(panel, "<a>Open Tasks view</a>", new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -268,6 +283,25 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             }
         });
         tasksLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+    }
+
+    private void configureVariables() {
+        Map<String, Object> variables = getTaskVariables();
+        EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(getContainer().getShell(), variables);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            this.variables = dialog.getVariables();
+        }
+    }
+
+    protected Map<String, Object> getTaskVariables() {
+        if (variables == null) {
+            if (currentTask != null) {
+                variables = DBTUtils.getVariables(currentTask);
+            } else {
+                variables = new LinkedHashMap<>();
+            }
+        }
+        return variables;
     }
 
     public void updateSaveTaskButtons() {

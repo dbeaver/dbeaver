@@ -156,7 +156,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                         return null;
                     }
                     SQLQueryParameter param = (SQLQueryParameter) item.getData();
-                    Text editor = new Text(table, SWT.BORDER);
+                    Text editor = new Text(table, SWT.NONE);
                     editor.setText(CommonUtils.notEmpty(param.getValue()));
                     editor.selectAll();
 

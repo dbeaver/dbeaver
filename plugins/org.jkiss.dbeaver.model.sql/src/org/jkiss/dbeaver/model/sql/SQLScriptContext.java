@@ -111,6 +111,11 @@ public class SQLScriptContext {
         }
     }
 
+    public void setVariables(Map<String, Object> variables) {
+        this.variables.clear();
+        this.variables.putAll(variables);
+    }
+
     public Object getParameterDefaultValue(String name) {
         return defaultParameters.get(name);
     }
@@ -219,4 +224,10 @@ public class SQLScriptContext {
         return true;
     }
 
+    public Map<String, Object> getAllParameters() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.putAll(defaultParameters);
+        params.putAll(variables);
+        return params;
+    }
 }

@@ -62,7 +62,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreScri
     }
 
     @Override
-    public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
+    public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
         mainPage.saveState();
 
         getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));

@@ -19,11 +19,15 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 
+import java.util.Map;
+
 /**
  * SQLQuery container.
  */
 public interface SQLQueryContainer extends IDataSourceContainerProvider {
 
     SQLScriptElement getQuery();
+
+    Map<String, Object> getQueryParameters();
 
 }

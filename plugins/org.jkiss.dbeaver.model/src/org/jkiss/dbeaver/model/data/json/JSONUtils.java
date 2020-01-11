@@ -227,7 +227,7 @@ public class JSONUtils {
         json.endObject();
     }
 
-    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(DBRRunnableContext runnableContext, @NotNull OBJECT_TYPE object) {
+    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(DBRRunnableContext runnableContext, OBJECT_CONTEXT context, @NotNull OBJECT_TYPE object) {
         DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
         if (serializer == null) {
             log.error("No serializer found for object " + object.getClass().getName());
@@ -236,7 +236,7 @@ public class JSONUtils {
         Map<String, Object> state = new LinkedHashMap<>();
 
         Map<String, Object> location = new LinkedHashMap<>();
-        serializer.serializeObject(runnableContext, object, location);
+        serializer.serializeObject(runnableContext, context, object, location);
         state.put("type", SerializerRegistry.getInstance().getObjectType(object));
         state.put("location", location);
 
