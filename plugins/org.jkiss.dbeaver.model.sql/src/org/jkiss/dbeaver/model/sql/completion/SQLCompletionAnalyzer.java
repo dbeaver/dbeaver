@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.text.TextUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -838,29 +839,32 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (object instanceof DBSEntity && ((DBSEntity) object).getDataSource().getContainer().getPreferenceStore().getBoolean(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS)) {
                 SQLDialect dialect = SQLUtils.getDialectFromObject(object);
                 if (dialect.supportsAliasInSelect()) {
-                    String queryText = request.getActiveQuery().getText();
-                    Set<String> aliases = new LinkedHashSet<>();
-                    if (request.getActiveQuery() instanceof SQLQuery) {
-                        Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
-                        if (sqlStatement != null) {
-                            TablesNamesFinder namesFinder = new TablesNamesFinder() {
-                                public void visit(Table table) {
-                                    if (table != null && table.getAlias() != null && table.getAlias().getName() != null) {
-                                        aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
+                    String firstKeyword = SQLUtils.getFirstKeyword(dialect, request.getActiveQuery().getText());
+                    if (dialect.supportsAliasInUpdate() || !ArrayUtils.contains(dialect.getDMLKeywords(), firstKeyword.toUpperCase(Locale.ENGLISH))) {
+                        String queryText = request.getActiveQuery().getText();
+                        Set<String> aliases = new LinkedHashSet<>();
+                        if (request.getActiveQuery() instanceof SQLQuery) {
+                            Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
+                            if (sqlStatement != null) {
+                                TablesNamesFinder namesFinder = new TablesNamesFinder() {
+                                    public void visit(Table table) {
+                                        if (table != null && table.getAlias() != null && table.getAlias().getName() != null) {
+                                            aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
+                                        }
                                     }
-                                }
-                            };
-                            sqlStatement.accept(namesFinder);
+                                };
+                                sqlStatement.accept(namesFinder);
+                            }
                         }
+                        // It is table name completion after FROM. Auto-generate table alias
+                        SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
+                        alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> {
+                            if (aliases.contains(s) || sqlDialect.getKeywordType(s) != null) {
+                                return true;
+                            }
+                            return Pattern.compile("\\s+" + s + "[^\\w]+").matcher(queryText).find();
+                        });
                     }
-                    // It is table name completion after FROM. Auto-generate table alias
-                    SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
-                    alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> {
-                        if (aliases.contains(s) || sqlDialect.getKeywordType(s) != null) {
-                            return true;
-                        }
-                        return Pattern.compile("\\s+" + s + "[^\\w]+").matcher(queryText).find();
-                    });
                 }
             }
         }

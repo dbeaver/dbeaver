@@ -53,6 +53,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
     private static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[0][];
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[0];
+    public static final String[] DML_KEYWORDS = new String[0];
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
@@ -473,9 +474,10 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return false;
     }
 
+    @Override
     @NotNull
     public String[] getDMLKeywords() {
-        return new String[0];
+        return DML_KEYWORDS;
     }
 
     @NotNull

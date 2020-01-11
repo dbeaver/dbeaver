@@ -91,6 +91,9 @@ public interface SQLDialect {
     @NotNull
     String[] getDDLKeywords();
 
+    @NotNull
+    String[] getDMLKeywords();
+
     /**
      * Retrieves a list of all of this database's SQL keywords
      * that are NOT also SQL92 keywords.
