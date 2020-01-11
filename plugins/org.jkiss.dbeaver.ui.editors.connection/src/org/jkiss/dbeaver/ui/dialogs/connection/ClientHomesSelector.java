@@ -18,9 +18,11 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -33,22 +35,20 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * ClientHomesSelector
  */
-public class ClientHomesSelector
-{
+public class ClientHomesSelector implements ISelectionProvider {
     private Composite selectorPanel;
     private Combo homesCombo;
     //private Label versionLabel;
     private DBPDriver driver;
     private List<String> homeIds = new ArrayList<>();
     private String currentHomeId;
+
+    private final Map<ISelectionChangedListener, SelectionListener> listeners = new IdentityHashMap<>();
 
     public ClientHomesSelector(
         Composite parent,
@@ -171,4 +171,32 @@ public class ClientHomesSelector
         return CommonUtils.isEmpty(currentHomeId) ? null : currentHomeId;
     }
 
+    @Override
+    public ISelection getSelection() {
+        int selectionIndex = homesCombo.getSelectionIndex();
+        String selection = selectionIndex < 0 ? null : homesCombo.getItem(selectionIndex);
+        return selection == null ? new StructuredSelection() : new StructuredSelection(selection);
+    }
+
+    @Override
+    public void addSelectionChangedListener(ISelectionChangedListener listener) {
+        SelectionAdapter selectionAdapter = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                listener.selectionChanged(new SelectionChangedEvent(ClientHomesSelector.this, getSelection()));
+            }
+        };
+        homesCombo.addSelectionListener(selectionAdapter);
+        listeners.put(listener, selectionAdapter);
+    }
+
+    @Override
+    public void removeSelectionChangedListener(ISelectionChangedListener listener) {
+        homesCombo.removeSelectionListener(listeners.remove(listener));
+    }
+
+    @Override
+    public void setSelection(ISelection selection) {
+
+    }
 }

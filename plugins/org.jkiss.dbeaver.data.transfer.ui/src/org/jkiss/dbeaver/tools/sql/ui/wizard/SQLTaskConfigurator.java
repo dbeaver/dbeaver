@@ -96,7 +96,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
             Group group = UIUtils.createControlGroup(
                 (Composite) parent,
                 "SQL Script parameters",
-                1,
+                2,
                 GridData.FILL_BOTH,
                 0);
 
@@ -129,6 +129,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
                 false,
                 filter);
             GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalSpan = 2;
             gd.heightHint = 300;
             scriptsTree.setLayoutData(gd);
             scriptsTree.getViewer().addFilter(new ViewerFilter() {
@@ -161,6 +162,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
                 updateDataSource();
             });
 
+            UIUtils.createControlLabel(group, "Datasource");
             dsSelectCombo = new SelectDataSourceCombo(group) {
                 @Override
                 protected DBPProject getActiveProject() {
@@ -257,6 +259,17 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
         @Override
         public boolean isComplete() {
             return selectedScript != null && dsSelectCombo.getSelectedItem() != null;
+        }
+
+        @Override
+        public String getErrorMessage() {
+            if (selectedScript == null) {
+                return "Select SQL script to execute";
+            }
+            if (dsSelectCombo.getSelectedItem() == null) {
+                return "Select datasource";
+            }
+            return null;
         }
     }
 

@@ -240,16 +240,15 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             }
         }
 
-        if (selectedCategory != null && selectedCategory.supportsConfigurator()) {
+        if (selectedTaskType != null && selectedTaskType.supportsConfigurator()) {
             try {
-                DBTTaskConfigurator configurator = selectedTaskType == null ? null : selectedCategory.createConfigurator();
-                DBTTaskConfigPanel configPage = configurator == null ? null : configurator.createInputConfigurator(UIUtils.getDefaultRunnableContext(), selectedTaskType);
+                DBTTaskConfigurator configurator = selectedTaskType.createConfigurator();
+                DBTTaskConfigPanel configPage = configurator.createInputConfigurator(UIUtils.getDefaultRunnableContext(), selectedTaskType);
                 if (configPage != null) {
                     taskConfigPanel = configPage;
                     taskConfigPanel.createControl(configPanelPlaceholder, getTaskWizard(), this::updatePageCompletion);
                     if (task != null) {
                         taskConfigPanel.loadSettings();
-                        updatePageCompletion();
                     }
                 } else {
                     // Something weird was created
@@ -263,12 +262,14 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             Group group = UIUtils.createControlGroup(configPanelPlaceholder, "", 1, GridData.FILL_BOTH, 0);
             group.setLayoutData(new GridData(GridData.FILL_BOTH));
             Label emptyLabel = new Label(group, SWT.NONE);
-            emptyLabel.setText(selectedTaskType == null ? "Select a task type" : "No configuration");
+            emptyLabel.setText(selectedTaskType == null ?
+                (selectedCategory == null ? "Select a task type" : "Select " + selectedCategory.getName() + " task type") : "No configuration");
             GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER);
             gd.grabExcessHorizontalSpace = true;
             gd.grabExcessVerticalSpace = true;
             emptyLabel.setLayoutData(gd);
         }
+        updatePageCompletion();
         getShell().layout(true, true);
         getWizard().getContainer().updateButtons();
     }
@@ -310,7 +311,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             return false;
         }
         if (!taskConfigPanel.isComplete()) {
-            setErrorMessage("Fill task parameters");
+            String errorMessage = taskConfigPanel.getErrorMessage();
+            if (errorMessage != null) {
+                setErrorMessage(errorMessage);
+            } else {
+                setErrorMessage("Fill task '" + selectedTaskType.getName() + "' parameters");
+            }
             return false;
         }
         setErrorMessage(null);
@@ -324,7 +330,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
         }
         TaskConfigurationWizard realWizard = taskWizards.get(selectedTaskType);
         if (realWizard == null) {
-            DBTTaskConfigurator configurator = selectedCategory.createConfigurator();
+            DBTTaskConfigurator configurator = selectedTaskType.createConfigurator();
 
             if (task == null) {
                 task = (TaskImpl) selectedProject.getTaskManager().createTask(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, new LinkedHashMap<>());

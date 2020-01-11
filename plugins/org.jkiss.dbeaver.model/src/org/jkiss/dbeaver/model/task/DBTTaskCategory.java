@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 
 /**
@@ -48,10 +47,5 @@ public interface DBTTaskCategory {
 
     @NotNull
     DBTTaskType[] getTaskTypes();
-
-    boolean supportsConfigurator();
-
-    @NotNull
-    DBTTaskConfigurator createConfigurator() throws DBException;
 
 }
