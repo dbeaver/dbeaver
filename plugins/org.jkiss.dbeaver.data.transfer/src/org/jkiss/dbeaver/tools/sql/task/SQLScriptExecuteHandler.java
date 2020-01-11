@@ -25,8 +25,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.model.sql.exec.SQLScriptProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -107,7 +109,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
                 try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
                     String sqlScriptContent = IOUtils.readToString(fileReader);
                     try {
-                        processScript(monitor, dataSource, executionContext, filePath, sqlScriptContent, log, logStream);
+                        processScript(monitor, settings, executionContext, filePath, sqlScriptContent, log, logStream);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
@@ -119,11 +121,18 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         }
     }
 
-    private void processScript(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext, String filePath, String sqlScriptContent, Log log, Writer logStream) throws DBException {
+    private void processScript(DBRProgressMonitor monitor, SQLScriptExecuteSettings settings, DBCExecutionContext executionContext, String filePath, String sqlScriptContent, Log log, Writer logStream) throws DBException {
         List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(executionContext, sqlScriptContent);
         SQLScriptContext scriptContext = new SQLScriptContext(null, () -> executionContext, null, logStream, null);
         SQLScriptDataReceiver dataReceiver = new SQLScriptDataReceiver();
         SQLScriptProcessor scriptProcessor = new SQLScriptProcessor(executionContext, scriptElements, scriptContext, dataReceiver, log);
+
+        scriptProcessor.setCommitType(settings.isAutoCommit() ? SQLScriptCommitType.AUTOCOMMIT : SQLScriptCommitType.AT_END);
+        scriptProcessor.setErrorHandling(settings.isIgnoreErrors() ? SQLScriptErrorHandling.IGNORE : SQLScriptErrorHandling.STOP_ROLLBACK);
+        if (settings.isDumpQueryResultsToLog()) {
+            dataReceiver.setDumpWriter(logStream);
+        }
+
         scriptProcessor.runScript(monitor);
     }
 

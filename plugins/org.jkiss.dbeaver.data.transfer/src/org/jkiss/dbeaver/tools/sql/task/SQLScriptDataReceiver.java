@@ -21,10 +21,14 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
+import java.io.Writer;
+
 /**
  * SQLScriptDataReceiver
  */
 public class SQLScriptDataReceiver implements DBDDataReceiver {
+
+    private Writer dumpWriter;
 
     @Override
     public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
@@ -44,5 +48,13 @@ public class SQLScriptDataReceiver implements DBDDataReceiver {
     @Override
     public void close() {
 
+    }
+
+    public void setDumpWriter(Writer writer) {
+        this.dumpWriter = writer;
+    }
+
+    public Writer getDumpWriter() {
+        return dumpWriter;
     }
 }
