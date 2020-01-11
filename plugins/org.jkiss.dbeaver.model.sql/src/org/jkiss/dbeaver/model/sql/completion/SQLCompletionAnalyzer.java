@@ -88,8 +88,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         request.setQueryType(null);
         SQLWordPartDetector wordDetector = request.getWordDetector();
         SQLSyntaxManager syntaxManager = request.getContext().getSyntaxManager();
+        String prevKeyWord = request.getWordDetector().getPrevKeyWord();
         {
-            final String prevKeyWord = request.getWordDetector().getPrevKeyWord();
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
                     // TODO: its an ugly hack. Need a better way
@@ -183,7 +183,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     rootObject = getTableFromAlias(sc, tableAlias);
                     if (rootObject == null && tableAlias != null) {
                         // Maybe alias ss a table name
-                        SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(request.getContext().getDataSource());
+                        SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
                         String[] allNames = SQLUtils.splitFullIdentifier(
                             tableAlias,
                             sqlDialect.getCatalogSeparator(),
@@ -238,6 +238,22 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 // Sort using fuzzy match
                 matchedKeywords.sort(Comparator.comparingInt(o -> TextUtils.fuzzyScore(o, request.getWordPart())));
             }
+            SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
+            Set<String> allowedKeywords = null;
+            if (CommonUtils.isEmpty(prevKeyWord)) {
+                allowedKeywords = new HashSet<>();
+                Collections.addAll(allowedKeywords, sqlDialect.getQueryKeywords());
+                Collections.addAll(allowedKeywords, sqlDialect.getDMLKeywords());
+                Collections.addAll(allowedKeywords, sqlDialect.getDDLKeywords());
+                Collections.addAll(allowedKeywords, sqlDialect.getExecuteKeywords());
+            } else if (ArrayUtils.contains(sqlDialect.getQueryKeywords(), prevKeyWord.toUpperCase(Locale.ENGLISH))) {
+                allowedKeywords = new HashSet<>();
+                allowedKeywords.add(SQLConstants.KEYWORD_FROM);
+            } else if (sqlDialect.isEntityQueryWord(prevKeyWord)) {
+                allowedKeywords = new HashSet<>();
+                allowedKeywords.add(SQLConstants.KEYWORD_WHERE);
+            }
+
             for (String keyWord : matchedKeywords) {
                 DBPKeywordType keywordType = syntaxManager.getDialect().getKeywordType(keyWord);
                 if (keywordType != null) {
@@ -245,6 +261,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         continue;
                     }
                     if (request.getQueryType() == SQLCompletionRequest.QueryType.COLUMN && !(keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.KEYWORD)) {
+                        continue;
+                    }
+                    if (allowedKeywords != null && !allowedKeywords.contains(keyWord)) {
                         continue;
                     }
                     proposals.add(
@@ -342,7 +361,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (wordPart.indexOf(request.getContext().getSyntaxManager().getStructSeparator()) != -1 || wordPart.equals(ALL_COLUMNS_PATTERN)) {
                 return;
             }
-            SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(request.getContext().getDataSource());
+            SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
             String tableNamePattern = getTableNamePattern(sqlDialect);
             String tableAliasPattern = getTableAliasPattern("(" + wordPart + "[a-z]*)", tableNamePattern);
             Pattern rp = Pattern.compile(tableAliasPattern);
@@ -404,7 +423,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         if (!CommonUtils.isEmpty(prevWords)) {
             DBPDataSource dataSource = request.getContext().getDataSource();
-            SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
             String rightTableName = prevWords.get(0);
             String[] allNames = SQLUtils.splitFullIdentifier(
                 rightTableName,
@@ -597,7 +616,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         final List<String> nameList = new ArrayList<>();
-        SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
+        SQLDialect sqlDialect = dataSource.getSQLDialect();
         {
             // Regex matching MUST be very fast.
             // Otherwise UI will freeze during SQL typing.

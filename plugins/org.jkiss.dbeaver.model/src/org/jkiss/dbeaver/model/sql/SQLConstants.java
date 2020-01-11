@@ -42,6 +42,7 @@ public class SQLConstants {
     public static final String KEYWORD_FROM = "FROM";
     public static final String KEYWORD_INTO = "INTO";
     public static final String KEYWORD_JOIN = "JOIN";
+    public static final String KEYWORD_WHERE = "WHERE";
     public static final String KEYWORD_ON = "ON";
     public static final String KEYWORD_AND = "AND";
     public static final String KEYWORD_OR = "OR";
@@ -57,7 +58,7 @@ public class SQLConstants {
 
     public static final String[] COLUMN_KEYWORDS = {
         KEYWORD_SELECT,
-        "WHERE",
+        KEYWORD_WHERE,
         "SET",
         KEYWORD_ON,
         KEYWORD_AND,
@@ -308,7 +309,7 @@ public class SQLConstants {
         "VARYING",
         "WHEN",
         "WHENEVER",
-        "WHERE",
+        KEYWORD_WHERE,
         "WIDTH_BUCKET",
         "WINDOW",
         "WITH",
