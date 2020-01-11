@@ -25,6 +25,8 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
@@ -435,6 +437,10 @@ public class HexEditControl extends Composite {
         this.readOnly = (style & SWT.READ_ONLY) != 0;
         this.charsForAddress = charsForAddress;
         this.bytesPerLine = bytesPerLine;
+
+        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        currentTheme.getColorRegistry().get(SQLConstants.CONFIG_COLOR_TEXT);
+
         this.colorCaretLine = new Color(Display.getCurrent(), 232, 242, 254);  // very light blue
         this.colorHighlight = new Color(Display.getCurrent(), 255, 248, 147);  // mellow yellow
         this.highlightRangesInScreen = new ArrayList<>();
