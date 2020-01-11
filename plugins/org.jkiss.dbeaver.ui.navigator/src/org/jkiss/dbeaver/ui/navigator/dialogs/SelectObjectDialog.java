@@ -220,8 +220,6 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
 
         objectList.loadData();
 
-        closeOnFocusLost(objectList.getItemsViewer().getControl(), objectList.getSearchTextControl());
-
         return group;
     }
 
