@@ -183,7 +183,7 @@ public class SQLScriptContext {
     }
 
     public boolean fillQueryParameters(SQLQuery query, boolean useDefaults) {
-        if (ignoreParameters || parametersProvider == null) {
+        if (ignoreParameters) {
             return true;
         }
 
@@ -193,13 +193,25 @@ public class SQLScriptContext {
             return true;
         }
 
-        // Resolve parameters (only if it is the first fetch)
-        Boolean paramsResult = parametersProvider.prepareStatementParameters(this, query, parameters, useDefaults);
-        if (paramsResult == null) {
-            ignoreParameters = true;
-            return true;
-        } else if (!paramsResult) {
-            return false;
+        if (parametersProvider != null) {
+            // Resolve parameters (only if it is the first fetch)
+            Boolean paramsResult = parametersProvider.prepareStatementParameters(this, query, parameters, useDefaults);
+            if (paramsResult == null) {
+                ignoreParameters = true;
+                return true;
+            } else if (!paramsResult) {
+                return false;
+            }
+        } else {
+            for (SQLQueryParameter parameter : parameters) {
+                Object varValue = variables.get(parameter.getVarName());
+                if (varValue == null) {
+                    varValue = defaultParameters.get(parameter.getVarName());
+                }
+                if (varValue != null) {
+                    parameter.setValue(CommonUtils.toString(varValue));
+                }
+            }
         }
 
         SQLUtils.fillQueryParameters(query, parameters);

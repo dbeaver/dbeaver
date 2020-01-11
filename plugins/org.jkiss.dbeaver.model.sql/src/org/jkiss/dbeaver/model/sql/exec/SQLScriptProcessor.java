@@ -37,13 +37,13 @@ import java.util.List;
  * SQLScriptProcessor
  */
 public class SQLScriptProcessor {
+    private static final String STAT_LOG_PREFIX = "-----------------> ";
+
     private final DBCExecutionContext executionContext;
     private final List<SQLScriptElement> queries;
     private final SQLScriptContext scriptContext;
     private final DBDDataReceiver dataReceiver;
     private final Log log;
-
-    private boolean fetchResultSets;
 
     private Throwable lastError = null;
 
@@ -65,10 +65,6 @@ public class SQLScriptProcessor {
         this.scriptContext = scriptContext;
         this.dataReceiver = dataReceiver;
         this.log = log;
-    }
-
-    public void setFetchResultSets(boolean fetchResultSets) {
-        this.fetchResultSets = fetchResultSets;
     }
 
     public void setFetchSize(int fetchSize) {
@@ -174,7 +170,7 @@ public class SQLScriptProcessor {
 
     private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element) {
         if (element instanceof SQLControlCommand) {
-            session.getProgressMonitor().subTask("-- Execute command:\n" + element.getText());
+            log.debug(STAT_LOG_PREFIX + "Execute command\n" + element.getText());
             try {
                 return scriptContext.executeControlCommand((SQLControlCommand) element);
             } catch (Throwable e) {
@@ -186,9 +182,11 @@ public class SQLScriptProcessor {
             }
         }
         SQLQuery sqlQuery = (SQLQuery) element;
+        scriptContext.fillQueryParameters(sqlQuery, true);
         lastError = null;
 
         try {
+            statistics.reset();
             statistics.setQueryText(sqlQuery.getText());
 
             DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
@@ -226,7 +224,7 @@ public class SQLScriptProcessor {
         // Execute statement
         try {
             DBRProgressMonitor monitor = session.getProgressMonitor();
-            monitor.subTask("-- Execute query:\n" + sqlQuery.getText());
+            log.debug(STAT_LOG_PREFIX + "Execute query\n" + sqlQuery.getText());
             boolean hasResultSet = statement.executeStatement();
 
             statistics.addExecuteTime(System.currentTimeMillis() - startTime);
@@ -236,7 +234,7 @@ public class SQLScriptProcessor {
             while (true) {
                 // Fetch data only if we have to fetch all results or if it is rs requested
                 {
-                    if (hasResultSet && fetchResultSets) {
+                    if (hasResultSet) {
                         DBCResultSet resultSet = statement.openResultSet();
                         if (resultSet == null) {
                             // Kind of bug in the driver. It says it has resultset but returns null
@@ -298,6 +296,9 @@ public class SQLScriptProcessor {
             } catch (Throwable e) {
                 log.error("Error closing statement", e);
             }
+            log.debug(STAT_LOG_PREFIX + "Time: " + RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()) +
+                (statistics.getRowsFetched() >= 0 ? ", fetched " + statistics.getRowsFetched() + " row(s)" : "") +
+                (statistics.getRowsUpdated() >= 0 ? ", updated " + statistics.getRowsUpdated() + " row(s)" : ""));
         }
     }
 
