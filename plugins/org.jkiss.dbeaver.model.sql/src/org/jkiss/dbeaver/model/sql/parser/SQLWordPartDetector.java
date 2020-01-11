@@ -144,7 +144,8 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 }
                 if (prevWords == null) {
                     prevWords = new ArrayList<>();
-                } else {
+                }
+                if (!prevWord.equals(prevKeyWord)) {
                     // Add only second word (first is in prevKeyword)
                     prevWords.add(prevWord);
                 }
