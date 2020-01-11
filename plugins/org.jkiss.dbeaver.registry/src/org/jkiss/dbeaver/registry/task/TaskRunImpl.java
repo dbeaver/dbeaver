@@ -39,10 +39,11 @@ class TaskRunImpl implements DBTTaskRun {
     private String errorMessage;
     private String errorStackTrace;
 
-    public TaskRunImpl() {
+    TaskRunImpl() {
+        this.id = "void";
     }
 
-    public TaskRunImpl(String id, Date startTime, String startUser, String startedBy, long duration, String errorMessage, String errorStackTrace) {
+    TaskRunImpl(String id, Date startTime, String startUser, String startedBy, long duration, String errorMessage, String errorStackTrace) {
         this.id = id;
         this.startTime = startTime;
         this.startUser = startUser;
@@ -114,4 +115,13 @@ class TaskRunImpl implements DBTTaskRun {
         return id + "; " + startUser + "; " + startedBy + "; " + (isRunSuccess() ? "Success" : CommonUtils.notEmpty(errorMessage));
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TaskRunImpl && id.equals(((TaskRunImpl) obj).id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
