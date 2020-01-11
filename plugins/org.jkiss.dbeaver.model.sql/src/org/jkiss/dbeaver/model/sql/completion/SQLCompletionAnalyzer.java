@@ -354,30 +354,43 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     continue;
                 }
 
-                proposals.add(
-                    0,
-                    SQLCompletionAnalyzer.createCompletionProposal(
-                        request,
-                        tableName,
-                        tableName,
-                        DBPKeywordType.OTHER,
-                        null,
-                        false,
-                        null)
-                );
-                proposals.add(
-                    0,
-                    SQLCompletionAnalyzer.createCompletionProposal(
-                        request,
-                        tableAlias,
-                        tableAlias,
-                        DBPKeywordType.OTHER,
-                        null,
-                        false,
-                        null)
-                );
+                if (!hasProposal(proposals, tableName)) {
+                    proposals.add(
+                        0,
+                        SQLCompletionAnalyzer.createCompletionProposal(
+                            request,
+                            tableName,
+                            tableName,
+                            DBPKeywordType.OTHER,
+                            null,
+                            false,
+                            null)
+                    );
+                }
+                if (!CommonUtils.isEmpty(tableAlias) && !hasProposal(proposals, tableAlias)) {
+                    proposals.add(
+                        0,
+                        SQLCompletionAnalyzer.createCompletionProposal(
+                            request,
+                            tableAlias,
+                            tableAlias,
+                            DBPKeywordType.OTHER,
+                            null,
+                            false,
+                            null)
+                    );
+                }
             }
         }
+    }
+
+    private static boolean hasProposal(List<SQLCompletionProposalBase> proposals, String displayName) {
+        for (SQLCompletionProposalBase proposal : proposals) {
+            if (displayName.equals(proposal.getDisplayString())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean makeJoinColumnProposals(DBSObjectContainer sc, DBSEntity leftTable) {
@@ -842,7 +855,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                     // It is table name completion after FROM. Auto-generate table alias
                     SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
-                    alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> aliases.contains(s) || queryText.contains(" " + s) || sqlDialect.getKeywordType(s) != null);
+                    alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> {
+                        if (aliases.contains(s) || sqlDialect.getKeywordType(s) != null) {
+                            return true;
+                        }
+                        return Pattern.compile("\\s+" + s + "[^\\w]+").matcher(queryText).find();
+                    });
                 }
             }
         }
