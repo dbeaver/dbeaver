@@ -47,8 +47,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringWriter;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Parameter binding
@@ -165,6 +165,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                             UIUtils.asyncExec(SQLQueryParameterBindDialog.this::okPressed);
                         }
                     });
+                    editor.addModifyListener(e -> saveEditorValue(editor, index, item));
 
                     return editor;
                 }
