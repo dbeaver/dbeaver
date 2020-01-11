@@ -50,6 +50,7 @@ public class SQLConstants {
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
         KEYWORD_UPDATE,
+        KEYWORD_DELETE,
         KEYWORD_INTO,
         "TABLE",
         "VIEW",

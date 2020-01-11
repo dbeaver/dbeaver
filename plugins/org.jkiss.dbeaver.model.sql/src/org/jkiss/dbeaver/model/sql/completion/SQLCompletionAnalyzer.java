@@ -93,7 +93,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
                     // TODO: its an ugly hack. Need a better way
-                    if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
+                    if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
+                        request.setQueryType(null);
+                    } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
                         !CommonUtils.isEmpty(request.getWordDetector().getPrevWords()) &&
                         ("(".equals(request.getWordDetector().getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
                     {
@@ -231,15 +233,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         // Final filtering
-        if (!searchFinished && !CommonUtils.isEmpty(request.getWordPart()))  {
-            // Keyword assist
-            List<String> matchedKeywords = syntaxManager.getDialect().getMatchedKeywords(request.getWordPart());
-            if (!request.isSimpleMode()) {
-                // Sort using fuzzy match
-                matchedKeywords.sort(Comparator.comparingInt(o -> TextUtils.fuzzyScore(o, request.getWordPart())));
-            }
-            SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
+        if (!searchFinished) {
+            List<String> matchedKeywords = Collections.emptyList();
             Set<String> allowedKeywords = null;
+
+            SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
             if (CommonUtils.isEmpty(prevKeyWord)) {
                 allowedKeywords = new HashSet<>();
                 Collections.addAll(allowedKeywords, sqlDialect.getQueryKeywords());
@@ -247,13 +245,34 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 Collections.addAll(allowedKeywords, sqlDialect.getDDLKeywords());
                 Collections.addAll(allowedKeywords, sqlDialect.getExecuteKeywords());
             } else if (ArrayUtils.contains(sqlDialect.getQueryKeywords(), prevKeyWord.toUpperCase(Locale.ENGLISH))) {
-                allowedKeywords = new HashSet<>();
-                allowedKeywords.add(SQLConstants.KEYWORD_FROM);
+                // SELECT ..
+                // Limit with FROM if we already have some expression
+                String delimiter = request.getWordDetector().getPrevDelimiter();
+                if (!CommonUtils.isEmpty(wordDetector.getPrevWords()) && (CommonUtils.isEmpty(delimiter) || delimiter.endsWith(")"))) {
+                    // last expression ends with space or with ")"
+                    allowedKeywords = new HashSet<>();
+                    allowedKeywords.add(SQLConstants.KEYWORD_FROM);
+                    if (CommonUtils.isEmpty(request.getWordPart())) {
+                        matchedKeywords = Arrays.asList(SQLConstants.KEYWORD_FROM);
+                    }
+                }
             } else if (sqlDialect.isEntityQueryWord(prevKeyWord)) {
                 allowedKeywords = new HashSet<>();
-                allowedKeywords.add(SQLConstants.KEYWORD_WHERE);
+                if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
+                    allowedKeywords.add(SQLConstants.KEYWORD_FROM);
+                } else {
+                    allowedKeywords.add(SQLConstants.KEYWORD_WHERE);
+                }
             }
 
+            if (!CommonUtils.isEmpty(request.getWordPart())) {
+                // Keyword assist
+                matchedKeywords = syntaxManager.getDialect().getMatchedKeywords(request.getWordPart());
+                if (!request.isSimpleMode()) {
+                    // Sort using fuzzy match
+                    matchedKeywords.sort(Comparator.comparingInt(o -> TextUtils.fuzzyScore(o, request.getWordPart())));
+                }
+            }
             for (String keyWord : matchedKeywords) {
                 DBPKeywordType keywordType = syntaxManager.getDialect().getKeywordType(keyWord);
                 if (keywordType != null) {
@@ -961,13 +980,19 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (!quotedString) {
             replaceString = convertKeywordCase(request, replaceString, isObject);
         }
+        int cursorPos;
+        if (proposalType == DBPKeywordType.FUNCTION) {
+            replaceString += "()";
+            cursorPos = replaceString.length() - 2;
+        } else {
+            cursorPos = replaceString.length();
+        }
 
         return request.getContext().createProposal(
             request,
             displayString,
             replaceString, // replacementString
-            replaceString.length(), //cursorPosition the position of the cursor following the insert
-                                // relative to replacementOffset
+            cursorPos, //cursorPosition the position of the cursor following the insert relative to replacementOffset
             image, //image to display
             //new ContextInformation(img, displayString, displayString), //the context information associated with this proposal
             proposalType,
