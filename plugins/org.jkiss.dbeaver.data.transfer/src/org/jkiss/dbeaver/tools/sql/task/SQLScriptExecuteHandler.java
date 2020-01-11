@@ -17,20 +17,17 @@
 package org.jkiss.dbeaver.tools.sql.task;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
-import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.exec.SQLScriptProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
@@ -62,10 +59,10 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
     {
         SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
         settings.loadConfiguration(runnableContext, task.getProperties());
-        executeWithSettings(runnableContext, locale, log, listener, settings);
+        executeWithSettings(runnableContext, locale, log, logStream, listener, settings);
     }
 
-    private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, @NotNull Locale locale, @NotNull Log log, @NotNull DBTTaskExecutionListener listener, SQLScriptExecuteSettings settings) throws DBException {
+    private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, @NotNull Locale locale, @NotNull Log log, Writer logStream, @NotNull DBTTaskExecutionListener listener, SQLScriptExecuteSettings settings) throws DBException {
         // Start consumers
         listener.taskStarted(settings);
 
@@ -76,7 +73,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         try {
             runnableContext.run(true, true, monitor -> {
                 try {
-                    runScripts(monitor, dataSourceContainer, settings, log);
+                    runScripts(monitor, dataSourceContainer, settings, log, logStream);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
@@ -86,13 +83,15 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         } catch (InterruptedException e) {
             log.debug("Task canceled");
         }
-
+        if (error != null) {
+            log.error(error);
+        }
         listener.taskFinished(settings, error);
 
         log.debug("SQL script execute completed");
     }
 
-    private void runScripts(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer, SQLScriptExecuteSettings settings, Log log) throws DBException {
+    private void runScripts(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer, SQLScriptExecuteSettings settings, Log log, Writer logStream) throws DBException {
         if (!dataSourceContainer.isConnected()) {
             dataSourceContainer.connect(monitor, true, true);
         }
@@ -108,34 +107,24 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
                 try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
                     String sqlScriptContent = IOUtils.readToString(fileReader);
                     try {
-                        processScript(monitor, dataSource, executionContext, filePath, sqlScriptContent, log);
+                        processScript(monitor, dataSource, executionContext, filePath, sqlScriptContent, log, logStream);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
                 }
-            } catch (Exception e) {
-                throw new DBException("Error executing script '" + filePath + "'",
-                    e instanceof InvocationTargetException ? ((InvocationTargetException) e).getTargetException() : e);
+            } catch (Throwable e) {
+                Throwable error = e instanceof InvocationTargetException ? ((InvocationTargetException) e).getTargetException() : e;
+                throw new DBException("Error executing script '" + filePath + "'", error);
             }
         }
     }
 
-    private void processScript(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext, String filePath, String sqlScriptContent, Log log) throws DBException {
-        DBPContextProvider contextProvider = () -> executionContext;
-
-        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(dataSource);
-        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
-
-        Document sqlDocument = new Document(sqlScriptContent);
-
-        SQLParserContext parserContext = new SQLParserContext(contextProvider, syntaxManager, ruleManager, sqlDocument);
-        List<SQLScriptElement> scriptElements = SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
-        for (SQLScriptElement element : scriptElements) {
-            log.debug("===============================");
-            log.debug(element.toString());
-        }
+    private void processScript(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext, String filePath, String sqlScriptContent, Log log, Writer logStream) throws DBException {
+        List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(executionContext, sqlScriptContent);
+        SQLScriptContext scriptContext = new SQLScriptContext(null, () -> executionContext, null, logStream, null);
+        SQLScriptDataReceiver dataReceiver = new SQLScriptDataReceiver();
+        SQLScriptProcessor scriptProcessor = new SQLScriptProcessor(executionContext, scriptElements, scriptContext, dataReceiver, log);
+        scriptProcessor.runScript(monitor);
     }
 
 }

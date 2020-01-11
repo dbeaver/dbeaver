@@ -90,8 +90,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             taskLog.error("Task fatal error", e);
         } finally {
             monitor.done();
-            Log.setLogWriter(null);
             taskLog.flush();
+            Log.setLogWriter(null);
 
             taskRun.setRunDuration(elapsedTime);
             if (taskError != null) {
