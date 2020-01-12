@@ -162,7 +162,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer", context);
                 }
                 if (task != null) {
-                    DBTUtils.initFromContext(task, context);
+                    DBTUtils.initFromContext(monitor, task, context);
                 }
 
                 try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {

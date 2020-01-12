@@ -18,12 +18,15 @@ package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
@@ -123,10 +126,13 @@ public class DBTUtils {
         taskState.put(TASK_CONTEXT, taskContext);
     }
 
-    public static void initFromContext(DBTTask task, DBCExecutionContext executionContext) {
+    public static void initFromContext(DBRProgressMonitor monitor, DBTTask task, DBCExecutionContext executionContext) throws DBException {
         DBTTaskContext context = loadTaskContext(task.getProperties());
         if (context != null) {
-
+            DBExecUtils.setExecutionContextDefaults(monitor, executionContext.getDataSource(), executionContext,
+                context.getDefaultCatalog(),
+                null,
+                context.getDefaultSchema());
         }
     }
 
