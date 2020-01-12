@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -39,11 +38,11 @@ import java.util.Locale;
 /**
  * Index cache implementation
  */
-class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericPrimaryKey, GenericTableConstraintColumn> {
+class ConstraintKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericUniqueKey, GenericTableConstraintColumn> {
 
     private final GenericMetaObject pkObject;
 
-    PrimaryKeysCache(TableCache tableCache)
+    ConstraintKeysCache(TableCache tableCache)
     {
         super(
             tableCache,
@@ -59,11 +58,10 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         throws SQLException
     {
         try {
-            return session.getMetaData().getPrimaryKeys(
-                    owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-                    owner.getSchema() == null ? null : owner.getSchema().getName(),
-                    forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName())
-                .getSourceStatement();
+            return owner.getDataSource().getMetaModel().prepareUniqueConstraintsLoadStatement(
+                session,
+                owner,
+                forParent);
         } catch (SQLException e) {
             throw e;
         } catch (Exception e) {
@@ -82,14 +80,14 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @Nullable
     @Override
-    protected GenericPrimaryKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String pkName, JDBCResultSet dbResult)
+    protected GenericUniqueKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String pkName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
-        return new GenericPrimaryKey(
+        return new GenericUniqueKey(
             parent,
             pkName,
             null,
-            DBSEntityConstraintType.PRIMARY_KEY,
+            owner.getDataSource().getMetaModel().getUniqueConstraintType(dbResult),
             true);
     }
 
@@ -97,7 +95,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     @Override
     protected GenericTableConstraintColumn[] fetchObjectRow(
         JDBCSession session,
-        GenericTableBase parent, GenericPrimaryKey object, JDBCResultSet dbResult)
+        GenericTableBase parent, GenericUniqueKey object, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
@@ -123,7 +121,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     @Override
-    protected void cacheChildren(DBRProgressMonitor monitor, GenericPrimaryKey primaryKey, List<GenericTableConstraintColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, GenericUniqueKey primaryKey, List<GenericTableConstraintColumn> rows)
     {
         primaryKey.setColumns(rows);
     }

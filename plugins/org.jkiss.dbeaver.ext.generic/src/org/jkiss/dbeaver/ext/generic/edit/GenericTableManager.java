@@ -52,7 +52,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
 
     private static final Class<?>[] CHILD_TYPES = {
         GenericTableColumn.class,
-        GenericPrimaryKey.class,
+        GenericUniqueKey.class,
         GenericTableForeignKey.class,
         GenericTableIndex.class
     };

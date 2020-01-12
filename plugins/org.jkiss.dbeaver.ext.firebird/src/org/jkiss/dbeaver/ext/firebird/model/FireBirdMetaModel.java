@@ -28,17 +28,19 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Locale;
 
 /**
  * FireBirdDataSource
@@ -205,4 +207,26 @@ public class FireBirdMetaModel extends GenericMetaModel
         );
     }
 
+    @Override
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
+        return session.prepareStatement(
+            "select " +
+                "RC.RDB$RELATION_NAME TABLE_NAME," +
+                "ISGMT.RDB$FIELD_NAME as COLUMN_NAME," +
+                "CAST((ISGMT.RDB$FIELD_POSITION + 1) as SMALLINT) as KEY_SEQ," +
+                "RC.RDB$CONSTRAINT_NAME as PK_NAME," +
+                "RC.RDB$CONSTRAINT_TYPE as CONSTRAINT_TYPE " +
+                "FROM " +
+                "RDB$RELATION_CONSTRAINTS RC " +
+                "INNER JOIN RDB$INDEX_SEGMENTS ISGMT ON RC.RDB$INDEX_NAME = ISGMT.RDB$INDEX_NAME " +
+                "where RC.RDB$CONSTRAINT_TYPE IN ('PRIMARY KEY','UNIQUE') " +
+                (forParent == null ? "" : "AND RC.RDB$RELATION_NAME = '" + forParent.getName()) + "' " +
+                "ORDER BY ISGMT.RDB$FIELD_NAME ");
+    }
+
+    @Override
+    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+        String constraintType = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE");
+        return "PRIMARY KEY".equals(constraintType) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
+    }
 }
