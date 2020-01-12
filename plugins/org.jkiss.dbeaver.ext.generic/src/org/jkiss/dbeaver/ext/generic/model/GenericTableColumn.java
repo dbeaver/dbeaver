@@ -145,9 +145,9 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTableBase> implem
     @Property(viewable = false, order = 80)
     public boolean isInUniqueKey()
     {
-        final Collection<GenericPrimaryKey> uniqueKeysCache = getTable().getContainer().getPrimaryKeysCache().getCachedObjects(getTable());
+        final Collection<GenericUniqueKey> uniqueKeysCache = getTable().getContainer().getConstraintKeysCache().getCachedObjects(getTable());
         if (!CommonUtils.isEmpty(uniqueKeysCache)) {
-            for (GenericPrimaryKey key : uniqueKeysCache) {
+            for (GenericUniqueKey key : uniqueKeysCache) {
                 if (key.hasColumn(this)) {
                     return true;
                 }

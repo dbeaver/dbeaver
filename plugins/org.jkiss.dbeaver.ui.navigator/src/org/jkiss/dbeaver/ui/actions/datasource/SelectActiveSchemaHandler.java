@@ -31,7 +31,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -61,7 +61,6 @@ import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -193,67 +192,13 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     try {
-                        DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-                        if (rootContainer == null) {
-                            return Status.OK_STATUS;
-                        }
-
-                        DBCExecutionContextDefaults contextDefaults = null;
-                        if (executionContext != null) {
-                            contextDefaults = executionContext.getContextDefaults();
-                        }
-                        if (contextDefaults != null && (contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange())) {
-                            changeDefaultObject(monitor, rootContainer, contextDefaults, newInstanceName, curInstanceName, newObjectName);
-                        }
+                        DBExecUtils.setExecutionContextDefaults(monitor, dataSource, executionContext, newInstanceName, curInstanceName, newObjectName);
+                        return Status.OK_STATUS;
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
                     }
-                    return Status.OK_STATUS;
                 }
             }.schedule();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void changeDefaultObject(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObjectContainer rootContainer,
-        @NotNull DBCExecutionContextDefaults contextDefaults,
-        @Nullable String newInstanceName,
-        @Nullable String curInstanceName,
-        @Nullable String newObjectName) throws DBException
-    {
-        DBSCatalog newCatalog = null;
-        DBSSchema newSchema = null;
-
-        if (newInstanceName != null) {
-            DBSObject newInstance = rootContainer.getChild(monitor, newInstanceName);
-            if (newInstance instanceof DBSCatalog) {
-                newCatalog = (DBSCatalog) newInstance;
-            }
-        }
-        DBSObject newObject;
-        if (newObjectName != null) {
-            if (newCatalog == null) {
-                newObject = rootContainer.getChild(monitor, newObjectName);
-            } else {
-                newObject = newCatalog.getChild(monitor, newObjectName);
-            }
-            if (newObject instanceof DBSSchema) {
-                newSchema = (DBSSchema) newObject;
-            } else if (newObject instanceof DBSCatalog) {
-                newCatalog = (DBSCatalog) newObject;
-            }
-        }
-
-        boolean changeCatalog = (curInstanceName != null ? !CommonUtils.equalObjects(curInstanceName, newInstanceName) : newCatalog != null);
-
-        if (newCatalog != null && newSchema != null && changeCatalog) {
-            contextDefaults.setDefaultCatalog(monitor, newCatalog, newSchema);
-        } else if (newSchema != null) {
-            contextDefaults.setDefaultSchema(monitor, newSchema);
-        } else if (newCatalog != null && changeCatalog) {
-            contextDefaults.setDefaultCatalog(monitor, newCatalog, null);
         }
     }
 

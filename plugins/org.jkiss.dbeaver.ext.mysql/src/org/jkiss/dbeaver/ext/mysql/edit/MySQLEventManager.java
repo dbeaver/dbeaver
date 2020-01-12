@@ -4,11 +4,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEvent;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLExecutionContext;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,7 +38,7 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLObjectEditor<MySQLEvent, MySQLCatalog>.ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final MySQLEvent event = command.getObject();
         final StringBuilder script = new StringBuilder();
         try {
@@ -45,11 +47,11 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
             log.error(e);
         }
 
-        makeEventActions(actions, event, false, script.toString());
+        makeEventActions(actions, executionContext, event, false, script.toString());
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         final MySQLEvent event = command.getObject();
         final StringBuilder script = new StringBuilder();
         options = new LinkedHashMap<>(options);
@@ -64,11 +66,11 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
             ddlText = "ALTER " + ddlText.substring(7);
         }
 
-        makeEventActions(actionList, event, true, ddlText);
+        makeEventActions(actionList, executionContext, event, true, ddlText);
     }
 
-    private void makeEventActions(List<DBEPersistAction> actionList, MySQLEvent event, boolean alter, String ddlText) {
-        MySQLCatalog curCatalog = event.getCatalog().getDataSource().getDefaultDatabase();
+    private void makeEventActions(List<DBEPersistAction> actionList, DBCExecutionContext executionContext, MySQLEvent event, boolean alter, String ddlText) {
+        MySQLCatalog curCatalog = ((MySQLExecutionContext)executionContext).getDefaultCatalog();
         if (curCatalog != event.getCatalog()) {
             actionList.add(new SQLDatabasePersistAction("Set current schema ", "USE " + DBUtils.getQuotedIdentifier(event.getCatalog()), false)); //$NON-NLS-2$
         }
@@ -79,7 +81,7 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(new SQLDatabasePersistAction("Drop event", "DROP EVENT " + DBUtils.getQuotedIdentifier(command.getObject())));
 
     }

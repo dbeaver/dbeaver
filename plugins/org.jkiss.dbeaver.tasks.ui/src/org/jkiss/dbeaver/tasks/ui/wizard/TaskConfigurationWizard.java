@@ -35,8 +35,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskContext;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.model.task.DBTUtils;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
@@ -60,6 +62,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     private Button saveAsTaskButton;
 
     private Map<String, Object> variables;
+    private DBTTaskContext taskContext;
 
     protected TaskConfigurationWizard() {
     }
@@ -230,6 +233,11 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     protected void saveConfigurationToTask(DBTTask theTask) {
         Map<String, Object> state = new LinkedHashMap<>();
         saveTaskState(getRunnableContext(), theTask, state);
+
+        DBTTaskContext context = getTaskContext();
+        if (context != null) {
+            DBTUtils.saveTaskContext(state, context);
+        }
         if (theTask.getType().supportsVariables()) {
             DBTUtils.setVariables(state, getTaskVariables());
         }
@@ -258,7 +266,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
 
         if (supportsVariables) {
-            UIUtils.createDialogButton(panel, "Task variables ...", new SelectionAdapter() {
+            UIUtils.createDialogButton(panel, "Variables ...", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     configureVariables();
@@ -302,6 +310,19 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             }
         }
         return variables;
+    }
+
+    public DBTTaskContext getTaskContext() {
+        if (taskContext == null) {
+            if (currentTask != null) {
+                taskContext = DBTUtils.loadTaskContext(currentTask.getProperties());
+            }
+        }
+        return taskContext;
+    }
+
+    protected void saveTaskContext(DBCExecutionContext executionContext) {
+        taskContext = DBTUtils.extractContext(executionContext);
     }
 
     public void updateSaveTaskButtons() {

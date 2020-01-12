@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -135,11 +136,16 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             for (IDataTransferProducer producer : producers) {
                 if (producer instanceof DatabaseTransferProducer) {
                     DBSObject databaseObject = producer.getDatabaseObject();
+
                     if (databaseObject instanceof SQLQueryContainer) {
                         Map<String, Object> queryParameters = ((SQLQueryContainer) databaseObject).getQueryParameters();
                         if (!CommonUtils.isEmpty(queryParameters)) {
                             getTaskVariables().putAll(queryParameters);
                         }
+                    }
+
+                    if (databaseObject instanceof DBPContextProvider) {
+                        saveTaskContext(((DBPContextProvider) databaseObject).getExecutionContext());
                     }
                 }
             }
@@ -440,12 +446,29 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     private Map<String, Object> saveConfiguration(Map<String, Object> config) {
         config.put("maxJobCount", settings.getMaxJobCount());
         config.put("showFinalMessage", settings.isShowFinalMessage());
+
         // Save nodes' settings
+        boolean isTask = getCurrentTask() != null;
         for (Map.Entry<Class, NodePageSettings> entry : nodeSettings.entrySet()) {
-            //IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
+            NodePageSettings nodePageSettings = entry.getValue();
+            if (isTask) {
+                // Do not save settings for nodes not involved in this task
+                if (nodePageSettings.sourceNode.getNodeType() == DataTransferNodeDescriptor.NodeType.PRODUCER &&
+                    settings.getProducer() != null &&
+                    !settings.getProducer().getId().equals(nodePageSettings.sourceNode.getId()))
+                {
+                    continue;
+                }
+                if (nodePageSettings.sourceNode.getNodeType() == DataTransferNodeDescriptor.NodeType.CONSUMER &&
+                    settings.getConsumer() != null &&
+                    !settings.getConsumer().getId().equals(nodePageSettings.sourceNode.getId()))
+                {
+                    continue;
+                }
+            }
             Map<String, Object> nodeSection = new LinkedHashMap<>();
 
-            IDataTransferSettings settings = this.settings.getNodeSettings(entry.getValue().sourceNode);
+            IDataTransferSettings settings = this.settings.getNodeSettings(nodePageSettings.sourceNode);
             if (settings != null) {
                 settings.saveSettings(nodeSection);
             }
@@ -467,6 +490,13 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         Map<String, Object> processorsSection = new LinkedHashMap<>();
 
         for (DataTransferProcessorDescriptor procDescriptor : settings.getProcessorPropsHistory().keySet()) {
+
+            if (isTask) {
+                // Do not save settings for nodes not involved in this task
+                if (settings.getProcessor() != null && !settings.getProcessor().getId().equals(procDescriptor.getId())) {
+                    continue;
+                }
+            }
 
             Map<String, Object> procSettings = new LinkedHashMap<>();
 
@@ -504,7 +534,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         @Override
         protected void runTask() throws DBException {
             DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
-            handlerTransfer.executeWithSettings(this, Locale.getDefault(), log, this, settings);
+            handlerTransfer.executeWithSettings(this, getCurrentTask(), Locale.getDefault(), log, this, settings);
         }
 
     }

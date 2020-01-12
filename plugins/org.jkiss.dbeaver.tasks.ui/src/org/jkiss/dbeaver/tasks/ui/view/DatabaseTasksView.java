@@ -72,6 +72,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private static final String TASKS_VIEW_MENU_ID = VIEW_ID + ".menu";
 
     public static final String CREATE_TASK_CMD_ID = "org.jkiss.dbeaver.task.create";
+    public static final String COPY_TASK_CMD_ID = "org.jkiss.dbeaver.task.copy";
     public static final String EDIT_TASK_CMD_ID = "org.jkiss.dbeaver.task.edit";
     public static final String RUN_TASK_CMD_ID = "org.jkiss.dbeaver.task.run";
     public static final String GROUP_TASK_CMD_ID = "org.jkiss.dbeaver.task.group";
@@ -92,6 +93,17 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
     private Color colorError;
+
+    public DatabaseTasksView() {
+    }
+
+    public TreeViewer getTaskViewer() {
+        return taskViewer;
+    }
+
+    public TreeViewer getTaskRunViewer() {
+        return taskRunViewer;
+    }
 
     @Override
     public void createPartControl(Composite parent) {
@@ -329,6 +341,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             manager.add(ActionUtils.makeCommandContribution(getSite(), EDIT_TASK_CMD_ID));
             //manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
             manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
+            manager.add(ActionUtils.makeCommandContribution(getSite(), COPY_TASK_CMD_ID));
             manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, "Delete task", null));
             manager.add(new Separator());
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
@@ -498,8 +511,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     public void refresh() {
         refreshTasks();
-        refreshScheduledTasks();
         taskViewer.refresh(true);
+        if (refreshScheduledTasks()) {
+            taskViewer.refresh(true);
+        }
 
         loadTaskRuns();
     }
@@ -583,7 +598,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         allTasks.sort((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()));
     }
 
-    private void refreshScheduledTasks() {
+    private boolean refreshScheduledTasks() {
         DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
         if (scheduler != null) {
             try {
@@ -596,10 +611,13 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 });
             } catch (InvocationTargetException e) {
                 DBWorkbench.getPlatformUI().showError("Scheduled tasks", "Error reading scheduled tasks", e);
+                return false;
             } catch (InterruptedException e) {
                 // ignore
             }
+            return true;
         }
+        return false;
     }
 
     private void loadTaskRuns() {

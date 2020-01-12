@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -37,6 +38,10 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
@@ -297,6 +302,64 @@ public class DBExecUtils {
             } catch (DBCException e) {
                 log.warn(e);
             }
+        }
+    }
+
+    public static void setExecutionContextDefaults(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext, @Nullable String newInstanceName, @Nullable String curInstanceName, @Nullable String newObjectName) throws DBException {
+        DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        if (rootContainer == null) {
+            return;
+        }
+
+        DBCExecutionContextDefaults contextDefaults = null;
+        if (executionContext != null) {
+            contextDefaults = executionContext.getContextDefaults();
+        }
+        if (contextDefaults != null && (contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange())) {
+            changeDefaultObject(monitor, rootContainer, contextDefaults, newInstanceName, curInstanceName, newObjectName);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void changeDefaultObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer rootContainer,
+        @NotNull DBCExecutionContextDefaults contextDefaults,
+        @Nullable String newCatalogName,
+        @Nullable String curCatalogName,
+        @Nullable String newObjectName) throws DBException
+    {
+        DBSCatalog newCatalog = null;
+        DBSSchema newSchema = null;
+
+        if (newCatalogName != null) {
+            DBSObject newInstance = rootContainer.getChild(monitor, newCatalogName);
+            if (newInstance instanceof DBSCatalog) {
+                newCatalog = (DBSCatalog) newInstance;
+            }
+        }
+        DBSObject newObject;
+        if (newObjectName != null) {
+            if (newCatalog == null) {
+                newObject = rootContainer.getChild(monitor, newObjectName);
+            } else {
+                newObject = newCatalog.getChild(monitor, newObjectName);
+            }
+            if (newObject instanceof DBSSchema) {
+                newSchema = (DBSSchema) newObject;
+            } else if (newObject instanceof DBSCatalog) {
+                newCatalog = (DBSCatalog) newObject;
+            }
+        }
+
+        boolean changeCatalog = (curCatalogName != null ? !CommonUtils.equalObjects(curCatalogName, newCatalogName) : newCatalog != null);
+
+        if (newCatalog != null && newSchema != null && changeCatalog) {
+            contextDefaults.setDefaultCatalog(monitor, newCatalog, newSchema);
+        } else if (newSchema != null) {
+            contextDefaults.setDefaultSchema(monitor, newSchema);
+        } else if (newCatalog != null && changeCatalog) {
+            contextDefaults.setDefaultCatalog(monitor, newCatalog, null);
         }
     }
 }

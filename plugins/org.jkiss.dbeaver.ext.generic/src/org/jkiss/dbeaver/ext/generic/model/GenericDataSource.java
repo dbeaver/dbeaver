@@ -338,8 +338,8 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    public PrimaryKeysCache getPrimaryKeysCache() {
-        return structureContainer.getPrimaryKeysCache();
+    public ConstraintKeysCache getConstraintKeysCache() {
+        return structureContainer.getConstraintKeysCache();
     }
 
     @Override
