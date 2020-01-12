@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -77,7 +78,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
     {
     	OracleTableConstraint constraint = (OracleTableConstraint) command.getObject();

@@ -56,7 +56,7 @@ public final class DBStructUtils {
         final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(object.getClass(), SQLObjectEditor.class);
         if (entityEditor != null) {
             SQLObjectEditor.ObjectCreateCommand createCommand = entityEditor.makeCreateCommand(object, options);
-            DBEPersistAction[] ddlActions = createCommand.getPersistActions(monitor, options);
+            DBEPersistAction[] ddlActions = createCommand.getPersistActions(monitor, DBUtils.getDefaultContext(object, true), options);
 
             return SQLUtils.generateScript(object.getDataSource(), ddlActions, addComments);
         }

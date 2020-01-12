@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerExecutionContext;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -72,26 +74,26 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(monitor, actions, command.getObject(), ViewAction.CREATE);
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+        createOrReplaceViewQuery(monitor, executionContext, actions, command.getObject(), ViewAction.CREATE);
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceViewQuery(monitor, actionList, command.getObject(), ViewAction.ALTER);
+            createOrReplaceViewQuery(monitor, executionContext, actionList, command.getObject(), ViewAction.ALTER);
         }
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        createOrReplaceViewQuery(monitor, actions, command.getObject(), ViewAction.DROP);
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+        createOrReplaceViewQuery(monitor, executionContext, actions, command.getObject(), ViewAction.DROP);
     }
 
-    private void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLServerView view, ViewAction action)
+    private void createOrReplaceViewQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerView view, ViewAction action)
     {
         SQLServerDatabase procDatabase = view.getContainer().getDatabase();
-        SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultDatabase(monitor);
+        SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }

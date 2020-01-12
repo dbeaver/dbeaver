@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -56,13 +57,13 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand, Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(actions, objectCreateCommand.getObject());
+        createOrReplaceProcedureQuery(executionContext, actions, objectCreateCommand.getObject());
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
     {
         final OraclePackage object = objectDeleteCommand.getObject();
         actions.add(
@@ -72,9 +73,9 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand, Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(actionList, objectChangeCommand.getObject());
+        createOrReplaceProcedureQuery(executionContext, actionList, objectChangeCommand.getObject());
     }
 
     @Override
@@ -83,7 +84,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actionList, OraclePackage pack)
+    private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext, List<DBEPersistAction> actionList, OraclePackage pack)
     {
         try {
             String header = pack.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS).trim();
@@ -119,7 +120,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         } catch (DBException e) {
             log.warn(e);
         }
-        OracleUtils.addSchemaChangeActions(actionList, pack);
+        OracleUtils.addSchemaChangeActions(executionContext, actionList, pack);
     }
 
 }
