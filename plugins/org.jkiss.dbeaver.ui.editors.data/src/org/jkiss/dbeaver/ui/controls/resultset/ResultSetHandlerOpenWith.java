@@ -198,7 +198,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
                     producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
 
-                    producer.transferData(monitor, consumer, null, producerSettings);
+                    producer.transferData(monitor, consumer, null, producerSettings, null);
 
                     consumer.finishTransfer(monitor, false);
 

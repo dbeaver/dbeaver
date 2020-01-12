@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -135,11 +136,16 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             for (IDataTransferProducer producer : producers) {
                 if (producer instanceof DatabaseTransferProducer) {
                     DBSObject databaseObject = producer.getDatabaseObject();
+
                     if (databaseObject instanceof SQLQueryContainer) {
                         Map<String, Object> queryParameters = ((SQLQueryContainer) databaseObject).getQueryParameters();
                         if (!CommonUtils.isEmpty(queryParameters)) {
                             getTaskVariables().putAll(queryParameters);
                         }
+                    }
+
+                    if (databaseObject instanceof DBPContextProvider) {
+                        saveTaskContext(((DBPContextProvider) databaseObject).getExecutionContext());
                     }
                 }
             }
@@ -528,7 +534,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         @Override
         protected void runTask() throws DBException {
             DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
-            handlerTransfer.executeWithSettings(this, Locale.getDefault(), log, this, settings);
+            handlerTransfer.executeWithSettings(this, getCurrentTask(), Locale.getDefault(), log, this, settings);
         }
 
     }

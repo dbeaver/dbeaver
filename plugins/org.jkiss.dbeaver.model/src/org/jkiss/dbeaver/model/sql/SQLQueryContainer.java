@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.Map;
 /**
  * SQLQuery container.
  */
-public interface SQLQueryContainer extends IDataSourceContainerProvider {
+public interface SQLQueryContainer extends IDataSourceContainerProvider, DBPContextProvider {
 
     SQLScriptElement getQuery();
 
