@@ -398,17 +398,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObjects();
     }
 
+    /**
+     * Deprecated. Database change is not supported (as it is ambiguous)
+     */
+    @Deprecated
     public void setDefaultInstance(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase newDatabase, PostgreSchema schema)
         throws DBException
     {
         final PostgreDatabase oldDatabase = getDefaultInstance();
-        if (oldDatabase == newDatabase) {
-            // The same
-            return;
+        if (oldDatabase != newDatabase) {
+            newDatabase.initializeMetaContext(monitor);
+            newDatabase.cacheDataTypes(monitor, false);
         }
-
-        newDatabase.initializeMetaContext(monitor);
-        newDatabase.cacheDataTypes(monitor, false);
 
         PostgreSchema oldDefaultSchema = null;
         if (schema != null) {
