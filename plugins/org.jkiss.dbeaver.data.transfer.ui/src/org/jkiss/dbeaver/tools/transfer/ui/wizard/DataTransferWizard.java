@@ -440,12 +440,29 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     private Map<String, Object> saveConfiguration(Map<String, Object> config) {
         config.put("maxJobCount", settings.getMaxJobCount());
         config.put("showFinalMessage", settings.isShowFinalMessage());
+
         // Save nodes' settings
+        boolean isTask = getCurrentTask() != null;
         for (Map.Entry<Class, NodePageSettings> entry : nodeSettings.entrySet()) {
-            //IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
+            NodePageSettings nodePageSettings = entry.getValue();
+            if (isTask) {
+                // Do not save settings for nodes not involved in this task
+                if (nodePageSettings.sourceNode.getNodeType() == DataTransferNodeDescriptor.NodeType.PRODUCER &&
+                    settings.getProducer() != null &&
+                    !settings.getProducer().getId().equals(nodePageSettings.sourceNode.getId()))
+                {
+                    continue;
+                }
+                if (nodePageSettings.sourceNode.getNodeType() == DataTransferNodeDescriptor.NodeType.CONSUMER &&
+                    settings.getConsumer() != null &&
+                    !settings.getConsumer().getId().equals(nodePageSettings.sourceNode.getId()))
+                {
+                    continue;
+                }
+            }
             Map<String, Object> nodeSection = new LinkedHashMap<>();
 
-            IDataTransferSettings settings = this.settings.getNodeSettings(entry.getValue().sourceNode);
+            IDataTransferSettings settings = this.settings.getNodeSettings(nodePageSettings.sourceNode);
             if (settings != null) {
                 settings.saveSettings(nodeSection);
             }
@@ -467,6 +484,13 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         Map<String, Object> processorsSection = new LinkedHashMap<>();
 
         for (DataTransferProcessorDescriptor procDescriptor : settings.getProcessorPropsHistory().keySet()) {
+
+            if (isTask) {
+                // Do not save settings for nodes not involved in this task
+                if (settings.getProcessor() != null && !settings.getProcessor().getId().equals(procDescriptor.getId())) {
+                    continue;
+                }
+            }
 
             Map<String, Object> procSettings = new LinkedHashMap<>();
 
