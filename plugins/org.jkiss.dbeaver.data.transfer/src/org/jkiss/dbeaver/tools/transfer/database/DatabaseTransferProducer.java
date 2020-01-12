@@ -121,10 +121,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     @Override
     public void transferData(
-        DBRProgressMonitor monitor1,
-        IDataTransferConsumer consumer,
-        IDataTransferProcessor processor,
-        DatabaseProducerSettings settings)
+        @NotNull DBRProgressMonitor monitor1,
+        @NotNull IDataTransferConsumer consumer,
+        @Nullable IDataTransferProcessor processor,
+        @NotNull DatabaseProducerSettings settings, DBTTask task)
         throws DBException {
         String contextTask = DTMessages.data_transfer_wizard_job_task_export;
 
@@ -161,6 +161,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 if (!selectiveExportFromUI && newConnection) {
                     context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer", context);
                 }
+                if (task != null) {
+                    DBTUtils.initFromContext(task, context);
+                }
+
                 try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
                     try {
                         AbstractExecutionSource transferSource = new AbstractExecutionSource(dataContainer, context, consumer);

@@ -508,7 +508,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         settings.setMaxRows(10);
 
         try {
-            currentProducer.transferData(monitor, previewConsumer, importer, settings);
+            currentProducer.transferData(monitor, previewConsumer, importer, settings, null);
         } finally {
             previewConsumer.close();
             settings.setMaxRows(-1);

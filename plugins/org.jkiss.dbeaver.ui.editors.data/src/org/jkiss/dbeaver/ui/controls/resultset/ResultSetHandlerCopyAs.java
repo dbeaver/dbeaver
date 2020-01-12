@@ -165,7 +165,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
                     producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
 
-                    producer.transferData(monitor, consumer, null, producerSettings);
+                    producer.transferData(monitor, consumer, null, producerSettings, null);
 
                     consumer.finishTransfer(monitor, false);
                     consumer.finishTransfer(monitor, true);

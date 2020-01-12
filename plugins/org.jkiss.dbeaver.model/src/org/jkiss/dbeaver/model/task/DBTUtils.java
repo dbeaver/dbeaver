@@ -17,26 +17,33 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Task handler
+ * Task utils
  */
 public class DBTUtils {
+    private static final Log log = Log.getLog(DBTUtils.class);
 
     public static final String TASK_VARIABLES = "taskVariables";
+    public static final String TASK_CONTEXT = "taskContext";
 
     @NotNull
-    public static Map<String, Object> getVariables(DBTTask task) {
+    public static Map<String, Object> getVariables(@NotNull DBTTask task) {
         Map<String, Object> state = task.getProperties();
-        return getVariables(state);
-    }
 
-    @NotNull
-    public static Map<String, Object> getVariables(Map<String, Object> state) {
         Map<String, Object> variables = (Map<String, Object>) state.get(TASK_VARIABLES);
         if (variables == null) {
             variables = new LinkedHashMap<>();
@@ -44,15 +51,82 @@ public class DBTUtils {
         return variables;
     }
 
-    public static void setVariables(DBTTask task, Map<String, Object> variables) {
-        setVariables(task.getProperties(), variables);
-    }
-
-    public static void setVariables(Map<String, Object> taskState, Map<String, Object> variables) {
+    public static void setVariables(@NotNull Map<String, Object> taskState, @Nullable Map<String, Object> variables) {
         if (!CommonUtils.isEmpty(variables)) {
             taskState.put(DBTUtils.TASK_VARIABLES, variables);
         } else {
             taskState.remove(DBTUtils.TASK_VARIABLES);
+        }
+    }
+
+    public static DBTTaskContext extractContext(@NotNull DBCExecutionContext executionContext) {
+        DBTTaskContext context = new DBTTaskContext();
+
+        DBCExecutionContextDefaults defaults = executionContext.getContextDefaults();
+        if (defaults != null) {
+            DBSCatalog defaultCatalog = defaults.getDefaultCatalog();
+            if (defaultCatalog != null) {
+                context.setDefaultCatalog(defaultCatalog.getName());
+            }
+            DBSSchema defaultSchema = defaults.getDefaultSchema();
+            if (defaultSchema != null) {
+                context.setDefaultSchema(defaultSchema.getName());
+            }
+        }
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
+        if (txnManager != null) {
+            try {
+                context.setAutoCommit(txnManager.isAutoCommit());
+                DBPTransactionIsolation isolation = txnManager.getTransactionIsolation();
+                if (isolation != null) {
+                    context.setTransactionIsolation(isolation.getCode());
+                }
+            } catch (Throwable e) {
+                log.debug(e);
+            }
+        }
+        return context;
+    }
+
+    @Nullable
+    public static DBTTaskContext loadTaskContext(@NotNull Map<String, Object> taskState) {
+        Map<String, Object> contextMap = (Map<String, Object>) taskState.get(TASK_CONTEXT);
+        if (contextMap == null) {
+            return null;
+        }
+        DBTTaskContext context = new DBTTaskContext();
+        context.setDefaultCatalog(CommonUtils.toString(contextMap.get("defaultCatalog"), null));
+        context.setDefaultSchema(CommonUtils.toString(contextMap.get("defaultSchema"), null));
+        context.setAutoCommit(CommonUtils.toBoolean(contextMap.get("autoCommit")));
+        context.setTransactionIsolation(CommonUtils.toInt(contextMap.get("transactionIsolation"), -1));
+        return context;
+    }
+
+    public static void saveTaskContext(@NotNull Map<String, Object> taskState, @Nullable DBTTaskContext context) {
+        if (context == null) {
+            taskState.remove(TASK_CONTEXT);
+            return;
+        }
+        Map<String, Object> taskContext = new LinkedHashMap<>();
+
+        if (context.getDefaultCatalog() != null) {
+            taskContext.put("defaultCatalog", context.getDefaultCatalog());
+        }
+        if (context.getDefaultSchema() != null) {
+            taskContext.put("defaultSchema", context.getDefaultSchema());
+        }
+
+        taskContext.put("autoCommit", context.isAutoCommit());
+        if (context.getTransactionIsolation() >= 0) {
+            taskContext.put("transactionIsolation", context.getTransactionIsolation());
+        }
+        taskState.put(TASK_CONTEXT, taskContext);
+    }
+
+    public static void initFromContext(DBTTask task, DBCExecutionContext executionContext) {
+        DBTTaskContext context = loadTaskContext(task.getProperties());
+        if (context != null) {
+
         }
     }
 
