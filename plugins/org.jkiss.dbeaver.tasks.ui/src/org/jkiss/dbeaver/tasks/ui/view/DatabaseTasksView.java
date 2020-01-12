@@ -445,6 +445,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             switch (event.getAction()) {
                 case TASK_ADD:
                     refresh();
+                    taskViewer.setSelection(new StructuredSelection(task), true);
                     break;
                 case TASK_REMOVE:
                     refresh();
@@ -511,6 +512,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     public void refresh() {
         refreshTasks();
+        regroupTasks();
         taskViewer.refresh(true);
         if (refreshScheduledTasks()) {
             taskViewer.refresh(true);
