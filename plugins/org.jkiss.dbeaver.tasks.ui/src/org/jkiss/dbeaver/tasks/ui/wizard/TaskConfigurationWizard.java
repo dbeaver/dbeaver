@@ -258,7 +258,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
 
         if (supportsVariables) {
-            UIUtils.createDialogButton(panel, "Task variables ...", new SelectionAdapter() {
+            UIUtils.createDialogButton(panel, "Variables ...", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     configureVariables();

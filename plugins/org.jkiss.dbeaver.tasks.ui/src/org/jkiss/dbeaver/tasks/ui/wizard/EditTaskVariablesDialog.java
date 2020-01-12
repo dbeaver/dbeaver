@@ -126,6 +126,7 @@ public class EditTaskVariablesDialog extends StatusDialog {
             newButton.setImage(DBeaverIcons.getImage(UIIcon.ROW_ADD));
             ToolItem deleteButton = new ToolItem(toolbar, SWT.NONE);
             deleteButton.setImage(DBeaverIcons.getImage(UIIcon.ROW_DELETE));
+            deleteButton.setEnabled(false);
 
             newButton.addSelectionListener(new SelectionAdapter() {
                 @Override
