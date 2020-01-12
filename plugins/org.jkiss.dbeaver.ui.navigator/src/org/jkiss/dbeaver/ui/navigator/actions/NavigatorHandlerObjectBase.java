@@ -193,7 +193,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             UIUtils.runInProgressService(monitor -> {
                 try {
                     for (DBECommand command : commands) {
-                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, options);
+                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), options);
                         script.append(
                             SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
                                 persistActions,

@@ -482,7 +482,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
                     DBPDataSource dataSource = getDatabaseObject().getDataSource();
                     try {
-                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, options);
+                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, getExecutionContext(), options);
                         script.append(SQLUtils.generateScript(
                             dataSource,
                             persistActions,

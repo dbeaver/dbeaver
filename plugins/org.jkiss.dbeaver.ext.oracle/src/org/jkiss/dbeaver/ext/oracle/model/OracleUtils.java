@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -198,7 +199,7 @@ public class OracleUtils {
         }
     }
 
-    public static void addSchemaChangeActions(List<DBEPersistAction> actions, OracleSourceObject object)
+    public static void addSchemaChangeActions(DBCExecutionContext executionContext, List<DBEPersistAction> actions, OracleSourceObject object)
     {
         OracleSchema schema = object.getSchema();
         if (schema == null) {
@@ -208,7 +209,7 @@ public class OracleUtils {
             "Set target schema",
             "ALTER SESSION SET CURRENT_SCHEMA=" + schema.getName(),
             DBEPersistAction.ActionType.INITIALIZER));
-        OracleSchema defaultSchema = object.getDataSource().getDefaultSchema();
+        OracleSchema defaultSchema = ((OracleExecutionContext)executionContext).getDefaultSchema();
         if (schema != defaultSchema && defaultSchema != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Set current schema",
