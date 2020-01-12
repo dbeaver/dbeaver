@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -64,7 +65,7 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
 
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTrigger, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTrigger, PropertyHandler> command, Map<String, Object> options) throws DBException {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment trigger",
@@ -74,12 +75,12 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     }
 
     @Override
-    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreTrigger trigger, boolean create) {
+    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, PostgreTrigger trigger, boolean create) {
         actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getBody(), true));
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction("Drop trigger",

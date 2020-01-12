@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -84,7 +85,7 @@ public class VerticaTableColumnManager extends GenericTableColumnManager {
      * TODO: Vertica is originally based on PG. Maybe we should refactor this stuff somehow.
      */
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final GenericTableColumn column = command.getObject();
 
@@ -103,7 +104,7 @@ public class VerticaTableColumnManager extends GenericTableColumnManager {
                 actionList.add(new SQLDatabasePersistAction("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue()));
             }
         }
-        super.addObjectModifyActions(monitor, actionList, command, options);
+        super.addObjectModifyActions(monitor, executionContext, actionList, command, options);
     }
 
 }

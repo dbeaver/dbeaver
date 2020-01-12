@@ -19,16 +19,14 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
+import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -72,21 +70,21 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-        createOrReplaceProcedureQuery(monitor, actions, command.getObject(), true);
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+        createOrReplaceProcedureQuery(monitor, executionContext, actions, command.getObject(), true);
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceProcedureQuery(monitor, actionList, command.getObject(), false);
+            createOrReplaceProcedureQuery(monitor, executionContext, actionList, command.getObject(), false);
         }
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         SQLServerDatabase procDatabase = command.getObject().getContainer().getDatabase();
-        SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultDatabase(monitor);
+        SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }
@@ -100,9 +98,9 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
         }
     }
 
-    private void createOrReplaceProcedureQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLServerProcedure procedure, boolean create) {
+    private void createOrReplaceProcedureQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerProcedure procedure, boolean create) throws DBException {
         SQLServerDatabase procDatabase = procedure.getContainer().getDatabase();
-        SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultDatabase(monitor);
+        SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }
@@ -119,7 +117,7 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<SQLServerProcedure, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<SQLServerProcedure, PropertyHandler> command, Map<String, Object> options) throws DBException {
         final SQLServerProcedure procedure = command.getObject();
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             SQLServerDatabase database = procedure.getContainer().getDatabase();

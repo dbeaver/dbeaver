@@ -45,7 +45,7 @@ public interface GenericStructContainer extends DBSObjectContainer, DBSProcedure
 
     IndexCache getIndexCache();
 
-    PrimaryKeysCache getPrimaryKeysCache();
+    ConstraintKeysCache getConstraintKeysCache();
 
     ForeignKeysCache getForeignKeysCache();
 

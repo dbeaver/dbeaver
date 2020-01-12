@@ -520,7 +520,7 @@ public class SQLScriptParser
         boolean execQuery = false;
         boolean ddlQuery = false;
         List<SQLQueryParameter> parameters = null;
-        TPRuleBasedScanner ruleScanner = new TPRuleBasedScanner();
+        TPRuleBasedScanner ruleScanner = context.getScanner();
         ruleScanner.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;

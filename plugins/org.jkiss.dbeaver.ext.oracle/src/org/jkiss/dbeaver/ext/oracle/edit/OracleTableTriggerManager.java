@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -57,13 +58,13 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
-    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, OracleTableTrigger trigger, boolean create) {
+    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, OracleTableTrigger trigger, boolean create) {
         String source = OracleUtils.normalizeSourceName(trigger, false);
         if (source == null) {
             return;
@@ -73,7 +74,7 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
             script = "CREATE OR REPLACE " + script;
         }
         actions.add(new SQLDatabasePersistAction("Create trigger", script, true)); //$NON-NLS-2$
-        OracleUtils.addSchemaChangeActions(actions, trigger);
+        OracleUtils.addSchemaChangeActions(executionContext, actions, trigger);
     }
 
 }

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -116,7 +117,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             super(user, MySQLUIMessages.edit_user_manager_command_drop_user);
         }
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
         {
             return new DBEPersistAction[] {
                 new SQLDatabasePersistAction(MySQLUIMessages.edit_user_manager_command_drop_user, "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$

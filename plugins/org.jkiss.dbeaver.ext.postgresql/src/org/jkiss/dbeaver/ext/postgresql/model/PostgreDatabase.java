@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -241,6 +242,18 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Override
     public String getDescription() {
         return null;
+    }
+
+    @NotNull
+    @Override
+    protected String getMainContextName() {
+        return JDBCExecutionContext.TYPE_MAIN + " <" + getName() + ">";
+    }
+
+    @NotNull
+    @Override
+    protected String getMetadataContextName() {
+        return JDBCExecutionContext.TYPE_METADATA + " <" + getName() + ">";
     }
 
     @Property(viewable = true, multiline = true, order = 100)

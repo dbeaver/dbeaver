@@ -212,10 +212,6 @@ public class MySQLDataSource extends JDBCDataSource {
         }
     }
 
-    public MySQLCatalog getDefaultDatabase() {
-        return (MySQLCatalog) DBUtils.getDefaultContext(this, true).getContextDefaults().getDefaultCatalog();
-    }
-
     public String[] getTableTypes() {
         return MySQLConstants.TABLE_TYPES;
     }
