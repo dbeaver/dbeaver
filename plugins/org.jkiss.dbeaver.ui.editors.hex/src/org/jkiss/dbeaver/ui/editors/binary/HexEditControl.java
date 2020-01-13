@@ -130,8 +130,6 @@ public class HexEditControl extends Composite {
     private int verticalBarFactor = 0;
 
     // visual components
-    private Color colorCaretLine = null;
-    private Color colorHighlight = null;
     private Font fontCurrent = null;  // disposed externally
     private Font fontDefault = null;  // disposed internally
     private GridData textGridData = null;
@@ -147,7 +145,21 @@ public class HexEditControl extends Composite {
     private Text previewTextSeparator = null;
     private StyledText previewText = null;
 
-	private int defWidth = Integer.valueOf(HexPreferencesPage.getDefaultWidth());
+    private int defWidth = Integer.valueOf(HexPreferencesPage.getDefaultWidth());
+
+    private Color colorText;
+    private FontData fontData;
+    private Color colorCaretLine = null;
+    private Color colorCaretLineText = null;
+    private Color colorHighlight = null;
+    private Color colorHighlightText = null;
+
+    private void loadSettings() {
+        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        this.colorCaretLine = currentTheme.getColorRegistry().get("org.jkiss.dbeaver.hex.editor.color.caret");
+        this.colorText = currentTheme.getColorRegistry().get("org.jkiss.dbeaver.hex.editor.color.text");
+        this.fontDefault = currentTheme.getFontRegistry().get("org.jkiss.dbeaver.hex.editor.font.output");
+    }
 
     /**
      * Get long selection start and end points. Helper method for long selection listeners.
@@ -434,14 +446,12 @@ public class HexEditControl extends Composite {
     {
         super(parent, style | SWT.V_SCROLL);
 
+        loadSettings();
+
         this.readOnly = (style & SWT.READ_ONLY) != 0;
         this.charsForAddress = charsForAddress;
         this.bytesPerLine = bytesPerLine;
 
-        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        currentTheme.getColorRegistry().get(SQLConstants.CONFIG_COLOR_TEXT);
-
-        this.colorCaretLine = new Color(Display.getCurrent(), 232, 242, 254);  // very light blue
         this.colorHighlight = new Color(Display.getCurrent(), 255, 248, 147);  // mellow yellow
         this.highlightRangesInScreen = new ArrayList<>();
 
@@ -610,7 +620,7 @@ public class HexEditControl extends Composite {
             gridDataTextSeparator.widthHint = 10;
             linesTextSeparator = new Text(linesColumn, SWT.SEPARATOR);
             linesTextSeparator.setEnabled(false);
-            linesTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+            linesTextSeparator.setBackground(colorCaretLine);
             linesTextSeparator.setLayoutData(gridDataTextSeparator);
 
             linesText = new StyledText(linesColumn, SWT.MULTI | SWT.READ_ONLY);
@@ -618,7 +628,7 @@ public class HexEditControl extends Composite {
             linesText.setEnabled(false);
             //linesText.setBackground(COLOR_LIGHT_SHADOW);
             //linesText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
-            fontDefault = new Font(Display.getCurrent(), DEFAULT_FONT_DATA);
+//            fontDefault = new Font(Display.getCurrent(), DEFAULT_FONT_DATA);
             fontCurrent = fontDefault;
             linesText.setFont(fontCurrent);
             GC styledTextGC = new GC(linesText);
@@ -713,7 +723,7 @@ public class HexEditControl extends Composite {
             gridDataTextSeparator2.grabExcessHorizontalSpace = true;
             previewTextSeparator = new Text(previewColumn, SWT.SEPARATOR);
             previewTextSeparator.setEnabled(false);
-            previewTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+            previewTextSeparator.setBackground(COLOR_BLUE);
             previewTextSeparator.setLayoutData(gridDataTextSeparator2);
             makeFirstRowSameHeight();
 
@@ -944,12 +954,12 @@ public class HexEditControl extends Composite {
                     content.get(ByteBuffer.wrap(tmpRawBuffer, 0, 1), null, getCaretPos());
                     int offset = (int) (getCaretPos() - textAreasStart);
                     hexText.replaceTextRange(offset * 3, 2, GeneralUtils.byteToHex[tmpRawBuffer[0] & 0x0ff]);
-                    hexText.setStyleRange(new StyleRange(offset * 3, 2, COLOR_BLUE, null));
+                    hexText.setStyleRange(new StyleRange(offset * 3, 2, colorHighlightText, null));
                     previewText.replaceTextRange(
                         offset,
                         1,
                         Character.toString(byteToChar[tmpRawBuffer[0] & 0x0ff]));
-                    previewText.setStyleRange(new StyleRange(offset, 1, COLOR_BLUE, null));
+                    previewText.setStyleRange(new StyleRange(offset, 1, colorHighlightText, null));
                 }
             } catch (IOException e) {
                 log.warn(e);
@@ -1323,8 +1333,8 @@ public class HexEditControl extends Composite {
         boolean highlight = mergeRangesIsHighlight;
         while (mergerNext()) {
             if (blue || highlight) {
-                result.add(new StyleRange(start, mergeRangesPosition - start, blue ? COLOR_BLUE : null,
-                    highlight ? colorHighlight : null));
+                result.add(new StyleRange(start, mergeRangesPosition - start, blue ? colorText : null,
+                    highlight ? colorHighlightText : null));
             }
             start = mergeRangesPosition;
             blue = mergeRangesIsBlue;
