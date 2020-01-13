@@ -29,18 +29,18 @@
         </fontDefinition>
 
         <colorDefinition
-            label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.highlight.label"
-            categoryId="org.jkiss.dbeaver.ui.presentation.hex"
-            id="org.jkiss.dbeaver.hex.editor.color.highlight"
-            value="COLOR_DARK_RED">
-            <description>%colorDefinition.org.jkiss.dbeaver.hex.editor.color.highlight.description</description>
-        </colorDefinition>
-        <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.caret.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.hex"
             id="org.jkiss.dbeaver.hex.editor.color.caret"
             value="COLOR_DARK_BLUE">
             <description>%colorDefinition.org.jkiss.dbeaver.hex.editor.color.caret.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.text.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.hex"
+            id="org.jkiss.dbeaver.hex.editor.color.text"
+            value="COLOR_DARK_BLUE">
+            <description>%colorDefinition.org.jkiss.dbeaver.hex.editor.color.text.description</description>
         </colorDefinition>
 
     </extension>
