@@ -70,7 +70,7 @@ public class NetezzaMetaModel extends GenericMetaModel
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p.proceduresignature,p.returns,p.proceduresource " +
                 "FROM _v_procedure p " +
-                "WHERE p.owner=? AND p.procedure=?"))
+                "WHERE p.procedure=?"))
             {
                 //dbStat.setString(1, sourceObject.getContainer().getName());
                 dbStat.setString(1, sourceObject.getName());
