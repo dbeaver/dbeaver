@@ -44,8 +44,8 @@ public class NetezzaMetaModel extends GenericMetaModel
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Netezza view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT v.definition " +
-                "FROM _v_view v, _v_objs_owned o " +
-                "WHERE v.objid = o.objid AND o.DATABASE=? AND v.VIEWNAME=?"))
+                "FROM _v_view v " +
+                "WHERE v.VIEWNAME=?"))
             {
                 dbStat.setString(1, sourceObject.getContainer().getName());
                 dbStat.setString(2, sourceObject.getName());
