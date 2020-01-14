@@ -52,12 +52,11 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -442,7 +441,7 @@ class GenericFilterValueEdit {
                 }
             } catch (Throwable e) {
                 populateValues(Collections.emptyList());
-                return GeneralUtils.makeExceptionStatus(e);
+                log.error(e);
             }
             return Status.OK_STATUS;
         }
