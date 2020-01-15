@@ -25,6 +25,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -84,6 +85,8 @@ class GenericFilterValueEdit {
 
     private static final int MAX_MULTI_VALUES = 1000;
     private static final String MULTI_KEY_LABEL = "...";
+    private Composite buttonsPanel;
+    private Button toggleButton;
 
     GenericFilterValueEdit(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
         this.viewer = viewer;
@@ -136,7 +139,7 @@ class GenericFilterValueEdit {
 
         tableViewer = new TableViewer(composite, style);
         Table table = this.tableViewer.getTable();
-        table.setLinesVisible(visibleLines);
+        table.setLinesVisible(false);
         table.setHeaderVisible(visibleHeader);
         table.setLayoutData(layoutData);
         this.tableViewer.setContentProvider(new ListContentProvider());
@@ -144,24 +147,56 @@ class GenericFilterValueEdit {
         isCheckedTable = (style & SWT.CHECK) == SWT.CHECK;
 
         if (isCheckedTable) {
-            Composite buttonsPanel = UIUtils.createComposite(composite, 2);
-            UIUtils.createPushButton(buttonsPanel, "Select All", null, new SelectionAdapter() {
+            buttonsPanel = UIUtils.createComposite(composite, 2);
+            buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            toggleButton = UIUtils.createDialogButton(buttonsPanel, "&Select All", new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
-                    for (TableItem item : table.getItems()) {
-                        item.setChecked(true);
+                public void widgetSelected(SelectionEvent e)
+                {
+                    TableItem[] items = tableViewer.getTable().getItems();
+                    if (Boolean.FALSE.equals(toggleButton.getData())) {
+                        // Clear all checked
+                        for (TableItem item : items) {
+                            item.setChecked(false);
+                        }
+                        toggleButton.setData(false);
+                    } else {
+                        for (TableItem item : items) {
+                            item.setChecked(true);
+                        }
+                        toggleButton.setData(true);
                     }
+                    updateToggleButton(toggleButton);
                 }
             });
-            UIUtils.createPushButton(buttonsPanel, "Select None", null, new SelectionAdapter() {
+            toggleButton.setData(true);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = 120;
+            toggleButton.setLayoutData(gd);
+            UIUtils.createEmptyLabel(buttonsPanel, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            tableViewer.getTable().addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    for (TableItem item : table.getItems()) {
-                        item.setChecked(false);
+                    if (e.detail == SWT.CHECK) {
+                        updateToggleButton(toggleButton);
                     }
                 }
             });
         }
+    }
+
+    private void updateToggleButton(Button toggleButton) {
+        boolean hasCheckedItems = hasCheckedItems();
+        toggleButton.setText(hasCheckedItems ? "&Clear All" : "&Select All");
+        toggleButton.setData(!hasCheckedItems);
+    }
+
+    private boolean hasCheckedItems() {
+        for (TableItem items : tableViewer.getTable().getItems()) {
+            if (items.getChecked()) return true;
+        }
+        return false;
     }
 
     void addContextMenu(Action[] actions) {
@@ -316,7 +351,7 @@ class GenericFilterValueEdit {
             }
         }
 
-        java.util.List<DBDLabelValuePair> sortedList = new ArrayList<>(rowData.values());
+        List<DBDLabelValuePair> sortedList = new ArrayList<>(rowData.values());
         if (pattern != null) {
             for (Iterator<DBDLabelValuePair> iter = sortedList.iterator(); iter.hasNext(); ) {
                 final DBDLabelValuePair valuePair = iter.next();
@@ -414,6 +449,37 @@ class GenericFilterValueEdit {
             }
         }
         return rowData.containsKey(cellValue);
+    }
+
+    @Nullable
+    public Object getFilterValue() {
+        if (tableViewer != null) {
+            List<Object> values = new ArrayList<>();
+
+            for (DBDLabelValuePair item : getMultiValues()) {
+                if (((TableItem)tableViewer.testFindItem(item)).getChecked()) {
+                    values.add(item.getValue());
+                }
+            }
+            return values.toArray();
+        } else if (editor != null) {
+            try {
+                return editor.extractEditorValue();
+            } catch (DBException e) {
+                log.error("Can't get editor value", e);
+            }
+        }
+        return null;
+    }
+
+    public Button createFilterButton(String label, SelectionAdapter selectionAdapter) {
+        if (isCheckedTable) {
+            Button button = UIUtils.createDialogButton(buttonsPanel, label, selectionAdapter);
+            ((GridLayout) buttonsPanel.getLayout()).numColumns++;
+            return button;
+        } else {
+            return null;
+        }
     }
 
     private abstract class KeyLoadJob extends AbstractJob {

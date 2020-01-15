@@ -47,8 +47,6 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-import java.util.ArrayList;
-
 public class FilterValueEditDialog extends BaseDialog{
 	
 	private static final String DIALOG_ID = "DBeaver.FilterValueEditDialog";//$NON-NLS-1$
@@ -207,22 +205,7 @@ public class FilterValueEditDialog extends BaseDialog{
     @Override
     protected void okPressed()
     {
-        if (handler.getTableViewer() != null) {
-            java.util.List<Object> values = new ArrayList<>();
-                        
-            for (DBDLabelValuePair item : handler.getMultiValues()) {
-                if (  ((TableItem)handler.getTableViewer().testFindItem(item)).getChecked()) {
-                    values.add(item.getValue());
-                }
-            }
-            value = values.toArray();
-        } else if (handler.getEditor() != null) {
-            try {
-            	value = handler.getEditor().extractEditorValue();
-            } catch (DBException e) {
-                log.error("Can't get editor value", e);
-            }
-        }
+        value = handler.getFilterValue();
         super.okPressed();
     }
 
