@@ -2751,12 +2751,16 @@ public class ResultSetViewer extends Viewer
                 }
                 filtersMenu.add(new Separator());
 
+/*
                 // Operators with multiple inputs
                 for (DBCLogicalOperator operator : operators) {
                     if (operator.getArgumentCount() < 0) {
                         filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.INPUT, attribute));
                     }
                 }
+*/
+
+                filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
 
                 // Operators with no inputs
                 for (DBCLogicalOperator operator : operators) {
@@ -2764,8 +2768,6 @@ public class ResultSetViewer extends Viewer
                         filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.NONE, attribute));
                     }
                 }
-
-                filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
             }
 
             filtersMenu.add(new Separator());
@@ -4318,35 +4320,6 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-
-    private class FilterByValueAction extends Action {
-        private final DBCLogicalOperator operator;
-        private final FilterByAttributeType type;
-        private final DBDAttributeBinding attribute;
-        private final Object value;
-
-        FilterByValueAction(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute, Object value) {
-            super(attribute.getName() + " = " + CommonUtils.truncateString(String.valueOf(value), 64), null);
-            this.operator = operator;
-            this.type = type;
-            this.attribute = attribute;
-            this.value = value;
-        }
-
-        @Override
-        public void run() {
-            if (operator.getArgumentCount() != 0 && value == null) {
-                return;
-            }
-            DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());
-            DBDAttributeConstraint constraint = filter.getConstraint(attribute);
-            if (constraint != null) {
-                constraint.setOperator(operator);
-                constraint.setValue(value);
-                setDataFilter(filter, true);
-            }
-        }
-    }
 
     private class FilterResetAttributeAction extends Action {
         private final DBDAttributeBinding attribute;
