@@ -91,7 +91,7 @@ public class StreamTransferResultSet implements DBCResultSet {
             return attr.getDefaultValue();
         }
 
-        Object value = streamRow[attr.getSourceAttributeIndex()];
+        Object value = streamRow[sourceIndex];
         if (value != null && dateTimeFormat != null && attr.getTargetAttribute() != null && attr.getTargetAttribute().getDataKind() == DBPDataKind.DATETIME) {
             // Convert string to timestamp
             try {

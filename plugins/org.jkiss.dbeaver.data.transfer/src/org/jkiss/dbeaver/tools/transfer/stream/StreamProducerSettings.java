@@ -77,7 +77,10 @@ public class StreamProducerSettings implements IDataTransferSettings {
                 runnableContext.run(true, true, monitor -> {
                     try {
                         entity = (DBSEntity) DBUtils.findObjectById(monitor, project, entityId);
-
+                        if (entity == null) {
+                            log.error("Entity '" + entityId + "' not found");
+                            return;
+                        }
                         Map<String, Object> attrsConfig = JSONUtils.getObject(config, "attributes");
                         for (String sourceAttrName : attrsConfig.keySet()) {
                             Map<String, Object> attrMap = (Map<String, Object>) attrsConfig.get(sourceAttrName);
@@ -234,7 +237,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
         }
 
         public String getSourceAttributeName() {
-            return sourceAttributeName;
+            return CommonUtils.isEmpty(sourceAttributeName) ? String.valueOf(sourceAttributeIndex) : sourceAttributeName;
         }
 
         public void setSourceAttributeName(String sourceAttributeName) {
