@@ -18,6 +18,10 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -31,6 +35,8 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
@@ -61,8 +67,9 @@ public class ClientHomesSelector implements ISelectionProvider {
         //label.setFont(UIUtils.makeBoldFont(label.getFont()));
         homesCombo = new Combo(selectorPanel, SWT.READ_ONLY);
         //directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.grabExcessHorizontalSpace = true;
+        gd.widthHint = UIUtils.getFontHeight(homesCombo) * 30;
         homesCombo.setLayoutData(gd);
         homesCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -77,6 +84,7 @@ public class ClientHomesSelector implements ISelectionProvider {
                 handleHomeChange();
             }
         });
+        homesCombo.setEnabled(false);
 //        versionLabel = new Label(this, SWT.CENTER);
 //        gd = new GridData();
 //        gd.widthHint = 60;
@@ -98,6 +106,9 @@ public class ClientHomesSelector implements ISelectionProvider {
 
     public void populateHomes(DBPDriver driver, String currentHome, boolean selectDefault)
     {
+        if (this.driver == driver) {
+            return;
+        }
         this.driver = driver;
         this.currentHomeId = currentHome;
 
@@ -105,39 +116,58 @@ public class ClientHomesSelector implements ISelectionProvider {
         this.homeIds.clear();
 
         Map<String, DBPNativeClientLocation> homes = new LinkedHashMap<>();
-        for (DBPNativeClientLocation ncl : driver.getNativeClientLocations()) {
-            homes.put(ncl.getName(), ncl);
-        }
 
-        DBPNativeClientLocationManager clientManager = driver.getNativeClientManager();
-        if (clientManager != null) {
-            for (DBPNativeClientLocation location : clientManager.findLocalClientLocations()) {
-                if (!homes.containsKey(location.getName())) {
-                    homes.put(location.getName(), location);
+        AbstractJob hlJob = new AbstractJob("Find native client homes") {
+
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                for (DBPNativeClientLocation ncl : driver.getNativeClientLocations()) {
+                    homes.put(ncl.getName(), ncl);
                 }
-            }
-        }
-        if (!CommonUtils.isEmpty(currentHome) && !homes.containsKey(currentHome)) {
-            homes.put(currentHome, new LocalNativeClientLocation(currentHome, currentHome));
-        }
 
-        this.homesCombo.add("");
-        this.homeIds.add(null);
-        for (DBPNativeClientLocation location : homes.values()) {
-            homesCombo.add(location.getDisplayName());
-            homeIds.add(location.getName());
-            if (currentHomeId != null && location.getName().equals(currentHomeId)) {
-                homesCombo.select(homesCombo.getItemCount() - 1);
-            }
-        }
-        if (selectDefault && homesCombo.getItemCount() > 1 && homesCombo.getSelectionIndex() == -1) {
-            // Select first
-            homesCombo.select(1);
-            currentHomeId = homesCombo.getItem(1);
-        }
-        this.homesCombo.add(UIConnectionMessages.controls_client_home_selector_browse);
+                DBPNativeClientLocationManager clientManager = driver.getNativeClientManager();
+                if (clientManager != null) {
+                    for (DBPNativeClientLocation location : clientManager.findLocalClientLocations()) {
+                        if (!homes.containsKey(location.getName())) {
+                            homes.put(location.getName(), location);
+                        }
+                    }
+                }
+                if (!CommonUtils.isEmpty(currentHome) && !homes.containsKey(currentHome)) {
+                    homes.put(currentHome, new LocalNativeClientLocation(currentHome, currentHome));
+                }
 
-        displayClientVersion();
+                return Status.OK_STATUS;
+            }
+        };
+        hlJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                UIUtils.syncExec(() -> {
+                    homesCombo.add("");
+                    homeIds.add(null);
+                    for (DBPNativeClientLocation location : homes.values()) {
+                        homesCombo.add(location.getDisplayName());
+                        homeIds.add(location.getName());
+                        if (currentHomeId != null && location.getName().equals(currentHomeId)) {
+                            homesCombo.select(homesCombo.getItemCount() - 1);
+                        }
+                    }
+                    if (selectDefault && homesCombo.getItemCount() > 1 && homesCombo.getSelectionIndex() == -1) {
+                        // Select first
+                        homesCombo.select(1);
+                        currentHomeId = homesCombo.getItem(1);
+                    }
+                    homesCombo.add(UIConnectionMessages.controls_client_home_selector_browse);
+
+                    displayClientVersion();
+
+                    homesCombo.setEnabled(true);
+                });
+                super.done(event);
+            }
+        });
+        hlJob.schedule();
     }
 
     private void displayClientVersion()
