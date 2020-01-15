@@ -88,6 +88,8 @@ class GenericFilterValueEdit {
     private Composite buttonsPanel;
     private Button toggleButton;
 
+    private transient final Set<Object> savedValues = new HashSet<>();
+
     GenericFilterValueEdit(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
         this.viewer = viewer;
         this.attribute = attribute;
@@ -223,11 +225,21 @@ class GenericFilterValueEdit {
             if (filterPattern.isEmpty()) {
                 filterPattern = null;
             }
+            saveCheckedValues();
             loadValues(null);
         });
         return valueFilterText;
     }
 
+    private void saveCheckedValues() {
+        savedValues.clear();
+        for (TableItem item : tableViewer.getTable().getItems()) {
+            if (item.getChecked()) {
+                DBDLabelValuePair value = (DBDLabelValuePair) item.getData();
+                savedValues.add(value.getValue());
+            }
+        }
+    }
 
     void loadValues(Runnable onFinish) {
         if (loadJob != null) {
@@ -322,7 +334,7 @@ class GenericFilterValueEdit {
 
         // Get all values from actual RSV data
         boolean hasNulls = false;
-        java.util.Map<Object, DBDLabelValuePair> rowData = new HashMap<>();
+        Map<Object, DBDLabelValuePair> rowData = new HashMap<>();
         for (DBDLabelValuePair pair : values) {
             final DBDLabelValuePair oldLabel = rowData.get(pair.getValue());
             if (oldLabel != null) {
@@ -405,6 +417,7 @@ class GenericFilterValueEdit {
                 Collections.addAll(checkedValues, (Object[]) constraint.getValue());
             }
         }
+        checkedValues.addAll(savedValues);
 
         tableViewer.setInput(sortedList);
         DBDLabelValuePair firstVisibleItem = null;
@@ -454,13 +467,14 @@ class GenericFilterValueEdit {
     @Nullable
     public Object getFilterValue() {
         if (tableViewer != null) {
-            List<Object> values = new ArrayList<>();
+            Set<Object> values = new LinkedHashSet<>();
 
             for (DBDLabelValuePair item : getMultiValues()) {
                 if (((TableItem)tableViewer.testFindItem(item)).getChecked()) {
                     values.add(item.getValue());
                 }
             }
+            values.addAll(savedValues);
             return values.toArray();
         } else if (editor != null) {
             try {
