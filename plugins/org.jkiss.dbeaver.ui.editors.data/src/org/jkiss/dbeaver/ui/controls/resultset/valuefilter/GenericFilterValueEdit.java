@@ -162,9 +162,11 @@ class GenericFilterValueEdit {
                             item.setChecked(false);
                         }
                         toggleButton.setData(false);
+                        savedValues.clear();
                     } else {
                         for (TableItem item : items) {
                             item.setChecked(true);
+                            savedValues.add((((DBDLabelValuePair) item.getData())).getValue());
                         }
                         toggleButton.setData(true);
                     }
@@ -181,6 +183,12 @@ class GenericFilterValueEdit {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (e.detail == SWT.CHECK) {
+                        DBDLabelValuePair value = (DBDLabelValuePair) e.item.getData();
+                        if (((TableItem)e.item).getChecked()) {
+                            savedValues.add(value.getValue());
+                        } else {
+                            savedValues.remove(value.getValue());
+                        }
                         updateToggleButton(toggleButton);
                     }
                 }
@@ -225,20 +233,9 @@ class GenericFilterValueEdit {
             if (filterPattern.isEmpty()) {
                 filterPattern = null;
             }
-            saveCheckedValues();
             loadValues(null);
         });
         return valueFilterText;
-    }
-
-    private void saveCheckedValues() {
-        savedValues.clear();
-        for (TableItem item : tableViewer.getTable().getItems()) {
-            if (item.getChecked()) {
-                DBDLabelValuePair value = (DBDLabelValuePair) item.getData();
-                savedValues.add(value.getValue());
-            }
-        }
     }
 
     void loadValues(Runnable onFinish) {
