@@ -2950,8 +2950,7 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public DBSObject getParentObject()
         {
-            DBCExecutionContext executionContext = getExecutionContext();
-            return executionContext == null ? null : executionContext.getOwnerInstance();
+            return getDataSource();
         }
 
         @Nullable
