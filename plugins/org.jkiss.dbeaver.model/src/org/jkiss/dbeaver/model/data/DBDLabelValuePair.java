@@ -23,7 +23,7 @@ package org.jkiss.dbeaver.model.data;
 public class DBDLabelValuePair implements Comparable {
 
     private final String label;
-    private final Object value;
+    private Object value;
 
     public DBDLabelValuePair(String label, Object value) {
         this.label = label;
@@ -36,6 +36,10 @@ public class DBDLabelValuePair implements Comparable {
 
     public Object getValue() {
         return value;
+    }
+
+    public void setValue(Object value) {
+        this.value = value;
     }
 
     @Override

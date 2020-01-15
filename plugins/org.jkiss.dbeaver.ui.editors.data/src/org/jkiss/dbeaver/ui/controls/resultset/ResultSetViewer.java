@@ -2153,7 +2153,7 @@ public class ResultSetViewer extends Viewer
         Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
         ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[0]);
 
-        FilterValueEditPopup menu = new FilterValueEditPopup(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
+        FilterValueEditPopup popup = new FilterValueEditPopup(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
 
         Point location;
         if (atKeyboardCursor) {
@@ -2162,16 +2162,16 @@ public class ResultSetViewer extends Viewer
             location = getSite().getWorkbenchWindow().getWorkbench().getDisplay().getCursorLocation();
         }
         if (location != null) {
-            menu.setLocation(location);
+            popup.setLocation(location);
         }
 
-        if (menu.open() == IDialogConstants.OK_ID) {
-            Object value = menu.getValue();
+        if (popup.open() == IDialogConstants.OK_ID) {
+            Object value = popup.getValue();
 
             DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());
             DBDAttributeConstraint constraint = filter.getConstraint(curAttribute);
             if (constraint != null) {
-                constraint.setOperator(DBCLogicalOperator.EQUALS);
+                constraint.setOperator(DBCLogicalOperator.IN);
                 constraint.setValue(value);
                 setDataFilter(filter, true);
             }
