@@ -493,7 +493,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
 
             if (isTask) {
                 // Do not save settings for nodes not involved in this task
-                if (settings.getProcessor() != null && !settings.getProcessor().getId().equals(procDescriptor.getId())) {
+                if (settings.getProcessor() == null || !settings.getProcessor().getId().equals(procDescriptor.getId())) {
                     continue;
                 }
             }
