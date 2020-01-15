@@ -29,7 +29,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -119,7 +118,7 @@ public class FilterValueEditPopup extends Dialog {
             }
         };
 
-        if (filter.getAttribute().getDataKind() == DBPDataKind.STRING || descReferrer != null) {
+        {
             Text filterTextbox = filter.addFilterTextbox(group);
             filterTextbox.setFocus();
             filterTextbox.addTraverseListener(e -> {
