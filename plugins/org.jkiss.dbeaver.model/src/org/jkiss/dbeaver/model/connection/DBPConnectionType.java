@@ -77,7 +77,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.confirmExecute = confirmExecute;
         this.confirmDataChange = confirmDataChange;
         this.predefined = predefined;
-        this.connectionModifyRestrictions = connectionModifyRestrictions;
+        if (connectionModifyRestrictions != null) {
+            this.connectionModifyRestrictions = new ArrayList<>(connectionModifyRestrictions);
+        }
     }
 
     public boolean isPredefined() {
@@ -160,8 +162,25 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     }
 
     @Override
+    public String toString() {
+        return name;
+    }
+
+    @Override
     public boolean equals(Object obj) {
-        return obj instanceof DBPConnectionType && id.equals(((DBPConnectionType) obj).id);
+        if (obj instanceof DBPConnectionType) {
+            DBPConnectionType ct = (DBPConnectionType)obj;
+            return CommonUtils.equalObjects(id, ct.id) &&
+                CommonUtils.equalObjects(name, ct.name) &&
+                CommonUtils.equalObjects(color, ct.color) &&
+                CommonUtils.equalObjects(description, ct.description) &&
+                autocommit == ct.autocommit &&
+                confirmExecute == ct.confirmExecute &&
+                confirmDataChange == ct.confirmDataChange &&
+                predefined == ct.predefined &&
+                CommonUtils.equalObjects(connectionModifyRestrictions, ct.connectionModifyRestrictions);
+        }
+        return false;
     }
 
     @Override
