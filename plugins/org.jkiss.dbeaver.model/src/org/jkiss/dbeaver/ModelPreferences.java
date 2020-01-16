@@ -172,7 +172,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, META_CLIENT_NAME_OVERRIDE, false);
         PrefUtils.setDefaultPreferenceValue(store, META_CLIENT_NAME_VALUE, "");
 
-        PrefUtils.setDefaultPreferenceValue(store, CONNECT_USE_ENV_VARS, false);
+        PrefUtils.setDefaultPreferenceValue(store, CONNECT_USE_ENV_VARS, true);
 
         PrefUtils.setDefaultPreferenceValue(store, RESULT_NATIVE_DATETIME_FORMAT, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_TRANSFORM_COMPLEX_TYPES, true);
