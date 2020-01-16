@@ -28,7 +28,12 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	@Override
 	public ExasolTablePartitionColumnCache getObjectsCache(
 			ExasolTablePartitionColumn object) {
-		return ((ExasolTable) object.getTable()).getPartitionCache();
+		return object.getTable().getPartitionCache();
+	}
+
+	@Override
+	public boolean canCreateObject(Object container) {
+		return false;
 	}
 
 	@Override
@@ -40,7 +45,7 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command,
                                           Map<String, Object> options) throws DBException {
-		ExasolTable table = (ExasolTable) command.getObject().getTable();
+		ExasolTable table = command.getObject().getTable();
 		try {
 			actionList.add(new SQLDatabasePersistAction(generateAction(table)));
 		} catch (DBException e) {
@@ -58,7 +63,7 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command,
                                           Map<String, Object> options) {
-		ExasolTable table = (ExasolTable) command.getObject().getTable();
+		ExasolTable table = command.getObject().getTable();
 		try {
 			actions.add(new SQLDatabasePersistAction(generateAction(table)));
 		} catch (DBException e) {
@@ -73,7 +78,7 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 		ExasolTablePartitionColumn col = command.getObject();
 		ExasolTablePartitionColumnCache cache = getObjectsCache(col);
 		cache.removeObject(col, false);
-		ExasolTable table = (ExasolTable) command.getObject().getTable();
+		ExasolTable table = command.getObject().getTable();
 		try {
 			actions.add(new SQLDatabasePersistAction(generateAction(table)));
 		} catch (DBException e) {
