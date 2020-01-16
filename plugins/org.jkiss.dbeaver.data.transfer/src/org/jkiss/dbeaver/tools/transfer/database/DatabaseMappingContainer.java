@@ -73,6 +73,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     public void setTarget(DBSDataManipulator target) {
         this.target = target;
+        this.targetName = null;
     }
 
     @Override
