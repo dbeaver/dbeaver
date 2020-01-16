@@ -74,7 +74,7 @@ public class ExasolSchemaManager
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                return new ExasolSchema((ExasolDataSource) container, dialog.getName(), dialog.getOwner().getName());
+                return new ExasolSchema((ExasolDataSource) container, dialog.getName(), dialog.getOwner() == null ? null : dialog.getOwner().getName());
             }
         }.execute();
     }
