@@ -24,10 +24,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -69,20 +68,35 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         } else if (activeEditor instanceof IDataSourceContainerProvider) {
             DBPDataSourceContainer dsContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
             @NotNull
-            final DBSObject activeObject;
+            DBSObject activeObject = null;
             if (dsContainer != null) {
-                DBPDataSource dataSource = dsContainer.getDataSource();
-                if (dataSource != null) {
-                    activeObject = DBUtils.getDefaultOrActiveObject(dataSource.getDefaultInstance());
-                } else {
-                    activeObject = dsContainer;
+                if (activeEditor instanceof DBPContextProvider) {
+                    DBCExecutionContext executionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
+                    if (executionContext != null) {
+                        DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                        if (contextDefaults != null) {
+                            activeObject = contextDefaults.getDefaultSchema();
+                            if (activeObject == null) {
+                                activeObject = contextDefaults.getDefaultCatalog();
+                            }
+                        }
+                    }
+                }
+                if (activeObject == null) {
+                    DBPDataSource dataSource = dsContainer.getDataSource();
+                    if (dataSource != null) {
+                        activeObject = DBUtils.getDefaultOrActiveObject(dataSource.getDefaultInstance());
+                    } else {
+                        activeObject = dsContainer;
+                    }
                 }
 
+                DBSObject objectToSelect = activeObject;
                 final NavigatorViewBase view = navigatorView;
                 UIUtils.runInUI(activePage.getWorkbenchWindow(), monitor -> {
-                    DBSObject showObject = activeObject;
+                    DBSObject showObject = objectToSelect;
                     if (showObject instanceof DBSInstance && !(showObject instanceof DBPDataSourceContainer)) {
-                        showObject = activeObject.getParentObject();
+                        showObject = objectToSelect.getParentObject();
                     }
 
                     if (showObject instanceof DBPDataSource) {

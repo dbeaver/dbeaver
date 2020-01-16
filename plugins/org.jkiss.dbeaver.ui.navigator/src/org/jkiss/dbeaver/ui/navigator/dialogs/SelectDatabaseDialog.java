@@ -115,22 +115,27 @@ public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
     }
 
     protected Collection<DBNDatabaseNode> getObjects(DBRProgressMonitor monitor) throws DBException {
+        DBSObject rootObject;
         if (instanceObjects != null && currentInstanceName != null) {
-            DBSObject newInstance = DBUtils.findObject(instanceObjects, currentInstanceName);
-            if (newInstance instanceof DBSObjectContainer) {
-                Collection<? extends DBSObject> databaseList = ((DBSObjectContainer) newInstance).getChildren(monitor);
-                if (databaseList == null) {
-                    return Collections.emptyList();
-                }
-                List<DBNDatabaseNode> nodeList = new ArrayList<>(databaseList.size());
-                for (DBSObject database : databaseList) {
-                    DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, database, false);
+            rootObject = DBUtils.findObject(instanceObjects, currentInstanceName);
+        } else {
+            rootObject = dataSourceContainer.getDataSource();
+        }
+        if (rootObject instanceof DBSObjectContainer) {
+            Collection<? extends DBSObject> objectList = ((DBSObjectContainer) rootObject).getChildren(monitor);
+            if (objectList == null) {
+                return Collections.emptyList();
+            }
+            List<DBNDatabaseNode> nodeList = new ArrayList<>(objectList.size());
+            for (DBSObject object : objectList) {
+                if (object instanceof DBSObjectContainer) {
+                    DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, object, false);
                     if (databaseNode != null) {
                         nodeList.add(databaseNode);
                     }
                 }
-                return nodeList;
             }
+            return nodeList;
         }
         return objects;
     }
