@@ -32,14 +32,14 @@
             label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.caret.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.hex"
             id="org.jkiss.dbeaver.hex.editor.color.caret"
-            value="COLOR_DARK_BLUE">
+            value="COLOR_WIDGET_LIGHT_SHADOW">
             <description>%colorDefinition.org.jkiss.dbeaver.hex.editor.color.caret.description</description>
         </colorDefinition>
         <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.text.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.hex"
             id="org.jkiss.dbeaver.hex.editor.color.text"
-            value="COLOR_DARK_BLUE">
+            value="COLOR_BLACK">
             <description>%colorDefinition.org.jkiss.dbeaver.hex.editor.color.text.description</description>
         </colorDefinition>
 
