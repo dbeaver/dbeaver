@@ -17,10 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
@@ -32,6 +28,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.util.Map;
 
 public class ExasolConnection
 		implements DBPRefreshableObject, DBPNamedObject2, DBPSaveableObject, DBPScriptObject{
@@ -179,7 +179,7 @@ public class ExasolConnection
 		}
 	}
 	
-    @Property(viewable = true, editable= true, updatable=true, order = 35)
+    @Property(viewable = true, editable= true, updatable=true, password = true, order = 35)
 	public String getPassword()
 	{
 	    return password;

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.exasol.ui;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -73,35 +72,32 @@ public class ExasolConnectionDialog extends BaseDialog {
         Button saveCred = UIUtils.createCheckbox(group, "Provide Credentials","Credential", false, 2);
         Text userText = UIUtils.createLabelText(group, "User", "");
         userText.setEnabled(false);
-        Text passwordText = UIUtils.createLabelText(group, "Password", "", SWT.PASSWORD);
+        Text passwordText = UIUtils.createLabelText(group, "Password", "", SWT.BORDER | SWT.PASSWORD);
         passwordText.setEnabled(false);
 
         
-        ModifyListener mod = new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                name = nameText.getText();
-                user = userText.getText();
-                url  = urlText.getText();
-                password = passwordText.getText();
-                comment = commentText.getText();
-                //enable/disable OK button   
-                if (
+        ModifyListener mod = e -> {
+            name = nameText.getText();
+            user = userText.getText();
+            url  = urlText.getText();
+            password = passwordText.getText();
+            comment = commentText.getText();
+            //enable/disable OK button
+            if (
+                    (
+                        saveCred.getSelection() &
                         (
-                            saveCred.getSelection() &
-                            (
-                                CommonUtils.isEmpty(user) |
-                                CommonUtils.isEmpty(password)
-                            )
-                        ) 
-                        | name.isEmpty() 
-                        | url.isEmpty()
+                            CommonUtils.isEmpty(user) |
+                            CommonUtils.isEmpty(password)
+                        )
                     )
-                {
-                    getButton(IDialogConstants.OK_ID).setEnabled(false);
-                } else {
-                    getButton(IDialogConstants.OK_ID).setEnabled(true);
-                }
+                    | name.isEmpty()
+                    | url.isEmpty()
+                )
+            {
+                getButton(IDialogConstants.OK_ID).setEnabled(false);
+            } else {
+                getButton(IDialogConstants.OK_ID).setEnabled(true);
             }
         };
         
