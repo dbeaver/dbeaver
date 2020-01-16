@@ -57,15 +57,13 @@ public class ExasolConnectionManager
     public DBSObjectCache<ExasolDataSource, ExasolConnection> getObjectsCache(
             ExasolConnection object)
     {
-        ExasolDataSource source = (ExasolDataSource) object.getDataSource();
+        ExasolDataSource source = object.getDataSource();
         return source.getConnectionCache();
     }
     
     @Override
     protected ExasolConnection createDatabaseObject(DBRProgressMonitor monitor,
-                                                    DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
-            throws DBException
-    {
+                                                    DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
         return new UITask<ExasolConnection>() {
             @Override
             protected ExasolConnection runTask()
@@ -85,7 +83,7 @@ public class ExasolConnectionManager
     {
     	return new SQLDatabasePersistAction(
                 	"Comment on Connection",
-                	String.format("COMMENT ON CONNECTION %s is ''",
+                	String.format("COMMENT ON CONNECTION %s is '%s'",
     	                DBUtils.getQuotedIdentifier(con),
     	                ExasolUtils.quoteString(con.getDescription())
     	            )                
