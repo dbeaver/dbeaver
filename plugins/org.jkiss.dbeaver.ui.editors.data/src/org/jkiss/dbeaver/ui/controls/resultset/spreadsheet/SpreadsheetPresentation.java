@@ -34,7 +34,6 @@
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
@@ -61,7 +60,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.menus.CommandContributionItem;
-import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
@@ -1005,16 +1003,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (editorControl != null) {
                 editorControl.addDisposeListener(e -> valueController.unregisterEditor((IValueEditorStandalone) activeInlineEditor));
             }
-            // show dialog in separate job to avoid block
-            new UIJob("Open separate editor") {
-                @Override
-                public IStatus runInUIThread(IProgressMonitor monitor)
-                {
-                    ((IValueEditorStandalone) activeInlineEditor).showValueEditor();
-                    return Status.OK_STATUS;
-                }
-            }.schedule();
-            //((IValueEditorStandalone)editor).showValueEditor();
+            UIUtils.asyncExec(() -> ((IValueEditorStandalone) activeInlineEditor).showValueEditor());
         } else {
             // Set editable value
             if (activeInlineEditor != null) {
