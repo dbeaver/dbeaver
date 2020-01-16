@@ -22,11 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -79,7 +75,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
         this.referencedKey = referencedKey;
         this.enabled = enabled;
         this.constName = name;
-        this.refTable = referencedKey.getTable();
+        setReferencedConstraint(referencedKey);
 
     }
 
@@ -151,17 +147,20 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
     @Property(id = "reference", viewable = true)
     public ExasolTableUniqueKey getReferencedConstraint() {
     	if (referencedKey == null) {
-    		try {
-    		referencedKey = refTable.getPrimaryKey(new VoidProgressMonitor());
-    		} catch (DBException e) {
-    			LOG.error("Error reading pk", e);
-			}
+    	    if (refTable != null) {
+                try {
+                    referencedKey = refTable.getPrimaryKey(new VoidProgressMonitor());
+                } catch (DBException e) {
+                    LOG.error("Error reading pk", e);
+                }
+            }
     	}
         return referencedKey;
     }
 
     public void setReferencedConstraint(ExasolTableUniqueKey referencedKey) {
         this.referencedKey = referencedKey;
+        this.refTable = referencedKey == null ? null : referencedKey.getTable();
     }
 
     @Property(viewable = true, editable = true, updatable = true)
