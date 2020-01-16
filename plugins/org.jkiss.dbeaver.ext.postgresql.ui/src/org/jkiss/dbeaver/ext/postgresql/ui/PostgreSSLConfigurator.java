@@ -113,6 +113,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
                     false);
                 finder.run(new DefaultProgressMonitor(monitor));
                 UIUtils.syncExec(() -> {
+                    sslFactoryCombo.removeAll();
                     for (String cn : finder.getDriverClassNames()) {
                         sslFactoryCombo.add(cn);
                     }
