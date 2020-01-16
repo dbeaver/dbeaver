@@ -900,6 +900,7 @@
                     categories="graph">
                     <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
                 </driver>
 
                 <!-- PrestoDB -->
