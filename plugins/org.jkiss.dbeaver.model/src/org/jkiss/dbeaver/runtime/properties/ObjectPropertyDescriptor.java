@@ -160,6 +160,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.supportsPreview();
     }
 
+    public boolean isPassword() {
+        return propInfo.password();
+    }
+
     public IPropertyValueTransformer getValueTransformer()
     {
         return valueTransformer;
