@@ -23,7 +23,7 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * SelectObjectDialog
@@ -81,8 +81,12 @@ public abstract class AbstractPopupPanel extends Dialog {
                 @Override
                 public void focusLost(FocusEvent e) {
                     UIUtils.asyncExec(() -> {
-                        if (getShell() != null && !UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
-                            cancelPressed();
+                        Shell shell = getShell();
+                        if (shell != null) {
+                            Control focusControl = shell.getDisplay().getFocusControl();
+                            if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
+                                cancelPressed();
+                            }
                         }
                     });
                 }
