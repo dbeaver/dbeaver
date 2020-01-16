@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.GenerateSQLParametrizedDialog;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
@@ -172,6 +173,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
 
         TextViewer textViewer = editor.getTextViewer();
         textViewer.setData("editor", editor);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(partSite, textViewer.getTextWidget());
 
         return textViewer;
     }
