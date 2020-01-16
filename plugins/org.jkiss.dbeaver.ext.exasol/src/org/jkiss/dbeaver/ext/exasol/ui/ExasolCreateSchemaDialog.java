@@ -84,15 +84,11 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
                 try {
                     grantees = new ArrayList<>(datasource.getAllGrantees(monitor));
                     
-                    UIUtils.syncExec(new Runnable() {
-                        @Override
-                        public void run()
+                    UIUtils.syncExec(() -> {
+                        for (ExasolGrantee grantee: grantees)
                         {
-                            for (ExasolGrantee grantee: grantees)
-                            {
-                                String name = grantee.getName();
-                                userCombo.add(name);
-                            }
+                            String name = grantee.getName();
+                            userCombo.add(name);
                         }
                     });
                 } catch (DBException e) {

@@ -57,27 +57,22 @@ public class ExasolUserDialog extends BaseDialog {
         final Composite composite = super.createDialogArea(parent);
         
         final Composite group = new Composite(composite, SWT.NONE);
-        final Composite group_text = new Composite(composite, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 350;
-        gd.heightHint = 150;
-        gd.verticalIndent = 0;
-        gd.horizontalIndent = 0;
-        group.setLayoutData(gd);
+        final Composite groupText = new Composite(composite, SWT.NONE);
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
         group.setLayout(new GridLayout(2, true));
-        group_text.setLayoutData(gd);
-        group_text.setLayout(new GridLayout(2, true));
+        groupText.setLayoutData(new GridData(GridData.FILL_BOTH));
+        groupText.setLayout(new GridLayout(2, true));
         final Text nameText = UIUtils.createLabelText(group, ExasolMessages.dialog_create_user_userid, "");
 
-        final Text commentText = UIUtils.createLabelText(group,ExasolMessages.dialog_create_user_comment, "", SWT.MULTI);
+        final Text commentText = UIUtils.createLabelText(group,ExasolMessages.dialog_create_user_comment, "", SWT.BORDER | SWT.MULTI);
         String[] userTypes = new String[] {
         		ExasolMessages.dialog_create_user_kerberos,
         		ExasolMessages.dialog_create_user_ldap,
         		ExasolMessages.dialog_create_user_local
         		};
-        final Text passwordText = UIUtils.createLabelText(group_text, ExasolMessages.dialog_create_user_local_password, "", SWT.PASSWORD);
-        final Text urlText = UIUtils.createLabelText(group_text,ExasolMessages.dialog_create_user_ldap_dn, "");
-        final Text principalText = UIUtils.createLabelText(group_text,ExasolMessages.dialog_create_user_kerberos_principal, "");
+        final Text passwordText = UIUtils.createLabelText(groupText, ExasolMessages.dialog_create_user_local_password, "", SWT.BORDER | SWT.PASSWORD);
+        final Text urlText = UIUtils.createLabelText(groupText,ExasolMessages.dialog_create_user_ldap_dn, "");
+        final Text principalText = UIUtils.createLabelText(groupText,ExasolMessages.dialog_create_user_kerberos_principal, "");
 		passwordText.setEnabled(false);
 		urlText.setEnabled(false);
 		principalText.setEnabled(false);
