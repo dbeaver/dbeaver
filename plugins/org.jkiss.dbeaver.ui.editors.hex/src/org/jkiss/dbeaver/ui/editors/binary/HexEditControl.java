@@ -67,7 +67,7 @@ public class HexEditControl extends Composite {
      * There are differences on which chars can correctly be displayed in each operating system,
      * charset encoding, or font system.
      */
-    static String headerRow = null;
+    static String headerRow;
     static final byte[] hexToNibble = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -1, -1, -1, -1, -1, -1,
         10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 10, 11, 12, 13, 14, 15};
@@ -94,7 +94,7 @@ public class HexEditControl extends Composite {
     private Runnable delayedWaiting = null;
     private boolean dragging = false;
     private int fontCharWidth = -1;
-    private List<Integer> highlightRangesInScreen = null;
+    private List<Integer> highlightRangesInScreen;
     private List<Long> mergeChangeRanges = null;
     private List<Integer> mergeHighlightRanges = null;
     private int mergeIndexChange = -2;
@@ -105,20 +105,20 @@ public class HexEditControl extends Composite {
     private final int charsForAddress;  // Files up to 16 Ters: 11 binary digits + ':'
     private int bytesPerLine;
     private boolean caretStickToStart = false;  // stick to end
-    private BinaryClipboard myClipboard = null;
+    private BinaryClipboard myClipboard;
     private BinaryContent content = null;
     private long endPosition = 0L;
     private BinaryTextFinder finder = null;
     private boolean isInserting = true;
     private KeyListener keyAdapter = new ControlKeyAdapter();
-    private int lastFocusedTextArea = -1;  // 1 or 2;
+    private int lastFocusedTextArea;  // 1 or 2;
     private long lastLocationPosition = -1L;
-    private List<SelectionListener> longSelectionListeners = null;
+    private List<SelectionListener> longSelectionListeners;
     private long previousFindEnd = -1;
     private boolean previousFindIgnoredCase = false;
     private String previousFindString = null;
     private boolean previousFindStringWasHex = false;
-    private int previousLine = -1;
+    private int previousLine;
     private long previousRedrawStart = -1;
     private long startPosition = 0L;
     private long textAreasStart = -1L;
@@ -148,16 +148,14 @@ public class HexEditControl extends Composite {
     private int defWidth = Integer.valueOf(HexPreferencesPage.getDefaultWidth());
 
     private Color colorText;
-    private FontData fontData;
     private Color colorCaretLine = null;
-    private Color colorCaretLineText = null;
-    private Color colorHighlight = null;
     private Color colorHighlightText = null;
 
     private void loadSettings() {
         ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
         this.colorCaretLine = currentTheme.getColorRegistry().get("org.jkiss.dbeaver.hex.editor.color.caret");
         this.colorText = currentTheme.getColorRegistry().get("org.jkiss.dbeaver.hex.editor.color.text");
+        this.colorHighlightText = UIUtils.getSharedColor(UIUtils.blend(this.colorText.getRGB(), this.colorCaretLine.getRGB(), 50));
         this.fontDefault = currentTheme.getFontRegistry().get("org.jkiss.dbeaver.hex.editor.font.output");
     }
 
@@ -205,7 +203,7 @@ public class HexEditControl extends Composite {
                 case SWT.HOME:
                 case SWT.PAGE_UP:
                 case SWT.PAGE_DOWN:
-                    boolean selection = startPosition != endPosition;
+                    //boolean selection = startPosition != endPosition;
                     boolean ctrlKey = (e.stateMask & SWT.CONTROL) != 0;
                     if ((e.stateMask & SWT.SHIFT) != 0) {  // shift mod2
                         long newPos = doNavigateKeyPressed(ctrlKey, e.keyCode, getCaretPos(), false);
@@ -219,13 +217,9 @@ public class HexEditControl extends Composite {
                         caretStickToStart = false;
                     }
                     ensureCaretIsVisible();
-                    Runnable delayed = new Runnable() {
-                        @Override
-                        public void run()
-                        {
-                            redrawTextAreas(false);
-                            runnableEnd();
-                        }
+                    Runnable delayed = () -> {
+                        redrawTextAreas(false);
+                        runnableEnd();
                     };
                     runnableAdd(delayed);
                     notifyLongSelectionListeners();
@@ -318,7 +312,7 @@ public class HexEditControl extends Composite {
     }
 
     private class ControlPaintAdapter implements PaintListener {
-        boolean hexContent = false;        
+        boolean hexContent;
 
         ControlPaintAdapter(boolean isHexText)
         {
@@ -360,7 +354,7 @@ public class HexEditControl extends Composite {
             if (!dragging)
                 return;
 
-            boolean selection = startPosition != endPosition;
+            //boolean selection = startPosition != endPosition;
             int lower = e.x / charLen;
             int higher = e.y / charLen;
             int caretPos = ((StyledText) e.widget).getCaretOffset() / charLen;
@@ -408,13 +402,9 @@ public class HexEditControl extends Composite {
                     }
                     ensureWholeScreenIsVisible();
                     ensureCaretIsVisible();
-                    Runnable delayed = new Runnable() {
-                        @Override
-                        public void run()
-                        {
-                            redrawTextAreas(true);
-                            runnableEnd();
-                        }
+                    Runnable delayed = () -> {
+                        redrawTextAreas(true);
+                        runnableEnd();
                     };
                     runnableAdd(delayed);
                     updateScrollBar();
@@ -452,24 +442,15 @@ public class HexEditControl extends Composite {
         this.charsForAddress = charsForAddress;
         this.bytesPerLine = bytesPerLine;
 
-        this.colorHighlight = new Color(Display.getCurrent(), 255, 248, 147);  // mellow yellow
         this.highlightRangesInScreen = new ArrayList<>();
 
         this.myClipboard = new BinaryClipboard(parent.getDisplay());
         this.longSelectionListeners = new ArrayList<>();
-        addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                colorCaretLine.dispose();
-                colorHighlight.dispose();
-                if (fontDefault != null && !fontDefault.isDisposed())
-                    fontDefault.dispose();
-                try {
-                    myClipboard.dispose();
-                } catch (IOException ex) {
-                    log.warn("Can't cleanup clipboard temporary data");
-                }
+        addDisposeListener(e -> {
+            try {
+                myClipboard.dispose();
+            } catch (IOException ex) {
+                log.warn("Can't cleanup clipboard temporary data");
             }
         });
         initialize();
@@ -592,12 +573,7 @@ public class HexEditControl extends Composite {
                 lastFocusedTextArea = 1;
                 if (e.widget == previewText)
                     lastFocusedTextArea = 2;
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        drawUnfocusedCaret(true);
-                    }
-                });
+                UIUtils.asyncExec(() -> drawUnfocusedCaret(true));
             }
         };
         Caret defaultCaret;
@@ -772,14 +748,10 @@ public class HexEditControl extends Composite {
                     (((long) getVerticalBar().getSelection()) << verticalBarFactor) * (long) bytesPerLine;
                 if (previousStart == textAreasStart) return;
 
-                Runnable delayed = new Runnable() {
-                    @Override
-                    public void run()
-                    {
-                        redrawTextAreas(false);
-                        setFocus();
-                        runnableEnd();
-                    }
+                Runnable delayed = () -> {
+                    redrawTextAreas(false);
+                    setFocus();
+                    runnableEnd();
                 };
                 runnableAdd(delayed);
             }
@@ -799,13 +771,9 @@ public class HexEditControl extends Composite {
                 updateTextsMetrics();
             }
         });
-        addDisposeListener(new org.eclipse.swt.events.DisposeListener() {
-            @Override
-            public void widgetDisposed(org.eclipse.swt.events.DisposeEvent e)
-            {
-                if (content != null)
-                    content.dispose();
-            }
+        addDisposeListener(e -> {
+            if (content != null)
+                content.dispose();
         });
     }
 
@@ -965,19 +933,15 @@ public class HexEditControl extends Composite {
                 log.warn(e);
             }
             startPosition = endPosition = incrementPosWithinLimits(getCaretPos(), event.widget == hexText);
-            Runnable delayed = new Runnable() {
-                @Override
-                public void run()
-                {
-                    ensureCaretIsVisible();
-                    redrawTextAreas(false);
-                    if (isInserting) {
-                        updateScrollBar();
-                        redrawTextAreas(true);
-                    }
-                    refreshSelections();
-                    runnableEnd();
+            Runnable delayed = () -> {
+                ensureCaretIsVisible();
+                redrawTextAreas(false);
+                if (isInserting) {
+                    updateScrollBar();
+                    redrawTextAreas(true);
                 }
+                refreshSelections();
+                runnableEnd();
             };
             runnableAdd(delayed);
             notifyListeners(SWT.Modify, null);
@@ -1145,15 +1109,11 @@ public class HexEditControl extends Composite {
 
         initFinder(findString, isHexString, searchForward, ignoreCase);
         final Object[] result = new Object[2];
-        HexManager.blockUntilFinished(new Runnable() {
-            @Override
-            public void run()
-            {
-                try {
-                    result[0] = finder.getNextMatch();
-                } catch (IOException e) {
-                    result[1] = e;
-                }
+        HexManager.blockUntilFinished(() -> {
+            try {
+                result[0] = finder.getNextMatch();
+            } catch (IOException e) {
+                result[1] = e;
             }
         });
         if (result[1] != null) {
@@ -1600,12 +1560,7 @@ public class HexEditControl extends Composite {
             }
             hexText.getCaret().setVisible(true);
             previewText.getCaret().setVisible(true);
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    drawUnfocusedCaret(true);
-                }
-            });
+            UIUtils.asyncExec(() -> drawUnfocusedCaret(true));
         } else {
             hexText.getCaret().setVisible(false);
             previewText.getCaret().setVisible(false);
@@ -1767,7 +1722,7 @@ public class HexEditControl extends Composite {
     void select(long start, long end)
     {
         upANibble = 0;
-        boolean selection = startPosition != endPosition;
+        //boolean selection = startPosition != endPosition;
         startPosition = 0L;
         if (start > 0L) {
             startPosition = start;
@@ -1806,7 +1761,6 @@ public class HexEditControl extends Composite {
      * same position, but only if it falls within the new content's limits.
      *
      * @param aContent the content to be displayed
-     * @param notify
      */
     public void setContentProvider(BinaryContent aContent, boolean notify)
     {
