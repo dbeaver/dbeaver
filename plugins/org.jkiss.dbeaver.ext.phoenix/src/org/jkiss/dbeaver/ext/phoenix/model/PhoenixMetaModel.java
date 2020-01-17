@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -65,6 +66,16 @@ public class PhoenixMetaModel extends GenericMetaModel implements DBCQueryTransf
     
     @Override
     public boolean supportsUpsertStatement() {
+        return true;
+    }
+
+    @Override
+    public boolean isSystemSchema(GenericSchema schema) {
+        return "SYSTEM".equals(schema.getName());
+    }
+
+    @Override
+    public boolean supportsNullSchemas() {
         return true;
     }
 }
