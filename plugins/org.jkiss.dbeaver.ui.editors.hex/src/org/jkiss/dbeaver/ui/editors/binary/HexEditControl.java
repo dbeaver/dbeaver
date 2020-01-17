@@ -596,7 +596,7 @@ public class HexEditControl extends Composite {
             gridDataTextSeparator.widthHint = 10;
             linesTextSeparator = new Text(linesColumn, SWT.SEPARATOR);
             linesTextSeparator.setEnabled(false);
-            linesTextSeparator.setBackground(colorCaretLine);
+            linesTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
             linesTextSeparator.setLayoutData(gridDataTextSeparator);
 
             linesText = new StyledText(linesColumn, SWT.MULTI | SWT.READ_ONLY);
@@ -699,7 +699,7 @@ public class HexEditControl extends Composite {
             gridDataTextSeparator2.grabExcessHorizontalSpace = true;
             previewTextSeparator = new Text(previewColumn, SWT.SEPARATOR);
             previewTextSeparator.setEnabled(false);
-            previewTextSeparator.setBackground(COLOR_BLUE);
+            previewTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
             previewTextSeparator.setLayoutData(gridDataTextSeparator2);
             makeFirstRowSameHeight();
 
