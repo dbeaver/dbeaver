@@ -19,7 +19,15 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -28,6 +36,8 @@ import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -42,7 +52,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     private static final Log log = Log.getLog(ConnectionPropertiesControl.class);
 
-    public static final String USER_PROPERTIES_CATEGORY = UIConnectionMessages.controls_connection_properties_category_user_properties;
+    private static final String USER_PROPERTIES_CATEGORY = UIConnectionMessages.controls_connection_properties_category_user_properties;
 
     private List<DBPPropertyDescriptor> driverProvidedProperties;
     private List<DBPPropertyDescriptor> customProperties;
@@ -55,7 +65,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         //setNamesEditable(true);
     }
 
-    public PropertySourceCustom makeProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
+    PropertySourceCustom makeProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         Map<Object, Object> connectionProps = new HashMap<>();
         connectionProps.putAll(driver.getConnectionProperties());
@@ -126,8 +136,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     }
 
     private List<DBPPropertyDescriptor> getAllProperties(DBPDriver driver, boolean includeCustom) {
-        List<DBPPropertyDescriptor> propertyDescriptors = new ArrayList<>();
-        propertyDescriptors.addAll(driver.getConnectionPropertyDescriptors());
+        List<DBPPropertyDescriptor> propertyDescriptors = new ArrayList<>(driver.getConnectionPropertyDescriptors());
         if (driverProvidedProperties != null) {
             propertyDescriptors.addAll(driverProvidedProperties);
         }
@@ -181,11 +190,45 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         customProperties.sort(PROPERTIES_COMPARATOR);
     }
 
-    private static Comparator<DBPPropertyDescriptor> PROPERTIES_COMPARATOR = new Comparator<DBPPropertyDescriptor>() {
-        @Override
-        public int compare(DBPPropertyDescriptor o1, DBPPropertyDescriptor o2) {
-            return o1.getDisplayName().compareTo(o2.getDisplayName());
-        }
-    };
+    private static Comparator<DBPPropertyDescriptor> PROPERTIES_COMPARATOR = Comparator.comparing(DBPPropertyDescriptor::getDisplayName);
+
+    void createPropertiesToolBar(Composite parent) {
+        ToolBar toolBar = new ToolBar(parent, SWT.HORIZONTAL);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        toolBar.setLayoutData(gd);
+
+        ToolItem addItem = new ToolItem(toolBar, SWT.NONE);
+        addItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_ADD));
+        addItem.setToolTipText("Add user property");
+        addItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createNewProperty(getCategoryNode(USER_PROPERTIES_CATEGORY), USER_PROPERTIES_CATEGORY);
+            }
+        });
+
+        ToolItem removeItem = new ToolItem(toolBar, SWT.NONE);
+        removeItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_DELETE));
+        removeItem.setToolTipText("Remove user property");
+        removeItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ISelection selection = getSelection();
+                if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+                    removeProperty(((IStructuredSelection) selection).getFirstElement());
+                }
+            }
+        });
+        removeItem.setEnabled(false);
+
+        addSelectionChangedListener(event -> {
+            addItem.setEnabled(getCategoryNode(USER_PROPERTIES_CATEGORY) != null);
+            boolean hasDelete = false;
+            if (USER_PROPERTIES_CATEGORY.equals(getSelectedCategory())) {
+                hasDelete = true;
+            }
+            removeItem.setEnabled(hasDelete);
+        });
+    }
 
 }
