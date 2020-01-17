@@ -132,7 +132,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     {
         return session.getMetaData().getColumns(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
             forTable == null ?
                 owner.getDataSource().getAllObjectsPattern() :
                 JDBCUtils.escapeWildCards(session, forTable.getName()),

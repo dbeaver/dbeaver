@@ -200,6 +200,9 @@ public final class DBUtils {
         if (dataSource  == null) {
             // It is not SQL identifier, let's just make it simple then
             for (DBPNamedObject namePart : path) {
+                if (isVirtualObject(namePart)) {
+                    continue;
+                }
                 if (name.length() > 0) { name.append('.'); }
                 name.append(namePart.getName());
             }
@@ -208,7 +211,7 @@ public final class DBUtils {
 
             DBPNamedObject parent = null;
             for (DBPNamedObject namePart : path) {
-                if (namePart == null) {
+                if (namePart == null || isVirtualObject(namePart)) {
                     continue;
                 }
                 if (namePart instanceof DBSCatalog && ((sqlDialect.getCatalogUsage() & SQLDialect.USAGE_DML) == 0)) {
@@ -538,6 +541,9 @@ public final class DBUtils {
         DBSObject[] path = getObjectPath(object, true);
         StringBuilder pathStr = new StringBuilder();
         for (DBSObject obj : path) {
+            if (isVirtualObject(obj)) {
+                continue;
+            }
             if (pathStr.length() > 0) {
                 pathStr.append('/');
             }
@@ -1756,6 +1762,10 @@ public final class DBUtils {
 
     public static boolean isHiddenObject(Object object) {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
+    }
+
+    public static boolean isVirtualObject(Object object) {
+        return object instanceof DBPVirtualObject && ((DBPVirtualObject) object).isVirtual();
     }
 
     public static boolean isInheritedObject(Object object) {

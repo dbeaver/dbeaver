@@ -53,6 +53,7 @@ import java.util.*;
 public class GenericMetaModel {
 
     private static final Log log = Log.getLog(GenericMetaModel.class);
+    private static final String DEFAULT_NULL_SCHEMA_NAME = "<DEFAULT>";
 
     GenericMetaModelDescriptor descriptor;
 
@@ -162,8 +163,14 @@ public class GenericMetaModel {
                         // some drivers uses TABLE_OWNER column instead of TABLE_SCHEM
                         schemaName = GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.TABLE_OWNER);
                     }
+                    boolean nullSchema = false;
                     if (CommonUtils.isEmpty(schemaName)) {
-                        continue;
+                        if (supportsNullSchemas()) {
+                            schemaName = DEFAULT_NULL_SCHEMA_NAME;
+                            nullSchema = true;
+                        } else {
+                            continue;
+                        }
                     }
                     if (schemaFilters != null && !schemaFilters.matches(schemaName)) {
                         // Doesn't match filter
@@ -190,6 +197,9 @@ public class GenericMetaModel {
                     session.getProgressMonitor().subTask("Schema " + schemaName);
 
                     GenericSchema schema = createSchemaImpl(dataSource, catalog, schemaName);
+                    if (nullSchema) {
+                        schema.setVirtual(true);
+                    }
                     tmpSchemas.add(schema);
                 }
             } finally {
@@ -217,6 +227,11 @@ public class GenericMetaModel {
         }
     }
 
+    // Schema with NULL name is a valid schema [Phoenix]
+    public boolean supportsNullSchemas() {
+        return false;
+    }
+
     public GenericSchema createSchemaImpl(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) throws DBException {
         return new GenericSchema(dataSource, catalog, schemaName);
     }
@@ -240,7 +255,7 @@ public class GenericMetaModel {
                 // Read procedures
                 JDBCResultSet dbResult = session.getMetaData().getFunctions(
                     container.getCatalog() == null ? null : container.getCatalog().getName(),
-                    container.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
+                    container.getSchema() == null || DBUtils.isVirtualObject(container.getSchema()) ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
                     dataSource.getAllObjectsPattern());
                 try {
                     supportsFunctions = true;
@@ -298,7 +313,7 @@ public class GenericMetaModel {
                 // Read procedures
                 JDBCResultSet dbResult = session.getMetaData().getProcedures(
                     container.getCatalog() == null ? null : container.getCatalog().getName(),
-                    container.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
+                    container.getSchema() == null || DBUtils.isVirtualObject(container.getSchema()) ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
                     dataSource.getAllObjectsPattern());
                 try {
                     while (dbResult.next()) {
@@ -463,7 +478,7 @@ public class GenericMetaModel {
 
         return session.getMetaData().getTables(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
             tableNamePattern,
             null).getSourceStatement();
     }
@@ -531,7 +546,7 @@ public class GenericMetaModel {
     {
         return session.getMetaData().getPrimaryKeys(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : owner.getSchema().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
             forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName())
             .getSourceStatement();
     }
