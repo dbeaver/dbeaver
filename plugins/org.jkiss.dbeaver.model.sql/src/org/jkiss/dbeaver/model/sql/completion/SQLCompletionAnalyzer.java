@@ -752,6 +752,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     // Skip hidden
                     continue;
                 }
+                if (DBUtils.isVirtualObject(child)) {
+                    makeProposalsFromChildren(child, startPart, addFirst);
+                    continue;
+                }
                 if (allObjects) {
                     if (combinedMatch.length() > 0) {
                         combinedMatch.append(", ");
