@@ -53,7 +53,7 @@ import java.util.*;
 public class GenericMetaModel {
 
     private static final Log log = Log.getLog(GenericMetaModel.class);
-    private static final String DEFAULT_NULL_SCHEMA_NAME = "<DEFAULT>";
+    private static final String DEFAULT_NULL_SCHEMA_NAME = "DEFAULT";
 
     GenericMetaModelDescriptor descriptor;
 

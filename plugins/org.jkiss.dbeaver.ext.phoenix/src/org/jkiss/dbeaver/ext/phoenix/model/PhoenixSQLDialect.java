@@ -30,6 +30,7 @@ public class PhoenixSQLDialect extends GenericSQLDialect {
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         schemaUsage = SQLDialect.USAGE_ALL;
+        removeSQLKeyword("SYSTEM");
     }
 
 
