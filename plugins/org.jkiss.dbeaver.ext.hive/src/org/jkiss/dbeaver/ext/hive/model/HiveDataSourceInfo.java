@@ -54,9 +54,7 @@ class HiveDataSourceInfo extends JDBCDataSourceInfo {
                         props.load(propsStream);
                         clientVersion = props.getProperty("version");
                     } finally {
-                        if (propsStream != null) {
-                            IOUtils.close(propsStream);
-                        }
+                        IOUtils.close(propsStream);
                     }
                 }
             }
