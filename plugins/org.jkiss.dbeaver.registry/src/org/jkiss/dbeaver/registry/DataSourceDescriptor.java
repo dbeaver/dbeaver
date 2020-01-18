@@ -88,6 +88,8 @@ public class DataSourceDescriptor
         {DBPConnectionConfiguration.VARIABLE_PASSWORD, "password (plain)"},
         {DBPConnectionConfiguration.VARIABLE_URL, "JDBC URL"},
 
+        {DBPConnectionConfiguration.VAR_PROJECT_PATH, "project path"},
+        {DBPConnectionConfiguration.VAR_PROJECT_NAME, "project name"},
         {SystemVariablesResolver.VAR_WORKSPACE, "workspace path"},
         {SystemVariablesResolver.VAR_HOME, "user home path"},
         {SystemVariablesResolver.VAR_DBEAVER_HOME, "application install path"},
@@ -104,7 +106,6 @@ public class DataSourceDescriptor
     private DriverDescriptor driver;
     @NotNull
     private DBPConnectionConfiguration connectionInfo;
-    private DBPConnectionConfiguration tunnelConnectionInfo;
     // Copy of connection info with resolved params (cache)
     private DBPConnectionConfiguration resolvedConnectionInfo;
 
@@ -266,12 +267,8 @@ public class DataSourceDescriptor
 
     @NotNull
     @Override
-    public DBPConnectionConfiguration getActualConnectionConfiguration()
-    {
-        return
-            this.resolvedConnectionInfo != null ?
-                this.resolvedConnectionInfo :
-                (this.tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo);
+    public DBPConnectionConfiguration getActualConnectionConfiguration() {
+        return this.resolvedConnectionInfo != null ? this.resolvedConnectionInfo : this.connectionInfo;
     }
 
     @NotNull
@@ -709,9 +706,40 @@ public class DataSourceDescriptor
         processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
 
         connecting = true;
-        tunnelConnectionInfo = null;
         resolvedConnectionInfo = null;
         try {
+            // Resolve variables
+            if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
+                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()) ||
+                !CommonUtils.isEmpty(connectionInfo.getUserProfileName()))
+            {
+                this.resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
+                // Update config from profile
+                if (!CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+                    // Update config from profile
+                    DBWNetworkProfile profile = registry.getNetworkProfile(connectionInfo.getConfigProfileName());
+                    if (profile != null) {
+                        for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
+                            if (handlerCfg.isEnabled()) {
+                                resolvedConnectionInfo.updateHandler(handlerCfg);
+                            }
+                        }
+                    }
+                }
+                if (!CommonUtils.isEmpty(connectionInfo.getUserProfileName())) {
+
+                }
+                // Process variables
+                if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+                    IVariableResolver variableResolver = new DataSourceVariableResolver(
+                        this, this.resolvedConnectionInfo);
+                    this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
+                }
+
+            } else {
+                resolvedConnectionInfo = connectionInfo;
+            }
+
             // Handle tunnelHandler
             // Open tunnelHandler and replace connection info with new one
             this.proxyHandler = null;
@@ -755,24 +783,9 @@ public class DataSourceDescriptor
                         }
                     }
 
-/*
-                    for (DBWHandlerConfiguration handler : getConnectionConfiguration().getDeclaredHandlers()) {
-                        if (handler.isEnabled() && handler.isSecured() && !handler.isSavePassword()) {
-                            if (!DataSourceHandler.askForPassword(this, handler)) {
-                                DataSourceHandler.updateDataSourceObject(this);
-                                return false;
-                            }
-                        }
-                    }
-*/
-
-                    if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                        tunnelConfiguration = new DBWHandlerConfiguration(tunnelConfiguration);
-                        tunnelConfiguration.resolveSystemEnvironmentVariables();
-                    }
                     DBExecUtils.startContextInitiation(this);
                     try {
-                        tunnelConnectionInfo = tunnelHandler.initializeHandler(monitor, registry.getPlatform(), tunnelConfiguration, connectionInfo);
+                        resolvedConnectionInfo = tunnelHandler.initializeHandler(monitor, registry.getPlatform(), tunnelConfiguration, resolvedConnectionInfo);
                     } finally {
                         DBExecUtils.finishContextInitiation(this);
                     }
@@ -783,31 +796,6 @@ public class DataSourceDescriptor
             }
 
             monitor.subTask("Connect to data source");
-
-            if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
-                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()) ||
-                !CommonUtils.isEmpty(connectionInfo.getUserProfileName()))
-            {
-                this.resolvedConnectionInfo = new DBPConnectionConfiguration(this.tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo);
-                if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                    this.resolvedConnectionInfo.resolveDynamicVariables();
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
-                    // Update config from profile
-                    DBWNetworkProfile profile = registry.getNetworkProfile(connectionInfo.getConfigProfileName());
-                    if (profile != null) {
-                        for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
-                            if (handlerCfg.isEnabled()) {
-                                resolvedConnectionInfo.updateHandler(handlerCfg);
-                            }
-                        }
-                    }
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getUserProfileName())) {
-
-                }
-
-            }
 
             this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
             this.connectTime = new Date();
@@ -847,7 +835,6 @@ public class DataSourceDescriptor
                     log.error("Error closing tunnel", e);
                 } finally {
                     tunnelHandler = null;
-                    tunnelConnectionInfo = null;
                 }
             }
             proxyHandler = null;
@@ -976,7 +963,6 @@ public class DataSourceDescriptor
             }
 
             this.dataSource = null;
-            this.tunnelConnectionInfo = null;
             this.resolvedConnectionInfo = null;
             this.connectTime = null;
 

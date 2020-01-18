@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.storage.BytesContentStorage;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -77,7 +77,7 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
     {
         final Text editor = new Text(editPlaceholder, SWT.BORDER);
         editor.setEditable(!valueController.isReadOnly());
-        editor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        editor.setFont(UIUtils.getMonospaceFont());
         long maxLength = valueController.getValueType().getMaxLength();
         if (maxLength <= 0) {
             maxLength = MAX_STRING_LENGTH;

@@ -40,11 +40,12 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
 
     @Override
     public int getFeatures(IResource resource) {
+        int features = FEATURE_CREATE_FOLDER | FEATURE_RENAME;
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (activeProject == null || resource != activeProject.getEclipseProject()) {
-            return FEATURE_DELETE | FEATURE_RENAME;
+            features |= FEATURE_DELETE;
         }
-        return FEATURE_RENAME;
+        return features;
     }
 
     @NotNull

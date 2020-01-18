@@ -24,7 +24,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -32,14 +31,12 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 /**
  * VariablesHintLabel
  */
-public class VariablesHintLabel
-{
+public class VariablesHintLabel {
 
-    public VariablesHintLabel(Composite parent, String[][] vars)
-    {
+    public VariablesHintLabel(Composite parent, String hintLabel, String hintTitle, String[][] vars) {
         String varsText = GeneralUtils.generateVariablesLegend(vars);
 
-        CLabel infoLabel = UIUtils.createInfoLabel(parent, CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label);
+        CLabel infoLabel = UIUtils.createInfoLabel(parent, hintLabel);
         Layout layout = parent.getLayout();
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         if (layout instanceof GridLayout) {
@@ -50,7 +47,10 @@ public class VariablesHintLabel
         infoLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
-                new EditTextDialog(parent.getShell(), CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title, varsText, true).open();
+                EditTextDialog dialog = new EditTextDialog(parent.getShell(), hintTitle, varsText, true);
+                dialog.setMonospaceFont(true);
+                dialog.setAutoSize(true);
+                dialog.open();
             }
         });
         infoLabel.setToolTipText(varsText);
