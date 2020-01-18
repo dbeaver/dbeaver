@@ -18,9 +18,6 @@ package org.jkiss.dbeaver.ext.mysql.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -51,16 +48,12 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
     protected Composite createDialogArea(Composite parent) {
         final Composite composite = super.createDialogArea(parent);
 
-        final Composite group = new Composite(composite, SWT.NONE);
-        group.setLayout(new GridLayout(2, false));
+        final Composite group = UIUtils.createComposite(composite, 2);
 
         final Text nameText = UIUtils.createLabelText(group, "Database name", "");
-        nameText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                name = nameText.getText();
-                getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
-            }
+        nameText.addModifyListener(e -> {
+            name = nameText.getText();
+            getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
         });
 
         final Combo charsetCombo = UIUtils.createLabelCombo(group, "Charset", SWT.BORDER | SWT.DROP_DOWN);
