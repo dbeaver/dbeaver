@@ -203,7 +203,7 @@ public class TransactionMonitorToolbar {
                 count = "None";
             }
             final Point textSize = e.gc.textExtent(count);
-            e.gc.setForeground(UIStyles.getDefaultTextSelectionForeground());
+            e.gc.setForeground(UIStyles.getDefaultTextForeground());
             e.gc.drawText(count, bounds.x + (bounds.width - textSize.x) / 2 - 2, bounds.y + (bounds.height - textSize.y) / 2 - 1);
         }
 
