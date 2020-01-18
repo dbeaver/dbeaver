@@ -130,16 +130,11 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
         createPasswordControls(addrGroup, passwordText, 2);
 
-        {
-            Composite buttonsGroup = new Composite(addrGroup, SWT.NONE);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            buttonsGroup.setLayoutData(gd);
-            buttonsGroup.setLayout(new GridLayout(2, false));
-            homesSelector = new ClientHomesSelector(buttonsGroup, PostgreMessages.dialog_setting_connection_localClient);
-            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-            homesSelector.getPanel().setLayoutData(gd);
-        }
+        UIUtils.createHorizontalLine(addrGroup, 4, 10);
+
+        homesSelector = new ClientHomesSelector(addrGroup, PostgreMessages.dialog_setting_connection_localClient, false);
+        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+        homesSelector.getPanel().setLayoutData(gd);
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
