@@ -60,7 +60,14 @@ public class ClientHomesSelector implements ISelectionProvider {
         Composite parent,
         String title)
     {
-        selectorPanel = UIUtils.createComposite(parent, 2);
+        this(parent, title, true);
+    }
+    public ClientHomesSelector(
+        Composite parent,
+        String title,
+        boolean createComposite)
+    {
+        selectorPanel = createComposite ? UIUtils.createComposite(parent, 2) : parent;
 
         Label controlLabel = UIUtils.createControlLabel(selectorPanel, title);
         controlLabel.setToolTipText("Local client configuration is needed for some administrative tasks like database dump/restore.");
