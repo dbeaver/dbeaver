@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -507,18 +508,17 @@ public class DBeaverApplication extends BaseApplicationImpl {
     private void shutdown() {
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
         try {
-/*
-            final IWorkbench workbench = PlatformUI.getWorkbench();
-            if (workbench == null)
-                return;
-*/
-
             instanceServer = null;
-            DBeaverInstanceServer.stopInstanceServer();
+            RuntimeUtils.runTask(monitor -> {
+                DBeaverInstanceServer.stopInstanceServer();
+            }, "Stop RMI", 1000);
         } catch (Throwable e) {
             log.error(e);
         } finally {
             instance = null;
+
+            log.debug("DBeaver shutdown completed"); //$NON-NLS-1$
+
             stopDebugWriter();
         }
     }
