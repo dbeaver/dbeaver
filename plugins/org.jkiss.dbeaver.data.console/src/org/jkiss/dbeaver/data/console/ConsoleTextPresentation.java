@@ -17,10 +17,6 @@
 
 package org.jkiss.dbeaver.data.console;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.resource.JFaceResources;
@@ -57,16 +53,13 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
-import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Empty presentation.
@@ -74,7 +67,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class ConsoleTextPresentation extends AbstractPresentation implements IAdaptable {
 
-    public static final int FIRST_ROW_LINE = 2;
+    private static final int FIRST_ROW_LINE = 2;
 
     private StyledText text;
     private DBDAttributeBinding curAttribute;
@@ -270,7 +263,7 @@ public class ConsoleTextPresentation extends AbstractPresentation implements IAd
         ResultSetModel model = controller.getModel();
         List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
 
-        grid.append("> "+controller.getDataContainer().getName()+"\n");
+        grid.append("> ").append(controller.getDataContainer().getName()).append("\n");
 
         List<ResultSetRow> allRows = model.getAllRows();
         int extraSpacesNum = extraSpaces ? 2 : 0;
@@ -410,8 +403,6 @@ public class ConsoleTextPresentation extends AbstractPresentation implements IAd
         }
     }
 
-    StringBuilder fixBuffer = new StringBuilder();
-
     private String getCellString(ResultSetModel model, DBDAttributeBinding attr, ResultSetRow row, DBDDisplayFormat displayFormat) {
         Object cellValue = model.getCellValue(attr, row);
         if (cellValue instanceof DBDValueError) {
@@ -426,7 +417,8 @@ public class ConsoleTextPresentation extends AbstractPresentation implements IAd
             displayString = DBConstants.NULL_VALUE_LABEL;
         }
 
-        fixBuffer.setLength(0);
+        StringBuilder fixBuffer = new StringBuilder();
+
         for (int i = 0; i < displayString.length(); i++) {
             char c = displayString.charAt(i);
             switch (c) {
@@ -584,7 +576,6 @@ public class ConsoleTextPresentation extends AbstractPresentation implements IAd
             int newOffset = text.getOffsetAtLine(lineNum);
             newOffset += xOffset;
             text.setCaretOffset(newOffset);
-            //text.setSelection(newOffset, 0);
             text.showSelection();
         }
     }
@@ -683,6 +674,7 @@ public class ConsoleTextPresentation extends AbstractPresentation implements IAd
             return curSelection;
         }
 
+        @NotNull
         @Override
         public Iterator<String> iterator()
         {
