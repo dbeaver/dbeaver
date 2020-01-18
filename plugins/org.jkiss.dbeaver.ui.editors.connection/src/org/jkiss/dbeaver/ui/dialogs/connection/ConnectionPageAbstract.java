@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
@@ -47,6 +48,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected Text driverText;
     protected Button savePasswordCheck;
     protected ToolBar userManagementToolbar;
+    private VariablesHintLabel variablesHintLabel;
 
     public IDataSourceConnectionEditorSite getSite() {
         return site;
@@ -75,12 +77,21 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             driverText.setText(CommonUtils.toString(driver.getFullName()));
         }
 
+        DataSourceDescriptor dataSource = (DataSourceDescriptor) getSite().getActiveDataSource();
+
         if (savePasswordCheck != null) {
-            DataSourceDescriptor dataSource = (DataSourceDescriptor) getSite().getActiveDataSource();
             if (dataSource != null) {
                 savePasswordCheck.setSelection(dataSource.isSavePassword());
             } else {
                 savePasswordCheck.setSelection(true);
+            }
+        }
+
+        if (variablesHintLabel != null) {
+            if (dataSource != null) {
+                variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource, dataSource.getConnectionConfiguration()));
+            } else {
+                variablesHintLabel.setResolver(null);
             }
         }
     }
@@ -126,14 +137,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             placeholder.setLayoutData(gd);
 
             if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                new VariablesHintLabel(placeholder,
+                variablesHintLabel = new VariablesHintLabel(placeholder,
                     UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
                     UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
                     DataSourceDescriptor.CONNECT_VARIABLES);
-//                CLabel infoLabel = UIUtils.createInfoLabel(placeholder, UIUtils.getSupportedVariablesTip(UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label, ALLOWED_VARIABLES));
-//                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
-//                infoLabel.setLayoutData(gd);
-//                infoLabel.setToolTipText(UIConnectionMessages.dialog_connection_env_variables_hint);
             }
 
             if (site.isNew()) {
@@ -146,23 +153,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 Label advancedLabel = UIUtils.createControlLabel(linksComposite, UIConnectionMessages.dialog_connection_advanced_settings);
                 advancedLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-/*
-                if (!site.getDriver().isEmbedded()) {
-                    Button netConfigLink = new Button(linksComposite, SWT.PUSH);
-                    netConfigLink.setText(UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_network_link);
-                    netConfigLink.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            site.openSettingsPage("ConnectionPageNetwork");
-                        }
-                    });
-                    netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-                    //((GridLayout)linksComposite.getLayout()).numColumns++;
-                }
-*/
                 {
                     if (!site.getDriver().isEmbedded()) {
                         UIUtils.createEmptyLabel(linksComposite, 1, 1);
+                        ((GridLayout)linksComposite.getLayout()).numColumns++;
                     }
                     Button netConfigLink = new Button(linksComposite, SWT.PUSH);
                     netConfigLink.setText(UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_general_link);
@@ -173,7 +167,6 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                         }
                     });
                     netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-                    //((GridLayout)linksComposite.getLayout()).numColumns++;
                 }
             }
 

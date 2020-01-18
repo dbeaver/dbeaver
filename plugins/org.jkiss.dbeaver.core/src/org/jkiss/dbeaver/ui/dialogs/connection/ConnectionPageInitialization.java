@@ -292,6 +292,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                     public void widgetSelected(SelectionEvent e) {
                         EditBootstrapQueriesDialog dialog = new EditBootstrapQueriesDialog(
                             getShell(),
+                            dataSourceDescriptor,
                             bootstrapQueries,
                             ignoreBootstrapErrors);
                         if (dialog.open() == IDialogConstants.OK_ID) {

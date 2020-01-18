@@ -165,7 +165,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
         for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
             DBWHandlerConfiguration configuration = dataSource.getConnectionConfiguration().getHandler(descriptor.getId());
             if (configuration == null) {
-                configuration = new DBWHandlerConfiguration(descriptor, driver);
+                configuration = new DBWHandlerConfiguration(descriptor, dataSource);
             }
             HandlerBlock handlerBlock = configurations.get(descriptor);
             if (handlerBlock == null) {
