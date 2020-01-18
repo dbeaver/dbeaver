@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -33,6 +32,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -118,7 +118,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         panel.setLayoutData(gd);
 
         {
-            Composite placeholder = UIUtils.createPlaceholder(panel, 1, 5);
+            Composite placeholder = UIUtils.createComposite(panel, 1);
             gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
             gd.horizontalSpan = 4;
             gd.grabExcessHorizontalSpace = true;
@@ -126,10 +126,14 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             placeholder.setLayoutData(gd);
 
             if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                CLabel infoLabel = UIUtils.createInfoLabel(placeholder, UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label);
-                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
-                infoLabel.setLayoutData(gd);
-                infoLabel.setToolTipText(UIConnectionMessages.dialog_connection_env_variables_hint);
+                new VariablesHintLabel(placeholder,
+                    UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
+                    UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
+                    DataSourceDescriptor.CONNECT_VARIABLES);
+//                CLabel infoLabel = UIUtils.createInfoLabel(placeholder, UIUtils.getSupportedVariablesTip(UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label, ALLOWED_VARIABLES));
+//                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
+//                infoLabel.setLayoutData(gd);
+//                infoLabel.setToolTipText(UIConnectionMessages.dialog_connection_env_variables_hint);
             }
 
             if (site.isNew()) {

@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -178,16 +179,15 @@ public class DBWHandlerConfiguration {
                 CommonUtils.equalObjects(this.properties, source.properties);
     }
 
-    public void resolveSystemEnvironmentVariables() {
-        userName = userName != null ? GeneralUtils.replaceSystemEnvironmentVariables(userName) : null;
-        password = password != null ? GeneralUtils.replaceSystemEnvironmentVariables(password) : null;
+    public void resolveDynamicVariables(IVariableResolver variableResolver) {
+        userName = GeneralUtils.replaceVariables(userName, variableResolver);
+        password = GeneralUtils.replaceVariables(password, variableResolver);
         for (String prop : this.properties.keySet()) {
             Object value = this.properties.get(prop);
             if (value instanceof String && !CommonUtils.isEmpty((String)value)) {
-                this.properties.put(prop, GeneralUtils.replaceSystemEnvironmentVariables((String)value));
+                this.properties.put(prop, GeneralUtils.replaceVariables((String)value, variableResolver));
             }
         }
-
     }
 
     public boolean hasValuableInfo() {

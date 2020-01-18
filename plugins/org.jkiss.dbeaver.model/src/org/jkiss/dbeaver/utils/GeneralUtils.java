@@ -427,15 +427,29 @@ public class GeneralUtils {
 
     @NotNull
     public static String generateVariablesLegend(@NotNull String[][] vars) {
+        String[] varPatterns = new String[vars.length];
+        int patternMaxLength = 0;
+        for (int i = 0; i < vars.length; i++) {
+            varPatterns[i] = GeneralUtils.variablePattern(vars[i][0]);
+            patternMaxLength = Math.max(patternMaxLength, varPatterns[i].length());
+        }
         StringBuilder text = new StringBuilder();
-        for (String[] var : vars) {
-            text.append(GeneralUtils.variablePattern(var[0])).append("\t- ").append(var[1]).append("\n");
+        for (int i = 0; i < vars.length; i++) {
+            text.append(varPatterns[i]);
+            // Indent
+            for (int k = 0; k < patternMaxLength - varPatterns[i].length(); k++) {
+                text.append(' ');
+            }
+            text.append(" - ").append(vars[i][1]).append("\n");
         }
         return text.toString();
     }
 
     @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
+        if (CommonUtils.isEmpty(string)) {
+            return string;
+        }
         try {
             Matcher matcher = VAR_PATTERN.matcher(string);
             int pos = 0;

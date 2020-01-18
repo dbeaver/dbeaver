@@ -158,7 +158,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 });
             }
 
-            new VariablesHintLabel(detailsGroup, DataSourceDescriptor.CONNECT_VARIABLES);
+            new VariablesHintLabel(detailsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label, CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title, DataSourceDescriptor.CONNECT_VARIABLES);
         }
 
         selectEventType(null);

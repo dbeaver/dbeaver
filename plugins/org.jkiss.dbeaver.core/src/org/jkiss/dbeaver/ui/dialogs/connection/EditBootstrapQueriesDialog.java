@@ -131,7 +131,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
         });
 
         ignoreErrorButton = UIUtils.createCheckbox(composite, CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_ignore_error_lable, ignoreErrors);
-        new VariablesHintLabel(composite, DataSourceDescriptor.CONNECT_VARIABLES);
+        new VariablesHintLabel(composite, CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label, CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title, DataSourceDescriptor.CONNECT_VARIABLES);
 
         UIUtils.packColumns(queriesTable, true);
 
