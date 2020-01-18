@@ -24,7 +24,6 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
@@ -88,8 +87,8 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
         }
 
         @Override
-        protected Control createDialogArea(Composite parent) {
-            final Control area = super.createDialogArea(parent);
+        protected Composite createDialogArea(Composite parent) {
+            final Composite area = super.createDialogArea(parent);
 
             final DBPProject project = node.getOwnerProject();
             if (project != null) {
@@ -97,7 +96,7 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
                 if (bookmarksFolder != null) {
                     DBNResource bookmarksFolderNode = node.getModel().getNodeByResource(bookmarksFolder);
                     if (bookmarksFolderNode != null) {
-                        UIUtils.createControlLabel((Composite) area, "Bookmark folder");
+                        UIUtils.createControlLabel(area, "Bookmark folder");
                         DatabaseNavigatorTree foldersNavigator = new DatabaseNavigatorTree((Composite) area, bookmarksFolderNode, SWT.BORDER | SWT.SINGLE, true);
                         final GridData gd = new GridData(GridData.FILL_BOTH);
                         gd.widthHint = 200;
