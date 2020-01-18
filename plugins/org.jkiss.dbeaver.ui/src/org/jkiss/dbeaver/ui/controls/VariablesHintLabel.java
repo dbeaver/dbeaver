@@ -40,6 +40,7 @@ public class VariablesHintLabel {
 
     private final String[][] variables;
     private IVariableResolver resolver;
+    private CLabel infoLabel;
 
     public VariablesHintLabel(Composite parent, String hintLabel, String hintTitle, String[][] vars) {
         this(parent, hintLabel, hintTitle, vars, true);
@@ -50,7 +51,7 @@ public class VariablesHintLabel {
 
         String varsText = GeneralUtils.generateVariablesLegend(vars);
 
-        CLabel infoLabel = UIUtils.createInfoLabel(parent, hintLabel);
+        infoLabel = UIUtils.createInfoLabel(parent, hintLabel);
         Layout layout = parent.getLayout();
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         if (stretch && layout instanceof GridLayout) {
@@ -74,6 +75,10 @@ public class VariablesHintLabel {
         });
         infoLabel.setToolTipText(varsText);
 
+    }
+
+    public CLabel getInfoLabel() {
+        return infoLabel;
     }
 
     public void setResolver(IVariableResolver resolver) {
