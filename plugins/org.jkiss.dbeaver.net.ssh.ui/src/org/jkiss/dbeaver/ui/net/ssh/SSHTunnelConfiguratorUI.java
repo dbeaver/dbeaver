@@ -26,16 +26,19 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
+import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -68,6 +71,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
     private Spinner keepAliveText;
     private Spinner tunnelTimeout;
+    private VariablesHintLabel variablesHintLabel;
 
     @Override
     public void createControl(Composite parent)
@@ -148,18 +152,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             tunnelTimeout.setLayoutData(gd);
         }
 
-        Composite controlGroup = UIUtils.createPlaceholder(composite, 1);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        //gd.horizontalSpan = 2;
-        controlGroup.setLayoutData(gd);
+        {
+            Composite controlGroup = UIUtils.createComposite(composite, 2);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            controlGroup.setLayoutData(gd);
 
-        Button testButton = UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                testTunnelConnection();
-            }
-        });
-        //new Label(controlGroup, SWT.NONE);
+            UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    testTunnelConnection();
+                }
+            });
+            String hint = "You can use variables in SSH parameters.";
+            variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DataSourceDescriptor.CONNECT_VARIABLES, false);
+        }
 
         authMethodCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -175,6 +181,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         DBWHandlerConfiguration configuration = new DBWHandlerConfiguration(savedConfiguration);
         configuration.setProperties(Collections.emptyMap());
         saveSettings(configuration);
+        configuration.resolveDynamicVariables(
+            new DataSourceVariableResolver(
+                configuration.getDataSource(),
+                configuration.getDataSource().getConnectionConfiguration()));
 
         try {
             final String[] tunnelVersions = new String[2];
@@ -275,6 +285,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         updateAuthMethodVisibility();
 
         savedConfiguration = new DBWHandlerConfiguration(configuration);
+
+        variablesHintLabel.setResolver(
+            new DataSourceVariableResolver(
+                savedConfiguration.getDataSource(),
+                savedConfiguration.getDataSource().getConnectionConfiguration()));
     }
 
     @Override

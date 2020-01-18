@@ -660,7 +660,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                             reader.setListener(EMPTY_LISTENER);
                             return;
                         }
-                        curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource.getDriver());
+                        curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource);
                         curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
                         curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                         if (!passwordReadCanceled) {

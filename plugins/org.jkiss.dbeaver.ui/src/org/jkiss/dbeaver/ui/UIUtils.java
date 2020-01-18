@@ -1496,8 +1496,32 @@ public class UIUtils {
         table.addDisposeListener(e -> menuMgr.dispose());
     }
 
+    public static void setControlContextMenu(Control control, IMenuListener menuListener) {
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.addMenuListener(menuListener);
+        menuMgr.setRemoveAllWhenShown(true);
+        control.setMenu(menuMgr.createContextMenu(control));
+        control.addDisposeListener(e -> menuMgr.dispose());
+    }
+
     public static void fillDefaultTableContextMenu(IContributionManager menu, final Table table) {
-        menu.add(new Action("Copy selection") {
+        if (table.getColumnCount() > 1) {
+            menu.add(new Action("Copy " + table.getColumn(0).getText()) {
+                @Override
+                public void run() {
+                    StringBuilder text = new StringBuilder();
+                    for (TableItem item : table.getSelection()) {
+                        if (text.length() > 0) text.append("\n");
+                        text.append(item.getText(0));
+                    }
+                    if (text.length() == 0) {
+                        return;
+                    }
+                    UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
+                }
+            });
+        }
+        menu.add(new Action("Copy All") {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
