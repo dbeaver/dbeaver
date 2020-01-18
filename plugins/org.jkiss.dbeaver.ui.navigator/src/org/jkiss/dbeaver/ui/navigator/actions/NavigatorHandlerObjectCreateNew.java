@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
@@ -173,6 +174,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         } else if (node instanceof DBNResource) {
             final DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
             IResource resource = ((DBNResource) node).getResource();
+            if (resource instanceof IProject) {
+                createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_PROJECT));
+            }
             DBPResourceHandler handler = workspace.getResourceHandler(resource);
             if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE));
@@ -180,10 +184,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
             }
-            if (resource instanceof IFolder) {
-                if (site != null) {
-                    createActions.add(new Separator());
-                }
+            if (resource instanceof IContainer) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
             }

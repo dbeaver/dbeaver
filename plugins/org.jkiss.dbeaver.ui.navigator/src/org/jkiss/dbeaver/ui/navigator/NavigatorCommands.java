@@ -37,6 +37,7 @@ public class NavigatorCommands {
     public static final String CMD_CREATE_RESOURCE_FOLDER = "org.jkiss.dbeaver.core.resource.create.folder";
     public static final String CMD_CREATE_FILE_LINK = "org.jkiss.dbeaver.core.resource.link.file";
     public static final String CMD_CREATE_FOLDER_LINK = "org.jkiss.dbeaver.core.resource.link.folder";
+    public static final String CMD_CREATE_PROJECT = "org.jkiss.dbeaver.core.project.create";
 
     public static final String PARAM_OBJECT_TYPE = "org.jkiss.dbeaver.core.object.type";
     public static final String PARAM_OBJECT_TYPE_NAME = "org.jkiss.dbeaver.core.object.typeName";
