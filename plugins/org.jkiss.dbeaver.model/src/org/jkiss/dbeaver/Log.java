@@ -54,13 +54,18 @@ public class Log
     private static ThreadLocal<PrintWriter> logWriter = new ThreadLocal<>();
     private static boolean quietMode;
     private static PrintWriter DEFAULT_DEBUG_WRITER;
+    private final boolean doEclipseLog;
 
     public static Log getLog(Class<?> forClass) {
-        return new Log(forClass.getName());
+        return new Log(forClass.getName(), false);
     }
 
     public static Log getLog(String name) {
-        return new Log(name);
+        return new Log(name, true);
+    }
+
+    public static Log getLog(String name, boolean doEclipseLog) {
+        return new Log(name, doEclipseLog);
     }
 
     public static boolean isQuietMode() {
@@ -109,8 +114,9 @@ public class Log
         }
     }
 
-    private Log(String name) {
+    private Log(String name, boolean doEclipseLog) {
         this.name = name;
+        this.doEclipseLog = doEclipseLog;
     }
 
     public void flush() {
@@ -280,7 +286,7 @@ public class Log
     }
 
     private void writeEclipseLog(IStatus status) {
-        if (logWriter.get() == null && eclipseLog != null) {
+        if (doEclipseLog && logWriter.get() == null && eclipseLog != null) {
             eclipseLog.log(status);
         }
     }
