@@ -558,9 +558,9 @@ class ResultSetPersister {
                                 NLS.bind(
                                     ResultSetMessages.controls_resultset_viewer_status_inserted_,
                                     new Object[]{
-                                        DataUpdaterJob.this.insertStats.getRowsUpdated(),
-                                        DataUpdaterJob.this.deleteStats.getRowsUpdated(),
-                                        DataUpdaterJob.this.updateStats.getRowsUpdated()}));
+                                        ResultSetUtils.formatRowCount(DataUpdaterJob.this.insertStats.getRowsUpdated()),
+                                        ResultSetUtils.formatRowCount(DataUpdaterJob.this.deleteStats.getRowsUpdated()),
+                                        ResultSetUtils.formatRowCount(DataUpdaterJob.this.updateStats.getRowsUpdated())}));
                         } else {
                             DBWorkbench.getPlatformUI().showError("Data error", "Error synchronizing data with database", error);
                             viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
