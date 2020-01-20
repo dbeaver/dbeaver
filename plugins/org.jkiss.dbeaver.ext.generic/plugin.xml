@@ -668,11 +668,11 @@
                     sampleURL="jdbc:phoenix:{host}[:{port}]"
                     defaultPort="2181"
                     webURL="http://phoenix.apache.org/"
-                    description="Driver for Apache Phoenix HBase Database"
+                    description="Thin driver for Apache Phoenix HBase Database"
                     category="Hadoop"
                     categories="hadoop">
                     <parameter name="omit-type-cache" value="true"/>
-                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-core:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE" ignore-dependencies="true"/>
                 </driver>
                 <driver
                     id="gemfire_xd"
