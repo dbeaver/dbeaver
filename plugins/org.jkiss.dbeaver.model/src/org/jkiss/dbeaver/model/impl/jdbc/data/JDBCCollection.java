@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -327,6 +328,33 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 return new JDBCCollection(elementType, elementValueHandler, null);
             }
             return makeCollectionFromJavaArray(session, elementType, elementValueHandler, array);
+        } catch (DBException e) {
+            throw new DBCException("Can't extract array data from Java array", e); //$NON-NLS-1$
+        }
+    }
+
+    @NotNull
+    public static JDBCCollection makeCollectionFromJavaCollection(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Collection coll) throws DBCException {
+        DBPDataTypeProvider dataTypeProvider = session.getDataSource();
+        DBPDataKind dataKind = DBPDataKind.OBJECT;
+        DBSDataType elementType = dataTypeProvider.getLocalDataType(Types.STRUCT);
+        if (elementType == null) {
+            try {
+                String typeName = dataTypeProvider.getDefaultDataTypeName(dataKind);
+                if (typeName != null) {
+                    elementType = dataTypeProvider.getLocalDataType(typeName);
+                }
+            } catch (Exception e) {
+                throw new DBCException("Error resolving default data type", e);
+            }
+        }
+
+        try {
+            if (elementType == null) {
+                throw new DBCException("Can't resolve array element data type"); //$NON-NLS-1$
+            }
+            final DBDValueHandler elementValueHandler = DBUtils.findValueHandler(session, elementType);
+            return makeCollectionFromJavaArray(session, elementType, elementValueHandler, coll.toArray());
         } catch (DBException e) {
             throw new DBCException("Can't extract array data from Java array", e); //$NON-NLS-1$
         }
