@@ -668,6 +668,7 @@
                     sampleURL="jdbc:phoenix:{host}[:{port}]"
                     defaultPort="2181"
                     webURL="http://phoenix.apache.org/"
+                    defaultPort="2181"
                     description="Driver for Apache Phoenix HBase Database"
                     category="Hadoop"
                     categories="hadoop">
