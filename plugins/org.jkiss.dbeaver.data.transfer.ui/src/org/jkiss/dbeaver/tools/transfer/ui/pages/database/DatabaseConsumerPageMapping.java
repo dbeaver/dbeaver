@@ -751,12 +751,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         settings.loadNode(getWizard().getRunnableContext(), producerContainer);
         DBNDatabaseNode containerNode = settings.getContainerNode();
         if (containerNode != null) {
-            //DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(containerNode);
             containerPanel.setContainerInfo(containerNode);
         }
 
         {
-            //Map<DBSDataContainer,DatabaseMappingContainer> dataMappings = settings.getDataMappings();
             List<DatabaseMappingContainer> model = new ArrayList<>();
 
             for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
