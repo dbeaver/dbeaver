@@ -279,7 +279,7 @@ public class MavenArtifact implements IMavenIdentifier
     @Nullable
     public MavenArtifactVersion getVersion(String versionStr) {
         for (MavenArtifactVersion version : localVersions) {
-            if (version.getVersion().equals(versionStr)) {
+            if (CommonUtils.equalObjects(version.getVersion(), versionStr)) {
                 return version;
             }
         }
