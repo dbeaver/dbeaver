@@ -87,24 +87,28 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return null;
         }
 
-        DBNDatabaseNode selectedDB = null;
-        for (DBNDatabaseNode node : contextDefaultObjectsReader.getNodeList()) {
-            if (node.getObject() == contextDefaultObjectsReader.getDefaultObject()) {
-                selectedDB = node;
+        DBSObject selectedDB = null;
+        DBSObject defaultObject = contextDefaultObjectsReader.getDefaultObject();
+        if (defaultObject != null) {
+            for (DBSObject object : contextDefaultObjectsReader.getObjectList()) {
+                if (object == defaultObject || object == defaultObject.getParentObject()) {
+                    selectedDB = object;
+                }
             }
         }
+        DBNDatabaseNode selectedNode = selectedDB == null ? null : DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(selectedDB);
         SelectDatabaseDialog dialog = new SelectDatabaseDialog(
             HandlerUtil.getActiveShell(event),
             dataSourceContainer,
             contextDefaultObjectsReader.getDefaultCatalogName(),
             contextDefaultObjectsReader.getNodeList(),
-            selectedDB == null ? null : Collections.singletonList(selectedDB));
+            selectedNode == null ? null : Collections.singletonList(selectedNode));
         dialog.setModeless(true);
         if (dialog.open() == IDialogConstants.CANCEL_ID) {
             return null;
         }
         DBNDatabaseNode node = dialog.getSelectedObject();
-        if (node != null && node.getObject() != contextDefaultObjectsReader.getDefaultObject()) {
+        if (node != null && node.getObject() != defaultObject) {
             // Change current schema
             changeDataBaseSelection(dataSourceContainer, executionContext, contextDefaultObjectsReader.getDefaultCatalogName(), dialog.getCurrentInstanceName(), node.getNodeName());
         }
@@ -190,6 +194,9 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             new AbstractJob("Change active database") {
+                {
+                    setUser(true);
+                }
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     try {
