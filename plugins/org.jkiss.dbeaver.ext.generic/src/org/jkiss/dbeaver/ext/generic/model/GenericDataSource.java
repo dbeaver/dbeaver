@@ -433,17 +433,18 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
         boolean omitCatalog = isOmitCatalog();
-        Object omitTypeCache = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE);
-        if (omitTypeCache == null || !CommonUtils.toBoolean(omitTypeCache)) {
+        boolean omitTypeCache = CommonUtils.toBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE));
+        if (!omitTypeCache) {
             // Cache data types
             try {
                 dataTypeCache.getAllObjects(monitor, this);
             } catch (Exception e) {
                 log.warn("Can't fetch database data types", e);
             }
-        } else {
-            // Use basic data types
-            dataTypeCache.fillStandardTypes(this);
+            if (CommonUtils.isEmpty(dataTypeCache.getCachedObjects())) {
+                // Use basic data types
+                dataTypeCache.fillStandardTypes(this);
+            }
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read generic metadata")) {
             // Read metadata
