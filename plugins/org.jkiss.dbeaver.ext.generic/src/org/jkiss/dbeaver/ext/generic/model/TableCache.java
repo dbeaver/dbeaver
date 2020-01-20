@@ -113,6 +113,10 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
             // Bad table type. Just skip it
             return null;
         }
+        if (DBUtils.isVirtualObject(owner) && !CommonUtils.isEmpty(tableSchema)) {
+            // Wrong schema - this may happen with virtual schemas
+            return null;
+        }
         GenericTableBase table = getDataSource().getMetaModel().createTableImpl(
             owner,
             tableName,
