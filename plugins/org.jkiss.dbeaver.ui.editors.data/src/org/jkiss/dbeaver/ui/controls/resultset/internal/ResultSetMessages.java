@@ -85,6 +85,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_status_row;
     public static String controls_resultset_viewer_status_rows;
     public static String controls_resultset_viewer_status_rows_fetched;
+    public static String controls_resultset_viewer_status_rows_updated;
     public static String controls_resultset_viewer_status_rows_size;
     public static String controls_resultset_viewer_value;
     public static String controls_resultset_viewer_calculate_row_count;

@@ -1838,9 +1838,23 @@ public class ResultSetViewer extends Viewer
                         "/" + model.getRowCount() +
                     (curRow == null ? getExecutionTimeMessage() : "");
             } else {
-                statusMessage =
-                    String.valueOf(model.getRowCount()) +
-                    ResultSetMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage();
+                long rowsFetched, rowsUpdated = -1;
+                DBCStatistics stats = getModel().getStatistics();
+                if (stats == null || stats.isEmpty()) {
+                    rowsFetched = getModel().getRowCount();
+                } else {
+                    rowsFetched = stats.getRowsFetched();
+                    rowsUpdated = stats.getRowsUpdated();
+                }
+                if (rowsFetched < 0 && rowsUpdated >= 0) {
+                    statusMessage =
+                        ResultSetUtils.formatRowCount(rowsUpdated) +
+                            ResultSetMessages.controls_resultset_viewer_status_rows_updated + getExecutionTimeMessage();
+                } else {
+                    statusMessage =
+                        ResultSetUtils.formatRowCount(rowsFetched) +
+                            ResultSetMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage();
+                }
             }
         }
         boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
