@@ -64,7 +64,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         @Nullable Collection<IDataTransferProducer> producers,
         @Nullable Collection<IDataTransferConsumer> consumers)
     {
-        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers);
         TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard);
         dialog.open();
     }
@@ -75,7 +75,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         @Nullable Collection<IDataTransferConsumer> consumers,
         @Nullable IStructuredSelection selection)
     {
-        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers, null);
+        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers);
         TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection);
         dialog.open();
     }
@@ -88,8 +88,6 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, null);
         return dialog.open();
     }
-
-    //private static final Log log = Log.getLog(DataTransferWizard.class);
 
     static class NodePageSettings {
         DataTransferNodeDescriptor sourceNode;
@@ -106,6 +104,10 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
             this.settingsPage = sPages.length == 0 ? null : sPages[0];
         }
 
+        @Override
+        public String toString() {
+            return sourceNode.getId();
+        }
     }
 
     private DataTransferSettings settings;
@@ -125,9 +127,9 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
         loadSettings();
     }
 
-    private DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, @Nullable DBTTask task) {
-        this(task);
-        this.settings = new DataTransferSettings(runnableContext, producers, consumers, new DialogSettingsMap(getDialogSettings()), true);
+    private DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers) {
+        this(null);
+        this.settings = new DataTransferSettings(runnableContext, producers, consumers, new DialogSettingsMap(getDialogSettings()), true, CommonUtils.isEmpty(consumers));
 
         loadSettings();
 
