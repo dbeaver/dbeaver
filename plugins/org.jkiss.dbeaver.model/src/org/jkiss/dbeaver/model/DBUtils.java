@@ -379,12 +379,17 @@ public final class DBUtils {
         for (int i = 0; i < names.size(); i++) {
             String childName = names.get(i);
             DBSObject child = parent.getChild(monitor, childName);
-            if (child == null) {
+            if (child == null && i == 0) {
                 DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
-                DBSObjectContainer container = DBUtils.getSelectedObject(executionContext, DBSObjectContainer.class);
+                DBSObjectContainer container = contextDefaults.getDefaultCatalog();
                 if (container != null) {
-                    parent = container;
-                    child = parent.getChild(monitor, childName);
+                    child = container.getChild(monitor, childName);
+                    if (child == null) {
+                        container = contextDefaults.getDefaultSchema();
+                        if (container != null) {
+                            child = container.getChild(monitor, childName);
+                        }
+                    }
                 }
             }
             if (child == null) {
