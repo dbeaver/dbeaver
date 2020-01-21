@@ -472,7 +472,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         return "";
                     }
                     DBSSchema schema = DBUtils.getParentOfType(DBSSchema.class, dataContainer);
-                    return schema == null ? "" : stripObjectName(schema.getName());
+                    if (schema != null) {
+                        return stripObjectName(schema.getName());
+                    }
+                    // Try catalog (#7506)
+                    DBSCatalog catalog = DBUtils.getParentOfType(DBSCatalog.class, dataContainer);
+                    return catalog == null ? "" : stripObjectName(catalog.getName());
                 }
                 case VARIABLE_TABLE: {
                     if (settings.isUseSingleFile()) {
