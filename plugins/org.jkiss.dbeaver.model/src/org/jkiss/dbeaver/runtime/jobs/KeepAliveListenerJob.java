@@ -33,19 +33,19 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.*;
 
 /**
- * KeepAliveJob
+ * KeepAliveListenerJob
  */
-public class KeepAliveJob extends AbstractJob
+public class KeepAliveListenerJob extends AbstractJob
 {
-    public static final int MONITOR_INTERVAL = 3000; // once per 3 seconds
+    private static final int MONITOR_INTERVAL = 3000; // once per 3 seconds
 
-    private static final Log log = Log.getLog(KeepAliveJob.class);
+    private static final Log log = Log.getLog(KeepAliveListenerJob.class);
 
     private final DBPPlatform platform;
     private Map<String, Long> checkCache = new HashMap<>();
     private final Set<String> pingCache = new HashSet<>();
 
-    public KeepAliveJob(DBPPlatform platform)
+    public KeepAliveListenerJob(DBPPlatform platform)
     {
         super("Keep-Alive monitor");
         setUser(false);
@@ -110,11 +110,11 @@ public class KeepAliveJob extends AbstractJob
         }
         long curTime = System.currentTimeMillis();
         if ((curTime - lastCheckTime) / 1000 > keepAliveInterval) {
-            final PingJob pingJob = new PingJob(dataSource);
+            final KeepAlivePingJob pingJob = new KeepAlivePingJob(dataSource);
             pingJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
-                    synchronized (KeepAliveJob.this) {
+                    synchronized (KeepAliveListenerJob.this) {
                         checkCache.put(dsId, System.currentTimeMillis());
                         pingCache.remove(dsId);
                     }
