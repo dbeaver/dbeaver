@@ -78,7 +78,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
                 GenericConstants.TABLE_TYPE_VIEW,
                 null);
         if (viewImpl instanceof GenericView) {
-            ((GenericView) viewImpl).setObjectDefinitionText("CREATE VIEW " + tableName + " AS SELECT 1 as A;\n");
+            ((GenericView) viewImpl).setObjectDefinitionText("CREATE VIEW " + viewImpl.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS SELECT 1 as A;\n");
         }
         return viewImpl;
     }
