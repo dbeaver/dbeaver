@@ -1472,7 +1472,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         activePresentation.refreshData(attributesChanged || (rowsChanged && recordMode), false, true);
-        this.updateStatusMessage();
+        //this.updateStatusMessage();
     }
 
     private void createStatusBar()

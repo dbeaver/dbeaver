@@ -27,7 +27,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -519,6 +518,6 @@ public class ResultSetUtils
     }
 
     static String formatRowCount(long rows) {
-        return rows < 0 ? DBConstants.LABEL_NA : String.valueOf(rows);
+        return rows < 0 ? "0" : String.valueOf(rows);
     }
 }
