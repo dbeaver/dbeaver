@@ -26,8 +26,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
+import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
 
 import java.util.List;
 
@@ -71,10 +70,7 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
 
         @Override
         public void run() {
-            CreateConnectionDialog dialog = new CreateConnectionDialog(
-                window,
-                new NewConnectionWizard(driver));
-            dialog.open();
+            NewConnectionDialog.openNewConnectionDialog(window, driver);
         }
     }
 

@@ -92,8 +92,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    protected int getShellStyle() {
-        return SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL;
+    public int getShellStyle() {
+        if (isModalWizard() || UIUtils.isInDialog()) {
+            return SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL;
+        }
+        return SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
+    }
+
+    protected boolean isModalWizard() {
+        return true;
     }
 
     @Override

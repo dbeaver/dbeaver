@@ -22,11 +22,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 
 /**
  * UIServiceConnectionsImpl
@@ -37,10 +35,7 @@ public class UIServiceConnectionsImpl implements UIServiceConnections {
 
     @Override
     public void openConnectionEditor(DBPDataSourceContainer dataSourceContainer) {
-        EditConnectionDialog dialog = new EditConnectionDialog(
-            UIUtils.getActiveWorkbenchWindow(),
-            new EditConnectionWizard((DataSourceDescriptor) dataSourceContainer));
-        dialog.open();
+        EditConnectionDialog.openEditConnectionDialog(UIUtils.getActiveWorkbenchWindow(), dataSourceContainer);
     }
 
     @Override
