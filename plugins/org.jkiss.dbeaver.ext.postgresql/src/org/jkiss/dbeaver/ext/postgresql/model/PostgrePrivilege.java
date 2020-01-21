@@ -153,21 +153,21 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
     }
 
     public short getPermission(PostgrePrivilegeType privilegeType) {
-        for (int i = 0; i < permissions.length; i++) {
-            if (permissions[i].privilegeType == privilegeType) {
-                return permissions[i].permissions;
+        for (ObjectPermission permission : permissions) {
+            if (permission.privilegeType == privilegeType || permission.privilegeType == PostgrePrivilegeType.ALL) {
+                return permission.permissions;
             }
         }
         return NONE;
     }
 
     public void setPermission(PostgrePrivilegeType privilegeType, boolean permit) {
-        for (int i = 0; i < permissions.length; i++) {
-            if (permissions[i].privilegeType == privilegeType) {
+        for (ObjectPermission permission : permissions) {
+            if (permission.privilegeType == privilegeType) {
                 if (permit) {
-                    permissions[i].permissions |= GRANTED;
+                    permission.permissions |= GRANTED;
                 } else {
-                    permissions[i].permissions = 0;
+                    permission.permissions = 0;
                 }
             }
         }
