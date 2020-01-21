@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -125,8 +126,15 @@ public final class DBStructUtils {
     }
 
     private static void addDDLLine(StringBuilder sql, String ddl) {
+        ddl = ddl.trim();
         if (!CommonUtils.isEmpty(ddl)) {
-            sql.append("\n").append(ddl);
+            if (sql.length() > 0) {
+                sql.append("\n\n");
+            }
+            sql.append(ddl);
+            if (!ddl.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
+                sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
+            }
         }
     }
 
