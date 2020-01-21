@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -26,30 +27,42 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.utils.CommonUtils;
 
-/**
- * CreateConnectionDialog
- */
-public class EditConnectionDialog extends MultiPageWizardDialog
-{
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
-    public static final int TEST_BUTTON_ID = 2000;
+/**
+ * NewConnectionDialog.
+ * <p>
+ * It is a modeless dialog. But only one instance can be opened for a particular datasource.
+ */
+public class EditConnectionDialog extends MultiPageWizardDialog {
+
+    private static final Map<DBPDataSourceContainer, EditConnectionDialog> openDialogs = Collections.synchronizedMap(new IdentityHashMap<>());
+
+    private static final int TEST_BUTTON_ID = 2000;
     private static String lastActivePage;
 
     private Button testButton;
 
-    public EditConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard)
-    {
+    private EditConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard) {
         super(window, wizard);
     }
 
     @Override
-    public ConnectionWizard getWizard()
-    {
-        return (ConnectionWizard)super.getWizard();
+    public ConnectionWizard getWizard() {
+        return (ConnectionWizard) super.getWizard();
+    }
+
+    @Override
+    protected boolean isModalWizard() {
+        return false;
     }
 
     @Override
@@ -58,8 +71,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     }
 
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
 
         if (!CommonUtils.isEmpty(lastActivePage)) {
@@ -75,8 +87,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
+    protected void createButtonsForButtonBar(Composite parent) {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
         testButton = createButton(parent, TEST_BUTTON_ID, "   " + CoreMessages.dialog_connection_button_test + "   ", false);
@@ -84,16 +95,15 @@ public class EditConnectionDialog extends MultiPageWizardDialog
 
         Label spacer = new Label(parent, SWT.NONE);
         spacer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        ((GridLayout)parent.getLayout()).numColumns++;
-        ((GridLayout)parent.getLayout()).makeColumnsEqualWidth = false;
+        ((GridLayout) parent.getLayout()).numColumns++;
+        ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
 
         super.createButtonsForButtonBar(parent);
         //testButton.moveAbove(getButton(IDialogConstants.CANCEL_ID));
     }
 
     @Override
-    protected void buttonPressed(int buttonId)
-    {
+    protected void buttonPressed(int buttonId) {
         if (buttonId == TEST_BUTTON_ID) {
             testConnection();
             return;
@@ -110,8 +120,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     }
 
     @Override
-    public void updateButtons()
-    {
+    public void updateButtons() {
         if (testButton != null) {
             ConnectionPageSettings settings = getWizard().getPageSettings();
             testButton.setEnabled(settings != null && settings.isPageComplete());
@@ -119,9 +128,25 @@ public class EditConnectionDialog extends MultiPageWizardDialog
         super.updateButtons();
     }
 
-    private void testConnection()
-    {
+    private void testConnection() {
         getWizard().testConnection();
+    }
+
+    public static boolean openEditConnectionDialog(IWorkbenchWindow window, DBPDataSourceContainer dataSource) {
+        EditConnectionDialog dialog = openDialogs.get(dataSource);
+        if (dialog != null) {
+            dialog.getShell().forceActive();
+            return true;
+        }
+
+        EditConnectionWizard wizard = new EditConnectionWizard((DataSourceDescriptor) dataSource);
+        dialog = new EditConnectionDialog(window, wizard);
+        openDialogs.put(dataSource, dialog);
+        try {
+            return dialog.open() == IDialogConstants.OK_ID;
+        } finally {
+            openDialogs.remove(dataSource);
+        }
     }
 
 }

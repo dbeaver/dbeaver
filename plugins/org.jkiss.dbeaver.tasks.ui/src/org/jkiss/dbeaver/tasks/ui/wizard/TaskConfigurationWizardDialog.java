@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
@@ -55,17 +54,13 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     }
 
     @Override
-    protected TaskConfigurationWizard getWizard() {
-        return (TaskConfigurationWizard) super.getWizard();
+    protected boolean isModalWizard() {
+        return false;
     }
 
     @Override
-    public int getShellStyle() {
-        int shellStyle = SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
-        if (UIUtils.isInDialog()) {
-            shellStyle |= SWT.APPLICATION_MODAL;
-        }
-        return shellStyle;
+    protected TaskConfigurationWizard getWizard() {
+        return (TaskConfigurationWizard) super.getWizard();
     }
 
     protected TaskConfigurationWizard getTaskWizard() {

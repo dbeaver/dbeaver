@@ -21,8 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
+import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
 
 public class DataSourceCreateHandler extends AbstractHandler {
 
@@ -30,10 +29,7 @@ public class DataSourceCreateHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        CreateConnectionDialog dialog = new CreateConnectionDialog(
-            window,
-            new NewConnectionWizard());
-        dialog.open();
+        NewConnectionDialog.openNewConnectionDialog(window);
 
         return null;
     }
