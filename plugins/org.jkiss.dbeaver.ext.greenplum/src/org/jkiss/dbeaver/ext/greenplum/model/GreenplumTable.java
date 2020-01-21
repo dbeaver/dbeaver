@@ -119,7 +119,7 @@ public class GreenplumTable extends PostgreTableRegular {
     private int[] readDistributedColumns(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table distributed columns")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                if (((GreenplumDataSource)getDataSource()).isGreenplumVersionAtLeast(session.getProgressMonitor(), 6, 0)) {
+                if (((GreenplumDataSource) getDataSource()).isGreenplumVersionAtLeast(session.getProgressMonitor(), 6, 0)) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT distkey FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
                         if (dbResult.next()) {
                             return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
@@ -179,8 +179,9 @@ public class GreenplumTable extends PostgreTableRegular {
             }
 
             String partitionData = getPartitionData(monitor);
-            if (partitionData!=null) {
-                ddl.append(String.format("\n%s", partitionData));
+            if (partitionData != null) {
+                ddl.append("\n");
+                ddl.append(partitionData);
             }
         } catch (DBException e) {
             log.error("Error reading Greenplum table properties", e);
@@ -190,10 +191,10 @@ public class GreenplumTable extends PostgreTableRegular {
     private String getPartitionData(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table partition data")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT pg_get_partition_def('"+getSchema().getName()+"."+getName()+"'::regclass, true, false);")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT pg_get_partition_def('" + getSchema().getName() + "." + getName() + "'::regclass, true, false);")) {
                     if (dbResult.next()) {
                         String result = dbResult.getString(1);
-                        if (result!=null && result.startsWith("PARTITION ")) {
+                        if (result != null && result.startsWith("PARTITION ")) {
                             return result;
                         }
                         return null;
