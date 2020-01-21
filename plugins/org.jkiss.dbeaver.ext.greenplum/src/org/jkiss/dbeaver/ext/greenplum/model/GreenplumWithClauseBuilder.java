@@ -40,7 +40,7 @@ public class GreenplumWithClauseBuilder {
             withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
             withClauseBuilder.append("\n)");
         } else if (tableIsGreenplumWithRelOptions(table, tableBase)) {
-            String [] options = tableBase.getRelOptions();
+            String[] options = tableBase.getRelOptions();
             withClauseBuilder.append(format("\nWITH (\n\t%s", options[0]));
             for (int i = 1; i < options.length; i++) {
                 String option = options[i];
