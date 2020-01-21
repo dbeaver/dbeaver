@@ -195,7 +195,11 @@ public class DBExecUtils {
                     } else {
                         // Do not recover if connection was canceled
                         log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
-                        InvalidateJob.invalidateDataSource(monitor, dataSource, false,
+                        InvalidateJob.invalidateDataSource(
+                            monitor,
+                            dataSource,
+                            false,
+                            true,
                             () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
                         if (i < tryCount - 1) {
                             log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);

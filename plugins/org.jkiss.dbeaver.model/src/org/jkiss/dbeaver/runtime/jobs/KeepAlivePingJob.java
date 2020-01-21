@@ -30,41 +30,56 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import java.util.List;
 
 /**
- * PingJob
+ * KeepAlivePingJob
  */
-public class PingJob extends AbstractJob
-{
-    private static final Log log = Log.getLog(PingJob.class);
+class KeepAlivePingJob extends AbstractJob {
+    private static final Log log = Log.getLog(KeepAlivePingJob.class);
 
     private final DBPDataSource dataSource;
 
-    public PingJob(DBPDataSource dataSource)
-    {
-        super("Connection ping");
+    KeepAlivePingJob(DBPDataSource dataSource) {
+        super("Connection ping (" + dataSource.getContainer().getName() + ")");
         setUser(false);
         setSystem(true);
         this.dataSource = dataSource;
     }
 
     @Override
-    protected IStatus run(DBRProgressMonitor monitor)
-    {
-        //log.debug("Ping connection " + dataSource.getContainer().getId());
+    protected IStatus run(DBRProgressMonitor monitor) {
         for (final DBSInstance instance : dataSource.getAvailableInstances()) {
             for (final DBCExecutionContext context : instance.getAllContexts()) {
                 try {
                     context.checkContextAlive(monitor);
                 } catch (Exception e) {
                     log.debug("Context [" + dataSource.getName() + "::" + context.getContextName() + "] check failed: " + e.getMessage());
+                    // Invalidate. Do not log errors (as it can spam tons of logs)
                     if (e instanceof DBException) {
-                        final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(monitor, dataSource, false,
+                        final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(
+                            monitor,
+                            dataSource,
+                            false,
+                            false,
                             () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
-                        log.debug("Connection invalidated: " + results);
+                        if (isSuccess(results)) {
+                            log.debug("Connection invalidated: " + results);
+                        }
                     }
                 }
             }
         }
         return Status.OK_STATUS;
+    }
+
+    private boolean isSuccess(List<InvalidateJob.ContextInvalidateResult> results) {
+        for (InvalidateJob.ContextInvalidateResult result : results) {
+            switch (result.result) {
+                case ALIVE:
+                case RECONNECTED:
+                case CONNECTED:
+                    return true;
+            }
+        }
+        return false;
     }
 
 

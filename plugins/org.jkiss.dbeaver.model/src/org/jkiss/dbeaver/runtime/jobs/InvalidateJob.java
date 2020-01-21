@@ -89,12 +89,12 @@ public class InvalidateJob extends DataSourceJob
 
         // Disable disconnect on failure. It is the worst case anyway.
         // Not sure that we should force disconnect even here.
-        this.invalidateResults = invalidateDataSource(monitor, dataSource, false, feedbackHandler);
+        this.invalidateResults = invalidateDataSource(monitor, dataSource, false, true, feedbackHandler);
 
         return Status.OK_STATUS;
     }
 
-    public static List<ContextInvalidateResult> invalidateDataSource(DBRProgressMonitor monitor, DBPDataSource dataSource, boolean disconnectOnFailure, Runnable feedback) {
+    public static List<ContextInvalidateResult> invalidateDataSource(DBRProgressMonitor monitor, DBPDataSource dataSource, boolean disconnectOnFailure, boolean showErrors, Runnable feedback) {
         long timeSpent = 0;
         List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
 
@@ -150,7 +150,7 @@ public class InvalidateJob extends DataSourceJob
             try {
                 container.disconnect(monitor);
             } catch (Exception e) {
-                log.error("Error closing unaccessible datasource", e);
+                log.error("Error closing inaccessible datasource", e);
             }
             StringBuilder msg = new StringBuilder();
             for (ContextInvalidateResult result : invalidateResults) {
@@ -164,12 +164,14 @@ public class InvalidateJob extends DataSourceJob
 
         if (totalContexts > 0) {
             if (goodContextsNumber == 0) {
-                DBeaverNotifications.showNotification(
-                    dataSource,
-                    DBeaverNotifications.NT_RECONNECT,
-                    "Datasource invalidate failed",
-                    DBPMessageType.ERROR,
-                    feedback);
+                if (showErrors) {
+                    DBeaverNotifications.showNotification(
+                        dataSource,
+                        DBeaverNotifications.NT_RECONNECT,
+                        "Datasource invalidate failed",
+                        DBPMessageType.ERROR,
+                        feedback);
+                }
             } else {
                 DBeaverNotifications.showNotification(
                     dataSource,
