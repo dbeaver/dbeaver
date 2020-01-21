@@ -398,7 +398,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Override
     public ITabbedFolder getActiveFolder()
     {
-        return folderComposite == null ? null : folderComposite.getActiveFolder();
+        return getActiveFolder(true);
+    }
+
+    private ITabbedFolder getActiveFolder(boolean activate)
+    {
+        return folderComposite == null ? null : folderComposite.getActiveFolder(activate);
     }
 
     @Override
@@ -479,7 +484,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     public <T> T getAdapter(Class<T> adapter)
     {
         Object result = null;
-        final Object activeFolder = getActiveFolder();
+        final Object activeFolder = getActiveFolder(false);
         if (activeFolder != null) {
             if (activeFolder instanceof IAdaptable) {
                 result = ((IAdaptable) activeFolder).getAdapter(adapter);
