@@ -177,10 +177,34 @@ public class GreenplumTable extends PostgreTableRegular {
                 }
                 ddl.append(")");
             }
+
+            String partitionData = getPartitionData(monitor);
+            if (partitionData!=null) {
+                ddl.append(String.format("\n%s", partitionData));
+            }
         } catch (DBException e) {
             log.error("Error reading Greenplum table properties", e);
         }
     }
 
-}
+    private String getPartitionData(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table partition data")) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT pg_get_partition_def('"+getSchema().getName()+"."+getName()+"'::regclass, true, false);")) {
+                    if (dbResult.next()) {
+                        String result = dbResult.getString(1);
+                        if (result!=null && result.startsWith("PARTITION ")) {
+                            return result;
+                        }
+                        return null;
+                    } else {
+                        return null;
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        }
+    }
 
+}
