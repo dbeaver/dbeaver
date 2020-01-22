@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -286,10 +287,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         savedConfiguration = new DBWHandlerConfiguration(configuration);
 
-        variablesHintLabel.setResolver(
-            new DataSourceVariableResolver(
-                savedConfiguration.getDataSource(),
-                savedConfiguration.getDataSource().getConnectionConfiguration()));
+        DBPDataSourceContainer dataSource = savedConfiguration.getDataSource();
+        if (dataSource != null) {
+            variablesHintLabel.setResolver(
+                new DataSourceVariableResolver(
+                    dataSource,
+                    dataSource.getConnectionConfiguration()));
+        }
     }
 
     @Override
