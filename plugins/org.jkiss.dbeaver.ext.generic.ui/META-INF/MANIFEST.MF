@@ -25,5 +25,6 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
+Bundle-Localization: OSGI-INF/l10n/bundle
 Export-Package: org.jkiss.dbeaver.ext.generic.views
 Automatic-Module-Name: org.jkiss.dbeaver.ext.generic.ui
