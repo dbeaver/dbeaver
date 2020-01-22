@@ -243,10 +243,10 @@ public abstract class AbstractToolWizard<SETTINGS extends AbstractNativeToolSett
 
     public String getObjectsName() {
         StringBuilder str = new StringBuilder();
-        for (BASE_OBJECT object : settings.getDatabaseObjects()) {
-            if (str.length() > 0) str.append(",");
-            str.append(object.getName());
-        }
+//        for (BASE_OBJECT object : settings.getDatabaseObjects()) {
+//            if (str.length() > 0) str.append(",");
+//            str.append(object.getName());
+//        }
         return str.toString();
     }
 

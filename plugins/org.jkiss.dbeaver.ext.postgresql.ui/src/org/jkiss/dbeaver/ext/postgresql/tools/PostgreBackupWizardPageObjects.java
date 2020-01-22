@@ -290,13 +290,12 @@ class PostgreBackupWizardPageObjects extends AbstractToolWizardPage<PostgreBacku
             if (item.getChecked()) {
                 PostgreSchema schema = (PostgreSchema) item.getData();
                 Set<PostgreTableBase> checkedTables = checkedObjects.get(schema);
-                if (CommonUtils.isEmpty(checkedTables)) {
-                    // All tables checked
+                // All tables checked
+                if (!schemas.contains(schema)) {
                     schemas.add(schema);
-                } else {
-                    // Only a few tables checked
-                    tables.addAll(checkedTables);
                 }
+                // Only a few tables checked
+                tables.addAll(checkedTables);
             }
         }
         PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataBase, schemas, tables);
