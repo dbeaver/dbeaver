@@ -619,19 +619,23 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (oid == 0) {
-            // New database
-            readDatabaseInfo(monitor);
-            return this;
-        } else {
-            // Refresh all properties
-            PostgreDatabase refDatabase = getDataSource().getDatabaseCache().refreshObject(monitor, getDataSource(), this);
-            if (refDatabase != null && refDatabase == dataSource.getDefaultInstance()) {
-                // Cache types
-                refDatabase.cacheDataTypes(monitor, true);
-            }
-            return refDatabase;
-        }
+        readDatabaseInfo(monitor);
+
+        // Clear all caches
+        roleCache.clearCache();
+        accessMethodCache.clearCache();
+        foreignDataWrapperCache.clearCache();
+        foreignServerCache.clearCache();
+        languageCache.clearCache();
+        encodingCache.clearCache();
+        extensionCache.clearCache();
+        availableExtensionCache.clearCache();
+        collationCache.clearCache();
+        tablespaceCache.clearCache();
+        schemaCache.clearCache();
+        cacheDataTypes(monitor, true);
+
+        return this;
     }
 
     public Collection<PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {
