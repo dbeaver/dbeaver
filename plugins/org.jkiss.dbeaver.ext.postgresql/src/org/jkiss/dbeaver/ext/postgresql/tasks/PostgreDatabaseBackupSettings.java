@@ -128,7 +128,9 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                     schemas = new ArrayList<>();
                     info.setSchemas(schemas);
                 }
-                schemas.add(schema);
+                if (!schemas.contains(schema)) {
+                    schemas.add(schema);
+                }
             }
             if (object instanceof PostgreTableBase) {
                 List<PostgreTableBase> tables = info.getTables();
