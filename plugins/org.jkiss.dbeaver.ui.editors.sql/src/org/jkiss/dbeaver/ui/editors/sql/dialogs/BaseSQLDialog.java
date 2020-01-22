@@ -162,7 +162,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-        if (sqlViewer.getTextViewer() != null && sqlViewer.getTextViewer().getDocument() != null) {
+        if (sqlViewer != null && sqlViewer.getTextViewer() != null && sqlViewer.getTextViewer().getDocument() != null) {
             sqlInput.setText(sqlViewer.getTextViewer().getDocument().get());
         }
         super.okPressed();
