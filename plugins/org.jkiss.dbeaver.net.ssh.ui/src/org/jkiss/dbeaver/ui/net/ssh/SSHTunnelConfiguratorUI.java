@@ -182,10 +182,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         DBWHandlerConfiguration configuration = new DBWHandlerConfiguration(savedConfiguration);
         configuration.setProperties(Collections.emptyMap());
         saveSettings(configuration);
-        configuration.resolveDynamicVariables(
-            new DataSourceVariableResolver(
-                configuration.getDataSource(),
-                configuration.getDataSource().getConnectionConfiguration()));
+        DBPDataSourceContainer dataSource = configuration.getDataSource();
+        if (dataSource != null) {
+            configuration.resolveDynamicVariables(
+                new DataSourceVariableResolver(
+                    dataSource,
+                    dataSource == null ? null : dataSource.getConnectionConfiguration()));
+        }
 
         try {
             final String[] tunnelVersions = new String[2];
