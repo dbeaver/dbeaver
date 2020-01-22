@@ -46,9 +46,9 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
             case DBPConnectionConfiguration.VARIABLE_URL:
                 return configuration.getUrl();
             case DBPConnectionConfiguration.VAR_PROJECT_PATH:
-                return dataSourceContainer.getProject().getEclipseProject().getLocation().toOSString();
+                return dataSourceContainer == null ? null : dataSourceContainer.getProject().getEclipseProject().getLocation().toOSString();
             case DBPConnectionConfiguration.VAR_PROJECT_NAME:
-                return dataSourceContainer.getProject().getName();
+                return dataSourceContainer == null ? null : dataSourceContainer.getProject().getName();
             default:
                 String var = super.get(name);
                 if (var != null) {

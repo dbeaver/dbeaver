@@ -72,7 +72,7 @@ public class DBWHandlerConfiguration {
     }
 
     public DBPDriver getDriver() {
-        return dataSource.getDriver();
+        return dataSource == null ? null : dataSource.getDriver();
     }
 
     public DBPDataSourceContainer getDataSource() {
