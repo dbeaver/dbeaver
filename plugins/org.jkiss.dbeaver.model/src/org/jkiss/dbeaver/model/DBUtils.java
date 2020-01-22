@@ -381,9 +381,11 @@ public final class DBUtils {
             DBSObject child = parent.getChild(monitor, childName);
             if (child == null && i == 0) {
                 DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
-                DBSObjectContainer container = contextDefaults.getDefaultCatalog();
-                if (container != null) {
-                    child = container.getChild(monitor, childName);
+                if (contextDefaults != null) {
+                    DBSObjectContainer container = contextDefaults.getDefaultCatalog();
+                    if (container != null) {
+                        child = container.getChild(monitor, childName);
+                    }
                     if (child == null) {
                         container = contextDefaults.getDefaultSchema();
                         if (container != null) {

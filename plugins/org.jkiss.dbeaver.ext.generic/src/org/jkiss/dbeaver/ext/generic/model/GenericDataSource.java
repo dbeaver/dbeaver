@@ -794,6 +794,21 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         }
     }
 
+    GenericCatalog getDefaultCatalog() {
+        return null;
+    }
+
+    GenericSchema getDefaultSchema() {
+        if (schemas != null) {
+            for (GenericSchema schema : schemas) {
+                if (schema.isVirtual()) {
+                    return schema;
+                }
+            }
+        }
+        return null;
+    }
+
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
         @NotNull
         @Override
