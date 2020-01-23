@@ -96,17 +96,15 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         PostgreDataSource dataSource = getDefaultCatalog().getDataSource();
         PostgreDatabase defaultInstance = dataSource.getDefaultInstance();
         try {
-            /*if (defaultInstance.getDefaultContext() == this) {
-                dataSource.setDefaultInstance(monitor, catalog, schema);
-            } else */
             if (getOwnerInstance() != catalog) {
                 disconnect();
                 setOwnerInstance(catalog);
                 connect(monitor, null, null, null, false);
             }
             if (schema != null) {
-                this.activeSchema = null;
                 setDefaultSchema(monitor, schema);
+            } else {
+                DBUtils.fireObjectSelectionChange(null, defaultInstance);
             }
         } catch (DBException e) {
             throw new DBCException("Error changing default database", e);

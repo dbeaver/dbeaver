@@ -47,7 +47,7 @@ import java.util.Map;
 public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler implements IElementUpdater {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        DBCExecutionContext context = getExecutionContext(event, true);
+        DBCExecutionContext context = getActiveExecutionContext(event, true);
         if (context != null) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             if (txnManager != null) {
@@ -95,7 +95,7 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
 
         boolean autoCommit = true;
         DBPTransactionIsolation isolation = null;
-        DBCExecutionContext context = getExecutionContext(activeEditor);
+        DBCExecutionContext context = getExecutionContextFromPart(activeEditor);
         if (context != null && context.isConnected()) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             if (txnManager != null) {

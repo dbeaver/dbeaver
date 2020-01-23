@@ -49,7 +49,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBCExecutionContext context = getExecutionContext(event, false);
+        DBCExecutionContext context = getActiveExecutionContext(event, false);
         if (context != null) {
             invalidateDataSource(context.getDataSource());
         } else {

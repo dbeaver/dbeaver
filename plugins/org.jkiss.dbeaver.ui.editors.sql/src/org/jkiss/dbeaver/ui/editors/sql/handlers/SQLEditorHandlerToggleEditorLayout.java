@@ -29,8 +29,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 
-public class ToggleEditorLayoutHandler extends AbstractHandler {
-    static protected final Log log = Log.getLog(ToggleEditorLayoutHandler.class);
+public class SQLEditorHandlerToggleEditorLayout extends AbstractHandler {
+    static protected final Log log = Log.getLog(SQLEditorHandlerToggleEditorLayout.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

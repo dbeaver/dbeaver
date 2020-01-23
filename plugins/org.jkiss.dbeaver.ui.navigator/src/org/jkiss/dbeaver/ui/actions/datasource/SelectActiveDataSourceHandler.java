@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.GC;
@@ -29,7 +28,6 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -131,7 +129,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                 }
             }
 
-            final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(workbenchWindow.getActivePage().getActivePart());
+            final DBPDataSourceContainer dataSourceContainer = getDataSourceContainerFromPart(workbenchWindow.getActivePage().getActivePart());
             if (dataSourceContainer != null) {
                 return dataSourceContainer.getRegistry().getDataSources();
             } else {
@@ -174,7 +172,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
             }
             singleDataSources.sort(DBUtils.nameComparator());
 
-            DBPDataSourceContainer curDataSource = getDataSourceContainer(workbenchWindow.getActivePage().getActivePart());
+            DBPDataSourceContainer curDataSource = getDataSourceContainerFromPart(workbenchWindow.getActivePage().getActivePart());
             for (DBPDataSourceContainer ds : connectedDataSources) {
                 DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(ds);
                 menuItems.add(

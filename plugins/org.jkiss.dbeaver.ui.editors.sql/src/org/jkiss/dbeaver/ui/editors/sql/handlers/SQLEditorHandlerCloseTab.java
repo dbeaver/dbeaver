@@ -20,34 +20,17 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-public class SwitchPanelHandler extends AbstractHandler {
 
-    private static final Log log = Log.getLog(SwitchPanelHandler.class);
+public class SQLEditorHandlerCloseTab extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
-        if (editor == null) {
-            return null;
-        }
-
-        String actionId = event.getCommand().getId();
-
-        switch (actionId) {
-            case SQLEditorCommands.CMD_SQL_SWITCH_PANEL:
-                editor.toggleActivePanel();
-                break;
-            case SQLEditorCommands.CMD_SQL_SHOW_OUTPUT:
-                editor.showOutputPanel();
-                break;
-            case SQLEditorCommands.CMD_SQL_SHOW_LOG:
-                editor.showExecutionLogPanel();
-                break;
+        if (editor != null) {
+            editor.closeActiveTab();
         }
         return null;
     }

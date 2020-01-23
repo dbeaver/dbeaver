@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
@@ -55,19 +54,26 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class OpenHandler extends AbstractDataSourceHandler {
+public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
 
-    public static void openResource(IResource resource, IWorkbenchWindow window)
-    {
+    public static void openResource(IResource resource) {
+        openResource(resource, new SQLNavigatorContext());
+    }
+
+    public static void openResource(IResource resource, @NotNull SQLNavigatorContext navigatorContext) {
         try {
             DBPResourceHandler handler = DBWorkbench.getPlatform().getWorkspace().getResourceHandler(resource);
             if (handler != null) {
+                if (resource instanceof IFile && navigatorContext.getDataSourceContainer() != null) {
+                    EditorUtils.setFileDataSource((IFile) resource, navigatorContext);
+                }
                 handler.openResource(resource);
             }
         } catch (Exception e) {
@@ -75,10 +81,11 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
     }
 
-    public static void openResourceEditor(IWorkbenchWindow workbenchWindow, SQLEditorUtils.ResourceInfo resourceInfo) {
+    public static void openResourceEditor(IWorkbenchWindow workbenchWindow, SQLEditorUtils.ResourceInfo resourceInfo, SQLNavigatorContext context) {
         if (resourceInfo.getResource() != null) {
-            openResource(resourceInfo.getResource(), workbenchWindow);
+            openResource(resourceInfo.getResource(), context);
         } else if (resourceInfo.getLocalFile() != null) {
+            EditorUtils.setFileDataSource(resourceInfo.getLocalFile(), context);
             EditorUtils.openExternalFileEditor(resourceInfo.getLocalFile(), workbenchWindow);
         }
     }
@@ -99,116 +106,91 @@ public class OpenHandler extends AbstractDataSourceHandler {
                     openRecentEditor(event);
                     break;
             }
-        } catch (CoreException e) {
+        } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Open editor", "Can execute command '" + actionId + "'", e);
         }
         return null;
     }
 
-    private static void openEditor(ExecutionEvent event) throws ExecutionException, CoreException {
-        List<DBPDataSourceContainer> containers = getDataSourceContainers(event);
-        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+    private static void openEditor(ExecutionEvent event) throws ExecutionException, CoreException, InterruptedException {
+        SQLNavigatorContext editorContext = getCurrentContext(event);
 
-        DBPProject project = !containers.isEmpty() ?
-            containers.get(0).getRegistry().getProject() :
-            DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        DBPProject project = editorContext.getProject();
         checkProjectIsOpen(project);
-        final DBPDataSourceContainer[] containerList = containers.toArray(new DBPDataSourceContainer[containers.size()]);
 
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final IFolder rootFolder = SQLEditorUtils.getScriptsFolder(project, true);
-        final List<SQLEditorUtils.ResourceInfo> scriptTree = SQLEditorUtils.findScriptTree(rootFolder, containerList.length == 0 ? null : containerList);
-        if (scriptTree.isEmpty() && containerList.length == 1) {
+        final List<SQLEditorUtils.ResourceInfo> scriptTree = SQLEditorUtils.findScriptTree(project, rootFolder, editorContext.getDataSourceContainer());
+        if (scriptTree.isEmpty()) {
             // Create new script
-            final IFile newScript = SQLEditorUtils.createNewScript(project, rootFolder, containers.isEmpty() ? null : containers.get(0));
-            openResource(newScript, workbenchWindow);
+            final IFile newScript = SQLEditorUtils.createNewScript(project, rootFolder, editorContext);
+            openResource(newScript, editorContext);
         } else {
             // Show script chooser
-            ScriptSelectorPanel selector = new ScriptSelectorPanel(workbenchWindow, containerList, rootFolder);
+            ScriptSelectorPanel selector = new ScriptSelectorPanel(workbenchWindow, editorContext, rootFolder);
             selector.showTree(scriptTree);
         }
     }
 
-    public static IFile openNewEditor(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, ISelection selection) throws CoreException {
-        DBPProject project = dataSourceContainer != null ?
-            dataSourceContainer.getRegistry().getProject() :
-            DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+    public static IFile openNewEditor(@NotNull SQLNavigatorContext editorContext, ISelection selection) throws CoreException {
+        DBPProject project = editorContext.getProject();
         checkProjectIsOpen(project);
         IFolder folder = getCurrentScriptFolder(selection);
-        IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, dataSourceContainer);
+        IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, editorContext);
 
-        openResource(scriptFile, workbenchWindow);
+        openResource(scriptFile, editorContext);
 
         return scriptFile;
     }
 
-    public  static IFolder getCurrentScriptFolder(ISelection selection) {
+    public static IFolder getCurrentScriptFolder(ISelection selection) {
         IFolder folder = null;
         if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
             final Object element = ((IStructuredSelection) selection).getFirstElement();
             if (element instanceof IFolder) {
-                folder = (IFolder)element;
-            } else if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
-                folder = (IFolder) ((DBNResource)element).getResource();
+                folder = (IFolder) element;
+            } else if (element instanceof DBNResource && ((DBNResource) element).getResource() instanceof IFolder) {
+                folder = (IFolder) ((DBNResource) element).getResource();
             }
         }
         return folder;
     }
 
-    private static void openNewEditor(ExecutionEvent event) throws CoreException {
+    private static void openNewEditor(ExecutionEvent event) throws CoreException, InterruptedException {
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        try {
-            DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
+        SQLNavigatorContext context = getCurrentContext(event);
 
-            openNewEditor(workbenchWindow, dataSourceContainer, HandlerUtil.getCurrentSelection(event));
-        } catch (InterruptedException e) {
-            // Canceled
-        }
+        openNewEditor(context, HandlerUtil.getCurrentSelection(event));
     }
 
-    private static void openRecentEditor(ExecutionEvent event) throws CoreException {
-        try {
-            DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
-            openRecentScript(HandlerUtil.getActiveWorkbenchWindow(event), dataSourceContainer, null);
-        } catch (InterruptedException e) {
-            // Canceled
-        }
+    private static void openRecentEditor(ExecutionEvent event) throws CoreException, InterruptedException {
+        SQLNavigatorContext context = getCurrentContext(event);
+        openRecentScript(HandlerUtil.getActiveWorkbenchWindow(event), context, null);
     }
 
-    @Nullable
-    private static DBPDataSourceContainer getCurrentConnection(ExecutionEvent event) throws InterruptedException {
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
-        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
-        DBPProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : workspace.getActiveProject();
+    @NotNull
+    private static SQLNavigatorContext getCurrentContext(ExecutionEvent event) throws InterruptedException {
+        SQLNavigatorContext context = new SQLNavigatorContext(event);
 
-        if (dataSourceContainer == null) {
+        if (context.getDataSourceContainer() == null) {
+            DBPProject project = NavigatorUtils.getSelectedProject();
             if (project != null) {
                 final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
-                if (dataSourceRegistry == null) {
-                    return null;
-                }
                 if (dataSourceRegistry.getDataSources().size() == 1) {
-                    dataSourceContainer = dataSourceRegistry.getDataSources().get(0);
+                    context.setDataSourceContainer(dataSourceRegistry.getDataSources().get(0));
                 } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
                     SelectDataSourceDialog dialog = new SelectDataSourceDialog(HandlerUtil.getActiveShell(event), project, null);
                     if (dialog.open() == IDialogConstants.CANCEL_ID) {
                         throw new InterruptedException();
                     }
-                    dataSourceContainer = dialog.getDataSource();
+                    context.setDataSourceContainer(dialog.getDataSource());
                 }
             }
         }
-        return dataSourceContainer;
+        return context;
     }
 
-    @Nullable
-    private static IFolder getCurrentFolder(ExecutionEvent event)
-    {
-        final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        return null;
-    }
-
-    private static List<DBPDataSourceContainer> getDataSourceContainers(ExecutionEvent event)
-    {
+    private static List<DBPDataSourceContainer> getDataSourceContainers(ExecutionEvent event) {
         List<DBPDataSourceContainer> containers = new ArrayList<>();
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (selection instanceof IStructuredSelection) {
@@ -241,8 +223,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
         return containers;
     }
 
-    private static DBPDataSourceContainer getDataSourceContainers(IWorkbenchPart activePart)
-    {
+    private static DBPDataSourceContainer getDataSourceContainers(IWorkbenchPart activePart) {
         if (activePart instanceof IDataSourceContainerProvider) {
             return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
         }
@@ -253,48 +234,44 @@ public class OpenHandler extends AbstractDataSourceHandler {
         return null;
     }
 
-    public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable IFolder scriptFolder) throws CoreException {
-        final DBPProject project = dataSourceContainer != null ?
-            dataSourceContainer.getRegistry().getProject() :
-            DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+    public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @NotNull SQLNavigatorContext editorContext, @Nullable IFolder scriptFolder) throws CoreException {
+        final DBPProject project = editorContext.getProject();
         checkProjectIsOpen(project);
-        SQLEditorUtils.ResourceInfo res = SQLEditorUtils.findRecentScript(project, dataSourceContainer);
+        SQLEditorUtils.ResourceInfo res = SQLEditorUtils.findRecentScript(project, editorContext);
         if (res != null) {
-            openResourceEditor(workbenchWindow, res);
+            openResourceEditor(workbenchWindow, res, editorContext);
         } else {
-            IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, dataSourceContainer);
-            openResource(scriptFile, workbenchWindow);
+            IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, editorContext);
+            openResource(scriptFile, editorContext);
         }
     }
 
-    public static void checkProjectIsOpen(final DBPProject project) throws CoreException {
+    static void checkProjectIsOpen(final DBPProject project) throws CoreException {
         if (project == null) {
-        	throw new CoreException(GeneralUtils.makeExceptionStatus(new IllegalStateException("No active project.")));
+            throw new CoreException(GeneralUtils.makeExceptionStatus(new IllegalStateException("No active project.")));
         }
         project.ensureOpen();
     }
 
     public static SQLEditor openSQLConsole(
         IWorkbenchWindow workbenchWindow,
-        DBPDataSourceContainer dataSourceContainer,
+        SQLNavigatorContext context,
         String name,
-        String sqlText)
-    {
+        String sqlText) {
         StringEditorInput sqlInput = new StringEditorInput(name, sqlText, false, GeneralUtils.DEFAULT_ENCODING);
-        return openSQLConsole(workbenchWindow, dataSourceContainer, sqlInput);
+        return openSQLConsole(workbenchWindow, context, sqlInput);
     }
 
-    public static SQLEditor openSQLConsole(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, IEditorInput sqlInput) {
-        EditorUtils.setInputDataSource(sqlInput, dataSourceContainer);
+    public static SQLEditor openSQLConsole(IWorkbenchWindow workbenchWindow, SQLNavigatorContext context, IEditorInput sqlInput) {
+        EditorUtils.setInputDataSource(sqlInput, context);
         return openSQLEditor(workbenchWindow, sqlInput);
     }
 
     private static SQLEditor openSQLEditor(
         IWorkbenchWindow workbenchWindow,
-        IEditorInput sqlInput)
-    {
+        IEditorInput sqlInput) {
         try {
-            return (SQLEditor)workbenchWindow.getActivePage().openEditor(
+            return (SQLEditor) workbenchWindow.getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName());
         } catch (PartInitException e) {

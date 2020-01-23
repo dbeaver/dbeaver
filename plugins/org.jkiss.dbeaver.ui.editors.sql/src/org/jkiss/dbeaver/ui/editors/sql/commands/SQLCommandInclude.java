@@ -28,7 +28,8 @@ import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -76,9 +77,9 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         UIUtils.syncExec(() -> {
             final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
-            SQLEditor sqlEditor = OpenHandler.openSQLConsole(
+            SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
                     workbenchWindow,
-                    scriptContext.getExecutionContext().getDataSource().getContainer(),
+                    new SQLNavigatorContext(scriptContext.getExecutionContext()),
                     input);
             final IncludeScriptListener scriptListener = new IncludeScriptListener(workbenchWindow, sqlEditor, statusFlag);
             sqlEditor.processSQL(false, true, null, scriptListener);

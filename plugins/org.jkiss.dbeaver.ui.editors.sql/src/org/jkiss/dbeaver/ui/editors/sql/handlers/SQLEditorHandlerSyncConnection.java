@@ -19,17 +19,27 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
-public class ToggleResultsPanelHandler extends AbstractHandler {
+public class SQLEditorHandlerSyncConnection extends AbstractHandler {
+
+    public SQLEditorHandlerSyncConnection()
+    {
+    }
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
-        if (editor != null) {
-            editor.toggleResultPanel();
+    public Object execute(ExecutionEvent event) throws ExecutionException
+    {
+        final NavigatorViewBase navigatorView = NavigatorUtils.getActiveNavigatorView(event);
+        if (navigatorView == null) {
+            return null;
+        }
+        IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
+        if (NavigatorUtils.syncEditorWithNavigator(navigatorView, activeEditor)) {
+            HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().activate(activeEditor);
         }
         return null;
     }

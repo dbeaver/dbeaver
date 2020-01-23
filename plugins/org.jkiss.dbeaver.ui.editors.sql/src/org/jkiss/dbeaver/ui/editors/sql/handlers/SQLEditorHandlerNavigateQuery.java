@@ -19,31 +19,39 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 
-public class AssistTemplatesHandler extends AbstractHandler {
-
-    public AssistTemplatesHandler()
-    {
-    }
+public class SQLEditorHandlerNavigateQuery extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-        if (activeEditor instanceof SQLEditorBase) {
-            SQLEditorBase editor = (SQLEditorBase)activeEditor;
-            boolean oldValue = SQLCompletionProcessor.isLookupTemplates();
-            SQLCompletionProcessor.setLookupTemplates(true);
-            try {
-                editor.getTextViewer().doOperation(SourceViewer.CONTENTASSIST_PROPOSALS);
-            } finally {
-                SQLCompletionProcessor.setLookupTemplates(oldValue);
-            }
+        if (!(activeEditor instanceof SQLEditorBase)) {
+            return null;
+        }
+        SQLEditorBase editor = (SQLEditorBase)activeEditor;
+
+        String actionId = event.getCommand().getId();
+
+        SQLScriptElement nextQuery;
+        switch (actionId) {
+            case SQLEditorCommands.CMD_SQL_QUERY_NEXT:
+                nextQuery = editor.extractNextQuery(true);
+                break;
+            case SQLEditorCommands.CMD_SQL_QUERY_PREV:
+                nextQuery = editor.extractNextQuery(false);
+                break;
+            default:
+                nextQuery = null;
+                break;
+        }
+        if (nextQuery != null) {
+            editor.selectAndReveal(nextQuery.getOffset(), nextQuery.getLength());
         }
         return null;
     }

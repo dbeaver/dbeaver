@@ -76,7 +76,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return null;
         }
 
-        DBCExecutionContext executionContext = getExecutionContext(HandlerUtil.getActiveEditor(event));
+        DBCExecutionContext executionContext = getExecutionContextFromPart(HandlerUtil.getActiveEditor(event));
         ContextDefaultObjectsReader contextDefaultObjectsReader = new ContextDefaultObjectsReader(dataSourceContainer.getDataSource(), executionContext);
         try {
             UIUtils.runInProgressService(contextDefaultObjectsReader);
@@ -164,7 +164,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                     }
                 }
             } else {
-                DBCExecutionContext executionContext = getExecutionContext(activeEditor);
+                DBCExecutionContext executionContext = getExecutionContextFromPart(activeEditor);
                 DBCExecutionContextDefaults contextDefaults = null;
                 if (executionContext != null) {
                     contextDefaults = executionContext.getContextDefaults();
@@ -222,7 +222,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 return;
             }
 
-            DBCExecutionContext executionContext = getExecutionContext(workbenchWindow.getActivePage().getActiveEditor());
+            DBCExecutionContext executionContext = getExecutionContextFromPart(workbenchWindow.getActivePage().getActiveEditor());
             ContextDefaultObjectsReader contextDefaultObjectsReader = new ContextDefaultObjectsReader(dataSourceContainer.getDataSource(), executionContext);
             contextDefaultObjectsReader.setReadNodes(true);
             RuntimeUtils.runTask(contextDefaultObjectsReader, "Read database list", DB_LIST_READ_TIMEOUT);

@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 
-public class ExportDataHandler extends AbstractHandler {
+public class SQLEditorHandlerExportData extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

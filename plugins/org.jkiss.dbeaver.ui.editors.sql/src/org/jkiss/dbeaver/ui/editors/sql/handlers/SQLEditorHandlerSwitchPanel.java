@@ -19,39 +19,35 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-public class NavigateQueryHandler extends AbstractHandler {
+public class SQLEditorHandlerSwitchPanel extends AbstractHandler {
+
+    private static final Log log = Log.getLog(SQLEditorHandlerSwitchPanel.class);
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
-        IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-        if (!(activeEditor instanceof SQLEditorBase)) {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
+        if (editor == null) {
             return null;
         }
-        SQLEditorBase editor = (SQLEditorBase)activeEditor;
 
         String actionId = event.getCommand().getId();
 
-        SQLScriptElement nextQuery;
         switch (actionId) {
-            case SQLEditorCommands.CMD_SQL_QUERY_NEXT:
-                nextQuery = editor.extractNextQuery(true);
+            case SQLEditorCommands.CMD_SQL_SWITCH_PANEL:
+                editor.toggleActivePanel();
                 break;
-            case SQLEditorCommands.CMD_SQL_QUERY_PREV:
-                nextQuery = editor.extractNextQuery(false);
+            case SQLEditorCommands.CMD_SQL_SHOW_OUTPUT:
+                editor.showOutputPanel();
                 break;
-            default:
-                nextQuery = null;
+            case SQLEditorCommands.CMD_SQL_SHOW_LOG:
+                editor.showExecutionLogPanel();
                 break;
-        }
-        if (nextQuery != null) {
-            editor.selectAndReveal(nextQuery.getOffset(), nextQuery.getLength());
         }
         return null;
     }

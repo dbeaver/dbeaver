@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.Map;
 
-public class MaximizeResultsPanelHandler extends AbstractHandler implements IElementUpdater {
+public class SQLEditorHandlerMaximizeResultsPanel extends AbstractHandler implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

@@ -26,7 +26,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -47,7 +50,8 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils.ResourceInfo;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -63,7 +67,7 @@ import java.util.Locale;
 public class ScriptSelectorPanel {
 
     private static final Log log = Log.getLog(ScriptSelectorPanel.class);
-    public static final String CONFIG_BOUNDS_PARAM = "bounds";
+    private static final String CONFIG_BOUNDS_PARAM = "bounds";
 
     private final IWorkbenchWindow workbenchWindow;
     private final Shell popup;
@@ -72,14 +76,14 @@ public class ScriptSelectorPanel {
     private final Button newButton;
     private volatile FilterJob filterJob;
 
-    public ScriptSelectorPanel(@NotNull final IWorkbenchWindow workbenchWindow, @NotNull final DBPDataSourceContainer[] containers, @NotNull final IFolder rootFolder) {
+    public ScriptSelectorPanel(@NotNull final IWorkbenchWindow workbenchWindow, @NotNull final SQLNavigatorContext navigatorContext, @NotNull final IFolder rootFolder) {
         this.workbenchWindow = workbenchWindow;
         Shell parent = this.workbenchWindow.getShell();
 
         popup = new Shell(parent, SWT.RESIZE | SWT.TITLE | SWT.CLOSE);
-        if (containers.length == 1) {
-            popup.setText("Choose SQL script for '" + containers[0].getName() + "'");
-            popup.setImage(DBeaverIcons.getImage(containers[0].getDriver().getIcon()));
+        if (navigatorContext.getDataSourceContainer() != null) {
+            popup.setText("Choose SQL script for '" + navigatorContext.getDataSourceContainer().getName() + "'");
+            popup.setImage(DBeaverIcons.getImage(navigatorContext.getDataSourceContainer().getDriver().getIcon()));
         } else {
             popup.setText("Choose SQL script");
         }
@@ -119,15 +123,12 @@ public class ScriptSelectorPanel {
         patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         //patternText.setForeground(fg);
         //patternText.setBackground(bg);
-        patternText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                if (filterJob != null) {
-                    return;
-                }
-                filterJob = new FilterJob();
-                filterJob.schedule(250);
+        patternText.addModifyListener(e -> {
+            if (filterJob != null) {
+                return;
             }
+            filterJob = new FilterJob();
+            filterJob.schedule(250);
         });
         final Color fg = patternText.getForeground();//parent.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND);
         final Color bg = patternText.getBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
@@ -146,9 +147,8 @@ public class ScriptSelectorPanel {
                     scriptFile = SQLEditorUtils.createNewScript(
                         DBWorkbench.getPlatform().getWorkspace().getProject(rootFolder.getProject()),
                         rootFolder,
-                        containers.length == 0 ?
-                            null : containers[0]);
-                    OpenHandler.openResource(scriptFile, workbenchWindow);
+                        navigatorContext);
+                    SQLEditorHandlerOpenEditor.openResource(scriptFile, navigatorContext);
                 } catch (CoreException ex) {
                     log.error(ex);
                 }
@@ -270,25 +270,20 @@ public class ScriptSelectorPanel {
                 }
                 popup.dispose();
                 for (ResourceInfo ri : files) {
-                    OpenHandler.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri);
+                    SQLEditorHandlerOpenEditor.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri, navigatorContext);
                 }
             }
         });
 
-        scriptTree.addListener(SWT.PaintItem, new Listener() {
-            public void handleEvent(Event event) {
-                final TreeItem item = (TreeItem) event.item;
-                final ResourceInfo ri = (ResourceInfo) item.getData();
-                if (ri != null && !ri.isDirectory() && CommonUtils.isEmpty(item.getText(2))) {
-                    UIUtils.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!item.isDisposed()) {
-                                item.setText(2, CommonUtils.getSingleLineString(CommonUtils.notEmpty(ri.getDescription())));
-                            }
-                        }
-                    });
-                }
+        scriptTree.addListener(SWT.PaintItem, event -> {
+            final TreeItem item = (TreeItem) event.item;
+            final ResourceInfo ri = (ResourceInfo) item.getData();
+            if (ri != null && !ri.isDirectory() && CommonUtils.isEmpty(item.getText(2))) {
+                UIUtils.asyncExec(() -> {
+                    if (!item.isDisposed()) {
+                        item.setText(2, CommonUtils.getSingleLineString(CommonUtils.notEmpty(ri.getDescription())));
+                    }
+                });
             }
         });
         this.patternText.addKeyListener(new KeyAdapter() {
@@ -306,26 +301,21 @@ public class ScriptSelectorPanel {
             }
         });
 
-        final Listener focusFilter = new Listener() {
-            public void handleEvent(Event event) {
-                if (event.widget != scriptViewer.getTree() && event.widget != patternText && event.widget != newButton) {
-                    popup.dispose();
-                }
+        final Listener focusFilter = event -> {
+            if (event.widget != scriptViewer.getTree() && event.widget != patternText && event.widget != newButton) {
+                popup.dispose();
             }
         };
 
         popup.getDisplay().addFilter(SWT.FocusIn, focusFilter);
-        popup.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                final Rectangle bounds = popup.getBounds();
-                getBoundsSettings().put(CONFIG_BOUNDS_PARAM, bounds.x + "," + bounds.y + "," + bounds.width + "," + bounds.height);
-                popup.getDisplay().removeFilter(SWT.FocusIn, focusFilter);
-            }
+        popup.addDisposeListener(e -> {
+            final Rectangle bounds1 = popup.getBounds();
+            getBoundsSettings().put(CONFIG_BOUNDS_PARAM, bounds1.x + "," + bounds1.y + "," + bounds1.width + "," + bounds1.height);
+            popup.getDisplay().removeFilter(SWT.FocusIn, focusFilter);
         });
     }
 
-    IDialogSettings getBoundsSettings() {
+    private IDialogSettings getBoundsSettings() {
         return UIUtils.getDialogSettings("DBeaver.ScriptSelectorPanel");
     }
 
@@ -354,7 +344,7 @@ public class ScriptSelectorPanel {
     private class ScriptFilter extends ViewerFilter {
         private final String pattern;
 
-        public ScriptFilter() {
+        ScriptFilter() {
             pattern = patternText.getText().toLowerCase(Locale.ENGLISH);
         }
 
@@ -385,7 +375,7 @@ public class ScriptSelectorPanel {
     }
 
     private class FilterJob extends UIJob {
-        public FilterJob() {
+        FilterJob() {
             super("Filter scripts");
         }
         @Override
