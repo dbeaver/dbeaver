@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-public class RenameHandler extends AbstractDataSourceHandler {
+public class SQLEditorHandlerRenameFile extends AbstractDataSourceHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

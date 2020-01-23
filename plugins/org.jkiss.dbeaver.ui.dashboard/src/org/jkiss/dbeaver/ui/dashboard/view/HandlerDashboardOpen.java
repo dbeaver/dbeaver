@@ -31,9 +31,9 @@ public class HandlerDashboardOpen extends AbstractDataSourceHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
+        DBPDataSourceContainer dataSourceContainer = getActiveDataSourceContainer(event, false);
         if (dataSourceContainer == null) {
-            dataSourceContainer = getDataSourceContainer(event, true);
+            dataSourceContainer = getActiveDataSourceContainer(event, true);
         }
         if (dataSourceContainer == null) {
             DBWorkbench.getPlatformUI().showError("Dashboard view", "Can't open dashboard - no database connection selected");

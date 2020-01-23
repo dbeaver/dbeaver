@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.RenameHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
 
 import java.io.File;
 
@@ -97,7 +97,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                 menuItemOthers.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        RenameHandler.renameFile(workbenchPart, inputFile, "file"); //$NON-NLS-1$
+                        SQLEditorHandlerRenameFile.renameFile(workbenchPart, inputFile, "file"); //$NON-NLS-1$
                     }
                 });
             }

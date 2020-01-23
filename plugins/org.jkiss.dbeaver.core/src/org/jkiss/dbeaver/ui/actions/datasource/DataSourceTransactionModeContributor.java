@@ -47,7 +47,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
     @Override
     protected void fillContributionItems(final List<IContributionItem> menuItems) {
         IEditorPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        DBCExecutionContext executionContext = AbstractDataSourceHandler.getExecutionContext(activePart);
+        DBCExecutionContext executionContext = AbstractDataSourceHandler.getExecutionContextFromPart(activePart);
 
         DBPDataSource dataSource = null;
         if (executionContext != null) {

@@ -31,7 +31,8 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -102,7 +103,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         if (instanceConParameters.openConsole) {
             final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             UIUtils.syncExec(() -> {
-                OpenHandler.openSQLConsole(workbenchWindow, dataSource, dataSource.getName(), "");
+                SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, new SQLNavigatorContext(dataSource), dataSource.getName(), "");
                 workbenchWindow.getShell().forceActive();
             });
         } else if (instanceConParameters.makeConnect) {

@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-public class GoToMatchingBracketHandler extends AbstractHandler {
+public class SQLEditorHandlerGoToMatchingBracket extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

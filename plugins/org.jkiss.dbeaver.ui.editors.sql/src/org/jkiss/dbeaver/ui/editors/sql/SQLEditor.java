@@ -21,9 +21,7 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFileState;
 import org.eclipse.core.runtime.*;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -99,6 +97,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
@@ -234,7 +233,12 @@ public class SQLEditor extends SQLEditorBase implements
         if (executionContext != null) {
             return executionContext;
         }
-        return DBUtils.getDefaultContext(getDataSource(), false);
+        if (dataSourceContainer != null &&
+            !dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION))
+        {
+            return DBUtils.getDefaultContext(getDataSource(), false);
+        }
+        return null;
     }
 
     @Nullable
@@ -302,7 +306,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
         IEditorInput input = getEditorInput();
         if (input != null) {
-            EditorUtils.setInputDataSource(input, container);
+            DBPDataSourceContainer savedContainer = EditorUtils.getInputDataSource(input);
+            if (savedContainer != container) {
+                EditorUtils.setInputDataSource(input, new SQLNavigatorContext(container, getExecutionContext()));
+            }
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null) {
                 DBNUtils.refreshNavigatorResource(file, container);
@@ -355,7 +362,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (inputDataSource == null) {
             // No datasource. Try to get one from active part
             IWorkbenchPart activePart = getSite().getWorkbenchWindow().getActivePage().getActivePart();
-            if (activePart instanceof IDataSourceContainerProvider) {
+            if (activePart != this && activePart instanceof IDataSourceContainerProvider) {
                 inputDataSource = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
             }
         }
@@ -378,22 +385,15 @@ public class SQLEditor extends SQLEditorBase implements
                     !dataSource.getContainer().getDriver().isEmbedded())
                 {
                     DBSInstance dsInstance = dataSource.getDefaultInstance();
+                    String[] contextDefaults = EditorUtils.getInputContextDefaults(getEditorInput());
+                    if (contextDefaults.length > 0 && contextDefaults[0] != null) {
+                        DBSInstance selectedInstance = DBUtils.findObject(dataSource.getAvailableInstances(), contextDefaults[0]);
+                        if (selectedInstance != null) {
+                            dsInstance = selectedInstance;
+                        }
+                    }
                     if (dsInstance != null) {
-                        final OpenContextJob job = new OpenContextJob(dsInstance);
-                        job.addJobChangeListener(new JobChangeAdapter() {
-                            @Override
-                            public void done(IJobChangeEvent event) {
-                                if (job.error != null) {
-                                    releaseExecutionContext();
-                                    DBWorkbench.getPlatformUI().showError("Open context", "Can't open editor connection", job.error);
-                                } else {
-                                    if (onSuccess != null) {
-                                        onSuccess.run();
-                                    }
-                                    fireDataSourceChange();
-                                }
-                                }
-                        });
+                        final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess);
                         job.schedule();
                     }
                 } else {
@@ -561,10 +561,12 @@ public class SQLEditor extends SQLEditorBase implements
 
     private class OpenContextJob extends AbstractJob {
         private final DBSInstance instance;
+        private final Runnable onSuccess;
         private Throwable error;
-        OpenContextJob(DBSInstance instance) {
+        OpenContextJob(DBSInstance instance, Runnable onSuccess) {
             super("Open connection to " + instance.getDataSource().getContainer().getName());
             this.instance = instance;
+            this.onSuccess = onSuccess;
             setUser(true);
         }
 
@@ -574,14 +576,33 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 String title = "SQLEditor <" + getEditorInput().getName() + ">";
                 monitor.subTask("Open context " + title);
-                executionContext = instance.openIsolatedContext(monitor, title, instance.getDefaultContext(monitor, false));
+                DBCExecutionContext newContext = instance.openIsolatedContext(monitor, title, instance.getDefaultContext(monitor, false));
+                // Set context defaults
+                String[] contextDefaultNames = EditorUtils.getInputContextDefaults(getEditorInput());
+                if (!CommonUtils.isEmpty(contextDefaultNames[0]) || !CommonUtils.isEmpty(contextDefaultNames[1])) {
+                    DBExecUtils.setExecutionContextDefaults(monitor, newContext.getDataSource(), newContext, contextDefaultNames[0], null, contextDefaultNames[1]);
+                }
+                SQLEditor.this.executionContext = newContext;
             } catch (DBException e) {
                 error = e;
                 return Status.OK_STATUS;
             } finally {
                 monitor.done();
             }
+            updateContext();
             return Status.OK_STATUS;
+        }
+
+        private void updateContext() {
+            if (error != null) {
+                releaseExecutionContext();
+                DBWorkbench.getPlatformUI().showError("Open context", "Can't open editor connection", error);
+            } else {
+                if (onSuccess != null) {
+                    onSuccess.run();
+                }
+                fireDataSourceChange();
+            }
         }
     }
 
@@ -1440,7 +1461,7 @@ public class SQLEditor extends SQLEditorBase implements
         try {
             super.doSetInput(editorInput);
         } catch (Throwable e) {
-            // Something bas may happend. E.g. OutOfMemory error in case of rtoo big input file.
+            // Something bad may happen. E.g. OutOfMemory error in case of too big input file.
             StringWriter out = new StringWriter();
             e.printStackTrace(new PrintWriter(out, true));
             editorInput = new StringEditorInput("Error", CommonUtils.truncateString(out.toString(), 10000), true, GeneralUtils.UTF8_ENCODING);
@@ -2003,6 +2024,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext != null) {
+            EditorUtils.setInputDataSource(getEditorInput(), new SQLNavigatorContext(executionContext));
+        }
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
         }
@@ -2258,7 +2282,7 @@ public class SQLEditor extends SQLEditorBase implements
             IFileStore fileStore = EFS.getStore(saveFile.toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
 
-            EditorUtils.setInputDataSource(input, getDataSourceContainer());
+            EditorUtils.setInputDataSource(input, new SQLNavigatorContext(getDataSourceContainer(), getExecutionContext()));
 
             setInput(input);
         } catch (CoreException e) {

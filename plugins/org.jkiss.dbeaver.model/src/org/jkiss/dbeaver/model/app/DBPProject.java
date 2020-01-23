@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
 import java.io.File;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -73,6 +74,10 @@ public interface DBPProject extends DBPObject
     void setProjectProperty(String propName, Object propValue);
 
     Object getResourceProperty(IResource resource, String propName);
+
+    Map<String, Object> getResourceProperties(IResource resource);
+
+    Map<String, Map<String, Object>> getResourceProperties();
 
     void setResourceProperty(IResource resource, String propName, Object propValue);
 

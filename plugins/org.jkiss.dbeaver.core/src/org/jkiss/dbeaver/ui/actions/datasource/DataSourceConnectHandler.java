@@ -29,7 +29,7 @@ public class DataSourceConnectHandler extends AbstractDataSourceHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false);
+        final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getActiveDataSourceContainer(event, false);
         if (dataSourceContainer != null) {
             DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
         }

@@ -22,7 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -34,9 +34,11 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RunProcedureConsoleHandler extends OpenObjectConsoleHandler {
+public class SQLEditorHandlerRunProcedureConsole extends SQLEditorHandlerOpenObjectConsole {
 
-    public RunProcedureConsoleHandler()
+    private static final Log log = Log.getLog(SQLEditorHandlerRunProcedureConsole.class);
+
+    public SQLEditorHandlerRunProcedureConsole()
     {
     }
 
@@ -44,7 +46,7 @@ public class RunProcedureConsoleHandler extends OpenObjectConsoleHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        DBPDataSourceContainer ds = null;
+        SQLNavigatorContext navContext = null;
         String procName = null;
 
         ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
@@ -55,8 +57,14 @@ public class RunProcedureConsoleHandler extends OpenObjectConsoleHandler {
                 DBSProcedure proc = (DBSProcedure) object;
                 procName = proc.getName();
                 entities.add(proc);
-                ds = object.getDataSource().getContainer();
+                if (navContext == null) {
+                    navContext = new SQLNavigatorContext(object);
+                }
             }
+        }
+        if (navContext == null || navContext.getDataSourceContainer() == null) {
+            log.debug("No active datasource");
+            return null;
         }
 
         DBRRunnableWithResult<String> generator = GenerateSQLContributor.CALL_GENERATOR(entities);
@@ -67,7 +75,7 @@ public class RunProcedureConsoleHandler extends OpenObjectConsoleHandler {
         }
 
         try {
-            openConsole(workbenchWindow, generator, ds, title, false, currentSelection);
+            openConsole(workbenchWindow, generator, navContext, title, false, currentSelection);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
         }

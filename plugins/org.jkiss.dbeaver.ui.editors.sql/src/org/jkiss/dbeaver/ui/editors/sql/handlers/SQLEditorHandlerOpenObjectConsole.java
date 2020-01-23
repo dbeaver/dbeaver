@@ -21,7 +21,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -30,7 +29,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -51,9 +50,11 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OpenObjectConsoleHandler extends AbstractHandler {
+public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
 
-    public OpenObjectConsoleHandler()
+    private static final Log log = Log.getLog(SQLEditorHandlerOpenObjectConsole.class);
+
+    public SQLEditorHandlerOpenObjectConsole()
     {
     }
 
@@ -61,17 +62,22 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        DBPDataSourceContainer ds = null;
+        SQLNavigatorContext navContext = null;
 
         ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
-        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(
-            currentSelection);
+        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(currentSelection);
         List<DBSEntity> entities = new ArrayList<>();
         for (DBSObject object : selectedObjects) {
-            ds = object.getDataSource().getContainer();
+            if (navContext == null) {
+                navContext = new SQLNavigatorContext(object);
+            }
             if (object instanceof DBSEntity) {
                 entities.add((DBSEntity) object);
             }
+        }
+        if (navContext == null || navContext.getDataSourceContainer() == null) {
+            log.debug("No active datasource");
+            return null;
         }
         DBRRunnableWithResult<String> generator = GenerateSQLContributor.SELECT_GENERATOR(entities, true);
         String title = "Query";
@@ -79,25 +85,22 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
             title = DBUtils.getObjectFullName(entities.get(0), DBPEvaluationContext.DML);
         }
         try {
-            openConsole(workbenchWindow, generator, ds, title, !entities.isEmpty(), currentSelection);
+            openConsole(workbenchWindow, generator, navContext, title, !entities.isEmpty(), currentSelection);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
         }
         return null;
     }
 
-
-    protected void openConsole(IWorkbenchWindow workbenchWindow, DBRRunnableWithResult<String> generator,
-                               DBPDataSourceContainer ds, String title, boolean doRun, ISelection currentSelection) throws Exception {
+    void openConsole(IWorkbenchWindow workbenchWindow, DBRRunnableWithResult<String> generator,
+                     SQLNavigatorContext navigatorContext, String title, boolean doRun, ISelection currentSelection) throws Exception {
         UIUtils.runInUI(workbenchWindow, generator);
         String sql = CommonUtils.notEmpty(generator.getResult());
 
-        DBPProject project = ds != null ? ds.getRegistry().getProject() : DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        OpenHandler.checkProjectIsOpen(project);
-        IFolder folder = OpenHandler.getCurrentScriptFolder(currentSelection);
-        IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, ds);
-        //InputStream is = new ByteArrayInputStream(sql.getBytes(GeneralUtils.getDefaultFileEncoding()));
-        //scriptFile.setContents(is, true, false, new NullProgressMonitor());
+        DBPProject project = navigatorContext.getProject();
+        SQLEditorHandlerOpenEditor.checkProjectIsOpen(project);
+        IFolder folder = SQLEditorHandlerOpenEditor.getCurrentScriptFolder(currentSelection);
+        IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, navigatorContext);
 
         FileEditorInput sqlInput = new FileEditorInput(scriptFile);
         SQLEditor editor = (SQLEditor) workbenchWindow.getActivePage().openEditor(sqlInput, SQLEditor.class.getName());

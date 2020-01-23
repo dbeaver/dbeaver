@@ -29,9 +29,9 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 
-public class ExecuteHandler extends AbstractHandler
+public class SQLEditorHandlerExecute extends AbstractHandler
 {
-    private static final Log log = Log.getLog(ExecuteHandler.class);
+    private static final Log log = Log.getLog(SQLEditorHandlerExecute.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException

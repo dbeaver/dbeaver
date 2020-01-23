@@ -19,31 +19,33 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.commands.IElementUpdater;
-import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
 
-import java.util.Map;
+public class SQLEditorHandlerAssistTemplates extends AbstractHandler {
 
-public class SyncConnectionAutoHandler extends AbstractHandler implements IElementUpdater {
-
-    public SyncConnectionAutoHandler()
+    public SQLEditorHandlerAssistTemplates()
     {
     }
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
-        prefs.setValue(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE,
-            !prefs.getBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
+        IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
+        if (activeEditor instanceof SQLEditorBase) {
+            SQLEditorBase editor = (SQLEditorBase)activeEditor;
+            boolean oldValue = SQLCompletionProcessor.isLookupTemplates();
+            SQLCompletionProcessor.setLookupTemplates(true);
+            try {
+                editor.getTextViewer().doOperation(SourceViewer.CONTENTASSIST_PROPOSALS);
+            } finally {
+                SQLCompletionProcessor.setLookupTemplates(oldValue);
+            }
+        }
         return null;
     }
 
-    @Override
-    public void updateElement(UIElement element, Map parameters) {
-        element.setChecked(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
-    }
 }

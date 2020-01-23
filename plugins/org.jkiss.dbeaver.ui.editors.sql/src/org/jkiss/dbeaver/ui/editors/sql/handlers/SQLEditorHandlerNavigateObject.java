@@ -34,9 +34,9 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-public class NavigateObjectHandler extends AbstractHandler {
+public class SQLEditorHandlerNavigateObject extends AbstractHandler {
 
-    public NavigateObjectHandler()
+    public SQLEditorHandlerNavigateObject()
     {
     }
 
