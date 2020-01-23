@@ -37,7 +37,7 @@ public class SQLiteUtils {
 
 
     public static String readMasterDefinition(DBRProgressMonitor monitor, DBSObject sourceObject, SQLiteObjectType objectType, String sourceObjectName, GenericTableBase table) {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Load PostgreSQL description")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Load SQLite description")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT sql FROM sqlite_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "") + "\n" +
                     "UNION ALL\n" +
