@@ -294,8 +294,10 @@ class PostgreBackupWizardPageObjects extends AbstractToolWizardPage<PostgreBacku
                 if (!schemas.contains(schema)) {
                     schemas.add(schema);
                 }
-                // Only a few tables checked
-                tables.addAll(checkedTables);
+                if (checkedTables != null) {
+                    // Only a few tables checked
+                    tables.addAll(checkedTables);
+                }
             }
         }
         PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataBase, schemas, tables);
