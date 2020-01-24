@@ -234,7 +234,7 @@ public class NavigatorUtils {
             DBSObject selectedObject = ((DBNDatabaseNode) selectedNode).getObject();
             DBPDataSource dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
             if (dataSource != null) {
-                DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), true);
+                DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), false);
                 DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
                 if (contextDefaults != null) {
                     if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != selectedObject) ||
