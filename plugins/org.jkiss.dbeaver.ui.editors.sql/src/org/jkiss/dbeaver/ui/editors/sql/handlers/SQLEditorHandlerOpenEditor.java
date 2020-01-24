@@ -106,6 +106,8 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                     openRecentEditor(event);
                     break;
             }
+        } catch (InterruptedException e) {
+            return null;
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Open editor", "Can execute command '" + actionId + "'", e);
         }
@@ -127,8 +129,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
             openResource(newScript, editorContext);
         } else {
             // Show script chooser
-            ScriptSelectorPanel selector = new ScriptSelectorPanel(workbenchWindow, editorContext, rootFolder);
-            selector.showTree(scriptTree);
+            ScriptSelectorPanel.showTree(workbenchWindow, editorContext, rootFolder, scriptTree);
         }
     }
 
