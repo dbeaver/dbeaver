@@ -48,14 +48,18 @@ public abstract class AbstractPopupPanel extends Dialog {
         return true;
     }
 
-    public boolean isModeless() {
+    protected boolean isModeless() {
         return modeless;
+    }
+
+    protected boolean isShowTitle() {
+        return false;
     }
 
     public void setModeless(boolean modeless) {
         this.modeless = modeless;
         if (modeless) {
-            setShellStyle(SWT.SHELL_TRIM);
+            setShellStyle(SWT.RESIZE | (isShowTitle() ? (SWT.CLOSE | SWT.TITLE | SWT.MIN | SWT.MAX) : SWT.NONE));
         } else {
             setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
         }
