@@ -103,7 +103,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
             nsList.add(0, ownerSchema);
         } else if (!globalSearch) {
             // Limit object search with search path
-            for (String sn : database.getDefaultContext().getSearchPath()) {
+            for (String sn : database.getMetaContext().getSearchPath()) {
                 final PostgreSchema schema = database.getSchema(
                     session.getProgressMonitor(),
                     PostgreUtils.getRealSchemaName(database, sn));

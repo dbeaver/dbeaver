@@ -413,8 +413,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
         PostgreSchema oldDefaultSchema = null;
         if (schema != null) {
-            oldDefaultSchema = newDatabase.getDefaultContext().getDefaultSchema();
-            newDatabase.getDefaultContext().setDefaultSchema(monitor, schema, false);
+            oldDefaultSchema = newDatabase.getMetaContext().getDefaultSchema();
+            newDatabase.getMetaContext().setDefaultSchema(monitor, schema, false);
         }
 
         activeDatabaseName = newDatabase.getName();
