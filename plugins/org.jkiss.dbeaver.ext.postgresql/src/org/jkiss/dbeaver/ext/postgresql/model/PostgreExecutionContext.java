@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -96,16 +97,16 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         PostgreDataSource dataSource = getDefaultCatalog().getDataSource();
         PostgreDatabase defaultInstance = dataSource.getDefaultInstance();
         try {
-            if (getOwnerInstance() != catalog) {
+            JDBCRemoteInstance oldInstance = getOwnerInstance();
+            if (oldInstance != catalog) {
                 disconnect();
                 setOwnerInstance(catalog);
                 connect(monitor, null, null, null, false);
             }
             if (schema != null && !CommonUtils.equalObjects(schema, activeSchema)) {
                 setDefaultSchema(monitor, schema);
-            } else {
-                DBUtils.fireObjectSelectionChange(null, defaultInstance);
             }
+            DBUtils.fireObjectSelectionChange(oldInstance, catalog);
         } catch (DBException e) {
             throw new DBCException("Error changing default database", e);
         }
