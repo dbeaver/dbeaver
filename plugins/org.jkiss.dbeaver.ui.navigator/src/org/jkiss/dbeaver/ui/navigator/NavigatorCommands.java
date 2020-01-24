@@ -31,7 +31,7 @@ public class NavigatorCommands {
     public static final String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete"; //$NON-NLS-1$
     public static final String CMD_OBJECT_MOVE_UP = "org.jkiss.dbeaver.core.object.move.up"; //$NON-NLS-1$
     public static final String CMD_OBJECT_MOVE_DOWN = "org.jkiss.dbeaver.core.object.move.down"; //$NON-NLS-1$
-    public static final String CMD_OBJECT_SET_ACTIVE = "org.jkiss.dbeaver.core.navigator.set.active";
+    public static final String CMD_OBJECT_SET_DEFAULT = "org.jkiss.dbeaver.core.navigator.set.default";
     public static final String CMD_CREATE_LOCAL_FOLDER = "org.jkiss.dbeaver.core.new.folder";
     public static final String CMD_CREATE_RESOURCE_FILE = "org.jkiss.dbeaver.core.resource.create.file";
     public static final String CMD_CREATE_RESOURCE_FOLDER = "org.jkiss.dbeaver.core.resource.create.folder";

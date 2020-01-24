@@ -20,7 +20,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -30,15 +32,15 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.TasksJob;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
-public class NavigatorHandlerSetActiveObject extends NavigatorHandlerObjectBase {
+public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -58,17 +60,20 @@ public class NavigatorHandlerSetActiveObject extends NavigatorHandlerObjectBase 
     private void markObjectAsActive(final DBNDatabaseNode databaseNode) {
         DBNNode parentNode = databaseNode.getParentNode();
 
-        if (parentNode instanceof DBNDatabaseItem)
+        if (parentNode instanceof DBNDatabaseItem) {
             markObjectAsActive((DBNDatabaseItem) parentNode);
+            return;
+        }
 
         DBSObject object = databaseNode.getObject();
         DBPDataSource dataSource = object.getDataSource();
-        DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), true);
 
-        TasksJob.runTask("Select active object", monitor -> {
+        TasksJob.runTask("Change default object", monitor -> {
             try {
                 DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
                     try {
+                        DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(monitor, true);
+
                         DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
                         if (contextDefaults != null) {
                             if (object instanceof DBSCatalog && contextDefaults.supportsCatalogChange()) {
@@ -89,4 +94,14 @@ public class NavigatorHandlerSetActiveObject extends NavigatorHandlerObjectBase 
         });
 
     }
+
+    @Override
+    public void updateElement(UIElement element, Map parameters)
+    {
+        if (!updateUI) {
+            return;
+        }
+        //element.setText("Set as default" + NavigatorHandlerObjectCreateNew.getObjectTypeName(element));
+    }
+
 }
