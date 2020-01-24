@@ -144,8 +144,8 @@ public class PostgreDebugSession extends DBGJDBCSession {
             JDBCDataSource src = this.controllerConnection.getDataSource();
             if (src instanceof PostgreDataSource) {
                 PostgreDataSource pgSrc = (PostgreDataSource) src;
-                log.debug(String.format("Active user %s", instance.getDefaultContext().getActiveUser()));
-                log.debug(String.format("Active schema %s", instance.getDefaultContext().getDefaultSchema()));
+                log.debug(String.format("Active user %s", instance.getMetaContext().getActiveUser()));
+                log.debug(String.format("Active schema %s", instance.getMetaContext().getDefaultSchema()));
                 if (pgSrc.getInfo() instanceof JDBCDataSourceInfo) {
                     JDBCDataSourceInfo JDBCinfo = (JDBCDataSourceInfo) pgSrc.getInfo();
                     log.debug("------------DATABASE DRIVER INFO---------------");
