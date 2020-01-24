@@ -101,7 +101,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 setOwnerInstance(catalog);
                 connect(monitor, null, null, null, false);
             }
-            if (schema != null) {
+            if (schema != null && !CommonUtils.equalObjects(schema, activeSchema)) {
                 setDefaultSchema(monitor, schema);
             } else {
                 DBUtils.fireObjectSelectionChange(null, defaultInstance);
