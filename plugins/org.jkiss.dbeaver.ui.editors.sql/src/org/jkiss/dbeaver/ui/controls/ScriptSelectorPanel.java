@@ -26,10 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -301,17 +298,30 @@ public class ScriptSelectorPanel {
             }
         });
 
-        final Listener focusFilter = event -> {
-            if (event.widget instanceof Control && !UIUtils.isParent(popup, (Control) event.widget)) {
-                popup.dispose();
+        FocusAdapter focusListener = new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                UIUtils.asyncExec(() -> {
+                    if (!popup.isDisposed()) {
+                        Control focusControl = popup.getDisplay().getFocusControl();
+                        if (focusControl != null && !UIUtils.isParent(popup, focusControl)) {
+                            popup.dispose();
+                        }
+                    }
+                });
             }
         };
 
-        popup.getDisplay().addFilter(SWT.FocusIn, focusFilter);
+        // Add listeners async because we need to bypass existing events which may immediuately hide the popup
+        UIUtils.asyncExec(() -> {
+            patternText.addFocusListener(focusListener);
+            scriptViewer.getTree().addFocusListener(focusListener);
+            newButton.addFocusListener(focusListener);
+        });
+
         popup.addDisposeListener(e -> {
             final Rectangle bounds1 = popup.getBounds();
             getBoundsSettings().put(CONFIG_BOUNDS_PARAM, bounds1.x + "," + bounds1.y + "," + bounds1.width + "," + bounds1.height);
-            popup.getDisplay().removeFilter(SWT.FocusIn, focusFilter);
         });
     }
 
