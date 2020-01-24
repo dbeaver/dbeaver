@@ -302,7 +302,7 @@ public class ScriptSelectorPanel {
         });
 
         final Listener focusFilter = event -> {
-            if (event.widget != scriptViewer.getTree() && event.widget != patternText && event.widget != newButton) {
+            if (event.widget instanceof Control && !UIUtils.isParent(popup, (Control) event.widget)) {
                 popup.dispose();
             }
         };
