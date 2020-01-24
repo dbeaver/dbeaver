@@ -583,6 +583,8 @@ public class SQLEditor extends SQLEditorBase implements
                     DBExecUtils.setExecutionContextDefaults(monitor, newContext.getDataSource(), newContext, contextDefaultNames[0], null, contextDefaultNames[1]);
                 }
                 SQLEditor.this.executionContext = newContext;
+                // Needed to update main toolbar
+                DBUtils.fireObjectSelect(instance, true);
             } catch (DBException e) {
                 error = e;
                 return Status.OK_STATUS;
