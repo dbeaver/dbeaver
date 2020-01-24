@@ -72,7 +72,7 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
             try {
                 DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
                     try {
-                        DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(monitor, true);
+                        DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
 
                         DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
                         if (contextDefaults != null) {
