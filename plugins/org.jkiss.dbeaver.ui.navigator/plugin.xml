@@ -245,7 +245,7 @@
         <command id="org.jkiss.dbeaver.core.navigator.view.configure" name="%command.org.jkiss.dbeaver.core.navigator.view.configure.name" description="%command.org.jkiss.dbeaver.core.navigator.view.configure.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name" description="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.preferences" name="%command.org.jkiss.dbeaver.core.navigator.preferences.name" description="%command.org.jkiss.dbeaver.core.navigator.preferences.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.navigator.set.active" name="%command.org.jkiss.dbeaver.core.navigator.set.active.name" description="%command.org.jkiss.dbeaver.core.navigator.set.active.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.set.default" name="%command.org.jkiss.dbeaver.core.navigator.set.default.name" description="%command.org.jkiss.dbeaver.core.navigator.set.default.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.open.browser" name="%command.org.jkiss.dbeaver.core.navigator.open.browser.name" description="%command.org.jkiss.dbeaver.core.navigator.open.browser.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.sql.script.associate" name="%command.org.jkiss.dbeaver.core.sql.script.associate.name" description="%command.org.jkiss.dbeaver.core.sql.script.associate.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
@@ -686,7 +686,7 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.navigator.preferences" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerPreferences"/>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.set.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerSetActiveObject">
+        <handler commandId="org.jkiss.dbeaver.core.navigator.set.default" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerSetDefaultObject">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -769,7 +769,7 @@
         <key commandId="org.jkiss.dbeaver.ui.tools.select.schema" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+0"/>
 
         <key commandId="org.jkiss.dbeaver.core.navigator.linkeditor" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+,"/>
-        <key commandId="org.jkiss.dbeaver.core.navigator.set.active" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+A"/>
+        <key commandId="org.jkiss.dbeaver.core.navigator.set.default" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+A"/>
         <key commandId="org.jkiss.dbeaver.core.object.goto" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+D"/>
         <key commandId="org.jkiss.dbeaver.core.object.open" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
     </extension>
