@@ -20,10 +20,12 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -45,28 +47,35 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
+        final IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
 
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structSelection = (IStructuredSelection) selection;
             Object element = structSelection.getFirstElement();
             if (element instanceof DBNDatabaseNode) {
-                markObjectAsActive((DBNDatabaseNode) element);
+                markObjectAsActive((DBNDatabaseNode) element, activeEditor);
             }
         }
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    private void markObjectAsActive(final DBNDatabaseNode databaseNode) {
+    private void markObjectAsActive(final DBNDatabaseNode databaseNode, IEditorPart activeEditor) {
         DBNNode parentNode = databaseNode.getParentNode();
 
         if (parentNode instanceof DBNDatabaseItem) {
-            markObjectAsActive((DBNDatabaseItem) parentNode);
+            markObjectAsActive((DBNDatabaseItem) parentNode, activeEditor);
             return;
         }
 
         DBSObject object = databaseNode.getObject();
         DBPDataSource dataSource = object.getDataSource();
+        final DBCExecutionContext editorContext;
+        if (activeEditor instanceof DBPContextProvider) {
+            editorContext = ((DBPContextProvider) activeEditor).getExecutionContext();
+        } else {
+            editorContext = null;
+        }
 
         TasksJob.runTask("Change default object", monitor -> {
             try {
@@ -74,14 +83,23 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
                     try {
                         DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
 
-                        DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
-                        if (contextDefaults != null) {
-                            if (object instanceof DBSCatalog && contextDefaults.supportsCatalogChange()) {
-                                contextDefaults.setDefaultCatalog(monitor, (DBSCatalog) object, null);
-                            } else if (object instanceof DBSSchema && contextDefaults.supportsSchemaChange()) {
-                                contextDefaults.setDefaultSchema(monitor, (DBSSchema) object);
-                            } else {
-                                throw new DBCException("Internal error: active object change not supported");
+                        DBCExecutionContext[] contextsToChange;
+                        if (editorContext != null && editorContext != defaultContext && editorContext.getDataSource() == defaultContext.getDataSource()) {
+                            contextsToChange = new DBCExecutionContext[] { defaultContext, editorContext };
+                        } else {
+                            contextsToChange = new DBCExecutionContext[] { defaultContext };
+                        }
+
+                        for (DBCExecutionContext executionContext : contextsToChange) {
+                            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                            if (contextDefaults != null) {
+                                if (object instanceof DBSCatalog && contextDefaults.supportsCatalogChange()) {
+                                    contextDefaults.setDefaultCatalog(monitor, (DBSCatalog) object, null);
+                                } else if (object instanceof DBSSchema && contextDefaults.supportsSchemaChange()) {
+                                    contextDefaults.setDefaultSchema(monitor, (DBSSchema) object);
+                                } else {
+                                    throw new DBCException("Internal error: active object change not supported");
+                                }
                             }
                         }
                     } catch (DBException e) {
