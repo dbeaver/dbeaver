@@ -114,8 +114,6 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_separate_connection_each_editor;
     public static String pref_page_sql_editor_label_connect_on_editor_activation;
     public static String pref_page_sql_editor_label_connect_on_query_execute;
-    public static String pref_page_sql_editor_label_smart_auto_commit;
-    public static String pref_page_sql_editor_label_smart_auto_commit_tip;
 
     public static String pref_page_sql_editor_group_auto_save;
     public static String pref_page_sql_editor_label_auto_save_on_close;

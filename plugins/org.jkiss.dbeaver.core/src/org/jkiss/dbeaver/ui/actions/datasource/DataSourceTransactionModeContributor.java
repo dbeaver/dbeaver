@@ -80,9 +80,10 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             menuItems.add(ActionUtils.makeActionContribution(
                     new TransactionAutoCommitAction(executionContext, false, !autoCommit, txnLevelCurrent),
                     true));
-            if (activePart instanceof ISmartTransactionManager) {
+            ISmartTransactionManager smartTransactionManager = DBUtils.getAdapter(ISmartTransactionManager.class, activePart);
+            if (smartTransactionManager != null) {
                 menuItems.add(ActionUtils.makeActionContribution(
-                        new SmartAutoCommitAction((ISmartTransactionManager)activePart),
+                        new SmartAutoCommitAction(smartTransactionManager),
                         true));
             }
 
@@ -170,6 +171,11 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         @Override
         public String getText() {
             return CoreMessages.action_menu_transaction_smart_auto_commit;
+        }
+
+        @Override
+        public String getToolTipText() {
+            return CoreMessages.action_menu_transaction_smart_auto_commit_tip;
         }
 
         @Override

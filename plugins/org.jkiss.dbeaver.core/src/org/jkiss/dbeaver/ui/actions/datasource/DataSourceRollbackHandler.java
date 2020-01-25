@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -53,15 +54,17 @@ public class DataSourceRollbackHandler extends AbstractDataSourceHandler
                 } catch (DBCException e) {
                     throw new InvocationTargetException(e);
                 }
-                DBeaverNotifications.showNotification(
-                    context.getDataSource(),
-                    DBeaverNotifications.NT_ROLLBACK,
-                    "Transaction has been rolled back\n\n" +
-                        "Query count: " + txnInfo.getUpdateCount() + "\n" +
-                        "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",
-                        DBPMessageType.ERROR,
-                    () -> TransactionLogDialog.showDialog(null, context, true));
 
+                if (context.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS)) {
+                    DBeaverNotifications.showNotification(
+                        context.getDataSource(),
+                        DBeaverNotifications.NT_ROLLBACK,
+                        "Transaction has been rolled back\n\n" +
+                            "Query count: " + txnInfo.getUpdateCount() + "\n" +
+                            "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",
+                        DBPMessageType.ERROR,
+                        () -> TransactionLogDialog.showDialog(null, context, true));
+                }
             }
         });
     }

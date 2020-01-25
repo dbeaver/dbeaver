@@ -50,7 +50,6 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION, true);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, true);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, false);
-        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_SMART_AUTO_COMMIT, false);
 
         {
             // SQL prefs

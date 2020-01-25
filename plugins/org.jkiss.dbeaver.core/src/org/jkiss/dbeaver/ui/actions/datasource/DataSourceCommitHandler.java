@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
@@ -54,14 +55,16 @@ public class DataSourceCommitHandler extends AbstractDataSourceHandler
                     throw new InvocationTargetException(e);
                 }
 
-                DBeaverNotifications.showNotification(
-                    context.getDataSource(),
-                    DBeaverNotifications.NT_COMMIT,
-                    "Transaction has been committed\n\n" +
-                        "Query count: " + txnInfo.getUpdateCount() + "\n" +
-                        "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",
-                    null,
-                    () -> TransactionLogDialog.showDialog(null, context, true));
+                if (context.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS)) {
+                    DBeaverNotifications.showNotification(
+                        context.getDataSource(),
+                        DBeaverNotifications.NT_COMMIT,
+                        "Transaction has been committed\n\n" +
+                            "Query count: " + txnInfo.getUpdateCount() + "\n" +
+                            "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",
+                        null,
+                        () -> TransactionLogDialog.showDialog(null, context, true));
+                }
             }
         });
     }

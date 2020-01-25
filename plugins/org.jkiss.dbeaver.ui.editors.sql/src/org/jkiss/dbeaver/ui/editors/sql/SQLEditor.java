@@ -521,12 +521,12 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean isSmartAutoCommit() {
-        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SMART_AUTO_COMMIT);
+        return getActivePreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
     }
 
     @Override
     public void setSmartAutoCommit(boolean smartAutoCommit) {
-        getActivePreferenceStore().setValue(SQLPreferenceConstants.EDITOR_SMART_AUTO_COMMIT, smartAutoCommit);
+        getActivePreferenceStore().setValue(ModelPreferences.TRANSACTIONS_SMART_COMMIT, smartAutoCommit);
         try {
             getActivePreferenceStore().save();
         } catch (IOException e) {
