@@ -4444,13 +4444,14 @@ public class ResultSetViewer extends Viewer
             super(name);
         }
         @NotNull
-        DBVEntity getVirtualEntity(DBDAttributeBinding binding)
+        DBVEntity getColorsVirtualEntity()
             throws IllegalStateException
         {
-            DBSEntity singleSource = model.getSingleSource();
-            return singleSource != null ?
-                DBVUtils.getVirtualEntity(singleSource, true) :
-                DBVUtils.getVirtualEntity(binding, true);
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer == null) {
+                throw new IllegalStateException("No data container");
+            }
+            return DBVUtils.getVirtualEntity(dataContainer, true);
         }
 
         void updateColors(DBVEntity entity) {
@@ -4484,7 +4485,7 @@ public class ResultSetViewer extends Viewer
                 shell.dispose();
             }
             try {
-                final DBVEntity vEntity = getVirtualEntity(attribute);
+                final DBVEntity vEntity = getColorsVirtualEntity();
                 vEntity.setColorOverride(attribute, value, null, StringConverter.asString(color));
                 updateColors(vEntity);
             } catch (IllegalStateException e) {
@@ -4506,7 +4507,7 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void run() {
-            final DBVEntity vEntity = getVirtualEntity(attribute);
+            final DBVEntity vEntity = getColorsVirtualEntity();
             vEntity.removeColorOverride(attribute);
             updateColors(vEntity);
         }
@@ -4519,7 +4520,7 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void run() {
-            final DBVEntity vEntity = getVirtualEntity(getModel().getAttributes()[0]);
+            final DBVEntity vEntity = getColorsVirtualEntity();
             if (!UIUtils.confirmAction("Reset all row coloring", "Are you sure you want to reset all color settings for '" + vEntity.getName() + "'?")) {
                 return;
             }
@@ -4540,11 +4541,11 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void run() {
-            ColorSettingsDialog dialog = new ColorSettingsDialog(ResultSetViewer.this, curAttribute, row);
+            final DBVEntity vEntity = getColorsVirtualEntity();
+            ColorSettingsDialog dialog = new ColorSettingsDialog(ResultSetViewer.this, vEntity, curAttribute, row);
             if (dialog.open() != IDialogConstants.OK_ID) {
                 return;
             }
-            final DBVEntity vEntity = getVirtualEntity(curAttribute);
             updateColors(vEntity);
         }
 
