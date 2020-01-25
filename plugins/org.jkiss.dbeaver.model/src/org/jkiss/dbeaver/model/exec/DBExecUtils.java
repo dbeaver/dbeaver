@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -33,6 +35,8 @@ import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -45,6 +49,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -366,4 +371,27 @@ public class DBExecUtils {
             contextDefaults.setDefaultCatalog(monitor, newCatalog, null);
         }
     }
+
+    public static void recoverSmartCommit(DBCExecutionContext executionContext) {
+        DBPPreferenceStore preferenceStore = executionContext.getDataSource().getContainer().getPreferenceStore();
+        if (preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT) && preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER)) {
+            DBCTransactionManager transactionManager = DBUtils.getTransactionManager(executionContext);
+            if (transactionManager != null) {
+                new AbstractJob("Recover smart commit mode") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
+                        try {
+                            if (!transactionManager.isAutoCommit()) {
+                                transactionManager.setAutoCommit(monitor,true);
+                            }
+                        } catch (DBCException e) {
+                            return GeneralUtils.makeExceptionStatus(e);
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule();
+            }
+        }
+    }
+
 }
