@@ -624,9 +624,6 @@ public class ResultSetModel {
             singleSourceEntity = sourceTable;
         }
 
-        // Update colors (we can do it only after single entity detection)
-        updateColorMapping(true);
-
         hasData = true;
     }
 
@@ -758,9 +755,7 @@ public class ResultSetModel {
         }
         curRows.addAll(newRows);
 
-        if (!resetOldRows) {
-            updateRowColors(false, newRows);
-        }
+        updateRowColors(resetOldRows, newRows);
     }
 
     void clearData() {
