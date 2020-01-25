@@ -187,6 +187,7 @@ public class SQLScriptParser
                         case T_BLOCK_END:
                         case T_BLOCK_TOGGLE:
                         case T_BLOCK_HEADER:
+                        case T_KEYWORD:
                         case T_UNKNOWN:
                             try {
                                 lastKeyword = document.get(tokenOffset, tokenLength);
