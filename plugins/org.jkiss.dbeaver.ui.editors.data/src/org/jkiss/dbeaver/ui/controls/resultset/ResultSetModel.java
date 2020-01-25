@@ -634,43 +634,28 @@ public class ResultSetModel {
         return colorMapping.containsKey(binding);
     }
 
-    boolean hasColorMapping(DBSEntity entity) {
-        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(entity, false);
-        return virtualEntity != null && !CommonUtils.isEmpty(virtualEntity.getColorOverrides());
-    }
-
     void updateColorMapping(boolean reset) {
         colorMapping.clear();
 
-        DBSEntity entity = getSingleSource();
-        if (entity != null) {
-            DBVEntity virtualEntity = DBVUtils.getVirtualEntity(entity, false);
-            if (virtualEntity != null) {
-                List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
-                if (!CommonUtils.isEmpty(coList)) {
-                    for (DBVColorOverride co : coList) {
-                        DBDAttributeBinding binding = getAttributeBinding(entity, co.getAttributeName());
-                        if (binding != null) {
-                            List<AttributeColorSettings> cmList =
-                                colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
-                            cmList.add(new AttributeColorSettings(co));
-                        }
-                    }
-                }
-            }
-        } else {
-            for (DBDAttributeBinding attr : attributes) {
-                DBVEntity virtualEntity = DBVUtils.getVirtualEntity(attr, false);
-                if (virtualEntity != null) {
-                    List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
-                    if (!CommonUtils.isEmpty(coList)) {
-                        for (DBVColorOverride co : coList) {
-                            if (CommonUtils.equalObjects(attr.getName(), co.getAttributeName())) {
-                                List<AttributeColorSettings> cmList =
-                                    colorMapping.computeIfAbsent(attr, k -> new ArrayList<>());
-                                cmList.add(new AttributeColorSettings(co));
-                            }
-                        }
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return;
+        }
+        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (virtualEntity == null) {
+            return;
+        }
+        {
+            List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
+            if (!CommonUtils.isEmpty(coList)) {
+                for (DBVColorOverride co : coList) {
+                    DBDAttributeBinding binding = DBUtils.findObject(attributes, co.getAttributeName());
+                    if (binding != null) {
+                        List<AttributeColorSettings> cmList =
+                            colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
+                        cmList.add(new AttributeColorSettings(co));
+                    } else {
+                        log.debug("Attribute '" + co.getAttributeName() + "' not found in bindings. Skip colors.");
                     }
                 }
             }
