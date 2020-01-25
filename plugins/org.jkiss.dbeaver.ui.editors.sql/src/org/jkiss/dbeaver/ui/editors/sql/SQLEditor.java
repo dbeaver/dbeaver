@@ -2168,8 +2168,10 @@ public class SQLEditor extends SQLEditorBase implements
                                 setDataSourceContainer(null);
                             }
                             break;
+                        case OBJECT_UPDATE:
                         case OBJECT_SELECT:
                             if (objectEvent) {
+                                setPartName(getEditorName());
                                 // Active schema was changed? Update title and tooltip
                                 firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
                             }
