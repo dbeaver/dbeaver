@@ -594,6 +594,7 @@ public class ResultSetModel {
         }
 
         // Add new data
+        updateColorMapping(true);
         appendData(rows, true);
         updateDataFilter();
 
@@ -657,7 +658,6 @@ public class ResultSetModel {
                 }
             }
         }
-        updateRowColors(reset, curRows);
     }
 
     private void updateRowColors(boolean reset, List<ResultSetRow> rows) {
