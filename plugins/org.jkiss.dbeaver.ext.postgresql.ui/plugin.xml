@@ -58,6 +58,7 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" if="object.dataSource.serverType.supportsRoles()"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn" if="object.dataSource.serverType.supportsRoles()"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure" if="object.dataSource.serverType.supportsRoles()"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" if="object.dataSource.serverType.supportsRoles()"/>
         </editor>
         <editor id="postgresql.source.view" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor"
                 label="%db.editor.source.name" description="%db.editor.source.description" icon="#sql_text" position="additions_middle"
