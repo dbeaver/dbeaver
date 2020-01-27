@@ -108,7 +108,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         return null;
     }
 
-    protected class StructCreateCommand extends ObjectCreateCommand
+    public class StructCreateCommand extends ObjectCreateCommand
         implements DBECommandAggregator<OBJECT_TYPE> {
 
         private final Map<DBPObject, NestedObjectCommand> objectCommands = new LinkedHashMap<>();

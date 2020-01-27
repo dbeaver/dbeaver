@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -701,7 +702,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             getContainer().run(true, true, monitor -> {
                 monitor.beginTask("Generate table DDL", 1);
                 try {
-                    ddl[0] = DatabaseTransferConsumer.generateTargetTableDDL(new DefaultProgressMonitor(monitor), dataSource, container, mapping);
+                    DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
+                    ddl[0] = DatabaseTransferConsumer.generateTargetTableDDL(new DefaultProgressMonitor(monitor), executionContext, container, mapping);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
