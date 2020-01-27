@@ -465,6 +465,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 logWriter.write(cmdString.toString());
 
                 logWriter.write("Task '" + task.getName() + "' started at " + new Date() + lf);
+                logWriter.flush();
 
                 InputStream in = input;
                 try (Reader reader = new InputStreamReader(in, GeneralUtils.getDefaultConsoleEncoding())) {
@@ -494,6 +495,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             } finally {
                 try {
                     logWriter.write("Task '" + task.getName() + "' finished at " + new Date() + lf);
+                    logWriter.flush();
                 } catch (IOException e) {
                     // ignore
                 }
