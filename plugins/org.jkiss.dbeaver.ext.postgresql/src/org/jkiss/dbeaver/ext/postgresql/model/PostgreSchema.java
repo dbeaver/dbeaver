@@ -54,7 +54,18 @@ import java.util.stream.Collectors;
 /**
  * PostgreSchema
  */
-public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, PostgreObject, PostgreScriptObject {
+public class PostgreSchema implements
+    DBSSchema,
+    PostgreTableContainer,
+    DBPNamedObject2,
+    DBPSaveableObject,
+    DBPRefreshableObject,
+    DBPSystemObject,
+    DBSProcedureContainer,
+    PostgreObject,
+    PostgreScriptObject,
+    PostgrePrivilegeOwner
+{
 
     private static final Log log = Log.getLog(PostgreSchema.class);
 
@@ -63,6 +74,7 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
     protected String name;
     protected String description;
     protected long ownerId;
+    private Object schemaAcl;
     protected boolean persisted;
 
     public final ExtensionCache extensionCache = new ExtensionCache();
@@ -93,6 +105,7 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "nspowner");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+        this.schemaAcl = JDBCUtils.safeGetObject(dbResult, "nspacl");
         this.persisted = true;
     }
 
@@ -122,6 +135,16 @@ public class PostgreSchema implements DBSSchema, PostgreTableContainer, DBPNamed
     @Property(order = 4)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
         return database.getDataSource().getServerType().supportsRoles() ? database.getRoleById(monitor, ownerId) : null;
+    }
+
+    @Override
+    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+        return PostgreUtils.extractPermissionsFromACL(monitor, this, schemaAcl);
+    }
+
+    @Override
+    public String generateChangeOwnerQuery(String owner) {
+        return null;
     }
 
     public void setOwner(PostgreRole role) {
