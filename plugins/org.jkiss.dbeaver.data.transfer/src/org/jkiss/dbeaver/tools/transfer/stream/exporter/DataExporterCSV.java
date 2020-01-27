@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -68,7 +69,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private String delimiter;
     private char quoteChar = '"';
     private boolean useQuotes = true;
-    private boolean quoteAlways = true;
+    private String quoteAlways = "default";
     private String rowDelimiter;
     private String nullString;
     private HeaderPosition headerPosition;
@@ -98,7 +99,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = quoteChar != ' ';
-        quoteAlways = CommonUtils.toBoolean(properties.get(PROP_QUOTE_ALWAYS));
+        quoteAlways = CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS));
         try {
             headerPosition = HeaderPosition.valueOf(String.valueOf(properties.get(PROP_HEADER)));
         } catch (Exception e) {
@@ -180,8 +181,27 @@ public class DataExporterCSV extends StreamExporterAbstract {
             } else {
                 String stringValue = super.getValueDisplayString(column, row[i]);
                 boolean quote = false;
-                if (!stringValue.isEmpty() && !(row[i] instanceof Number) && !(row[i] instanceof Date) && Character.isDigit(stringValue.charAt(0))) {
-                    // Quote string values which starts from number
+                boolean isNumber = NumberUtils.isNumber(stringValue);
+                boolean isEmpty = stringValue.isEmpty();
+                boolean rowIsDate = row[i] instanceof Date;
+                boolean rowIsNumber = row[i] instanceof Number;
+                boolean startsWithDigit = Character.isDigit(stringValue.charAt(0));
+
+                if (quoteAlways.equalsIgnoreCase("disabled") || quoteAlways.equalsIgnoreCase("false")) {
+                    if (!isEmpty && !rowIsNumber && !rowIsDate && startsWithDigit) {
+                        // Quote string values which starts from number
+                        quote = true;
+                    }
+                } else if (quoteAlways.equalsIgnoreCase("all") || quoteAlways.equalsIgnoreCase("true")) {
+                    quote = true;
+                } else if (quoteAlways.equalsIgnoreCase("strings")) {
+                    if (!rowIsNumber && !isNumber) {
+                        quote = true;
+                    }
+                } else if (quoteAlways.equalsIgnoreCase("all but numbers")) {
+                    if (rowIsNumber || isNumber) {
+                        quote = false;
+                    }
                     quote = true;
                 }
                 writeCellValue(stringValue, quote);
@@ -207,7 +227,8 @@ public class DataExporterCSV extends StreamExporterAbstract {
         }
         // check for needed quote
         final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
-        if (quoteAlways || (useQuotes && value.isEmpty())) {
+
+        if (quoteAlways.equalsIgnoreCase("all") || (useQuotes && value.isEmpty())) {
             quote = true;
         } else if (!quote) {
             if (hasQuotes ||
@@ -219,6 +240,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
                 quote = true;
             }
         }
+
         if (quote && hasQuotes) {
             // escape quotes with double quotes
             buffer.setLength(0);
