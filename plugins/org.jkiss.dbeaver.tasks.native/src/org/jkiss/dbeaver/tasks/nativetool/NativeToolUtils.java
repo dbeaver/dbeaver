@@ -13,8 +13,8 @@ public abstract class NativeToolUtils {
     public static boolean isSecureString(AbstractNativeToolSettings settings, String string) {
         String userPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
         String toolUserPassword = settings.getToolUserPassword();
-        return !CommonUtils.isEmpty(toolUserPassword) && string.contains(toolUserPassword) ||
-            !CommonUtils.isEmpty(userPassword) && string.contains(userPassword);
+        return !CommonUtils.isEmpty(toolUserPassword) && string.endsWith(toolUserPassword) ||
+            !CommonUtils.isEmpty(userPassword) && string.endsWith(userPassword);
     }
 
 }
