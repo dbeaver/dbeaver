@@ -688,6 +688,10 @@ public class PostgreUtils {
             return "SEQUENCE";
         } else if (object instanceof PostgreProcedure) {
             return ((PostgreProcedure) object).getProcedureTypeName();
+        } else if (object instanceof PostgreSchema) {
+            return "SCHEMA";
+        } else if (object instanceof PostgreDatabase) {
+            return "DATABASE";
         } else {
             return "TABLE";
         }
