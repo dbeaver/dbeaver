@@ -26,6 +26,7 @@ public enum QuoteStrategy {
         } else if ("false".equalsIgnoreCase(v)) {
             return DISABLED;
         }
-        throw new IllegalArgumentException(v);
+        // default value if not provided any
+        return DISABLED;
     }
 }
