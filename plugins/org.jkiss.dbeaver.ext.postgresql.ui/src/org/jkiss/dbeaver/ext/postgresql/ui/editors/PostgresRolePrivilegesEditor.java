@@ -295,13 +295,12 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                         Collections.singletonList(privGrant));
                 }
                 // Add to map
+                currentPermissions[i] = permission;
                 permissionMap.put(permission.getName(), permission);
             } else if (privilegeType != null) {
                 // Check for privilege was already granted for this object
                 boolean hasPriv = permission.getPermission(privilegeType) != PostgrePrivilege.NONE;
-                if (grant == hasPriv) {
-                    continue;
-                } else if (!grant) {
+                if (grant != hasPriv && !grant) {
                     permissionMap.remove(permission.getName());
                 }
             }
