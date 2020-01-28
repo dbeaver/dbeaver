@@ -26,10 +26,7 @@ import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -49,10 +46,11 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     @Override
     public SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
         try {
-            if (!dataSource.getSQLDialect().supportsSubqueries()) {
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
+            if (!sqlDialect.supportsSubqueries() || (sqlDialect instanceof RelationalSQLDialect && ((RelationalSQLDialect)sqlDialect).isAmbiguousCountBroken())) {
                 return tryInjectCount(dataSource, query);
             }
-        } catch (DBException e) {
+        } catch (Throwable e) {
             log.debug("Error injecting count: " + e.getMessage());
             // Inject failed (most likely parser error)
         }

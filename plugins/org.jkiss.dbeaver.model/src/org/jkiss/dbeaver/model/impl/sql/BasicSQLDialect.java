@@ -34,7 +34,7 @@ import java.util.UUID;
 /**
  * Basic SQL Dialect
  */
-public class BasicSQLDialect extends AbstractSQLDialect {
+public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQLDialect {
 
     public static final String ID = "basic";
 
@@ -302,8 +302,14 @@ public class BasicSQLDialect extends AbstractSQLDialect {
         return false;
     }
 
-    protected boolean isStandardSQL() {
+    @Override
+    public boolean isStandardSQL() {
         return true;
+    }
+
+    @Override
+    public boolean isAmbiguousCountBroken() {
+        return false;
     }
 
     private void loadStandardKeywords() {
