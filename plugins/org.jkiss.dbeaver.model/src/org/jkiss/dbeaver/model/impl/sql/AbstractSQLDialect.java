@@ -376,16 +376,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean supportsOrderBy() {
-        return true;
-    }
-
-    @Override
-    public boolean supportsGroupBy() {
-        return true;
-    }
-
-    @Override
     public boolean supportsCommentQuery() {
         return false;
     }

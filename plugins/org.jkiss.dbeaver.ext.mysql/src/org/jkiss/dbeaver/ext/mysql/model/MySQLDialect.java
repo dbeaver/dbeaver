@@ -156,6 +156,11 @@ class MySQLDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public boolean isAmbiguousCountBroken() {
+        return true;
+    }
+
+    @Override
     protected boolean useBracketsForExec() {
         return true;
     }
