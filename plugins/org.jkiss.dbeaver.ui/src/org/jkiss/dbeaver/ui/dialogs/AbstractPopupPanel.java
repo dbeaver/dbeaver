@@ -53,7 +53,7 @@ public abstract class AbstractPopupPanel extends Dialog {
     }
 
     protected boolean isShowTitle() {
-        return false;
+        return true;
     }
 
     public void setModeless(boolean modeless) {

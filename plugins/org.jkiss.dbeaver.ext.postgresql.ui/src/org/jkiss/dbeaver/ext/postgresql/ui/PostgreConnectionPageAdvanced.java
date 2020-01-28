@@ -114,6 +114,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         // Load values from new connection info
         DBPPreferenceStore globalPrefs = DBWorkbench.getPlatform().getPreferenceStore();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
+        setTitle(site.getActiveDataSource().getDriver().getName());
 
         showNonDefault.setSelection(
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
