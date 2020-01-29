@@ -173,8 +173,14 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         if (completionProcessor == null) {
             this.completionProcessor = new SQLCompletionProcessor(editor);
         }
-        assistant.addContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
-        assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+        try {
+            assistant.addContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
+            assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+        } catch (Throwable e) {
+            // addContentAssistProcessor API was added in 4.12
+            // Let's support older Eclipse versions
+            assistant.setContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
+        }
 
         // Configure how content assist information will appear.
         assistant.enableAutoActivation(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
