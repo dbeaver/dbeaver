@@ -529,35 +529,37 @@ public class ProjectMetadata implements DBPProject {
                 try {
                     ContentUtils.makeFileBackup(getMetadataFolder(true).getFile(new Path(METADATA_STORAGE_FILE)));
 
-                    try (Writer mdWriter = new OutputStreamWriter(new FileOutputStream(mdFile), StandardCharsets.UTF_8)) {
-                        try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {
-                            jsonWriter.beginObject();
-
-                            jsonWriter.name("resources");
-                            jsonWriter.beginObject();
-                            for (Map.Entry<String, Map<String, Object>> resEntry : resourceProperties.entrySet()) {
-                                jsonWriter.name(resEntry.getKey());
+                    if (!CommonUtils.isEmpty(resourceProperties)) {
+                        try (Writer mdWriter = new OutputStreamWriter(new FileOutputStream(mdFile), StandardCharsets.UTF_8)) {
+                            try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {
                                 jsonWriter.beginObject();
-                                Map<String, Object> resProps = resEntry.getValue();
-                                for (Map.Entry<String, Object> propEntry : resProps.entrySet()) {
-                                    jsonWriter.name(propEntry.getKey());
-                                    Object value = propEntry.getValue();
-                                    if (value == null) {
-                                        jsonWriter.nullValue();
-                                    } else if (value instanceof Number) {
-                                        jsonWriter.value((Number)value);
-                                    } else if (value instanceof Boolean) {
-                                        jsonWriter.value((Boolean)value);
-                                    } else {
-                                        jsonWriter.value(CommonUtils.toString(value));
+
+                                jsonWriter.name("resources");
+                                jsonWriter.beginObject();
+                                for (Map.Entry<String, Map<String, Object>> resEntry : resourceProperties.entrySet()) {
+                                    jsonWriter.name(resEntry.getKey());
+                                    jsonWriter.beginObject();
+                                    Map<String, Object> resProps = resEntry.getValue();
+                                    for (Map.Entry<String, Object> propEntry : resProps.entrySet()) {
+                                        jsonWriter.name(propEntry.getKey());
+                                        Object value = propEntry.getValue();
+                                        if (value == null) {
+                                            jsonWriter.nullValue();
+                                        } else if (value instanceof Number) {
+                                            jsonWriter.value((Number) value);
+                                        } else if (value instanceof Boolean) {
+                                            jsonWriter.value((Boolean) value);
+                                        } else {
+                                            jsonWriter.value(CommonUtils.toString(value));
+                                        }
                                     }
+                                    jsonWriter.endObject();
                                 }
                                 jsonWriter.endObject();
-                            }
-                            jsonWriter.endObject();
 
-                            jsonWriter.endObject();
-                            jsonWriter.flush();
+                                jsonWriter.endObject();
+                                jsonWriter.flush();
+                            }
                         }
                     }
 
