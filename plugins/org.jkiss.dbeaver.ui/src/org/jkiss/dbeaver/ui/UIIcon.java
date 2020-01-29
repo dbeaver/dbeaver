@@ -66,10 +66,9 @@ public class UIIcon {
     public static final DBIcon FIND = new DBIcon("find", "misc/find.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FIND_TEXT = new DBIcon("find_text", "misc/find_text.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SEARCH = new DBIcon("search", "misc/search.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon CHECK = new DBIcon("check", "misc/check.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon CHECK2 = new DBIcon("check2", "misc/check.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CHECK_ON = new DBIcon("checked", "misc/checked.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CHECK_OFF = new DBIcon("unchecked", "misc/unchecked.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHECK_QUEST = new DBIcon("check_null", "misc/checked_null.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM = new DBIcon("zoom", "misc/zoom.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_IN = new DBIcon("zoom_in", "misc/zoom_in.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_OUT = new DBIcon("zoom_out", "misc/zoom_out.png"); //$NON-NLS-1$ //$NON-NLS-2$

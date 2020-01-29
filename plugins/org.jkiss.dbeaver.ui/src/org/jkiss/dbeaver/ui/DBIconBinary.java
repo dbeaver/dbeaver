@@ -35,7 +35,13 @@ public class DBIconBinary implements DBPImage
     public DBIconBinary(final String location, final ImageData data) {
         this.location = "binary:" + location;
         this.image = new Image(null, data);
-        imageDescriptor = ImageDescriptor.createFromImageData(data);
+        this.imageDescriptor = ImageDescriptor.createFromImageData(data);
+    }
+
+    public DBIconBinary(final String location, final Image image) {
+        this.location = "image:" + location;
+        this.image = image;
+        this.imageDescriptor = ImageDescriptor.createFromImage(image);
     }
 
     public Image getImage() {
@@ -63,4 +69,5 @@ public class DBIconBinary implements DBPImage
     public String toString() {
         return location;
     }
+
 }

@@ -2450,7 +2450,7 @@ public class ResultSetViewer extends Viewer
 
             // Edit items
             if (!valueController.isReadOnly()) {
-                if (!DBUtils.isNullValue(value)) {
+                if (!DBUtils.isNullValue(value) && attr != null && !attr.isRequired()) {
                     editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_CELL_SET_NULL));
                 }
                 if (valueController.getValueHandler() instanceof DBDValueDefaultGenerator) {
