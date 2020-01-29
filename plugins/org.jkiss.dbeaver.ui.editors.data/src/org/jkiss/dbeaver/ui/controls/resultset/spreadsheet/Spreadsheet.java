@@ -326,6 +326,12 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.redraw();
     }
 
+    @Override
+    protected void toggleCellValue(Object column, Object row) {
+        presentation.toggleCellValue(column, row);
+
+    }
+
     private void hookContextMenu()
     {
         MenuManager menuMgr = new MenuManager(null, AbstractPresentation.RESULT_SET_PRESENTATION_CONTEXT_MENU);

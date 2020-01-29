@@ -38,8 +38,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * LightGrid
@@ -2936,16 +2936,19 @@ public abstract class LightGrid extends Canvas {
                 //return;
             } else if (e.button == 1 || (e.button == 3 && col != null && !isSelectedCell)) {
                 if (col != null) {
-                    selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
-                    // Trigger selection event always!
-                    // It makes sense if grid content was changed but selection remains the same
-                    // If user clicks on the same selected cell value - selection event will trigger value redraw in panels
-                    selectionEvent = new Event();
-                    cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
-
                     if (e.stateMask != SWT.MOD2) {
                         focusColumn = col;
                         focusItem = row;
+                    }
+
+                    //boolean isClickOnLink = focusColumn != null && focusItem != -1 && cellRenderer.isOverLink(focusColumn, focusItem, e.x, e.y);
+                    /*if (!isClickOnLink) */{
+                        selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
+                        // Trigger selection event always!
+                        // It makes sense if grid content was changed but selection remains the same
+                        // If user clicks on the same selected cell value - selection event will trigger value redraw in panels
+                        selectionEvent = new Event();
+                        cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
                     }
                     //showColumn(col);
                     showItem(row);
@@ -3582,6 +3585,8 @@ public abstract class LightGrid extends Canvas {
                     }
                 }
                 break;
+            case ' ':
+                toggleCellValue(focusColumn.getElement(), rowElements[focusItem]);
             default:
                 break;
         }
@@ -3629,6 +3634,10 @@ public abstract class LightGrid extends Canvas {
 
             redraw();
         }
+    }
+
+    protected void toggleCellValue(Object column, Object row) {
+
     }
 
     /**

@@ -109,8 +109,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
-    private static final boolean SHOW_BOOLEAN_AS_CHECK = false;
-
     private Spreadsheet spreadsheet;
 
     @Nullable
@@ -149,6 +147,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
+    private boolean showBooleanAsCheckbox;
     private int rowBatchSize;
     private IValueEditor activeInlineEditor;
 
@@ -729,6 +728,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
         autoFetchSegments = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         calcColumnWidthByValue = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
+        showBooleanAsCheckbox = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
 
         spreadsheet.setColumnScrolling(!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
 
@@ -920,20 +920,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                 }
             }
+        } else {
+            if (isShowAsCheckbox(attr)) {
+                // No inline boolean editor. Single click changes value
+                return null;
+            }
         }
-
-//        if (controller.isAttributeReadOnly(attr) && inline) {
-//            // No inline editors for readonly columns
-//            return null;
-//        }
 
         Composite placeholder = null;
         if (inline) {
             if (controller.isAttributeReadOnly(attr)) {
                 controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only", DBPMessageType.ERROR);
-            }/* else {
-                controller.setStatus(attr.getName() + " " + attr.getFullTypeName(), DBPMessageType.INFORMATION);
-            }*/
+            }
             spreadsheet.cancelInlineEditor();
             activeInlineEditor = null;
 
@@ -967,21 +965,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             return null;
         }
-/*
-        if (inline &&
-            (!ArrayUtils.contains(supportedEditTypes, IValueController.EditType.INLINE) || controller.isAttributeReadOnly(attr)) &&
-            ArrayUtils.contains(supportedEditTypes, IValueController.EditType.PANEL))
-        {
-            // Inline editor isn't supported but panel viewer is
-            // Enable panel
-            if (!isPreviewVisible()) {
-                togglePreview();
-            }
-            placeholder.dispose();
-
-            return null;
-        }
-*/
 
         try {
             activeInlineEditor = valueController.getValueManager().createEditor(valueController);
@@ -1053,11 +1036,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
 
         Object value = controller.getModel().getCellValue(attr, row);
-        if (DBUtils.isNullValue(value)) {
-            log.warn("Can't navigate to NULL value");
-            return;
-        }
-        if (!CommonUtils.isEmpty(attr.getReferrers())) {
+        if (isShowAsCheckbox(attr)) {
+            // Switch boolean value
+            toggleBooleanValue(attr, row, value);
+        } else if (DBUtils.isNullValue(value)) {
+            UIUtils.showMessageBox(getSpreadsheet().getShell(), "Wrong link", "Can't navigate to NULL value", SWT.ICON_ERROR);
+        } else if (!CommonUtils.isEmpty(attr.getReferrers())) {
             // Navigate association
             new AbstractJob("Navigate association") {
                 @Override
@@ -1079,6 +1063,40 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             // Navigate hyperlink
             String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
             UIUtils.launchProgram(strValue);
+        }
+    }
+
+    public void toggleCellValue(Object columnElement, Object rowElement) {
+        boolean recordMode = controller.isRecordMode();
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : columnElement);
+        final ResultSetRow row = (ResultSetRow)(recordMode ? columnElement : rowElement);
+
+        if (isShowAsCheckbox(attr)) {
+            // Switch boolean value
+            Object cellValue = controller.getModel().getCellValue(attr, row);
+            toggleBooleanValue(attr, row, cellValue);
+        }
+    }
+
+    private void toggleBooleanValue(DBDAttributeBinding attr, ResultSetRow row, Object value) {
+        boolean nullable = !attr.isRequired();
+        if (Boolean.TRUE.equals(value)) {
+            value = false;
+        } else if (Boolean.FALSE.equals(value)) {
+            value = nullable ? null : true;
+        } else {
+            value = true;
+        }
+        final SpreadsheetValueController valueController = new SpreadsheetValueController(
+            controller,
+            attr,
+            row,
+            IValueController.EditType.NONE,
+            null);
+        // Update value in all selected rows
+        for (ResultSetRow selRow : getSelection().getSelectedRows()) {
+            valueController.setCurRow(selRow);
+            valueController.updateValue(value, true);
         }
     }
 
@@ -1551,6 +1569,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (!controller.isRecordMode()) {
                 DBDAttributeBinding attr = (DBDAttributeBinding)element;
                 if (attr != null) {
+                    if (isShowAsCheckbox(attr)) {
+                        return ALIGN_CENTER;
+                    }
                     DBPDataKind dataKind = attr.getDataKind();
                     if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
                         (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
@@ -1598,7 +1619,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
             ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
             Object value = controller.getModel().getCellValue(attr, row);
-            if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
+            if (isShowAsCheckbox(attr)) {
+                state |= STATE_LINK;
+            } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                 state |= STATE_LINK;
             } else {
                 String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
@@ -1633,7 +1656,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Object getCellValue(Object colElement, Object rowElement, boolean formatString)
         {
             DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-            if (SHOW_BOOLEAN_AS_CHECK && attr.getDataKind() == DBPDataKind.BOOLEAN) {
+            if (isShowAsCheckbox(attr)) {
                 return "";
             }
             ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
@@ -1674,26 +1697,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public DBPImage getCellImage(Object colElement, Object rowElement)
         {
             DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-            if (SHOW_BOOLEAN_AS_CHECK && attr.getDataKind() == DBPDataKind.BOOLEAN) {
+            if (isShowAsCheckbox(attr)) {
                 ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
                 Object cellValue = controller.getModel().getCellValue(attr, row);
                 if (cellValue instanceof Boolean) {
-                    return (Boolean)cellValue ? UIIcon.CHECK_ON : UIIcon.CHECK_OFF;
+                    if ((Boolean)cellValue) {
+                        return UIIcon.CHECK_ON;
+                    } else {
+                        return UIIcon.CHECK_OFF;
+                    }
+                }
+                if (DBUtils.isNullValue(cellValue)) {
+                    return UIIcon.CHECK_QUEST;
                 }
             }
-            // TODO: tired from cell icons. But maybe they make some sense - let's keep them commented
-/*
-            if (!showCelIcons) {
-                return null;
-            }
-            Object cellValue = getCellValue(colElement, rowElement, false);
-            if (cellValue instanceof DBDContent || cellValue instanceof DBDReference) {
-                DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowElement : colElement);
-                return DBUtils.getObjectImage(attr);
-            } else {
-                return null;
-            }
-*/
             return null;
         }
 
@@ -1869,6 +1886,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             backgroundNormal = null;
             foregroundDefault = null;
         }
+    }
+
+    private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
+        return showBooleanAsCheckbox && attr.getDataKind() == DBPDataKind.BOOLEAN;
     }
 
     private class GridLabelProvider implements IGridLabelProvider {
