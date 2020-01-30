@@ -81,7 +81,7 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                             imageLoader.data[0] = ImageUtils.makeWebImageData(image);
                         } else {
                             // Use maximum colors for JPEG, PNG
-                            imageLoader.data[0] = image.getImageData();
+                            imageLoader.data[0] = ImageUtils.getImageDataAtCurrentZoom(image);
                         }
                         imageLoader.save(fos, imageType);
                     } finally {
