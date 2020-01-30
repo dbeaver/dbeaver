@@ -51,6 +51,11 @@ public class NewConnectionWizard extends ConnectionWizard
     private DBPProject selectedProject;
     //private ConnectionPageNetwork pageNetwork;
 
+
+    public NewConnectionWizard() {
+        this(null);
+    }
+
     public NewConnectionWizard(DBPDriver initialDriver) {
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
