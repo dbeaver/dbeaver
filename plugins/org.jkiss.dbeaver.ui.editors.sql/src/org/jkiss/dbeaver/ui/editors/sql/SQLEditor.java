@@ -233,9 +233,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (executionContext != null) {
             return executionContext;
         }
-        if (dataSourceContainer != null &&
-            !dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION))
-        {
+        if (dataSourceContainer != null && !SQLEditorUtils.isOpenSeparateConnection(dataSourceContainer)) {
             return DBUtils.getDefaultContext(getDataSource(), false);
         }
         return null;
@@ -381,9 +379,8 @@ public class SQLEditor extends SQLEditorBase implements
                 // Datasource was changed or instance was changed (PG)
                 releaseExecutionContext();
                 curDataSource = dataSource;
-                if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
-                    !dataSource.getContainer().getDriver().isEmbedded())
-                {
+                DBPDataSourceContainer container = dataSource.getContainer();
+                if (SQLEditorUtils.isOpenSeparateConnection(container)) {
                     DBSInstance dsInstance = dataSource.getDefaultInstance();
                     String[] contextDefaults = EditorUtils.getInputContextDefaults(getEditorInput());
                     if (contextDefaults.length > 0 && contextDefaults[0] != null) {

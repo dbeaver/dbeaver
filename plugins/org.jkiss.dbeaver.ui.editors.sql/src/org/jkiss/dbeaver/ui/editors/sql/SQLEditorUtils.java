@@ -50,6 +50,11 @@ public class SQLEditorUtils {
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 
+    public static boolean isOpenSeparateConnection(DBPDataSourceContainer container) {
+        return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
+            !container.getDriver().isEmbedded();
+    }
+
     public static IFolder getScriptsFolder(DBPProject project, boolean forceCreate) throws CoreException
     {
     	if (project == null) {
