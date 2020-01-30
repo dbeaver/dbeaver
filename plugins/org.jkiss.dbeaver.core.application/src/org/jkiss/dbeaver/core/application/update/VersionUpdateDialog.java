@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 public class VersionUpdateDialog extends Dialog {
 
@@ -63,8 +64,8 @@ public class VersionUpdateDialog extends Dialog {
         earlyAccessURL = Platform.getProduct().getProperty("earlyAccessURL");
     }
 
-    public VersionDescriptor getCurrentVersion() {
-        return currentVersion;
+    public Version getCurrentVersion() {
+        return GeneralUtils.getProductVersion();
     }
 
     @Nullable
@@ -85,6 +86,10 @@ public class VersionUpdateDialog extends Dialog {
         return true;
     }
 
+    private boolean isNewVersionAvailable() {
+        return newVersion != null && newVersion.getProgramVersion().compareTo(getCurrentVersion()) > 0;
+    }
+
     @Override
     protected Control createDialogArea(Composite parent)
     {
@@ -101,13 +106,13 @@ public class VersionUpdateDialog extends Dialog {
 
         final Label titleLabel = new Label(propGroup, SWT.NONE);
         titleLabel.setText(
-            NLS.bind(newVersion == null ? CoreMessages.dialog_version_update_no_new_version : CoreMessages.dialog_version_update_available_new_version, GeneralUtils.getProductName()));
+            NLS.bind(!isNewVersionAvailable() ? CoreMessages.dialog_version_update_no_new_version : CoreMessages.dialog_version_update_available_new_version, GeneralUtils.getProductName()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         titleLabel.setLayoutData(gd);
         titleLabel.setFont(boldFont);
 
-        final String versionStr = GeneralUtils.getProductVersion().toString();
+        final String versionStr = getCurrentVersion().toString();
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_current_version);
         new Label(propGroup, SWT.NONE)
@@ -117,7 +122,7 @@ public class VersionUpdateDialog extends Dialog {
         new Label(propGroup, SWT.NONE)
             .setText(newVersion == null ? versionStr : newVersion.getProgramVersion().toString() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
 
-        if (newVersion != null) {
+        if (isNewVersionAvailable()) {
             final Label notesLabel = UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_notes);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
@@ -194,12 +199,12 @@ public class VersionUpdateDialog extends Dialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        if (showConfig && newVersion != null) {
+        if (showConfig && isNewVersionAvailable()) {
             ((GridLayout) parent.getLayout()).numColumns++;
             dontShowAgainCheck = UIUtils.createCheckbox(parent, "Don't show for the version " + newVersion.getPlainVersion(), false);
         }
 
-        if (newVersion != null) {
+        if (isNewVersionAvailable()) {
             createButton(
                 parent,
                 UPGRADE_ID,
@@ -224,7 +229,7 @@ public class VersionUpdateDialog extends Dialog {
             parent,
             IDialogConstants.CLOSE_ID,
             IDialogConstants.CLOSE_LABEL,
-            newVersion == null);
+                !isNewVersionAvailable());
     }
 
     @Override
