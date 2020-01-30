@@ -1881,9 +1881,10 @@ public class UIUtils {
     public static String getSupportedVariablesTip(String toolTip, String ... variables) {
         StringBuilder varsTip = new StringBuilder();
         varsTip.append(toolTip).append(". ").append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
-        for (String var : variables) {
-            if (varsTip.length() > 0) varsTip.append(",\n");
-            varsTip.append("\t").append(GeneralUtils.variablePattern(var));
+        for (int i = 0; i < variables.length; i++) {
+            String var = variables[i];
+            if (i > 0) varsTip.append(",\n");
+            varsTip.append("  ").append(GeneralUtils.variablePattern(var));
         }
         varsTip.append("."); //$NON-NLS-1$
         return varsTip.toString();
