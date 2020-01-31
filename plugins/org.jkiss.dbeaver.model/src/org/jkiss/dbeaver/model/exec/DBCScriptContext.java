@@ -14,35 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import java.io.PrintWriter;
 
 /**
- * Execution source.
- * The thing which initiates statement execution
+ * Script context.
+ * The same for series of queries executed as a single script
  */
-public interface DBCExecutionSource
-{
-    @Nullable
-    DBSDataContainer getDataContainer();
+public interface DBCScriptContext {
 
-    /**
-     * UI controller which initiated execution
-     * @return execution controller
-     */
-    @Nullable
-    Object getExecutionController();
+    boolean hasVariable(String name);
 
-    /**
-     * Additional source descriptor
-     */
-    @Nullable
-    Object getSourceDescriptor();
+    Object getVariable(String name);
 
-    @Nullable
-    DBCScriptContext getScriptContext();
+    void setVariable(String name, Object value);
+
+    void removeVariable(String name);
+
+    <T> T getData(String key);
+
+    void setData(String key, Object value);
+
+    PrintWriter getOutputWriter();
 
 }

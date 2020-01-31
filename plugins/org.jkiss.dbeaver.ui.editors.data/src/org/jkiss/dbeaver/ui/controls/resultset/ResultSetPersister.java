@@ -64,7 +64,7 @@ class ResultSetPersister {
 
         private final DBSDataContainer dataContainer;
 
-        public ExecutionSource(DBSDataContainer dataContainer) {
+        ExecutionSource(DBSDataContainer dataContainer) {
             this.dataContainer = dataContainer;
         }
 
@@ -84,6 +84,12 @@ class ResultSetPersister {
         @Override
         public Object getSourceDescriptor() {
             return ResultSetPersister.this;
+        }
+
+        @Nullable
+        @Override
+        public DBCScriptContext getScriptContext() {
+            return null;
         }
     }
 

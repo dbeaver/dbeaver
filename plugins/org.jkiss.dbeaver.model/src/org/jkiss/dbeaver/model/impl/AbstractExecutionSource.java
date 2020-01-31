@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
+import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
@@ -31,6 +32,7 @@ public class AbstractExecutionSource implements DBCExecutionSource {
     private final DBCExecutionContext executionContext;
     private final Object controller;
     private final Object descriptor;
+    private DBCScriptContext scriptContext;
 
     public AbstractExecutionSource(DBSDataContainer dataContainer, DBCExecutionContext executionContext, Object controller) {
         this(dataContainer, executionContext, controller, null);
@@ -59,5 +61,15 @@ public class AbstractExecutionSource implements DBCExecutionSource {
     @Override
     public Object getSourceDescriptor() {
         return descriptor;
+    }
+
+    @Nullable
+    @Override
+    public DBCScriptContext getScriptContext() {
+        return scriptContext;
+    }
+
+    public void setScriptContext(DBCScriptContext scriptContext) {
+        this.scriptContext = scriptContext;
     }
 }
