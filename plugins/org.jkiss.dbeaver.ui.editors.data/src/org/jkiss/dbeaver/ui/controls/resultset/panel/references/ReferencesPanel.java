@@ -20,15 +20,16 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListenerAdapter;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * RSV references panel
@@ -71,11 +72,23 @@ public class ReferencesPanel implements IResultSetPanel {
         presentation.getControl().addDisposeListener(e -> presentation.getController().removeListener(dataListener));
 
         if (presentation instanceof ISelectionProvider) {
-            ISelectionChangedListener selectionListener = event -> {
-                if (presentation.getController().getVisiblePanel() != ReferencesPanel.this) {
-                    return;
+            ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
+                private List<ResultSetRow> prevSelection;
+                @Override
+                public void selectionChanged(SelectionChangedEvent event) {
+                    if (presentation.getController().getVisiblePanel() != ReferencesPanel.this) {
+                        return;
+                    }
+                    if (!(event.getSelection() instanceof IResultSetSelection)) {
+                        return;
+                    }
+                    List<ResultSetRow> selectedItems = ((IResultSetSelection) event.getSelection()).getSelectedRows();
+                    if (CommonUtils.equalObjects(prevSelection, selectedItems)) {
+                        return;
+                    }
+                    this.prevSelection = selectedItems;
+                    getResultsContainer().refreshReferences();
                 }
-                getResultsContainer().refreshReferences();
             };
             ((ISelectionProvider) presentation).addSelectionChangedListener(selectionListener);
             presentation.getControl().addDisposeListener(e -> ((ISelectionProvider) presentation).removeSelectionChangedListener(selectionListener));
