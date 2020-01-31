@@ -458,7 +458,8 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime, SQLQueryResult curResult) throws DBCException {
-        DBCExecutionSource source = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), partSite.getPart(), sqlQuery);
+        AbstractExecutionSource source = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), partSite.getPart(), sqlQuery);
+        source.setScriptContext(scriptContext);
         final DBCStatement dbcStatement = DBUtils.makeStatement(
             source,
             session,
