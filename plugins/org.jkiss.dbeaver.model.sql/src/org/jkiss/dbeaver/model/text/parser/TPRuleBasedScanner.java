@@ -87,7 +87,7 @@ public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, T
 		final int documentLength = document.getLength();
 
 		// Sometimes we have length longer than document length
-		while (offset + length >= documentLength) {
+		while (offset + length > documentLength) {
 			length--;
 		}
 		checkRange(offset, length, documentLength);
