@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,7 +50,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 class ReferencesResultsContainer implements IResultSetContainer {
@@ -317,37 +315,41 @@ class ReferencesResultsContainer implements IResultSetContainer {
             //log.error("No active reference key");
             return;
         }
-        try {
-            UIUtils.runInProgressService(monitor -> {
-
+        new AbstractJob("Read references") {
+            {
+                //setUser(true);
+                //setSystem(false);
+            }
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
                 try {
                     DBSEntity realEntity = DBVUtils.getRealEntity(monitor, activeReferenceKey.refEntity);
                     if (!(realEntity instanceof DBSDataContainer)) {
                         log.error("Referencing entity is not a data container");
-                        return;
+                        return Status.OK_STATUS;
                     }
                     dataContainer = (DBSDataContainer) realEntity;
 
                     List<ResultSetRow> selectedRows = parentController.getSelection().getSelectedRows();
                     if (!force && CommonUtils.equalObjects(lastSelectedRows, selectedRows)) {
-                        return;
+                        return Status.OK_STATUS;
                     }
                     lastSelectedRows = selectedRows;
                     if (selectedRows.isEmpty()) {
                         UIUtils.asyncExec(() -> {
-                            this.dataViewer.clearData();
-                            this.dataViewer.showEmptyPresentation();
+                            dataViewer.clearData();
+                            dataViewer.showEmptyPresentation();
                         });
                     } else {
                         if (activeReferenceKey.isReference) {
-                            this.dataViewer.navigateReference(
+                            dataViewer.navigateReference(
                                 monitor,
                                 parentController.getModel(),
                                 activeReferenceKey.refAssociation,
                                 selectedRows,
                                 false);
                         } else {
-                            this.dataViewer.navigateAssociation(
+                            dataViewer.navigateAssociation(
                                 monitor,
                                 parentController.getModel(),
                                 activeReferenceKey.refAssociation,
@@ -355,15 +357,12 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
                         }
                     }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
+                } catch (Exception e) {
+                    return GeneralUtils.makeExceptionStatus(e);
                 }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Can't show references", "Error opening '" + dataContainer.getName() + "' references", e.getTargetException());
-        } catch (InterruptedException e) {
-            // Ignore
-        }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     static class ReferenceKey {
