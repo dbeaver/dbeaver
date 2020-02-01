@@ -12,8 +12,7 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tasks.native;visibility:=reexport,
  net.sf.opencsv;visibility:=reexport,
- com.google.gson,
- org.eclipse.jface
+ com.google.gson
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
