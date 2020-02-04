@@ -42,4 +42,7 @@ public interface DBCExecutionSource
     @Nullable
     Object getSourceDescriptor();
 
+    @Nullable
+    DBCScriptContext getScriptContext();
+
 }

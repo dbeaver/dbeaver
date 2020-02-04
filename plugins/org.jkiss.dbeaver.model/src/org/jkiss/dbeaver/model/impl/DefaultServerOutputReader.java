@@ -48,7 +48,9 @@ public class DefaultServerOutputReader implements DBCServerOutputReader
 
     @Override
     public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable SQLQueryResult queryResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
-        dumpWarnings(output, queryResult.getWarnings());
+        if (queryResult != null) {
+            dumpWarnings(output, queryResult.getWarnings());
+        }
     }
 
     protected void dumpWarnings(@NotNull PrintWriter output, List<Throwable> warnings) {

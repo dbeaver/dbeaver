@@ -23,7 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskCategory;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
@@ -38,7 +38,7 @@ public class TaskHandlerEdit extends AbstractHandler {
             Object element = ((IStructuredSelection)selection).getFirstElement();
             if (element instanceof DBTTask) {
                 DBTTask task = (DBTTask) element;
-                DBTTaskCategory taskTypeDescriptor = task.getType().getCategory();
+                DBTTaskType taskTypeDescriptor = task.getType();
                 if (!taskTypeDescriptor.supportsConfigurator()) {
                     return null;
                 }

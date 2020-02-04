@@ -22,6 +22,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -42,13 +43,15 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
 
     public static final int SHOW_GLOBAL_FILTERS_ID = 1000;
 
+    private DataSourceDescriptor dataSourceDescriptor;
     private List<String> queries;
     private boolean ignoreErrors;
     private Table queriesTable;
     private Button ignoreErrorButton;
 
-    public EditBootstrapQueriesDialog(Shell shell, Collection<String> queries, boolean ignoreErrors) {
+    public EditBootstrapQueriesDialog(Shell shell, DataSourceDescriptor dataSourceDescriptor, Collection<String> queries, boolean ignoreErrors) {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
+        this.dataSourceDescriptor = dataSourceDescriptor;
         this.queries = new ArrayList<>(queries);
         this.ignoreErrors = ignoreErrors;
     }
@@ -131,7 +134,14 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
         });
 
         ignoreErrorButton = UIUtils.createCheckbox(composite, CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_ignore_error_lable, ignoreErrors);
-        new VariablesHintLabel(composite, DataSourceDescriptor.CONNECT_VARIABLES);
+        VariablesHintLabel variablesHintLabel = new VariablesHintLabel(
+            composite,
+            CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
+            CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
+            DataSourceDescriptor.CONNECT_VARIABLES);
+        if (dataSourceDescriptor != null) {
+            variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSourceDescriptor, dataSourceDescriptor.getConnectionConfiguration()));
+        }
 
         UIUtils.packColumns(queriesTable, true);
 

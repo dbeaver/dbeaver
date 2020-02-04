@@ -78,6 +78,12 @@ public interface SQLDialect {
     String[][] getStringQuoteStrings();
 
     /**
+     * Data query keywords. By default it is SELECT
+     */
+    @NotNull
+    String[] getQueryKeywords();
+
+    /**
      * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
      * @return the list of execute keywords.
      */
@@ -90,6 +96,9 @@ public interface SQLDialect {
      */
     @NotNull
     String[] getDDLKeywords();
+
+    @NotNull
+    String[] getDMLKeywords();
 
     /**
      * Retrieves a list of all of this database's SQL keywords
@@ -229,10 +238,6 @@ public interface SQLDialect {
     boolean supportsTableDropCascade();
 
     boolean supportsOrderByIndex();
-
-    boolean supportsOrderBy();
-
-    boolean supportsGroupBy();
 
     /**
      * Check whether dialect support plain comment queries (queries which contains only comments)

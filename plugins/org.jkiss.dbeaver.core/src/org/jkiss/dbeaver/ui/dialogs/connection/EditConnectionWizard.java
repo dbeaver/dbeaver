@@ -46,10 +46,7 @@ import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute;
-import org.jkiss.dbeaver.ui.preferences.PrefPageConnections;
-import org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle;
-import org.jkiss.dbeaver.ui.preferences.PrefPageMetaData;
-import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
+import org.jkiss.dbeaver.ui.preferences.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -72,7 +69,6 @@ public class EditConnectionWizard extends ConnectionWizard
     //private ConnectionPageNetwork pageNetwork;
     private ConnectionPageInitialization pageInit;
     private ConnectionPageShellCommands pageEvents;
-    private PrefPageConnections pageClientSettings;
 
     /**
      * Constructor for SampleNewWizard.
@@ -153,9 +149,14 @@ public class EditConnectionWizard extends ConnectionWizard
         }
 
         if (!embedded && pageSettings != null) {
-            pageClientSettings = new PrefPageConnections();
+            PrefPageConnections pageClientSettings = new PrefPageConnections();
             pageSettings.addSubPage(
                 createPreferencePage(pageClientSettings, CoreMessages.dialog_connection_edit_wizard_connections, CoreMessages.dialog_connection_edit_wizard_connections_description));
+        }
+        if (pageSettings != null) {
+            PrefPageTransactions pageClientTransactions = new PrefPageTransactions();
+            pageSettings.addSubPage(
+                createPreferencePage(pageClientTransactions, CoreMessages.dialog_connection_edit_wizard_transactions, CoreMessages.dialog_connection_edit_wizard_transactions_description));
         }
 
         addPreferencePage(new PrefPageMetaData(), CoreMessages.dialog_connection_edit_wizard_metadata,  CoreMessages.dialog_connection_edit_wizard_metadata_description);

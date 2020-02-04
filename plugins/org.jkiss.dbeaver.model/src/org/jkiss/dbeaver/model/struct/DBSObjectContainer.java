@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -62,6 +63,7 @@ public interface DBSObjectContainer extends DBSObject
      * @throws DBException on any DB error
      * @return child object or null
      */
+    @Nullable
     DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException;
 
     /**
@@ -71,6 +73,7 @@ public interface DBSObjectContainer extends DBSObject
      * @return type of child objects
      * @throws org.jkiss.dbeaver.DBException on error
      */
+    @NotNull
     Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**

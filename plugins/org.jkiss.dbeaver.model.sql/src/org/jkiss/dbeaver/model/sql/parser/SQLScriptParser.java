@@ -17,13 +17,12 @@
 
 package org.jkiss.dbeaver.model.sql.parser;
 
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentExtension3;
-import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -125,7 +124,7 @@ public class SQLScriptParser
                 }
 
                 if (tokenType == SQLTokenType.T_BLOCK_HEADER) {
-                    if (curBlock == null || !curBlock.isHeader) {
+                    if (curBlock == null) {
                         // Check for double block header, e.g. DO, DECLARE
                         curBlock = new ScriptBlockInfo(curBlock, true);
                     }
@@ -188,6 +187,7 @@ public class SQLScriptParser
                         case T_BLOCK_END:
                         case T_BLOCK_TOGGLE:
                         case T_BLOCK_HEADER:
+                        case T_KEYWORD:
                         case T_UNKNOWN:
                             try {
                                 lastKeyword = document.get(tokenOffset, tokenLength);
@@ -516,12 +516,16 @@ public class SQLScriptParser
     public static List<SQLQueryParameter> parseParameters(SQLParserContext context, int queryOffset, int queryLength) {
         final SQLDialect sqlDialect = context.getDialect();
         IDocument document = context.getDocument();
+        if (queryLength > document.getLength()) {
+            // This may happen during parameters parsing. Query may be trimmed or modified
+            queryLength = document.getLength();
+        }
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
         boolean supportParamsInDDL = context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
         boolean execQuery = false;
         boolean ddlQuery = false;
         List<SQLQueryParameter> parameters = null;
-        TPRuleBasedScanner ruleScanner = new TPRuleBasedScanner();
+        TPRuleBasedScanner ruleScanner = context.getScanner();
         ruleScanner.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
@@ -672,6 +676,20 @@ public class SQLScriptParser
             }
         }
         return queryList;
+    }
+
+    public static List<SQLScriptElement> parseScript(DBCExecutionContext executionContext, String sqlScriptContent) {
+        DBPContextProvider contextProvider = () -> executionContext;
+
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(executionContext.getDataSource());
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(executionContext.getDataSource(), false);
+
+        Document sqlDocument = new Document(sqlScriptContent);
+
+        SQLParserContext parserContext = new SQLParserContext(contextProvider, syntaxManager, ruleManager, sqlDocument);
+        return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
     private static class ScriptBlockInfo {

@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -152,9 +153,10 @@ public class ResultSetReferenceMenu
         } else {
             manager.add(FKS_TITLE_ACTION);
             manager.add(new Separator());
+            ArrayList<Action> entries = new ArrayList<>(associations.size());
             for (DBSEntityAssociation association : associations) {
                 DBSEntity refTable = association.getReferencedConstraint().getParentObject();
-                manager.add(new Action(
+                entries.add(new Action(
                     DBUtils.getObjectFullName(refTable, DBPEvaluationContext.UI) + " (" + association.getName() + ")",
                     DBeaverIcons.getImageDescriptor(DBSEntityType.TABLE.getIcon())) {
                     @Override
@@ -173,6 +175,8 @@ public class ResultSetReferenceMenu
                     }
                 });
             }
+            entries.sort(Comparator.comparing(Action::getText));
+            entries.forEach(manager::add);
         }
 
         manager.add(new Separator());
@@ -182,9 +186,10 @@ public class ResultSetReferenceMenu
         } else {
             manager.add(REFS_TITLE_ACTION);
             manager.add(new Separator());
+            ArrayList<Action> entries = new ArrayList<>(references.size());
             for (DBSEntityAssociation refAssociation : references) {
                 DBSEntity refTable = refAssociation.getParentObject();
-                manager.add(new Action(
+                entries.add(new Action(
                     DBUtils.getObjectFullName(refTable, DBPEvaluationContext.UI) + " (" + refAssociation.getName() + ")",
                     DBeaverIcons.getImageDescriptor(DBSEntityType.TABLE.getIcon())) {
                     @Override
@@ -208,6 +213,8 @@ public class ResultSetReferenceMenu
                     }
                 });
             }
+            entries.sort(Comparator.comparing(Action::getText));
+            entries.forEach(manager::add);
         }
 
     }

@@ -292,7 +292,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     
     private void refresh(DBRProgressMonitor monitor) throws DBCException
     {
-    	if (!refreshed) {
+    	if (!refreshed && this.objectId != null) {
 	    	JDBCSession session = DBUtils.openMetaSession(monitor, this, ExasolMessages.read_schema_details );
 	    	try (JDBCPreparedStatement stmt = session.prepareStatement("SELECT * FROM SYS."+getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL)+"_OBJECT_SIZES WHERE OBJECT_ID = ?"))
 	    	{

@@ -23,15 +23,21 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateSchemaDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -56,16 +62,25 @@ public class ExasolSchemaManager
     @Override
     public DBSObjectCache<? extends DBSObject, ExasolSchema> getObjectsCache(
         ExasolSchema object) {
-        ExasolDataSource source = (ExasolDataSource) object.getDataSource();
+        ExasolDataSource source = object.getDataSource();
         return source.getSchemaCache();
     }
 
+    @Override
+    public boolean canCreateObject(Object container) {
+        return super.canCreateObject(container);
+    }
 
     @Override
     protected ExasolSchema createDatabaseObject(
         DBRProgressMonitor monitor,
-        DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
-    {
+        DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBCException {
+        Object navContainer = options.get(DBEObjectMaker.OPTION_CONTAINER);
+        boolean virtSchema = navContainer instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) navContainer).getChildrenClass() == ExasolVirtualSchema.class;
+        if (virtSchema) {
+            throw new DBCFeatureNotSupportedException();
+        }
+
         return new UITask<ExasolSchema>() {
             @Override
             protected ExasolSchema runTask() {
@@ -73,7 +88,7 @@ public class ExasolSchemaManager
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                return new ExasolSchema((ExasolDataSource) container, dialog.getName(), dialog.getOwner().getName());
+                return new ExasolSchema((ExasolDataSource) container, dialog.getName(), dialog.getOwner() == null ? null : dialog.getOwner().getName());
             }
         }.execute();
     }
@@ -95,7 +110,7 @@ public class ExasolSchemaManager
 
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final ExasolSchema schema = command.getObject();
 
         String script = "CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema);
@@ -114,7 +129,7 @@ public class ExasolSchemaManager
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         int result = new UITask<Integer>() {
             protected Integer runTask() {
                 ConfirmationDialog dialog = new ConfirmationDialog(
@@ -140,7 +155,7 @@ public class ExasolSchemaManager
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectRenameCommand command, Map<String, Object> options) {
         ExasolSchema obj = command.getObject();
         actions.add(
@@ -152,7 +167,7 @@ public class ExasolSchemaManager
     }
 
     @Override
-    public void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    public void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         ExasolSchema schema = command.getObject();
 
         if (command.getProperties().size() >= 1) {

@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
@@ -151,8 +151,9 @@ public class FireBirdUtils {
 
     private static void printParam(StringBuilder sql, GenericProcedureParameter param) {
         sql.append(DBUtils.getQuotedIdentifier(param)).append(" ").append(param.getTypeName());
-        if (param.getDataKind() == DBPDataKind.STRING) {
-            sql.append("(").append(param.getMaxLength()).append(")");
+        String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
+        if (typeModifiers != null) {
+            sql.append(typeModifiers);
         }
     }
 

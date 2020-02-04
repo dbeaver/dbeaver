@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -51,7 +52,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
 
     private static final Class<?>[] CHILD_TYPES = {
         GenericTableColumn.class,
-        GenericPrimaryKey.class,
+        GenericUniqueKey.class,
         GenericTableForeignKey.class,
         GenericTableIndex.class
     };
@@ -109,7 +110,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<GenericTableBase, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<GenericTableBase, PropertyHandler> command, Map<String, Object> options) {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction(
                     "Comment table",

@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
@@ -28,11 +26,9 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -44,6 +40,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 
 public class FilterValueEditPopup extends Dialog {
@@ -109,14 +106,48 @@ public class FilterValueEditPopup extends Dialog {
             }
         }
 
-        Composite tableComposite = new Composite(group, SWT.NONE);
+        FocusAdapter focusListener = new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                UIUtils.asyncExec(() -> {
+                    Shell shell = getShell();
+                    if (shell != null && !UIUtils.isParent(shell, shell.getDisplay().getFocusControl())) {
+                        cancelPressed();
+                    }
+                });
+            }
+        };
+
+        {
+            Text filterTextbox = filter.addFilterTextbox(group);
+            filterTextbox.setFocus();
+            filterTextbox.addTraverseListener(e -> {
+                Table table = filter.getTableViewer().getTable();
+                if (e.detail == SWT.TRAVERSE_ARROW_PREVIOUS || e.detail == SWT.TRAVERSE_ARROW_NEXT) {
+                    if (table.getSelectionIndex() < 0 && table.getItemCount() > 0) {
+                        table.setSelection(0);
+                    }
+                    table.setFocus();
+                }
+            });
+            filterTextbox.addFocusListener(focusListener);
+            UIUtils.addEmptyTextHint(filterTextbox, text -> "Type partial value to search");
+        }
+
+        Composite tableComposite = UIUtils.createComposite(group, 1);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 300;
         tableComposite.setLayoutData(gd);
-        tableComposite.setLayout(new FillLayout());
 
-        filter.setupTable(tableComposite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL, true, descReferrer != null, new GridData(GridData.FILL_BOTH));
+        filter.setupTable(
+            tableComposite,
+            SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL |
+                (filter.getOperator() == DBCLogicalOperator.IN ? SWT.CHECK : SWT.NONE),
+            true,
+            descReferrer != null,
+            new GridData(GridData.FILL_BOTH));
+
         Table table = filter.getTableViewer().getTable();
 
         TableViewerColumn resultsetColumn = new TableViewerColumn(filter.getTableViewer(), UIUtils.createTableColumn(table, SWT.NONE, "Value"));
@@ -127,7 +158,7 @@ public class FilterValueEditPopup extends Dialog {
             }
         });
 
-        TableViewerColumn descColumn = null;
+        TableViewerColumn descColumn;
         if (descReferrer != null) {
             descColumn = new TableViewerColumn(filter.getTableViewer(), UIUtils.createTableColumn(table, SWT.NONE, "Description"));
             descColumn.setLabelProvider(new ColumnLabelProvider() {
@@ -138,51 +169,31 @@ public class FilterValueEditPopup extends Dialog {
             });
         }
 
-        FocusAdapter focusListener = new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                UIUtils.asyncExec(() -> {
-                    if (!UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
-                        cancelPressed();
-                    }
-                });
-            }
-        };
         table.addFocusListener(focusListener);
 
         filter.getTableViewer().addSelectionChangedListener(event -> {
-            ISelection selection = event.getSelection();
-            if (selection instanceof IStructuredSelection) {
-                value = ((IStructuredSelection) selection).getFirstElement();
-            }
+            value = filter.getFilterValue();
             //okPressed();
         });
-        filter.getTableViewer().addDoubleClickListener(event -> {
-            value = filter.getTableViewer().getStructuredSelection().getFirstElement();
-            okPressed();
-        });
+        filter.getTableViewer().addDoubleClickListener(event -> applyFilterValue());
 
-        if (filter.getAttribute().getDataKind() == DBPDataKind.STRING || descReferrer != null) {
-            Text filterTextbox = filter.addFilterTextbox(group);
-            filterTextbox.setFocus();
-            filterTextbox.addTraverseListener(e -> {
-                if (e.detail == SWT.TRAVERSE_ARROW_PREVIOUS || e.detail == SWT.TRAVERSE_ARROW_NEXT) {
-                    if (table.getSelectionIndex() < 0 && table.getItemCount() > 0) {
-                        table.setSelection(0);
-                    }
-                    table.setFocus();
-                }
-            });
-            filterTextbox.addFocusListener(focusListener);
-        } else {
-            table.setFocus();
-        }
         filter.setFilterPattern(null);
-        filter.loadValues(() -> {
-            UIUtils.asyncExec(() -> UIUtils.packColumns(table, false));
+        filter.loadValues(() ->
+            UIUtils.asyncExec(() -> UIUtils.packColumns(table, false)));
+
+        filter.createFilterButton(ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                applyFilterValue();
+            }
         });
 
         return tableComposite;
+    }
+
+    private void applyFilterValue() {
+        value = filter.getFilterValue();
+        okPressed();
     }
 
     @Override
@@ -195,7 +206,6 @@ public class FilterValueEditPopup extends Dialog {
     }
 
     public Object getValue() {
-        return ((DBDLabelValuePair) value).getValue();
+        return value;
     }
-
 }

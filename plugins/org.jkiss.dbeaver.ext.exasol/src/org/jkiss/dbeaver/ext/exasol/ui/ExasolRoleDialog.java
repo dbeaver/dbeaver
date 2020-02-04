@@ -47,12 +47,7 @@ public class ExasolRoleDialog extends BaseDialog {
         final Composite composite = super.createDialogArea(parent);
         
         final Composite group = new Composite(composite, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 250;
-        gd.heightHint = 200;
-        gd.verticalIndent = 0;
-        gd.horizontalIndent = 0;
-        group.setLayoutData(gd);
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
         group.setLayout(new GridLayout(2, false));
         final Text nameText = UIUtils.createLabelText(group, "Role Name", "");
         final Text commentText = UIUtils.createLabelText(group, "Description", "");

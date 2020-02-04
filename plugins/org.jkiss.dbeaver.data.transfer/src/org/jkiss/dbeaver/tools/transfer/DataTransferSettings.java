@@ -72,8 +72,9 @@ public class DataTransferSettings {
         @Nullable Collection<IDataTransferProducer> producers,
         @Nullable Collection<IDataTransferConsumer> consumers,
         @NotNull Map<String, Object> configuration,
-        boolean selectDefaultNodes) {
-        initializePipes(producers, consumers);
+        boolean selectDefaultNodes,
+        boolean isExport) {
+        initializePipes(producers, consumers, isExport);
         loadConfiguration(runnableContext, configuration, selectDefaultNodes);
     }
 
@@ -87,8 +88,13 @@ public class DataTransferSettings {
             getNodesFromLocation(runnableContext, task, taskLog, "producers", IDataTransferProducer.class),
             getNodesFromLocation(runnableContext, task, taskLog, "consumers", IDataTransferConsumer.class),
             getTaskOrSavedSettings(task, configuration),
-            !task.getProperties().isEmpty()
+            !task.getProperties().isEmpty(),
+            isExportTask(task)
         );
+    }
+
+    public static boolean isExportTask(DBTTask task) {
+        return task.getType().getId().equals(DTConstants.TASK_EXPORT);
     }
 
     // When we create new task its settings are empty. We need to load defaults from saved settings (usually data transfer dialog settings)
@@ -100,7 +106,7 @@ public class DataTransferSettings {
         return taskSettings;
     }
 
-    private void initializePipes(@Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers) {
+    private void initializePipes(@Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, boolean isExport) {
         this.initProducers = producers == null ? null : producers.toArray(new IDataTransferProducer[0]);
         this.initConsumers = consumers == null ? null : consumers.toArray(new IDataTransferConsumer[0]);
         this.dataPipes = new ArrayList<>();
@@ -121,8 +127,8 @@ public class DataTransferSettings {
                 if (initProducers[i].getDatabaseObject() != null) initObjects.add(initProducers[i].getDatabaseObject());
                 dataPipes.add(new DataTransferPipe(initProducers[i], initConsumers[i]));
             }
-            consumerOptional = initProducers[0] instanceof IDataTransferNodePrimary;
-            producerOptional = initConsumers[0] instanceof IDataTransferNodePrimary;
+            consumerOptional = isExport;//initProducers[0] instanceof IDataTransferNodePrimary;
+            producerOptional = !isExport;//initConsumers[0] instanceof IDataTransferNodePrimary;
             if (producerOptional && consumerOptional) {
                 // Both producer and consumer set are primary
                 // This may happen when task was saved for db-> settings
@@ -142,7 +148,7 @@ public class DataTransferSettings {
                 selectProducer(producerDesc);
                 consumerOptional = true;
             } else {
-                DBWorkbench.getPlatformUI().showError("Can't find producer", "Can't find data propducer descriptor in registry");
+                DBWorkbench.getPlatformUI().showError("Can't find producer", "Can't find data producer descriptor in registry");
             }
         } else if (!ArrayUtils.isEmpty(initConsumers)) {
             // Make pipes
@@ -408,20 +414,6 @@ public class DataTransferSettings {
             if (consumer != null) {
                 try {
                     IDataTransferConsumer consumerNode = (IDataTransferConsumer) consumer.createNode();
-                    /*if (pipe.getProducer() != null) {
-                        IDataTransferConsumer.TransferParameters parameters = new IDataTransferConsumer.TransferParameters(
-                            processor != null && processor.isBinaryFormat(),
-                            processor != null && processor.isHTMLFormat());
-                        parameters.orderNumber = i;
-                        parameters.totalConsumers = dataPipes.size();
-
-                        consumerNode.initTransfer(
-                            pipe.getProducer().getDatabaseObject(),
-                            getNodeSettings(consumerNode),
-                            parameters,
-                            processor != null ? processor.getInstance() : null,
-                            processor != null ? getProcessorProperties() : null);
-                    }*/
                     pipe.setConsumer(consumerNode);
                 } catch (DBException e) {
                     log.error(e);
@@ -478,11 +470,11 @@ public class DataTransferSettings {
         this.showFinalMessage = showFinalMessage;
     }
 
-    public static void saveNodesLocation(DBRRunnableContext runnableContext, Map<String, Object> state, Collection<IDataTransferNode> nodes, String nodeType) {
+    public static void saveNodesLocation(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state, Collection<IDataTransferNode> nodes, String nodeType) {
         if (nodes != null) {
             List<Map<String, Object>> inputObjects = new ArrayList<>();
             for (Object inputObject : nodes) {
-                inputObjects.add(JSONUtils.serializeObject(runnableContext, inputObject));
+                inputObjects.add(JSONUtils.serializeObject(runnableContext, task, inputObject));
             }
             state.put(nodeType, inputObjects);
         }
@@ -519,27 +511,38 @@ public class DataTransferSettings {
         initConsumers = new IDataTransferConsumer[0];
     }
 
-    public void setDataPipes(List<IDataTransferProducer> producers, List<IDataTransferConsumer> consumers) {
-        boolean hasChanges = false;
-        if (producers != null) {
-            hasChanges = initProducers == null || !Arrays.equals(producers.toArray(), initProducers);
+    public void setDataPipes(List<DataTransferPipe> dataPipes, boolean isExport) {
+        this.dataPipes = dataPipes;
+
+        // Now determine main producer and consumer and processor
+        DataTransferRegistry registry = DataTransferRegistry.getInstance();
+
+        this.consumerOptional = isExport;
+        this.producerOptional = !isExport;
+
+        this.producer = null;
+        this.consumer = null;
+        if (!dataPipes.isEmpty()) {
+            DataTransferPipe pipe = dataPipes.get(0);
+            this.producer = pipe.getProducer() == null ? null : registry.getNodeByType(pipe.getProducer().getClass());
+            this.consumer = pipe.getConsumer() == null ? null : registry.getNodeByType(pipe.getConsumer().getClass());
         }
-        if (consumers != null && !hasChanges) {
-            hasChanges = initConsumers == null || !Arrays.equals(consumers.toArray(), initConsumers);
-        }
-        if (!hasChanges) {
-            return;
-        }
+
         DataTransferProcessorDescriptor savedProcessor = this.processor;
-
-        clearDataPipes();
-        initializePipes(producers, consumers);
-
         if (this.consumerOptional && this.consumer != null) {
             this.selectConsumer(this.consumer, savedProcessor, false);
         }
         if (this.producerOptional && this.producer != null) {
             this.selectProducer(this.producer, savedProcessor, false);
+        }
+
+        // Collect objects
+        initObjects.clear();
+        for (DataTransferPipe pipe : dataPipes) {
+            DBSObject object = isExport ? pipe.getProducer().getDatabaseObject() : pipe.getConsumer().getDatabaseObject();
+            if (object != null) {
+                initObjects.add(object);
+            }
         }
     }
 

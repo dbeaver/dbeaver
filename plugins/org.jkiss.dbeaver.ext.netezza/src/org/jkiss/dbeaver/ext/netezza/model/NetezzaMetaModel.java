@@ -44,11 +44,11 @@ public class NetezzaMetaModel extends GenericMetaModel
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Netezza view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT v.definition " +
-                "FROM _v_view v, _v_objs_owned o " +
-                "WHERE v.objid = o.objid AND o.DATABASE=? AND v.VIEWNAME=?"))
+                "FROM _v_view v " +
+                "WHERE v.VIEWNAME=?"))
             {
-                dbStat.setString(1, sourceObject.getContainer().getName());
-                dbStat.setString(2, sourceObject.getName());
+                //dbStat.setString(1, sourceObject.getContainer().getName());
+                dbStat.setString(1, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
                         return
@@ -70,10 +70,10 @@ public class NetezzaMetaModel extends GenericMetaModel
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p.proceduresignature,p.returns,p.proceduresource " +
                 "FROM _v_procedure p " +
-                "WHERE p.owner=? AND p.procedure=?"))
+                "WHERE p.procedure=?"))
             {
-                dbStat.setString(1, sourceObject.getContainer().getName());
-                dbStat.setString(2, sourceObject.getName());
+                //dbStat.setString(1, sourceObject.getContainer().getName());
+                dbStat.setString(1, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
                         return

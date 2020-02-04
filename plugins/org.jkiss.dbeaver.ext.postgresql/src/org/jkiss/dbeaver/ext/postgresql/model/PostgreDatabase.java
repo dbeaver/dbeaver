@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -102,7 +103,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     @NotNull
-    public PostgreExecutionContext getDefaultContext() {
+    public PostgreExecutionContext getMetaContext() {
         return (PostgreExecutionContext) super.getDefaultContext(true);
     }
 
@@ -147,7 +148,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
-        try (JDBCSession session = getDefaultContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+        try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
                 "\nFROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, name);
@@ -241,6 +242,18 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Override
     public String getDescription() {
         return null;
+    }
+
+    @NotNull
+    @Override
+    protected String getMainContextName() {
+        return JDBCExecutionContext.TYPE_MAIN + " <" + getName() + ">";
+    }
+
+    @NotNull
+    @Override
+    protected String getMetadataContextName() {
+        return JDBCExecutionContext.TYPE_METADATA + " <" + getName() + ">";
     }
 
     @Property(viewable = true, multiline = true, order = 100)
@@ -524,7 +537,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Nullable
     PostgreSchema getActiveSchema() {
-        return getDefaultContext().getDefaultSchema();
+        return getMetaContext().getDefaultSchema();
     }
 
     @Nullable
@@ -606,19 +619,27 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (oid == 0) {
-            // New database
-            readDatabaseInfo(monitor);
+        if (metaContext == null && executionContext == null) {
+            // Nothing to refresh
             return this;
-        } else {
-            // Refresh all properties
-            PostgreDatabase refDatabase = getDataSource().getDatabaseCache().refreshObject(monitor, getDataSource(), this);
-            if (refDatabase != null && refDatabase == dataSource.getDefaultInstance()) {
-                // Cache types
-                refDatabase.cacheDataTypes(monitor, true);
-            }
-            return refDatabase;
         }
+        readDatabaseInfo(monitor);
+
+        // Clear all caches
+        roleCache.clearCache();
+        accessMethodCache.clearCache();
+        foreignDataWrapperCache.clearCache();
+        foreignServerCache.clearCache();
+        languageCache.clearCache();
+        encodingCache.clearCache();
+        extensionCache.clearCache();
+        availableExtensionCache.clearCache();
+        collationCache.clearCache();
+        tablespaceCache.clearCache();
+        schemaCache.clearCache();
+        cacheDataTypes(monitor, true);
+
+        return this;
     }
 
     public Collection<PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {
@@ -698,7 +719,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         // Check schemas in search path
-        List<String> searchPath = getDefaultContext().getSearchPath();
+        List<String> searchPath = getMetaContext().getSearchPath();
         for (String schemaName : searchPath) {
             final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
             if (schema != null) {

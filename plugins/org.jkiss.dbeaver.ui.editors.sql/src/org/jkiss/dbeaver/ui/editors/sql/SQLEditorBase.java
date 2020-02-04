@@ -98,6 +98,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private final SQLSyntaxManager syntaxManager;
     @NotNull
     private final SQLRuleScanner ruleScanner;
+    @Nullable
     private SQLParserContext parserContext;
     private ProjectionSupport projectionSupport;
 
@@ -555,7 +556,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         ruleManager.loadRules(getDataSource(), SQLEditorBase.isBigScript(getEditorInput()));
 
         ruleScanner.refreshRules(getDataSource(), ruleManager);
-        parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
+        parserContext = new SQLParserContext(SQLEditorBase.this, syntaxManager, ruleManager, document != null ? document : new Document());
 
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
@@ -631,21 +632,30 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Nullable
     public SQLScriptElement extractActiveQuery() {
+        if (parserContext == null) {
+            return null;
+        }
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         return SQLScriptParser.extractActiveQuery(parserContext, selection.getOffset(), selection.getLength());
     }
 
     public SQLScriptElement extractQueryAtPos(int currentPos) {
-        return SQLScriptParser.extractQueryAtPos(parserContext, currentPos);
+        return parserContext == null ? null : SQLScriptParser.extractQueryAtPos(parserContext, currentPos);
     }
 
     public SQLScriptElement extractNextQuery(boolean next) {
+        if (parserContext == null) {
+            return null;
+        }
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         int offset = selection.getOffset();
         return SQLScriptParser.extractNextQuery(parserContext, offset, next);
     }
 
     public List<SQLScriptElement> extractScriptQueries(int startOffset, int length, boolean scriptMode, boolean keepDelimiters, boolean parseParameters) {
+        if (parserContext == null) {
+            return null;
+        }
         return SQLScriptParser.extractScriptQueries(parserContext, startOffset, length, scriptMode, keepDelimiters, parseParameters);
     }
 
@@ -654,7 +664,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     List<SQLQueryParameter> parseQueryParameters(SQLQuery query) {
-        SQLParserContext context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+        if (parserContext == null) {
+            return null;
+        }
+        SQLParserContext context = new SQLParserContext(SQLEditorBase.this, parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
         return SQLScriptParser.parseParameters(context, 0, query.getLength());
     }
 

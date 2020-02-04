@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.widgets.Control;
 
 /**
@@ -384,6 +385,14 @@ public class ImageUtils {
         }
 
         return colours;
+    }
+
+    public static ImageData getImageDataAtCurrentZoom(Image image) {
+        try {
+            return image.getImageData(DPIUtil.getDeviceZoom());
+        } catch (Exception e) {
+            return image.getImageData();
+        }
     }
 
 }

@@ -20,12 +20,14 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLExecutionContext;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,14 +56,14 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
         return new MySQLTrigger(table.getContainer(), table, "NewTrigger");
     }
 
-    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, MySQLTrigger trigger, boolean create) {
+    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, MySQLTrigger trigger, boolean create) {
         if (trigger.isPersisted()) {
             actions.add(
                 new SQLDatabasePersistAction("Drop trigger",
                     "DROP TRIGGER IF EXISTS " + trigger.getFullyQualifiedName(DBPEvaluationContext.DDL))
             );
         }
-        MySQLCatalog curCatalog = trigger.getCatalog().getDataSource().getDefaultDatabase();
+        MySQLCatalog curCatalog = ((MySQLExecutionContext)executionContext).getDefaultCatalog();
         if (curCatalog != trigger.getCatalog()) {
             actions.add(new SQLDatabasePersistAction("Set current schema ", "USE " + DBUtils.getQuotedIdentifier(trigger.getCatalog()), false)); //$NON-NLS-2$
         }

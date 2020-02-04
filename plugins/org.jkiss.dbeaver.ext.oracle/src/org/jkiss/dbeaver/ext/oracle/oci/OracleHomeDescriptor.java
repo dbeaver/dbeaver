@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class OracleHomeDescriptor extends LocalNativeClientLocation
@@ -54,7 +53,7 @@ public class OracleHomeDescriptor extends LocalNativeClientLocation
         }
     }
 
-    public Collection<String> getOraServiceNames()
+    public List<String> getOraServiceNames()
     {
         if (tnsNames == null) {
             tnsNames = new ArrayList<>(OCIUtils.readTnsNames(getPath(), true).keySet());

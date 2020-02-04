@@ -67,6 +67,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private boolean checkEnabled;
     private INavigatorFilter navigatorFilter;
     private Text filterControl;
+    private boolean inlineRenameEnabled = false;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
@@ -207,18 +208,19 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private void initEditor()
     {
-        Tree treeControl = this.treeViewer.getTree();
+        if (inlineRenameEnabled) {
+            Tree treeControl = this.treeViewer.getTree();
 
-        treeEditor = new TreeEditor(treeControl);
-        treeEditor.horizontalAlignment = SWT.LEFT;
-        treeEditor.verticalAlignment = SWT.TOP;
-        treeEditor.grabHorizontal = false;
-        treeEditor.minimumWidth = 50;
+            treeEditor = new TreeEditor(treeControl);
+            treeEditor.horizontalAlignment = SWT.LEFT;
+            treeEditor.verticalAlignment = SWT.TOP;
+            treeEditor.grabHorizontal = false;
+            treeEditor.minimumWidth = 50;
 
-        //treeControl.addSelectionListener(new TreeSelectionAdapter());
-        if (!checkEnabled) {
-            // Add rename listener only for non CHECK trees
-            treeControl.addMouseListener(new TreeSelectionAdapter());
+            if (!checkEnabled) {
+                // Add rename listener only for non CHECK trees
+                treeControl.addMouseListener(new TreeSelectionAdapter());
+            }
         }
     }
 

@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
@@ -30,7 +33,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,9 +57,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                 }
             }
             final DBPDataSource dataSource = getDataSource();
-            OpenHandler.openSQLConsole(
+            SQLEditorHandlerOpenEditor.openSQLConsole(
                 UIUtils.getActiveWorkbenchWindow(),
-                dataSource == null ? null : dataSource.getContainer(), 
+                new SQLNavigatorContext(dataSource),
                 "Source", 
                 sqlText
             );

@@ -113,6 +113,10 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
             // Bad table type. Just skip it
             return null;
         }
+        if (DBUtils.isVirtualObject(owner) && !CommonUtils.isEmpty(tableSchema)) {
+            // Wrong schema - this may happen with virtual schemas
+            return null;
+        }
         GenericTableBase table = getDataSource().getMetaModel().createTableImpl(
             owner,
             tableName,
@@ -132,7 +136,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     {
         return session.getMetaData().getColumns(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
             forTable == null ?
                 owner.getDataSource().getAllObjectsPattern() :
                 JDBCUtils.escapeWildCards(session, forTable.getName()),

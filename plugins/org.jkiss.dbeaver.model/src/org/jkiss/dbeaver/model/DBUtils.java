@@ -200,6 +200,9 @@ public final class DBUtils {
         if (dataSource  == null) {
             // It is not SQL identifier, let's just make it simple then
             for (DBPNamedObject namePart : path) {
+                if (isVirtualObject(namePart)) {
+                    continue;
+                }
                 if (name.length() > 0) { name.append('.'); }
                 name.append(namePart.getName());
             }
@@ -208,7 +211,7 @@ public final class DBUtils {
 
             DBPNamedObject parent = null;
             for (DBPNamedObject namePart : path) {
-                if (namePart == null) {
+                if (namePart == null || isVirtualObject(namePart)) {
                     continue;
                 }
                 if (namePart instanceof DBSCatalog && ((sqlDialect.getCatalogUsage() & SQLDialect.USAGE_DML) == 0)) {
@@ -376,12 +379,19 @@ public final class DBUtils {
         for (int i = 0; i < names.size(); i++) {
             String childName = names.get(i);
             DBSObject child = parent.getChild(monitor, childName);
-            if (child == null) {
+            if (child == null && i == 0) {
                 DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
-                DBSObjectContainer container = DBUtils.getSelectedObject(executionContext, DBSObjectContainer.class);
-                if (container != null) {
-                    parent = container;
-                    child = parent.getChild(monitor, childName);
+                if (contextDefaults != null) {
+                    DBSObjectContainer container = contextDefaults.getDefaultCatalog();
+                    if (container != null) {
+                        child = container.getChild(monitor, childName);
+                    }
+                    if (child == null) {
+                        container = contextDefaults.getDefaultSchema();
+                        if (container != null) {
+                            child = container.getChild(monitor, childName);
+                        }
+                    }
                 }
             }
             if (child == null) {
@@ -538,6 +548,9 @@ public final class DBUtils {
         DBSObject[] path = getObjectPath(object, true);
         StringBuilder pathStr = new StringBuilder();
         for (DBSObject obj : path) {
+            if (isVirtualObject(obj)) {
+                continue;
+            }
             if (pathStr.length() > 0) {
                 pathStr.append('/');
             }
@@ -1758,6 +1771,10 @@ public final class DBUtils {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
     }
 
+    public static boolean isVirtualObject(Object object) {
+        return object instanceof DBPVirtualObject && ((DBPVirtualObject) object).isVirtual();
+    }
+
     public static boolean isInheritedObject(Object object) {
         return object instanceof DBPInheritedObject && ((DBPInheritedObject) object).isInherited();
     }
@@ -1933,6 +1950,19 @@ public final class DBUtils {
         } else if (cell1 instanceof Comparable && cell1.getClass() == cell2.getClass()) {
             return ((Comparable) cell1).compareTo(cell2);
         } else {
+            if (cell1 instanceof Number) {
+                Number num2 = (Number) GeneralUtils.convertString(String.valueOf(cell2), cell1.getClass());
+                if (num2 == null) {
+                    return -1;
+                }
+                return CommonUtils.compareNumbers((Number) cell1, num2);
+            } else if (cell2 instanceof Number) {
+                Number num1 = (Number) GeneralUtils.convertString(String.valueOf(cell1), cell2.getClass());
+                if (num1 == null) {
+                    return 1;
+                }
+                return CommonUtils.compareNumbers(num1, (Number) cell2);
+            }
             String str1 = String.valueOf(cell1);
             String str2 = String.valueOf(cell2);
             return str1.compareTo(str2);

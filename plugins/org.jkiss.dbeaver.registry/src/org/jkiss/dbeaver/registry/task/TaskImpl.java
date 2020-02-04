@@ -167,20 +167,49 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
     }
 
     @Override
+    public void removeRunLog(DBTTaskRun taskRun) {
+        File runLog = getRunLog(taskRun);
+
+        if (runLog.exists() && !runLog.delete()) {
+            log.error("Can't delete log file '" + runLog.getAbsolutePath() + "'");
+        }
+        RunStatistics runStatistics = loadRunStatistics();
+        runStatistics.runs.remove(taskRun);
+        flushRunStatistics(runStatistics);
+        if (CommonUtils.equalObjects(lastRun, taskRun)) {
+            lastRun = null;
+        }
+        TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(this, DBTTaskEvent.Action.TASK_UPDATE));
+    }
+
+    @Override
     public void cleanRunStatistics() {
         File statsFolder = getTaskStatsFolder(false);
         if (statsFolder.exists()) {
             for (File file : ArrayUtils.safeArray(statsFolder.listFiles())) {
-                file.delete();
+                if (!file.delete()) {
+                    log.error("Can't delete log item '" + file.getAbsolutePath() + "'");
+                }
             }
-            statsFolder.delete();
+            if (!statsFolder.delete()) {
+                log.error("Can't delete logs folder '" + statsFolder.getAbsolutePath() + "'");
+            }
         }
+        RunStatistics runStatistics = new RunStatistics();
+        flushRunStatistics(runStatistics);
+        lastRun = null;
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(this, DBTTaskEvent.Action.TASK_UPDATE));
     }
 
     @Override
     public void setProperties(@NotNull Map<String, Object> properties) {
         this.properties = new LinkedHashMap<>(properties);
+    }
+
+    @NotNull
+    @Override
+    public File getRunLogFolder() {
+        return getTaskStatsFolder(false);
     }
 
     File getTaskStatsFolder(boolean create) {
@@ -191,7 +220,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         return taskStatsFolder;
     }
 
-    RunStatistics loadRunStatistics() {
+    private RunStatistics loadRunStatistics() {
         File metaFile = new File(getTaskStatsFolder(false), META_FILE_NAME);
         if (!metaFile.exists()) {
             return new RunStatistics();

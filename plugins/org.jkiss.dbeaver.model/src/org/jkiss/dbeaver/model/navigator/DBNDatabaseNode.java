@@ -828,6 +828,15 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
     }
 
+    public boolean isVirtual() {
+        for (DBNNode node = this; node != null; node = node.getParentNode()) {
+            if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getMeta().isVirtual()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static class PropertyValueReader implements DBRRunnableParametrized<DBRProgressMonitor> {
         private final DBRProgressMonitor monitor;
         private final DBXTreeItem meta;

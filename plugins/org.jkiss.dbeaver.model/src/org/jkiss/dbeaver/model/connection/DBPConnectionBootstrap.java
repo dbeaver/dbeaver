@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -121,4 +123,13 @@ public class DBPConnectionBootstrap {
                 CommonUtils.equalObjects(this.initQueries, source.initQueries) &&
                 this.ignoreErrors == source.ignoreErrors;
     }
+
+    void resolveDynamicVariables(IVariableResolver variableResolver) {
+        this.defaultCatalogName = GeneralUtils.replaceVariables(this.defaultCatalogName, variableResolver);
+        this.defaultSchemaName = GeneralUtils.replaceVariables(this.defaultSchemaName, variableResolver);
+        for (int i = 0; i < initQueries.size(); i++) {
+            initQueries.set(i, GeneralUtils.replaceVariables(initQueries.get(i), variableResolver));
+        }
+    }
+
 }

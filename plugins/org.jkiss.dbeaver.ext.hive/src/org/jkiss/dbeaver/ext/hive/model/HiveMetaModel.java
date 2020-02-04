@@ -65,6 +65,7 @@ public class HiveMetaModel extends GenericMetaModel
                     }
                     String ddl = sql.toString();
                     if (sourceObject.isView()) {
+                        ddl = ddl.replace("CREATE VIEW", "CREATE OR REPLACE VIEW");
                         return SQLFormatUtils.formatSQL(sourceObject.getDataSource(), ddl);
                     }
                     return ddl;

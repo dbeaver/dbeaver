@@ -21,6 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 import java.util.Map;
@@ -46,7 +47,7 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard {
     }
 
     @Override
-    public void saveTaskState(DBRRunnableContext runnableContext, Map<String, Object> state) {
+    public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
 
     }
 

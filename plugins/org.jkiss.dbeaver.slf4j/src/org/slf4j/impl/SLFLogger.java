@@ -11,7 +11,8 @@ class SLFLogger implements Logger {
     private final Log log;
 
     public SLFLogger(String name) {
-        log = Log.getLog(name);
+        // Do not write to Eclipse log from 3rd party loggers
+        log = Log.getLog(name, false);
     }
 
     @Override

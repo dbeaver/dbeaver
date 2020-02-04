@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.view;
 
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -32,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -53,7 +53,7 @@ public class StatisticsPresentation extends AbstractPresentation {
         super.createPresentation(controller, parent);
         UIUtils.createHorizontalLine(parent);
         table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION);
-        table.setLinesVisible(true);
+        table.setLinesVisible(!UIStyles.isDarkTheme());
         table.setHeaderVisible(true);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -76,15 +76,7 @@ public class StatisticsPresentation extends AbstractPresentation {
         UIUtils.createTableColumn(table, SWT.LEFT, "Name");
         UIUtils.createTableColumn(table, SWT.LEFT, "Value");
 
-        {
-            MenuManager menuMgr = new MenuManager();
-            menuMgr.addMenuListener(manager -> {
-                UIUtils.fillDefaultTableContextMenu(manager, table);
-            });
-            menuMgr.setRemoveAllWhenShown(true);
-            table.setMenu(menuMgr.createContextMenu(table));
-            table.addDisposeListener(e -> menuMgr.dispose());
-        }
+        UIUtils.setControlContextMenu(table, manager -> UIUtils.fillDefaultTableContextMenu(manager, table));
     }
 
     @Override

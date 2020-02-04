@@ -47,7 +47,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button editorSeparateConnectionCheck;
     private Button connectOnActivationCheck;
     private Button connectOnExecuteCheck;
-    private Button smartAutoCommitCheck;
 
     private Button saveOnQueryExecution;
     private Button autoSaveOnClose;
@@ -101,7 +100,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_editor_activation, false);
             connectOnExecuteCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_query_execute, false);
-            smartAutoCommitCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_smart_auto_commit, SQLEditorMessages.pref_page_sql_editor_label_smart_auto_commit_tip, false, 1);
         }
 
         {
@@ -151,7 +149,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             editorSeparateConnectionCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION));
             connectOnActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE));
             connectOnExecuteCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE));
-            smartAutoCommitCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_SMART_AUTO_COMMIT));
 
             autoSaveOnClose.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
@@ -176,7 +173,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.EDITOR_SMART_AUTO_COMMIT, smartAutoCommitCheck.getSelection());
 
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, autoSaveOnClose.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
@@ -205,7 +201,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
         store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
         store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE);
-        store.setToDefault(SQLPreferenceConstants.EDITOR_SMART_AUTO_COMMIT);
 
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);

@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerExecutionContext;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -61,8 +63,8 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
         return newTrigger;
     }
 
-    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLServerTableTrigger trigger, boolean create) {
-        DBSObject defaultDatabase = trigger.getDataSource().getDefaultDatabase(monitor);
+    protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerTableTrigger trigger, boolean create) {
+        DBSObject defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
         if (defaultDatabase != trigger.getTable().getDatabase()) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getDatabase()), false)); //$NON-NLS-2$
         }
@@ -80,14 +82,14 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         SQLServerTableTrigger trigger = command.getObject();
-        DBSObject defaultDatabase = trigger.getDataSource().getDefaultDatabase(monitor);
+        DBSObject defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
         if (defaultDatabase != trigger.getTable().getDatabase()) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getDatabase()), false)); //$NON-NLS-2$
         }
 
-        super.addObjectDeleteActions(monitor, actions, command, options);
+        super.addObjectDeleteActions(monitor, executionContext, actions, command, options);
 
         if (defaultDatabase != trigger.getTable().getDatabase()) {
             actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$

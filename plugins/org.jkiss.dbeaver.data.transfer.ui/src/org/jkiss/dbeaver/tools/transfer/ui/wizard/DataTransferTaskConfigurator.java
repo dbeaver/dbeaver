@@ -27,7 +27,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -46,7 +47,10 @@ import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
-import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -55,11 +59,9 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
-import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -95,8 +97,10 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
         public DBPDataSource getLastDataSource() {
             int itemCount = objectsTable.getItemCount();
-            DBSObject lastObject = itemCount <= 0 ? null : (DBSObject) objectsTable.getItem(itemCount - 1).getData();
-            return lastObject == null ? null : lastObject.getDataSource();
+            if (itemCount <= 0) return null;
+            DataTransferPipe pipe = (DataTransferPipe) objectsTable.getItem(itemCount - 1).getData();
+            DBSObject databaseObject = getTableNode(pipe).getDatabaseObject();
+            return databaseObject == null ? null : databaseObject.getDataSource();
         }
         
         @Override
@@ -141,7 +145,11 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                     if (tables != null) {
                         for (DBNNode node : tables) {
                             if (node instanceof DBNDatabaseNode) {
-                                addObjectToTable(((DBNDatabaseNode) node).getObject());
+                                DBSObject object = ((DBNDatabaseNode) node).getObject();
+                                DataTransferPipe pipe = new DataTransferPipe(
+                                    isExport ? new DatabaseTransferProducer((DBSDataContainer) object) : null,
+                                    isExport ? null : new DatabaseTransferConsumer((DBSDataManipulator) object));
+                                addPipeToTable(pipe);
                             }
                         }
                         updateSettings(propertyChangeListener);
@@ -183,7 +191,13 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                                 DataSourceContextProvider contextProvider = new DataSourceContextProvider(lastDataSource);
                                 String query = serviceSQL.openSQLEditor(contextProvider, "SQL Query", UIIcon.SQL_SCRIPT, "");
                                 if (query != null) {
-                                    addObjectToTable(new SQLQueryDataContainer(contextProvider, new SQLQuery(lastDataSource, query), null, log));
+
+                                    DataTransferPipe pipe = new DataTransferPipe(
+                                        new DatabaseTransferProducer(
+                                            new SQLQueryDataContainer(contextProvider, new SQLQuery(lastDataSource, query), null, log)),
+                                        null);
+
+                                    addPipeToTable(pipe);
                                     updateSettings(propertyChangeListener);
                                 }
                             }
@@ -194,8 +208,8 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             Button removeButton = UIUtils.createDialogButton(buttonsPanel, "Remove", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    DBSObject object = (DBSObject) objectsTable.getItem(objectsTable.getSelectionIndex()).getData();
-                    if (UIUtils.confirmAction("Remove object", "Remove object " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "?")) {
+                    DataTransferPipe object = (DataTransferPipe) objectsTable.getItem(objectsTable.getSelectionIndex()).getData();
+                    if (UIUtils.confirmAction("Remove object", "Remove object " + getTableNode(object).getObjectName() + "?")) {
                         objectsTable.remove(objectsTable.getSelectionIndex());
                         updateSettings(propertyChangeListener);
                     }
@@ -223,40 +237,28 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         @Override
         public void loadSettings() {
             DataTransferSettings settings = dtWizard.getSettings();
-            List<DBSObject> selectedObjects = new ArrayList<>();
-            if (!isExport()) {
-                for (IDataTransferNode node : ArrayUtils.safeArray(settings.getInitConsumers())) {
-                    if (node instanceof DatabaseTransferConsumer) {
-                        selectedObjects.add(((DatabaseTransferConsumer) node).getTargetObject());
-                    }
-                }
-            }
-            if (isExport()) {
-                for (IDataTransferNode node : ArrayUtils.safeArray(settings.getInitProducers())) {
-                    if (node instanceof DatabaseTransferProducer) {
-                        selectedObjects.add(((DatabaseTransferProducer) node).getDatabaseObject());
-                    }
-                }
-            }
 
-            if (!selectedObjects.isEmpty()) {
-                for (DBSObject object : selectedObjects) {
-                    if (object != null) {
-                        addObjectToTable(object);
-                    }
-                }
+            for (DataTransferPipe pipe : settings.getDataPipes()) {
+                addPipeToTable(pipe);
             }
             UIUtils.asyncExec(() -> UIUtils.packColumns(objectsTable, true));
         }
 
-        private void addObjectToTable(DBSObject object) {
+        private void addPipeToTable(DataTransferPipe pipe) {
+            IDataTransferNode node = getTableNode(pipe);
             TableItem item = new TableItem(objectsTable, SWT.NONE);
-            item.setData(object);
-            item.setImage(0, DBeaverIcons.getImage(DBValueFormatting.getObjectImage(object)));
-            item.setText(0, DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
-            if (object.getDataSource() != null) {
+            item.setData(pipe);
+            item.setImage(0, DBeaverIcons.getImage(node.getObjectIcon()));
+            item.setText(0, node.getObjectName());
+
+            DBSObject object = node.getDatabaseObject();
+            if (object != null && object.getDataSource() != null) {
                 item.setText(1, object.getDataSource().getContainer().getName());
             }
+        }
+
+        private IDataTransferNode getTableNode(DataTransferPipe pipe) {
+            return isExport() ? pipe.getProducer() : pipe.getConsumer();
         }
 
         @Override
@@ -266,38 +268,27 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             }
 
             DataTransferSettings settings = dtWizard.getSettings();
-            boolean isExport = isExport();
-            List<IDataTransferProducer> producers = isExport ? new ArrayList<>() : null;
-            List<IDataTransferConsumer> consumers = isExport ? null : new ArrayList<>();
 
-            if (producers == null && settings.getInitProducers() != null) {
-                producers = Arrays.asList(settings.getInitProducers());
+            // Save from config table
+            List<DataTransferPipe> dataPipes = new ArrayList<>();
+            for (TableItem item : objectsTable.getItems()) {
+                dataPipes.add((DataTransferPipe) item.getData());
             }
-            if (consumers == null && settings.getInitConsumers() != null) {
-                consumers = Arrays.asList(settings.getInitConsumers());
-            }
-
-            TableItem[] items = objectsTable.getItems();
-
-            for (TableItem item : items) {
-                DBSObject object = (DBSObject) item.getData();
-                if (object instanceof DBSDataContainer) {
-                    if (isExport) {
-                        producers.add(new DatabaseTransferProducer((DBSDataContainer) object));
-                    } else {
-                        if (object instanceof DBSDataManipulator) {
-                            consumers.add(new DatabaseTransferConsumer((DBSDataManipulator) object));
-                        }
-                    }
-                }
-            }
-            settings.setDataPipes(producers, consumers);
+            settings.setDataPipes(dataPipes, isExport());
             dtWizard.loadSettings();
         }
 
         @Override
         public boolean isComplete() {
             return objectsTable.getItemCount() > 0;
+        }
+
+        @Override
+        public String getErrorMessage() {
+            if (objectsTable.getItemCount() == 0) {
+                return "No objects selected";
+            }
+            return null;
         }
     }
 

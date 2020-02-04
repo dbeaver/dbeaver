@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,91 +40,85 @@ import java.util.List;
 import java.util.Map;
 
 public class ExasolViewManager
-        extends SQLObjectEditor<ExasolView, ExasolSchema> implements DBEObjectRenamer<ExasolView> {
+    extends SQLObjectEditor<ExasolView, ExasolSchema> implements DBEObjectRenamer<ExasolView> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
-    
+
     @Override
     protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options)
-            throws DBException
-    {
+        throws DBException {
         ExasolTableBase object = command.getObject();
         if (CommonUtils.isEmpty(object.getName())) {
             throw new DBException("View name cannot be empty");
-            
+
         }
-        if (CommonUtils.isEmpty(((ExasolView) object).getSource() )) {
+        if (CommonUtils.isEmpty(((ExasolView) object).getSource())) {
             throw new DBException("View definition cannot be empty");
         }
     }
 
     @Override
     public DBSObjectCache<ExasolSchema, ExasolView> getObjectsCache(
-            ExasolView object)
-    {
+        ExasolView object) {
         return object.getContainer().getViewCache();
     }
 
     @Override
-    protected ExasolView createDatabaseObject(DBRProgressMonitor monitor,
-                                              DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
-            throws DBException
+    protected ExasolView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+        throws DBException
     {
-        ExasolView newView = new ExasolView((ExasolSchema) container);
+        ExasolSchema schema = (ExasolSchema) container;
+        ExasolView newView = new ExasolView(schema);
         newView.setName("new_view");
+        setNewObjectName(monitor, schema, newView);
+        newView.setObjectDefinitionText("CREATE OR REPLACE VIEW " + newView.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\nSELECT");
         return newView;
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command, Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+                                          ObjectCreateCommand command, Map<String, Object> options) {
         createOrReplaceViewQuery(actions, command.getObject(), false);
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command, Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+                                          ObjectDeleteCommand command, Map<String, Object> options) {
         ExasolView view = command.getObject();
         actions.add(
-                new SQLDatabasePersistAction("Drop view", "DROP VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))
-                );
-        
+            new SQLDatabasePersistAction("Drop view", "DROP VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))
+        );
+
     }
-    
+
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
-                                          ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
+                                          ObjectChangeCommand command, Map<String, Object> options) {
         createOrReplaceViewQuery(actionList, command.getObject(), true);
     }
-    
-    protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, ExasolView view, Boolean replace) 
-    {
+
+    protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, ExasolView view, Boolean replace) {
         if (replace) {
             actions.add(
-                    new SQLDatabasePersistAction("Drop view", "DROP VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))
-                    );
+                new SQLDatabasePersistAction("Drop view", "DROP VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))
+            );
         }
         try {
             actions.add(
                 new SQLDatabasePersistAction("Create view", view.getSource()));
-            
-            if (!CommonUtils.isEmpty(view.getDescription()))
-            {
-            	 actions.add(
-            			 new SQLDatabasePersistAction(
-            					 String.format("COMMENT ON VIEW %s is '%s'", 
-            							 view.getFullyQualifiedName(DBPEvaluationContext.DDL),
-            							 ExasolUtils.quoteString(view.getDescription())
-            							 )
-            					 )
-            			 );
+
+            if (!CommonUtils.isEmpty(view.getDescription())) {
+                actions.add(
+                    new SQLDatabasePersistAction(
+                        String.format("COMMENT ON VIEW %s is '%s'",
+                            view.getFullyQualifiedName(DBPEvaluationContext.DDL),
+                            ExasolUtils.quoteString(view.getDescription())
+                        )
+                    )
+                );
             }
         } catch (DBCException e) {
             log.error(e);
@@ -132,23 +127,21 @@ public class ExasolViewManager
 
     @Override
     public void renameObject(DBECommandContext commandContext,
-            ExasolView object, String newName) throws DBException
-    {
+                             ExasolView object, String newName) throws DBException {
         processObjectRename(commandContext, object, newName);
     }
-    
+
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+                                          ObjectRenameCommand command, Map<String, Object> options) {
         ExasolView obj = command.getObject();
         actions.add(
-                new SQLDatabasePersistAction(
-                    "Rename View",
-                    "RENAME VIEW " +  DBUtils.getQuotedIdentifier(obj.getSchema()) + "." + DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
-                        DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
-            );
+            new SQLDatabasePersistAction(
+                "Rename View",
+                "RENAME VIEW " + DBUtils.getQuotedIdentifier(obj.getSchema()) + "." + DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
+                    DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
+        );
     }
 
-    
+
 }

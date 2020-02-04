@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +38,7 @@ import java.util.Map;
 /**
  * SQL script execution context
  */
-public class SQLScriptContext {
+public class SQLScriptContext implements DBCScriptContext {
 
     private final Map<String, Object> variables = new HashMap<>();
     private final Map<String, Object> defaultParameters = new HashMap<>();
@@ -82,6 +83,7 @@ public class SQLScriptContext {
         return sourceFile;
     }
 
+    @Override
     public boolean hasVariable(String name) {
         if (variables.containsKey(name)) {
             return true;
@@ -89,6 +91,7 @@ public class SQLScriptContext {
         return parentContext != null && parentContext.hasVariable(name);
     }
 
+    @Override
     public Object getVariable(String name) {
         Object value = variables.get(name);
         if (value == null && parentContext != null) {
@@ -97,6 +100,7 @@ public class SQLScriptContext {
         return value;
     }
 
+    @Override
     public void setVariable(String name, Object value) {
         variables.put(name, value);
         if (parentContext != null) {
@@ -104,11 +108,17 @@ public class SQLScriptContext {
         }
     }
 
+    @Override
     public void removeVariable(String name) {
         variables.remove(name);
         if (parentContext != null) {
             parentContext.removeVariable(name);
         }
+    }
+
+    public void setVariables(Map<String, Object> variables) {
+        this.variables.clear();
+        this.variables.putAll(variables);
     }
 
     public Object getParameterDefaultValue(String name) {
@@ -135,14 +145,17 @@ public class SQLScriptContext {
         return statementPragmas == null ? null : statementPragmas.get(name);
     }
 
-    public Object getData(String key) {
-        return data.get(key);
+    @Override
+    public <T> T getData(String key) {
+        return (T)data.get(key);
     }
 
+    @Override
     public void setData(String key, Object value) {
         this.data.put(key, value);
     }
 
+    @Override
     @NotNull
     public PrintWriter getOutputWriter() {
         return outputWriter;
@@ -183,7 +196,7 @@ public class SQLScriptContext {
     }
 
     public boolean fillQueryParameters(SQLQuery query, boolean useDefaults) {
-        if (ignoreParameters || parametersProvider == null) {
+        if (ignoreParameters) {
             return true;
         }
 
@@ -193,18 +206,37 @@ public class SQLScriptContext {
             return true;
         }
 
-        // Resolve parameters (only if it is the first fetch)
-        Boolean paramsResult = parametersProvider.prepareStatementParameters(this, query, parameters, useDefaults);
-        if (paramsResult == null) {
-            ignoreParameters = true;
-            return true;
-        } else if (!paramsResult) {
-            return false;
+        if (parametersProvider != null) {
+            // Resolve parameters (only if it is the first fetch)
+            Boolean paramsResult = parametersProvider.prepareStatementParameters(this, query, parameters, useDefaults);
+            if (paramsResult == null) {
+                ignoreParameters = true;
+                return true;
+            } else if (!paramsResult) {
+                return false;
+            }
+        } else {
+            for (SQLQueryParameter parameter : parameters) {
+                Object varValue = variables.get(parameter.getVarName());
+                if (varValue == null) {
+                    varValue = defaultParameters.get(parameter.getVarName());
+                }
+                if (varValue != null) {
+                    parameter.setValue(CommonUtils.toString(varValue));
+                }
+            }
         }
 
         SQLUtils.fillQueryParameters(query, parameters);
 
         return true;
+    }
+
+    public Map<String, Object> getAllParameters() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.putAll(defaultParameters);
+        params.putAll(variables);
+        return params;
     }
 
 }

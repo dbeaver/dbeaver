@@ -561,7 +561,6 @@ public class ResultSetModel {
                     documentAttribute = realAttr;
                 }
             }
-            updateColorMapping(false);
         }
     }
 
@@ -595,6 +594,7 @@ public class ResultSetModel {
         }
 
         // Add new data
+        updateColorMapping(false);
         appendData(rows, true);
         updateDataFilter();
 
@@ -623,7 +623,6 @@ public class ResultSetModel {
                 }
             }
             singleSourceEntity = sourceTable;
-            updateColorMapping(false);
         }
 
         hasData = true;
@@ -633,48 +632,35 @@ public class ResultSetModel {
         return colorMapping.containsKey(binding);
     }
 
-    boolean hasColorMapping(DBSEntity entity) {
-        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(entity, false);
-        return virtualEntity != null && !CommonUtils.isEmpty(virtualEntity.getColorOverrides());
-    }
-
     void updateColorMapping(boolean reset) {
         colorMapping.clear();
 
-        DBSEntity entity = getSingleSource();
-        if (entity != null) {
-            DBVEntity virtualEntity = DBVUtils.getVirtualEntity(entity, false);
-            if (virtualEntity != null) {
-                List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
-                if (!CommonUtils.isEmpty(coList)) {
-                    for (DBVColorOverride co : coList) {
-                        DBDAttributeBinding binding = getAttributeBinding(entity, co.getAttributeName());
-                        if (binding != null) {
-                            List<AttributeColorSettings> cmList =
-                                colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
-                            cmList.add(new AttributeColorSettings(co));
-                        }
-                    }
-                }
-            }
-        } else {
-            for (DBDAttributeBinding attr : attributes) {
-                DBVEntity virtualEntity = DBVUtils.getVirtualEntity(attr, false);
-                if (virtualEntity != null) {
-                    List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
-                    if (!CommonUtils.isEmpty(coList)) {
-                        for (DBVColorOverride co : coList) {
-                            if (CommonUtils.equalObjects(attr.getName(), co.getAttributeName())) {
-                                List<AttributeColorSettings> cmList =
-                                    colorMapping.computeIfAbsent(attr, k -> new ArrayList<>());
-                                cmList.add(new AttributeColorSettings(co));
-                            }
-                        }
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return;
+        }
+        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (virtualEntity == null) {
+            return;
+        }
+        {
+            List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
+            if (!CommonUtils.isEmpty(coList)) {
+                for (DBVColorOverride co : coList) {
+                    DBDAttributeBinding binding = DBUtils.findObject(attributes, co.getAttributeName());
+                    if (binding != null) {
+                        List<AttributeColorSettings> cmList =
+                            colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
+                        cmList.add(new AttributeColorSettings(co));
+                    } else {
+                        log.debug("Attribute '" + co.getAttributeName() + "' not found in bindings. Skip colors.");
                     }
                 }
             }
         }
-        updateRowColors(reset, curRows);
+        if (reset) {
+            updateRowColors(true, curRows);
+        }
     }
 
     private void updateRowColors(boolean reset, List<ResultSetRow> rows) {
@@ -759,7 +745,7 @@ public class ResultSetModel {
         }
     }
 
-    public void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
+    void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
         if (resetOldRows) {
             curRows.clear();
         }
@@ -771,7 +757,8 @@ public class ResultSetModel {
                 new ResultSetRow(firstRowNum + i, rows.get(i)));
         }
         curRows.addAll(newRows);
-        updateRowColors(false, newRows);
+
+        updateRowColors(resetOldRows, newRows);
     }
 
     void clearData() {

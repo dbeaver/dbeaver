@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -113,10 +114,10 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     @Override
     public void transferData(
-        DBRProgressMonitor monitor,
-        IDataTransferConsumer consumer,
-        IDataTransferProcessor processor,
-        StreamProducerSettings settings)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IDataTransferConsumer consumer,
+        @Nullable IDataTransferProcessor processor,
+        @NotNull StreamProducerSettings settings, DBTTask task)
         throws DBException
     {
         // Initialize importer
@@ -287,7 +288,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferProducer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, StreamTransferProducer object, Map<String, Object> state) {
+        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferProducer object, Map<String, Object> state) {
             state.put("file", object.inputFile.getAbsolutePath());
             if (object.defaultProcessor != null) {
                 state.put("node", object.defaultProcessor.getNode().getId());

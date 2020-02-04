@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.views.session;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -209,7 +208,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                                 StyledText text = new StyledText(detailsFolder, SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL);
                                 text.setForeground(UIStyles.getDefaultTextForeground());
                                 text.setBackground(UIStyles.getDefaultTextBackground());
-                                text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+                                text.setFont(UIUtils.getMonospaceFont());
                                 text.setData(detailsInfo);
                                 extDetailsItem.setControl(text);
                             } else if (DBPObject.class.isAssignableFrom(detailsType)) {

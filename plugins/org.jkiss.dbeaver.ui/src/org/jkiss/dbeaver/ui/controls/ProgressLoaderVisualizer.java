@@ -176,10 +176,9 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
                 int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
                 int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
                 e.gc.setForeground(UIStyles.getDefaultTextForeground());
-                e.gc.setBackground(progressPane.getBackground());
+                e.gc.setBackground(UIStyles.getDefaultTextBackground());
                 e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
                 e.gc.drawText(status, statusX, statusY, true);
-                e.gc.setForeground(shadowColor);
                 e.gc.drawRoundRectangle(statusX - 3, statusY - 3, statusSize.x + 5, statusSize.y + 5, 5, 5);
             };
             progressPane.addPaintListener(painListener);

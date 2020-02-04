@@ -43,6 +43,9 @@ public class CoreMessages extends NLS {
 	public static String action_menu_transaction_manualcommit_description;
 	public static String action_menu_transaction_autocommit_description;
 	public static String action_menu_transaction_smart_auto_commit;
+	public static String action_menu_transaction_smart_auto_commit_tip;
+	public static String action_menu_transaction_smart_auto_commit_recover;
+	public static String action_menu_transaction_smart_auto_commit_recover_tip;
 	public static String action_menu_tools_find_in_navigator;
 
 	public static String action_menu_transactionMonitor_totalStatement;
@@ -560,6 +563,8 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_connection_edit_wizard_connections;
 	public static String dialog_connection_edit_wizard_connections_description;
+	public static String dialog_connection_edit_wizard_transactions;
+	public static String dialog_connection_edit_wizard_transactions_description;
 	public static String dialog_connection_edit_wizard_metadata;
 	public static String dialog_connection_edit_wizard_metadata_description;
 	public static String dialog_connection_edit_wizard_resultset;

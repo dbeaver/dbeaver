@@ -20,6 +20,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
@@ -33,6 +34,7 @@ import java.util.Locale;
 public class DataTransferJob implements DBRRunnableWithProgress {
 
     private DataTransferSettings settings;
+    private DBTTask task;
     private long elapsedTime;
     private boolean hasErrors;
 
@@ -40,9 +42,10 @@ public class DataTransferJob implements DBRRunnableWithProgress {
     private Log log;
     private DBTTaskExecutionListener listener;
 
-    public DataTransferJob(DataTransferSettings settings, Locale locale, Log log, DBTTaskExecutionListener listener)
+    public DataTransferJob(DataTransferSettings settings, DBTTask task, Locale locale, Log log, DBTTaskExecutionListener listener)
     {
         this.settings = settings;
+        this.task = task;
         this.locale = locale;
         this.log = log;
         this.listener = listener;
@@ -92,8 +95,6 @@ public class DataTransferJob implements DBRRunnableWithProgress {
         IDataTransferProducer producer = transferPipe.getProducer();
         IDataTransferConsumer consumer = transferPipe.getConsumer();
 
-        //IDataTransferSettings consumerSettings = settings.getNodeSettings(settings.getConsumer());
-
         monitor.beginTask(
             NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
                 CommonUtils.truncateString(producer.getObjectName(), 200),
@@ -109,7 +110,8 @@ public class DataTransferJob implements DBRRunnableWithProgress {
                     monitor,
                     consumer,
                     processor,
-                    nodeSettings);
+                    nodeSettings,
+                    task);
             } finally {
                 consumer.finishTransfer(monitor, false);
             }

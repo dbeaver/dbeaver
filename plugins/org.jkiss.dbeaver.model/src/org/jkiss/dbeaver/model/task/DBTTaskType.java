@@ -48,7 +48,14 @@ public interface DBTTaskType {
     @NotNull
     Class<?>[] getInputTypes();
 
+    boolean supportsVariables();
+
     @NotNull
     DBTTaskHandler createHandler() throws DBException;
+
+    boolean supportsConfigurator();
+
+    @NotNull
+    DBTTaskConfigurator createConfigurator() throws DBException;
 
 }

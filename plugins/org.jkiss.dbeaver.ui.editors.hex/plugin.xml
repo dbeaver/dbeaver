@@ -11,4 +11,38 @@
         <service name="org.jkiss.dbeaver.ui.data.IHexEditorService" class="org.jkiss.dbeaver.ui.editors.binary.HexEditorService"/>
     </extension>
 
+    <extension point="org.eclipse.ui.themes">
+
+        <!-- Colors for Hex editor -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.hex.label" id="org.jkiss.dbeaver.ui.presentation.hex">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.hex.description</description>
+        </themeElementCategory>
+
+        <fontDefinition
+            id="org.jkiss.dbeaver.hex.editor.font.output"
+            categoryId="org.jkiss.dbeaver.ui.presentation.hex"
+            label="%fontDefinition.org.jkiss.dbeaver.hex.editor.font.label"
+            value="Courier New-regular-10">
+            <description>%fontDefinition.org.jkiss.dbeaver.hex.editor.font.description</description>
+            <fontValue os="linux" value="Monospace-regular-10"/>
+            <fontValue os="macosx" value="Courier-regular-11"/>
+        </fontDefinition>
+
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.caret.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.hex"
+            id="org.jkiss.dbeaver.hex.editor.color.caret"
+            value="232,242,254">
+            <description>%colorDefinition.org.jkiss.dbeaver.hex.editor.color.caret.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.text.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.hex"
+            id="org.jkiss.dbeaver.hex.editor.color.text"
+            value="COLOR_BLACK">
+            <description>%colorDefinition.org.jkiss.dbeaver.hex.editor.color.text.description</description>
+        </colorDefinition>
+
+    </extension>
+
 </plugin>

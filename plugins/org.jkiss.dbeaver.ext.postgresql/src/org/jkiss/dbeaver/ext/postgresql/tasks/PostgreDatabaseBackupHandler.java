@@ -100,8 +100,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
                 // Use explicit quotes in case of quoted identifiers (#5950)
                 cmd.add(escapeCLIIdentifier(table.getSchema().getName() + "." + table.getName()));
             }
-        }
-        if (!CommonUtils.isEmpty(arg.getSchemas())) {
+        } else if (!CommonUtils.isEmpty(arg.getSchemas())) {
             for (PostgreSchema schema : arg.getSchemas()) {
                 cmd.add("-n");
                 // Use explicit quotes in case of quoted identifiers (#5950)

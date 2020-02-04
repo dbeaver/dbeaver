@@ -137,7 +137,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 if (producer.getObjectContainerIcon() != null) {
                     item.setImage(0, DBeaverIcons.getImage(producer.getObjectContainerIcon()));
                 }
-                item.setText(1, producer.getObjectName());
+                item.setText(1, CommonUtils.notEmpty(producer.getObjectName()));
                 DBPImage producerObjectIcon = producer.getObjectIcon();
                 if (producerObjectIcon == null) {
                     producerObjectIcon = settings.getProducer().getIcon();

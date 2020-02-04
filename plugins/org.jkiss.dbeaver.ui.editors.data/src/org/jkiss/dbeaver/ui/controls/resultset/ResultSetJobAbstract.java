@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
+import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 
@@ -53,4 +54,9 @@ abstract class ResultSetJobAbstract extends DataSourceJob implements DBCExecutio
         return this;
     }
 
+    @Nullable
+    @Override
+    public DBCScriptContext getScriptContext() {
+        return null;
+    }
 }

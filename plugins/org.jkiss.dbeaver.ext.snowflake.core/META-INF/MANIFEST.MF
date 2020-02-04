@@ -2,12 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.snowflake.core;singleton:=true
-Bundle-Version: 1.0.44.qualifier
-Bundle-Release-Date: 20200106
+Bundle-Version: 1.0.46.qualifier
+Bundle-Release-Date: 20200203
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.snowflake,
  org.jkiss.dbeaver.ext.snowflake.model
+Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.snowflake.core

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -46,24 +47,26 @@ public class PostgreScriptExecuteSettings extends AbstractScriptExecuteSettings<
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         super.loadSettings(runnableContext, store);
-        String databaseId = store.getString("pg.script.database");
+        if (store instanceof DBPPreferenceMap) {
+            String databaseId = store.getString("pg.script.database");
 
-        if (!CommonUtils.isEmpty(databaseId)) {
-            try {
-                runnableContext.run(true, true, monitor -> {
-                    try {
-                        database = (PostgreDatabase) DBUtils.findObjectById(monitor, getProject(), databaseId);
-                        if (database == null) {
-                            throw new DBException("Database " + databaseId + " not found");
+            if (!CommonUtils.isEmpty(databaseId)) {
+                try {
+                    runnableContext.run(true, true, monitor -> {
+                        try {
+                            database = (PostgreDatabase) DBUtils.findObjectById(monitor, getProject(), databaseId);
+                            if (database == null) {
+                                throw new DBException("Database " + databaseId + " not found");
+                            }
+                        } catch (Throwable e) {
+                            throw new InvocationTargetException(e);
                         }
-                    } catch (Throwable e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                log.error("Error loading objects configuration", e);
-            } catch (InterruptedException e) {
-                // Ignore
+                    });
+                } catch (InvocationTargetException e) {
+                    log.error("Error loading objects configuration", e);
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
             }
         }
     }

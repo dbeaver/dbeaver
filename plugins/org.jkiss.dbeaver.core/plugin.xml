@@ -942,6 +942,14 @@
                 </or>
             </enabledWhen>
         </page>
+        <page id="org.jkiss.dbeaver.preferences.main.transactions" class="org.jkiss.dbeaver.ui.preferences.PrefPageTransactions" name="%page.org.jkiss.dbeaver.preferences.main.transactions.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
         <page id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="%page.org.jkiss.dbeaver.preferences.main.meta.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
         </page>

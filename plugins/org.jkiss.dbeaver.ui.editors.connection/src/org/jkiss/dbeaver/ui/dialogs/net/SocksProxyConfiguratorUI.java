@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.net;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
@@ -43,6 +44,10 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
     @Override
     public void createControl(Composite parent)
     {
+        final Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(new GridLayout(1, true));
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
         createSocksGroup(parent);
     }
 

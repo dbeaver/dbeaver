@@ -130,7 +130,6 @@ public class SQLPreferenceConstants
     public static final String EDITOR_SEPARATE_CONNECTION               = "database.editor.separate.connection"; //$NON-NLS-1$
     public static final String EDITOR_CONNECT_ON_ACTIVATE               = "database.editor.connect.on.activate"; //$NON-NLS-1$
     public static final String EDITOR_CONNECT_ON_EXECUTE                = "database.editor.connect.on.execute"; //$NON-NLS-1$
-    public static final String EDITOR_SMART_AUTO_COMMIT                 = "database.editor.smart.auto.commit"; //$NON-NLS-1$
 
     public static final String CONFIRM_DANGER_SQL                       = "dangerous_sql"; //$NON-NLS-1$
     public static final String CONFIRM_MASS_PARALLEL_SQL                = "mass_parallel_sql"; //$NON-NLS-1$

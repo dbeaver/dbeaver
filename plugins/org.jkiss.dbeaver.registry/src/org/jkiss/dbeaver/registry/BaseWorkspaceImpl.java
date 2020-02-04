@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -62,6 +63,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     private final List<DBPProjectListener> projectListeners = new ArrayList<>();
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
     private final Map<String, Map<String, Object>> externalFileProperties = new HashMap<>();
+
+    private final AbstractJob externalFileSaver = new WorkspaceFilesMetadataJob();
 
     protected BaseWorkspaceImpl(DBPPlatform platform, IWorkspace eclipseWorkspace) {
         this.platform = platform;
@@ -508,27 +511,33 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
 
     @Override
     public Map<String, Object> getFileProperties(File file) {
-        return externalFileProperties.get(file.getAbsolutePath());
+        synchronized (externalFileProperties) {
+            return externalFileProperties.get(file.getAbsolutePath());
+        }
     }
 
     @Override
     public Object getFileProperty(File file, String property) {
-        final Map<String, Object> fileProps = externalFileProperties.get(file.getAbsolutePath());
-        return fileProps == null ? null : fileProps.get(property);
+        synchronized (externalFileProperties) {
+            final Map<String, Object> fileProps = externalFileProperties.get(file.getAbsolutePath());
+            return fileProps == null ? null : fileProps.get(property);
+        }
     }
 
     @Override
     public void setFileProperty(File file, String property, Object value) {
-        final String filePath = file.getAbsolutePath();
-        Map<String, Object> fileProps = externalFileProperties.get(filePath);
-        if (fileProps == null) {
-            fileProps = new HashMap<>();
-            externalFileProperties.put(filePath, fileProps);
-        }
-        if (value == null) {
-            fileProps.remove(property);
-        } else {
-            fileProps.put(property, value);
+        synchronized (externalFileProperties) {
+            final String filePath = file.getAbsolutePath();
+            Map<String, Object> fileProps = externalFileProperties.get(filePath);
+            if (fileProps == null) {
+                fileProps = new HashMap<>();
+                externalFileProperties.put(filePath, fileProps);
+            }
+            if (value == null) {
+                fileProps.remove(property);
+            } else {
+                fileProps.put(property, value);
+            }
         }
 
         saveExternalFileProperties();
@@ -536,40 +545,37 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
 
     @Override
     public Map<String, Map<String, Object>> getAllFiles() {
-        return externalFileProperties;
+        synchronized (externalFileProperties) {
+            return new LinkedHashMap<>(externalFileProperties);
+        }
     }
 
     private void loadExternalFileProperties() {
-        externalFileProperties.clear();
-        File propsFile = new File(
-            GeneralUtils.getMetadataFolder(),
-            EXT_FILES_PROPS_STORE);
-        if (propsFile.exists()) {
-            try (InputStream is = new FileInputStream(propsFile)) {
-                try (ObjectInputStream ois = new ObjectInputStream(is)) {
-                    final Object object = ois.readObject();
-                    if (object instanceof Map) {
-                        externalFileProperties.putAll((Map) object);
-                    } else {
-                        log.error("Bad external files properties data format: " + object);
+        synchronized (externalFileProperties) {
+            externalFileProperties.clear();
+            File propsFile = new File(
+                GeneralUtils.getMetadataFolder(),
+                EXT_FILES_PROPS_STORE);
+            if (propsFile.exists()) {
+                try (InputStream is = new FileInputStream(propsFile)) {
+                    try (ObjectInputStream ois = new ObjectInputStream(is)) {
+                        final Object object = ois.readObject();
+                        if (object instanceof Map) {
+                            externalFileProperties.putAll((Map) object);
+                        } else {
+                            log.error("Bad external files properties data format: " + object);
+                        }
                     }
+                } catch (Exception e) {
+                    log.error("Error saving external files properties", e);
                 }
-            } catch (Exception e) {
-                log.error("Error saving external files properties", e);
             }
         }
     }
 
     private void saveExternalFileProperties() {
-        File propsFile = new File(
-            GeneralUtils.getMetadataFolder(),
-            EXT_FILES_PROPS_STORE);
-        try (OutputStream os = new FileOutputStream(propsFile)) {
-            try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
-                oos.writeObject(externalFileProperties);
-            }
-        } catch (Exception e) {
-            log.error("Error saving external files properties", e);
+        synchronized (externalFileProperties) {
+            externalFileSaver.schedule(100);
         }
     }
 
@@ -676,4 +682,26 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         return workspaceId;
     }
 
+    private class WorkspaceFilesMetadataJob extends AbstractJob {
+        public WorkspaceFilesMetadataJob() {
+            super("External files metadata saver");
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            synchronized (externalFileProperties) {
+                File propsFile = new File(
+                    GeneralUtils.getMetadataFolder(),
+                    EXT_FILES_PROPS_STORE);
+                try (OutputStream os = new FileOutputStream(propsFile)) {
+                    try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
+                        oos.writeObject(externalFileProperties);
+                    }
+                } catch (Exception e) {
+                    log.error("Error saving external files properties", e);
+                }
+            }
+            return Status.OK_STATUS;
+        }
+    }
 }

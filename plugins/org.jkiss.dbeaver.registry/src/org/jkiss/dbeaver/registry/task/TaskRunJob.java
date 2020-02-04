@@ -84,27 +84,31 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             taskLog = Log.getLog(TaskRunJob.class);
             Log.setLogWriter(logStream);
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
-            executeTask(new LoggingProgressMonitor(monitor), new PrintWriter(logStream, true));
-        } catch (Throwable e) {
-            taskError = e;
-            taskLog.error("Task fatal error", e);
-        } finally {
-            monitor.done();
-            Log.setLogWriter(null);
-            taskLog.flush();
+            try {
+                executeTask(new LoggingProgressMonitor(monitor), new PrintWriter(logStream, true));
+            } catch (Throwable e) {
+                taskError = e;
+                taskLog.error("Task fatal error", e);
+            } finally {
+                monitor.done();
+                taskLog.flush();
+                Log.setLogWriter(null);
 
-            taskRun.setRunDuration(elapsedTime);
-            if (taskError != null) {
-                String errorMessage = taskError.getMessage();
-                if (CommonUtils.isEmpty(errorMessage)) {
-                    errorMessage = taskError.getClass().getName();
+                taskRun.setRunDuration(elapsedTime);
+                if (taskError != null) {
+                    String errorMessage = taskError.getMessage();
+                    if (CommonUtils.isEmpty(errorMessage)) {
+                        errorMessage = taskError.getClass().getName();
+                    }
+                    taskRun.setErrorMessage(errorMessage);
+                    StringWriter buf = new StringWriter();
+                    taskError.printStackTrace(new PrintWriter(buf, true));
+                    taskRun.setErrorStackTrace(buf.toString());
                 }
-                taskRun.setErrorMessage(errorMessage);
-                StringWriter buf = new StringWriter();
-                taskError.printStackTrace(new PrintWriter(buf, true));
-                taskRun.setErrorStackTrace(buf.toString());
+                task.updateRun(taskRun);
             }
-            task.updateRun(taskRun);
+        } catch (IOException e) {
+            log.error("Error opning task run log file", e);
         }
         return Status.OK_STATUS;
     }

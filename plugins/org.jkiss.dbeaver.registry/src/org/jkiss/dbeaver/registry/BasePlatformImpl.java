@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
-import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
+import org.jkiss.dbeaver.runtime.jobs.KeepAliveListenerJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -112,7 +112,7 @@ public abstract class BasePlatformImpl implements DBPPlatform {
         }
 
         // Keep-alive job
-        new KeepAliveJob(this).scheduleMonitor();
+        new KeepAliveListenerJob(this).scheduleMonitor();
     }
 
     public synchronized void dispose() {

@@ -162,6 +162,7 @@
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 4.x+"
+                        promoted="1"
                         categories="sql">
                     <replace provider="mysql" driver="mysql3"/>
 
@@ -185,7 +186,6 @@
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 8 and later"
-                        promoted="1"
                         categories="sql">
                     <!--<replace provider="generic" driver="mysql3"/>-->
                     <!--<replace provider="mysql" driver="mysql3"/>

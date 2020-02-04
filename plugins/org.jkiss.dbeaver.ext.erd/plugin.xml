@@ -338,7 +338,7 @@
 
     <extension point="org.eclipse.ui.menus">
         <!-- All Context menus -->
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=export_import">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=compare">
             <command commandId="org.jkiss.dbeaver.erd.diagram.view" label="%command.org.jkiss.dbeaver.erd.diagram.view.name">
                 <visibleWhen checkEnabled="true"/>
             </command>

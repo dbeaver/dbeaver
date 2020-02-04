@@ -173,7 +173,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                 }
             }
         }
-        return null;
+        return getDataSource().getDefaultCatalog();
     }
 
     @Override
@@ -186,7 +186,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                 }
             }
         }
-        return null;
+        return getDataSource().getDefaultSchema();
     }
 
     @Override

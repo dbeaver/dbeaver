@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 class TransformerSettingsDialog extends BaseDialog {
 
@@ -166,13 +166,7 @@ class TransformerSettingsDialog extends BaseDialog {
 
     private void updateAttributeSelection() {
         if (currentAttribute != null) {
-            saveTransformerSettings();
-            for (TableItem item : attributeTable.getItems()) {
-                if (item.getData() == currentAttribute) {
-                    updateTransformItem(item);
-                    break;
-                }
-            }
+            updateAttributeItemText();
         }
 
         if (attributeTable.getSelectionIndex() < 0) {
@@ -233,7 +227,7 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     private void saveTransformerSettings() {
-        if (currentAttribute == null || transformer == null) {
+        if (currentAttribute == null) {
             // Nothign to save - just ignore
             return;
         }
@@ -289,7 +283,9 @@ class TransformerSettingsDialog extends BaseDialog {
                             infoText.setText(CommonUtils.notEmpty(transformer.getDescription()));
                             loadTransformerSettings(transformer.getProperties());
                         }
-                        updateAttributeSelection();
+                        updateTransformerInfo();
+                        updateAttributeItemText();
+
                         composite.layout(true, true);
                     }
                 });
@@ -305,6 +301,16 @@ class TransformerSettingsDialog extends BaseDialog {
         propertiesEditor = new PropertyTreeViewer(settingsPanel, SWT.BORDER);
 
         propertiesEditor.getControl().setFocus();
+    }
+
+    private void updateAttributeItemText() {
+        saveTransformerSettings();
+        for (TableItem item : attributeTable.getItems()) {
+            if (item.getData() == currentAttribute) {
+                updateTransformItem(item);
+                break;
+            }
+        }
     }
 
     private void loadTransformerSettings(Collection<? extends DBPPropertyDescriptor> properties) {

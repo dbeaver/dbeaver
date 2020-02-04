@@ -71,11 +71,15 @@ public class TaskRegistry implements DBTTaskRegistry
                     TaskCategoryDescriptor taskType = getTaskCategory(typeId);
                     TaskTypeDescriptor taskDescriptor = new TaskTypeDescriptor(taskType, ext);
                     taskDescriptors.put(taskDescriptor.getId(), taskDescriptor);
-                } else if ("configurator".equals(ext.getName())) {
+                }
+            }
+
+            for (IConfigurationElement ext : extElements) {
+                if ("configurator".equals(ext.getName())) {
                     String typeId = ext.getAttribute("type");
-                    TaskCategoryDescriptor taskType = getTaskCategory(typeId);
+                    TaskTypeDescriptor taskType = getTaskType(typeId);
                     if (taskType == null) {
-                        log.debug("");
+                        log.debug("Task type '" + typeId + "' not found. Skip configurator.");
                     } else {
                         TaskConfiguratorDescriptor configDescriptor = new TaskConfiguratorDescriptor(taskType, ext);
                         taskType.setConfigurator(configDescriptor);
@@ -113,7 +117,7 @@ public class TaskRegistry implements DBTTaskRegistry
 
     @Nullable
     @Override
-    public DBTTaskType getTaskType(String id) {
+    public TaskTypeDescriptor getTaskType(String id) {
         return taskDescriptors.get(id);
     }
 

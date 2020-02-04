@@ -61,7 +61,8 @@ import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.BaseSQLDialog;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -73,8 +74,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * QueryLogViewer
@@ -902,9 +903,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
         }
         if (sql.length() > 0) {
-            OpenHandler.openSQLConsole(
+            SQLEditorHandlerOpenEditor.openSQLConsole(
                 UIUtils.getActiveWorkbenchWindow(),
-                dsContainer,
+                new SQLNavigatorContext(dsContainer),
                 "QueryManager", //$NON-NLS-1$
                 sql.toString()
             );

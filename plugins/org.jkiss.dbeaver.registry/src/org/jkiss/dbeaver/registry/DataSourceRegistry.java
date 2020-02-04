@@ -464,10 +464,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     public void updateDataSource(DBPDataSourceContainer dataSource) {
-        if (!dataSource.isTemporary()) {
-            this.saveDataSources();
+        if (!(dataSource instanceof DataSourceDescriptor)) {
+            return;
         }
-        this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
+        if (!dataSources.contains(dataSource)) {
+            addDataSource(dataSource);
+        } else {
+            if (!dataSource.isTemporary()) {
+                this.saveDataSources();
+            }
+            this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
+        }
     }
 
     @Override

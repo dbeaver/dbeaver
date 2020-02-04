@@ -22,10 +22,12 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -52,7 +54,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     }
 
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
     {
         boolean withGrantOption = false;
         StringBuilder privName = new StringBuilder();
@@ -112,7 +114,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     {
         if (prevCommand instanceof PostgreCommandGrantPrivilege) {
             PostgreCommandGrantPrivilege prevGrant = (PostgreCommandGrantPrivilege)prevCommand;
-            if (prevGrant.permission == permission && prevGrant.privilege == privilege) {
+            if (prevGrant.permission == permission && Arrays.equals(prevGrant.privilege, privilege)) {
                 if (prevGrant.grant == grant) {
                     return prevCommand;
                 } else {

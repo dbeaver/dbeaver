@@ -38,20 +38,20 @@ import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.runtime.properties.PropertySourceMap;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.IPropertySourceEditable;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCollection;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceMap;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -59,8 +59,8 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.text.Collator;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Driver properties control
@@ -319,10 +319,6 @@ public class PropertyTreeViewer extends TreeViewer {
 
     protected DBPPropertyDescriptor[] filterProperties(Object object, DBPPropertyDescriptor[] properties) {
         return properties;
-    }
-
-    public DBPPropertyDescriptor getSelectedProperty() {
-        return selectedProperty;
     }
 
     public void clearProperties()
@@ -704,6 +700,42 @@ public class PropertyTreeViewer extends TreeViewer {
     public void setExtraLabelProvider(IBaseLabelProvider extraLabelProvider)
     {
         this.extraLabelProvider = extraLabelProvider;
+    }
+
+    public DBPPropertyDescriptor getSelectedProperty() {
+        ISelection selection = getSelection();
+        if (selection instanceof IStructuredSelection) {
+            Object element = ((IStructuredSelection) selection).getFirstElement();
+            if (element instanceof TreeNode) {
+                final TreeNode prop = (TreeNode) element;
+                return prop.property;
+            }
+        }
+        return null;
+    }
+
+    public String getSelectedCategory() {
+        ISelection selection = getSelection();
+        if (selection instanceof IStructuredSelection) {
+            Object element = ((IStructuredSelection) selection).getFirstElement();
+            if (element instanceof TreeNode) {
+                final TreeNode prop = (TreeNode) element;
+                return prop.parent != null ? prop.parent.category : prop.category;
+            }
+        }
+        return null;
+    }
+
+    public Object getCategoryNode(String category) {
+        Object input = getInput();
+        if (input instanceof Collection) {
+            for (Object element : (Collection)input) {
+                if (element instanceof TreeNode && category.equals(((TreeNode) element).category)) {
+                    return element;
+                }
+            }
+        }
+        return null;
     }
 
     public void saveEditorValues() {

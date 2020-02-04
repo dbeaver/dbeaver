@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -56,14 +55,15 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -1035,6 +1035,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (prop != null) {
                 if (forUI && cellValue instanceof Boolean) {
                     return "";
+                }
+                if (prop.isPassword() && cellValue instanceof String) {
+                    return  CommonUtils.isEmpty((String) cellValue) ? "" : "************";
                 }
                 return ObjectViewerRenderer.getCellString(cellValue, prop.isNameProperty());
             } else {

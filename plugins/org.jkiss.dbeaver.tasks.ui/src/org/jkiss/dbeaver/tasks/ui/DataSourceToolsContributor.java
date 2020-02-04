@@ -85,12 +85,14 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
 
             // Contribute standard tools like session manager
             DBPDataSource dataSource = selectedObject.getDataSource();
-            DBPDataSourceContainer dataSourceContainer = dataSource.getContainer();
-            DBPEditorContribution[] contributedEditors = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getContributedEditors(DBPEditorContribution.MB_CONNECTION_EDITOR, dataSourceContainer);
-            if (contributedEditors.length > 0) {
-                menuItems.add(new Separator());
-                for (DBPEditorContribution ec : contributedEditors) {
-                    menuItems.add(new ActionContributionItem(new OpenToolsEditorAction(activePage, dataSource, ec)));
+            if (dataSource != null) {
+                DBPDataSourceContainer dataSourceContainer = dataSource.getContainer();
+                DBPEditorContribution[] contributedEditors = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getContributedEditors(DBPEditorContribution.MB_CONNECTION_EDITOR, dataSourceContainer);
+                if (contributedEditors.length > 0) {
+                    menuItems.add(new Separator());
+                    for (DBPEditorContribution ec : contributedEditors) {
+                        menuItems.add(new ActionContributionItem(new OpenToolsEditorAction(activePage, dataSource, ec)));
+                    }
                 }
             }
         }

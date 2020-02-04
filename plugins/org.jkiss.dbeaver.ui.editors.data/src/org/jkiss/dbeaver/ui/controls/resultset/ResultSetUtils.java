@@ -517,4 +517,7 @@ public class ResultSetUtils
         return associatedEntity[0];
     }
 
+    static String formatRowCount(long rows) {
+        return rows < 0 ? "0" : String.valueOf(rows);
+    }
 }

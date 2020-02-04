@@ -121,6 +121,9 @@ public final class ModelPreferences
     public static final String NAVIGATOR_SORT_FOLDERS_FIRST = "navigator.sort.forlers.first"; //$NON-NLS-1$
 
     public static final String PLATFORM_LANGUAGE = "platform.language"; //$NON-NLS-1$
+    public static final String TRANSACTIONS_SMART_COMMIT = "transaction.smart.commit"; //$NON-NLS-1$
+    public static final String TRANSACTIONS_SMART_COMMIT_RECOVER = "transaction.smart.commit.recover"; //$NON-NLS-1$
+    public static final String TRANSACTIONS_SHOW_NOTIFICATIONS = "transaction.show.notifications"; //$NON-NLS-1$
 
     private static Bundle mainBundle;
     private static DBPPreferenceStore preferences;
@@ -172,7 +175,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, META_CLIENT_NAME_OVERRIDE, false);
         PrefUtils.setDefaultPreferenceValue(store, META_CLIENT_NAME_VALUE, "");
 
-        PrefUtils.setDefaultPreferenceValue(store, CONNECT_USE_ENV_VARS, false);
+        PrefUtils.setDefaultPreferenceValue(store, CONNECT_USE_ENV_VARS, true);
 
         PrefUtils.setDefaultPreferenceValue(store, RESULT_NATIVE_DATETIME_FORMAT, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_TRANSFORM_COMPLEX_TYPES, true);
@@ -233,5 +236,9 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
+
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SMART_COMMIT, false);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER, true);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS, true);
     }
 }

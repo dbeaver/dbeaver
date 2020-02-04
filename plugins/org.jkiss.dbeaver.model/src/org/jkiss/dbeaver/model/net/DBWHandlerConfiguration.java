@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.net;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -33,22 +35,22 @@ public class DBWHandlerConfiguration {
 
     @NotNull
     private final DBWHandlerDescriptor descriptor;
-    private DBPDriver driver;
+    private DBPDataSourceContainer dataSource;
     private boolean enabled;
     private String userName;
     private String password;
     private boolean savePassword = true;
     private final Map<String, Object> properties;
 
-    public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDriver driver) {
+    public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDataSourceContainer dataSource) {
         this.descriptor = descriptor;
-        this.driver = driver;
+        this.dataSource = dataSource;
         this.properties = new HashMap<>();
     }
 
     public DBWHandlerConfiguration(@NotNull DBWHandlerConfiguration configuration) {
         this.descriptor = configuration.descriptor;
-        this.driver = configuration.driver;
+        this.dataSource = configuration.dataSource;
         this.enabled = configuration.enabled;
         this.userName = configuration.userName;
         this.password = configuration.password;
@@ -70,11 +72,15 @@ public class DBWHandlerConfiguration {
     }
 
     public DBPDriver getDriver() {
-        return driver;
+        return dataSource == null ? null : dataSource.getDriver();
     }
 
-    public void setDriver(DBPDriver driver) {
-        this.driver = driver;
+    public DBPDataSourceContainer getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(DBPDataSourceContainer dataSource) {
+        this.dataSource = dataSource;
     }
 
     public DBWHandlerType getType() {
@@ -170,7 +176,7 @@ public class DBWHandlerConfiguration {
         DBWHandlerConfiguration source = (DBWHandlerConfiguration) obj;
         return
             CommonUtils.equalObjects(this.descriptor, source.descriptor) &&
-                CommonUtils.equalObjects(this.driver, source.driver) &&
+                CommonUtils.equalObjects(this.dataSource, source.dataSource) &&
                 this.enabled == source.enabled &&
                 CommonUtils.equalObjects(this.userName, source.userName) &&
                 CommonUtils.equalObjects(this.password, source.password) &&
@@ -178,16 +184,15 @@ public class DBWHandlerConfiguration {
                 CommonUtils.equalObjects(this.properties, source.properties);
     }
 
-    public void resolveSystemEnvironmentVariables() {
-        userName = userName != null ? GeneralUtils.replaceSystemEnvironmentVariables(userName) : null;
-        password = password != null ? GeneralUtils.replaceSystemEnvironmentVariables(password) : null;
+    public void resolveDynamicVariables(IVariableResolver variableResolver) {
+        userName = GeneralUtils.replaceVariables(userName, variableResolver);
+        password = GeneralUtils.replaceVariables(password, variableResolver);
         for (String prop : this.properties.keySet()) {
             Object value = this.properties.get(prop);
             if (value instanceof String && !CommonUtils.isEmpty((String)value)) {
-                this.properties.put(prop, GeneralUtils.replaceSystemEnvironmentVariables((String)value));
+                this.properties.put(prop, GeneralUtils.replaceVariables((String)value, variableResolver));
             }
         }
-
     }
 
     public boolean hasValuableInfo() {

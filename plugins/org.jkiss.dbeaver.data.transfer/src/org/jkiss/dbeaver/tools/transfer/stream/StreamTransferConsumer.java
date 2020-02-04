@@ -472,7 +472,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         return "";
                     }
                     DBSSchema schema = DBUtils.getParentOfType(DBSSchema.class, dataContainer);
-                    return schema == null ? "" : stripObjectName(schema.getName());
+                    if (schema != null) {
+                        return stripObjectName(schema.getName());
+                    }
+                    // Try catalog (#7506)
+                    DBSCatalog catalog = DBUtils.getParentOfType(DBSCatalog.class, dataContainer);
+                    return catalog == null ? "" : stripObjectName(catalog.getName());
                 }
                 case VARIABLE_TABLE: {
                     if (settings.isUseSingleFile()) {
@@ -701,7 +706,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferConsumer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, StreamTransferConsumer object, Map<String, Object> state) {
+        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferConsumer object, Map<String, Object> state) {
         }
 
         @Override
