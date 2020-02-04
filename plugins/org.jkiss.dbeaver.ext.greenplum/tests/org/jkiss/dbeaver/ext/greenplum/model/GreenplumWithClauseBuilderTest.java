@@ -45,7 +45,7 @@ public class GreenplumWithClauseBuilderTest {
         when(tableBase.getRelOptions()).thenReturn(new String[]{"appendonly=true"});
 
         String withClause = generateWithClause(table, tableBase);
-        assertEquals("\nWITH (\n\tOIDS=TRUE, appendonly=true\n)", withClause);
+        assertEquals("\nWITH (\n\tOIDS=TRUE,\n\tappendonly=true\n)", withClause);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class GreenplumWithClauseBuilderTest {
         when(tableBase.getRelOptions()).thenReturn(new String[]{"appendonly=true", "orientation=column"});
 
         String withClause = generateWithClause(table, tableBase);
-        assertEquals("\nWITH (\n\tOIDS=TRUE, appendonly=true, orientation=column\n)", withClause);
+        assertEquals("\nWITH (\n\tOIDS=TRUE,\n\tappendonly=true,\n\torientation=column\n)", withClause);
     }
 
     private void setupGeneralWhenMocks(boolean supportOids, boolean hasOids) {

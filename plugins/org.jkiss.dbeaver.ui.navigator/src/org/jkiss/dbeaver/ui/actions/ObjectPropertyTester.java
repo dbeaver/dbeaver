@@ -217,6 +217,10 @@ public class ObjectPropertyTester extends PropertyTester
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {
+        if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode)node).isVirtual()) {
+            // Can't create virtual objects
+            return false;
+        }
         if (onlySingle == null) {
             // Just try to find first create handler
             if (node instanceof DBNDataSource) {

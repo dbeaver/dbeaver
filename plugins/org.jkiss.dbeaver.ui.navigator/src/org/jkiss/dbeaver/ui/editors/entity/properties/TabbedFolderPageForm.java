@@ -557,7 +557,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     parent,
                     property.getDisplayName(),
                     objectValueToString(value),
-                    SWT.BORDER | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+                    SWT.BORDER |
+                        (readOnly ? SWT.READ_ONLY : SWT.NONE) |
+                        (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isPassword() ? SWT.PASSWORD : SWT.NONE));
                 text.setLayoutData(new GridData((BeanUtils.isNumericType(propType) ? GridData.HORIZONTAL_ALIGN_BEGINNING : GridData.FILL_HORIZONTAL) | GridData.VERTICAL_ALIGN_BEGINNING));
                 return text;
             }

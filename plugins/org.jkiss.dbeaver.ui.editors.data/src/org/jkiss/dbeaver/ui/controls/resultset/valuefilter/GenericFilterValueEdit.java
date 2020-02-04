@@ -25,6 +25,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -52,12 +53,11 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -85,6 +85,10 @@ class GenericFilterValueEdit {
 
     private static final int MAX_MULTI_VALUES = 1000;
     private static final String MULTI_KEY_LABEL = "...";
+    private Composite buttonsPanel;
+    private Button toggleButton;
+
+    private transient final Set<Object> savedValues = new HashSet<>();
 
     GenericFilterValueEdit(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
         this.viewer = viewer;
@@ -137,7 +141,7 @@ class GenericFilterValueEdit {
 
         tableViewer = new TableViewer(composite, style);
         Table table = this.tableViewer.getTable();
-        table.setLinesVisible(visibleLines);
+        table.setLinesVisible(false);
         table.setHeaderVisible(visibleHeader);
         table.setLayoutData(layoutData);
         this.tableViewer.setContentProvider(new ListContentProvider());
@@ -145,24 +149,64 @@ class GenericFilterValueEdit {
         isCheckedTable = (style & SWT.CHECK) == SWT.CHECK;
 
         if (isCheckedTable) {
-            Composite buttonsPanel = UIUtils.createComposite(composite, 2);
-            UIUtils.createPushButton(buttonsPanel, "Select All", null, new SelectionAdapter() {
+            buttonsPanel = UIUtils.createComposite(composite, 2);
+            buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            toggleButton = UIUtils.createDialogButton(buttonsPanel, "&Select All", new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
-                    for (TableItem item : table.getItems()) {
-                        item.setChecked(true);
+                public void widgetSelected(SelectionEvent e)
+                {
+                    TableItem[] items = tableViewer.getTable().getItems();
+                    if (Boolean.FALSE.equals(toggleButton.getData())) {
+                        // Clear all checked
+                        for (TableItem item : items) {
+                            item.setChecked(false);
+                        }
+                        toggleButton.setData(false);
+                        savedValues.clear();
+                    } else {
+                        for (TableItem item : items) {
+                            item.setChecked(true);
+                            savedValues.add((((DBDLabelValuePair) item.getData())).getValue());
+                        }
+                        toggleButton.setData(true);
                     }
+                    updateToggleButton(toggleButton);
                 }
             });
-            UIUtils.createPushButton(buttonsPanel, "Select None", null, new SelectionAdapter() {
+            toggleButton.setData(true);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = 120;
+            toggleButton.setLayoutData(gd);
+            UIUtils.createEmptyLabel(buttonsPanel, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            tableViewer.getTable().addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    for (TableItem item : table.getItems()) {
-                        item.setChecked(false);
+                    if (e.detail == SWT.CHECK) {
+                        DBDLabelValuePair value = (DBDLabelValuePair) e.item.getData();
+                        if (((TableItem)e.item).getChecked()) {
+                            savedValues.add(value.getValue());
+                        } else {
+                            savedValues.remove(value.getValue());
+                        }
+                        updateToggleButton(toggleButton);
                     }
                 }
             });
         }
+    }
+
+    private void updateToggleButton(Button toggleButton) {
+        boolean hasCheckedItems = hasCheckedItems();
+        toggleButton.setText(hasCheckedItems ? "&Clear All" : "&Select All");
+        toggleButton.setData(!hasCheckedItems);
+    }
+
+    private boolean hasCheckedItems() {
+        for (TableItem items : tableViewer.getTable().getItems()) {
+            if (items.getChecked()) return true;
+        }
+        return false;
     }
 
     void addContextMenu(Action[] actions) {
@@ -193,7 +237,6 @@ class GenericFilterValueEdit {
         });
         return valueFilterText;
     }
-
 
     void loadValues(Runnable onFinish) {
         if (loadJob != null) {
@@ -288,7 +331,7 @@ class GenericFilterValueEdit {
 
         // Get all values from actual RSV data
         boolean hasNulls = false;
-        java.util.Map<Object, DBDLabelValuePair> rowData = new HashMap<>();
+        Map<Object, DBDLabelValuePair> rowData = new HashMap<>();
         for (DBDLabelValuePair pair : values) {
             final DBDLabelValuePair oldLabel = rowData.get(pair.getValue());
             if (oldLabel != null) {
@@ -317,7 +360,7 @@ class GenericFilterValueEdit {
             }
         }
 
-        java.util.List<DBDLabelValuePair> sortedList = new ArrayList<>(rowData.values());
+        List<DBDLabelValuePair> sortedList = new ArrayList<>(rowData.values());
         if (pattern != null) {
             for (Iterator<DBDLabelValuePair> iter = sortedList.iterator(); iter.hasNext(); ) {
                 final DBDLabelValuePair valuePair = iter.next();
@@ -371,6 +414,7 @@ class GenericFilterValueEdit {
                 Collections.addAll(checkedValues, (Object[]) constraint.getValue());
             }
         }
+        checkedValues.addAll(savedValues);
 
         tableViewer.setInput(sortedList);
         DBDLabelValuePair firstVisibleItem = null;
@@ -417,6 +461,38 @@ class GenericFilterValueEdit {
         return rowData.containsKey(cellValue);
     }
 
+    @Nullable
+    public Object getFilterValue() {
+        if (tableViewer != null) {
+            Set<Object> values = new LinkedHashSet<>();
+
+            for (DBDLabelValuePair item : getMultiValues()) {
+                if (((TableItem)tableViewer.testFindItem(item)).getChecked()) {
+                    values.add(item.getValue());
+                }
+            }
+            values.addAll(savedValues);
+            return values.toArray();
+        } else if (editor != null) {
+            try {
+                return editor.extractEditorValue();
+            } catch (DBException e) {
+                log.error("Can't get editor value", e);
+            }
+        }
+        return null;
+    }
+
+    public Button createFilterButton(String label, SelectionAdapter selectionAdapter) {
+        if (isCheckedTable) {
+            Button button = UIUtils.createDialogButton(buttonsPanel, label, selectionAdapter);
+            ((GridLayout) buttonsPanel.getLayout()).numColumns++;
+            return button;
+        } else {
+            return null;
+        }
+    }
+
     private abstract class KeyLoadJob extends AbstractJob {
         private final Runnable onFinish;
         KeyLoadJob(String name, Runnable onFinish) {
@@ -442,7 +518,7 @@ class GenericFilterValueEdit {
                 }
             } catch (Throwable e) {
                 populateValues(Collections.emptyList());
-                return GeneralUtils.makeExceptionStatus(e);
+                log.error(e);
             }
             return Status.OK_STATUS;
         }

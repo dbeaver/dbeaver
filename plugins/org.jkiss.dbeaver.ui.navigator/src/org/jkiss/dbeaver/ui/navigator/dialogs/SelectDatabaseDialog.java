@@ -26,12 +26,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
@@ -76,7 +79,12 @@ public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
         if (currentInstanceName != null && dataSource != null) {
 
             DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-            if (instanceContainer != null) {
+            DBCExecutionContextDefaults contextDefaults = null;
+            DBCExecutionContext defaultContext = DBUtils.getDefaultContext(instanceContainer, true);
+            if (defaultContext != null) {
+                contextDefaults = defaultContext.getContextDefaults();
+            }
+            if (instanceContainer != null && contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.supportsSchemaChange()) {
 
                 // Create instance selector
                 Composite instancePanel = UIUtils.createComposite(dialogArea, 3);
@@ -115,27 +123,36 @@ public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
     }
 
     protected Collection<DBNDatabaseNode> getObjects(DBRProgressMonitor monitor) throws DBException {
+        DBSObject rootObject;
         if (instanceObjects != null && currentInstanceName != null) {
-            DBSObject newInstance = DBUtils.findObject(instanceObjects, currentInstanceName);
-            if (newInstance instanceof DBSObjectContainer) {
-                Collection<? extends DBSObject> databaseList = ((DBSObjectContainer) newInstance).getChildren(monitor);
-                if (databaseList == null) {
-                    return Collections.emptyList();
-                }
-                List<DBNDatabaseNode> nodeList = new ArrayList<>(databaseList.size());
-                for (DBSObject database : databaseList) {
-                    DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, database, false);
+            rootObject = DBUtils.findObject(instanceObjects, currentInstanceName);
+        } else {
+            rootObject = dataSourceContainer.getDataSource();
+        }
+        if (rootObject instanceof DBSObjectContainer) {
+            Collection<? extends DBSObject> objectList = ((DBSObjectContainer) rootObject).getChildren(monitor);
+            if (objectList == null) {
+                return Collections.emptyList();
+            }
+            List<DBNDatabaseNode> nodeList = new ArrayList<>(objectList.size());
+            for (DBSObject object : objectList) {
+                if (object instanceof DBSObjectContainer) {
+                    DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, object, false);
                     if (databaseNode != null) {
                         nodeList.add(databaseNode);
                     }
                 }
-                return nodeList;
             }
+            return nodeList;
         }
         return objects;
     }
 
     public String getCurrentInstanceName() {
+        DBNDatabaseNode selectedObject = getSelectedObject();
+        if (selectedObject.getObject() instanceof DBSCatalog) {
+            return selectedObject.getObject().getName();
+        }
         return currentInstanceName;
     }
 }

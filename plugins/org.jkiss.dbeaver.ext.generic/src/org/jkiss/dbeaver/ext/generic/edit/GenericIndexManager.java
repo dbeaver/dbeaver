@@ -43,7 +43,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
 
     @Override
     public boolean canCreateObject(Object container) {
-        return container instanceof GenericTable;
+        return container instanceof GenericTable && ((GenericTable) container).getDataSource().getInfo().supportsIndexes();
     }
 
     @Override

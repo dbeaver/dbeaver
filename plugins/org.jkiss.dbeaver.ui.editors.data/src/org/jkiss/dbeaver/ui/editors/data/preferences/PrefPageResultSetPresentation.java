@@ -39,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class PrefPageResultSetPresentation extends TargetPrefPage
 {
-    static final Log log = Log.getLog(PrefPageResultSetPresentation.class);
+    private static final Log log = Log.getLog(PrefPageResultSetPresentation.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.presentation"; //$NON-NLS-1$
 
@@ -60,6 +60,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     private Button gridShowAttrOrder;
     private Button gridShowAttrIcons;
     private Button useSmoothScrolling;
+    private Button showBooleanAsCheckbox;
     private Combo gridDoubleClickBehavior;
 
     private Spinner textTabSize;
@@ -80,19 +81,25 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION) ||
-            store.contains(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
             store.contains(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES) ||
             store.contains(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME) ||
             store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
-            store.contains(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS) ||
+
             store.contains(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
+            //store.contains(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING) ||
+            store.contains(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX) ||
+
+            store.contains(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK) ||
+            store.contains(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION) ||
+            store.contains(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||
 
             store.contains(ResultSetPreferences.RESULT_TEXT_TAB_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE) ||
@@ -100,8 +107,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS) ||
             store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING) ||
             store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES)
-            ;
+            store.contains(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
     }
 
     @Override
@@ -132,17 +138,18 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             gridShowOddRows = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
             colorizeDataTypes = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
-            gridRowBatchSize = UIUtils.createLabelText(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
-            gridRowBatchSize.setToolTipText(ResultSetMessages.pref_page_database_resultsets_label_row_batch_size_tip);
             //gridShowCellIcons = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
             gridShowAttrIcons = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_icons, ResultSetMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
             gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
             gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
             useSmoothScrolling = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_use_smooth_scrolling, ResultSetMessages.pref_page_database_resultsets_label_use_smooth_scrolling_tip, false, 2);
+            showBooleanAsCheckbox = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox, ResultSetMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox_tip, false, 2);
             gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
             gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_none, Spreadsheet.DoubleClickBehavior.NONE.ordinal());
             gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
             gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_inline_editor, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
+            gridRowBatchSize = UIUtils.createLabelText(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
+            gridRowBatchSize.setToolTipText(ResultSetMessages.pref_page_database_resultsets_label_row_batch_size_tip);
         }
 
         {
@@ -176,6 +183,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             gridShowAttrFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS));
             gridShowAttrOrder.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING));
             useSmoothScrolling.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
+            showBooleanAsCheckbox.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX));
 
             gridDoubleClickBehavior.select(
                 CommonUtils.valueOf(
@@ -215,6 +223,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS, gridShowAttrFilters.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING, gridShowAttrOrder.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING, useSmoothScrolling.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX, showBooleanAsCheckbox.getSelection());
+
             store.setValue(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(
                 Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
@@ -250,6 +260,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING);
         store.setToDefault(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
 
         store.setToDefault(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK);
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE);

@@ -36,7 +36,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 
 import java.util.Collections;
@@ -134,6 +135,8 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
 
     @Override
     public IResource createResource(IFolder folder) throws CoreException, DBException {
-        return OpenHandler.openNewEditor(UIUtils.getActiveWorkbenchWindow(), null, new StructuredSelection(folder));
+        return SQLEditorHandlerOpenEditor.openNewEditor(
+            new SQLNavigatorContext(),
+            new StructuredSelection(folder));
     }
 }

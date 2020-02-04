@@ -48,9 +48,6 @@ public class DatabaseEditorInputFactory implements IElementFactory
 
     @Override
     public IAdaptable createElement(IMemento memento) {
-        if (lookupEditor) {
-            return null;
-        }
         return new DatabaseLazyEditorInput(memento);
     }
 

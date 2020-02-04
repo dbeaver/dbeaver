@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -691,6 +688,10 @@ public class PostgreUtils {
             return "SEQUENCE";
         } else if (object instanceof PostgreProcedure) {
             return ((PostgreProcedure) object).getProcedureTypeName();
+        } else if (object instanceof PostgreSchema) {
+            return "SCHEMA";
+        } else if (object instanceof PostgreDatabase) {
+            return "DATABASE";
         } else {
             return "TABLE";
         }
@@ -706,6 +707,7 @@ public class PostgreUtils {
 
     public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePrivilegeOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
         if (object.isPersisted() && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+            DBCExecutionContext executionContext = DBUtils.getDefaultContext(object, true);
             actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
 
             // Owner
@@ -725,10 +727,10 @@ public class PostgreUtils {
                     if (permission.hasAllPrivileges(object)) {
                         Collections.addAll(actions,
                                 new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
-                                        .getPersistActions(monitor, options));
+                                        .getPersistActions(monitor, executionContext, options));
                     } else {
                         PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
-                        Collections.addAll(actions, grant.getPersistActions(monitor, options));
+                        Collections.addAll(actions, grant.getPersistActions(monitor, executionContext, options));
                     }
                 }
             }
@@ -741,6 +743,6 @@ public class PostgreUtils {
     }
 
     public static String getRealSchemaName(PostgreDatabase database, String name) {
-        return name.replace("$user", database.getDefaultContext().getActiveUser());
+        return name.replace("$user", database.getMetaContext().getActiveUser());
     }
 }

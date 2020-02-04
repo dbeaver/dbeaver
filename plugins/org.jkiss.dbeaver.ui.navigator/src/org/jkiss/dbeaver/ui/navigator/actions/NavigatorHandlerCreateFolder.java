@@ -18,16 +18,20 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
@@ -42,18 +46,27 @@ public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
             if (!(element instanceof DBNResource)) {
                 return null;
             }
+            DBNResource parentResource = (DBNResource) element;
             Shell activeShell = HandlerUtil.getActiveShell(event);
-            String folderName = EnterNameDialog.chooseName(
-                    activeShell,
-                    UINavigatorMessages.actions_navigator_create_folder_folder_name);
-            if (!CommonUtils.isEmpty(folderName)) {
-                try {
-                    ((DBNResource)element).createNewFolder(folderName);
-                } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError(
+            EnterNameDialog dialog = new EnterNameDialog(activeShell, UINavigatorMessages.actions_navigator_create_folder_folder_name, null) {
+                @Override
+                protected Composite createDialogArea(Composite parent) {
+                    final Composite area = super.createDialogArea(parent);
+                    UIUtils.createLabelText(area, "Container", parentResource.getResourcePath(), SWT.BORDER | SWT.READ_ONLY);
+                    return area;
+                }
+            };
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                String folderName = dialog.getResult();
+                if (!CommonUtils.isEmpty(folderName)) {
+                    try {
+                        parentResource.createNewFolder(folderName);
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError(
                             UINavigatorMessages.actions_navigator_create_folder_error_title,
                             NLS.bind(UINavigatorMessages.actions_navigator_create_folder_error_message, folderName),
                             e);
+                    }
                 }
             }
         }

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -40,7 +41,7 @@ public final class DBStructUtils {
 
     private static final Log log = Log.getLog(DBStructUtils.class);
 
-    public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSTable table, Map<String, Object> options, boolean addComments) throws DBException {
+    public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, Map<String, Object> options, boolean addComments) throws DBException {
         final DBERegistry editorsRegistry = table.getDataSource().getContainer().getPlatform().getEditorsRegistry();
         final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
         if (entityEditor instanceof SQLTableManager) {
@@ -56,7 +57,7 @@ public final class DBStructUtils {
         final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(object.getClass(), SQLObjectEditor.class);
         if (entityEditor != null) {
             SQLObjectEditor.ObjectCreateCommand createCommand = entityEditor.makeCreateCommand(object, options);
-            DBEPersistAction[] ddlActions = createCommand.getPersistActions(monitor, options);
+            DBEPersistAction[] ddlActions = createCommand.getPersistActions(monitor, DBUtils.getDefaultContext(object, true), options);
 
             return SQLUtils.generateScript(object.getDataSource(), ddlActions, addComments);
         }
@@ -64,7 +65,7 @@ public final class DBStructUtils {
         return SQLUtils.generateCommentLine(object.getDataSource(), "Can't generate DDL: object editor not found for " + object.getClass().getName());
     }
 
-    public static String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSTable table, Map<String, Object> options, boolean addComments) throws DBException {
+    public static String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, Map<String, Object> options, boolean addComments) throws DBException {
         if (table instanceof DBPScriptObject) {
             String definitionText = ((DBPScriptObject) table).getObjectDefinitionText(monitor, options);
             if (!CommonUtils.isEmpty(definitionText)) {
@@ -74,7 +75,7 @@ public final class DBStructUtils {
         return generateTableDDL(monitor, table, options, addComments);
     }
 
-    public static <T extends DBSTable> void generateTableListDDL(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder sql, @NotNull Collection<T> tablesOrViews, Map<String, Object> options, boolean addComments) throws DBException {
+    public static <T extends DBSEntity> void generateTableListDDL(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder sql, @NotNull Collection<T> tablesOrViews, Map<String, Object> options, boolean addComments) throws DBException {
         List<T> goodTableList = new ArrayList<>();
         List<T> cycleTableList = new ArrayList<>();
         List<T> viewList = new ArrayList<>();
@@ -125,8 +126,15 @@ public final class DBStructUtils {
     }
 
     private static void addDDLLine(StringBuilder sql, String ddl) {
+        ddl = ddl.trim();
         if (!CommonUtils.isEmpty(ddl)) {
-            sql.append("\n").append(ddl);
+            if (sql.length() > 0) {
+                sql.append("\n\n");
+            }
+            sql.append(ddl);
+            if (!ddl.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
+                sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
+            }
         }
     }
 

@@ -59,8 +59,8 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Navigator utils
@@ -191,8 +191,7 @@ public class NavigatorUtils {
             final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
             final DBNNode selectedNode = getSelectedNode(viewer);
             if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
-                addSetActiveObjectAction(workbenchSite, manager, selectedNode);
-
+                addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
             }
 
             manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
@@ -228,14 +227,14 @@ public class NavigatorUtils {
         return menuMgr;
     }
 
-    private static void addSetActiveObjectAction(IWorkbenchSite workbenchSite, IMenuManager manager, DBNNode selectedNode) {
+    private static void addSetDefaultObjectAction(IWorkbenchSite workbenchSite, IMenuManager manager, DBNNode selectedNode) {
         // Add "Set active object" menu
         boolean addSetActive = false;
         if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
             DBSObject selectedObject = ((DBNDatabaseNode) selectedNode).getObject();
             DBPDataSource dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
             if (dataSource != null) {
-                DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), true);
+                DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), false);
                 DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
                 if (contextDefaults != null) {
                     if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != selectedObject) ||
@@ -248,7 +247,7 @@ public class NavigatorUtils {
         }
 
         if (addSetActive) {
-            manager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_SET_ACTIVE));
+            manager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_SET_DEFAULT));
         }
 
         manager.add(new Separator());

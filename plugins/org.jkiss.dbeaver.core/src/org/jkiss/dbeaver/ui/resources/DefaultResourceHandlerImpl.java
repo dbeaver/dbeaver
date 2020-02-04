@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -81,6 +82,8 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
         if (resource instanceof IFile) {
             IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);
+        } else if (resource instanceof IFolder) {
+            DBWorkbench.getPlatformUI().executeShellProgram(resource.getLocation().toOSString());
         }
     }
 

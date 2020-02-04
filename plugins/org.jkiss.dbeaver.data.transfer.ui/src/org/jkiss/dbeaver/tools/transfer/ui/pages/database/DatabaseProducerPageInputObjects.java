@@ -34,12 +34,11 @@ import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -84,12 +83,6 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
 
             UIUtils.createTableColumn(mappingTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source);
             UIUtils.createTableColumn(mappingTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target);
-
-            for (DataTransferPipe pipe : settings.getDataPipes()) {
-                TableItem item = new TableItem(mappingTable, SWT.NONE);
-                item.setData(pipe);
-                updateItemData(item, pipe);
-            }
 
             mappingTable.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -211,7 +204,15 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
     @Override
     public void activatePage()
     {
-        final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
+        //final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
+        DataTransferSettings settings = getWizard().getSettings();
+
+        mappingTable.removeAll();
+        for (DataTransferPipe pipe : settings.getDataPipes()) {
+            TableItem item = new TableItem(mappingTable, SWT.NONE);
+            item.setData(pipe);
+            updateItemData(item, pipe);
+        }
 
         updatePageCompletion();
     }

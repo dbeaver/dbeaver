@@ -1496,8 +1496,32 @@ public class UIUtils {
         table.addDisposeListener(e -> menuMgr.dispose());
     }
 
+    public static void setControlContextMenu(Control control, IMenuListener menuListener) {
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.addMenuListener(menuListener);
+        menuMgr.setRemoveAllWhenShown(true);
+        control.setMenu(menuMgr.createContextMenu(control));
+        control.addDisposeListener(e -> menuMgr.dispose());
+    }
+
     public static void fillDefaultTableContextMenu(IContributionManager menu, final Table table) {
-        menu.add(new Action("Copy selection") {
+        if (table.getColumnCount() > 1) {
+            menu.add(new Action("Copy " + table.getColumn(0).getText()) {
+                @Override
+                public void run() {
+                    StringBuilder text = new StringBuilder();
+                    for (TableItem item : table.getSelection()) {
+                        if (text.length() > 0) text.append("\n");
+                        text.append(item.getText(0));
+                    }
+                    if (text.length() == 0) {
+                        return;
+                    }
+                    UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
+                }
+            });
+        }
+        menu.add(new Action("Copy All") {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
@@ -1849,14 +1873,21 @@ public class UIUtils {
     }
 
     public static void setContentProposalToolTip(Control control, String toolTip, String ... variables) {
+        control.setToolTipText(getSupportedVariablesTip(toolTip, variables));
+
+    }
+
+    @NotNull
+    public static String getSupportedVariablesTip(String toolTip, String ... variables) {
         StringBuilder varsTip = new StringBuilder();
-        for (String var : variables) {
-            if (varsTip.length() > 0) varsTip.append(",\n");
-            varsTip.append("\t").append(GeneralUtils.variablePattern(var));
+        varsTip.append(toolTip).append(". ").append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
+        for (int i = 0; i < variables.length; i++) {
+            String var = variables[i];
+            if (i > 0) varsTip.append(",\n");
+            varsTip.append("  ").append(GeneralUtils.variablePattern(var));
         }
         varsTip.append("."); //$NON-NLS-1$
-        control.setToolTipText(toolTip + ". " + UIMessages.pref_page_connections_tool_tip_text_allowed_variables + ":\n" + varsTip);
-
+        return varsTip.toString();
     }
 
     public static CoolItem createCoolItem(CoolBar coolBar, Control control) {
@@ -2018,5 +2049,9 @@ public class UIUtils {
         } finally {
             control.setRedraw(true);
         }
+    }
+
+    public static Font getMonospaceFont() {
+        return JFaceResources.getFont(JFaceResources.TEXT_FONT);
     }
 }

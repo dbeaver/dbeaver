@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
@@ -52,7 +52,7 @@ public class StringInlineEditor extends BaseValueEditor<Control> {
         if (inline) {
             final Text editor = new Text(editPlaceholder, SWT.BORDER);
             //editor.setTextLimit(MAX_STRING_LENGTH);
-            //editor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+            //editor.setFont(UIUtils.getMonospaceFont());
             editor.setEditable(!valueController.isReadOnly());
             return editor;
         } else {
@@ -60,7 +60,7 @@ public class StringInlineEditor extends BaseValueEditor<Control> {
                 SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             //editor.setTextLimit(MAX_STRING_LENGTH);
             editor.setEditable(!valueController.isReadOnly());
-            editor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+            editor.setFont(UIUtils.getMonospaceFont());
             editor.setBackground(UIStyles.getDefaultTextBackground());
             editor.setForeground(UIStyles.getDefaultTextForeground());
             StyledTextUtils.fillDefaultStyledTextContextMenu(editor);

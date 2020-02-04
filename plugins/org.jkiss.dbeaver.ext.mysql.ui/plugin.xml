@@ -217,7 +217,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <configurator type="mysql" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
+        <configurator type="mysqlDatabaseBackup" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
+        <configurator type="mysqlDatabaseRestore" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
+        <configurator type="mysqlScriptExecute" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
     </extension>
 
 </plugin>

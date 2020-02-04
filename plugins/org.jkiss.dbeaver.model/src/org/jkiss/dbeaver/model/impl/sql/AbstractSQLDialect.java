@@ -46,6 +46,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public static final String ID = "basic";
 
     private static final String[] DEFAULT_LINE_COMMENTS = { "//"};
+    private static final String[] QUERY_KEYWORDS = new String[] { SQLConstants.KEYWORD_SELECT };
     private static final String[] EXEC_KEYWORDS = new String[0];
     private static final String[] DDL_KEYWORDS = new String[0];
 
@@ -53,6 +54,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
     private static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[0][];
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[0];
+    public static final String[] DML_KEYWORDS = new String[0];
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
@@ -79,6 +81,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public String[][] getStringQuoteStrings() {
         return DEFAULT_STRING_QUOTES;
+    }
+
+    @NotNull
+    @Override
+    public String[] getQueryKeywords() {
+        return QUERY_KEYWORDS;
     }
 
     @NotNull
@@ -368,16 +376,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean supportsOrderBy() {
-        return true;
-    }
-
-    @Override
-    public boolean supportsGroupBy() {
-        return true;
-    }
-
-    @Override
     public boolean supportsCommentQuery() {
         return false;
     }
@@ -473,9 +471,10 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return false;
     }
 
+    @Override
     @NotNull
     public String[] getDMLKeywords() {
-        return new String[0];
+        return DML_KEYWORDS;
     }
 
     @NotNull

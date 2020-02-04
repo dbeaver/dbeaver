@@ -36,8 +36,7 @@ import java.util.List;
 /**
  * GenericEntityContainer
  */
-public abstract class GenericObjectContainer implements GenericStructContainer,DBPRefreshableObject
-{
+public abstract class GenericObjectContainer implements GenericStructContainer, DBPRefreshableObject {
     private static final Log log = Log.getLog(GenericObjectContainer.class);
 
     @NotNull
@@ -45,57 +44,50 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private final TableCache tableCache;
     private final IndexCache indexCache;
     private final ForeignKeysCache foreignKeysCache;
-    private final PrimaryKeysCache primaryKeysCache;
+    private final ConstraintKeysCache constraintKeysCache;
     private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
     protected List<? extends GenericSequence> sequences;
     protected List<? extends GenericSynonym> synonyms;
     private List<? extends GenericTrigger> triggers;
 
-    protected GenericObjectContainer(@NotNull GenericDataSource dataSource)
-    {
+    protected GenericObjectContainer(@NotNull GenericDataSource dataSource) {
         this.dataSource = dataSource;
         this.tableCache = new TableCache(dataSource);
         this.indexCache = new IndexCache(tableCache);
-        this.primaryKeysCache = new PrimaryKeysCache(tableCache);
+        this.constraintKeysCache = new ConstraintKeysCache(tableCache);
         this.foreignKeysCache = new ForeignKeysCache(tableCache);
     }
 
     @Override
-    public final TableCache getTableCache()
-    {
+    public final TableCache getTableCache() {
         return tableCache;
     }
 
     @Override
-    public final IndexCache getIndexCache()
-    {
+    public final IndexCache getIndexCache() {
         return indexCache;
     }
 
     @Override
-    public final PrimaryKeysCache getPrimaryKeysCache()
-    {
-        return primaryKeysCache;
+    public final ConstraintKeysCache getConstraintKeysCache() {
+        return constraintKeysCache;
     }
 
     @Override
-    public final ForeignKeysCache getForeignKeysCache()
-    {
+    public final ForeignKeysCache getForeignKeysCache() {
         return foreignKeysCache;
     }
 
     @NotNull
     @Override
-    public GenericDataSource getDataSource()
-    {
+    public GenericDataSource getDataSource() {
         return dataSource;
     }
 
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return true;
     }
 
@@ -106,7 +98,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             List<GenericView> filtered = new ArrayList<>();
             for (GenericTableBase table : tables) {
                 if (table instanceof GenericView) {
-                    filtered.add((GenericView)table);
+                    filtered.add((GenericView) table);
                 }
             }
             return filtered;
@@ -131,29 +123,25 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
     @Override
     public Collection<GenericTableBase> getTables(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
     public GenericTableBase getTable(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
+        throws DBException {
         return tableCache.getObject(monitor, this, name);
     }
 
     @Override
     public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         cacheIndexes(monitor, true);
         return indexCache.getObjects(monitor, this, null);
     }
 
     private void cacheIndexes(DBRProgressMonitor monitor, boolean readFromTables)
-        throws DBException
-    {
+        throws DBException {
         // Cache indexes (read all tables, all columns and all indexes in this container)
         // This doesn't work for generic datasource because metadata facilities
         // allows index query only by certain table name
@@ -196,8 +184,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                         for (int i = 0; i < newIndexCache.size(); i++) {
                             GenericTableIndex newIndex = newIndexCache.get(i);
                             if (oldIndex.getContainer() == newIndex.getContainer() &&
-                                CommonUtils.equalObjects(oldIndex.getName(), newIndex.getName()))
-                            {
+                                CommonUtils.equalObjects(oldIndex.getName(), newIndex.getName())) {
                                 newIndexCache.set(i, oldIndex);
                             }
                         }
@@ -210,8 +197,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-        throws DBException
-    {
+        throws DBException {
         // Cache tables
         if ((scope & STRUCT_ENTITIES) != 0) {
             monitor.subTask("Cache tables");
@@ -236,10 +222,10 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             // Try to read all FKs
             try {
                 monitor.subTask("Cache primary keys");
-                Collection<GenericPrimaryKey> objects = primaryKeysCache.getObjects(monitor, this, null);
+                Collection<GenericUniqueKey> objects = constraintKeysCache.getObjects(monitor, this, null);
                 if (CommonUtils.isEmpty(objects)) {
                     // Nothing was read, Maybe driver doesn't support mass keys reading
-                    primaryKeysCache.clearCache();
+                    constraintKeysCache.clearCache();
                 }
             } catch (Exception e) {
                 // Failed - seems to be unsupported feature
@@ -271,8 +257,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
     @Override
     public synchronized Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (procedures == null) {
             loadProcedures(monitor);
         }
@@ -280,8 +265,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     public GenericPackage getPackage(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
+        throws DBException {
         return DBUtils.findObject(getPackages(monitor), name);
     }
 
@@ -291,8 +275,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
     @Override
     public synchronized List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (procedures == null) {
             loadProcedures(monitor);
         }
@@ -300,8 +283,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException
-    {
+    public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
         for (GenericProcedure procedure : CommonUtils.safeCollection(getProcedures(monitor))) {
             if (uniqueName.equals(procedure.getUniqueName())) {
                 return procedure;
@@ -312,8 +294,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
     @Override
     public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
+        throws DBException {
         return DBUtils.findObjects(getProcedures(monitor), name);
     }
 
@@ -385,25 +366,22 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return getTables(monitor);
     }
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
-        throws DBException
-    {
+        throws DBException {
         return getTable(monitor, childName);
     }
 
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         this.tableCache.clearCache();
         this.indexCache.clearCache();
-        this.primaryKeysCache.clearCache();
+        this.constraintKeysCache.clearCache();
         this.foreignKeysCache.clearCache();
         this.packages = null;
         this.procedures = null;
@@ -412,14 +390,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         return this;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return getName() == null ? "<NONE>" : getName();
     }
 
     private synchronized void loadProcedures(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         dataSource.getMetaModel().loadProcedures(monitor, this);
 
         // Order procedures
@@ -459,8 +435,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     private synchronized void loadSequences(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         sequences = dataSource.getMetaModel().loadSequences(monitor, this);
 
         // Order procedures
@@ -472,8 +447,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     private synchronized void loadSynonyms(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         synonyms = dataSource.getMetaModel().loadSynonyms(monitor, this);
 
         // Order procedures
@@ -485,8 +459,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     private synchronized List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         List<? extends GenericTrigger> triggers = dataSource.getMetaModel().loadTriggers(monitor, this, null);
 
         // Order procedures

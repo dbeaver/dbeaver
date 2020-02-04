@@ -26,13 +26,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.progress.UIJob;
@@ -45,9 +45,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils.ResourceInfo;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -60,31 +62,61 @@ import java.util.Locale;
 /**
  * Script selector panel (shell)
  */
-public class ScriptSelectorPanel {
+public class ScriptSelectorPanel extends AbstractPopupPanel {
 
     private static final Log log = Log.getLog(ScriptSelectorPanel.class);
-    public static final String CONFIG_BOUNDS_PARAM = "bounds";
+
+    private static final String DIALOG_ID = "DBeaver.ScriptSelectorPopup";
 
     private final IWorkbenchWindow workbenchWindow;
-    private final Shell popup;
-    private final Text patternText;
-    private final TreeViewer scriptViewer;
-    private final Button newButton;
+    @NotNull
+    private final SQLNavigatorContext navigatorContext;
+    @NotNull
+    private final IFolder rootFolder;
+    @NotNull
+    private final List<ResourceInfo> scriptFiles;
+
+    private Text patternText;
+    private TreeViewer scriptViewer;
+
     private volatile FilterJob filterJob;
 
-    public ScriptSelectorPanel(@NotNull final IWorkbenchWindow workbenchWindow, @NotNull final DBPDataSourceContainer[] containers, @NotNull final IFolder rootFolder) {
-        this.workbenchWindow = workbenchWindow;
-        Shell parent = this.workbenchWindow.getShell();
+    private ScriptSelectorPanel(
+        @NotNull final IWorkbenchWindow workbenchWindow,
+        @NotNull final SQLNavigatorContext navigatorContext,
+        @NotNull final IFolder rootFolder,
+        @NotNull List<ResourceInfo> scriptFiles) {
+        super(workbenchWindow.getShell(),
+            navigatorContext.getDataSourceContainer() == null ?
+                "Choose SQL script" :
+                "Choose SQL script for '" + navigatorContext.getDataSourceContainer().getName() + "'");
 
-        popup = new Shell(parent, SWT.RESIZE | SWT.TITLE | SWT.CLOSE);
-        if (containers.length == 1) {
-            popup.setText("Choose SQL script for '" + containers[0].getName() + "'");
-            popup.setImage(DBeaverIcons.getImage(containers[0].getDriver().getIcon()));
-        } else {
-            popup.setText("Choose SQL script");
-        }
-        popup.setLayout(new FillLayout());
-        Rectangle bounds = new Rectangle(100, 100, 500, 200);
+        this.workbenchWindow = workbenchWindow;
+        this.navigatorContext = navigatorContext;
+        this.rootFolder = rootFolder;
+        this.scriptFiles = scriptFiles;
+    }
+
+    @Override
+    protected boolean isShowTitle() {
+        return true;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getDialogSettings(DIALOG_ID);
+    }
+
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+    }
+
+    @Override
+    protected Control createDialogArea(Composite parent) {
+        Composite composite = (Composite) super.createDialogArea(parent);
+
+        /*Rectangle bounds = new Rectangle(100, 100, 500, 200);
         final String boundsStr = getBoundsSettings().get(CONFIG_BOUNDS_PARAM);
         if (boundsStr != null && !boundsStr.isEmpty()) {
             final String[] bc = boundsStr.split(",");
@@ -97,37 +129,18 @@ public class ScriptSelectorPanel {
             } catch (NumberFormatException e) {
                 log.warn(e);
             }
-        }
-        // Check that panel fits display (#6087)
-        Rectangle displayBounds = workbenchWindow.getShell().getDisplay().getBounds();
-        if (bounds.x + bounds.width > displayBounds.width) {
-            bounds.width = displayBounds.width - bounds.x;
-            if (bounds.width < 100) {
-                bounds.width = 100;
-            }
-        }
-        popup.setBounds(bounds);
-
-        Composite composite = new Composite(popup, SWT.NONE);
-
-        final GridLayout gl = new GridLayout(2, false);
-        //gl.marginHeight = 0;
-        //gl.marginWidth = 0;
-        composite.setLayout(gl);
+        }*/
 
         patternText = new Text(composite, SWT.NONE);
         patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         //patternText.setForeground(fg);
         //patternText.setBackground(bg);
-        patternText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                if (filterJob != null) {
-                    return;
-                }
-                filterJob = new FilterJob();
-                filterJob.schedule(250);
+        patternText.addModifyListener(e -> {
+            if (filterJob != null) {
+                return;
             }
+            filterJob = new FilterJob();
+            filterJob.schedule(250);
         });
         final Color fg = patternText.getForeground();//parent.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND);
         final Color bg = patternText.getBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
@@ -135,23 +148,22 @@ public class ScriptSelectorPanel {
         composite.setForeground(fg);
         composite.setBackground(bg);
 
-        newButton = new Button(composite, SWT.PUSH | SWT.FLAT);
+        Button newButton = new Button(composite, SWT.PUSH | SWT.FLAT);
         newButton.setText("&New Script");
         newButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                popup.dispose();
                 IFile scriptFile;
                 try {
                     scriptFile = SQLEditorUtils.createNewScript(
                         DBWorkbench.getPlatform().getWorkspace().getProject(rootFolder.getProject()),
                         rootFolder,
-                        containers.length == 0 ?
-                            null : containers[0]);
-                    OpenHandler.openResource(scriptFile, workbenchWindow);
+                        navigatorContext);
+                    SQLEditorHandlerOpenEditor.openResource(scriptFile, navigatorContext);
                 } catch (CoreException ex) {
                     log.error(ex);
                 }
+                cancelPressed();
             }
         });
 
@@ -160,6 +172,8 @@ public class ScriptSelectorPanel {
         Tree scriptTree = new Tree(composite, SWT.SINGLE | SWT.FULL_SELECTION);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
+        gd.widthHint = 500;
+        gd.heightHint = 200;
         scriptTree.setLayoutData(gd);
         scriptTree.setForeground(fg);
         scriptTree.setBackground(bg);
@@ -243,7 +257,7 @@ public class ScriptSelectorPanel {
 
             @Override
             public Color getForeground(Object element) {
-                return popup.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
+                return getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
             }
 
             @Override
@@ -268,27 +282,22 @@ public class ScriptSelectorPanel {
                 if (files.isEmpty()) {
                     return;
                 }
-                popup.dispose();
+                cancelPressed();
                 for (ResourceInfo ri : files) {
-                    OpenHandler.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri);
+                    SQLEditorHandlerOpenEditor.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri, navigatorContext);
                 }
             }
         });
 
-        scriptTree.addListener(SWT.PaintItem, new Listener() {
-            public void handleEvent(Event event) {
-                final TreeItem item = (TreeItem) event.item;
-                final ResourceInfo ri = (ResourceInfo) item.getData();
-                if (ri != null && !ri.isDirectory() && CommonUtils.isEmpty(item.getText(2))) {
-                    UIUtils.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!item.isDisposed()) {
-                                item.setText(2, CommonUtils.getSingleLineString(CommonUtils.notEmpty(ri.getDescription())));
-                            }
-                        }
-                    });
-                }
+        scriptTree.addListener(SWT.PaintItem, event -> {
+            final TreeItem item = (TreeItem) event.item;
+            final ResourceInfo ri = (ResourceInfo) item.getData();
+            if (ri != null && !ri.isDirectory() && CommonUtils.isEmpty(item.getText(2))) {
+                UIUtils.asyncExec(() -> {
+                    if (!item.isDisposed()) {
+                        item.setText(2, CommonUtils.getSingleLineString(CommonUtils.notEmpty(ri.getDescription())));
+                    }
+                });
             }
         });
         this.patternText.addKeyListener(new KeyAdapter() {
@@ -306,35 +315,10 @@ public class ScriptSelectorPanel {
             }
         });
 
-        final Listener focusFilter = new Listener() {
-            public void handleEvent(Event event) {
-                if (event.widget != scriptViewer.getTree() && event.widget != patternText && event.widget != newButton) {
-                    popup.dispose();
-                }
-            }
-        };
+        closeOnFocusLost(patternText, scriptViewer.getTree(), newButton);
 
-        popup.getDisplay().addFilter(SWT.FocusIn, focusFilter);
-        popup.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                final Rectangle bounds = popup.getBounds();
-                getBoundsSettings().put(CONFIG_BOUNDS_PARAM, bounds.x + "," + bounds.y + "," + bounds.width + "," + bounds.height);
-                popup.getDisplay().removeFilter(SWT.FocusIn, focusFilter);
-            }
-        });
-    }
-
-    IDialogSettings getBoundsSettings() {
-        return UIUtils.getDialogSettings("DBeaver.ScriptSelectorPanel");
-    }
-
-    public void showTree(List<ResourceInfo> scriptFiles) {
-        // Fill script list
-        popup.layout();
-        popup.setVisible(true);
-
-        loadScriptTree(scriptFiles);
+        scriptViewer.setInput(scriptFiles);
+        UIUtils.expandAll(scriptViewer);
 
         final Tree tree = scriptViewer.getTree();
         final TreeColumn[] columns = tree.getColumns();
@@ -344,17 +328,25 @@ public class ScriptSelectorPanel {
         columns[2].setWidth(200 * 8);
 
         patternText.setFocus();
+
+        return composite;
     }
 
-    private void loadScriptTree(List<ResourceInfo> scriptFiles) {
-        scriptViewer.setInput(scriptFiles);
-        UIUtils.expandAll(scriptViewer);
+    protected void createButtonsForButtonBar(Composite parent)
+    {
+        // No buttons
+    }
+
+    public static void showTree(IWorkbenchWindow workbenchWindow, SQLNavigatorContext editorContext, IFolder rootFolder, List<ResourceInfo> scriptFiles) {
+        ScriptSelectorPanel selectorPanel = new ScriptSelectorPanel(workbenchWindow, editorContext, rootFolder, scriptFiles);
+        selectorPanel.setModeless(true);
+        selectorPanel.open();
     }
 
     private class ScriptFilter extends ViewerFilter {
         private final String pattern;
 
-        public ScriptFilter() {
+        ScriptFilter() {
             pattern = patternText.getText().toLowerCase(Locale.ENGLISH);
         }
 
@@ -385,7 +377,7 @@ public class ScriptSelectorPanel {
     }
 
     private class FilterJob extends UIJob {
-        public FilterJob() {
+        FilterJob() {
             super("Filter scripts");
         }
         @Override

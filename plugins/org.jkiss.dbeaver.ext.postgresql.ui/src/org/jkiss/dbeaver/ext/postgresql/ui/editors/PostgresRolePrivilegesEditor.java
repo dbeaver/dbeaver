@@ -247,6 +247,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             return;
         }
 
+        PostgrePrivilegeOwner databaseObject = getDatabaseObject();
+
         for (int i = 0; i < currentObjects.length; i++) {
             DBSObject currentObject = currentObjects[i];
             PostgrePrivilege permission = currentPermissions[i];
@@ -271,31 +273,42 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                         objectName = permissionsOwner.getName();
                     }
                     permission = new PostgreRolePrivilege(
-                        getDatabaseObject(),
+                        databaseObject,
                         kind,
                         permissionsOwner.getSchema().getName(),
                         objectName,
                         Collections.emptyList());
                 } else {
-                    permission = new PostgreObjectPrivilege(
-                        getDatabaseObject(),
+                    String currentUser = databaseObject.getDataSource().getContainer().getActualConnectionConfiguration().getUserName();
+                    PostgrePrivilegeGrant privGrant = new PostgrePrivilegeGrant(
+                        currentUser,
                         currentObject.getName(),
-                        Collections.emptyList());
+                        databaseObject.getDatabase().getName(),
+                        databaseObject.getSchema().getName(),
+                        databaseObject.getName(),
+                        privilegeType,
+                        false,
+                        false);
+                    permission = new PostgreObjectPrivilege(
+                        databaseObject,
+                        currentObject.getName(),
+                        Collections.singletonList(privGrant));
                 }
                 // Add to map
+                currentPermissions[i] = permission;
                 permissionMap.put(permission.getName(), permission);
             } else if (privilegeType != null) {
                 // Check for privilege was already granted for this object
                 boolean hasPriv = permission.getPermission(privilegeType) != PostgrePrivilege.NONE;
-                if (grant == hasPriv) {
-                    continue;
+                if (grant != hasPriv && !grant) {
+                    permissionMap.remove(permission.getName());
                 }
             }
 
             // Add command
             addChangeCommand(
                 new PostgreCommandGrantPrivilege(
-                    getDatabaseObject(),
+                    databaseObject,
                     grant,
                     permission,
                     privilegeType == null ? null : new PostgrePrivilegeType[] { privilegeType }),

@@ -338,8 +338,8 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    public PrimaryKeysCache getPrimaryKeysCache() {
-        return structureContainer.getPrimaryKeysCache();
+    public ConstraintKeysCache getConstraintKeysCache() {
+        return structureContainer.getConstraintKeysCache();
     }
 
     @Override
@@ -433,17 +433,18 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
         boolean omitCatalog = isOmitCatalog();
-        Object omitTypeCache = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE);
-        if (omitTypeCache == null || !CommonUtils.toBoolean(omitTypeCache)) {
+        boolean omitTypeCache = CommonUtils.toBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE));
+        if (!omitTypeCache) {
             // Cache data types
             try {
                 dataTypeCache.getAllObjects(monitor, this);
             } catch (Exception e) {
                 log.warn("Can't fetch database data types", e);
             }
-        } else {
-            // Use basic data types
-            dataTypeCache.fillStandardTypes(this);
+            if (CommonUtils.isEmpty(dataTypeCache.getCachedObjects())) {
+                // Use basic data types
+                dataTypeCache.fillStandardTypes(this);
+            }
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read generic metadata")) {
             // Read metadata
@@ -791,6 +792,21 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             log.error(e);
             return null;
         }
+    }
+
+    GenericCatalog getDefaultCatalog() {
+        return null;
+    }
+
+    GenericSchema getDefaultSchema() {
+        if (schemas != null) {
+            for (GenericSchema schema : schemas) {
+                if (schema.isVirtual()) {
+                    return schema;
+                }
+            }
+        }
+        return null;
     }
 
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRCreator;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
 
@@ -67,6 +68,7 @@ public interface UIServiceSQL {
      */
     Object openSQLConsole(
         @NotNull DBPDataSourceContainer dataSourceContainer,
+        @Nullable DBCExecutionContext executionContext,
         String name,
         String sqlText);
 
@@ -84,9 +86,9 @@ public interface UIServiceSQL {
 
     void disposeSQLPanel(Object panelObject);
 
-    Object openNewScript(DBPDataSourceContainer dataSource);
+    Object openNewScript(DBSObject forObject);
 
-    Object openRecentScript(DBPDataSourceContainer dataSource);
+    Object openRecentScript(DBSObject forObject);
 
     void openResource(IResource element);
 

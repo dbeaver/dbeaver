@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.data;
 
+import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -25,9 +26,14 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 /**
  * Data container for single SQL query.
@@ -57,6 +63,10 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         return DATA_SELECT;
     }
 
+    public SQLScriptContext getScriptContext() {
+        return scriptContext;
+    }
+
     @NotNull
     @Override
     public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
@@ -75,6 +85,12 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         }
 
         if (scriptContext != null) {
+            SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+            syntaxManager.init(dataSource);
+            SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+            ruleManager.loadRules(dataSource, false);
+            SQLParserContext parserContext = new SQLParserContext(this, syntaxManager, ruleManager, new Document(query.getText()));
+            sqlQuery.setParameters(SQLScriptParser.parseParameters(parserContext, sqlQuery.getOffset(), sqlQuery.getLength()));
             if (!scriptContext.fillQueryParameters(sqlQuery, CommonUtils.isBitSet(flags, DBSDataContainer.FLAG_REFRESH))) {
                 // User canceled
                 return statistics;
@@ -223,6 +239,11 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
     @Override
     public SQLScriptElement getQuery() {
         return query;
+    }
+
+    @Override
+    public Map<String, Object> getQueryParameters() {
+        return scriptContext.getAllParameters();
     }
 
     @Nullable

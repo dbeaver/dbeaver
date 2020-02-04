@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -46,6 +47,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     public static final String PAGE_NAME = ConnectionPageShellCommands.class.getSimpleName();
 
     private static final String CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title = null;
+    private DataSourceDescriptor dataSource;
     private Text commandText;
     private Button showProcessCheck;
     private Button waitFinishCheck;
@@ -61,6 +63,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     protected ConnectionPageShellCommands(DataSourceDescriptor dataSource)
     {
         super(PAGE_NAME);
+        this.dataSource = dataSource;
         setTitle(CoreMessages.dialog_connection_edit_wizard_shell_cmd);
         setDescription(CoreMessages.dialog_connection_events_title);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.EVENT));
@@ -158,7 +161,12 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 });
             }
 
-            new VariablesHintLabel(detailsGroup, DataSourceDescriptor.CONNECT_VARIABLES);
+            VariablesHintLabel variablesHintLabel = new VariablesHintLabel(
+                detailsGroup,
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
+                DataSourceDescriptor.CONNECT_VARIABLES);
+            variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource, dataSource.getConnectionConfiguration()));
         }
 
         selectEventType(null);

@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
@@ -33,32 +33,34 @@ import java.util.Map;
 /**
  * Generic constraint manager
  */
-public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimaryKey, GenericTableBase> {
+public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUniqueKey, GenericTableBase> {
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, GenericPrimaryKey> getObjectsCache(GenericPrimaryKey object)
+    public DBSObjectCache<? extends DBSObject, GenericUniqueKey> getObjectsCache(GenericUniqueKey object)
     {
-        return object.getParentObject().getContainer().getPrimaryKeysCache();
+        return object.getParentObject().getContainer().getConstraintKeysCache();
     }
 
     @Override
     public boolean canCreateObject(Object container) {
-        return container instanceof GenericTable && ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableConstraint();
+        return container instanceof GenericTable &&
+            (!((GenericTable) container).isPersisted() ||
+            ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableConstraint());
     }
 
     @Override
-    public boolean canDeleteObject(GenericPrimaryKey object) {
-        return object.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+    public boolean canDeleteObject(GenericUniqueKey object) {
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableConstraint();
     }
 
     @Override
-    protected GenericPrimaryKey createDatabaseObject(
+    protected GenericUniqueKey createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
         GenericTableBase tableBase = (GenericTableBase)container;
-        return new GenericPrimaryKey(
+        return new GenericUniqueKey(
             tableBase,
             null,
             null,

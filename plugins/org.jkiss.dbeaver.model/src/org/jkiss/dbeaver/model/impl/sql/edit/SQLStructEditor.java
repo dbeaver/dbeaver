@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.sql.edit;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -34,7 +35,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     implements DBEStructEditor<OBJECT_TYPE>
 {
 
-    protected abstract void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException;
+    protected abstract void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException;
 
     @Override
     public StructCreateCommand makeCreateCommand(OBJECT_TYPE object, Map<String, Object> options)
@@ -107,7 +108,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         return null;
     }
 
-    protected class StructCreateCommand extends ObjectCreateCommand
+    public class StructCreateCommand extends ObjectCreateCommand
         implements DBECommandAggregator<OBJECT_TYPE> {
 
         private final Map<DBPObject, NestedObjectCommand> objectCommands = new LinkedHashMap<>();
@@ -142,10 +143,10 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addStructObjectCreateActions(monitor, actions, this, options);
-            addObjectExtraActions(monitor, actions, this, options);
+            addStructObjectCreateActions(monitor, executionContext, actions, this, options);
+            addObjectExtraActions(monitor, executionContext, actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
     }

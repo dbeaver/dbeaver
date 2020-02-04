@@ -36,6 +36,7 @@
         </command>
         <command id="org.jkiss.dbeaver.task.edit" name="%command.org.jkiss.dbeaver.task.edit.name" description="%command.org.jkiss.dbeaver.task.edit.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.task.create" name="%command.org.jkiss.dbeaver.task.create.name" description="%command.org.jkiss.dbeaver.task.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.task.copy" name="%command.org.jkiss.dbeaver.task.copy.name" description="%command.org.jkiss.dbeaver.task.copy.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.task.group" name="%command.org.jkiss.dbeaver.task.group.name" description="%command.org.jkiss.dbeaver.task.group.description" categoryId="org.jkiss.dbeaver.core.navigator">
             <commandParameter id="group" name="Group by" optional="false"/>
         </command>
@@ -68,7 +69,7 @@
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
-                    <count value="+"/>
+                    <count value="1"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -76,7 +77,7 @@
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
-                    <count value="+"/>
+                    <count value="1"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -84,11 +85,19 @@
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
-                    <count value="+"/>
+                    <count value="1"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.task.create" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerCreate"/>
+        <handler commandId="org.jkiss.dbeaver.task.copy" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerCopy">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerRefresh">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
         </handler>
@@ -103,14 +112,14 @@
             <command commandId="org.jkiss.dbeaver.core.procedure.execute">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <!--<command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection">
+            <command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection">
                 <visibleWhen checkEnabled="true"/>
-            </command>-->
+            </command>
             <command commandId="org.jkiss.dbeaver.core.sql.editor.forSelection">
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <separator name="compare" visible="false"/>
+            <separator name="compare" visible="true"/>
             <separator name="export_import" visible="false"/>
             <separator name="generate" visible="false"/>
 

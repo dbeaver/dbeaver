@@ -144,8 +144,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             ((GridData) layoutData).heightHint = 200;
         }
 
-        Composite linksComposite = UIUtils.createPlaceholder(ph, 2, 2);
+        Composite linksComposite = UIUtils.createComposite(ph, 3);
         linksComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        propsControl.createPropertiesToolBar(linksComposite);
 
         {
             CLabel infoLabel = UIUtils.createInfoLabel(linksComposite, UIConnectionMessages.dialog_setting_connection_driver_properties_advanced);
@@ -171,7 +173,6 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             }
             netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
-
 
         setControl(ph);
     }

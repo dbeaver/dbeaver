@@ -85,6 +85,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_status_row;
     public static String controls_resultset_viewer_status_rows;
     public static String controls_resultset_viewer_status_rows_fetched;
+    public static String controls_resultset_viewer_status_rows_updated;
     public static String controls_resultset_viewer_status_rows_size;
     public static String controls_resultset_viewer_value;
     public static String controls_resultset_viewer_calculate_row_count;
@@ -246,6 +247,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_show_attr_ordering_tip;
     public static String pref_page_database_resultsets_label_use_smooth_scrolling;
     public static String pref_page_database_resultsets_label_use_smooth_scrolling_tip;
+    public static String pref_page_database_resultsets_label_show_boolean_as_checkbox;
+    public static String pref_page_database_resultsets_label_show_boolean_as_checkbox_tip;
     public static String pref_page_database_resultsets_label_double_click_behavior;
     public static String pref_page_database_resultsets_group_plain_text;
     public static String pref_page_database_resultsets_label_value_format;

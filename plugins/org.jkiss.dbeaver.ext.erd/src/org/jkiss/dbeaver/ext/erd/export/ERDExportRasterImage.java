@@ -76,12 +76,12 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                         figure.paint(graphics);
                         ImageLoader imageLoader = new ImageLoader();
                         imageLoader.data = new ImageData[1];
-                        if (imageType != SWT.IMAGE_JPEG) {
+                        if (imageType == SWT.IMAGE_GIF) {
                             // Convert to 8bit color
                             imageLoader.data[0] = ImageUtils.makeWebImageData(image);
                         } else {
-                            // Use maximum colors for JPEG
-                            imageLoader.data[0] = image.getImageData();
+                            // Use maximum colors for JPEG, PNG
+                            imageLoader.data[0] = ImageUtils.getImageDataAtCurrentZoom(image);
                         }
                         imageLoader.save(fos, imageType);
                     } finally {

@@ -37,7 +37,7 @@
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
                                     <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
@@ -666,12 +666,13 @@
                     iconBig="icons/phoenix_icon_big.png"
                     class="org.apache.phoenix.jdbc.PhoenixDriver"
                     sampleURL="jdbc:phoenix:{host}[:{port}]"
+                    defaultPort="2181"
                     webURL="http://phoenix.apache.org/"
-                    description="Driver for Apache Phoenix HBase Database"
+                    description="Thin driver for Apache Phoenix HBase Database"
                     category="Hadoop"
                     categories="hadoop">
                     <parameter name="omit-type-cache" value="true"/>
-                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-core:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE" ignore-dependencies="true"/>
                 </driver>
                 <driver
                     id="gemfire_xd"
@@ -900,6 +901,7 @@
                     categories="graph">
                     <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
                 </driver>
 
                 <!-- PrestoDB -->
@@ -1391,7 +1393,7 @@
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericViewManager"          objectType="org.jkiss.dbeaver.ext.generic.model.GenericView"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager"   objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager"     objectType="org.jkiss.dbeaver.ext.generic.model.GenericProcedure"/>

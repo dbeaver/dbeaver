@@ -52,10 +52,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                     doExecute(monitor, task, settings, log);
                 } catch (Exception e) {
                     error = e;
-                    throw new InvocationTargetException(e);
                 } finally {
                     listener.taskFinished(settings, error);
-
                     Log.setLogWriter(null);
                 }
 
@@ -63,7 +61,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 monitor.done();
             });
         } catch (InvocationTargetException e) {
-            throw new DBException("Error dumping database", e.getTargetException());
+            throw new DBException("Error executing native tool", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
@@ -79,10 +77,6 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
     protected boolean needsModelRefresh() {
         return true;
-    }
-
-    public boolean isVerbose() {
-        return false;
     }
 
     private void validateClientHome(DBRProgressMonitor monitor, SETTINGS settings) throws DBCException {
@@ -471,6 +465,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 logWriter.write(cmdString.toString());
 
                 logWriter.write("Task '" + task.getName() + "' started at " + new Date() + lf);
+                logWriter.flush();
 
                 InputStream in = input;
                 try (Reader reader = new InputStreamReader(in, GeneralUtils.getDefaultConsoleEncoding())) {
@@ -500,6 +495,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             } finally {
                 try {
                     logWriter.write("Task '" + task.getName() + "' finished at " + new Date() + lf);
+                    logWriter.flush();
                 } catch (IOException e) {
                     // ignore
                 }

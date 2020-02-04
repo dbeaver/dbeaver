@@ -27,7 +27,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.SimpleDatabaseEditorContext;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -96,7 +96,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         }
 	}
 
-    private int importScripts(DBRProgressMonitor monitor, ScriptsImportData importData) throws IOException, DBException, CoreException
+    private int importScripts(DBRProgressMonitor monitor, ScriptsImportData importData) throws IOException, CoreException
     {
         List<Pattern> masks = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(importData.getFileMasks(), ",; "); //$NON-NLS-1$
@@ -160,7 +160,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             }
             // Set datasource
             if (importData.getDataSourceContainer() != null) {
-                EditorUtils.setFileDataSource(targetFile, importData.getDataSourceContainer());
+                EditorUtils.setFileDataSource(targetFile, new SimpleDatabaseEditorContext(importData.getDataSourceContainer()));
             }
             // Done
             monitor.worked(1);
@@ -200,19 +200,18 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         private final ScriptsImportData importData;
         private int importedCount;
 
-        public ScriptsImporter(ScriptsImportData importData)
+        ScriptsImporter(ScriptsImportData importData)
         {
             this.importData = importData;
         }
 
-        public int getImportedCount()
+        int getImportedCount()
         {
             return importedCount;
         }
 
         @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
             try {
                 importedCount = importScripts(monitor, importData);
             } catch (Exception e) {

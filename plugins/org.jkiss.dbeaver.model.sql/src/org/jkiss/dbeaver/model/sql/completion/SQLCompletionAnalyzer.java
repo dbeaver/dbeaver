@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.text.TextUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -87,12 +88,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         request.setQueryType(null);
         SQLWordPartDetector wordDetector = request.getWordDetector();
         SQLSyntaxManager syntaxManager = request.getContext().getSyntaxManager();
+        String prevKeyWord = request.getWordDetector().getPrevKeyWord();
         {
-            final String prevKeyWord = request.getWordDetector().getPrevKeyWord();
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
                     // TODO: its an ugly hack. Need a better way
-                    if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
+                    if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
+                        request.setQueryType(null);
+                    } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
                         !CommonUtils.isEmpty(request.getWordDetector().getPrevWords()) &&
                         ("(".equals(request.getWordDetector().getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
                     {
@@ -182,7 +185,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     rootObject = getTableFromAlias(sc, tableAlias);
                     if (rootObject == null && tableAlias != null) {
                         // Maybe alias ss a table name
-                        SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(request.getContext().getDataSource());
+                        SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
                         String[] allNames = SQLUtils.splitFullIdentifier(
                             tableAlias,
                             sqlDialect.getCatalogSeparator(),
@@ -230,12 +233,45 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         // Final filtering
-        if (!searchFinished && !CommonUtils.isEmpty(request.getWordPart()))  {
-            // Keyword assist
-            List<String> matchedKeywords = syntaxManager.getDialect().getMatchedKeywords(request.getWordPart());
-            if (!request.isSimpleMode()) {
-                // Sort using fuzzy match
-                matchedKeywords.sort(Comparator.comparingInt(o -> TextUtils.fuzzyScore(o, request.getWordPart())));
+        if (!searchFinished) {
+            List<String> matchedKeywords = Collections.emptyList();
+            Set<String> allowedKeywords = null;
+
+            SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
+            if (CommonUtils.isEmpty(prevKeyWord)) {
+                allowedKeywords = new HashSet<>();
+                Collections.addAll(allowedKeywords, sqlDialect.getQueryKeywords());
+                Collections.addAll(allowedKeywords, sqlDialect.getDMLKeywords());
+                Collections.addAll(allowedKeywords, sqlDialect.getDDLKeywords());
+                Collections.addAll(allowedKeywords, sqlDialect.getExecuteKeywords());
+            } else if (ArrayUtils.contains(sqlDialect.getQueryKeywords(), prevKeyWord.toUpperCase(Locale.ENGLISH))) {
+                // SELECT ..
+                // Limit with FROM if we already have some expression
+                String delimiter = request.getWordDetector().getPrevDelimiter();
+                if (!CommonUtils.isEmpty(wordDetector.getPrevWords()) && (CommonUtils.isEmpty(delimiter) || delimiter.endsWith(")"))) {
+                    // last expression ends with space or with ")"
+                    allowedKeywords = new HashSet<>();
+                    allowedKeywords.add(SQLConstants.KEYWORD_FROM);
+                    if (CommonUtils.isEmpty(request.getWordPart())) {
+                        matchedKeywords = Arrays.asList(SQLConstants.KEYWORD_FROM);
+                    }
+                }
+            } else if (sqlDialect.isEntityQueryWord(prevKeyWord)) {
+                allowedKeywords = new HashSet<>();
+                if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
+                    allowedKeywords.add(SQLConstants.KEYWORD_FROM);
+                } else {
+                    allowedKeywords.add(SQLConstants.KEYWORD_WHERE);
+                }
+            }
+
+            if (!CommonUtils.isEmpty(request.getWordPart())) {
+                // Keyword assist
+                matchedKeywords = syntaxManager.getDialect().getMatchedKeywords(request.getWordPart());
+                if (!request.isSimpleMode()) {
+                    // Sort using fuzzy match
+                    matchedKeywords.sort(Comparator.comparingInt(o -> TextUtils.fuzzyScore(o, request.getWordPart())));
+                }
             }
             for (String keyWord : matchedKeywords) {
                 DBPKeywordType keywordType = syntaxManager.getDialect().getKeywordType(keyWord);
@@ -244,6 +280,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         continue;
                     }
                     if (request.getQueryType() == SQLCompletionRequest.QueryType.COLUMN && !(keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.KEYWORD)) {
+                        continue;
+                    }
+                    if (allowedKeywords != null && !allowedKeywords.contains(keyWord)) {
                         continue;
                     }
                     proposals.add(
@@ -341,7 +380,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (wordPart.indexOf(request.getContext().getSyntaxManager().getStructSeparator()) != -1 || wordPart.equals(ALL_COLUMNS_PATTERN)) {
                 return;
             }
-            SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(request.getContext().getDataSource());
+            SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
             String tableNamePattern = getTableNamePattern(sqlDialect);
             String tableAliasPattern = getTableAliasPattern("(" + wordPart + "[a-z]*)", tableNamePattern);
             Pattern rp = Pattern.compile(tableAliasPattern);
@@ -354,30 +393,43 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     continue;
                 }
 
-                proposals.add(
-                    0,
-                    SQLCompletionAnalyzer.createCompletionProposal(
-                        request,
-                        tableName,
-                        tableName,
-                        DBPKeywordType.OTHER,
-                        null,
-                        false,
-                        null)
-                );
-                proposals.add(
-                    0,
-                    SQLCompletionAnalyzer.createCompletionProposal(
-                        request,
-                        tableAlias,
-                        tableAlias,
-                        DBPKeywordType.OTHER,
-                        null,
-                        false,
-                        null)
-                );
+                if (!hasProposal(proposals, tableName)) {
+                    proposals.add(
+                        0,
+                        SQLCompletionAnalyzer.createCompletionProposal(
+                            request,
+                            tableName,
+                            tableName,
+                            DBPKeywordType.OTHER,
+                            null,
+                            false,
+                            null)
+                    );
+                }
+                if (!CommonUtils.isEmpty(tableAlias) && !hasProposal(proposals, tableAlias)) {
+                    proposals.add(
+                        0,
+                        SQLCompletionAnalyzer.createCompletionProposal(
+                            request,
+                            tableAlias,
+                            tableAlias,
+                            DBPKeywordType.OTHER,
+                            null,
+                            false,
+                            null)
+                    );
+                }
             }
         }
+    }
+
+    private static boolean hasProposal(List<SQLCompletionProposalBase> proposals, String displayName) {
+        for (SQLCompletionProposalBase proposal : proposals) {
+            if (displayName.equals(proposal.getDisplayString())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean makeJoinColumnProposals(DBSObjectContainer sc, DBSEntity leftTable) {
@@ -390,7 +442,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         if (!CommonUtils.isEmpty(prevWords)) {
             DBPDataSource dataSource = request.getContext().getDataSource();
-            SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
             String rightTableName = prevWords.get(0);
             String[] allNames = SQLUtils.splitFullIdentifier(
                 rightTableName,
@@ -583,7 +635,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         final List<String> nameList = new ArrayList<>();
-        SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
+        SQLDialect sqlDialect = dataSource.getSQLDialect();
         {
             // Regex matching MUST be very fast.
             // Otherwise UI will freeze during SQL typing.
@@ -698,6 +750,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             for (DBSObject child : children) {
                 if (DBUtils.isHiddenObject(child)) {
                     // Skip hidden
+                    continue;
+                }
+                if (DBUtils.isVirtualObject(child)) {
+                    makeProposalsFromChildren(child, startPart, addFirst);
                     continue;
                 }
                 if (allObjects) {
@@ -825,24 +881,32 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (object instanceof DBSEntity && ((DBSEntity) object).getDataSource().getContainer().getPreferenceStore().getBoolean(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS)) {
                 SQLDialect dialect = SQLUtils.getDialectFromObject(object);
                 if (dialect.supportsAliasInSelect()) {
-                    String queryText = request.getActiveQuery().getText();
-                    Set<String> aliases = new LinkedHashSet<>();
-                    if (request.getActiveQuery() instanceof SQLQuery) {
-                        Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
-                        if (sqlStatement != null) {
-                            TablesNamesFinder namesFinder = new TablesNamesFinder() {
-                                public void visit(Table table) {
-                                    if (table != null && table.getAlias() != null && table.getAlias().getName() != null) {
-                                        aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
+                    String firstKeyword = SQLUtils.getFirstKeyword(dialect, request.getActiveQuery().getText());
+                    if (dialect.supportsAliasInUpdate() || !ArrayUtils.contains(dialect.getDMLKeywords(), firstKeyword.toUpperCase(Locale.ENGLISH))) {
+                        String queryText = request.getActiveQuery().getText();
+                        Set<String> aliases = new LinkedHashSet<>();
+                        if (request.getActiveQuery() instanceof SQLQuery) {
+                            Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
+                            if (sqlStatement != null) {
+                                TablesNamesFinder namesFinder = new TablesNamesFinder() {
+                                    public void visit(Table table) {
+                                        if (table != null && table.getAlias() != null && table.getAlias().getName() != null) {
+                                            aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
+                                        }
                                     }
-                                }
-                            };
-                            sqlStatement.accept(namesFinder);
+                                };
+                                sqlStatement.accept(namesFinder);
+                            }
                         }
+                        // It is table name completion after FROM. Auto-generate table alias
+                        SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
+                        alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> {
+                            if (aliases.contains(s) || sqlDialect.getKeywordType(s) != null) {
+                                return true;
+                            }
+                            return Pattern.compile("\\s+" + s + "[^\\w]+").matcher(queryText).find();
+                        });
                     }
-                    // It is table name completion after FROM. Auto-generate table alias
-                    SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
-                    alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> aliases.contains(s) || queryText.contains(" " + s) || sqlDialect.getKeywordType(s) != null);
                 }
             }
         }
@@ -920,13 +984,19 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (!quotedString) {
             replaceString = convertKeywordCase(request, replaceString, isObject);
         }
+        int cursorPos;
+        if (proposalType == DBPKeywordType.FUNCTION) {
+            replaceString += "()";
+            cursorPos = replaceString.length() - 2;
+        } else {
+            cursorPos = replaceString.length();
+        }
 
         return request.getContext().createProposal(
             request,
             displayString,
             replaceString, // replacementString
-            replaceString.length(), //cursorPosition the position of the cursor following the insert
-                                // relative to replacementOffset
+            cursorPos, //cursorPosition the position of the cursor following the insert relative to replacementOffset
             image, //image to display
             //new ContextInformation(img, displayString, displayString), //the context information associated with this proposal
             proposalType,

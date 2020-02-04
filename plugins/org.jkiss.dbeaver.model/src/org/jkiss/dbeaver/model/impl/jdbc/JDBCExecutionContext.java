@@ -339,12 +339,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
     @Override
     public boolean supportsSavepoints() {
-        try {
-            return getConnection().getMetaData().supportsSavepoints();
-        } catch (SQLException e) {
-            // ignore
-            return false;
-        }
+        return getDataSource().getInfo().supportsSavepoints();
     }
 
     @Override

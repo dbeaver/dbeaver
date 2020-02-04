@@ -84,7 +84,12 @@ public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, T
 	@Override
 	public void setRange(final IDocument document, int offset, int length) {
 		Assert.isLegal(document != null);
-		final int documentLength= document.getLength();
+		final int documentLength = document.getLength();
+
+		// Sometimes we have length longer than document length
+		while (offset + length > documentLength) {
+			length--;
+		}
 		checkRange(offset, length, documentLength);
 
 		fDocument= document;

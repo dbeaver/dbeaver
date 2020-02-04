@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.internal.part.StatusPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -36,7 +37,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
-import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 /**
  * Error message presentation.
@@ -71,6 +76,12 @@ public class ErrorPresentation extends AbstractPresentation {
         errorComposite = UIUtils.createComposite(partDivider, 1);
         errorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         statusPart = new StatusPart(errorComposite, status);
+
+        for (Control child : errorComposite.getChildren()) {
+            if (child instanceof Text) {
+                TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), child);
+            }
+        }
 
         sqlPanel = UIUtils.createComposite(partDivider, 1);
         sqlPanel.setLayout(new FillLayout());

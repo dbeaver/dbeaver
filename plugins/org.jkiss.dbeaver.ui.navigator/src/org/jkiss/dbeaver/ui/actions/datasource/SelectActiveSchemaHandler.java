@@ -31,7 +31,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -40,11 +39,11 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.impl.struct.ContextDefaultObjectsReader;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -61,10 +60,11 @@ import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class SelectActiveSchemaHandler extends AbstractDataSourceHandler implements IElementUpdater {
 
@@ -76,10 +76,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return null;
         }
 
-        DBCExecutionContext executionContext = getExecutionContext(HandlerUtil.getActiveEditor(event));
-        DatabaseListReader databaseListReader = new DatabaseListReader(dataSourceContainer.getDataSource(), executionContext);
+        DBCExecutionContext executionContext = getExecutionContextFromPart(HandlerUtil.getActiveEditor(event));
+        ContextDefaultObjectsReader contextDefaultObjectsReader = new ContextDefaultObjectsReader(dataSourceContainer.getDataSource(), executionContext);
         try {
-            UIUtils.runInProgressService(databaseListReader);
+            UIUtils.runInProgressService(contextDefaultObjectsReader);
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError("Schema list", "Error reading schema list", e.getTargetException());
             return null;
@@ -87,26 +87,30 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return null;
         }
 
-        DBNDatabaseNode selectedDB = null;
-        for (DBNDatabaseNode node : databaseListReader.nodeList) {
-            if (node.getObject() == databaseListReader.active) {
-                selectedDB = node;
+        DBSObject selectedDB = null;
+        DBSObject defaultObject = contextDefaultObjectsReader.getDefaultObject();
+        if (defaultObject != null) {
+            for (DBSObject object : contextDefaultObjectsReader.getObjectList()) {
+                if (object == defaultObject || object == defaultObject.getParentObject()) {
+                    selectedDB = object;
+                }
             }
         }
+        DBNDatabaseNode selectedNode = selectedDB == null ? null : DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(selectedDB);
         SelectDatabaseDialog dialog = new SelectDatabaseDialog(
             HandlerUtil.getActiveShell(event),
             dataSourceContainer,
-            databaseListReader.currentDatabaseInstanceName,
-            databaseListReader.nodeList,
-            selectedDB == null ? null : Collections.singletonList(selectedDB));
+            contextDefaultObjectsReader.getDefaultCatalogName(),
+            contextDefaultObjectsReader.getNodeList(),
+            selectedNode == null ? null : Collections.singletonList(selectedNode));
         dialog.setModeless(true);
         if (dialog.open() == IDialogConstants.CANCEL_ID) {
             return null;
         }
         DBNDatabaseNode node = dialog.getSelectedObject();
-        if (node != null && node != databaseListReader.active) {
+        if (node != null && node.getObject() != defaultObject) {
             // Change current schema
-            changeDataBaseSelection(dataSourceContainer, executionContext, databaseListReader.currentDatabaseInstanceName, dialog.getCurrentInstanceName(), node.getNodeName());
+            changeDataBaseSelection(dataSourceContainer, executionContext, contextDefaultObjectsReader.getDefaultCatalogName(), dialog.getCurrentInstanceName(), node.getNodeName());
         }
 
         return null;
@@ -160,7 +164,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                     }
                 }
             } else {
-                DBCExecutionContext executionContext = getExecutionContext(activeEditor);
+                DBCExecutionContext executionContext = getExecutionContextFromPart(activeEditor);
                 DBCExecutionContextDefaults contextDefaults = null;
                 if (executionContext != null) {
                     contextDefaults = executionContext.getContextDefaults();
@@ -190,154 +194,19 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             new AbstractJob("Change active database") {
+                {
+                    setUser(true);
+                }
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     try {
-                        DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-                        if (rootContainer == null) {
-                            return Status.OK_STATUS;
-                        }
-
-                        DBCExecutionContextDefaults contextDefaults = null;
-                        if (executionContext != null) {
-                            contextDefaults = executionContext.getContextDefaults();
-                        }
-                        if (contextDefaults != null && (contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange())) {
-                            changeDefaultObject(monitor, rootContainer, contextDefaults, newInstanceName, curInstanceName, newObjectName);
-                        }
+                        DBExecUtils.setExecutionContextDefaults(monitor, dataSource, executionContext, newInstanceName, curInstanceName, newObjectName);
+                        return Status.OK_STATUS;
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
                     }
-                    return Status.OK_STATUS;
                 }
             }.schedule();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void changeDefaultObject(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObjectContainer rootContainer,
-        @NotNull DBCExecutionContextDefaults contextDefaults,
-        @Nullable String newInstanceName,
-        @Nullable String curInstanceName,
-        @Nullable String newObjectName) throws DBException
-    {
-        DBSCatalog newCatalog = null;
-        DBSSchema newSchema = null;
-
-        if (newInstanceName != null) {
-            DBSObject newInstance = rootContainer.getChild(monitor, newInstanceName);
-            if (newInstance instanceof DBSCatalog) {
-                newCatalog = (DBSCatalog) newInstance;
-            }
-        }
-        DBSObject newObject;
-        if (newObjectName != null) {
-            if (newCatalog == null) {
-                newObject = rootContainer.getChild(monitor, newObjectName);
-            } else {
-                newObject = newCatalog.getChild(monitor, newObjectName);
-            }
-            if (newObject instanceof DBSSchema) {
-                newSchema = (DBSSchema) newObject;
-            } else if (newObject instanceof DBSCatalog) {
-                newCatalog = (DBSCatalog) newObject;
-            }
-        }
-
-        boolean changeCatalog = (curInstanceName != null ? !CommonUtils.equalObjects(curInstanceName, newInstanceName) : newCatalog != null);
-
-        if (newCatalog != null && newSchema != null && changeCatalog) {
-            contextDefaults.setDefaultCatalog(monitor, newCatalog, newSchema);
-        } else if (newSchema != null) {
-            contextDefaults.setDefaultSchema(monitor, newSchema);
-        } else if (newCatalog != null && changeCatalog) {
-            contextDefaults.setDefaultCatalog(monitor, newCatalog, null);
-        }
-    }
-
-    private static class DatabaseListReader implements DBRRunnableWithProgress {
-        private final DBPDataSource dataSource;
-        private final DBCExecutionContext executionContext;
-        private final List<DBNDatabaseNode> nodeList = new ArrayList<>();
-        // Remote instance node
-        private DBSObject active;
-        private boolean enabled;
-        private String currentDatabaseInstanceName;
-
-        DatabaseListReader(DBPDataSource dataSource, DBCExecutionContext executionContext) {
-            this.dataSource = dataSource;
-            this.executionContext = executionContext;
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-
-            DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-            if (objectContainer == null) {
-                return;
-            }
-
-            DBCExecutionContextDefaults contextDefaults = null;
-            if (executionContext != null) {
-                contextDefaults = executionContext.getContextDefaults();
-            }
-            if (contextDefaults == null) {
-                return;
-            }
-            try {
-                monitor.beginTask(UINavigatorMessages.toolbar_datasource_selector_action_read_databases, 1);
-                currentDatabaseInstanceName = null;
-
-                Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
-                if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
-                    enabled = false;
-                } else {
-                    enabled = true;
-
-                    DBSObjectContainer defObject = null;
-                    if (DBSCatalog.class.isAssignableFrom(childType)) {
-                        defObject = contextDefaults.getDefaultCatalog();
-                    }
-                    if (defObject != null) {
-                        Class<? extends DBSObject> catalogChildrenType = defObject.getChildType(monitor);
-                        if (catalogChildrenType != null && DBSSchema.class.isAssignableFrom(catalogChildrenType)) {
-                            currentDatabaseInstanceName = defObject.getName();
-                            if (contextDefaults.supportsSchemaChange()) {
-                                objectContainer = defObject;
-                            } else if (!contextDefaults.supportsCatalogChange()) {
-                                // Nothing can be changed
-                                objectContainer = null;
-                            }
-                            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-                            if (defaultSchema != null) {
-                                defObject = defaultSchema;
-                            }
-                        }
-                    }
-                    Collection<? extends DBSObject> children = objectContainer == null ?
-                        (defObject == null ? Collections.emptyList() : Collections.singletonList(defObject)) :
-                        objectContainer.getChildren(monitor);
-                    active = defObject;
-                    // Cache navigator nodes
-                    if (children != null) {
-                        for (DBSObject child : children) {
-                            if (DBUtils.getAdapter(DBSObjectContainer.class, child) != null) {
-                                DBNDatabaseNode node = navigatorModel.getNodeByObject(monitor, child, false);
-                                if (node != null) {
-                                    nodeList.add(node);
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (DBException e) {
-                throw new InvocationTargetException(e);
-            } finally {
-                monitor.done();
-            }
         }
     }
 
@@ -353,9 +222,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 return;
             }
 
-            DBCExecutionContext executionContext = getExecutionContext(workbenchWindow.getActivePage().getActiveEditor());
-            DatabaseListReader databaseListReader = new DatabaseListReader(dataSourceContainer.getDataSource(), executionContext);
-            RuntimeUtils.runTask(databaseListReader, "Read database list", DB_LIST_READ_TIMEOUT);
+            DBCExecutionContext executionContext = getExecutionContextFromPart(workbenchWindow.getActivePage().getActiveEditor());
+            ContextDefaultObjectsReader contextDefaultObjectsReader = new ContextDefaultObjectsReader(dataSourceContainer.getDataSource(), executionContext);
+            contextDefaultObjectsReader.setReadNodes(true);
+            RuntimeUtils.runTask(contextDefaultObjectsReader, "Read database list", DB_LIST_READ_TIMEOUT);
 
             DBSObject[] defObjects = null;
             if (executionContext != null) {
@@ -366,7 +236,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             }
             if (defObjects == null) defObjects = new DBSObject[0];
             DBSObject[] finalDefObjects = defObjects;
-            for (DBNDatabaseNode node : databaseListReader.nodeList) {
+            for (DBNDatabaseNode node : contextDefaultObjectsReader.getNodeList()) {
                 menuItems.add(
                     new ActionContributionItem(new Action(node.getName(), Action.AS_CHECK_BOX) {
                         private final DBSObject object = node.getObject();
@@ -382,8 +252,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                             changeDataBaseSelection(
                                 dataSourceContainer,
                                 executionContext,
-                                databaseListReader.currentDatabaseInstanceName,
-                                (object instanceof DBSCatalog ? object.getName() : databaseListReader.currentDatabaseInstanceName),
+                                contextDefaultObjectsReader.getDefaultCatalogName(),
+                                (object instanceof DBSCatalog ? object.getName() : contextDefaultObjectsReader.getDefaultCatalogName()),
                                 (object instanceof DBSSchema ? node.getNodeName() : null));
                         }
                     }

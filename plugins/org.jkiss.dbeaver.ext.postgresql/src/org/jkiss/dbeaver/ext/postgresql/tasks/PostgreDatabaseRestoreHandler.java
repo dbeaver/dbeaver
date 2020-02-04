@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,7 +77,10 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
         if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.PLAIN) {
             cmd.add("--format=" + settings.getFormat().getId());
         }
-        cmd.add("--dbname=" + arg.getDatabase().getName());
+        List<DBSObject> databaseObjects = settings.getDatabaseObjects();
+        if (!CommonUtils.isEmpty(databaseObjects)) {
+            cmd.add("--dbname=" + databaseObjects.get(0).getName());
+        }
         if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             cmd.add(settings.getInputFile());
         }
@@ -86,7 +90,12 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
 
     @Override
     protected boolean isLogInputStream() {
-        return false;
+        return true;
+    }
+
+    @Override
+    protected boolean isMergeProcessStreams() {
+        return true;
     }
 
     @Override

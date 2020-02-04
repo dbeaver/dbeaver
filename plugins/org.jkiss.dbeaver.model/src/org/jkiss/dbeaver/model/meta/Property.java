@@ -113,6 +113,11 @@ public @interface Property
      */
     boolean supportsPreview() default false;
 
+    /**
+     * Property holds password. Must be secured in UI.
+     */
+    boolean password() default false;
+
     int order() default Integer.MAX_VALUE;
 
     String helpContextId() default ""; //NON-NLS-1

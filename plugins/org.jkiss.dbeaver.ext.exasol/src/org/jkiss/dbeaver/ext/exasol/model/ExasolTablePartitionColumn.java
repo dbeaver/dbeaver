@@ -71,20 +71,21 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 	}
 
 	@Override
-    @Property(viewable = true, updatable = true, editable = true, order = 1, listProvider = TableColumListProvider.class)
+    @Property(viewable = true, editable = true, order = 1, listProvider = TableColumListProvider.class)
 	public ExasolTableColumn getTableColumn() {
 		return tableColumn;
 	}
 	
 	public void setTableColumn(ExasolTableColumn tableColumn) {
+		if (tableColumn == null) {
+			throw new IllegalArgumentException();
+		}
 		this.tableColumn = tableColumn;
 	}
 
 	@Override
     @Property(viewable = false)
 	public String getDescription() {
-		if (tableColumn == null)
-			return null;
 		return tableColumn.getDescription();
 	}
 
@@ -101,8 +102,6 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 	@Override
     @Property(viewable = false)
 	public String getName() {
-		if (tableColumn == null)
-			return null;
 		return tableColumn.getName();
 	}
 	

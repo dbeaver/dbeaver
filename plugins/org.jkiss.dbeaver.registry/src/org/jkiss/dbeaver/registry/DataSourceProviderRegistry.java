@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
@@ -42,6 +43,7 @@ import org.xml.sax.Attributes;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 //import org.eclipse.ui.PlatformUI;
 //import org.eclipse.ui.activities.IActivityManager;
@@ -391,6 +393,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 xml.addAttribute(RegistryConstants.ATTR_AUTOCOMMIT, connectionType.isAutocommit());
                 xml.addAttribute(RegistryConstants.ATTR_CONFIRM_EXECUTE, connectionType.isConfirmExecute());
                 xml.addAttribute(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE, connectionType.isConfirmDataChange());
+                List<DBPDataSourcePermission> modifyPermission = connectionType.getModifyPermission();
+                if (modifyPermission != null) {
+                    xml.addAttribute("modifyPermission",
+                        modifyPermission.stream().map(DBPDataSourcePermission::name).collect(Collectors.joining(",")));
+                }
                 xml.endElement();
             }
             xml.endElement();
@@ -456,6 +463,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT)),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE)),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE)));
+                String modifyPermissionList = atts.getValue("modifyPermission");
+                if (!CommonUtils.isEmpty(modifyPermissionList)) {
+                    List<DBPDataSourcePermission> permList = new ArrayList<>();
+                    for (String permItem : modifyPermissionList.split(",")) {
+                        permList.add(CommonUtils.valueOf(DBPDataSourcePermission.class, permItem, DBPDataSourcePermission.PERMISSION_EDIT_DATA));
+                    }
+                    connectionType.setModifyPermissions(permList);
+                }
                 connectionTypes.put(connectionType.getId(), connectionType);
             }
         }

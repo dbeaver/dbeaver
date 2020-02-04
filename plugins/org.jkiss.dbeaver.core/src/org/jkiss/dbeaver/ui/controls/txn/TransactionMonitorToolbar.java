@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -203,7 +204,7 @@ public class TransactionMonitorToolbar {
                 count = "None";
             }
             final Point textSize = e.gc.textExtent(count);
-            e.gc.setForeground(UIStyles.getDefaultTextSelectionForeground());
+            e.gc.setForeground(UIStyles.getDefaultTextForeground());
             e.gc.drawText(count, bounds.x + (bounds.width - textSize.x) / 2 - 2, bounds.y + (bounds.height - textSize.y) / 2 - 1);
         }
 
@@ -299,11 +300,13 @@ public class TransactionMonitorToolbar {
         @Override
         public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context) {
             refreshMonitor();
+            DBExecUtils.recoverSmartCommit(context);
         }
 
         @Override
         public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint) {
             refreshMonitor();
+            DBExecUtils.recoverSmartCommit(context);
         }
 
 /*

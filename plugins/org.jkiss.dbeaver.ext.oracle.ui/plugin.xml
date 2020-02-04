@@ -304,7 +304,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <configurator type="oracle" class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleTaskConfigurator"/>
+        <configurator type="oracleScriptExecute" class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleTaskConfigurator"/>
     </extension>
 
 </plugin>

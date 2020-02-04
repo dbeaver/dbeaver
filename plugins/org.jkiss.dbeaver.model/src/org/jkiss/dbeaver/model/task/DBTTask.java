@@ -58,7 +58,12 @@ public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
     DBTTaskRun[] getRunStatistics();
 
     @NotNull
+    File getRunLogFolder();
+
+    @NotNull
     File getRunLog(DBTTaskRun run);
+
+    void removeRunLog(DBTTaskRun taskRun);
 
     void cleanRunStatistics();
 

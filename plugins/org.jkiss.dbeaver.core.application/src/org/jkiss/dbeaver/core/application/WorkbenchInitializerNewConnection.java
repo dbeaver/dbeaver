@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.core.application;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
-import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
+import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
 
 public class WorkbenchInitializerNewConnection implements IWorkbenchWindowInitializer {
     @Override
@@ -31,8 +30,7 @@ public class WorkbenchInitializerNewConnection implements IWorkbenchWindowInitia
         if (!DataSourceRegistry.isProjectsInitialized() || !DataSourceRegistry.getAllDataSources().isEmpty()) {
             return;
         }
-        CreateConnectionDialog dialog = new CreateConnectionDialog(window, new NewConnectionWizard());
-        dialog.open();
+        NewConnectionDialog.openNewConnectionDialog(window);
     }
 }
 

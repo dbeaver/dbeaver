@@ -51,6 +51,7 @@ public class NewConnectionWizard extends ConnectionWizard
     private DBPProject selectedProject;
     //private ConnectionPageNetwork pageNetwork;
 
+
     public NewConnectionWizard() {
         this(null);
     }

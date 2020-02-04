@@ -64,7 +64,11 @@ public class SnowflakeMetaModel extends GenericMetaModel
                     while (dbResult.nextRow()) {
                         sql.append(dbResult.getString(1));
                     }
-                    return sql.toString();
+                    String result = sql.toString().trim();
+                    while (result.endsWith(";")) {
+                        result = result.substring(0, result.length() - 1);
+                    }
+                    return result;
                 }
             }
         } catch (SQLException e) {

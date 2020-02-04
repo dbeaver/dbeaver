@@ -18,7 +18,8 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -340,14 +341,18 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
 
     @Override
     public ITabbedFolder getActiveFolder() {
+        return getActiveFolder(true);
+    }
+
+    public ITabbedFolder getActiveFolder(boolean activate) {
         FolderPane pane = getActiveFolderPane();
         if (pane != null) {
-            return getActiveFolder(pane);
+            return getActiveFolder(pane, activate);
         }
         return null;
     }
 
-    public FolderPane getActiveFolderPane() {
+    private FolderPane getActiveFolderPane() {
         if (folderPanes.length == 1) {
             return folderPanes[0];
         }
@@ -364,10 +369,13 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
         return null;
     }
 
-    private ITabbedFolder getActiveFolder(FolderPane folderPane) {
+    private ITabbedFolder getActiveFolder(FolderPane folderPane, boolean activate) {
         TabbedFolderList folderList = folderPane.folderList;
         int selectionIndex = folderList.getSelectionIndex();
         if (selectionIndex < 0) {
+            if (!activate) {
+                return null;
+            }
             // If no folder was activated - do it now
             selectionIndex = 0;
             folderList.select(selectionIndex);

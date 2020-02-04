@@ -359,7 +359,7 @@
                         defaultPort="5432"
                         webURL="http://yellowbrick.io/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                        description="%driver.yellowbrick.description"
+                        description="Yellowbrick JDBC driver"
                         categories="sql">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
 

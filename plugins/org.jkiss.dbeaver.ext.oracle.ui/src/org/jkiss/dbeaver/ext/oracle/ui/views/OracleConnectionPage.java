@@ -91,9 +91,9 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         addrGroup.setLayout(new GridLayout(1, false));
         addrGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final Group protocolGroup = UIUtils.createControlGroup(addrGroup, OracleUIMessages.dialog_connection_connection_type_group, 1, GridData.FILL_HORIZONTAL, 0);
+        UIUtils.createControlLabel(addrGroup, OracleUIMessages.dialog_connection_connection_type_group);
 
-        connectionTypeFolder = new TabFolder(protocolGroup, SWT.TOP | SWT.MULTI);
+        connectionTypeFolder = new TabFolder(addrGroup, SWT.TOP | SWT.MULTI);
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         createBasicConnectionControls(connectionTypeFolder);
@@ -368,13 +368,15 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         //}
 
         if (tnsNameCombo.getItemCount() == 0) {
-            populateTnsNameCombo();
+            UIUtils.asyncExec(this::populateTnsNameCombo);
         }
 
         if (serviceNameCombo.getItemCount() == 0) {
-            for (String alias : getAvailableServiceNames()) {
-                serviceNameCombo.add(alias);
-            }
+            UIUtils.asyncExec(() -> {
+                for (String alias : getAvailableServiceNames()) {
+                    serviceNameCombo.add(alias);
+                }
+            });
         }
 
         String conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
@@ -389,7 +391,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             case BASIC:
                 hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
                 if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    portText.setText(String.valueOf(connectionInfo.getHostPort()));
+                    portText.setText(connectionInfo.getHostPort());
                 } else if (site.getDriver().getDefaultPort() != null) {
                     portText.setText(site.getDriver().getDefaultPort());
                 } else {

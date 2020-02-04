@@ -42,11 +42,6 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
     }
 
     @Override
-    public boolean isVerbose() {
-        return false;
-    }
-
-    @Override
     public void fillProcessParameters(OracleScriptExecuteSettings settings, OracleDataSource arg, List<String> cmd) throws IOException {
         String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus"); //$NON-NLS-1$
         File sqlPlusBinary = new File(settings.getClientHome().getPath(), "bin/" + sqlPlusExec); //$NON-NLS-1$

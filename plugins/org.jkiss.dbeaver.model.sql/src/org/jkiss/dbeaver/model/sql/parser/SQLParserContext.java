@@ -19,12 +19,16 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.IDocument;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
  * Parser context
@@ -32,7 +36,7 @@ import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 public class SQLParserContext {
 
     @NotNull
-    private final DBPDataSource dataSource;
+    private final DBPContextProvider contextProvider;
     @NotNull
     private final SQLSyntaxManager syntaxManager;
     @NotNull
@@ -41,16 +45,17 @@ public class SQLParserContext {
     private final IDocument document;
     private TPRuleBasedScanner scanner;
 
-    public SQLParserContext(@NotNull DBPDataSource dataSource, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
-        this.dataSource = dataSource;
+    public SQLParserContext(@NotNull DBPContextProvider contextProvider, @NotNull SQLSyntaxManager syntaxManager, @NotNull SQLRuleManager ruleManager, @NotNull IDocument document) {
+        this.contextProvider = contextProvider;
         this.syntaxManager = syntaxManager;
         this.ruleManager = ruleManager;
         this.document = document;
     }
 
-    @NotNull
+    @Nullable
     public DBPDataSource getDataSource() {
-        return dataSource;
+        DBCExecutionContext executionContext = contextProvider.getExecutionContext();
+        return executionContext == null ? null : executionContext.getDataSource();
     }
 
     @NotNull
@@ -69,7 +74,7 @@ public class SQLParserContext {
     }
 
     public SQLDialect getDialect() {
-        return SQLUtils.getDialectFromDataSource(dataSource);
+        return SQLUtils.getDialectFromDataSource(getDataSource());
     }
 
     public TPRuleBasedScanner getScanner() {
@@ -81,7 +86,10 @@ public class SQLParserContext {
     }
 
     public DBPPreferenceStore getPreferenceStore() {
-        return dataSource.getContainer().getPreferenceStore();
+        DBPDataSource dataSource = getDataSource();
+        return dataSource == null ?
+            DBWorkbench.getPlatform().getPreferenceStore() :
+            dataSource.getContainer().getPreferenceStore();
     }
 
     void startScriptEvaluation() {

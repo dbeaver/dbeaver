@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,7 +28,12 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	@Override
 	public ExasolTablePartitionColumnCache getObjectsCache(
 			ExasolTablePartitionColumn object) {
-		return ((ExasolTable) object.getTable()).getPartitionCache();
+		return object.getTable().getPartitionCache();
+	}
+
+	@Override
+	public boolean canCreateObject(Object container) {
+		return false;
 	}
 
 	@Override
@@ -36,10 +42,10 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	}
 	
 	@Override
-	protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
-			SQLObjectEditor<ExasolTablePartitionColumn, ExasolTable>.ObjectChangeCommand command,
-			Map<String, Object> options) throws DBException {
-		ExasolTable table = (ExasolTable) command.getObject().getTable();
+	protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
+                                          ObjectChangeCommand command,
+                                          Map<String, Object> options) throws DBException {
+		ExasolTable table = command.getObject().getTable();
 		try {
 			actionList.add(new SQLDatabasePersistAction(generateAction(table)));
 		} catch (DBException e) {
@@ -54,10 +60,10 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	}
 
 	@Override
-	protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolTablePartitionColumn, ExasolTable>.ObjectCreateCommand command,
-			Map<String, Object> options) {
-		ExasolTable table = (ExasolTable) command.getObject().getTable();
+	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+                                          ObjectCreateCommand command,
+                                          Map<String, Object> options) {
+		ExasolTable table = command.getObject().getTable();
 		try {
 			actions.add(new SQLDatabasePersistAction(generateAction(table)));
 		} catch (DBException e) {
@@ -66,13 +72,13 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	}
 
 	@Override
-	protected void addObjectDeleteActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command,
-                                          Map<String, Object> options) {
+	protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+										  ObjectDeleteCommand command,
+										  Map<String, Object> options) {
 		ExasolTablePartitionColumn col = command.getObject();
 		ExasolTablePartitionColumnCache cache = getObjectsCache(col);
 		cache.removeObject(col, false);
-		ExasolTable table = (ExasolTable) command.getObject().getTable();
+		ExasolTable table = command.getObject().getTable();
 		try {
 			actions.add(new SQLDatabasePersistAction(generateAction(table)));
 		} catch (DBException e) {

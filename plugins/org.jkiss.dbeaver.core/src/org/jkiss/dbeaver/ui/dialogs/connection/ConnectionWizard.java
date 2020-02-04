@@ -228,6 +228,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         ConnectionTester(DataSourceDescriptor testDataSource) {
             super(testDataSource);
             setSystem(true);
+            setUser(false);
             super.initialize = true;//CommonUtils.toBoolean(testDataSource.getDriver().getDriverParameter(DBConstants.PARAM_INIT_ON_TEST));
             productName = null;
             productVersion = null;

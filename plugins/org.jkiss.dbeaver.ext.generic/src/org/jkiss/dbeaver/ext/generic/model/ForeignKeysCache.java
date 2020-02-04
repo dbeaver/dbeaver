@@ -46,7 +46,7 @@ import java.util.*;
 */
 class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericTableForeignKey, GenericTableForeignKeyColumnTable> {
 
-    private final Map<String, GenericPrimaryKey> pkMap = new HashMap<>();
+    private final Map<String, GenericUniqueKey> pkMap = new HashMap<>();
     private final GenericMetaObject foreignKeyObject;
 
     ForeignKeysCache(TableCache tableCache)
@@ -73,7 +73,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     {
         return session.getMetaData().getImportedKeys(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : owner.getSchema().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
             forParent == null ?
                 owner.getDataSource().getAllObjectsPattern() :
                 forParent.getName())
@@ -140,9 +140,9 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 return null;
             }
 
-            Collection<GenericPrimaryKey> uniqueKeys = pkTable.getConstraints(session.getProgressMonitor());
+            Collection<GenericUniqueKey> uniqueKeys = pkTable.getConstraints(session.getProgressMonitor());
             if (uniqueKeys != null) {
-                for (GenericPrimaryKey pkConstraint : uniqueKeys) {
+                for (GenericUniqueKey pkConstraint : uniqueKeys) {
                     if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(session.getProgressMonitor(), pkConstraint, pkColumn) != null) {
                         pk = pkConstraint;
                         break;
@@ -163,7 +163,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             }
             if (pk == null) {
                 log.warn("Can't find unique key for table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumn.getName() + ". Making fake one.");
-                GenericPrimaryKey fakePk;
+                GenericUniqueKey fakePk;
                 // Too bad. But we have to create new fake PK for this FK
                 if (pkName == null) {
                     pkName = "primary_key";
@@ -171,7 +171,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
                 fakePk = pkMap.get(pkFullName);
                 if (fakePk == null) {
-                    fakePk = new GenericPrimaryKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                    fakePk = new GenericUniqueKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
                     pkMap.put(pkFullName, fakePk);
                     // Add this fake constraint to it's owner
                     fakePk.getTable().addUniqueKey(fakePk);

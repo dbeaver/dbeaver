@@ -64,7 +64,7 @@ public class OracleContentXML extends JDBCContentXML {
                         xmlObject);
                 }
             } else {
-                preparedStatement.setNull(paramIndex, java.sql.Types.SQLXML);
+                preparedStatement.setNull(paramIndex, java.sql.Types.SQLXML, columnType.getTypeName());
             }
         }
         catch (SQLException e) {

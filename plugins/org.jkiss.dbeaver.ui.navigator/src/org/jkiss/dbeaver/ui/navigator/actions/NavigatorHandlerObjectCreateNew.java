@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
@@ -173,6 +174,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         } else if (node instanceof DBNResource) {
             final DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
             IResource resource = ((DBNResource) node).getResource();
+            if (resource instanceof IProject) {
+                createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_PROJECT));
+            }
             DBPResourceHandler handler = workspace.getResourceHandler(resource);
             if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE));
@@ -180,10 +184,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
             }
-            if (resource instanceof IFolder) {
-                if (site != null) {
-                    createActions.add(new Separator());
-                }
+            if (resource instanceof IContainer) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
             }
@@ -328,90 +329,6 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         DBPDataSource dataSource = object.getDataSource();
         return dataSource == null || dataSource.getContainer().isConnectionReadOnly();
     }
-
-/*
-    /////////////////////////////////////////////////////////////////
-    // BAD CODE.
-    // It is optimization
-
-    private static int countCreateMenuItems(DBNNode node) {
-        int count = 0;
-
-        if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases) {
-            // Create connection
-            count++;
-        }
-        if (node instanceof DBNDatabaseNode) {
-            count += countDatabaseNodeCreateItems((DBNDatabaseNode) node);
-        }
-
-        if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNDataSource) {
-            // Create local folder
-            count++;
-        } else if (node instanceof DBNResource) {
-            final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getWorkspace();
-            IResource resource = ((DBNResource) node).getResource();
-            DBPResourceHandler handler = projectRegistry.getResourceHandler(resource);
-            if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0) {
-                // Create file
-                count++;
-            }
-            if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0) {
-                // Create folder
-                count++;
-            }
-            if (resource instanceof IFolder) {
-                // Create file and folder links
-                count++;
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private static int countDatabaseNodeCreateItems(DBNDatabaseNode node) {
-        int count = 0;
-        if (node instanceof DBNDatabaseFolder) {
-            final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder) node).getMeta().getChildren(node);
-            if (!CommonUtils.isEmpty(metaChildren)) {
-                Class<?> nodeClass = ((DBNContainer) node).getChildrenClass();
-                String nodeType = metaChildren.get(0).getChildrenType(node.getDataSource(), null);
-                DBPImage nodeIcon = metaChildren.get(0).getIcon(node);
-                if (nodeClass != null && nodeType != null) {
-                    if (isCreateSupported(node, nodeClass)) {
-                        count++;
-                    }
-                }
-            }
-        } else {
-            Class<?> nodeItemClass = node.getObject().getClass();
-            if (isCreateSupported(
-                node.getParentNode() instanceof DBNDatabaseNode ? (DBNDatabaseNode) node.getParentNode() : null,
-                nodeItemClass))
-            {
-                count++;
-            }
-
-            if (!isReadOnly(node.getObject())) {
-                List<DBXTreeNode> childNodeMetas = node.getMeta().getChildren(node);
-                if (!CommonUtils.isEmpty(childNodeMetas)) {
-                    for (DBXTreeNode childMeta : childNodeMetas) {
-                        if (childMeta instanceof DBXTreeFolder) {
-                            List<DBXTreeNode> folderChildMeta = childMeta.getChildren(node);
-                            if (!CommonUtils.isEmpty(folderChildMeta) && folderChildMeta.size() == 1 && folderChildMeta.get(0) instanceof DBXTreeItem) {
-                                addChildNodeCreateItem(site, createActions, node, (DBXTreeItem) folderChildMeta.get(0));
-                            }
-                        } else if (childMeta instanceof DBXTreeItem) {
-                            addChildNodeCreateItem(site, createActions, node, (DBXTreeItem) childMeta);
-                        }
-                    }
-                }
-            }
-        }
-        return count;
-    }
-
-*/
 
     public static class MenuCreateContributor extends CompoundContributionItem {
 

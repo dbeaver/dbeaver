@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -39,6 +40,9 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_USER = "user";
     public static final String VARIABLE_PASSWORD = "password";
     public static final String VARIABLE_URL = "url";
+
+    public static final String VAR_PROJECT_PATH = "project.path";
+    public static final String VAR_PROJECT_NAME = "project.name";
 
     private String hostName;
     private String hostPort;
@@ -352,45 +356,23 @@ public class DBPConnectionConfiguration implements DBPObject {
                 this.keepAliveInterval == source.keepAliveInterval;
     }
 
-    public void resolveDynamicVariables() {
-        hostName = replaceSystemEnvironmentVariables(hostName);
-        hostPort = replaceSystemEnvironmentVariables(hostPort);
-        serverName = replaceSystemEnvironmentVariables(serverName);
-        databaseName = replaceSystemEnvironmentVariables(databaseName);
-        userName = replaceSystemEnvironmentVariables(userName);
-        userPassword = replaceSystemEnvironmentVariables(userPassword);
-        url = replaceSystemEnvironmentVariables(url);
+    public void resolveDynamicVariables(IVariableResolver variableResolver) {
+        hostName = GeneralUtils.replaceVariables(hostName, variableResolver);
+        hostPort = GeneralUtils.replaceVariables(hostPort, variableResolver);
+        serverName = GeneralUtils.replaceVariables(serverName, variableResolver);
+        databaseName = GeneralUtils.replaceVariables(databaseName, variableResolver);
+        userName = GeneralUtils.replaceVariables(userName, variableResolver);
+        userPassword = GeneralUtils.replaceVariables(userPassword, variableResolver);
+        url = GeneralUtils.replaceVariables(url, variableResolver);
         for (Map.Entry<String, String> prop : this.properties.entrySet()) {
-            prop.setValue(replaceSystemEnvironmentVariables(prop.getValue()));
+            prop.setValue(GeneralUtils.replaceVariables(prop.getValue(), variableResolver));
         }
-    }
-
-    private String replaceSystemEnvironmentVariables(String value) {
-        if (CommonUtils.isEmpty(value)) {
-            return value;
-        }
-        value = GeneralUtils.replaceSystemEnvironmentVariables(value);
-        value = GeneralUtils.replaceVariables(value, name -> {
-            switch (name) {
-                case VARIABLE_HOST:
-                    return hostName;
-                case VARIABLE_PORT:
-                    return hostPort;
-                case VARIABLE_SERVER:
-                    return serverName;
-                case VARIABLE_DATABASE:
-                    return databaseName;
-                case VARIABLE_USER:
-                    return userName;
-                case VARIABLE_PASSWORD:
-                    return userPassword;
-                case VARIABLE_URL:
-                    return url;
-                default:
-                    return null;
+        for (DBWHandlerConfiguration handler : handlers) {
+            if (handler.isEnabled()) {
+                handler.resolveDynamicVariables(variableResolver);
             }
-        });
-        return value;
+        }
+        bootstrap.resolveDynamicVariables(variableResolver);
     }
 
     public void setConfigProfile(DBWNetworkProfile profile) {
@@ -405,4 +387,5 @@ public class DBPConnectionConfiguration implements DBPObject {
             }
         }
     }
+
 }

@@ -88,7 +88,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         final ILabelProvider mainLabelProvider = (ILabelProvider) viewer.getLabelProvider();
         columnController = new ViewerColumnController("projectExplorer", viewer);
         columnController.setForceAutoSize(true);
-        columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new TreeColumnViewerLabelProvider(new LabelProvider() {
+        columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return mainLabelProvider.getText(element);
@@ -98,9 +98,17 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             public Image getImage(Object element) {
                 return mainLabelProvider.getImage(element);
             }
-        }));
 
-        columnController.addColumn("DataSource", "Datasource(s) associated with resource", SWT.LEFT, true, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
+            @Override
+            public String getToolTipText(Object element) {
+                if (mainLabelProvider instanceof IToolTipProvider) {
+                    return ((IToolTipProvider) mainLabelProvider).getToolTipText(element);
+                }
+                return null;
+            }
+        });
+
+        columnController.addColumn("DataSource", "Datasource(s) associated with resource", SWT.LEFT, true, false, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 if (element instanceof DBNDatabaseNode) {
@@ -136,8 +144,30 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
 */
                 return null;
             }
+            @Override
+            public String getToolTipText(Object element) {
+                if (element instanceof DBNResource) {
+                    Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
+                    if (!CommonUtils.isEmpty(containers)) {
+                        StringBuilder text = new StringBuilder();
+                        for (DBPDataSourceContainer container : containers) {
+                            String description = container.getDescription();
+                            if (CommonUtils.isEmpty(description)) {
+                                description = container.getName();
+                            }
+                            if (!CommonUtils.isEmpty(description)) {
+                                if (text.length() > 0) {
+                                    text.append(", ");
+                                }
+                                text.append(description);
+                            }
+                        }
+                        return text.toString();
+                    }
+                }                return null;
+            }
 
-        }));
+        });
         columnController.addColumn("Preview", "Script content preview", SWT.LEFT, false, false, new LazyLabelProvider(shadowColor) {
             @Override
             public String getLazyText(Object element) {
@@ -148,7 +178,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
             }
         });
-        columnController.addColumn("Size", "File size", SWT.LEFT, false, false, true, null, new TreeColumnViewerLabelProvider(new LabelProvider() {
+        columnController.addColumn("Size", "File size", SWT.LEFT, false, false, true, null, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 if (element instanceof DBNResource) {
@@ -159,8 +189,8 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
                 return "";
             }
-        }), null);
-        columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
+        }, null);
+        columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new ColumnLabelProvider() {
             private SimpleDateFormat sdf = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
             @Override
@@ -177,8 +207,8 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
                 return "";
             }
-        }));
-        columnController.addColumn("Type", "Resource type", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
+        });
+        columnController.addColumn("Type", "Resource type", SWT.LEFT, false, false, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 if (element instanceof DBNResource) {
@@ -190,7 +220,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
                 return "";
             }
-        }));
+        });
         UIUtils.asyncExec(() -> columnController.createColumns(true));
     }
 

@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 public class EditTextDialog extends BaseDialog {
 
@@ -30,6 +31,7 @@ public class EditTextDialog extends BaseDialog {
     protected int textWidth = 300;
     protected int textHeight = 200;
     private boolean readonly = false;
+    private boolean monospaceFont;
 
     public EditTextDialog(Shell parentShell, String title, String text)
     {
@@ -48,6 +50,20 @@ public class EditTextDialog extends BaseDialog {
         this.readonly = readonly;
     }
 
+    public void setMonospaceFont(boolean monospaceFont) {
+        this.monospaceFont = monospaceFont;
+    }
+
+    public void setAutoSize(boolean autoSize) {
+        if (autoSize) {
+            textWidth = 0;
+            textHeight = 0;
+        } else {
+            textWidth = 300;
+            textHeight = 200;
+        }
+    }
+
     @Override
     protected Composite createDialogArea(Composite parent)
     {
@@ -58,6 +74,9 @@ public class EditTextDialog extends BaseDialog {
             textControl.setText(text);
         }
         textControl.setEditable(!readonly);
+        if (monospaceFont) {
+            textControl.setFont(UIUtils.getMonospaceFont());
+        }
         GridData gd = new GridData(GridData.FILL_BOTH);
         if (textWidth > 0) {
             gd.widthHint = textWidth;

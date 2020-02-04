@@ -18,15 +18,10 @@
 
 package org.jkiss.dbeaver.ext.exasol.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridLayout;
@@ -42,6 +37,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ExasolCreateSchemaDialog extends BaseDialog {
@@ -65,12 +63,9 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
         final Composite group = new Composite(composite, SWT.NONE);
         group.setLayout(new GridLayout(2, false));
         final Text nameText = UIUtils.createLabelText(group, "Schema Name", "");
-        nameText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                name = nameText.getText();
-                getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
-            }
+        nameText.addModifyListener(e -> {
+            name = nameText.getText();
+            updateButtons();
         });
 
         final Combo userCombo = UIUtils.createLabelCombo(group, "Owner", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -89,15 +84,11 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
                 try {
                     grantees = new ArrayList<>(datasource.getAllGrantees(monitor));
                     
-                    UIUtils.syncExec(new Runnable() {
-                        @Override
-                        public void run()
+                    UIUtils.syncExec(() -> {
+                        for (ExasolGrantee grantee: grantees)
                         {
-                            for (ExasolGrantee grantee: grantees)
-                            {
-                                String name = grantee.getName();
-                                userCombo.add(name);
-                            }
+                            String name = grantee.getName();
+                            userCombo.add(name);
                         }
                     });
                 } catch (DBException e) {
@@ -111,7 +102,11 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
 
 
     }
-    
+
+    private void updateButtons() {
+        getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
+    }
+
     public String getName() {
         return name;
     }

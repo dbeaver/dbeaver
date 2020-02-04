@@ -386,4 +386,9 @@ class GridColumn {
         }
     }
 
+    @Override
+    public String toString() {
+        return CommonUtils.toString(element);
+    }
+
 }

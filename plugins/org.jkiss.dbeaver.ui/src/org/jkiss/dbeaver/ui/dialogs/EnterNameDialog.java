@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -49,7 +48,7 @@ public class EnterNameDialog extends Dialog {
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
-        return UIUtils.getDialogSettings("DBeaver.EnterNameDialog"); //$NON-NLS-1$
+        return null;//UIUtils.getDialogSettings("DBeaver.EnterNameDialog"); //$NON-NLS-1$
     }
 
     public String getResult()
@@ -58,7 +57,7 @@ public class EnterNameDialog extends Dialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         getShell().setText(propertyName);
 
@@ -68,6 +67,7 @@ public class EnterNameDialog extends Dialog {
         gl.marginWidth = 10;
         propGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 300;
         propGroup.setLayoutData(gd);
 
         propNameText = UIUtils.createLabelText(propGroup, propertyName, null);

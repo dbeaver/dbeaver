@@ -82,7 +82,7 @@ public class JDBCRemoteInstance implements DBSInstance {
 
     protected void initializeMainContext(@NotNull DBRProgressMonitor monitor) throws DBCException {
         if (executionContext == null) {
-            this.executionContext = dataSource.createExecutionContext(this, JDBCExecutionContext.TYPE_MAIN);
+            this.executionContext = dataSource.createExecutionContext(this, getMainContextName());
             this.executionContext.connect(monitor, null, null, null, true);
         }
     }
@@ -94,13 +94,23 @@ public class JDBCRemoteInstance implements DBSInstance {
         }
         if (!dataSource.getContainer().getDriver().isEmbedded() && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION)) {
             synchronized (allContexts) {
-                this.metaContext = dataSource.createExecutionContext(this, JDBCExecutionContext.TYPE_METADATA);
+                this.metaContext = dataSource.createExecutionContext(this, getMetadataContextName());
                 this.metaContext.connect(monitor, true, null, null, true);
                 return this.metaContext;
             }
         } else {
             return this.executionContext;
         }
+    }
+
+    @NotNull
+    protected String getMainContextName() {
+        return JDBCExecutionContext.TYPE_MAIN;
+    }
+
+    @NotNull
+    protected String getMetadataContextName() {
+        return JDBCExecutionContext.TYPE_METADATA;
     }
 
     @NotNull

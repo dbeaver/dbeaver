@@ -458,7 +458,8 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime, SQLQueryResult curResult) throws DBCException {
-        DBCExecutionSource source = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), partSite.getPart(), sqlQuery);
+        AbstractExecutionSource source = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), partSite.getPart(), sqlQuery);
+        source.setScriptContext(scriptContext);
         final DBCStatement dbcStatement = DBUtils.makeStatement(
             source,
             session,
@@ -606,14 +607,11 @@ public class SQLQueryJob extends DataSourceJob
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
-            if (updateCount >= 0) {
-                fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
-                fakeResultSet.addColumn("Query", DBPDataKind.STRING);
-                fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
-                fakeResultSet.addRow(updateCount, query.getText(), new Date());
-            } else {
-                fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
-            }
+            fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
+            fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
+            fakeResultSet.addRow(updateCount, query.getText(), new Date());
+
             executeResult.setResultSetName("Result");
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);

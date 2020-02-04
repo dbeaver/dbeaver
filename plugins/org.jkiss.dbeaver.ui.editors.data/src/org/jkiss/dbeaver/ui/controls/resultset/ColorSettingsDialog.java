@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
-import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -97,6 +96,7 @@ class ColorSettingsDialog extends BaseDialog {
 
     ColorSettingsDialog(
         @NotNull ResultSetViewer resultSetViewer,
+        @NotNull DBVEntity vEntity,
         @Nullable final DBDAttributeBinding attr,
         @Nullable final ResultSetRow row)
     {
@@ -104,7 +104,8 @@ class ColorSettingsDialog extends BaseDialog {
         this.resultSetViewer = resultSetViewer;
         this.attribute = attr;
         this.row = row;
-        this.vEntitySrc = DBVUtils.getVirtualEntity(resultSetViewer.getDataContainer(), true);
+
+        this.vEntitySrc = vEntity;
         this.vEntity = new DBVEntity(vEntitySrc.getContainer(), vEntitySrc, vEntitySrc.getModel());
 
         DEFAULT_RGB = resultSetViewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND).getRGB();
@@ -146,7 +147,7 @@ class ColorSettingsDialog extends BaseDialog {
         UIUtils.createTableColumn(attributeTable, SWT.LEFT, "Colors");
 
         for (DBDAttributeBinding attr : resultSetViewer.getModel().getVisibleAttributes()) {
-            TableItem attrItem = new TableItem(attributeTable, SWT.NONE);;
+            TableItem attrItem = new TableItem(attributeTable, SWT.NONE);
             attrItem.setData(attr);
             attrItem.setText(0, attr.getName());
             attrItem.setImage(0, DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr, true)));
@@ -286,7 +287,7 @@ class ColorSettingsDialog extends BaseDialog {
             {
                 ToolBar buttonsPanel = new ToolBar(colorsGroup, SWT.FLAT | SWT.VERTICAL);
                 buttonsPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-                ToolItem btnAdd = UIUtils.createToolItem(buttonsPanel, "Add", UIIcon.ROW_ADD, new SelectionAdapter() {
+                UIUtils.createToolItem(buttonsPanel, "Add", UIIcon.ROW_ADD, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         curOverride = new DBVColorOverride(attribute.getName(), DBCLogicalOperator.EQUALS, null, null, null);

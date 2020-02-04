@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -107,13 +108,17 @@ public class ToolsRegistry
     public boolean hasTools(IStructuredSelection selection) {
         boolean singleObject = selection.size() == 1;
         for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-            DBSObject selectedObject = DBUtils.getFromObject(iter.next());
-            if (selectedObject != null) {
+            Object item = iter.next();
+            DBSObject dbObject = DBUtils.getFromObject(item);
+            if (dbObject != null) {
+                item = dbObject;
+            }
+            if (item instanceof DBPObject) {
                 for (ToolDescriptor descriptor : tools) {
                     if (descriptor.isSingleton() && !singleObject) {
                         continue;
                     }
-                    if (descriptor.appliesTo(selectedObject)) {
+                    if (descriptor.appliesTo((DBPObject) item)) {
                         return true;
                     }
                 }

@@ -20,12 +20,15 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -33,7 +36,10 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
 
     static protected final Log log = Log.getLog(AbstractDataSourceHandler.class);
 
-    protected DBCExecutionContext getExecutionContext(ExecutionEvent event, boolean useEditor)
+    /**
+     * Get execution context from active editor or active selection
+     */
+    public static DBCExecutionContext getActiveExecutionContext(ExecutionEvent event, boolean useEditor)
     {
         if (useEditor) {
             IEditorPart editor = HandlerUtil.getActiveEditor(event);
@@ -57,12 +63,35 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         return null;
     }
 
-    protected static DBPDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor)
+    public static DBSObject getActiveObject(ExecutionEvent event)
+    {
+        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+
+        IStructuredSelection navSelection = NavigatorUtils.getSelectionFromPart(activePart);
+        if (navSelection != null) {
+            DBNNode selectedNode = NavigatorUtils.getSelectedNode(navSelection);
+            if (selectedNode instanceof DBNDatabaseNode) {
+                return ((DBNDatabaseNode) selectedNode).getObject();
+            }
+        }
+
+        return null;
+    }
+
+    public static DBCExecutionContext getExecutionContextFromPart(IWorkbenchPart activePart)
+    {
+        if (activePart instanceof DBPContextProvider) {
+            return ((DBPContextProvider) activePart).getExecutionContext();
+        }
+        return null;
+    }
+
+    public static DBPDataSourceContainer getActiveDataSourceContainer(ExecutionEvent event, boolean useEditor)
     {
         if (useEditor) {
             IEditorPart editor = HandlerUtil.getActiveEditor(event);
             if (editor != null) {
-                DBPDataSourceContainer container = getDataSourceContainer(editor);
+                DBPDataSourceContainer container = getDataSourceContainerFromPart(editor);
                 if (container != null) {
                     return container;
                 }
@@ -70,7 +99,7 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
             return null;
         }
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        DBPDataSourceContainer container = getDataSourceContainer(activePart);
+        DBPDataSourceContainer container = getDataSourceContainerFromPart(activePart);
         if (container != null) {
             return container;
         }
@@ -87,15 +116,7 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         return null;
     }
 
-    public static DBCExecutionContext getExecutionContext(IWorkbenchPart activePart)
-    {
-        if (activePart instanceof DBPContextProvider) {
-            return ((DBPContextProvider) activePart).getExecutionContext();
-        }
-        return null;
-    }
-
-    public static DBPDataSourceContainer getDataSourceContainer(IWorkbenchPart activePart)
+    public static DBPDataSourceContainer getDataSourceContainerFromPart(IWorkbenchPart activePart)
     {
         if (activePart instanceof IDataSourceContainerProvider) {
             return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
@@ -106,4 +127,5 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         }
         return null;
     }
+
 }

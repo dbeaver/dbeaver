@@ -23,7 +23,7 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * SelectObjectDialog
@@ -48,14 +48,18 @@ public abstract class AbstractPopupPanel extends Dialog {
         return true;
     }
 
-    public boolean isModeless() {
+    protected boolean isModeless() {
         return modeless;
+    }
+
+    protected boolean isShowTitle() {
+        return true;
     }
 
     public void setModeless(boolean modeless) {
         this.modeless = modeless;
         if (modeless) {
-            setShellStyle(SWT.SHELL_TRIM);
+            setShellStyle(SWT.RESIZE | (isShowTitle() ? (SWT.CLOSE | SWT.TITLE | SWT.MIN | SWT.MAX) : SWT.NONE));
         } else {
             setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
         }
@@ -81,8 +85,12 @@ public abstract class AbstractPopupPanel extends Dialog {
                 @Override
                 public void focusLost(FocusEvent e) {
                     UIUtils.asyncExec(() -> {
-                        if (getShell() != null && !UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
-                            cancelPressed();
+                        Shell shell = getShell();
+                        if (shell != null) {
+                            Control focusControl = shell.getDisplay().getFocusControl();
+                            if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
+                                cancelPressed();
+                            }
                         }
                     });
                 }

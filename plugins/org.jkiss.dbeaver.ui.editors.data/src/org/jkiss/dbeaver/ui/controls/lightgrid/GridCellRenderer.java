@@ -21,8 +21,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -77,10 +77,7 @@ class GridCellRenderer extends AbstractRenderer
         Image image;
         Rectangle imageBounds = null;
 
-        if (isLinkState(state)) {
-            image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
-            imageBounds = LINK_IMAGE_BOUNDS;
-        } else {
+        {
             DBPImage cellImage = grid.getCellImage(col, row);
             if (cellImage != null) {
                 image = DBeaverIcons.getImage(cellImage);
@@ -88,12 +85,20 @@ class GridCellRenderer extends AbstractRenderer
             } else {
                 image = null;
             }
+
+            if (image == null && isLinkState(state)) {
+                image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
+                imageBounds = LINK_IMAGE_BOUNDS;
+            }
         }
 
         int columnAlign = grid.getContentProvider().getColumnAlign(col);
 
         if (image != null && columnAlign != IGridContentProvider.ALIGN_RIGHT) {
             int y = bounds.y + (bounds.height - imageBounds.height) / 2;
+            if (columnAlign == IGridContentProvider.ALIGN_CENTER) {
+                x += (bounds.width - imageBounds.width - RIGHT_MARGIN - LEFT_MARGIN) / 2;
+            }
             gc.drawImage(image, bounds.x + x, y);
 
             x += imageBounds.width + INSIDE_MARGIN;
@@ -176,25 +181,47 @@ class GridCellRenderer extends AbstractRenderer
         }
     }
 
-    public boolean isOverLink(GridColumn column, int row, int x, int y) {
-        int state = grid.getContentProvider().getCellState(column.getElement(), grid.getRowElement(row), null);
+    boolean isOverLink(GridColumn column, int row, int x, int y) {
+        IGridContentProvider contentProvider = grid.getContentProvider();
+        Object colElement = column.getElement();
+        Object rowElement = grid.getRowElement(row);
+        int state = contentProvider.getCellState(colElement, rowElement, null);
 
         if (isLinkState(state)) {
+            int columnAlign = contentProvider.getColumnAlign(colElement);
             Point origin = grid.getOrigin(column, row);
-            int verMargin = (grid.getItemHeight() - LINK_IMAGE_BOUNDS.height) / 2;
-            int columnAlign = grid.getContentProvider().getColumnAlign(column.getElement());
-
-            if (columnAlign != IGridContentProvider.ALIGN_RIGHT) {
-                if (x >= origin.x + LEFT_MARGIN && x <= origin.x + LEFT_MARGIN + LINK_IMAGE_BOUNDS.width &&
-                    y >= origin.y + verMargin && y <= origin.y + verMargin + LINK_IMAGE_BOUNDS.height) {
-                    return true;
-                }
+            DBPImage cellImage = grid.getCellImage(colElement, rowElement);
+            Image image;
+            if (cellImage == null) {
+                image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
             } else {
-                int width = column.getWidth();
-                if (x >= origin.x + width - (LEFT_MARGIN + LINK_IMAGE_BOUNDS.width) && x <= origin.x + width - RIGHT_MARGIN &&
-                    y >= origin.y + verMargin && y <= origin.y + verMargin + LINK_IMAGE_BOUNDS.height) {
-                    return true;
-                }
+                image = DBeaverIcons.getImage(cellImage);
+            }
+            Rectangle imageBounds = image.getBounds();
+
+            int verMargin = (grid.getItemHeight() - imageBounds.height) / 2;
+
+            switch (columnAlign) {
+                case IGridContentProvider.ALIGN_LEFT:
+                    if (x >= origin.x + LEFT_MARGIN && x <= origin.x + LEFT_MARGIN + imageBounds.width &&
+                        y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
+                        return true;
+                    }
+                    break;
+                case IGridContentProvider.ALIGN_RIGHT:
+                    int width = column.getWidth();
+                    if (x >= origin.x + width - (LEFT_MARGIN + imageBounds.width) && x <= origin.x + width - RIGHT_MARGIN &&
+                        y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
+                        return true;
+                    }
+                    break;
+                case IGridContentProvider.ALIGN_CENTER:
+                    int leftIndent = (column.getWidth() - imageBounds.width - RIGHT_MARGIN - LEFT_MARGIN) / 2;
+                    if (x >= origin.x + LEFT_MARGIN + leftIndent && x <= origin.x + LEFT_MARGIN + leftIndent + imageBounds.width &&
+                        y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
+                        return true;
+                    }
+                    break;
             }
 
         }

@@ -35,14 +35,17 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRCreator;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.GenerateSQLParametrizedDialog;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -131,10 +134,10 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
-    public Object openSQLConsole(@NotNull DBPDataSourceContainer dataSourceContainer, String name, String sqlText) {
-        return OpenHandler.openSQLConsole(
+    public Object openSQLConsole(@NotNull DBPDataSourceContainer dataSourceContainer, DBCExecutionContext executionContext, String name, String sqlText) {
+        return SQLEditorHandlerOpenEditor.openSQLConsole(
             UIUtils.getActiveWorkbenchWindow(),
-            dataSourceContainer,
+            executionContext != null ? new SQLNavigatorContext(executionContext) : new SQLNavigatorContext(dataSourceContainer),
             name,
             sqlText);
     }
@@ -172,6 +175,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
 
         TextViewer textViewer = editor.getTextViewer();
         textViewer.setData("editor", editor);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(partSite, textViewer.getTextWidget());
 
         return textViewer;
     }
@@ -199,9 +203,9 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
-    public Object openNewScript(DBPDataSourceContainer dataSource) {
+    public Object openNewScript(DBSObject forObject) {
         try {
-            OpenHandler.openNewEditor(UIUtils.getActiveWorkbenchWindow(), dataSource, null);
+            SQLEditorHandlerOpenEditor.openNewEditor(new SQLNavigatorContext(forObject), null);
             return true;
         } catch (CoreException e) {
             DBWorkbench.getPlatformUI().showError("Open new SQL editor", "Can't open new SQL editor", e);
@@ -210,9 +214,12 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
-    public Object openRecentScript(DBPDataSourceContainer dataSource) {
+    public Object openRecentScript(DBSObject forObject) {
         try {
-            OpenHandler.openRecentScript(UIUtils.getActiveWorkbenchWindow(), dataSource, null);
+            SQLEditorHandlerOpenEditor.openRecentScript(
+                UIUtils.getActiveWorkbenchWindow(),
+                new SQLNavigatorContext(forObject),
+                null);
             return true;
         } catch (CoreException e) {
             DBWorkbench.getPlatformUI().showError("Open SQL editor", "Can't open SQL editor", e);
@@ -222,6 +229,6 @@ public class UIServiceSQLImpl implements UIServiceSQL {
 
     @Override
     public void openResource(IResource element) {
-        OpenHandler.openResource(element, UIUtils.getActiveWorkbenchWindow());
+        SQLEditorHandlerOpenEditor.openResource(element, new SQLNavigatorContext());
     }
 }

@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -28,10 +29,10 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayInputStream;
@@ -49,6 +50,11 @@ public class SQLEditorUtils {
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 
+    public static boolean isOpenSeparateConnection(DBPDataSourceContainer container) {
+        return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
+            !container.getDriver().isEmbedded();
+    }
+
     public static IFolder getScriptsFolder(DBPProject project, boolean forceCreate) throws CoreException
     {
     	if (project == null) {
@@ -59,11 +65,16 @@ public class SQLEditorUtils {
     }
 
     @Nullable
-    public static ResourceInfo findRecentScript(DBPProject project, @Nullable DBPDataSourceContainer container) throws CoreException
+    public static ResourceInfo findRecentScript(DBPProject project, @Nullable SQLNavigatorContext context) throws CoreException
     {
         List<ResourceInfo> scripts = new ArrayList<>();
-        findScriptList(getScriptsFolder(project, false), container, scripts);
-        long recentTimestamp = 0l;
+        findScriptList(
+            project,
+            getScriptsFolder(project, false),
+            context == null ? null : context.getDataSourceContainer(),
+            scripts);
+
+        long recentTimestamp = 0L;
         ResourceInfo recentFile = null;
         for (ResourceInfo file : scripts) {
             if (file.localFile.lastModified() > recentTimestamp) {
@@ -74,101 +85,46 @@ public class SQLEditorUtils {
         return recentFile;
     }
 
-    private static void findScriptList(IFolder folder, @Nullable DBPDataSourceContainer container, List<ResourceInfo> result)
+    private static void findScriptList(@NotNull DBPProject project, IFolder folder, @Nullable DBPDataSourceContainer container, List<ResourceInfo> result)
     {
-        if (folder == null) {
+        if (folder == null || container == null) {
             return;
         }
         try {
-            // Search in project scripts
-            for (IResource resource : folder.members()) {
-                if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                    final DBPDataSourceContainer scriptDataSource = EditorUtils.getFileDataSource((IFile) resource);
-                    if (container == null || scriptDataSource == container) {
-                        result.add(new ResourceInfo((IFile) resource, scriptDataSource));
-                    }
-                } else if (resource instanceof IFolder) {
-                    findScriptList((IFolder) resource, container, result);
-                }
-            }
-            if (container != null) {
-                // Search in external files
-                for (Map.Entry<String, Map<String, Object>> fileEntry : DBWorkbench.getPlatform().getExternalFileManager().getAllFiles().entrySet()) {
-                    if (container.getId().equals(fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID))) {
-                        File extFile = new File(fileEntry.getKey());
-                        if (extFile.exists()) {
-                            result.add(new ResourceInfo(extFile, container));
-                        }
+            for (Map.Entry<String, Map<String, Object>> rp : project.getResourceProperties().entrySet()) {
+                String resName = rp.getKey();
+                Map<String, Object> props = rp.getValue();
+                Object dsId = props.get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
+                if (CommonUtils.equalObjects(container.getId(), dsId)) {
+                    IResource resource = project.getEclipseProject().findMember(resName);
+                    if (resource instanceof IFile) {
+                        result.add(new ResourceInfo((IFile) resource, container));
                     }
                 }
             }
-        } catch (CoreException e) {
+
+            // Search in external files
+            for (Map.Entry<String, Map<String, Object>> fileEntry : DBWorkbench.getPlatform().getExternalFileManager().getAllFiles().entrySet()) {
+                if (container.getId().equals(fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID))) {
+                    File extFile = new File(fileEntry.getKey());
+                    if (extFile.exists()) {
+                        result.add(new ResourceInfo(extFile, container));
+                    }
+                }
+            }
+        } catch (Throwable e) {
             log.debug(e.getMessage());
         }
     }
 
-    public static List<ResourceInfo> findScriptTree(IFolder folder, @Nullable DBPDataSourceContainer[] containers)
+    public static List<ResourceInfo> findScriptTree(DBPProject project, IFolder folder, @Nullable DBPDataSourceContainer container)
     {
         List<ResourceInfo> result = new ArrayList<>();
-        try {
-            for (IResource resource : folder.members()) {
-                if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                    final DBPDataSourceContainer scriptDataSource = EditorUtils.getFileDataSource((IFile) resource);
-                    if (containers == null || ArrayUtils.containsRef(containers, scriptDataSource)) {
-                        result.add(new ResourceInfo((IFile) resource, scriptDataSource));
-                    }
-                } else if (resource instanceof IFolder) {
-                    final ResourceInfo folderInfo = new ResourceInfo((IFolder) resource);
-                    if (findChildScripts(folderInfo, containers)) {
-                        result.add(folderInfo);
-                    }
-                }
-            }
-            if (!ArrayUtils.isEmpty(containers)) {
-                // Search in external files
-                for (Map.Entry<String, Map<String, Object>> fileEntry : DBWorkbench.getPlatform().getExternalFileManager().getAllFiles().entrySet()) {
-                    final Object fileContainerId = fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
-                    if (fileContainerId != null) {
-                        File extFile = new File(fileEntry.getKey());
-                        if (extFile.exists()) {
-                            for (DBPDataSourceContainer container : containers) {
-                                if (container.getId().equals(fileContainerId)) {
-                                    result.add(new ResourceInfo(extFile, container));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (CoreException e) {
-            log.debug(e);
-        }
+        findScriptList(project, folder, container, result);
         return result;
     }
 
-    private static boolean findChildScripts(ResourceInfo folder, @Nullable DBPDataSourceContainer[] containers) throws CoreException {
-        boolean hasScripts = false;
-        for (IResource resource : ((IFolder)folder.resource).members()) {
-            if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                final DBPDataSourceContainer scriptDataSource = EditorUtils.getFileDataSource((IFile) resource);
-                if (containers == null || ArrayUtils.containsRef(containers, scriptDataSource)) {
-                    folder.children.add(new ResourceInfo((IFile) resource, scriptDataSource));
-                    hasScripts = true;
-                }
-            } else if (resource instanceof IFolder) {
-                final ResourceInfo folderInfo = new ResourceInfo((IFolder) resource);
-                if (findChildScripts(folderInfo, containers)) {
-                    folder.children.add(folderInfo);
-                    hasScripts = true;
-                }
-            }
-
-        }
-        return hasScripts;
-    }
-
-    public static IFile createNewScript(DBPProject project, @Nullable IFolder folder, @Nullable DBPDataSourceContainer dataSourceContainer) throws CoreException
+    public static IFile createNewScript(DBPProject project, @Nullable IFolder folder, @NotNull SQLNavigatorContext navigatorContext) throws CoreException
     {
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
 
@@ -184,6 +140,7 @@ public class SQLEditorUtils {
 
         if (CommonUtils.equalObjects(scriptsRootFolder, scriptsFolder)) {
             // We are in the root folder
+            DBPDataSourceContainer dataSourceContainer = navigatorContext.getDataSourceContainer();
             if (dataSourceContainer != null) {
                 if (dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS)) {
                     // Create script folders according to connection folders
@@ -220,11 +177,10 @@ public class SQLEditorUtils {
         // Make new script file
         IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
-        //tempFile.setCharset(GeneralUtils.getDefaultFileEncoding(), progressMonitor);
 
         // Save ds container reference
-        if (dataSourceContainer != null) {
-            EditorUtils.setFileDataSource(tempFile, dataSourceContainer);
+        if (navigatorContext.getDataSourceContainer() != null) {
+            EditorUtils.setFileDataSource(tempFile, navigatorContext);
         }
 
         return tempFile;
@@ -251,7 +207,7 @@ public class SQLEditorUtils {
         private final List<ResourceInfo> children;
         private String description;
 
-        public ResourceInfo(IFile file, DBPDataSourceContainer dataSource) {
+        ResourceInfo(IFile file, DBPDataSourceContainer dataSource) {
             this.resource = file;
             this.localFile = file.getLocation().toFile();
             this.dataSource = dataSource;
@@ -263,7 +219,7 @@ public class SQLEditorUtils {
             this.dataSource = null;
             this.children = new ArrayList<>();
         }
-        public ResourceInfo(File localFile, DBPDataSourceContainer dataSource) {
+        ResourceInfo(File localFile, DBPDataSourceContainer dataSource) {
             this.resource = null;
             this.localFile = localFile;
             this.dataSource = dataSource;
