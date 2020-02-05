@@ -108,7 +108,8 @@ public class HANAWKBWriter {
     }
 
     private static int computeMultiPointSize(MultiPoint multiPoint, XyzmMode xyzmMode) {
-        return HEADER_SIZE + COUNT_SIZE + multiPoint.getNumPoints() * xyzmMode.getCoordinatesPerPoint() * COORD_SIZE;
+        int pointSize = xyzmMode.getCoordinatesPerPoint() * COORD_SIZE;
+        return HEADER_SIZE + COUNT_SIZE + multiPoint.getNumPoints() * (HEADER_SIZE + pointSize);
     }
 
     private static int computeMultiLineStringSize(MultiLineString multiLineString, XyzmMode xyzmMode) {
