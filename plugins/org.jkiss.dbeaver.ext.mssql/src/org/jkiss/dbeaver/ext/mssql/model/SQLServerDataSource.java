@@ -80,7 +80,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return info;
     }
 
-    boolean isDataWarehouseServer(DBRProgressMonitor monitor) {
+    public boolean isDataWarehouseServer(DBRProgressMonitor monitor) {
         return getServerVersion(monitor).contains(SQLServerConstants.SQL_DW_SERVER_LABEL);
     }
 
