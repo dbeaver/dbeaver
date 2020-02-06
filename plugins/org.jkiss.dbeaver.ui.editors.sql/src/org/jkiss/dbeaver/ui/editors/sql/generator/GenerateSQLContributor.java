@@ -32,27 +32,31 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.generator.*;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.sql.generator.SQLGenerator;
+import org.jkiss.dbeaver.model.sql.generator.SQLGeneratorProcedureCall;
+import org.jkiss.dbeaver.model.sql.generator.SQLGeneratorSelect;
+import org.jkiss.dbeaver.model.sql.registry.SQLGeneratorConfigurationRegistry;
+import org.jkiss.dbeaver.model.sql.registry.SQLGeneratorDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -60,7 +64,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class GenerateSQLContributor extends CompoundContributionItem {
@@ -71,8 +74,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
     // Contributors
 
     @Override
-    protected IContributionItem[] getContributionItems()
-    {
+    protected IContributionItem[] getContributionItems() {
         IWorkbenchPart part = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
         IStructuredSelection structuredSelection = NavigatorUtils.getSelectionFromPart(part);
         if (structuredSelection == null || structuredSelection.isEmpty()) {
@@ -85,60 +87,30 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             makeResultSetContributions(menu, (IResultSetSelection) structuredSelection);
 
         } else {
-            List<DBSEntity> entities = new ArrayList<>();
-            List<DBPScriptObject> scriptObjects = new ArrayList<>();
-            for (Object sel : structuredSelection.toArray()) {
-                final DBSObject object = RuntimeUtils.getObjectAdapter(sel, DBSObject.class);
-                if (object instanceof DBSEntity) {
-                    entities.add((DBSEntity) object);
-                }
-                if (object instanceof DBPScriptObject) {
-                    scriptObjects.add((DBPScriptObject) object);
+            List<DBPObject> objects = new ArrayList<>();
+            for (Object obj : structuredSelection.toList()) {
+                if (obj instanceof DBSWrapper) {
+                    objects.add(((DBSWrapper) obj).getObject());
+                } else if (obj instanceof DBPObject) {
+                    objects.add((DBPObject) obj);
                 }
             }
-            if (!entities.isEmpty()) {
-                makeTableContributions(menu, entities);
-            }
-            if (!scriptObjects.isEmpty()) {
-                makeScriptContributions(menu, scriptObjects);
+            List<SQLGeneratorDescriptor> generators = SQLGeneratorConfigurationRegistry.getInstance().getApplicableGenerators(objects, structuredSelection);
+            int lastGrand = 0;
+            for (SQLGeneratorDescriptor gen : generators) {
+                int order = gen.getOrder();
+                if (order > 0 && order / 1000 > lastGrand) {
+                    menu.add(new Separator());
+                }
+                lastGrand = order / 1000;
+
+                menu.add(makeAction(gen.getLabel(), gen, objects));
             }
         }
         return menu.toArray(new IContributionItem[0]);
     }
 
-    private void makeTableContributions(List<IContributionItem> menu, final List<DBSEntity> entities)
-    {
-        // Table
-        menu.add(makeAction("SELECT ", SELECT_GENERATOR(entities, true)));
-        menu.add(makeAction("INSERT ", INSERT_GENERATOR(entities)));
-        menu.add(makeAction("UPDATE ", UPDATE_GENERATOR(entities)));
-        menu.add(makeAction("DELETE ", DELETE_GENERATOR(entities)));
-        menu.add(makeAction("MERGE", MERGE_GENERATOR(entities)));
-        if (entities.size() > 1) {
-            menu.add(new Separator());
-            menu.add(makeAction("JOIN", JOIN_GENERATOR(entities)));
-        }
-    }
-
-    private void makeScriptContributions(List<IContributionItem> menu, final List<DBPScriptObject> scriptObjects)
-    {
-        if (menu.size() > 0) {
-            menu.add(new Separator());
-        }
-        List<DBSProcedure> procedures = new ArrayList<>();
-        for (DBPScriptObject so : scriptObjects) {
-            if (so instanceof DBSProcedure) {
-                procedures.add((DBSProcedure) so);
-            }
-        }
-        if (!procedures.isEmpty()) {
-            menu.add(makeAction("CALL", CALL_GENERATOR(procedures)));
-        }
-        menu.add(makeAction("DDL", new SQLGeneratorDDL(scriptObjects)));
-    }
-
-    private void makeResultSetContributions(List<IContributionItem> menu, IResultSetSelection rss)
-    {
+    private void makeResultSetContributions(List<IContributionItem> menu, IResultSetSelection rss) {
         final IResultSetController rsv = rss.getController();
         DBSDataContainer dataContainer = rsv.getDataContainer();
         final List<DBDAttributeBinding> visibleAttributes = rsv.getModel().getVisibleAttributes();
@@ -147,15 +119,15 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             final List<ResultSetRow> selectedRows = new ArrayList<>(rss.getSelectedRows());
             if (!CommonUtils.isEmpty(selectedRows)) {
 
-                menu.add(makeAction("SELECT .. WHERE .. =", new SQLGeneratorSelectFromData(dataContainer, rsv, selectedRows, entity)));
-                if (selectedRows.size() > 1) {
-                    menu.add(makeAction("SELECT .. WHERE .. IN", new SQLGeneratorSelectManyFromData(dataContainer, rsv, entity, selectedRows)));
+                List<IResultSetController> objects = new ArrayList<>();
+                objects.add(rsv);
+                List<SQLGeneratorDescriptor> generators = SQLGeneratorConfigurationRegistry.getInstance().getApplicableGenerators(objects, rsv);
+                for (SQLGeneratorDescriptor gen : generators) {
+                    if (gen.isMultiObject() && selectedRows.size() < 2) {
+                        continue;
+                    }
+                    menu.add(makeAction(gen.getLabel(), gen, objects));
                 }
-                menu.add(makeAction("INSERT", new SQLGeneratorInsertFromData(dataContainer, rsv, selectedRows, entity)));
-
-                menu.add(makeAction("UPDATE", new SQLGeneratorUpdateFromData(dataContainer, rsv, selectedRows, entity)));
-
-                menu.add(makeAction("DELETE by Unique Key", new SQLGeneratorDeleteFromData(dataContainer, rsv, selectedRows, entity)));
             }
         } else {
             //if (dataContainer != null && !visibleAttributes.isEmpty() && entity != null)
@@ -174,13 +146,11 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         return object instanceof DBSTable || object instanceof DBPScriptObject;
     }
 
-    private static ContributionItem makeAction(String text, final SQLGenerator<?> sqlGenerator)
-    {
+    private static ContributionItem makeAction(String text, SQLGeneratorDescriptor sqlGenerator, List<?> objects) {
         return new ActionContributionItem(
             new Action(text, DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT)) {
                 @Override
-                public void run()
-                {
+                public void run() {
                     IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
                     IEditorPart activeEditor = activePage.getActiveEditor();
 
@@ -200,14 +170,21 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     }
 
                     if (executionContext != null) {
+                        SQLGenerator<?> generator;
+                        try {
+                            generator = sqlGenerator.createGenerator(objects);
+                        } catch (DBException e) {
+                            DBWorkbench.getPlatformUI().showError("Generator create", "Can't create SQL generator '" + sqlGenerator.getId() + "'", e);
+                            return;
+                        }
                         ViewSQLDialog dialog = new GenerateSQLDialog(
                             activePage.getActivePart().getSite(),
                             executionContext,
-                            sqlGenerator);
+                            generator);
                         dialog.open();
                     }
                 }
-        });
+            });
     }
 
     private static class GenerateSQLDialog extends ViewSQLDialog {
@@ -230,7 +207,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     getDialogBoundsSettings().getBoolean(PROP_USE_FQ_NAMES));
             sqlGenerator.setCompactSQL(
                 getDialogBoundsSettings().get(PROP_USE_COMPACT_SQL) != null &&
-                getDialogBoundsSettings().getBoolean(PROP_USE_COMPACT_SQL));
+                    getDialogBoundsSettings().getBoolean(PROP_USE_COMPACT_SQL));
             UIUtils.runInUI(sqlGenerator);
             Object sql = sqlGenerator.getResult();
             if (sql != null) {
@@ -280,75 +257,17 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
     @NotNull
     public static SQLGenerator<DBSEntity> SELECT_GENERATOR(final List<DBSEntity> entities, final boolean columnList) {
-        return new SQLGeneratorSelect(entities, columnList);
-    }
-
-    @NotNull
-    private SQLGenerator<DBSEntity> DELETE_GENERATOR(final List<DBSEntity> entities) {
-        return new SQLGeneratorDelete(entities);
-    }
-
-    @NotNull
-    private static SQLGenerator<DBSEntity> INSERT_GENERATOR(final List<DBSEntity> entities) {
-        return new SQLGeneratorInsert(entities);
-    }
-
-    @NotNull
-    private static SQLGenerator<DBSEntity> UPDATE_GENERATOR(final List<DBSEntity> entities) {
-        return new SQLGeneratorUpdate(entities);
-    }
-
-    @NotNull
-    private static SQLGenerator<DBSEntity> MERGE_GENERATOR(final List<DBSEntity> entities) {
-        return new SQLGeneratorMerge(entities);
-    }
-
-    @NotNull
-    private static SQLGenerator<DBSEntity> JOIN_GENERATOR(final List<DBSEntity> entities) {
-        return new SQLGeneratorJoin(entities);
+        SQLGeneratorSelect generatorSelect = new SQLGeneratorSelect();
+        generatorSelect.initGenerator(entities);
+        generatorSelect.setColumnList(columnList);
+        return generatorSelect;
     }
 
     @NotNull
     public static SQLGenerator<DBSProcedure> CALL_GENERATOR(final List<DBSProcedure> entities) {
-        return new SQLGeneratorProcedureCall(entities);
-    }
-
-    private static class SQLGeneratorSelectFromData extends ResultSetAnalysisRunner {
-        private final IResultSetController rsv;
-        private final List<ResultSetRow> selectedRows;
-        private final DBSEntity entity;
-
-        public SQLGeneratorSelectFromData(DBSDataContainer dataContainer, IResultSetController rsv, List<ResultSetRow> selectedRows, DBSEntity entity) {
-            super(dataContainer.getDataSource(), rsv.getModel());
-            this.rsv = rsv;
-            this.selectedRows = selectedRows;
-            this.entity = entity;
-        }
-
-        @Override
-        public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object) {
-            for (ResultSetRow firstRow : selectedRows) {
-
-                Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
-                sql.append("SELECT ");
-                boolean hasAttr = false;
-                for (DBSAttributeBase attr : getAllAttributes(monitor, object)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
-                    hasAttr = true;
-                }
-                sql.append(getLineSeparator()).append("FROM ").append(getEntityName(entity));
-                sql.append(getLineSeparator()).append("WHERE ");
-                hasAttr = false;
-                for (DBDAttributeBinding binding : keyAttributes) {
-                    if (hasAttr) sql.append(" AND ");
-                    appendValueCondition(rsv, sql, binding, firstRow);
-                    hasAttr = true;
-                }
-                sql.append(";\n");
-            }
-        }
-
+        SQLGeneratorProcedureCall procedureCall = new SQLGeneratorProcedureCall();
+        procedureCall.initGenerator(entities);
+        return procedureCall;
     }
 
 }

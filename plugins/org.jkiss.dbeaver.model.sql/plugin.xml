@@ -18,6 +18,34 @@
         <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" label="%sql.formatter.external.name" description="%sql.formatter.external.tip"/>
     </extension>
 
+    <!-- SQL Generators -->
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="tableSelect" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorSelect" label="SELECT" description="SELECT from table" order="1">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </generator>
+        <generator id="tableInsert" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorInsert" label="INSERT" description="INSERT into table" order="2">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableUpdate" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorUpdate" label="UPDATE" description="UPDATE table" order="3">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableDelete" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDelete" label="DELETE" description="DELETE from table" order="4">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableMerge" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorMerge" label="MERGE" description="MERGE table" order="5">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorJoin" label="JOIN" description="JOIN tables" order="6" multiObject="true">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </generator>
+        <generator id="procedureCall" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorProcedureCall" label="CALL" description="Execute procedure" order="1000">
+            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
+        </generator>
+        <generator id="tableDDL" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDDL" label="DDL" description="Get table DDL" order="1001">
+            <objectType name="org.jkiss.dbeaver.model.DBPScriptObject"/>
+        </generator>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.sqlCommand">
         <command id="set" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
         <command id="unset" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandUnset" label="Unset" description="Removes variable/parameter"/>

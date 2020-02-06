@@ -27,6 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -42,7 +43,7 @@ import java.util.List;
  * ResultSet controller.
  * This interface is not supposed to be implemented by clients.
  */
-public interface IResultSetController extends IDataController, DBPContextProvider {
+public interface IResultSetController extends IDataController, DBPContextProvider, DBPObject {
 
     String MENU_ID_EDIT = "edit";
     String MENU_ID_VIEW = "view";

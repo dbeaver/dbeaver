@@ -26,12 +26,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 public class SQLGeneratorUpdate extends TableAnalysisRunner {
-    public SQLGeneratorUpdate(List<DBSEntity> entities) {
-        super(entities);
-    }
 
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {

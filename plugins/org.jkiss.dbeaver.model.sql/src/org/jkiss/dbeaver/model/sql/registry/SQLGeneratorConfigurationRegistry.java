@@ -22,16 +22,19 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.sql.generator.SQLGenerator;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 public class SQLGeneratorConfigurationRegistry
 {
     private static final Log log = Log.getLog(SQLGeneratorConfigurationRegistry.class);
 
-    private static final String TAG_FORMATTER = "generator"; //$NON-NLS-1$
+    private static final String TAG_GENERATOR = "generator"; //$NON-NLS-1$
 
     private static SQLGeneratorConfigurationRegistry instance = null;
     private final List<SQLGeneratorDescriptor> generators = new ArrayList<>();
@@ -51,10 +54,10 @@ public class SQLGeneratorConfigurationRegistry
 
     private void loadExtensions(IExtensionRegistry registry)
     {
-        IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQLFormatterDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQLGeneratorDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extConfigs) {
             // Load generators
-            if (TAG_FORMATTER.equals(ext.getName())) {
+            if (TAG_GENERATOR.equals(ext.getName())) {
                 this.generators.add(
                     new SQLGeneratorDescriptor(ext));
             }
@@ -70,8 +73,21 @@ public class SQLGeneratorConfigurationRegistry
         return new ArrayList<>(generators);
     }
 
-    public List<SQLGeneratorDescriptor> getApplicableGenerators() {
-        return getAllGenerators();
+    public List<SQLGeneratorDescriptor> getApplicableGenerators(Collection<?> objects, Object context) {
+        List<SQLGeneratorDescriptor> result = new ArrayList<>();
+        for (SQLGeneratorDescriptor gen : generators) {
+            for (Object object : objects) {
+                if (object instanceof DBPObject && gen.appliesTo((DBPObject) object, context)) {
+                    if (gen.isMultiObject() && objects.size() < 2) {
+                        continue;
+                    }
+                    result.add(gen);
+                    break;
+                }
+            }
+        }
+        result.sort(Comparator.comparingInt(SQLGeneratorDescriptor::getOrder));
+        return result;
     }
 
     public SQLGeneratorDescriptor getGenerator(String id) {

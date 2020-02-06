@@ -22,14 +22,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 public abstract class ProcedureAnalysisRunner extends BaseAnalysisRunner<DBSProcedure> {
-
-    ProcedureAnalysisRunner(List<DBSProcedure> entities)
-    {
-        super(entities);
-    }
 
     protected Collection<? extends DBSEntityAttribute> getAllAttributes(DBRProgressMonitor monitor, DBSProcedure object) {
         return Collections.emptyList();

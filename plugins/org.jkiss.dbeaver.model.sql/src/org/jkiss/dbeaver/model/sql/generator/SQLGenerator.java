@@ -29,13 +29,16 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String> {
-    final protected List<OBJECT> objects;
+    protected List<OBJECT> objects;
     private boolean fullyQualifiedNames = true;
     private boolean compactSQL = false;
 
-    SQLGenerator(List<OBJECT> objects)
-    {
+    public void initGenerator(List<OBJECT> objects) {
         this.objects = objects;
+    }
+
+    public List<OBJECT> getObjects() {
+        return objects;
     }
 
     public boolean isFullyQualifiedNames() {

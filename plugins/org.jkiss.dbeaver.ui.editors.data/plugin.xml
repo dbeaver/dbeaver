@@ -180,6 +180,25 @@
         </editor>
     </extension>
 
+    <!-- SQL Generators -->
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="dataSelect" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorSelectFromData" label="SELECT .. WHERE .. =" description="SELECT from table" order="1">
+            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+        </generator>
+        <generator id="dataSelectMany" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorSelectManyFromData" label="SELECT .. WHERE .. IN" description="SELECT from table IN" order="2" multiObject="true">
+            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+        </generator>
+        <generator id="dataInsert" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorInsertFromData" label="INSERT" description="INSERT into table" order="3">
+            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+        </generator>
+        <generator id="dataUpdate" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorUpdateFromData" label="UPDATE" description="UPDATE table" order="4">
+            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+        </generator>
+        <generator id="dataDeleteByUniqueKey" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorDeleteFromData" label="DELETE by Unique Key" description="DELETE from table" order="5">
+            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+        </generator>
+    </extension>
+
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
                 class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"

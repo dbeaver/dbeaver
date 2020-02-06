@@ -25,13 +25,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 public class SQLGeneratorProcedureCall extends ProcedureAnalysisRunner {
-
-    public SQLGeneratorProcedureCall(List<DBSProcedure> entities) {
-        super(entities);
-    }
 
     @Override
     protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
