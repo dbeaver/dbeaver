@@ -273,9 +273,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     @Override
     public void dispose() {
-
         try {
-            if (exportSql) {
+            if (exportSql && wb != null) {
                 try {
 
                     Sheet sh = wb.createSheet();
@@ -302,16 +301,22 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                     log.error("Dispose error", e);
                 }
             }
-            wb.write(getSite().getOutputStream());
-            wb.dispose();
+            if (wb != null) {
+                wb.write(getSite().getOutputStream());
+                wb.dispose();
+            }
 
         } catch (IOException e) {
             log.error("Dispose error", e);
         }
         wb = null;
-        for (Worksheet w : worksheets.values()) {
-            w.dispose();
+        if (worksheets != null) {
+            for (Worksheet w : worksheets.values()) {
+                w.dispose();
+            }
         }
+        worksheets.clear();
+
         super.dispose();
     }
 
