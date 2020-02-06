@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.colors;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -44,6 +44,10 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
@@ -55,7 +59,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-class ColorSettingsDialog extends BaseDialog {
+public class ColorSettingsDialog extends BaseDialog {
 
     private static final Log log = Log.getLog(ColorSettingsDialog.class);
 
@@ -94,10 +98,10 @@ class ColorSettingsDialog extends BaseDialog {
     private Composite editorPlaceholder1;
     private Composite editorPlaceholder2;
 
-    ColorSettingsDialog(
+    public ColorSettingsDialog(
         @NotNull ResultSetViewer resultSetViewer,
         @NotNull DBVEntity vEntity,
-        @Nullable final DBDAttributeBinding attr,
+        @NotNull final DBDAttributeBinding attr,
         @Nullable final ResultSetRow row)
     {
         super(resultSetViewer.getControl().getShell(), "Customize colors for [" + attr.getName() + "]", UIIcon.PALETTE);

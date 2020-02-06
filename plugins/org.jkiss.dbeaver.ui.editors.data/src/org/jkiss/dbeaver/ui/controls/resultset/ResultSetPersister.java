@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -513,6 +514,64 @@ class ResultSetPersister {
             return (DBSDataManipulator) entity;
         } else {
             throw new DBCException("Entity " + entity.getName() + " doesn't support data manipulation");
+        }
+    }
+
+    void checkEntityIdentifiers() throws DBException
+    {
+
+        final DBCExecutionContext executionContext = viewer.getExecutionContext();
+        if (executionContext == null) {
+            throw new DBCException("Can't persist data - not connected to database");
+        }
+
+        boolean needsSingleEntity = this.hasInserts() || this.hasDeletes();
+
+        DBSEntity entity = model.getSingleSource();
+        if (needsSingleEntity) {
+            if (entity == null) {
+                throw new DBCException("Can't detect source entity");
+            }
+        }
+
+        if (entity != null) {
+            // Check for value locators
+            // Probably we have only virtual one with empty attribute set
+            DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
+            if (identifier != null) {
+                if (CommonUtils.isEmpty(identifier.getAttributes())) {
+                    // Empty identifier. We have to define it
+                    if (!UIConfirmation.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(viewer, executionContext))) {
+                        throw new DBCException("No unique key defined");
+                    }
+                }
+            }
+        }
+
+        List<DBDAttributeBinding> updatedAttributes = this.getUpdatedAttributes();
+        if (this.hasDeletes()) {
+            DBDRowIdentifier defIdentifier = this.getDefaultRowIdentifier();
+            if (defIdentifier == null) {
+                throw new DBCException("No unique row identifier is result set. Cannot proceed with row(s) delete.");
+            } else if (!defIdentifier.isValidIdentifier()) {
+                throw new DBCException("Attributes of unique key '" + DBUtils.getObjectFullName(defIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set. Cannot proceed with row(s) delete.");
+            }
+        }
+
+        {
+            for (DBDAttributeBinding attr : updatedAttributes) {
+                // Check attributes of non-virtual identifier
+                DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+                if (rowIdentifier == null) {
+                    // We shouldn't be here ever!
+                    // Virtual id should be created if we missing natural one
+                    throw new DBCException("Attribute " + attr.getName() + " was changed but it hasn't associated unique key");
+                } else if (!rowIdentifier.isValidIdentifier()) {
+                    throw new DBCException(
+                        "Can't update attribute '" + attr.getName() +
+                            "' - attributes of key '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
+                }
+            }
         }
     }
 
