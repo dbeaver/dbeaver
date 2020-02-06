@@ -148,7 +148,11 @@ public class SQLServerUtils {
         String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(systemSchema + ".sp_helptext '" + objectFQN + "'")) {
+            String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
+            if (dataSource.isDataWarehouseServer(monitor)) {
+                sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
