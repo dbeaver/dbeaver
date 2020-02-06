@@ -806,7 +806,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.add" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+INSERT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.cell.setDefault" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.cell.setDefault" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+BACKSPACE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.cell.reset" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ESC"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+S"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+R"/>
