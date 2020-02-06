@@ -28,10 +28,6 @@ import java.util.List;
 
 public abstract class BaseAnalysisRunner<OBJECT> extends SQLGenerator<OBJECT> {
 
-    protected BaseAnalysisRunner(List<OBJECT> objects) {
-        super(objects);
-    }
-
     protected abstract Collection<? extends DBSAttributeBase> getAllAttributes(DBRProgressMonitor monitor, OBJECT object) throws DBException;
 
     protected abstract Collection<? extends DBSAttributeBase> getKeyAttributes(DBRProgressMonitor monitor, OBJECT object) throws DBException;

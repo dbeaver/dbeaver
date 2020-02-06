@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.generator;
+package org.jkiss.dbeaver.ui.controls.resultset.generator;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,26 +27,33 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.generator.BaseAnalysisRunner;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class ResultSetAnalysisRunner extends BaseAnalysisRunner<ResultSetModel> {
+public abstract class ResultSetAnalysisRunner extends BaseAnalysisRunner<IResultSetController> {
 
-    ResultSetAnalysisRunner(DBPDataSource dataSource, ResultSetModel model)
-    {
-        super(Collections.singletonList(model));
+    public IResultSetController getController() {
+        return objects.get(0);
     }
 
-    protected abstract void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, ResultSetModel object)
+    public List<ResultSetRow> getSelectedRows() {
+        return getController().getSelection().getSelectedRows();
+    }
+
+    public DBSEntity getSingleEntity() {
+        return getController().getModel().getSingleSource();
+    }
+
+    protected abstract void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, IResultSetController object)
         throws DBException;
 
-    protected Collection<? extends DBSAttributeBase> getAllAttributes(DBRProgressMonitor monitor, ResultSetModel object) {
-        return object.getVisibleAttributes();
+    protected Collection<? extends DBSAttributeBase> getAllAttributes(DBRProgressMonitor monitor, IResultSetController object) {
+        return object.getModel().getVisibleAttributes();
     }
 
     void appendValueCondition(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow firstRow) {
@@ -60,7 +67,7 @@ public abstract class ResultSetAnalysisRunner extends BaseAnalysisRunner<ResultS
         }
     }
 
-    protected List<DBDAttributeBinding> getKeyAttributes(DBRProgressMonitor monitor, ResultSetModel object) {
+    protected List<DBDAttributeBinding> getKeyAttributes(DBRProgressMonitor monitor, IResultSetController object) {
         final DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier(object);
         if (rowIdentifier == null) {
             return Collections.emptyList();
@@ -69,8 +76,8 @@ public abstract class ResultSetAnalysisRunner extends BaseAnalysisRunner<ResultS
     }
 
     @Nullable
-    private DBDRowIdentifier getDefaultRowIdentifier(ResultSetModel object) {
-        for (DBDAttributeBinding attr : object.getAttributes()) {
+    private DBDRowIdentifier getDefaultRowIdentifier(IResultSetController object) {
+        for (DBDAttributeBinding attr : object.getModel().getAttributes()) {
             DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
             if (rowIdentifier != null) {
                 return rowIdentifier;

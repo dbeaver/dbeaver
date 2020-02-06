@@ -22,13 +22,8 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
-
-    public SQLGeneratorJoin(List<DBSEntity> entities) {
-        super(entities);
-    }
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException {

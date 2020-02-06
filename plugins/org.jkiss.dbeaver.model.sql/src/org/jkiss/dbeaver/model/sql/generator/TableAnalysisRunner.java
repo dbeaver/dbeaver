@@ -24,14 +24,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 public abstract class TableAnalysisRunner extends BaseAnalysisRunner<DBSEntity> {
-
-    TableAnalysisRunner(List<DBSEntity> entities)
-    {
-        super(entities);
-    }
 
     protected Collection<? extends DBSEntityAttribute> getAllAttributes(DBRProgressMonitor monitor, DBSEntity object) throws DBException
     {

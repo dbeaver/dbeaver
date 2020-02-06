@@ -32,9 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 public class SQLGeneratorDDL extends SQLGenerator<DBPScriptObject> {
-    public SQLGeneratorDDL(List<DBPScriptObject> scriptObjects) {
-        super(scriptObjects);
-    }
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
