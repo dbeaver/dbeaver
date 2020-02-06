@@ -172,9 +172,13 @@ public class HANAWKBParser {
         return factory.createPolygon(shell, holes);
     }
 
-    private MultiPoint parseMultiPoint() {
-        CoordinateSequence cs = readCoordinateSequence();
-        return factory.createMultiPoint(cs);
+    private MultiPoint parseMultiPoint() throws HANAWKBParserException {
+        int numPoints = data.getInt();
+        Point[] points = new Point[numPoints];
+        for (int i = 0; i < numPoints; ++i) {
+            points[i] = (Point) parseSubGeometry();
+        }
+        return factory.createMultiPoint(points);
     }
 
     private MultiLineString parseMultiLineString() throws HANAWKBParserException {
