@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.handler;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -33,6 +33,9 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSaveReport;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSaveSettings;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.DetailsViewDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 

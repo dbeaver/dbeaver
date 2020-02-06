@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.handler;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.utils.CommonUtils;
 
 /**

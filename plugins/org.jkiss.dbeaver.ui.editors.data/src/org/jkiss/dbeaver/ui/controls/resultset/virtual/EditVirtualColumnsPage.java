@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.virtual;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.utils.CommonUtils;
 

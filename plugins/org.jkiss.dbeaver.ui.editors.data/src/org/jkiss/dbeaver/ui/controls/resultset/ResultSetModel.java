@@ -279,12 +279,12 @@ public class ResultSetModel {
         return null;
     }
 
-    DBVEntity getVirtualEntity(boolean create) {
+    public DBVEntity getVirtualEntity(boolean create) {
         DBSEntity entity = isSingleSource() ? getSingleSource() : null;
         return getVirtualEntity(entity, create);
     }
 
-    DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
+    public DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
         if (entity != null) {
             return DBVUtils.getVirtualEntity(entity, true);
         }
@@ -632,7 +632,7 @@ public class ResultSetModel {
         return colorMapping.containsKey(binding);
     }
 
-    void updateColorMapping(boolean reset) {
+    public void updateColorMapping(boolean reset) {
         colorMapping.clear();
 
         DBSDataContainer dataContainer = getDataContainer();

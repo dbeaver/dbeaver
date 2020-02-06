@@ -22,7 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
+import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 
 /**
  * Spreadsheet command handler.

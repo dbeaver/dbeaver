@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
