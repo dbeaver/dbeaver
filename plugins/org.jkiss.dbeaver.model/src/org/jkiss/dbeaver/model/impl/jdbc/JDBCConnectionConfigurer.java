@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCException;
 
 import java.sql.Connection;
 import java.util.Properties;
@@ -26,7 +27,7 @@ import java.util.Properties;
  */
 public interface JDBCConnectionConfigurer {
 
-    void beforeConnection(DBPConnectionConfiguration connectionInfo, Properties connectProps);
+    void beforeConnection(DBPConnectionConfiguration connectionInfo, Properties connectProps) throws DBCException;
 
     void afterConnection(DBPConnectionConfiguration connectionInfo, Properties connectProps, Connection connection, Throwable error);
 
