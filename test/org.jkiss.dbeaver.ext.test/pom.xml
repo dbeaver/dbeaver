@@ -9,6 +9,6 @@
     <relativePath>../../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.test</artifactId>
-  <version>1.0.130-SNAPSHOT</version>
+  <version>1.0.131-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
