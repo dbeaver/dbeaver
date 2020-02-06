@@ -58,7 +58,10 @@ public class SQLNavigatorContext implements DatabaseEditorContext {
 
     public SQLNavigatorContext(DBSObject selectedObject) {
         this.selectedObject = selectedObject;
-        this.dataSourceContainer = selectedObject == null ? null : selectedObject.getDataSource().getContainer();
+        this.dataSourceContainer = selectedObject == null ? null :
+            (selectedObject instanceof DBPDataSourceContainer ?
+                (DBPDataSourceContainer) selectedObject :
+                selectedObject.getDataSource().getContainer());
         this.executionContext = null;
     }
 
