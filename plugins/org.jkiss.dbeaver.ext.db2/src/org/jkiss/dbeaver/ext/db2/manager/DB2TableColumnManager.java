@@ -170,7 +170,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
         if (command.hasProperty("dataType") || command.hasProperty("maxLength") || command.hasProperty("scale")) {
             sb.append(LINE_SEPARATOR);
             sb.append(CLAUSE_SET_TYPE);
-            sb.append(column.getDataType().getFullTypeName());
+            sb.append(DBUtils.getFullTypeName(column));
         }
 
         return sb.toString();
