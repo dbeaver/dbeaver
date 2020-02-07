@@ -1912,7 +1912,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (tabItem != null) {
                     // Do not switch tab if Output tab is active
                     CTabItem selectedTab = resultTabs.getSelection();
-                    if (selectedTab == null || selectedTab.getData() != outputViewer) {
+                    if (selectedTab == null || selectedTab.getData() != outputViewer.getControl()) {
                         resultTabs.setSelection(tabItem);
                     }
                 }
