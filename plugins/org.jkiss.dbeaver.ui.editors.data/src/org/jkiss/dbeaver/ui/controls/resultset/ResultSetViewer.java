@@ -3576,6 +3576,31 @@ public class ResultSetViewer extends Viewer
     @Override
     public boolean applyChanges(@Nullable DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings)
     {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource == null) {
+            return false;
+        }
+        if (dataSource.getContainer().getConnectionConfiguration().getConnectionType().isConfirmDataChange()) {
+            ResultSetSaveReport saveReport = generateChangesReport();
+            if (saveReport == null) {
+                return false;
+            }
+            settings = UITask.run(() -> {
+                SavePreviewDialog spd = new SavePreviewDialog(
+                    this,
+                    saveReport.isHasReferences() && saveReport.getDeletes() > 0,
+                    saveReport);
+                if (spd.open() == IDialogConstants.OK_ID) {
+                    return spd.getSaveSettings();
+                } else {
+                    return null;
+                }
+            });
+            if (settings == null) {
+                return false;
+            }
+        }
+
         return saveChanges(monitor, settings, null);
     }
 
