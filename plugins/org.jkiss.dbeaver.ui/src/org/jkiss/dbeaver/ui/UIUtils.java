@@ -1850,12 +1850,12 @@ public class UIUtils {
     }
 
     public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider) {
-        installContentProposal(control, contentAdapter, provider, false, true);
+        installContentProposal(control, contentAdapter, provider, true, true);
     }
 
     public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation, boolean insertAfter) {
         try {
-            KeyStroke keyStroke = autoActivation ? null : KeyStroke.getInstance("Ctrl+Space"); //$NON-NLS-1$
+            KeyStroke keyStroke = KeyStroke.getInstance("Ctrl+Space"); //$NON-NLS-1$
             final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
                 control,
                 contentAdapter,
