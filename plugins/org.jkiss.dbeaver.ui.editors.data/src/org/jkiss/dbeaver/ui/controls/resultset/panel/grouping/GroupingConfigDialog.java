@@ -64,7 +64,6 @@ class GroupingConfigDialog extends BaseDialog
             proposals.add(attr.getName());
         }
         StringContentProposalProvider proposalProvider = new StringContentProposalProvider(new String[0]);
-        proposalProvider.setFiltering(true);
         proposalProvider.setProposals(proposals.toArray(new String[0]));
         columnsTable = StringEditorTable.createEditableList(composite, "Columns", resultsContainer.getGroupAttributes(), DBIcon.TREE_ATTRIBUTE, proposalProvider);
 
