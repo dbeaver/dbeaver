@@ -675,7 +675,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             // Append trailing space to let alias regex match correctly
             String testQuery = SQLUtils.stripComments(request.getContext().getSyntaxManager().getDialect(), request.getActiveQuery().getText()) + " ";
             Matcher matcher = aliasPattern.matcher(testQuery);
-            if (matcher.find()) {
+            while (matcher.find()) {
+                if (!nameList.isEmpty() && matcher.start() > request.getDocumentOffset()) {
+                    // Do not search after cursor
+                    break;
+                }
+                nameList.clear();
                 int groupCount = matcher.groupCount();
                 for (int i = 1; i <= groupCount; i++) {
                     String group = matcher.group(i);
