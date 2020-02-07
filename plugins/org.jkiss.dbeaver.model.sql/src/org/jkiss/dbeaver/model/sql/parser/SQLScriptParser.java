@@ -36,6 +36,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 
 /**
@@ -70,7 +71,7 @@ public class SQLScriptParser
         boolean hasBlocks = false;
         int lastTokenLineFeeds = 0;
         SQLTokenType prevNotEmptyTokenType = SQLTokenType.T_UNKNOWN;
-        String lastKeyword = null;
+        String firstKeyword = null, lastKeyword = null;
         for (; ; ) {
             TPToken token = ruleScanner.nextToken();
             int tokenOffset = ruleScanner.getTokenOffset();
@@ -191,8 +192,11 @@ public class SQLScriptParser
                         case T_UNKNOWN:
                             try {
                                 lastKeyword = document.get(tokenOffset, tokenLength);
+                                if (firstKeyword == null) {
+                                    firstKeyword = lastKeyword;
+                                }
                             } catch (BadLocationException e) {
-                                log.error("Error getting first keyword", e);
+                                log.error("Error getting last keyword", e);
                             }
                             break;
                     }
@@ -261,9 +265,10 @@ public class SQLScriptParser
                         String queryText = document.get(statementStart, tokenOffset - statementStart);
                         queryText = SQLUtils.fixLineFeeds(queryText);
 
+                        boolean isDDLQuery = firstKeyword != null && ArrayUtils.contains(dialect.getDDLKeywords(), firstKeyword.toUpperCase(Locale.ENGLISH));
                         if (isDelimiter && (keepDelimiters ||
                             (hasBlocks && dialect.isDelimiterAfterQuery()) ||
-                            (dialect.isDelimiterAfterBlock() && SQLConstants.BLOCK_END.equals(lastKeyword))))
+                            (isDDLQuery && dialect.isDelimiterAfterBlock() && SQLConstants.BLOCK_END.equalsIgnoreCase(lastKeyword))))
                         {
                             if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                                 // Add delimiter in the end of query. Do this only for semicolon delimiters.
@@ -541,27 +546,26 @@ public class SQLScriptParser
             if (token.isWhitespace() || tokenType == SQLTokenType.T_COMMENT) {
                 continue;
             }
-            if (!supportParamsInDDL) {
-                if (firstKeyword) {
-                    // Detect query type
-                    try {
-                        String tokenText = document.get(tokenOffset, tokenLength);
-                        if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
-                            // DDL doesn't support parameters
-                            ddlQuery = true;
-                        } else {
-                            execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
-                        }
-                    } catch (BadLocationException e) {
-                        log.warn(e);
+            if (firstKeyword) {
+                // Detect query type
+                try {
+                    String tokenText = document.get(tokenOffset, tokenLength);
+                    if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
+                        // DDL doesn't support parameters
+                        ddlQuery = true;
+                    } else {
+                        execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
                     }
-                    firstKeyword = false;
+                } catch (BadLocationException e) {
+                    log.warn(e);
                 }
+                firstKeyword = false;
             }
+
             if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
-                    if (ddlQuery) {
+                    if (!supportParamsInDDL && ddlQuery) {
                         continue;
                     }
                     if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
