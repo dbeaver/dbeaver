@@ -533,7 +533,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 if ((combo.getStyle() & SWT.READ_ONLY) == 0) {
                     SimpleContentProposalProvider proposalProvider = new SimpleContentProposalProvider(strings);
                     proposalProvider.setFiltering(true);
-                    UIUtils.installContentProposal(combo, new ComboContentAdapter(), proposalProvider, true, true);
+                    UIUtils.installContentProposal(combo, new ComboContentAdapter(), proposalProvider, true, false);
                 }
 
                 return combo;
