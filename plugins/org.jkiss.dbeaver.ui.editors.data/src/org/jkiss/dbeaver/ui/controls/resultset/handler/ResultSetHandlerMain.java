@@ -274,22 +274,6 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 }
                 ResultSetSaveSettings saveSettings = new ResultSetSaveSettings();
 
-                if (dataSource.getContainer().getConnectionConfiguration().getConnectionType().isConfirmDataChange()) {
-                    ResultSetSaveReport saveReport = rsv.generateChangesReport();
-                    if (saveReport == null) {
-                        return null;
-                    }
-                    {
-                        SavePreviewDialog spd = new SavePreviewDialog(
-                            rsv,
-                            saveReport.isHasReferences() && saveReport.getDeletes() > 0,
-                            saveReport);
-                        if (spd.open() != IDialogConstants.OK_ID) {
-                            return null;
-                        }
-                        saveSettings = spd.getSaveSettings();
-                    }
-                }
                 rsv.applyChanges(null, saveSettings);
 
                 break;

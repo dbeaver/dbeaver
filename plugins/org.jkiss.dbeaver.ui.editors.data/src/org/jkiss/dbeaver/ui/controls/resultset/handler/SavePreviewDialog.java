@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import java.util.ArrayList;
 import java.util.List;
 
-class SavePreviewDialog extends DetailsViewDialog {
+public class SavePreviewDialog extends DetailsViewDialog {
 
     private static final String DIALOG_ID = "DBeaver.RSV.SavePreviewDialog";//$NON-NLS-1$
 
@@ -52,7 +52,7 @@ class SavePreviewDialog extends DetailsViewDialog {
     private ResultSetSaveSettings saveSettings;
     private ResultSetSaveReport saveReport;
 
-    SavePreviewDialog(@NotNull ResultSetViewer viewer, boolean showCascadeSettings, @NotNull ResultSetSaveReport saveReport) {
+    public SavePreviewDialog(@NotNull ResultSetViewer viewer, boolean showCascadeSettings, @NotNull ResultSetSaveReport saveReport) {
         super(viewer.getControl().getShell(), "Preview changes", UIIcon.SQL_SCRIPT);
 
         this.viewer = viewer;
