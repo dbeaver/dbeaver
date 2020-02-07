@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -28,6 +26,9 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -62,13 +63,12 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
                 CoreMessages.pref_page_ui_general_label_enable_debug_logs_tip, false, 2);
             UIUtils.createControlLabel(groupLogs, CoreMessages.pref_page_ui_general_label_log_file_location);
             logsDebugLocation = new TextWithOpenFile(groupLogs, CoreMessages.pref_page_ui_general_label_open_file_text, new String[] { "*.log", "*.txt" } );
-            UIUtils.installContentProposal(
+            ContentAssistUtils.installContentProposal(
                 logsDebugLocation.getTextControl(),
-                new TextContentAdapter(),
-                new SimpleContentProposalProvider(new String[] {
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(
                     GeneralUtils.variablePattern(SystemVariablesResolver.VAR_WORKSPACE),
-                    GeneralUtils.variablePattern(SystemVariablesResolver.VAR_HOME)
-                }));
+                    GeneralUtils.variablePattern(SystemVariablesResolver.VAR_HOME)));
             logsDebugLocation.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             Label tipLabel = UIUtils.createLabel(groupLogs, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart);

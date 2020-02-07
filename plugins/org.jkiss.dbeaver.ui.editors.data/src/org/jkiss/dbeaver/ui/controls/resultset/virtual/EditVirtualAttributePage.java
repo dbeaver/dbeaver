@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.virtual;
 
 import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
@@ -34,6 +32,9 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
@@ -114,10 +115,10 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
             } else {
                 typeCombo.setText(CommonUtils.notEmpty(vAttr.getTypeName()));
             }
-            UIUtils.installContentProposal(
+            ContentAssistUtils.installContentProposal(
                 typeCombo,
                 new ComboContentAdapter(),
-                new SimpleContentProposalProvider(typeCombo.getItems()));
+                new StringContentProposalProvider(typeCombo.getItems()));
         }
 
         kindCombo = UIUtils.createLabelCombo(panel, "Data Kind", "Column data kind", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -141,10 +142,10 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
             }
         }
 
-        UIUtils.installContentProposal(
+        ContentAssistUtils.installContentProposal(
             expressionText,
-            new TextContentAdapter(),
-            new SimpleContentProposalProvider(expressionProposals.toArray(new String[0])));
+            new SmartTextContentAdapter(),
+            new StringContentProposalProvider(expressionProposals.toArray(new String[0])));
 
         previewText = UIUtils.createLabelText(panel, "Preview", "", SWT.BORDER | SWT.READ_ONLY);
         previewText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

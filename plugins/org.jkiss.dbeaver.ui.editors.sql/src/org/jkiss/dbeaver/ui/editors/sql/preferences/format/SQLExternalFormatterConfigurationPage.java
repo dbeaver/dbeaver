@@ -16,14 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.preferences.format;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -42,12 +43,11 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         externalCmdText.setLayoutData(gd);
-        UIUtils.installContentProposal(
+        ContentAssistUtils.installContentProposal(
                 externalCmdText,
-                new TextContentAdapter(),
-                new SimpleContentProposalProvider(new String[] {
-                        GeneralUtils.variablePattern(SQLFormatterExternal.VAR_FILE)
-                }));
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(
+                    GeneralUtils.variablePattern(SQLFormatterExternal.VAR_FILE)));
         UIUtils.setContentProposalToolTip(externalCmdText, SQLEditorMessages.pref_page_sql_format_label_external_set_content_tool_tip, SQLFormatterExternal.VAR_FILE);
 
         externalUseFile = UIUtils.createCheckbox(settingsGroup,

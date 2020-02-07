@@ -46,6 +46,9 @@ public class SQLConstants {
     public static final String KEYWORD_ON = "ON";
     public static final String KEYWORD_AND = "AND";
     public static final String KEYWORD_OR = "OR";
+    public static final String KEYWORD_IS = "IS";
+    public static final String KEYWORD_NOT = "NOT";
+    public static final String KEYWORD_NULL = "NULL";
 
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
@@ -185,7 +188,7 @@ public class SQLConstants {
         "INTERSECTION",
         "INTERVAL",
         "INTO",
-        "IS",
+        KEYWORD_IS,
         "JOIN",
         "LANGUAGE",
         "LARGE",
@@ -214,8 +217,8 @@ public class SQLConstants {
         "NO",
         "NONE",
         "NORMALIZE",
-        "NOT",
-        "NULL",
+        KEYWORD_NOT,
+        KEYWORD_NULL,
         "NULLIF",
         "NUMERIC",
         "OF",

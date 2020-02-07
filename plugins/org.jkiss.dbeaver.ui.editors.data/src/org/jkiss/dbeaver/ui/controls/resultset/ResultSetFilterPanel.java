@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -56,7 +57,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartStyledTextContentAdapter;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -231,26 +233,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             });
 
-            StyledTextContentAdapter contentAdapter = new StyledTextContentAdapter(filtersText) {
-                @Override
-                public void setControlContents(Control control, String text, int cursorPosition) {
-                    // We need to set selection in the beginning of current word
-                    Point selection = filtersText.getSelection();
-                    String curText = filtersText.getText();
-                    int insertPosition = selection.x;
-                    for (int i = selection.x - 1; i >= 0; i--) {
-                        if (Character.isUnicodeIdentifierPart(curText.charAt(i))) {
-                            insertPosition = i;
-                        } else {
-                            break;
-                        }
-                    }
-                    filtersText.setSelection(insertPosition, selection.y);
-                    insertControlContents(control, text, cursorPosition);
-                }
-            };
-            filtersProposalAdapter = UIUtils.installContentProposal(
-                filtersText, contentAdapter, this, false, false);
+            filtersProposalAdapter = ContentAssistUtils.installContentProposal(
+                filtersText,
+                new SmartStyledTextContentAdapter(),
+                this,
+                true);
         }
 
         // Handle all shortcuts by filters editor, not by host editor
@@ -638,6 +625,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         SystemJob searchJob = new SystemJob("Extract attribute proposals", reader);
         searchJob.schedule();
         UIUtils.waitJobCompletion(searchJob);
+
+        String[] filterKeywords = { SQLConstants.KEYWORD_AND, SQLConstants.KEYWORD_OR, SQLConstants.KEYWORD_IS, SQLConstants.KEYWORD_NOT, SQLConstants.KEYWORD_NULL };
+        for (String kw : filterKeywords) {
+            if (word.isEmpty() || kw.startsWith(word.toUpperCase())) {
+                proposals.add(new ContentProposal(kw + " ", kw + ": SQL expression keyword"));
+            }
+        }
 
         return proposals.toArray(new IContentProposal[0]);
     }
