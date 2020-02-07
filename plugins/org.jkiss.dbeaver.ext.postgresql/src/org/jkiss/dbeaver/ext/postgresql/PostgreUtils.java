@@ -748,6 +748,8 @@ public class PostgreUtils {
         return name.replace("$user", database.getMetaContext().getActiveUser());
     }
 
+    // Copied from pgjdbc array parser class
+    // https://github.com/pgjdbc/pgjdbc/blob/master/pgjdbc/src/main/java/org/postgresql/jdbc/PgArray.java
     public static List<Object> parseArrayString(String fieldString, String delimiter) {
         List<Object> arrayList  = new ArrayList<>();
 
