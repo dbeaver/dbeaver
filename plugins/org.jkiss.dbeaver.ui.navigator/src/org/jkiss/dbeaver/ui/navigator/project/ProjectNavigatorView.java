@@ -19,16 +19,21 @@ package org.jkiss.dbeaver.ui.navigator.project;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersistor;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 
 /**
  * ProjectNavigatorView
@@ -76,5 +81,16 @@ public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
         super.createPartControl(parent);
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_NAVIGATOR);
         UIExecutionQueue.queueExec(this::restoreState);
+    }
+
+    @Override
+    public void configureView() {
+        DBPProject project = NavigatorUtils.getSelectedProject();
+        if (project != null) {
+            UIUtils.showPreferencesFor(getSite().getShell(), project.getEclipseProject(), PrefPageProjectResourceSettings.PAGE_ID);
+        } else {
+            ActionUtils.runCommand(IWorkbenchCommandConstants.WINDOW_PREFERENCES, UIUtils.getActiveWorkbenchWindow());
+        }
+
     }
 }
