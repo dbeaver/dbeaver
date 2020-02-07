@@ -780,9 +780,9 @@ public final class DBUtils {
             assert attr != null;
             try {
                 curValue = attr.extractNestedValue(curValue);
-            } catch (DBCException e) {
-                log.debug("Error reading nested value of [" + attr.getName() + "]", e);
-                curValue = null;
+            } catch (Throwable e) {
+                //log.debug("Error reading nested value of [" + attr.getName() + "]", e);
+                curValue = new DBDValueError(e);
                 break;
             }
         }
