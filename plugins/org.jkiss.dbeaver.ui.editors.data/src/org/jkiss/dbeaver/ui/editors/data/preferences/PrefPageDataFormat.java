@@ -71,7 +71,8 @@ public class PrefPageDataFormat extends TargetPrefPage
     private Map<String, Map<Object, Object>> profileProperties = new HashMap<>();
     private Combo profilesCombo;
     private PropertySourceCustom propertySource;
-    private Button useNativeFormatCheck;
+    private Button datetimeNativeFormatCheck;
+    private Button numericNativeFormatCheck;
 
     public PrefPageDataFormat()
     {
@@ -143,7 +144,8 @@ public class PrefPageDataFormat extends TargetPrefPage
             settingsGroup.setLayout(new GridLayout(2, false));
             settingsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
 
-            useNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting_tip, false, 2);
+            datetimeNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting_tip, false, 2);
+            numericNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_numeric_use_native_formatting, ResultSetMessages.pref_page_data_format_numeric_use_native_formatting_tip, false, 2);
         }
 
         // formats
@@ -358,7 +360,8 @@ public class PrefPageDataFormat extends TargetPrefPage
 
         setCurrentProfile(getDefaultProfile());
 
-        useNativeFormatCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
+        datetimeNativeFormatCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
+        numericNativeFormatCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT));
     }
 
     @Override
@@ -372,7 +375,8 @@ public class PrefPageDataFormat extends TargetPrefPage
             }
             formatterProfile.saveProfile();
 
-            store.setValue(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT, useNativeFormatCheck.getSelection());
+            store.setValue(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT, datetimeNativeFormatCheck.getSelection());
+            store.setValue(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT, numericNativeFormatCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }

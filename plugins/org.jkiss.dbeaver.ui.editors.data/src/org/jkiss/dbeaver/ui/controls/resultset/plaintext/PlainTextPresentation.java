@@ -42,6 +42,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -396,6 +397,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         if (cellValue instanceof DBDValueError) {
             return ((DBDValueError) cellValue).getErrorTitle();
         }
+        if (cellValue instanceof Number && controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT)) {
+            displayFormat = DBDDisplayFormat.NATIVE;
+        }
+
         String displayString = attr.getValueHandler().getValueDisplayString(attr, cellValue, displayFormat);
 
         if (displayString.isEmpty() &&
