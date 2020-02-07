@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -30,6 +29,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -84,12 +85,12 @@ public class StringEditorTable {
                     saveEditorValue(editor, index, item);
                 });
                 if (proposalProvider != null) {
-                    setProposalAdapter(UIUtils.installContentProposal(
+                    setProposalAdapter(ContentAssistUtils.installContentProposal(
                         editor,
-                        new TextContentAdapter(),
+                        new SmartTextContentAdapter(),
                         proposalProvider,
-                        true,
-                        false));
+                        true
+                    ));
                 }
                 return editor;
             }

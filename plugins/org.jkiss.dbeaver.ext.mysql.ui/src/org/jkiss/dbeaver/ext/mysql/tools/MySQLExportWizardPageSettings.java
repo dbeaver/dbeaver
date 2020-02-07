@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,6 +27,9 @@ import org.jkiss.dbeaver.ext.mysql.tasks.MySQLExportSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -114,17 +115,15 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
             NativeToolUtils.VARIABLE_TABLE,
             NativeToolUtils.VARIABLE_DATE,
             NativeToolUtils.VARIABLE_TIMESTAMP);
-        UIUtils.installContentProposal(
+        ContentAssistUtils.installContentProposal(
             outputFileText,
-            new TextContentAdapter(),
-            new SimpleContentProposalProvider(new String[] {
+            new SmartTextContentAdapter(),
+            new StringContentProposalProvider(
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_HOST),
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATABASE),
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TABLE),
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATE),
-                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP),
-                }
-            ));
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP)));
 
         createExtraArgsInput(outputGroup);
 

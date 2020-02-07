@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls;
+package org.jkiss.dbeaver.ui.contentassist;
 
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.fieldassist.IControlContentAdapter2;
@@ -28,61 +28,57 @@ import org.eclipse.swt.widgets.Control;
  */
 public class StyledTextContentAdapter implements IControlContentAdapter, IControlContentAdapter2 {
 
-    private final StyledText filtersText;
-
-    public StyledTextContentAdapter(StyledText filtersText) {
-        this.filtersText = filtersText;
-    }
-
     @Override
     public String getControlContents(Control control) {
-        return filtersText.getText();
+        return ((StyledText)control).getText();
     }
 
     @Override
     public void setControlContents(Control control, String text, int cursorPosition) {
-        filtersText.setText(text);
-        filtersText.setSelection(cursorPosition, cursorPosition);
+        ((StyledText)control).setText(text);
+        ((StyledText)control).setSelection(cursorPosition, cursorPosition);
     }
 
     @Override
     public void insertControlContents(Control control, String text, int cursorPosition) {
-        Point selection = filtersText.getSelection();
-        filtersText.insert(text);
+        StyledText styledText = ((StyledText)control);
+        Point selection = styledText.getSelection();
+        styledText.insert(text);
         // Insert will leave the cursor at the end of the inserted text. If this
         // is not what we wanted, reset the selection.
         if (cursorPosition <= text.length()) {
-            filtersText.setSelection(selection.x + cursorPosition, selection.x + cursorPosition);
+            styledText.setSelection(selection.x + cursorPosition, selection.x + cursorPosition);
         }
     }
 
     @Override
     public int getCursorPosition(Control control) {
-        return filtersText.getCaretOffset();
+        return ((StyledText)control).getCaretOffset();
     }
 
     @Override
     public Rectangle getInsertionBounds(Control control) {
-        Point caretOrigin = filtersText.getLocationAtOffset(filtersText.getCaretOffset());
+        StyledText styledText = ((StyledText)control);
+        Point caretOrigin = styledText.getLocationAtOffset(styledText.getCaretOffset());
         // We fudge the y pixels due to problems with getCaretLocation
         // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=52520
         return new Rectangle(
-            caretOrigin.x + filtersText.getClientArea().x,
-            caretOrigin.y + filtersText.getClientArea().y + 3, 1, filtersText.getLineHeight());
+            caretOrigin.x + styledText.getClientArea().x,
+            caretOrigin.y + styledText.getClientArea().y + 3, 1, styledText.getLineHeight());
     }
 
     @Override
     public void setCursorPosition(Control control, int position) {
-        filtersText.setSelection(new Point(position, position));
+        ((StyledText)control).setSelection(new Point(position, position));
     }
 
     @Override
     public Point getSelection(Control control) {
-        return filtersText.getSelection();
+        return ((StyledText)control).getSelection();
     }
 
     @Override
     public void setSelection(Control control, Point range) {
-        filtersText.setSelection(range);
+        ((StyledText)control).setSelection(range);
     }
 }

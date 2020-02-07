@@ -11,6 +11,7 @@ Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.css,
+ org.jkiss.dbeaver.ui.contentassist,
  org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.controls.autorefresh,
  org.jkiss.dbeaver.ui.controls.finder,

@@ -18,8 +18,6 @@
 
 package org.jkiss.dbeaver.tasks.ui.nativetool;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -27,6 +25,9 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> extends ActiveWizardPage {
@@ -55,10 +56,10 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
     protected void createExtraArgsInput(Composite outputGroup) {
         extraCommandArgsText = UIUtils.createLabelText(outputGroup, "Extra command args", wizard.getSettings().getExtraCommandArgs());
         extraCommandArgsText.setToolTipText("Set extra command args for tool executable.");
-        UIUtils.installContentProposal(
+        ContentAssistUtils.installContentProposal(
             extraCommandArgsText,
-            new TextContentAdapter(),
-            new SimpleContentProposalProvider(new String[]{}));
+            new SmartTextContentAdapter(),
+            new StringContentProposalProvider(new String[]{}));
         extraCommandArgsText.addModifyListener(e -> wizard.getSettings().setExtraCommandArgs(extraCommandArgsText.getText()));
 
     }

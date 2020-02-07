@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -53,6 +52,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -531,9 +532,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
                 if ((combo.getStyle() & SWT.READ_ONLY) == 0) {
-                    SimpleContentProposalProvider proposalProvider = new SimpleContentProposalProvider(strings);
+                    StringContentProposalProvider proposalProvider = new StringContentProposalProvider(strings);
                     proposalProvider.setFiltering(true);
-                    UIUtils.installContentProposal(combo, new ComboContentAdapter(), proposalProvider, true, false);
+                    ContentAssistUtils.installContentProposal(combo, new ComboContentAdapter(), proposalProvider, true);
                 }
 
                 return combo;
