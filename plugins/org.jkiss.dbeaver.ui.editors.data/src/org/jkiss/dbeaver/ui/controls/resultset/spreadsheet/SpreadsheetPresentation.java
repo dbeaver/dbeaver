@@ -66,6 +66,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -1688,7 +1689,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return attr.getValueRenderer().getValueDisplayString(
                     attr.getAttribute(),
                     value,
-                    DBDDisplayFormat.UI);
+                    getValueRenderFormat(attr, value));
             } else {
                 return value;
             }
@@ -1888,6 +1889,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             backgroundNormal = null;
             foregroundDefault = null;
         }
+    }
+
+    private DBDDisplayFormat getValueRenderFormat(DBDAttributeBinding attr, Object value) {
+        if (value instanceof Number && controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT)) {
+            return DBDDisplayFormat.NATIVE;
+        }
+        return DBDDisplayFormat.UI;
     }
 
     private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
