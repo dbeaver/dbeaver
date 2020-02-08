@@ -668,12 +668,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     }
 
     @Override
-    public void runPostSaveCommands() {
+    public void runPostSaveCommands(Map<String, Object> context) {
         for (ISaveablePart sp : nestedSaveable) {
             if (sp instanceof TabbedFolderPageEditor) {
                 IEditorPart editor = ((TabbedFolderPageEditor) sp).getEditor();
                 if (editor instanceof IDatabasePostSaveProcessor) {
-                    ((IDatabasePostSaveProcessor) editor).runPostSaveCommands();
+                    ((IDatabasePostSaveProcessor) editor).runPostSaveCommands(context);
                 }
             }
         }
