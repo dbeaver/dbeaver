@@ -88,8 +88,7 @@ public class StringEditorTable {
                     setProposalAdapter(ContentAssistUtils.installContentProposal(
                         editor,
                         new SmartTextContentAdapter(),
-                        proposalProvider,
-                        true
+                        proposalProvider
                     ));
                 }
                 return editor;
