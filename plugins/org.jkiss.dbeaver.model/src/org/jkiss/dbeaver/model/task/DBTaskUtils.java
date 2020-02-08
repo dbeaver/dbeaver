@@ -37,8 +37,8 @@ import java.util.Map;
 /**
  * Task utils
  */
-public class DBTUtils {
-    private static final Log log = Log.getLog(DBTUtils.class);
+public class DBTaskUtils {
+    private static final Log log = Log.getLog(DBTaskUtils.class);
 
     public static final String TASK_VARIABLES = "taskVariables";
     public static final String TASK_CONTEXT = "taskContext";
@@ -56,9 +56,9 @@ public class DBTUtils {
 
     public static void setVariables(@NotNull Map<String, Object> taskState, @Nullable Map<String, Object> variables) {
         if (!CommonUtils.isEmpty(variables)) {
-            taskState.put(DBTUtils.TASK_VARIABLES, variables);
+            taskState.put(DBTaskUtils.TASK_VARIABLES, variables);
         } else {
-            taskState.remove(DBTUtils.TASK_VARIABLES);
+            taskState.remove(DBTaskUtils.TASK_VARIABLES);
         }
     }
 

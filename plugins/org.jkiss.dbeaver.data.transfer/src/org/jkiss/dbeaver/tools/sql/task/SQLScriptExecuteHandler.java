@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
-import org.jkiss.dbeaver.model.task.DBTUtils;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.utils.IOUtils;
 
@@ -125,7 +125,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
     private void processScript(DBRProgressMonitor monitor, DBTTask task, SQLScriptExecuteSettings settings, DBCExecutionContext executionContext, String filePath, String sqlScriptContent, Log log, Writer logStream) throws DBException {
         List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(executionContext, sqlScriptContent);
         SQLScriptContext scriptContext = new SQLScriptContext(null, () -> executionContext, null, logStream, null);
-        scriptContext.setVariables(DBTUtils.getVariables(task));
+        scriptContext.setVariables(DBTaskUtils.getVariables(task));
         SQLScriptDataReceiver dataReceiver = new SQLScriptDataReceiver();
         SQLScriptProcessor scriptProcessor = new SQLScriptProcessor(executionContext, scriptElements, scriptContext, dataReceiver, log);
 
