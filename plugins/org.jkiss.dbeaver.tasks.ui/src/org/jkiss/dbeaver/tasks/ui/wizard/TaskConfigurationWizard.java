@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskContext;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
-import org.jkiss.dbeaver.model.task.DBTUtils;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView;
@@ -236,10 +236,10 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
 
         DBTTaskContext context = getTaskContext();
         if (context != null) {
-            DBTUtils.saveTaskContext(state, context);
+            DBTaskUtils.saveTaskContext(state, context);
         }
         if (theTask.getType().supportsVariables()) {
-            DBTUtils.setVariables(state, getTaskVariables());
+            DBTaskUtils.setVariables(state, getTaskVariables());
         }
         theTask.setProperties(state);
         try {
@@ -304,7 +304,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     protected Map<String, Object> getTaskVariables() {
         if (variables == null) {
             if (currentTask != null) {
-                variables = DBTUtils.getVariables(currentTask);
+                variables = DBTaskUtils.getVariables(currentTask);
             } else {
                 variables = new LinkedHashMap<>();
             }
@@ -315,14 +315,14 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     public DBTTaskContext getTaskContext() {
         if (taskContext == null) {
             if (currentTask != null) {
-                taskContext = DBTUtils.loadTaskContext(currentTask.getProperties());
+                taskContext = DBTaskUtils.loadTaskContext(currentTask.getProperties());
             }
         }
         return taskContext;
     }
 
     protected void saveTaskContext(DBCExecutionContext executionContext) {
-        taskContext = DBTUtils.extractContext(executionContext);
+        taskContext = DBTaskUtils.extractContext(executionContext);
     }
 
     public void updateSaveTaskButtons() {
