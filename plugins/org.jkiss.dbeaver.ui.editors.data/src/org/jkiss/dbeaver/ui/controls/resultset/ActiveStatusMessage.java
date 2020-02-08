@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -156,7 +157,10 @@ abstract class ActiveStatusMessage extends Composite {
         @Override
         public void completeLoading(String message) {
             completed = true;
-            setMessage(message);
+            if (!CommonUtils.equalObjects(getMessage(), message)) {
+                setMessage(message);
+                getParent().layout(true, true);
+            }
             actionItem.setImage(actionImage);
             loadService = null;
         }
