@@ -1546,7 +1546,7 @@ public class ResultSetViewer extends Viewer
                     };
                 }
             };
-            rowCountLabel.setLayoutData(new RowData(10 * fontHeight, SWT.DEFAULT));
+            //rowCountLabel.setLayoutData();
             CSSUtils.setCSSClass(rowCountLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             rowCountLabel.setMessage("Row Count");
 
@@ -1801,19 +1801,24 @@ public class ResultSetViewer extends Viewer
 
         if (rowCountLabel != null && !rowCountLabel.isDisposed()) {
             // Update row count label
+            String rcMessage;
             if (!hasData()) {
-                rowCountLabel.setMessage("No Data");
+                rcMessage = "No Data";
             } else if (!isHasMoreData()) {
-                rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getRowCount()));
+                rcMessage = ROW_COUNT_FORMAT.format(model.getRowCount());
             } else {
                 if (model.getTotalRowCount() == null) {
-                    rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getRowCount()) + "+");
+                    rcMessage = ROW_COUNT_FORMAT.format(model.getRowCount()) + "+";
                 } else {
                     // We know actual row count
-                    rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getTotalRowCount()));
+                    rcMessage = ROW_COUNT_FORMAT.format(model.getTotalRowCount());
                 }
             }
-            rowCountLabel.updateActionState();
+            if (!CommonUtils.equalObjects(rowCountLabel.getMessage(), rcMessage)) {
+                rowCountLabel.setMessage(rcMessage);
+                rowCountLabel.updateActionState();
+                statusBar.layout(true, true);
+            }
         }
     }
 
