@@ -116,7 +116,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Nullable
     private DBDAttributeBinding curAttribute;
-    private int columnOrder = SWT.NONE;
+    private int columnOrder = SWT.DEFAULT;
 
     private final Map<SpreadsheetValueController, IValueEditorStandalone> openEditors = new HashMap<>();
 
