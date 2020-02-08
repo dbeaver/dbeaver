@@ -20,10 +20,10 @@ public class ContentAssistUtils {
     private static final Log log = Log.getLog(UIUtils.class);
 
     public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider) {
-        return installContentProposal(control, contentAdapter, provider, null);
+        return installContentProposal(control, contentAdapter, provider, null, true);
     }
 
-    public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, ILabelProvider labelProvider) {
+    public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, ILabelProvider labelProvider, boolean autoActivation) {
         IKeyLookup keyLookup = KeyLookupFactory.getDefault();
         KeyStroke keyStroke = KeyStroke.getInstance(keyLookup.getCtrl(), SWT.SPACE); //$NON-NLS-1$
         final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
@@ -31,7 +31,7 @@ public class ContentAssistUtils {
             contentAdapter,
             provider,
             keyStroke,
-            ".abcdefghijklmnopqrstuvwxyz_$(".toCharArray());
+            autoActivation ? ".abcdefghijklmnopqrstuvwxyz_$([{".toCharArray() : null);
         boolean isSingleValueAdapter = contentAdapter instanceof CComboContentAdapter || contentAdapter instanceof ComboContentAdapter;
         proposalAdapter.setProposalAcceptanceStyle(isSingleValueAdapter ? ContentProposalAdapter.PROPOSAL_REPLACE : ContentProposalAdapter.PROPOSAL_INSERT);
         proposalAdapter.setPopupSize(new Point(300, 200));

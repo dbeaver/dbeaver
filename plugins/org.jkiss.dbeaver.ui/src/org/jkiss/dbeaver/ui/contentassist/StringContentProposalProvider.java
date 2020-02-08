@@ -24,7 +24,7 @@ public class StringContentProposalProvider implements IContentProposalProvider {
         int startPos = 0;
         for (int i = position - 1; i >= 0; i--) {
             char ch = Character.toUpperCase(contents.charAt(i));
-            if (possibleChars.indexOf(ch) == -1) {
+            if (!Character.isLetterOrDigit(ch) && possibleChars.indexOf(ch) == -1) {
                 startPos = i + 1;
                 break;
             }
