@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.contentassist.SmartStyledTextContentAdapter;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
@@ -236,8 +237,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersProposalAdapter = ContentAssistUtils.installContentProposal(
                 filtersText,
                 new SmartStyledTextContentAdapter(),
-                this,
-                true);
+                this);
         }
 
         // Handle all shortcuts by filters editor, not by host editor
@@ -597,8 +597,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     @Override
     public IContentProposal[] getProposals(String contents, int position) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        if (viewer.getDataContainer() != null) {
-            syntaxManager.init(viewer.getDataContainer().getDataSource());
+        DBPDataSource dataSource = viewer.getDataSource();
+        if (dataSource != null) {
+            syntaxManager.init(dataSource);
         }
         SQLWordPartDetector wordDetector = new SQLWordPartDetector(new Document(contents), syntaxManager, position);
         final String word = wordDetector.getFullWord().toLowerCase(Locale.ENGLISH);
@@ -614,11 +615,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
                     final String content = DBUtils.getQuotedIdentifier(attribute) + " ";
                     proposals.add(
-                            new ContentProposal(
-                                    content,
-                                    attribute.getName(),
-                                    DBInfoUtils.makeObjectDescription(monitor, attribute.getAttribute(), false),
-                                    content.length()));
+                        new ContentProposalExt(
+                            content,
+                            attribute.getName(),
+                            DBInfoUtils.makeObjectDescription(monitor, attribute.getAttribute(), false),
+                            content.length(),
+                            DBValueFormatting.getObjectImage(attribute)));
                 }
             }
         };
@@ -627,8 +629,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         UIUtils.waitJobCompletion(searchJob);
 
         String[] filterKeywords = { SQLConstants.KEYWORD_AND, SQLConstants.KEYWORD_OR, SQLConstants.KEYWORD_IS, SQLConstants.KEYWORD_NOT, SQLConstants.KEYWORD_NULL };
+
         for (String kw : filterKeywords) {
             if (word.isEmpty() || kw.startsWith(word.toUpperCase())) {
+                if (dataSource != null) {
+                    kw = dataSource.getSQLDialect().storesUnquotedCase().transform(kw);
+                }
                 proposals.add(new ContentProposal(kw + " ", kw + ": SQL expression keyword"));
             }
         }
