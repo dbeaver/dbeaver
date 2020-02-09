@@ -381,24 +381,28 @@ public class SQLEditor extends SQLEditorBase implements
                 curDataSource = dataSource;
                 DBPDataSourceContainer container = dataSource.getContainer();
                 if (SQLEditorUtils.isOpenSeparateConnection(container)) {
-                    DBSInstance dsInstance = dataSource.getDefaultInstance();
-                    String[] contextDefaults = EditorUtils.getInputContextDefaults(getEditorInput());
-                    if (contextDefaults.length > 0 && contextDefaults[0] != null) {
-                        DBSInstance selectedInstance = DBUtils.findObject(dataSource.getAvailableInstances(), contextDefaults[0]);
-                        if (selectedInstance != null) {
-                            dsInstance = selectedInstance;
-                        }
-                    }
-                    if (dsInstance != null) {
-                        final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess);
-                        job.schedule();
-                    }
+                    initSeparateConnection(dataSource, onSuccess);
                 } else {
                     if (onSuccess != null) {
                         onSuccess.run();
                     }
                 }
             }
+        }
+    }
+
+    private void initSeparateConnection(DBPDataSource dataSource, Runnable onSuccess) {
+        DBSInstance dsInstance = dataSource.getDefaultInstance();
+        String[] contextDefaults = EditorUtils.getInputContextDefaults(getEditorInput());
+        if (contextDefaults.length > 0 && contextDefaults[0] != null) {
+            DBSInstance selectedInstance = DBUtils.findObject(dataSource.getAvailableInstances(), contextDefaults[0]);
+            if (selectedInstance != null) {
+                dsInstance = selectedInstance;
+            }
+        }
+        if (dsInstance != null) {
+            final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess);
+            job.schedule();
         }
     }
 
@@ -584,7 +588,6 @@ public class SQLEditor extends SQLEditorBase implements
                 DBUtils.fireObjectSelect(instance, true);
             } catch (DBException e) {
                 error = e;
-                return Status.OK_STATUS;
             } finally {
                 monitor.done();
             }
@@ -1996,6 +1999,10 @@ public class SQLEditor extends SQLEditorBase implements
             } else {
                 throw new DBException("Disconnected from database");
             }
+        }
+        DBPDataSource dataSource = ds.getDataSource();
+        if (dataSource != null && SQLEditorUtils.isOpenSeparateConnection(ds) && executionContext == null) {
+            initSeparateConnection(dataSource, () -> onFinish.onTaskFinished(Status.OK_STATUS));
         }
         return true;
     }
