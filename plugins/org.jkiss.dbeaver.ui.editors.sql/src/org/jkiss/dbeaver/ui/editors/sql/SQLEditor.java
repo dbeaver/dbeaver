@@ -2003,6 +2003,7 @@ public class SQLEditor extends SQLEditorBase implements
         DBPDataSource dataSource = ds.getDataSource();
         if (dataSource != null && SQLEditorUtils.isOpenSeparateConnection(ds) && executionContext == null) {
             initSeparateConnection(dataSource, () -> onFinish.onTaskFinished(Status.OK_STATUS));
+            return executionContext != null;
         }
         return true;
     }
