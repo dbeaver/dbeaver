@@ -623,7 +623,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (QMUtils.isTransactionActive(context)) {
                     UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                     if (serviceConnections != null) {
-                        serviceConnections.closeActiveTransaction(monitor, context, true);
+                        serviceConnections.closeActiveTransaction(monitor, context, false);
                     }
                 }
 
