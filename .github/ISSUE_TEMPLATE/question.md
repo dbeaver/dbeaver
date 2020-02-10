@@ -2,7 +2,7 @@
 name: Question
 about: Do you have any questions? We are here to help.
 title: ''
-labels: question
+labels: question, wait for review
 assignees: ''
 
 ---
