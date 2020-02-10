@@ -27,8 +27,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
@@ -90,17 +90,23 @@ public class ColumnsMappingDialog extends StatusDialog {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(1, false));
+        composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        new Label(composite, SWT.NONE).setText("Source entity: " + DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI) +
-            " [" + mapping.getSource().getDataSource().getContainer().getName() + "]");
-        new Label(composite, SWT.NONE).setText("Target entity: " + mapping.getTargetName() +
-            " [" + (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()) + "]");
+        UIUtils.createLabelText(composite, "Source container", mapping.getSource().getDataSource().getContainer().getName(), SWT.BORDER | SWT.READ_ONLY);
+        Text sourceEntity = UIUtils.createLabelText(composite, "Source entity", DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL);
+        ((GridData)sourceEntity.getLayoutData()).widthHint = 600;
+        ((GridData)sourceEntity.getLayoutData()).heightHint = UIUtils.getFontHeight(sourceEntity) * 3;
+        UIUtils.createLabelText(composite, "Target container", (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()), SWT.BORDER | SWT.READ_ONLY);
+        Text targetEntity = UIUtils.createLabelText(composite, "Target entity", mapping.getTargetName(), SWT.BORDER | SWT.READ_ONLY);
+        ((GridData)targetEntity.getLayoutData()).widthHint = 600;
+        ((GridData)targetEntity.getLayoutData()).heightHint = UIUtils.getFontHeight(sourceEntity) * 3;
+
         mappingViewer = new TableViewer(composite, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         gd.heightHint = 300;
+        gd.horizontalSpan = 2;
         mappingViewer.getTable().setLayoutData(gd);
         mappingViewer.getTable().setLinesVisible(true);
         mappingViewer.getTable().setHeaderVisible(true);
