@@ -51,10 +51,15 @@ public class SQLServerDialect extends JDBCSQLDialect {
             {"[", "]"},
             {"\"", "\""},
     };
+    public static final String[][] SYBASE_LEGACY_QUOTE_STRINGS = {
+        {"\"", "\""},
+    };
+
 
     private static String[] EXEC_KEYWORDS =  { "CALL", "EXEC" };
 
     private JDBCDataSource dataSource;
+    private boolean isSqlServer;
 
     public SQLServerDialect() {
         super("SQLServer");
@@ -64,6 +69,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
         super.initDriverSettings(dataSource, metaData);
         super.addSQLKeywords(Arrays.asList(SQLSERVER_EXTRA_KEYWORDS));
         this.dataSource = dataSource;
+        this.isSqlServer = SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver());
     }
 
     @NotNull
@@ -95,7 +101,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
 
     @Override
     public boolean isDelimiterAfterQuery() {
-        return SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver());
+        return isSqlServer;
     }
 
     @Override
@@ -109,6 +115,10 @@ public class SQLServerDialect extends JDBCSQLDialect {
     }
 
     public String[][] getIdentifierQuoteStrings() {
+        if (!isSqlServer && !dataSource.isServerVersionAtLeast(12, 6)) {
+            // Old Sybase doesn't support square brackets - #7755
+            return SYBASE_LEGACY_QUOTE_STRINGS;
+        }
         return SQLSERVER_QUOTE_STRINGS;
     }
 
@@ -120,7 +130,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
-        if (SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver())) {
+        if (isSqlServer) {
             if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2008_VERSION_MAJOR, 0)) {
                 return MultiValueInsertMode.GROUP_ROWS;
             }
