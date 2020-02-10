@@ -128,19 +128,19 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
+            findTablesByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_CONSTRAINT) {
-            findConstraintsByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
+            findConstraintsByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-            findProceduresByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
+            findProceduresByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_TABLE_COLUMN) {
-            findTableColumnsByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
+            findTableColumnsByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_DATA_TYPE) {
-            findDataTypesByMask(session, nsList, objectNameMask, caseSensitive, maxResults, references);
+            findDataTypesByMask(session, database, nsList, objectNameMask, caseSensitive, maxResults, references);
         }
     }
 
-    private void findTablesByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String tableNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
+    private void findTablesByMask(JDBCSession session, PostgreDatabase database, @Nullable final List<PostgreSchema> schema, String tableNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -165,7 +165,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                     final long tableId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String tableName = JDBCUtils.safeGetString(dbResult, "relname");
                     final PostgreClass.RelKind tableType = PostgreClass.RelKind.valueOf(JDBCUtils.safeGetString(dbResult, "relkind"));
-                    final PostgreSchema tableSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
+                    final PostgreSchema tableSchema = database.getSchema(session.getProgressMonitor(), schemaId);
                     if (tableSchema == null) {
                         log.debug("Can't resolve table '" + tableName + "' - owner schema " + schemaId + " not found");
                         continue;
@@ -188,7 +188,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findProceduresByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String procNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
+    private void findProceduresByMask(JDBCSession session, PostgreDatabase database, @Nullable final List<PostgreSchema> schema, String procNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -213,7 +213,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "pronamespace");
                     final String procName = JDBCUtils.safeGetString(dbResult, "proname");
                     final long procId = JDBCUtils.safeGetLong(dbResult, "oid");
-                    final PostgreSchema procSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
+                    final PostgreSchema procSchema = database.getSchema(session.getProgressMonitor(), schemaId);
                     if (procSchema == null) {
                         log.debug("Procedure's schema '" + schemaId + "' not found");
                         continue;
@@ -233,7 +233,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findConstraintsByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String constrNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
+    private void findConstraintsByMask(JDBCSession session, PostgreDatabase database, @Nullable final List<PostgreSchema> schema, String constrNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -257,7 +257,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "connamespace");
                     final long constrId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String constrName = JDBCUtils.safeGetString(dbResult, "conname");
-                    final PostgreSchema constrSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
+                    final PostgreSchema constrSchema = database.getSchema(session.getProgressMonitor(), schemaId);
                     if (constrSchema == null) {
                         log.debug("Constraint's schema '" + schemaId + "' not found");
                         continue;
@@ -277,7 +277,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findTableColumnsByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String columnNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
+    private void findTableColumnsByMask(JDBCSession session, PostgreDatabase database, @Nullable final List<PostgreSchema> schema, String columnNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -302,7 +302,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
                     final long tableId = JDBCUtils.safeGetLong(dbResult, "attrelid");
                     final String attributeName = JDBCUtils.safeGetString(dbResult, "attname");
-                    final PostgreSchema constrSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
+                    final PostgreSchema constrSchema = database.getSchema(session.getProgressMonitor(), schemaId);
                     if (constrSchema == null) {
                         log.debug("Attribute's schema '" + schemaId + "' not found");
                         continue;
@@ -322,7 +322,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
         }
     }
 
-    private void findDataTypesByMask(JDBCSession session, List<PostgreSchema> catalog, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) {
+    private void findDataTypesByMask(JDBCSession session, PostgreDatabase database, List<PostgreSchema> catalog, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
     }
