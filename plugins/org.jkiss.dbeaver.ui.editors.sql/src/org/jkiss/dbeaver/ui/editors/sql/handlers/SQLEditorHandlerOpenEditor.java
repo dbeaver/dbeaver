@@ -181,6 +181,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                     context.setDataSourceContainer(dataSourceRegistry.getDataSources().get(0));
                 } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
                     SelectDataSourceDialog dialog = new SelectDataSourceDialog(HandlerUtil.getActiveShell(event), project, null);
+                    dialog.setModeless(true);
                     if (dialog.open() == IDialogConstants.CANCEL_ID) {
                         throw new InterruptedException();
                     }

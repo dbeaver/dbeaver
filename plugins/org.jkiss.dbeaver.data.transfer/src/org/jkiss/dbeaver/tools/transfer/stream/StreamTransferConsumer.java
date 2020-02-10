@@ -261,7 +261,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         if (processor != null) {
             // Dispose exporter
-            processor.dispose();
+            try {
+                processor.dispose();
+            } catch (Exception e) {
+                log.debug(e);
+            }
             processor = null;
         }
         closeOutputStreams();
