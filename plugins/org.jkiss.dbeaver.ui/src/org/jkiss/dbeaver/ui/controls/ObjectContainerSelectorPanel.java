@@ -135,27 +135,13 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                     new Class[]{DBSObjectContainer.class},
                     new Class[] { DBSObjectContainer.class },
                     new Class[]{ DBSSchema.class });
-                if (node instanceof DBNDatabaseNode) {
-                    DBPObject nodeObject = DBUtils.getPublicObject(((DBNDatabaseNode) node).getObject());
-                    if (nodeObject instanceof DBSObjectContainer) {
-                        try {
-                            Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getChildType(new VoidProgressMonitor());
-                            if (childrenClass != null) {
-                                if (!DBSEntity.class.isAssignableFrom(childrenClass)) {
-                                    // Upper level of container
-                                    UIUtils.showMessageBox(getShell(),"Bad container node", "You can select only table container (e.g. schema).", SWT.ICON_ERROR);
-                                } else {
-                                    setSelectedNode((DBNDatabaseNode) node);
-                                    addNodeToHistory((DBNDatabaseNode) node);
-                                    saveHistory();
-                                }
-                            } else {
-                                throw new DBException("Can't determine container child objects");
-                            }
-                        } catch (DBException e) {
-                            DBWorkbench.getPlatformUI().showError("Bad container node", "Error determining container elements type", e);
-                        }
-                    }
+                try {
+                    checkValidContainerNode(node);
+                    setSelectedNode((DBNDatabaseNode) node);
+                    addNodeToHistory((DBNDatabaseNode) node);
+                    saveHistory();
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Bad container node", "Node '" + node.getName() + "' cannot be selected as table container", e);
                 }
             }
         };
@@ -173,6 +159,30 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         });
 
         loadHistory();
+    }
+
+    public void checkValidContainerNode(DBNNode node) throws DBException
+    {
+        if (node instanceof DBNDatabaseNode) {
+            DBPObject nodeObject = DBUtils.getPublicObject(((DBNDatabaseNode) node).getObject());
+            if (nodeObject instanceof DBSObjectContainer) {
+                try {
+                    Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getChildType(new VoidProgressMonitor());
+                    if (childrenClass != null) {
+                        if (!DBSEntity.class.isAssignableFrom(childrenClass)) {
+                            // Upper level of container
+                            throw new DBException("You can select only table container (e.g. schema).");
+                        }
+                    } else {
+                        throw new DBException("Can't determine container child objects for " + nodeObject);
+                    }
+                } catch (DBException e) {
+                    throw new DBException("Error determining container elements type", e);
+                }
+            }
+        } else {
+            throw new DBException("Non-databse node " + node);
+        }
     }
 
     private HistoryItem addNodeToHistory(DBNDatabaseNode node) {

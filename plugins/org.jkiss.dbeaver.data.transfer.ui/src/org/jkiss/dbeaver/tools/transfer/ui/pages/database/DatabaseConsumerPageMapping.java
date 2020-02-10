@@ -146,6 +146,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     }
                     mappingViewer.refresh();
                     updatePageCompletion();
+                    setMessage(null);
                 }
 
             };
@@ -753,7 +754,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         settings.loadNode(getWizard().getRunnableContext(), producerContainer);
         DBNDatabaseNode containerNode = settings.getContainerNode();
         if (containerNode != null) {
-            containerPanel.setContainerInfo(containerNode);
+            try {
+                containerPanel.checkValidContainerNode(containerNode);
+                containerPanel.setContainerInfo(containerNode);
+            } catch (DBException e) {
+                setErrorMessage(e.getMessage());
+            }
         }
 
         {
