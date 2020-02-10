@@ -25,20 +25,26 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class SQLEditorHandlerSyncConnectionAuto extends AbstractHandler implements IElementUpdater {
 
-    public SQLEditorHandlerSyncConnectionAuto()
-    {
+    public SQLEditorHandlerSyncConnectionAuto() {
     }
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         final DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
         prefs.setValue(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE,
             !prefs.getBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
+
+        try {
+            prefs.save();
+        } catch (IOException e) {
+            throw new ExecutionException("Error saving configuration", e);
+        }
+
         return null;
     }
 

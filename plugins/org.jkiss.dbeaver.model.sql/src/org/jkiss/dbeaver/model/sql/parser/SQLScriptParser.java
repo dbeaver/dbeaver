@@ -521,9 +521,9 @@ public class SQLScriptParser
     public static List<SQLQueryParameter> parseParameters(SQLParserContext context, int queryOffset, int queryLength) {
         final SQLDialect sqlDialect = context.getDialect();
         IDocument document = context.getDocument();
-        if (queryLength > document.getLength()) {
+        if (queryOffset + queryLength > document.getLength()) {
             // This may happen during parameters parsing. Query may be trimmed or modified
-            queryLength = document.getLength();
+            queryLength = document.getLength() - queryOffset;
         }
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
         boolean supportParamsInDDL = context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
