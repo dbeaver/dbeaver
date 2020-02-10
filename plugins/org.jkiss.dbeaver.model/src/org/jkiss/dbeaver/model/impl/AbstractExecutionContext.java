@@ -50,7 +50,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         this.purpose = purpose;
         this.id = generateContextId();
 
-        log.debug("Execution context opened (" + dataSource.getName() + ", " + this.id +  ")");
+        log.debug("Execution context opened (" + dataSource.getName() + "; " + purpose + "; " + this.id +  ")");
     }
 
     public static synchronized long generateContextId() {
