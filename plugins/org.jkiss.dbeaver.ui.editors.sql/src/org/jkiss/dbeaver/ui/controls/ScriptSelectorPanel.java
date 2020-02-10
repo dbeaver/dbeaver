@@ -328,7 +328,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         columns[1].pack();
         columns[2].setWidth(200 * 8);
 
-        scriptTree.setFocus();
+        UIUtils.asyncExec(scriptTree::setFocus);
 
         return composite;
     }
