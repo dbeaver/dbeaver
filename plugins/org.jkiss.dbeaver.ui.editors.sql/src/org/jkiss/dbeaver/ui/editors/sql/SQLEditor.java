@@ -391,7 +391,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void initSeparateConnection(DBPDataSource dataSource, Runnable onSuccess) {
+    private void initSeparateConnection(@NotNull DBPDataSource dataSource, Runnable onSuccess) {
         DBSInstance dsInstance = dataSource.getDefaultInstance();
         String[] contextDefaults = EditorUtils.getInputContextDefaults(getEditorInput());
         if (contextDefaults.length > 0 && contextDefaults[0] != null) {
@@ -1983,6 +1983,18 @@ public class SQLEditor extends SQLEditorBase implements
 
     public boolean transformQueryWithParameters(SQLQuery query) {
         return createScriptContext().fillQueryParameters(query, false);
+    }
+
+    // Called on OPEN_SEPARATE_CONNECTION optio nchange
+    public void updateExecutionContextState() {
+        // Save current datasource (we want to keep it here)
+        DBPDataSource dataSource = curDataSource;
+        releaseExecutionContext();
+        // Restore cur data source (as it is reset in releaseExecutionContext)
+        curDataSource = dataSource;
+        if (dataSource != null && SQLEditorUtils.isOpenSeparateConnection(dataSource.getContainer())) {
+            initSeparateConnection(dataSource, null);
+        }
     }
 
     private boolean checkSession(DBRProgressListener onFinish)
