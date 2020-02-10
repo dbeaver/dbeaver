@@ -131,8 +131,9 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             }
         }*/
 
-        patternText = new Text(composite, SWT.NONE);
+        patternText = new Text(composite, SWT.BORDER);
         patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.addEmptyTextHint(patternText, text -> "Enter a part of script name here");
         //patternText.setForeground(fg);
         //patternText.setBackground(bg);
         patternText.addModifyListener(e -> {
@@ -327,7 +328,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         columns[1].pack();
         columns[2].setWidth(200 * 8);
 
-        patternText.setFocus();
+        scriptTree.setFocus();
 
         return composite;
     }
