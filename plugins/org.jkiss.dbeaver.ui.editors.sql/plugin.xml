@@ -246,6 +246,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.assist.templates" name="%command.org.jkiss.dbeaver.ui.editors.sql.assist.templates.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.assist.templates.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.sync.connection" name="%command.org.jkiss.dbeaver.ui.editors.sql.sync.connection.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.sync.connection.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.sync.auto" name="%command.org.jkiss.dbeaver.ui.editors.sql.sync.auto.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.sync.auto.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.connection.separate" name="%command.org.jkiss.dbeaver.ui.editors.sql.connection.separate.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.connection.separate.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.rename" name="%command.org.jkiss.dbeaver.ui.editors.sql.rename.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.rename.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.deleteThisScript" name="%command.org.jkiss.dbeaver.ui.editors.sql.deleteThisScript.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.deleteThisScript.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.close.tab" name="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -485,6 +486,7 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSyncConnectionAuto"/>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.connection.separate" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSeparateConnectionOption"/>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExportData">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -598,7 +600,9 @@
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
+
                 <separator name="execute" visible="true"/>
+
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement">
                     <visibleWhen>
                         <with variable="activeEditor">
@@ -648,8 +652,11 @@
                         </with>
                     </visibleWhen>
                 </command>
+
                 <separator name="query" visible="true"/>
+
                 <separator name="plan" visible="true"/>
+
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain">
                     <visibleWhen>
                         <with variable="activeEditor">
@@ -664,7 +671,9 @@
                         </with>
                     </visibleWhen>
                 </command>
+
                 <separator name="files" visible="true"/>
+
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file">
                     <visibleWhen>
                         <with variable="activeEditor">
@@ -679,17 +688,22 @@
                         </with>
                     </visibleWhen>
                 </command>
-                <separator name="misc" visible="true"/>
+                <separator name="layout" visible="true"/>
+
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" style="push"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
 
-                <separator name="sync" visible="true"/>
+                <separator name="context" visible="true"/>
 
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"><parameter name="noCustomLabel" value="true"/></command>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"><parameter name="noCustomLabel" value="true"/></command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"/>
+
+                <separator name="options" visible="true"/>
+
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" style="toggle"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.connection.separate" style="toggle"/>
 
             </menu>
         </menuContribution>
