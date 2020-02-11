@@ -630,7 +630,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (dataSource == null) {
             return null;
         }
-        if (request.getActiveQuery() == null) {
+        SQLScriptElement activeQuery = request.getActiveQuery();
+        if (activeQuery == null) {
             return null;
         }
 
@@ -673,10 +674,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 return null;
             }
             // Append trailing space to let alias regex match correctly
-            String testQuery = SQLUtils.stripComments(request.getContext().getSyntaxManager().getDialect(), request.getActiveQuery().getText()) + " ";
+            String testQuery = SQLUtils.stripComments(request.getContext().getSyntaxManager().getDialect(), activeQuery.getText()) + " ";
             Matcher matcher = aliasPattern.matcher(testQuery);
             while (matcher.find()) {
-                if (!nameList.isEmpty() && matcher.start() > request.getDocumentOffset()) {
+                if (!nameList.isEmpty() && matcher.start() > request.getDocumentOffset() - activeQuery.getOffset()) {
                     // Do not search after cursor
                     break;
                 }
