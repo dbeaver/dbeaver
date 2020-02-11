@@ -90,7 +90,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
             SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
             ruleManager.loadRules(dataSource, false);
             SQLParserContext parserContext = new SQLParserContext(this, syntaxManager, ruleManager, new Document(query.getText()));
-            sqlQuery.setParameters(SQLScriptParser.parseParameters(parserContext, sqlQuery.getOffset(), sqlQuery.getLength()));
+            sqlQuery.setParameters(SQLScriptParser.parseParameters(parserContext, 0, sqlQuery.getLength()));
             if (!scriptContext.fillQueryParameters(sqlQuery, CommonUtils.isBitSet(flags, DBSDataContainer.FLAG_REFRESH))) {
                 // User canceled
                 return statistics;
