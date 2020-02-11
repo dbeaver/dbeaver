@@ -139,13 +139,17 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             if (!CommonUtils.isEmpty(providedDriversConfig)) {
                 File configFile = new File(providedDriversConfig);
                 if (configFile.exists()) {
+                    log.debug("Loading provided drivers configuration from '" + configFile.getAbsolutePath() + "'");
                     loadDrivers(configFile, true);
+                } else {
+                    log.debug("Provided drivers configuration file '" + configFile.getAbsolutePath() + "' doesn't exist");
                 }
             }
 
             // Load user drivers
             File driversConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
             if (driversConfig.exists()) {
+                log.debug("Loading user drivers configuration from '" + driversConfig.getAbsolutePath() + "'");
                 loadDrivers(driversConfig, false);
             }
         }
