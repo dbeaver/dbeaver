@@ -458,12 +458,22 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             Control finalEditControl = editControl;
 
             if (finalEditControl instanceof Combo) {
-                ((Combo) finalEditControl).addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        updatePropertyValue(prop, ((Combo) finalEditControl).getText());
-                    }
-                });
+                if ((finalEditControl.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
+                    ((Combo) finalEditControl).addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            updatePropertyValue(prop, ((Combo) finalEditControl).getText());
+                        }
+                    });
+                } else {
+                    ((Combo) finalEditControl).addModifyListener(e -> {
+                        try {
+                            updatePropertyValue(prop, ((Combo) finalEditControl).getText());
+                        } catch (Exception ex) {
+                            log.debug("Error setting value from combo: " + ex.getMessage());
+                        }
+                    });
+                }
             } else if (finalEditControl instanceof Text) {
                 ((Text) finalEditControl).addModifyListener(e -> updatePropertyValue(prop, ((Text) finalEditControl).getText()));
             } else if (finalEditControl instanceof Button) {
