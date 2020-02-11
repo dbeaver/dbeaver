@@ -16,7 +16,7 @@
     <repositories>
         <repository>
             <id>eclipse-color-theme</id>
-            <url>http://eclipse-color-theme.github.com/update</url>
+            <url>https://eclipse-color-theme.github.com/update</url>
             <layout>p2</layout>
         </repository>
     </repositories>
