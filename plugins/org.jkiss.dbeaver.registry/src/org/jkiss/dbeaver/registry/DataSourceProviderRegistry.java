@@ -139,14 +139,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             if (!CommonUtils.isEmpty(providedDriversConfig)) {
                 File configFile = new File(providedDriversConfig);
                 if (configFile.exists()) {
-                    loadDrivers(configFile);
+                    loadDrivers(configFile, true);
                 }
             }
 
             // Load user drivers
             File driversConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
             if (driversConfig.exists()) {
-                loadDrivers(driversConfig);
+                loadDrivers(driversConfig, false);
             }
         }
 
@@ -298,12 +298,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Persistence
 
-    private void loadDrivers(File driversConfig)
+    private void loadDrivers(File driversConfig, boolean provided)
     {
         if (driversConfig.exists()) {
             try {
                 try (InputStream is = new FileInputStream(driversConfig)) {
-                    new SAXReader(is).parse(new DriverDescriptorSerializerLegacy.DriversParser());
+                    new SAXReader(is).parse(new DriverDescriptorSerializerLegacy.DriversParser(provided));
                 } catch (XMLException ex) {
                     log.warn("Drivers config parse error", ex);
                 }

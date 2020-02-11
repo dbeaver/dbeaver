@@ -149,9 +149,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
 
 
     public static class DriversParser implements SAXListener {
+        private final boolean providedDrivers;
         DataSourceProviderDescriptor curProvider;
         DriverDescriptor curDriver;
         DBPDriverLibrary curLibrary;
+
+        public DriversParser(boolean provided) {
+            this.providedDrivers = provided;
+        }
 
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) {
@@ -191,13 +196,13 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver = new DriverDescriptor(curProvider, idAttr);
                         curProvider.addDriver(curDriver);
                     }
-                    if (curProvider.isDriversManagable()) {
+                    if (providedDrivers || curProvider.isDriversManagable()) {
                         String category = atts.getValue(RegistryConstants.ATTR_CATEGORY);
                         if (!CommonUtils.isEmpty(category)) {
                             curDriver.setCategory(category);
                         }
-                        if (curDriver.isCustom()) {
-                            curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                        if (providedDrivers || curDriver.isCustom()) {
+                            curDriver.setName(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_NAME), curDriver.getName()));
                         }
                         curDriver.setDescription(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DESCRIPTION), curDriver.getDescription()));
                         curDriver.setDriverClassName(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()));
@@ -231,12 +236,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     if (CommonUtils.isEmpty(typeStr)) {
                         type = DBPDriverLibrary.FileType.jar;
                     } else {
-                        try {
-                            type = DBPDriverLibrary.FileType.valueOf(typeStr);
-                        } catch (IllegalArgumentException e) {
-                            log.warn(e);
-                            type = DBPDriverLibrary.FileType.jar;
-                        }
+                        type = CommonUtils.valueOf(DBPDriverLibrary.FileType.class, typeStr, DBPDriverLibrary.FileType.jar);
                     }
                     String path = normalizeLibraryPath(atts.getValue(RegistryConstants.ATTR_PATH));
                     if (!CommonUtils.isEmpty(path)) {
@@ -245,7 +245,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     boolean custom = CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM), true);
                     String version = atts.getValue(RegistryConstants.ATTR_VERSION);
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
-                    if (!custom && lib == null) {
+                    if (!providedDrivers && !custom && lib == null) {
                         // Perhaps this library isn't included in driver bundle
                         // Or this is predefined library from some previous version - as it wasn't defined in plugin.xml
                         // so let's just skip it
