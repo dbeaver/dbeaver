@@ -20,7 +20,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.commands.IElementUpdater;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -28,7 +27,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
@@ -51,11 +49,6 @@ public class SQLEditorHandlerSeparateConnectionOption extends AbstractDataSource
             prefs.save();
         } catch (IOException e) {
             throw new ExecutionException("Error saving configuration", e);
-        }
-
-        IEditorPart editor = HandlerUtil.getActiveEditor(event);
-        if (editor instanceof SQLEditor) {
-            ((SQLEditor) editor).updateExecutionContextState();
         }
 
         return null;
