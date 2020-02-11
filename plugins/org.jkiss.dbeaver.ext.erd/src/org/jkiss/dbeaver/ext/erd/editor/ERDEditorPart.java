@@ -206,6 +206,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
+    protected void updateToolbarActions() {
+        if (progressControl != null) {
+            progressControl.updateActions();
+
+        }
+    }
+
     /**
      * The <code>CommandStackListener</code> that listens for
      * <code>CommandStack </code> changes.
@@ -275,10 +282,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     @Override
-    public void doSave(IProgressMonitor monitor)
-    {
-
-    }
+    public abstract void doSave(IProgressMonitor monitor);
 
     /**
      * Save as not allowed
@@ -878,15 +882,23 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         {
             toolBarManager.add(ActionUtils.makeCommandContribution(
                 getSite(),
-                IWorkbenchCommandConstants.FILE_SAVE_AS,
-                ERDMessages.erd_editor_control_action_save_external_format,
-                UIIcon.PICTURE_SAVE));
-            toolBarManager.add(ActionUtils.makeCommandContribution(
-                getSite(),
                 IWorkbenchCommandConstants.FILE_PRINT,
                 ERDMessages.erd_editor_control_action_print_diagram,
                 UIIcon.PRINT));
+
+            toolBarManager.add(ActionUtils.makeCommandContribution(
+                getSite(),
+                IWorkbenchCommandConstants.FILE_SAVE_AS,
+                ERDMessages.erd_editor_control_action_save_external_format,
+                UIIcon.PICTURE_SAVE));
+
+            toolBarManager.add(ActionUtils.makeCommandContribution(
+                getSite(),
+                IWorkbenchCommandConstants.FILE_SAVE,
+                null,
+                UIIcon.SAVE));
         }
+        toolBarManager.add(new Separator());
         {
             Action configAction = new Action(ERDMessages.erd_editor_control_action_configuration) {
                 @Override

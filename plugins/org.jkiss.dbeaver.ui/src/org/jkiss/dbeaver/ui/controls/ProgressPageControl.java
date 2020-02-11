@@ -251,7 +251,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         }
     }
 
-    protected void updateActions() {
+    public void updateActions() {
         UIUtils.updateContributionItems(defaultToolbarManager);
         UIUtils.updateContributionItems(customToolbarManager);
     }
