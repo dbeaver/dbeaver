@@ -133,10 +133,21 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             });
         }
 
-        // Load drivers
-        File driversConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
-        if (driversConfig.exists()) {
-            loadDrivers(driversConfig);
+        {
+            // Try to load initial drivers config
+            String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
+            if (!CommonUtils.isEmpty(providedDriversConfig)) {
+                File configFile = new File(providedDriversConfig);
+                if (configFile.exists()) {
+                    loadDrivers(configFile);
+                }
+            }
+
+            // Load user drivers
+            File driversConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
+            if (driversConfig.exists()) {
+                loadDrivers(driversConfig);
+            }
         }
 
         // Resolve all driver replacements

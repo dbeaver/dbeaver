@@ -199,12 +199,12 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         if (curDriver.isCustom()) {
                             curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
                         }
-                        curDriver.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                        curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
-                        curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
-                        curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
-                        curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), false));
-                        curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), false));
+                        curDriver.setDescription(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DESCRIPTION), curDriver.getDescription()));
+                        curDriver.setDriverClassName(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()));
+                        curDriver.setSampleURL(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_URL), curDriver.getSampleURL()));
+                        curDriver.setDriverDefaultPort(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_PORT), curDriver.getDefaultPort()));
+                        curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), curDriver.isEmbedded()));
+                        curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), curDriver.isAllowsEmptyPassword()));
                     }
                     if (atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER) != null) {
                         curDriver.setCustomDriverLoader((
