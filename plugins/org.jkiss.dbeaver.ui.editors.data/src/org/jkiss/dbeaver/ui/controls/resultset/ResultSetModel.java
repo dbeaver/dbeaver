@@ -800,7 +800,8 @@ public class ResultSetModel {
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
         if (rowIdentifier == null) {
-            return "No unique identifier found";
+            String status = attribute.getRowIdentifierStatus();
+            return status != null ? status : "No row identifier found";
         }
         DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
         if (!(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {

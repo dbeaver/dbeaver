@@ -138,6 +138,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @Nullable
     public abstract DBDRowIdentifier getRowIdentifier();
 
+    public abstract String getRowIdentifierStatus();
+
     @Nullable
     public abstract List<DBSEntityReferrer> getReferrers();
 
