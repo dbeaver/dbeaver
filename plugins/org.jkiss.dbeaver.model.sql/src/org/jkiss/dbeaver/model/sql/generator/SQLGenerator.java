@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     protected List<OBJECT> objects;
     private boolean fullyQualifiedNames = true;
     private boolean compactSQL = false;
+    private Map<String, Object> generatorOptions = new LinkedHashMap<>();
 
     public void initGenerator(List<OBJECT> objects) {
         this.objects = objects;
@@ -57,6 +59,18 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         this.compactSQL = compactSQL;
     }
 
+    public Object getGeneratorOption(String name) {
+        return generatorOptions.get(name);
+    }
+
+    public void setGeneratorOption(String name, Object value) {
+        if (value == null) {
+            generatorOptions.remove(name);
+        } else {
+            generatorOptions.put(name, value);
+        }
+    }
+
     protected String getLineSeparator() {
         return compactSQL ? " " : "\n";
     }
@@ -72,6 +86,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     protected void addOptions(Map<String, Object> options) {
         options.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, isFullyQualifiedNames());
         options.put(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT, isCompactSQL());
+        options.putAll(generatorOptions);
     }
 
     @Override

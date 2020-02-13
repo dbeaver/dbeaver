@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
+import org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -79,7 +79,7 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
             log.debug("No active datasource");
             return null;
         }
-        DBRRunnableWithResult<String> generator = GenerateSQLContributor.SELECT_GENERATOR(entities, true);
+        DBRRunnableWithResult<String> generator = SQLGeneratorContributor.SELECT_GENERATOR(entities, true);
         String title = "Query";
         if (entities.size() == 1) {
             title = DBUtils.getObjectFullName(entities.get(0), DBPEvaluationContext.DML);
