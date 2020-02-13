@@ -24,14 +24,14 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 /**
- * SQLUtilsPropertyTester
+ * SQLGeneratorPropertyTester
  */
-public class SQLUtilsPropertyTester extends PropertyTester
+public class SQLGeneratorPropertyTester extends PropertyTester
 {
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql.util";
     public static final String PROP_CAN_GENERATE = "canGenerate";
 
-    public SQLUtilsPropertyTester() {
+    public SQLGeneratorPropertyTester() {
         super();
     }
 
@@ -50,7 +50,7 @@ public class SQLUtilsPropertyTester extends PropertyTester
                     // Results
                     return ((IResultSetSelection) structuredSelection).getController().getModel().isSingleSource();
                 } else {
-                    return GenerateSQLContributor.hasContributions(structuredSelection);
+                    return SQLGeneratorContributor.hasContributions(structuredSelection);
                 }
         }
         return false;

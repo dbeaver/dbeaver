@@ -19,17 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.generator;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -66,9 +58,9 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GenerateSQLContributor extends CompoundContributionItem {
+public class SQLGeneratorContributor extends CompoundContributionItem {
 
-    static protected final Log log = Log.getLog(GenerateSQLContributor.class);
+    static protected final Log log = Log.getLog(SQLGeneratorContributor.class);
 
     //////////////////////////////////////////////////////////
     // Contributors
@@ -177,7 +169,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             DBWorkbench.getPlatformUI().showError("Generator create", "Can't create SQL generator '" + sqlGenerator.getId() + "'", e);
                             return;
                         }
-                        ViewSQLDialog dialog = new GenerateSQLDialog(
+                        ViewSQLDialog dialog = new SQLGeneratorDialog(
                             activePage.getActivePart().getSite(),
                             executionContext,
                             generator);
@@ -185,71 +177,6 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     }
                 }
             });
-    }
-
-    private static class GenerateSQLDialog extends ViewSQLDialog {
-
-        private static final String PROP_USE_FQ_NAMES = "GenerateSQL.useFQNames";
-        private static final String PROP_USE_COMPACT_SQL = "GenerateSQL.compactSQL";
-        private final SQLGenerator<?> sqlGenerator;
-
-        GenerateSQLDialog(IWorkbenchPartSite parentSite, DBCExecutionContext context, SQLGenerator<?> sqlGenerator) {
-            super(parentSite, () -> context,
-                "Generated SQL (" + context.getDataSource().getContainer().getName() + ")",
-                null, "");
-            this.sqlGenerator = sqlGenerator;
-        }
-
-        @Override
-        protected Composite createDialogArea(Composite parent) {
-            sqlGenerator.setFullyQualifiedNames(
-                getDialogBoundsSettings().get(PROP_USE_FQ_NAMES) == null ||
-                    getDialogBoundsSettings().getBoolean(PROP_USE_FQ_NAMES));
-            sqlGenerator.setCompactSQL(
-                getDialogBoundsSettings().get(PROP_USE_COMPACT_SQL) != null &&
-                    getDialogBoundsSettings().getBoolean(PROP_USE_COMPACT_SQL));
-            UIUtils.runInUI(sqlGenerator);
-            Object sql = sqlGenerator.getResult();
-            if (sql != null) {
-                setSQLText(CommonUtils.toString(sql));
-            }
-
-            Composite composite = super.createDialogArea(parent);
-
-            Group settings = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-            Button useFQNames = UIUtils.createCheckbox(settings, "Use fully qualified names", sqlGenerator.isFullyQualifiedNames());
-            useFQNames.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    sqlGenerator.setFullyQualifiedNames(useFQNames.getSelection());
-                    getDialogBoundsSettings().put(PROP_USE_FQ_NAMES, useFQNames.getSelection());
-
-                    UIUtils.runInUI(sqlGenerator);
-                    Object sql = sqlGenerator.getResult();
-                    if (sql != null) {
-                        setSQLText(CommonUtils.toString(sql));
-                        updateSQL();
-                    }
-                }
-            });
-            Button useCompactSQL = UIUtils.createCheckbox(settings, "Compact SQL", sqlGenerator.isCompactSQL());
-            useCompactSQL.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    sqlGenerator.setCompactSQL(useCompactSQL.getSelection());
-                    getDialogBoundsSettings().put(PROP_USE_COMPACT_SQL, useCompactSQL.getSelection());
-
-                    UIUtils.runInUI(sqlGenerator);
-                    Object sql = sqlGenerator.getResult();
-                    if (sql != null) {
-                        setSQLText(CommonUtils.toString(sql));
-                        updateSQL();
-                    }
-                }
-            });
-
-            return composite;
-        }
     }
 
     ///////////////////////////////////////////////////

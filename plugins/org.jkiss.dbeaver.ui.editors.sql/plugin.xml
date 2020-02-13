@@ -191,8 +191,8 @@
                 properties="active,canExecute,canExplain,canNavigate,canValidate,canExport,hasSelection"
                 type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
-                id="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
+                class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql.util"
                 properties="canGenerate"
                 type="org.eclipse.ui.IWorkbenchPart"/>
@@ -758,7 +758,7 @@
                         <test property="org.jkiss.dbeaver.ui.editors.sql.util.canGenerate"/>
                     </with>
                 </visibleWhen>
-                <dynamic id="org.jkiss.dbeaver.core.menu.sql.generate" class="org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor"/>
+                <dynamic id="org.jkiss.dbeaver.core.menu.sql.generate" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorContributor"/>
             </menu>
         </menuContribution>
 
