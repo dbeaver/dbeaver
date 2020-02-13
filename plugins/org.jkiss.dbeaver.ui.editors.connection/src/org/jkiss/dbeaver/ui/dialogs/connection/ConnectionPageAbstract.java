@@ -45,6 +45,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected IDataSourceConnectionEditorSite site;
     // Driver name
     protected Text driverText;
+    protected Text passwordText;
     protected Button savePasswordCheck;
     protected ToolBar userManagementToolbar;
     private VariablesHintLabel variablesHintLabel;
@@ -180,11 +181,22 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     }
 
-    protected void createPasswordControls(Composite parent, Text passwordText) {
-        createPasswordControls(parent, passwordText, 1);
+    protected Text createPasswordText(Composite parent, String label) {
+        if (label != null) {
+            UIUtils.createControlLabel(parent, label);
+        }
+        Composite ph = UIUtils.createPlaceholder(parent, 1);
+        ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        passwordText = new Text(ph, SWT.BORDER | SWT.PASSWORD);
+        passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        return passwordText;
     }
 
-    protected void createPasswordControls(Composite parent, Text passwordText, int hSpan) {
+    protected void createPasswordControls(Composite parent) {
+        createPasswordControls(parent, 1);
+    }
+
+    protected void createPasswordControls(Composite parent, int hSpan) {
         // We don't support password preview in standard project secure storage (as we need password encryption)
         UIServiceSecurity serviceSecurity = DBWorkbench.getService(UIServiceSecurity.class);
         boolean supportsPasswordView = serviceSecurity != null;

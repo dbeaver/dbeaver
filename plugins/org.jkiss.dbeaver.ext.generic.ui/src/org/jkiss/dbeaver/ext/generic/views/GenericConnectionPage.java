@@ -64,7 +64,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     private Text pathText;
     // Login
     private Text userNameText;
-    private Text passwordText;
     // URL
     private Text urlText;
 
@@ -276,13 +275,10 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             passwordLabel.setText(GenericMessages.dialog_connection_password_label);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            passwordText = new Text(settingsGroup, SWT.BORDER | SWT.PASSWORD);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            passwordText.setLayoutData(gd);
+            createPasswordText(settingsGroup, null);
             passwordText.addModifyListener(textListener);
 
-            createPasswordControls(settingsGroup, passwordText, 2);
+            createPasswordControls(settingsGroup, 2);
 
             addControlToGroup(GROUP_LOGIN, userNameLabel);
             addControlToGroup(GROUP_LOGIN, userNameText);

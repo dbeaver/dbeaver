@@ -54,7 +54,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     private Text portText;
     private Text dbText;
     private Text usernameText;
-    private Text passwordText;
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
@@ -125,13 +124,10 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
 
         Composite passPH = UIUtils.createPlaceholder(addrGroup, 2, 5);
         passPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        passwordText = new Text(passPH, SWT.BORDER | SWT.PASSWORD);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.widthHint = fontHeight * 20;
-        passwordText.setLayoutData(gd);
+        createPasswordText(passPH, null);
         passwordText.addModifyListener(textListener);
 
-        createPasswordControls(passPH, passwordText);
+        createPasswordControls(passPH);
 
         UIUtils.createHorizontalLine(addrGroup, 2, 10);
 
