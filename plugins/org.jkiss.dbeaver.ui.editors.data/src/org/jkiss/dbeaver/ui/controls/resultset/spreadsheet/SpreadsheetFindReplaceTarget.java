@@ -108,7 +108,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public boolean isEditable()
     {
-        return !owner.getController().isReadOnly();
+        return owner.getController().getReadOnlyStatus() == null;
     }
 
     @Override

@@ -73,7 +73,9 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     boolean isRecordMode();
 
-    boolean isAttributeReadOnly(DBDAttributeBinding attr);
+    String getReadOnlyStatus();
+
+    String getAttributeReadOnlyStatus(DBDAttributeBinding attr);
 
     boolean isPanelsVisible();
 

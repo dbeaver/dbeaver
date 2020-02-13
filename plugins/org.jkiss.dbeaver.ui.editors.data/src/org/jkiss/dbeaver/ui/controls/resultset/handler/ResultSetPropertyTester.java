@@ -87,7 +87,7 @@ public class ResultSetPropertyTester extends PropertyTester
                     return false;
                 }
                 DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-                return attr != null && !rsv.isAttributeReadOnly(attr);
+                return attr != null && rsv.getAttributeReadOnlyStatus(attr) == null;
             }
             case PROP_CAN_MOVE: {
                 if (actionsDisabled || !rsv.supportsNavigation()) return false;
@@ -109,7 +109,7 @@ public class ResultSetPropertyTester extends PropertyTester
                         return false;
                     }
                     if ("inline".equals(expectedValue)) {
-                        return !rsv.isAttributeReadOnly(attr);
+                        return rsv.getAttributeReadOnlyStatus(attr) == null;
                     } else {
                         return rsv.getCurrentRow() != null;
                     }

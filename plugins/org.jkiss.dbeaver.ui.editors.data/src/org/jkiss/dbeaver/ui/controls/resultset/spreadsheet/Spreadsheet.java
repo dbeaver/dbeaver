@@ -252,7 +252,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                     }
                     final SpreadsheetPresentation presentation = getPresentation();
                     final DBDAttributeBinding attribute = presentation.getCurrentAttribute();
-                    if (editorControl != null && attribute != null && !presentation.getController().isAttributeReadOnly(attribute) && event.keyCode != SWT.CR) {
+                    if (editorControl != null && attribute != null && presentation.getController().getAttributeReadOnlyStatus(attribute) == null && event.keyCode != SWT.CR) {
                         if (!editorControl.isDisposed()) {
                             // We used to forward key even to control but it worked poorly.
                             // So let's just insert first letter (it will remove old value which must be selected for inline controls)

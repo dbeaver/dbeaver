@@ -1340,6 +1340,9 @@ public abstract class LightGrid extends Canvas {
      */
     int indexOf(GridColumn column)
     {
+        if (column == null) {
+            return -1;
+        }
         column = column.getFirstLeaf();
         int index = columns.indexOf(column);
         if (index < 0) {
@@ -4448,9 +4451,9 @@ public abstract class LightGrid extends Canvas {
             x + width,
             y + height - 1);
 
-        if (getContentProvider().isGridReadOnly()) {
-
-        }
+//        if (getContentProvider().isGridReadOnly()) {
+//
+//        }
 
         if (sortOrder != SWT.NONE) {
             int arrowWidth = GridColumnRenderer.SORT_WIDTH;

@@ -572,7 +572,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             Object colElement = spreadsheet.getColumnElement(colNum);
                             final DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowElement : colElement);
                             final ResultSetRow row = (ResultSetRow)(controller.isRecordMode() ? colElement : rowElement);
-                            if (controller.isAttributeReadOnly(attr)) {
+                            if (controller.getAttributeReadOnlyStatus(attr) != null) {
                                 continue;
                             }
                             Object newValue = attr.getValueHandler().getValueFromObject(
@@ -609,7 +609,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     if (attr == null || row == null) {
                         continue;
                     }
-                    if (controller.isAttributeReadOnly(attr)) {
+                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
@@ -932,8 +932,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         Composite placeholder = null;
         if (inline) {
-            if (controller.isAttributeReadOnly(attr)) {
-                controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only", DBPMessageType.ERROR);
+            String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr);
+            if (readOnlyStatus != null) {
+                controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only: " + readOnlyStatus, DBPMessageType.ERROR);
             }
             spreadsheet.cancelInlineEditor();
             activeInlineEditor = null;
@@ -1605,14 +1606,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public boolean isElementReadOnly(Object element) {
             if (element instanceof DBDAttributeBinding) {
-                return controller.isAttributeReadOnly((DBDAttributeBinding) element);
+                return controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element) != null;
             }
             return false;
         }
 
         @Override
         public boolean isGridReadOnly() {
-            return controller.isReadOnly();
+            return controller.getReadOnlyStatus() != null;
         }
 
         @Override
@@ -1849,7 +1850,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Override
         public Color getCellHeaderBackground(Object element) {
-            if (element instanceof DBDAttributeBinding && controller.isAttributeReadOnly((DBDAttributeBinding) element)) {
+            if (element instanceof DBDAttributeBinding && controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element) != null) {
                 return backgroundOdd;
             }
             return cellHeaderBackground;
@@ -2019,8 +2020,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 String tip = CommonUtils.isEmpty(description) ?
                     name + ": " + typeName :
                     name + ": " + typeName + "\n" + description;
-                if (controller.isAttributeReadOnly(attributeBinding)) {
-                    tip += " (read-only)";
+                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding);
+                if (readOnlyStatus != null) {
+                    tip += " (Read-only: " + readOnlyStatus + ")";
                 }
                 return tip;
             }
@@ -2098,7 +2100,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     if (attr.getValueHandler() != origAttr.getValueHandler()) {
                         continue;
                     }
-                    if (controller.isAttributeReadOnly(attr)) {
+                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
