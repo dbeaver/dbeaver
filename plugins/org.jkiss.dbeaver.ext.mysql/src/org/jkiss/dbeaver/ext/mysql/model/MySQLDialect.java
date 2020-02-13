@@ -54,6 +54,7 @@ class MySQLDialect extends JDBCSQLDialect {
     };
 
     private static String[] EXEC_KEYWORDS =  { "CALL" };
+    private int lowerCaseTableNames;
 
     public MySQLDialect() {
         super("MySQL");
@@ -61,6 +62,7 @@ class MySQLDialect extends JDBCSQLDialect {
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+        this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
         //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
         addFunctions(Arrays.asList("SLEEP"));
@@ -105,6 +107,11 @@ class MySQLDialect extends JDBCSQLDialect {
     public String[][] getBlockBoundStrings() {
         // No anonymous blocks in MySQL
         return null;
+    }
+
+    @Override
+    public boolean useCaseInsensitiveNameLookup() {
+        return lowerCaseTableNames != 0;
     }
 
     @NotNull

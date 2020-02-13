@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.*;
@@ -78,7 +77,7 @@ public class MySQLDataSource extends JDBCDataSource {
     private List<MySQLCharset> charsets;
     private Map<String, MySQLCollation> collations;
     private String defaultCharset, defaultCollation;
-    private String activeCatalogName;
+    private int lowerCaseTableNames = 1;
     private SQLHelpProvider helpProvider;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
@@ -98,6 +97,10 @@ public class MySQLDataSource extends JDBCDataSource {
                 }
         }
         return super.getDataSourceFeature(featureId);
+    }
+
+    int getLowerCaseTableNames() {
+        return lowerCaseTableNames;
     }
 
     @Override
@@ -300,9 +303,19 @@ public class MySQLDataSource extends JDBCDataSource {
 
             }
 
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VARIABLES LIKE 'lower_case_table_names'")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        lowerCaseTableNames = JDBCUtils.safeGetInt(dbResult, 2);
+                    }
+                }
+            } catch (Throwable ex) {
+                log.debug("Error reading default server charset/collation", ex);
+            }
+
             // Read catalogs
             catalogCache.getAllObjects(monitor, this);
-            activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
+            //activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
         }
     }
 
@@ -314,7 +327,6 @@ public class MySQLDataSource extends JDBCDataSource {
         this.engines = null;
         this.catalogCache.clearCache();
         this.users = null;
-        this.activeCatalogName = null;
 
         this.initialize(monitor);
 
