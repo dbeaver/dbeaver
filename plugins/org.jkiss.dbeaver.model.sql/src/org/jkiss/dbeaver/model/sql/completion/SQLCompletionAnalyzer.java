@@ -23,6 +23,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -50,6 +53,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private static final String ALL_COLUMNS_PATTERN = "*";
     private static final String MATCH_ANY_PATTERN = "%";
+    public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 20;
 
     private final SQLCompletionRequest request;
     private DBRProgressMonitor monitor;
@@ -139,6 +143,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         // Join?
                         if (makeJoinColumnProposals((DBSObjectContainer)dataSource, (DBSEntity)rootObject)) {
                             return;
+                        }
+                    } else if (!request.isSimpleMode()) {
+                        List<String> prevWords = wordDetector.getPrevWords();
+                        boolean waitsForValue = rootObject instanceof DBSEntity &&
+                            !CommonUtils.isEmpty(prevWords) &&
+                            !CommonUtils.isEmpty(wordDetector.getPrevDelimiter());
+                        if (waitsForValue) {
+                            makeProposalsFromAttributeValues(dataSource, wordDetector, (DBSEntity) rootObject);
                         }
                     }
                 } else if (dataSource instanceof DBSObjectContainer) {
@@ -299,6 +311,36 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
         }
         filterProposals(dataSource);
+    }
+
+    private void makeProposalsFromAttributeValues(DBPDataSource dataSource, SQLWordPartDetector wordDetector, DBSEntity entity) throws DBException {
+        List<String> prevWords = wordDetector.getPrevWords();
+        if (!prevWords.isEmpty()) {
+            // Column name?
+            String columnName = prevWords.get(prevWords.size() - 1);
+            columnName = DBUtils.getUnQuotedIdentifier(dataSource, columnName);
+            DBSEntityAttribute attribute = entity.getAttribute(monitor, columnName);
+            if (attribute instanceof DBSAttributeEnumerable) {
+                try (DBCSession session = request.getContext().getExecutionContext().openSession(monitor, DBCExecutionPurpose.META, "Read attribute values")) {
+                    List<DBDLabelValuePair> valueEnumeration = ((DBSAttributeEnumerable) attribute).getValueEnumeration(session, null, MAX_ATTRIBUTE_VALUE_PROPOSALS);
+                    if (!valueEnumeration.isEmpty()) {
+                        DBPImage attrImage = null;
+                        for (DBDLabelValuePair valuePair : valueEnumeration) {
+                            String sqlValue = SQLUtils.convertValueToSQL(dataSource, attribute, valuePair.getValue());
+                            proposals.add(request.getContext().createProposal(
+                                request,
+                                sqlValue,
+                                sqlValue,
+                                sqlValue.length(),
+                                attrImage,
+                                DBPKeywordType.OTHER,
+                                null,
+                                null));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void filterProposals(DBPDataSource dataSource) {
