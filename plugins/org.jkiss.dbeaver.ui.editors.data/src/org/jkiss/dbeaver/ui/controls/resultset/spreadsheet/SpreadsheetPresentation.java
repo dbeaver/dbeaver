@@ -1850,9 +1850,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Override
         public Color getCellHeaderBackground(Object element) {
-            if (element instanceof DBDAttributeBinding && controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element) != null) {
-                return backgroundOdd;
-            }
+//            if (element instanceof DBDAttributeBinding && controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element) != null) {
+//                return backgroundOdd;
+//            }
             return cellHeaderBackground;
         }
 
