@@ -87,7 +87,7 @@ public class NetworkHandlerRegistry {
 */
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
-            if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(dataSource.getDriver().getDataSourceProvider())) {
+            if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(dataSource)) {
                 result.add(d);
             }
         }

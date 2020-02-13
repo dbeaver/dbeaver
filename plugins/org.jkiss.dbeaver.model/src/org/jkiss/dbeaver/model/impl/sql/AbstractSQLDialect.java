@@ -297,6 +297,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean useCaseInsensitiveNameLookup() {
+        return false;
+    }
+
+    @Override
     public boolean supportsUnquotedMixedCase() {
         return true;
     }

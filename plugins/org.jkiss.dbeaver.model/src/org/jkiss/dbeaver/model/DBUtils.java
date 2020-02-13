@@ -155,14 +155,17 @@ public final class DBUtils {
         if (!hasBadChars && caseSensitiveNames) {
             // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
             // Disable supportsQuotedMixedCase checking. Let's quote identifiers always if storage case doesn't match actual case
-            /*if (sqlDialect.supportsQuotedMixedCase()) */
-            {
-                // See how unquoted idents are stored
+            // unless database use case-insensitive search always (e.g. MySL with lower_case_table_names <> 0)
+            if (!sqlDialect.useCaseInsensitiveNameLookup()) {
+                // See how unquoted identifiers are stored
                 // If passed identifier case differs from unquoted then we need to escape it
-                if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
-                    hasBadChars = !str.equals(str.toUpperCase());
-                } else if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.LOWER) {
-                    hasBadChars = !str.equals(str.toLowerCase());
+                switch (sqlDialect.storesUnquotedCase()) {
+                    case UPPER:
+                        hasBadChars = !str.equals(str.toUpperCase());
+                        break;
+                    case LOWER:
+                        hasBadChars = !str.equals(str.toLowerCase());
+                        break;
                 }
             }
         }
@@ -780,9 +783,9 @@ public final class DBUtils {
             assert attr != null;
             try {
                 curValue = attr.extractNestedValue(curValue);
-            } catch (DBCException e) {
-                log.debug("Error reading nested value of [" + attr.getName() + "]", e);
-                curValue = null;
+            } catch (Throwable e) {
+                //log.debug("Error reading nested value of [" + attr.getName() + "]", e);
+                curValue = new DBDValueError(e);
                 break;
             }
         }

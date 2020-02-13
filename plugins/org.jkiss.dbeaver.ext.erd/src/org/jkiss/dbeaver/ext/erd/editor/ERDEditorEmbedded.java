@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.action.DiagramTogglePersistAction;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVObject;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
@@ -85,6 +88,13 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     public boolean isReadOnly()
     {
         return false;
+    }
+
+    @Override
+    protected void fillDefaultEditorContributions(IContributionManager toolBarManager) {
+        super.fillDefaultEditorContributions(toolBarManager);
+
+        toolBarManager.add(ActionUtils.makeActionContribution(new DiagramTogglePersistAction(this), true));
     }
 
     @Override
@@ -354,6 +364,27 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
             log.error("Error saving diagram", e);
+        }
+        updateToolbarActions();
+    }
+
+    public boolean isStateSaved() {
+        DBVObject vObject = this.getVirtualObject();
+        return (vObject != null && vObject.getProperty(PROP_DIAGRAM_STATE) != null);
+    }
+
+    public void resetSavedState(boolean refreshDiagram) {
+        try {
+            DBVObject vObject = this.getVirtualObject();
+            if (vObject != null && vObject.getProperty(PROP_DIAGRAM_STATE) != null) {
+                vObject.setProperty(PROP_DIAGRAM_STATE, null);
+                vObject.persistConfiguration();
+            }
+        } catch (Exception e) {
+            log.error("Error resetting diagram state", e);
+        }
+        if (refreshDiagram) {
+            refreshDiagram(true, true);
         }
     }
 

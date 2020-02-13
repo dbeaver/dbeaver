@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
@@ -111,19 +112,23 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected MySQLTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
-    {
+    protected MySQLTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         MySQLTable table = (MySQLTable) container;
 
-        MySQLTableColumn column = new MySQLTableColumn(table);
-        DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar"); //$NON-NLS-1$
-        column.setName(getNewColumnName(monitor, context, table));
-        final String typeName = columnType == null ? "integer" : columnType.getName().toLowerCase();
-        column.setTypeName(typeName); //$NON-NLS-1$
-        column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
-        column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
-        column.setOrdinalPosition(table.getCachedAttributes().size() + 1);
-        column.setFullTypeName(DBUtils.getFullTypeName(column));
+        MySQLTableColumn column;
+        if (copyFrom instanceof DBSEntityAttribute) {
+            column = new MySQLTableColumn(monitor, table, (DBSEntityAttribute)copyFrom);
+        } else {
+            column = new MySQLTableColumn(table);
+            DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar"); //$NON-NLS-1$
+            column.setName(getNewColumnName(monitor, context, table));
+            final String typeName = columnType == null ? "integer" : columnType.getName().toLowerCase();
+            column.setTypeName(typeName); //$NON-NLS-1$
+            column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
+            column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
+            column.setOrdinalPosition(table.getCachedAttributes().size() + 1);
+            column.setFullTypeName(DBUtils.getFullTypeName(column));
+        }
         return column;
     }
 

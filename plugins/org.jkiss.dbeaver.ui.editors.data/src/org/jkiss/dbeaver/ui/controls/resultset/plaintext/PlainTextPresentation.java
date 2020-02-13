@@ -42,6 +42,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -396,6 +397,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         if (cellValue instanceof DBDValueError) {
             return ((DBDValueError) cellValue).getErrorTitle();
         }
+        if (cellValue instanceof Number && controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT)) {
+            displayFormat = DBDDisplayFormat.NATIVE;
+        }
+
         String displayString = attr.getValueHandler().getValueDisplayString(attr, cellValue, displayFormat);
 
         if (displayString.isEmpty() &&
@@ -434,6 +439,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         boolean delimLeading = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
         boolean delimTrailing = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
         DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
+        boolean extraSpaces = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
+        String indent = extraSpaces ? " " : "";
 
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
@@ -452,23 +459,30 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 valueWidth = Math.max(valueWidth, values[i].length());
             }
         }
+        if (extraSpaces) {
+            //nameWidth += 1;
+            //valueWidth += 1;
+        }
 
         // Header
         if (delimLeading) grid.append("|");
-        grid.append("Name");
+        grid.append(indent).append("Name");
         for (int j = nameWidth - 4; j > 0; j--) {
             grid.append(" ");
         }
-        grid.append("|Value");
+        grid.append(indent).append("|").append(indent).append("Value");
         for (int j = valueWidth - 5; j > 0; j--) {
             grid.append(" ");
         }
+        grid.append(indent);
         if (delimTrailing) grid.append("|");
         grid.append("\n");
 
         if (delimLeading) grid.append("|");
+        if (extraSpaces) grid.append("--");
         for (int j = 0; j < nameWidth; j++) grid.append("-");
         grid.append("|");
+        if (extraSpaces) grid.append("--");
         for (int j = 0; j < valueWidth; j++) grid.append("-");
         if (delimTrailing) grid.append("|");
         grid.append("\n");
@@ -479,15 +493,19 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 DBDAttributeBinding attr = attrs.get(i);
                 String name = getAttributeName(attr);
                 if (delimLeading) grid.append("|");
+                grid.append(indent);
                 grid.append(name);
+                grid.append(indent);
                 for (int j = nameWidth - name.length(); j > 0; j--) {
                     grid.append(" ");
                 }
                 grid.append("|");
+                grid.append(indent);
                 grid.append(values[i]);
                 for (int j = valueWidth - values[i].length(); j > 0; j--) {
                     grid.append(" ");
                 }
+                grid.append(indent);
 
                 if (delimTrailing) grid.append("|");
                 grid.append("\n");

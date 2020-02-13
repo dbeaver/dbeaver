@@ -25,7 +25,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.athena.AthenaActivator;
 import org.jkiss.dbeaver.ext.athena.internal.AthenaMessages;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
@@ -40,14 +39,11 @@ import org.jkiss.utils.CommonUtils;
 /**
  * AthenaConnectionPage
  */
-public class AthenaConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
-{
-    private static final Log log = Log.getLog(AthenaConnectionPage.class);
+public class AthenaConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage {
 
     private Combo awsRegionCombo;
     private Text s3LocationText;
     private Text accessKeyText;
-    private Text secretAccessKeyText;
 
     private static ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
     private DriverPropertiesDialogPage driverPropsPage;
@@ -57,14 +53,12 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
     }
 
     @Override
-    public void createControl(Composite composite)
-    {
+    public void createControl(Composite composite) {
         setImageDescriptor(logoImage);
 
         Composite settingsGroup = new Composite(composite, SWT.NONE);
@@ -92,11 +86,11 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
             accessKeyText.setToolTipText(AthenaMessages.label_access_key);
             accessKeyText.addModifyListener(textListener);
 
-            secretAccessKeyText = UIUtils.createLabelText(addrGroup, AthenaMessages.label_secret_key, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$ 
+            Text secretAccessKeyText = createPasswordText(addrGroup, AthenaMessages.label_secret_key);
             secretAccessKeyText.setToolTipText(AthenaMessages.label_access_key_id);
             secretAccessKeyText.addModifyListener(textListener);
 
-            createPasswordControls(addrGroup, secretAccessKeyText, 2);
+            createPasswordControls(addrGroup, 2);
         }
 
 
@@ -105,17 +99,15 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
     }
 
     @Override
-    public boolean isComplete()
-    {
+    public boolean isComplete() {
         return awsRegionCombo != null && !CommonUtils.isEmpty(awsRegionCombo.getText()) &&
             s3LocationText != null && !CommonUtils.isEmpty(s3LocationText.getText()) &&
             accessKeyText != null && !CommonUtils.isEmpty(accessKeyText.getText()) &&
-            secretAccessKeyText != null && !CommonUtils.isEmpty(secretAccessKeyText.getText());
+            passwordText != null && !CommonUtils.isEmpty(passwordText.getText());
     }
 
     @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
         super.loadSettings();
 
         // Load values from new connection info
@@ -145,14 +137,13 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
         if (accessKeyText != null) {
             accessKeyText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
         }
-        if (secretAccessKeyText != null) {
-            secretAccessKeyText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
+        if (passwordText != null) {
+            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (awsRegionCombo != null) {
             connectionInfo.setServerName(awsRegionCombo.getText().trim());
@@ -163,16 +154,15 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
         if (accessKeyText != null) {
             connectionInfo.setUserName(accessKeyText.getText().trim());
         }
-        if (secretAccessKeyText != null && savePasswordCheck.getSelection()) {
-            connectionInfo.setUserPassword(secretAccessKeyText.getText().trim());
+        if (passwordText != null && savePasswordCheck.getSelection()) {
+            connectionInfo.setUserPassword(passwordText.getText().trim());
         }
         super.saveSettings(dataSource);
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
-    {
-        return new IDialogPage[] {
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
+        return new IDialogPage[]{
             driverPropsPage
         };
     }

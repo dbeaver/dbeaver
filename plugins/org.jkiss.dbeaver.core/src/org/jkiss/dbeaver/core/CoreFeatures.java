@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.core;
 
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 
 /**
  * DBeaver project nature
@@ -31,5 +29,5 @@ public interface CoreFeatures {
     DBRFeature ENTITY_EDITOR_REJECT = DBRFeature.createFeature(ENTITY_EDITOR, "Reject object properties changes");
 
     DBRFeature RESULT_SET = DBRFeature.createCategory("Result Set", "ResultSet operation");
-    DBRFeature RESULT_SET_APPLY_CHANGES = DBRFeature.createCommandFeature(RESULT_SET, ResultSetHandlerMain.CMD_APPLY_CHANGES);
+    //DBRFeature RESULT_SET_APPLY_CHANGES = DBRFeature.createCommandFeature(RESULT_SET, ResultSetHandlerMain.CMD_APPLY_CHANGES);
 }

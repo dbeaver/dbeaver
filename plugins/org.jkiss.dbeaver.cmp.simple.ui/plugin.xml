@@ -39,7 +39,7 @@
                     <visibleWhen checkEnabled="true"/>
                 </command>
 
-                <!--<dynamic id="org.jkiss.dbeaver.core.menu.compare" class="org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor"/>-->
+                <!--<dynamic id="org.jkiss.dbeaver.core.menu.compare" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorContributorr"/>-->
             </menu>
         </menuContribution>
 

@@ -892,7 +892,7 @@
             <separator name="additions" visible="true"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.preferences"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure"/>
             <separator name="additions_end" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.project.refresh"/>
         </menuContribution>

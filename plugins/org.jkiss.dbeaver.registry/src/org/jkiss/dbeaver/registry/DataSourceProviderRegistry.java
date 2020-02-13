@@ -133,10 +133,25 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             });
         }
 
-        // Load drivers
-        File driversConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
-        if (driversConfig.exists()) {
-            loadDrivers(driversConfig);
+        {
+            // Try to load initial drivers config
+            String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
+            if (!CommonUtils.isEmpty(providedDriversConfig)) {
+                File configFile = new File(providedDriversConfig);
+                if (configFile.exists()) {
+                    log.debug("Loading provided drivers configuration from '" + configFile.getAbsolutePath() + "'");
+                    loadDrivers(configFile, true);
+                } else {
+                    log.debug("Provided drivers configuration file '" + configFile.getAbsolutePath() + "' doesn't exist");
+                }
+            }
+
+            // Load user drivers
+            File driversConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
+            if (driversConfig.exists()) {
+                log.debug("Loading user drivers configuration from '" + driversConfig.getAbsolutePath() + "'");
+                loadDrivers(driversConfig, false);
+            }
         }
 
         // Resolve all driver replacements
@@ -287,12 +302,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Persistence
 
-    private void loadDrivers(File driversConfig)
+    private void loadDrivers(File driversConfig, boolean provided)
     {
         if (driversConfig.exists()) {
             try {
                 try (InputStream is = new FileInputStream(driversConfig)) {
-                    new SAXReader(is).parse(new DriverDescriptorSerializerLegacy.DriversParser());
+                    new SAXReader(is).parse(new DriverDescriptorSerializerLegacy.DriversParser(provided));
                 } catch (XMLException ex) {
                     log.warn("Drivers config parse error", ex);
                 }

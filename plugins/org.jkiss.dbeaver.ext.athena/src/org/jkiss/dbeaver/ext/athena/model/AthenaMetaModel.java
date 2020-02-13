@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -32,14 +33,20 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Athena meta model
  */
 public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
+
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" line ([0-9]+)\\:([0-9]+)");
+
     public AthenaMetaModel() {
     }
 
@@ -80,4 +87,18 @@ public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return getTableDDL(monitor, sourceObject, options);
     }
 
+    @Override
+    public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
+        String message = error.getMessage();
+        if (!CommonUtils.isEmpty(message)) {
+            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
+            if (matcher.find()) {
+                DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                pos.line = Integer.parseInt(matcher.group(1)) - 1;
+                pos.position = Integer.parseInt(matcher.group(2)) - 1;
+                return pos;
+            }
+        }
+        return null;
+    }
 }

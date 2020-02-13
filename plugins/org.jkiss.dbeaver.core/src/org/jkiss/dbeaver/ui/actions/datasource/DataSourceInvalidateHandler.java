@@ -59,6 +59,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                 // It should trigger connection instantiation if for some reason it was lost (SQLEditor specific?)
                 DBPDataSourceContainer dsContainer = ((IDataSourceContainerProviderEx) editor).getDataSourceContainer();
                 if (dsContainer != null) {
+                    ((IDataSourceContainerProviderEx) editor).setDataSourceContainer(null);
                     ((IDataSourceContainerProviderEx) editor).setDataSourceContainer(dsContainer);
                 }
             }

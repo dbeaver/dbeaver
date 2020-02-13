@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTUtils;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -162,7 +162,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer", context);
                 }
                 if (task != null) {
-                    DBTUtils.initFromContext(monitor, task, context);
+                    DBTaskUtils.initFromContext(monitor, task, context);
                 }
 
                 try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
@@ -329,7 +329,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 SQLQuery query = new SQLQuery(ds.getDataSource(), queryText);
                                 SQLScriptContext scriptContext = new SQLScriptContext(null,
                                     new DataSourceContextProvider(ds), null, new PrintWriter(System.err, true), null);
-                                scriptContext.setVariables(DBTUtils.getVariables(objectContext));
+                                scriptContext.setVariables(DBTaskUtils.getVariables(objectContext));
                                 producer.dataContainer = new SQLQueryDataContainer(new DataSourceContextProvider(ds), query, scriptContext, log);
                                 break;
                             }

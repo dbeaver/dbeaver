@@ -85,13 +85,7 @@ public abstract class AbstractPopupPanel extends Dialog {
                 @Override
                 public void focusLost(FocusEvent e) {
                     UIUtils.asyncExec(() -> {
-                        Shell shell = getShell();
-                        if (shell != null) {
-                            Control focusControl = shell.getDisplay().getFocusControl();
-                            if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
-                                cancelPressed();
-                            }
-                        }
+                        handleFocusLost();
                     });
                 }
             };
@@ -102,6 +96,18 @@ public abstract class AbstractPopupPanel extends Dialog {
             }
         }
 
+    }
+
+    private void handleFocusLost() {
+        Shell shell = getShell();
+        if (shell != null) {
+            Control focusControl = shell.getDisplay().getFocusControl();
+            if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
+                cancelPressed();
+            }
+        } else {
+            cancelPressed();
+        }
     }
 
 }

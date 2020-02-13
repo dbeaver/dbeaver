@@ -161,7 +161,7 @@ public class PostgreUtils {
             if (vector.isEmpty()) {
                 return null;
             }
-            final String[] strings = vector.split(" ");
+            final String[] strings = vector.split(PostgreConstants.DEFAULT_ARRAY_DELIMITER);
             final long[] ids = new long[strings.length];
             for (int i = 0; i < strings.length; i++) {
                 ids[i] = Long.parseLong(strings[i]);
@@ -193,7 +193,7 @@ public class PostgreUtils {
             if (vector.isEmpty()) {
                 return null;
             }
-            final String[] strings = vector.split(" ");
+            final String[] strings = vector.split(PostgreConstants.DEFAULT_ARRAY_DELIMITER);
             final int[] ids = new int[strings.length];
             for (int i = 0; i < strings.length; i++) {
                 ids[i] = Integer.parseInt(strings[i]);
@@ -413,17 +413,19 @@ public class PostgreUtils {
         }
     }
 
-    public static PostgreDataType findDataType(DBCSession session, PostgreDataSource dataSource, DBSTypedObject column) throws DBCException {
-        if (column instanceof PostgreAttribute) {
-            return ((PostgreAttribute) column).getDataType();
+    public static PostgreDataType findDataType(DBCSession session, PostgreDataSource dataSource, DBSTypedObject type) throws DBCException {
+        if (type instanceof PostgreDataType) {
+            return (PostgreDataType) type;
+        } else if (type instanceof PostgreAttribute) {
+            return ((PostgreAttribute) type).getDataType();
         } else {
-            if (column instanceof JDBCColumnMetaData) {
+            if (type instanceof JDBCColumnMetaData) {
                 try {
-                    DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) column).getEntityMetaData();
+                    DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) type).getEntityMetaData();
                     if (entityMetaData != null) {
                         DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), entityMetaData);
                         if (docEntity != null) {
-                            DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
+                            DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) type).getName());
                             if (attribute instanceof DBSTypedObjectEx) {
                                 DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
                                 if (dataType instanceof PostgreDataType) {
@@ -432,21 +434,21 @@ public class PostgreUtils {
                             }
                         }
                     } else {
-                        String databaseName = ((JDBCColumnMetaData) column).getCatalogName();
+                        String databaseName = ((JDBCColumnMetaData) type).getCatalogName();
                         PostgreDatabase database = dataSource.getDatabase(databaseName);
                         if (database != null) {
-                            PostgreDataType dataType = database.getDataType(session.getProgressMonitor(), column.getTypeName());
+                            PostgreDataType dataType = database.getDataType(session.getProgressMonitor(), type.getTypeName());
                             if (dataType != null) {
                                 return dataType;
                             }
                         }
                     }
                 } catch (DBException e) {
-                    throw new DBCException("Error extracting column " + column + " data type", e);
+                    throw new DBCException("Error extracting column " + type + " data type", e);
                 }
             }
 
-            String typeName = column.getTypeName();
+            String typeName = type.getTypeName();
             return dataSource.getLocalDataType(typeName);
         }
     }
@@ -745,4 +747,124 @@ public class PostgreUtils {
     public static String getRealSchemaName(PostgreDatabase database, String name) {
         return name.replace("$user", database.getMetaContext().getActiveUser());
     }
+
+    // Copied from pgjdbc array parser class
+    // https://github.com/pgjdbc/pgjdbc/blob/master/pgjdbc/src/main/java/org/postgresql/jdbc/PgArray.java
+    public static List<Object> parseArrayString(String fieldString, String delimiter) {
+        List<Object> arrayList  = new ArrayList<>();
+
+        int dimensionsCount = 1;
+        char delim = delimiter.charAt(0);//connection.getTypeInfo().getArrayDelimiter(oid);
+
+        if (fieldString != null) {
+
+            char[] chars = fieldString.toCharArray();
+            StringBuilder buffer = null;
+            boolean insideString = false;
+            boolean wasInsideString = false; // needed for checking if NULL
+            // value occurred
+            List<List<Object>> dims = new ArrayList<>(); // array dimension arrays
+            List<Object> curArray = arrayList; // currently processed array
+
+            // Starting with 8.0 non-standard (beginning index
+            // isn't 1) bounds the dimensions are returned in the
+            // data formatted like so "[0:3]={0,1,2,3,4}".
+            // Older versions simply do not return the bounds.
+            //
+            // Right now we ignore these bounds, but we could
+            // consider allowing these index values to be used
+            // even though the JDBC spec says 1 is the first
+            // index. I'm not sure what a client would like
+            // to see, so we just retain the old behavior.
+            int startOffset = 0;
+            {
+                if (chars[0] == '[') {
+                    while (chars[startOffset] != '=') {
+                        startOffset++;
+                    }
+                    startOffset++; // skip =
+                }
+            }
+
+            for (int i = startOffset; i < chars.length; i++) {
+
+                // escape character that we need to skip
+                if (chars[i] == '\\') {
+                    i++;
+                } else if (!insideString && chars[i] == '{') {
+                    // subarray start
+                    if (dims.isEmpty()) {
+                        dims.add(arrayList);
+                    } else {
+                        List<Object> a = new ArrayList<>();
+                        List<Object> p = dims.get(dims.size() - 1);
+                        p.add(a);
+                        dims.add(a);
+                    }
+                    curArray = dims.get(dims.size() - 1);
+
+                    // number of dimensions
+                    {
+                        for (int t = i + 1; t < chars.length; t++) {
+                            if (Character.isWhitespace(chars[t])) {
+                                continue;
+                            } else if (chars[t] == '{') {
+                                dimensionsCount++;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    buffer = new StringBuilder();
+                    continue;
+                } else if (chars[i] == '"') {
+                    // quoted element
+                    insideString = !insideString;
+                    wasInsideString = true;
+                    continue;
+                } else if (!insideString && Character.isWhitespace(chars[i])) {
+                    // white space
+                    continue;
+                } else if ((!insideString && (chars[i] == delim || chars[i] == '}'))
+                    || i == chars.length - 1) {
+                    // array end or element end
+                    // when character that is a part of array element
+                    if (chars[i] != '"' && chars[i] != '}' && chars[i] != delim && buffer != null) {
+                        buffer.append(chars[i]);
+                    }
+
+                    String b = buffer == null ? null : buffer.toString();
+
+                    // add element to current array
+                    if (b != null && (!b.isEmpty() || wasInsideString)) {
+                        curArray.add(!wasInsideString && b.equals("NULL") ? null : b);
+                    }
+
+                    wasInsideString = false;
+                    buffer = new StringBuilder();
+
+                    // when end of an array
+                    if (chars[i] == '}') {
+                        dims.remove(dims.size() - 1);
+
+                        // when multi-dimension
+                        if (!dims.isEmpty()) {
+                            curArray = dims.get(dims.size() - 1);
+                        }
+
+                        buffer = null;
+                    }
+
+                    continue;
+                }
+
+                if (buffer != null) {
+                    buffer.append(chars[i]);
+                }
+            }
+        }
+        return arrayList;
+    }
+
 }

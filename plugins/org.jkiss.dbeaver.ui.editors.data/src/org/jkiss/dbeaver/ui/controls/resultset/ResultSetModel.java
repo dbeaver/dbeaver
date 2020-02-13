@@ -279,12 +279,12 @@ public class ResultSetModel {
         return null;
     }
 
-    DBVEntity getVirtualEntity(boolean create) {
+    public DBVEntity getVirtualEntity(boolean create) {
         DBSEntity entity = isSingleSource() ? getSingleSource() : null;
         return getVirtualEntity(entity, create);
     }
 
-    DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
+    public DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
         if (entity != null) {
             return DBVUtils.getVirtualEntity(entity, true);
         }
@@ -632,7 +632,7 @@ public class ResultSetModel {
         return colorMapping.containsKey(binding);
     }
 
-    void updateColorMapping(boolean reset) {
+    public void updateColorMapping(boolean reset) {
         colorMapping.clear();
 
         DBSDataContainer dataContainer = getDataContainer();
@@ -789,6 +789,28 @@ public class ResultSetModel {
         }
         DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
         return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
+    }
+
+    public String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
+        if (attribute == null || attribute.getMetaAttribute() == null) {
+            return "Null meta attribute";
+        }
+        if (attribute.getMetaAttribute().isReadOnly()) {
+            return "Attribute is read-only";
+        }
+        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+        if (rowIdentifier == null) {
+            String status = attribute.getRowIdentifierStatus();
+            return status != null ? status : "No row identifier found";
+        }
+        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
+        if (!(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
+            return "Underlying entity doesn't support data modification";
+        }
+        if ((dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0) {
+            return "Underlying entity doesn't support data update";
+        }
+        return null;
     }
 
     public boolean isUpdateInProgress() {

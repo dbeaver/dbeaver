@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -53,6 +52,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -457,12 +458,22 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             Control finalEditControl = editControl;
 
             if (finalEditControl instanceof Combo) {
-                ((Combo) finalEditControl).addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        updatePropertyValue(prop, ((Combo) finalEditControl).getText());
-                    }
-                });
+                if ((finalEditControl.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
+                    ((Combo) finalEditControl).addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            updatePropertyValue(prop, ((Combo) finalEditControl).getText());
+                        }
+                    });
+                } else {
+                    ((Combo) finalEditControl).addModifyListener(e -> {
+                        try {
+                            updatePropertyValue(prop, ((Combo) finalEditControl).getText());
+                        } catch (Exception ex) {
+                            log.debug("Error setting value from combo: " + ex.getMessage());
+                        }
+                    });
+                }
             } else if (finalEditControl instanceof Text) {
                 ((Text) finalEditControl).addModifyListener(e -> updatePropertyValue(prop, ((Text) finalEditControl).getText()));
             } else if (finalEditControl instanceof Button) {
@@ -531,9 +542,8 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
                 if ((combo.getStyle() & SWT.READ_ONLY) == 0) {
-                    SimpleContentProposalProvider proposalProvider = new SimpleContentProposalProvider(strings);
-                    proposalProvider.setFiltering(true);
-                    UIUtils.installContentProposal(combo, new ComboContentAdapter(), proposalProvider, true, true);
+                    StringContentProposalProvider proposalProvider = new StringContentProposalProvider(strings);
+                    ContentAssistUtils.installContentProposal(combo, new ComboContentAdapter(), proposalProvider);
                 }
 
                 return combo;

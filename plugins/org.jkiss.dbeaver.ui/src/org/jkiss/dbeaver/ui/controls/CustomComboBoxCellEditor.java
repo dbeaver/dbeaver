@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.swt.SWT;
@@ -26,7 +25,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -34,7 +34,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
 
-    private SimpleContentProposalProvider proposalProvider;
+    private StringContentProposalProvider proposalProvider;
 
     public CustomComboBoxCellEditor(Composite parent, String[] items) {
         super(parent, items);
@@ -83,9 +83,8 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
         if ((getStyle() & SWT.READ_ONLY) == 0) {
             // Install proposal provider for editable combos
             // In fact it was a bad idea to use proposals in inline combo editors (#2409)
-            proposalProvider = new SimpleContentProposalProvider(comboBox.getItems());
-            proposalProvider.setFiltering(true);
-            UIUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, true, true);
+            proposalProvider = new StringContentProposalProvider(comboBox.getItems());
+            ContentAssistUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider);
         }
 
         return comboBox;

@@ -56,7 +56,7 @@ public class SQLTokenAdapter extends Token {
                     case T_TYPE:
                         return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_DATATYPE), null, scanner.getKeywordStyle());
                     case T_NUMBER:
-                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_NUMBER), null, scanner.getKeywordStyle());
+                        return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_NUMBER), null, SWT.NORMAL);
                     case T_COMMENT:
                         return new TextAttribute(scanner.getColor(SQLConstants.CONFIG_COLOR_COMMENT), null, SWT.NORMAL);
                     case T_DELIMITER:

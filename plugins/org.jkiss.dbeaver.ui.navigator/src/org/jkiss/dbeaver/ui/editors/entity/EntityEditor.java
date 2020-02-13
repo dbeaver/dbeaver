@@ -293,9 +293,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         // Run post-save commands (e.g. compile)
+        Map<String, Object> context = new LinkedHashMap<>();
         for (IEditorPart editor : editorMap.values()) {
             if (editor instanceof IDatabasePostSaveProcessor) {
-                ((IDatabasePostSaveProcessor) editor).runPostSaveCommands();
+                ((IDatabasePostSaveProcessor) editor).runPostSaveCommands(context);
             }
             if (monitor.isCanceled()) {
                 return;

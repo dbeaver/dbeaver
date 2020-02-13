@@ -356,7 +356,7 @@
                     <property name="loginTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
@@ -385,7 +385,7 @@
                     <property name="loginTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
@@ -415,7 +415,7 @@
                     <property name="loginTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>

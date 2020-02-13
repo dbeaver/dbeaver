@@ -201,7 +201,9 @@ public class SQLQuery implements SQLScriptElement {
         if (name == null) {
             return null;
         }
-        return DBUtils.getUnQuotedIdentifier(dataSource, name);
+        return dataSource == null ?
+            DBUtils.getUnQuotedIdentifier(name, SQLConstants.DEFAULT_IDENTIFIER_QUOTE) :
+            DBUtils.getUnQuotedIdentifier(dataSource, name);
     }
 
     /**
