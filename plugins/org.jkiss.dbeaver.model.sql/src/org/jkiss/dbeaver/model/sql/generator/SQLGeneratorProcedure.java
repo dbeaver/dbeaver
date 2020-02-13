@@ -16,24 +16,20 @@
  */
 package org.jkiss.dbeaver.model.sql.generator;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 import java.util.Collection;
+import java.util.Collections;
 
-public abstract class TableAnalysisRunner extends BaseAnalysisRunner<DBSEntity> {
+public abstract class SQLGeneratorProcedure extends SQLGeneratorBase<DBSProcedure> {
 
-    protected Collection<? extends DBSEntityAttribute> getAllAttributes(DBRProgressMonitor monitor, DBSEntity object) throws DBException
-    {
-        return CommonUtils.safeCollection(object.getAttributes(monitor));
+    protected Collection<? extends DBSEntityAttribute> getAllAttributes(DBRProgressMonitor monitor, DBSProcedure object) {
+        return Collections.emptyList();
     }
 
-    protected Collection<? extends DBSEntityAttribute> getKeyAttributes(DBRProgressMonitor monitor, DBSEntity object) throws DBException
-    {
-        return DBUtils.getBestTableIdentifier(monitor, object);
+    protected Collection<? extends DBSEntityAttribute> getKeyAttributes(DBRProgressMonitor monitor, DBSProcedure object) {
+        return Collections.emptyList();
     }
 }

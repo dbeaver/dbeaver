@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 
 import java.util.Collection;
 
-public class SQLGeneratorUpdateFromData extends ResultSetAnalysisRunner {
+public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
 
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, IResultSetController object) throws DBException {

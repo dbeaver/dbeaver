@@ -26,7 +26,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 
-public class SQLGeneratorProcedureCall extends ProcedureAnalysisRunner {
+public class SQLGeneratorProcedureCall extends SQLGeneratorProcedure {
 
     @Override
     protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {

@@ -27,7 +27,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 
-public class SQLGeneratorUpdate extends TableAnalysisRunner {
+public class SQLGeneratorUpdate extends SQLGeneratorTable {
 
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {

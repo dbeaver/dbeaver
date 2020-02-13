@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class BaseAnalysisRunner<OBJECT> extends SQLGenerator<OBJECT> {
+public abstract class SQLGeneratorBase<OBJECT> extends SQLGenerator<OBJECT> {
 
     protected abstract Collection<? extends DBSAttributeBase> getAllAttributes(DBRProgressMonitor monitor, OBJECT object) throws DBException;
 
