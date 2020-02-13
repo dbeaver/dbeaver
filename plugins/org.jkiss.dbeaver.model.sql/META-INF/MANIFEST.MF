@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.model.sql;singleton:=true
-Bundle-Version: 1.0.16.qualifier
-Bundle-Release-Date: 20200203
+Bundle-Version: 1.0.17.qualifier
+Bundle-Release-Date: 20200217
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.model.sql.internal.SQLModelActivator
@@ -17,6 +17,7 @@ Export-Package: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.sql.format,
  org.jkiss.dbeaver.model.sql.format.external,
  org.jkiss.dbeaver.model.sql.format.tokenized,
+ org.jkiss.dbeaver.model.sql.generator,
  org.jkiss.dbeaver.model.sql.parser,
  org.jkiss.dbeaver.model.sql.parser.rules,
  org.jkiss.dbeaver.model.sql.parser.tokens,

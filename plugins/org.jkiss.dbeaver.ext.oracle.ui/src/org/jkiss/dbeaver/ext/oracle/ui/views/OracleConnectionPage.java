@@ -59,7 +59,6 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private Combo serviceNameCombo;
     private Text userNameText;
     private Combo userRoleCombo;
-    private Text passwordText;
     private Combo tnsNameCombo;
 	private TabFolder connectionTypeFolder;
     private ClientHomesSelector oraHomeSelector;
@@ -281,12 +280,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         userRoleCombo.add(OracleConnectionRole.SYSOPER.getTitle());
         userRoleCombo.select(0);
 
-        Label passwordLabel = UIUtils.createControlLabel(parent, OracleUIMessages.dialog_connection_password);
-        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        passwordText = new Text(parent, SWT.BORDER | SWT.PASSWORD);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        passwordText.setLayoutData(gd);
+        createPasswordText(parent, OracleUIMessages.dialog_connection_password);
         passwordText.addModifyListener(controlModifyListener);
 
         osAuthCheck = UIUtils.createCheckbox(parent, OracleUIMessages.dialog_connection_os_authentication, false);
@@ -304,9 +298,9 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             }
         });
 
-        createPasswordControls(parent, passwordText, 4);
+        createPasswordControls(parent, 4);
 
-        parent.setTabList(new Control[]{userNameText, passwordText, userRoleCombo, osAuthCheck});
+        parent.setTabList(new Control[]{userNameText, passwordText.getParent(), userRoleCombo, osAuthCheck});
     }
 
     private void createClientHomeGroup(Composite bottomControls)

@@ -17,11 +17,18 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
+import java.util.Map;
+
 /**
  * IDatabasePostSaveProcessor
  */
 public interface IDatabasePostSaveProcessor {
 
-    void runPostSaveCommands();
+    /**
+     * Execute post-save commands.
+     * May run database object compile or other complex stuff.
+     * @param context can be used to save object state. Cleared on each save.
+     */
+    void runPostSaveCommands(Map<String, Object> context);
 
 }

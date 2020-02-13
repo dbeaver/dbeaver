@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,6 +31,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLScriptBindingType;
@@ -112,14 +113,14 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
             connectionFoldersCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_create_script_folders, null, false, 2);
             scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_title_pattern, "");
-            UIUtils.installContentProposal(
+            ContentAssistUtils.installContentProposal(
                     scriptTitlePattern,
-                    new TextContentAdapter(),
-                    new SimpleContentProposalProvider(new String[] {
+                    new SmartTextContentAdapter(),
+                    new StringContentProposalProvider(
                         GeneralUtils.variablePattern(SQLEditor.VAR_CONNECTION_NAME),
                         GeneralUtils.variablePattern(SQLEditor.VAR_DRIVER_NAME),
                         GeneralUtils.variablePattern(SQLEditor.VAR_FILE_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT)}));
+                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT)));
             UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
                     SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT);
         }

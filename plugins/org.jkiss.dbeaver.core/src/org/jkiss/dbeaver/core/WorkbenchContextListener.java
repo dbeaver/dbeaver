@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributions;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
@@ -222,6 +223,8 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
             }
             // Refresh auto-commit element state (#3315)
             ActionUtils.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
+            // Refresh OpenSeparateConnection
+            ActionUtils.fireCommandRefresh(SQLEditorCommands.CMD_TOGGLE_SEPARATE_CONNECTION);
         }
         finally {
             contextService.deferUpdates(false);

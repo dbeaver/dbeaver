@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,6 +27,9 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -112,10 +113,10 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 settings.setOutputFilePattern(fileNameText.getText());
                 updatePageCompletion();
             });
-            UIUtils.installContentProposal(
+            ContentAssistUtils.installContentProposal(
                 fileNameText,
-                new TextContentAdapter(),
-                new SimpleContentProposalProvider(new String[] {
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATASOURCE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CATALOG),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_SCHEMA),
@@ -123,8 +124,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_INDEX),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)
-                }));
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)));
 
             {
                 UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_encoding);
@@ -224,15 +224,15 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
                 StreamTransferConsumer.VARIABLE_DATE,
                 StreamTransferConsumer.VARIABLE_PROJECT);
-            UIUtils.installContentProposal(
+            ContentAssistUtils.installContentProposal(
                 execProcessText,
-                new TextContentAdapter(),
-                new SimpleContentProposalProvider(new String[] {
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)}));
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)));
 
             showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, "Show finish message", null, getWizard().getSettings().isShowFinalMessage(), 4);
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {

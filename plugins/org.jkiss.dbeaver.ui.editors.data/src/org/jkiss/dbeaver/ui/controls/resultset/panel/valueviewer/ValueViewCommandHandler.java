@@ -23,8 +23,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 
 /**
  * ValueViewCommandHandler

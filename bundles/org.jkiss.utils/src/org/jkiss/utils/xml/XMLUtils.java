@@ -104,15 +104,7 @@ public class XMLUtils {
 
     @Nullable
     public static String getElementBody(Element element) {
-        org.w3c.dom.Node valueNode = element.getFirstChild();
-        if (valueNode == null) {
-            return null;
-        }
-        if (valueNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-            return valueNode.getNodeValue();
-        } else {
-            return null;
-        }
+        return element.getTextContent();
     }
 
     // Get list of all child elements of specified node

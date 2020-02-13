@@ -633,7 +633,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 dbStat.setLimit(0, keyValues.size());
                 if (dbStat.executeStatement()) {
                     try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                        return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult);
+                        return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult, true);
                     }
                 } else {
                     return Collections.emptyList();
@@ -815,7 +815,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 dbStat.setLimit(0, maxResults);
                 if (dbStat.executeStatement()) {
                     try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                        return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult);
+                        return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult, true);
                     }
                 } else {
                     return Collections.emptyList();

@@ -45,6 +45,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected IDataSourceConnectionEditorSite site;
     // Driver name
     protected Text driverText;
+    protected Text passwordText;
     protected Button savePasswordCheck;
     protected ToolBar userManagementToolbar;
     private VariablesHintLabel variablesHintLabel;
@@ -180,11 +181,22 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     }
 
-    protected void createPasswordControls(Composite parent, Text passwordText) {
-        createPasswordControls(parent, passwordText, 1);
+    protected Text createPasswordText(Composite parent, String label) {
+        if (label != null) {
+            UIUtils.createControlLabel(parent, label);
+        }
+        Composite ph = UIUtils.createPlaceholder(parent, 1);
+        ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        passwordText = new Text(ph, SWT.BORDER | SWT.PASSWORD);
+        passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        return passwordText;
     }
 
-    protected void createPasswordControls(Composite parent, Text passwordText, int hSpan) {
+    protected void createPasswordControls(Composite parent) {
+        createPasswordControls(parent, 1);
+    }
+
+    protected void createPasswordControls(Composite parent, int hSpan) {
         // We don't support password preview in standard project secure storage (as we need password encryption)
         UIServiceSecurity serviceSecurity = DBWorkbench.getService(UIServiceSecurity.class);
         boolean supportsPasswordView = serviceSecurity != null;
@@ -211,21 +223,46 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             showPasswordLabel.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    showPasswordText(serviceSecurity, passwordText);
+                    showPasswordText(serviceSecurity);
                 }
             });
         }
 
     }
 
-    private void showPasswordText(UIServiceSecurity serviceSecurity, Text passwordText) {
-        if (passwordText.getEchoChar() == '\0') {
-            passwordText.setEchoChar('*');
-            return;
+    private void showPasswordText(UIServiceSecurity serviceSecurity) {
+        Composite passContainer = passwordText.getParent();
+        boolean passHidden = (passwordText.getStyle() & SWT.PASSWORD) == SWT.PASSWORD;
+        if (passHidden) {
+            if (!serviceSecurity.validatePassword(
+                site.getProject().getSecureStorage(),
+                "Enter project password",
+                "Enter project master password to unlock connection password view"))
+            {
+                return;
+            }
         }
-        if (serviceSecurity.validatePassword(site.getProject().getSecureStorage(), "Enter project password", "Enter project master password to unlock connection password view")) {
-            passwordText.setEchoChar('\0');
+
+        Object layoutData = passwordText.getLayoutData();
+        String curValue = passwordText.getText();
+        passwordText.dispose();
+
+        if (passHidden) {
+            passwordText = new Text(passContainer, SWT.BORDER);
+        } else {
+            passwordText = new Text(passContainer, SWT.PASSWORD | SWT.BORDER);
         }
+        passwordText.setLayoutData(layoutData);
+        passwordText.setText(curValue);
+        passContainer.layout(true, true);
+
+//        if (passwordText.getEchoChar() == '\0') {
+//            passwordText.setEchoChar('*');
+//            return;
+//        }
+//        if (serviceSecurity.validatePassword(site.getProject().getSecureStorage(), "Enter project password", "Enter project master password to unlock connection password view")) {
+//            passwordText.setEchoChar('\0');
+//        }
     }
 
 }

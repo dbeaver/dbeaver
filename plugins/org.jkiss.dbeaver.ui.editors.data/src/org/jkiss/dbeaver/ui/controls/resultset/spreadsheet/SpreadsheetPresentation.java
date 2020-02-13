@@ -66,6 +66,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -84,6 +85,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
+import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
 import org.jkiss.dbeaver.ui.data.IMultiController;
@@ -113,7 +116,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Nullable
     private DBDAttributeBinding curAttribute;
-    private int columnOrder = SWT.NONE;
+    private int columnOrder = SWT.DEFAULT;
 
     private final Map<SpreadsheetValueController, IValueEditorStandalone> openEditors = new HashMap<>();
 
@@ -569,7 +572,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             Object colElement = spreadsheet.getColumnElement(colNum);
                             final DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowElement : colElement);
                             final ResultSetRow row = (ResultSetRow)(controller.isRecordMode() ? colElement : rowElement);
-                            if (controller.isAttributeReadOnly(attr)) {
+                            if (controller.getAttributeReadOnlyStatus(attr) != null) {
                                 continue;
                             }
                             Object newValue = attr.getValueHandler().getValueFromObject(
@@ -606,7 +609,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     if (attr == null || row == null) {
                         continue;
                     }
-                    if (controller.isAttributeReadOnly(attr)) {
+                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }
@@ -929,8 +932,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         Composite placeholder = null;
         if (inline) {
-            if (controller.isAttributeReadOnly(attr)) {
-                controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only", DBPMessageType.ERROR);
+            String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr);
+            if (readOnlyStatus != null) {
+                controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only: " + readOnlyStatus, DBPMessageType.ERROR);
             }
             spreadsheet.cancelInlineEditor();
             activeInlineEditor = null;
@@ -1602,14 +1606,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public boolean isElementReadOnly(Object element) {
             if (element instanceof DBDAttributeBinding) {
-                return controller.isAttributeReadOnly((DBDAttributeBinding) element);
+                return controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element) != null;
             }
             return false;
         }
 
         @Override
         public boolean isGridReadOnly() {
-            return controller.isReadOnly();
+            return controller.getReadOnlyStatus() != null;
         }
 
         @Override
@@ -1686,7 +1690,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return attr.getValueRenderer().getValueDisplayString(
                     attr.getAttribute(),
                     value,
-                    DBDDisplayFormat.UI);
+                    getValueRenderFormat(attr, value));
             } else {
                 return value;
             }
@@ -1846,9 +1850,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Override
         public Color getCellHeaderBackground(Object element) {
-            if (element instanceof DBDAttributeBinding && controller.isAttributeReadOnly((DBDAttributeBinding) element)) {
-                return backgroundOdd;
-            }
+//            if (element instanceof DBDAttributeBinding && controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element) != null) {
+//                return backgroundOdd;
+//            }
             return cellHeaderBackground;
         }
 
@@ -1888,6 +1892,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
     }
 
+    private DBDDisplayFormat getValueRenderFormat(DBDAttributeBinding attr, Object value) {
+        if (value instanceof Number && controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT)) {
+            return DBDDisplayFormat.NATIVE;
+        }
+        return DBDDisplayFormat.UI;
+    }
+
     private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
         return showBooleanAsCheckbox && attr.getDataKind() == DBPDataKind.BOOLEAN;
     }
@@ -1899,7 +1910,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
                 if (showAttributeIcons) {
-                    return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
+                    DBDAttributeBinding attr = (DBDAttributeBinding) element;
+                    DBPImage objectImage = DBValueFormatting.getObjectImage(attr.getAttribute());
+                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
+                        objectImage = new DBIconComposite(objectImage, false, null, null, null, DBIcon.OVER_LOCK);
+                    }
+                    return DBeaverIcons.getImage(objectImage);
                 }
             }
             return null;
@@ -2009,8 +2025,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 String tip = CommonUtils.isEmpty(description) ?
                     name + ": " + typeName :
                     name + ": " + typeName + "\n" + description;
-                if (controller.isAttributeReadOnly(attributeBinding)) {
-                    tip += " (read-only)";
+                String readOnlyStatus = controller.getAttributeReadOnlyStatus(attributeBinding);
+                if (readOnlyStatus != null) {
+                    tip += " (Read-only: " + readOnlyStatus + ")";
                 }
                 return tip;
             }
@@ -2088,7 +2105,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     if (attr.getValueHandler() != origAttr.getValueHandler()) {
                         continue;
                     }
-                    if (controller.isAttributeReadOnly(attr)) {
+                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
                         // No inline editors for readonly columns
                         continue;
                     }

@@ -118,6 +118,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_group_auto_save;
     public static String pref_page_sql_editor_label_auto_save_on_close;
     public static String pref_page_sql_editor_label_save_on_query_execute;
+    public static String pref_page_sql_editor_label_save_active_schema;
+    public static String pref_page_sql_editor_label_save_active_schema_tip;
     public static String pref_page_sql_editor_group_result_view;
     public static String pref_page_sql_editor_label_close_results_tab_on_error;
     public static String pref_page_sql_editor_label_results_orientation;

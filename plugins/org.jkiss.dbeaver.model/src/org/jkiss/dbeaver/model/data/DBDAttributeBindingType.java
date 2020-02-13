@@ -23,13 +23,8 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
-import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
-import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKeyColumn;
-import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -147,13 +142,8 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         if (ownerValue instanceof DBDComposite) {
             return ((DBDComposite) ownerValue).getAttributeValue(attribute);
         }
-        //log.debug("Can't extract nested value of '" + attribute.getName() + "': unsupported owner value type " + (ownerValue == null ? null : ownerValue.getClass().getName()));
-        // Can't extract nested value of attribute
-        // This may happen in case of dynamic records structure.
-        // If different records have different structure (see #3108) then we just can't use structured view
-        // T avoid error log spamming just ignore this and return null
-        // TODO: somehow visualize this error in results
-        return null;
+        DBDAttributeBinding parent = getParent(1);
+        throw new DBCException("Can't extract field '" + getName() + "' from type '" + (parent == null ? null : parent.getName()) + "': wrong value");
     }
 
     @Nullable

@@ -225,6 +225,8 @@ public interface SQLDialect {
      */
     boolean validIdentifierPart(char c, boolean quoted);
 
+    boolean useCaseInsensitiveNameLookup();
+
     boolean supportsUnquotedMixedCase();
 
     boolean supportsQuotedMixedCase();

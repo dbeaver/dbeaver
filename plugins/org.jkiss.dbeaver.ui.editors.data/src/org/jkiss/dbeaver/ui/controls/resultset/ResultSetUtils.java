@@ -167,19 +167,12 @@ public class ResultSetUtils
                     } else {
                         tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
                     }
-                    if (sqlQuery != null) {
-                        if (tableColumn != null && tableColumn.getTypeID() != attrMeta.getTypeID()) {
-                            // !! Do not try to use table column handlers for custom queries if source data type
-                            // differs from table data type.
-                            // Query may have expressions with the same alias as underlying table column
-                            // and this expression may return very different data type. It breaks fetch completely.
-                            // There should be a better solution but for now let's just disable this too smart feature.
-                            bindingMeta.setEntityAttribute(tableColumn, false);
-                            continue;
-                        }
-                    }
 
-                    if (tableColumn != null && bindingMeta.setEntityAttribute(tableColumn, true) && rows != null) {
+                    if (tableColumn != null &&
+                        bindingMeta.setEntityAttribute(
+                            tableColumn,
+                            ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
+                    {
                         // We have new type and new value handler.
                         // We have to fix already fetched values.
                         // E.g. we fetched strings and found out that we should handle them as LOBs or enums.
@@ -203,9 +196,11 @@ public class ResultSetUtils
                     if (!(binding instanceof DBDAttributeBindingMeta)) {
                         continue;
                     }
+                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
                     //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                     DBSEntityAttribute attr = binding.getEntityAttribute();
                     if (attr == null) {
+                        bindingMeta.setRowIdentifierStatus("No corresponding table column");
                         continue;
                     }
                     DBSEntity attrEntity = attr.getParentObject();
@@ -218,9 +213,11 @@ public class ResultSetUtils
                                     attrEntity,
                                     entityIdentifier);
                                 locatorMap.put(attrEntity, rowIdentifier);
+                            } else {
+                                bindingMeta.setRowIdentifierStatus("Cannot determine unique row identifier");
                             }
                         }
-                        ((DBDAttributeBindingMeta)binding).setRowIdentifier(rowIdentifier);
+                        bindingMeta.setRowIdentifier(rowIdentifier);
                     }
                 }
                 monitor.worked(1);

@@ -367,6 +367,9 @@ public class DBPConnectionConfiguration implements DBPObject {
         for (Map.Entry<String, String> prop : this.properties.entrySet()) {
             prop.setValue(GeneralUtils.replaceVariables(prop.getValue(), variableResolver));
         }
+        for (Map.Entry<String, String> prop : this.providerProperties.entrySet()) {
+            prop.setValue(GeneralUtils.replaceVariables(prop.getValue(), variableResolver));
+        }
         for (DBWHandlerConfiguration handler : handlers) {
             if (handler.isEnabled()) {
                 handler.resolveDynamicVariables(variableResolver);

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -39,7 +40,7 @@ import java.util.Map;
 /**
  * PostgreIndex
  */
-public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements PostgreObject, PostgreScriptObject {
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements PostgreObject, PostgreScriptObject, DBPHiddenObject {
     private long indexId;
     private boolean isUnique;
     private boolean isPrimary; // Primary index - implicit
@@ -258,6 +259,11 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     @Override
     public void setObjectDefinitionText(String sourceText) {
 
+    }
+
+    @Override
+    public boolean isHidden() {
+        return isPrimaryKeyIndex;
     }
 
     @Override

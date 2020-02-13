@@ -17,20 +17,19 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 
 import java.io.PrintWriter;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class AsyncServerOutputReader extends DefaultServerOutputReader {
+    private static final Log log = Log.getLog(AsyncServerOutputReader.class);
+
         @Override
         public boolean isAsyncOutputReadSupported() {
             return true;
@@ -41,14 +40,18 @@ public class AsyncServerOutputReader extends DefaultServerOutputReader {
             if (statement == null) {
                 super.readServerOutput(monitor, context, queryResult, null, output);
             } else {
+                // Do not read from connection warnings as it blocks statements cancelation and other connection-level stuff.
+                // See #7885
+/*
                 try {
                     SQLWarning connWarning = ((JDBCSession) statement.getSession()).getWarnings();
                     if (connWarning != null) {
                         dumpWarnings(output, Collections.singletonList(connWarning));
                     }
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug(e);
                 }
+*/
 
                 Throwable[] statementWarnings = statement.getStatementWarnings();
                 if (statementWarnings != null && statementWarnings.length > 0) {

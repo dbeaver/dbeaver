@@ -51,7 +51,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Text portText;
     private Text dbText;
     private Text usernameText;
-    private Text passwordText;
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
@@ -119,16 +118,10 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
         UIUtils.createEmptyLabel(addrGroup, 2, 1);
 
-        Label passwordLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_password);
-        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        passwordText.setLayoutData(gd);
+        createPasswordText(addrGroup, PostgreMessages.dialog_setting_connection_password);
         passwordText.addModifyListener(textListener);
 
-        createPasswordControls(addrGroup, passwordText, 2);
+        createPasswordControls(addrGroup, 2);
 
         UIUtils.createHorizontalLine(addrGroup, 4, 10);
 

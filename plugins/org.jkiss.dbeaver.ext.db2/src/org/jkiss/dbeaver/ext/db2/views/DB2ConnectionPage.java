@@ -46,7 +46,6 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     private Text portText;
     private Text dbText;
     private Text usernameText;
-    private Text passwordText;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/db2_logo.png"); //$NON-NLS-1$
 
@@ -111,30 +110,25 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
         }
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, DB2Messages.db2_connection_page_tab_security, 2, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(control, DB2Messages.db2_connection_page_tab_security, 4, 0, 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             addrGroup.setLayoutData(gd);
-                Label usernameLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_user_name);
-            usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            usernameText = new Text(addrGroup, SWT.BORDER);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            usernameText = UIUtils.createLabelText(addrGroup, DB2Messages.dialog_connection_user_name, "");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 200;
             usernameText.setLayoutData(gd);
             usernameText.addModifyListener(textListener);
 
-            Label passwordLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_password);
-            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            UIUtils.createEmptyLabel(addrGroup, 2, 1);
 
-            Composite passPH = UIUtils.createPlaceholder(addrGroup, 2, 5);
-            passPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            passwordText = new Text(passPH, SWT.BORDER | SWT.PASSWORD);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            Text passwordText = createPasswordText(addrGroup, DB2Messages.dialog_connection_password);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 200;
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            createPasswordControls(passPH, passwordText);
+            createPasswordControls(addrGroup, 2);
         }
 
         createDriverPanel(control);

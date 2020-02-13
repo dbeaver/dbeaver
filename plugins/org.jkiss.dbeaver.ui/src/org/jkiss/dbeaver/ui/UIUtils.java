@@ -20,15 +20,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.bindings.keys.KeyStroke;
-import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.fieldassist.ContentProposalAdapter;
-import org.eclipse.jface.fieldassist.IContentProposalProvider;
-import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
@@ -1847,29 +1842,6 @@ public class UIUtils {
 
     public static ImageDescriptor getShardImageDescriptor(String id) {
         return PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(id);
-    }
-
-    public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider) {
-        installContentProposal(control, contentAdapter, provider, false, true);
-    }
-
-    public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation, boolean insertAfter) {
-        try {
-            KeyStroke keyStroke = autoActivation ? null : KeyStroke.getInstance("Ctrl+Space"); //$NON-NLS-1$
-            final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
-                control,
-                contentAdapter,
-                provider,
-                keyStroke,
-                autoActivation ? ".abcdefghijklmnopqrstuvwxyz_$(".toCharArray() : ".(".toCharArray());
-            proposalAdapter.setProposalAcceptanceStyle(insertAfter ? ContentProposalAdapter.PROPOSAL_INSERT : ContentProposalAdapter.PROPOSAL_REPLACE);
-            proposalAdapter.setPopupSize(new Point(300, 200));
-            //proposalAdapter.setFilterStyle(ContentProposalAdapter.FILTER_CHARACTER);
-            return proposalAdapter;
-        } catch (ParseException e) {
-            log.error("Error installing filters content assistant");
-            return null;
-        }
     }
 
     public static void setContentProposalToolTip(Control control, String toolTip, String ... variables) {

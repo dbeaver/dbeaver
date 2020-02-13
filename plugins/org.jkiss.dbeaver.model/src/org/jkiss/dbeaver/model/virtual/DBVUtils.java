@@ -203,7 +203,8 @@ public abstract class DBVUtils {
         @NotNull DBCSession session,
         @NotNull DBSEntityAttribute valueAttribute,
         @NotNull DBDValueHandler valueHandler,
-        @NotNull DBCResultSet dbResult) throws DBCException
+        @NotNull DBCResultSet dbResult,
+        boolean formatValues) throws DBCException
     {
         List<DBDLabelValuePair> values = new ArrayList<>();
         List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
@@ -226,9 +227,9 @@ public abstract class DBVUtils {
                 }
                 hasNulls = true;
             }
-            if (keyValue instanceof Date) {
+            if (formatValues && keyValue instanceof Date) {
                 // Convert dates into string to avoid collisions
-                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.EDIT);
+                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
             String keyLabel;
             if (metaColumns.size() > 1) {

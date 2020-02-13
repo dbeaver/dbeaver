@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.MouseAdapter;
@@ -87,14 +89,11 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
 
     public void layoutLog()
     {
-        UIUtils.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (!infoTable.isDisposed()) {
-                    infoTable.getColumn(0).setWidth(infoTable.getBounds().width - 110);
-                    infoTable.getColumn(1).setWidth(50);
-                    infoTable.getColumn(2).setWidth(50);
-                }
+        UIUtils.asyncExec(() -> {
+            if (!infoTable.isDisposed()) {
+                infoTable.getColumn(0).setWidth(infoTable.getBounds().width - 110);
+                infoTable.getColumn(1).setWidth(50);
+                infoTable.getColumn(2).setWidth(50);
             }
         });
     }
@@ -103,65 +102,62 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
     protected void log(final int type, final Object message, final Throwable t)
     {
         super.log(type, message, t);
-        UIUtils.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (infoTable == null || infoTable.isDisposed()) {
-                    return;
+        UIUtils.syncExec(() -> {
+            if (infoTable == null || infoTable.isDisposed()) {
+                return;
+            }
+            int color = -1;
+            switch (type) {
+                case LOG_LEVEL_TRACE:
+                    color = SWT.COLOR_DARK_BLUE;
+                    break;
+                case LOG_LEVEL_DEBUG:
+                case LOG_LEVEL_INFO:
+                    break;
+                case LOG_LEVEL_WARN:
+                    color = SWT.COLOR_DARK_YELLOW;
+                    break;
+                case LOG_LEVEL_ERROR:
+                case LOG_LEVEL_FATAL:
+                    color = SWT.COLOR_DARK_RED;
+                    break;
+                default:
+                    break;
+            }
+            String messageStr;
+            DBCCompileError error = null;
+            if (message instanceof DBCCompileError) {
+                error = (DBCCompileError) message;
+                messageStr = error.getMessage();
+            } else {
+                messageStr = CommonUtils.toString(message);
+            }
+            StringTokenizer st = new StringTokenizer(messageStr, "\n"); //$NON-NLS-1$
+            while (st.hasMoreTokens()) {
+                final TableItem item = new TableItem(infoTable, SWT.NONE);
+                item.setText(0, st.nextToken());
+                if (error != null && error.getLine() > 0) {
+                    item.setText(1, String.valueOf(((DBCCompileError) message).getLine()));
+                    item.setText(2, String.valueOf(((DBCCompileError) message).getPosition()));
                 }
-                int color = -1;
-                switch (type) {
-                    case LOG_LEVEL_TRACE:
-                        color = SWT.COLOR_DARK_BLUE;
-                        break;
-                    case LOG_LEVEL_DEBUG:
-                    case LOG_LEVEL_INFO:
-                        break;
-                    case LOG_LEVEL_WARN:
-                        color = SWT.COLOR_DARK_YELLOW;
-                        break;
-                    case LOG_LEVEL_ERROR:
-                    case LOG_LEVEL_FATAL:
-                        color = SWT.COLOR_DARK_RED;
-                        break;
-                    default:
-                        break;
+                if (color != -1) {
+                    item.setForeground(infoTable.getDisplay().getSystemColor(color));
                 }
-                String messageStr;
-                DBCCompileError error = null;
-                if (message instanceof DBCCompileError) {
-                    error = (DBCCompileError) message;
-                    messageStr = error.getMessage();
-                } else {
-                    messageStr = CommonUtils.toString(message);
-                }
-                StringTokenizer st = new StringTokenizer(messageStr, "\n"); //$NON-NLS-1$
-                while (st.hasMoreTokens()) {
-                    final TableItem item = new TableItem(infoTable, SWT.NONE);
-                    item.setText(0, st.nextToken());
-                    if (error != null && error.getLine() > 0) {
-                        item.setText(1, String.valueOf(((DBCCompileError) message).getLine()));
-                        item.setText(2, String.valueOf(((DBCCompileError) message).getPosition()));
+                item.setData(message);
+                infoTable.showItem(item);
+            }
+            if (t != null) {
+                String prevMessage = null;
+                for (Throwable ex = t; error != null; ex = ex.getCause()) {
+                    final String errorMessage = ex.getMessage();
+                    if (errorMessage == null || errorMessage.equals(prevMessage)) {
+                        continue;
                     }
-                    if (color != -1) {
-                        item.setForeground(infoTable.getDisplay().getSystemColor(color));
-                    }
-                    item.setData(message);
-                    infoTable.showItem(item);
-                }
-                if (t != null) {
-                    String prevMessage = null;
-                    for (Throwable ex = t; error != null; ex = ex.getCause()) {
-                        final String errorMessage = ex.getMessage();
-                        if (errorMessage == null || errorMessage.equals(prevMessage)) {
-                            continue;
-                        }
-                        prevMessage = errorMessage;
-                        TableItem stackItem = new TableItem(infoTable, SWT.NONE);
-                        stackItem.setText(errorMessage);
-                        stackItem.setForeground(infoTable.getDisplay().getSystemColor(SWT.COLOR_RED));
-                        infoTable.showItem(stackItem);
-                    }
+                    prevMessage = errorMessage;
+                    TableItem stackItem = new TableItem(infoTable, SWT.NONE);
+                    stackItem.setText(errorMessage);
+                    stackItem.setForeground(infoTable.getDisplay().getSystemColor(SWT.COLOR_RED));
+                    infoTable.showItem(stackItem);
                 }
             }
         });
@@ -210,7 +206,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
         infoTable.addDisposeListener(e -> menuMgr.dispose());
     }
 
-    public void copySelectionToClipboard()
+    private void copySelectionToClipboard()
     {
         final TableItem[] selection = infoTable.getSelection();
         if (ArrayUtils.isEmpty(selection)) {

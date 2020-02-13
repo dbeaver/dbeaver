@@ -184,15 +184,19 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected PostgreTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
-    {
+    protected PostgreTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         PostgreTableBase table = (PostgreTableBase) container;
 
-        final PostgreTableColumn column = new PostgreTableColumn(table);
-        column.setName(getNewColumnName(monitor, context, table));
-        final PostgreDataType dataType = table.getDatabase().getDataType(monitor, PostgreOid.VARCHAR);
-        column.setDataType(dataType); //$NON-NLS-1$
-        column.setOrdinalPosition(-1);
+        final PostgreTableColumn column;
+        if (copyFrom instanceof PostgreTableColumn) {
+            column = new PostgreTableColumn(monitor, table, (PostgreTableColumn)copyFrom);
+        } else {
+            column = new PostgreTableColumn(table);
+            column.setName(getNewColumnName(monitor, context, table));
+            final PostgreDataType dataType = table.getDatabase().getDataType(monitor, PostgreOid.VARCHAR);
+            column.setDataType(dataType); //$NON-NLS-1$
+            column.setOrdinalPosition(-1);
+        }
         return column;
     }
 

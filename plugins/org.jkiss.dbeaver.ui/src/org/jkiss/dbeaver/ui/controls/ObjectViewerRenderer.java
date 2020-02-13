@@ -184,7 +184,7 @@ public abstract class ObjectViewerRenderer {
                 Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
 
                 if (getBooleanEditStyle() == ES_CENTERED) {
-                    gc.drawImage(image, event.x + (columnBounds.width - imageBounds.width) / 2, event.y + 2);
+                    gc.drawImage(image, event.x + (columnBounds.width - imageBounds.width) / 2, event.y);
                 } else {
                     gc.drawImage(image, event.x/* + 4*/, event.y + (columnBounds.height - imageBounds.height) / 2);
                 }

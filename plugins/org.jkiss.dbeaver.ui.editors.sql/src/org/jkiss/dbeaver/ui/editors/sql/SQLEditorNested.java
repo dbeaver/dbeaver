@@ -67,6 +67,8 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.text.DatabaseMarkerAnnotationModel;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.util.Map;
+
 /**
  * SQLEditorNested
  */
@@ -74,6 +76,8 @@ public abstract class SQLEditorNested<T extends DBSObject>
     extends SQLEditorBase
     implements IActiveWorkbenchPart, IRefreshablePart, DBCSourceHost, IDatabasePostSaveProcessor
 {
+
+    private static final String SAVE_CONTEXT_COMPILE_PARAM = "object.compiled";
 
     private EditorPageControl pageControl;
     private ObjectCompilerLogViewer compileLog;
@@ -167,11 +171,15 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public void runPostSaveCommands() {
+    public void runPostSaveCommands(Map<String, Object> context) {
         String compileCommandId = getCompileCommandId();
-        if (compileCommandId != null) {
+        if (compileCommandId != null && context.get(SAVE_CONTEXT_COMPILE_PARAM) == null) {
             // Compile after save
-            ActionUtils.runCommand(compileCommandId, getSite().getWorkbenchWindow());
+            try {
+                ActionUtils.runCommand(compileCommandId, getSite().getWorkbenchWindow());
+            } finally {
+                context.put(SAVE_CONTEXT_COMPILE_PARAM, true);
+            }
         }
     }
 

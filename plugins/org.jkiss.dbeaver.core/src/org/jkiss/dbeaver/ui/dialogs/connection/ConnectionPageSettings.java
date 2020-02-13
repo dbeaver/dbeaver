@@ -21,7 +21,6 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -109,7 +108,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             //UIUtils.resizeShell(getWizard().getContainer().getShell());
         }
 
-        setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
+        //setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
         DataSourceDescriptor connectionInfo = getActiveDataSource();
         if (!activated.contains(connectionInfo)) {
             if (this.connectionEditor != null) {
@@ -131,7 +130,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             connectionEditor.loadSettings();
         }
         activateCurrentItem();
-        getContainer().updateTitleBar();
+        //getContainer().updateTitleBar();
     }
 
     @Override

@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
+import org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,7 +67,7 @@ public class SQLEditorHandlerRunProcedureConsole extends SQLEditorHandlerOpenObj
             return null;
         }
 
-        DBRRunnableWithResult<String> generator = GenerateSQLContributor.CALL_GENERATOR(entities);
+        DBRRunnableWithResult<String> generator = SQLGeneratorContributor.CALL_GENERATOR(entities);
 
         String title = "Stored procedures call";
         if (entities.size() == 1 && !CommonUtils.isEmpty(procName)) {

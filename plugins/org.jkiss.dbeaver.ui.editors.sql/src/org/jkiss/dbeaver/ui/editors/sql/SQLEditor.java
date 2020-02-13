@@ -381,24 +381,29 @@ public class SQLEditor extends SQLEditorBase implements
                 curDataSource = dataSource;
                 DBPDataSourceContainer container = dataSource.getContainer();
                 if (SQLEditorUtils.isOpenSeparateConnection(container)) {
-                    DBSInstance dsInstance = dataSource.getDefaultInstance();
-                    String[] contextDefaults = EditorUtils.getInputContextDefaults(getEditorInput());
-                    if (contextDefaults.length > 0 && contextDefaults[0] != null) {
-                        DBSInstance selectedInstance = DBUtils.findObject(dataSource.getAvailableInstances(), contextDefaults[0]);
-                        if (selectedInstance != null) {
-                            dsInstance = selectedInstance;
-                        }
-                    }
-                    if (dsInstance != null) {
-                        final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess);
-                        job.schedule();
-                    }
+                    initSeparateConnection(dataSource, onSuccess);
                 } else {
                     if (onSuccess != null) {
                         onSuccess.run();
                     }
                 }
             }
+        }
+    }
+
+    private void initSeparateConnection(@NotNull DBPDataSource dataSource, Runnable onSuccess) {
+        DBSInstance dsInstance = dataSource.getDefaultInstance();
+        String[] contextDefaults = isRestoreActiveSchemaFromScript() ?
+            EditorUtils.getInputContextDefaults(getEditorInput()) : null;
+        if (!ArrayUtils.isEmpty(contextDefaults) && contextDefaults[0] != null) {
+            DBSInstance selectedInstance = DBUtils.findObject(dataSource.getAvailableInstances(), contextDefaults[0]);
+            if (selectedInstance != null) {
+                dsInstance = selectedInstance;
+            }
+        }
+        if (dsInstance != null) {
+            final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess);
+            job.schedule();
         }
     }
 
@@ -575,8 +580,11 @@ public class SQLEditor extends SQLEditorBase implements
                 monitor.subTask("Open context " + title);
                 DBCExecutionContext newContext = instance.openIsolatedContext(monitor, title, instance.getDefaultContext(monitor, false));
                 // Set context defaults
-                String[] contextDefaultNames = EditorUtils.getInputContextDefaults(getEditorInput());
-                if (!CommonUtils.isEmpty(contextDefaultNames[0]) || !CommonUtils.isEmpty(contextDefaultNames[1])) {
+                String[] contextDefaultNames = isRestoreActiveSchemaFromScript() ?
+                    EditorUtils.getInputContextDefaults(getEditorInput()) : null;
+                if (contextDefaultNames != null && contextDefaultNames.length > 1 &&
+                    (!CommonUtils.isEmpty(contextDefaultNames[0]) || !CommonUtils.isEmpty(contextDefaultNames[1])))
+                {
                     DBExecUtils.setExecutionContextDefaults(monitor, newContext.getDataSource(), newContext, contextDefaultNames[0], null, contextDefaultNames[1]);
                 }
                 SQLEditor.this.executionContext = newContext;
@@ -584,7 +592,6 @@ public class SQLEditor extends SQLEditorBase implements
                 DBUtils.fireObjectSelect(instance, true);
             } catch (DBException e) {
                 error = e;
-                return Status.OK_STATUS;
             } finally {
                 monitor.done();
             }
@@ -605,6 +612,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    private boolean isRestoreActiveSchemaFromScript() {
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) &&
+            getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
+    }
+
     private class CloseContextJob extends AbstractJob {
         private final DBCExecutionContext context;
         CloseContextJob(DBCExecutionContext context) {
@@ -620,7 +632,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (QMUtils.isTransactionActive(context)) {
                     UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                     if (serviceConnections != null) {
-                        serviceConnections.closeActiveTransaction(monitor, context, true);
+                        serviceConnections.closeActiveTransaction(monitor, context, false);
                     }
                 }
 
@@ -1912,7 +1924,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (tabItem != null) {
                     // Do not switch tab if Output tab is active
                     CTabItem selectedTab = resultTabs.getSelection();
-                    if (selectedTab == null || selectedTab.getData() != outputViewer) {
+                    if (selectedTab == null || selectedTab.getData() != outputViewer.getControl()) {
                         resultTabs.setSelection(tabItem);
                     }
                 }
@@ -1996,6 +2008,11 @@ public class SQLEditor extends SQLEditorBase implements
             } else {
                 throw new DBException("Disconnected from database");
             }
+        }
+        DBPDataSource dataSource = ds.getDataSource();
+        if (dataSource != null && SQLEditorUtils.isOpenSeparateConnection(ds) && executionContext == null) {
+            initSeparateConnection(dataSource, () -> onFinish.onTaskFinished(Status.OK_STATUS));
+            return executionContext != null;
         }
         return true;
     }
@@ -2363,6 +2380,17 @@ public class SQLEditor extends SQLEditorBase implements
             case SQLPreferenceConstants.RESULT_SET_ORIENTATION:
                 updateResultSetOrientation();
                 break;
+            case SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION: {
+                // Save current datasource (we want to keep it here)
+                DBPDataSource dataSource = curDataSource;
+                releaseExecutionContext();
+                // Restore cur data source (as it is reset in releaseExecutionContext)
+                curDataSource = dataSource;
+                if (dataSource != null && SQLEditorUtils.isOpenSeparateConnection(dataSource.getContainer())) {
+                    initSeparateConnection(dataSource, null);
+                }
+                break;
+            }
         }
     }
 
