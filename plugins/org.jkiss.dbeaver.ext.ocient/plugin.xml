@@ -29,7 +29,7 @@
                         webURL=""
                         categories="sql,analytic">
                     <replace provider="generic" driver="ocient_generic"/>
-                    <file type="jar" path="https://s3-us-west-2.amazonaws.com/ocient.com/ocient-jdbc4-1.0-jar-with-dependencies.jar"/>
+                    <file type="jar" path="maven:/com.ocient:ocient-jdbc4:RELEASE"/>
                 </driver>
              </drivers>
         </datasource>
