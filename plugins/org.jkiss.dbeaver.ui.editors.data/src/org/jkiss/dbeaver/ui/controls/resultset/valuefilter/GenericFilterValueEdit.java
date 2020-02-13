@@ -308,7 +308,7 @@ class GenericFilterValueEdit {
             List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
                 DBExecUtils.tryExecuteRecover(monitor, attributeEnumerable.getDataSource(), param -> {
                     try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read value enumeration")) {
-                        result = attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
+                        result = attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES, true);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }

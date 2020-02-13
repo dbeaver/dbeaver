@@ -322,7 +322,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             DBSEntityAttribute attribute = entity.getAttribute(monitor, columnName);
             if (attribute instanceof DBSAttributeEnumerable) {
                 try (DBCSession session = request.getContext().getExecutionContext().openSession(monitor, DBCExecutionPurpose.META, "Read attribute values")) {
-                    List<DBDLabelValuePair> valueEnumeration = ((DBSAttributeEnumerable) attribute).getValueEnumeration(session, null, MAX_ATTRIBUTE_VALUE_PROPOSALS);
+                    List<DBDLabelValuePair> valueEnumeration = ((DBSAttributeEnumerable) attribute).getValueEnumeration(session, null, MAX_ATTRIBUTE_VALUE_PROPOSALS, false);
                     if (!valueEnumeration.isEmpty()) {
                         DBPImage attrImage = null;
                         for (DBDLabelValuePair valuePair : valueEnumeration) {
