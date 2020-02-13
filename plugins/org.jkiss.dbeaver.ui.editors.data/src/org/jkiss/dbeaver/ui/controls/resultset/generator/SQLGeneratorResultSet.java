@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.generator.BaseAnalysisRunner;
+import org.jkiss.dbeaver.model.sql.generator.SQLGeneratorBase;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -35,7 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class ResultSetAnalysisRunner extends BaseAnalysisRunner<IResultSetController> {
+public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetController> {
 
     public IResultSetController getController() {
         return objects.get(0);

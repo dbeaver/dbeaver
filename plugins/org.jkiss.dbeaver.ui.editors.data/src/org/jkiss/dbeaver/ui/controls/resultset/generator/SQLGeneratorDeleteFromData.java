@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 
 import java.util.Collection;
 
-public class SQLGeneratorDeleteFromData extends ResultSetAnalysisRunner {
+public class SQLGeneratorDeleteFromData extends SQLGeneratorResultSet {
 
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, IResultSetController object) {

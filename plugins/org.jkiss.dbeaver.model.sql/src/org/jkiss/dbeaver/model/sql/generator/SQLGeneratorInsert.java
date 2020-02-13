@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-public class SQLGeneratorInsert extends TableAnalysisRunner {
+public class SQLGeneratorInsert extends SQLGeneratorTable {
 
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {

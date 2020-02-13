@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-public class SQLGeneratorSelect extends TableAnalysisRunner {
+public class SQLGeneratorSelect extends SQLGeneratorTable {
     private boolean columnList;
 
     public void setColumnList(boolean columnList) {
