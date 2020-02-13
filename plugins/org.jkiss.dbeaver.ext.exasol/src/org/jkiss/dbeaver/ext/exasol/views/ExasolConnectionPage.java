@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.exasol.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -55,7 +54,6 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
     private Text backupHostText;
     private Text portText;
     private Text usernameText;
-    private Text passwordText;
     private ClientHomesSelector homesSelector;
     private Button useBackupHostList;
     private boolean showBackupHosts = false;
@@ -76,12 +74,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
-        ModifyListener textListener = new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                evaluateURL();
-            }
-        };
+        ModifyListener textListener = e -> evaluateURL();
         {
             Composite addrGroup = UIUtils.createControlGroup(control, ExasolMessages.label_database, 2, 0, 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -140,29 +133,20 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
         }
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, ExasolMessages.label_security, 2, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(control, ExasolMessages.label_security, 4, 0, 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             addrGroup.setLayoutData(gd);
-            Label usernameLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.dialog_connection_user_name);
-            usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            usernameText = new Text(addrGroup, SWT.BORDER);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            usernameText = UIUtils.createLabelText(addrGroup, ExasolMessages.dialog_connection_user_name, "");
+            gd = (GridData) usernameText.getLayoutData();
             gd.widthHint = 200;
-            usernameText.setLayoutData(gd);
             usernameText.addModifyListener(textListener);
 
-            Label passwordLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.dialog_connection_password);
-            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            UIUtils.createEmptyLabel(addrGroup, 2, 1);
 
-            Composite passPH = UIUtils.createPlaceholder(addrGroup, 2, 5);
-            passwordText = new Text(passPH, SWT.BORDER | SWT.PASSWORD);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.widthHint = 200;
-            passwordText.setLayoutData(gd);
+            Text passwordText = createPasswordText(addrGroup, ExasolMessages.dialog_connection_password);
             passwordText.addModifyListener(textListener);
-
-            createPasswordControls(passPH, passwordText);
+            createPasswordControls(addrGroup, 2);
         }
 
         createDriverPanel(control);
@@ -191,7 +175,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
         }
         if (portText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                portText.setText(String.valueOf(connectionInfo.getHostPort()));
+                portText.setText(connectionInfo.getHostPort());
             } else if (site.getDriver().getDefaultPort() != null) {
                 portText.setText(site.getDriver().getDefaultPort());
             } else {

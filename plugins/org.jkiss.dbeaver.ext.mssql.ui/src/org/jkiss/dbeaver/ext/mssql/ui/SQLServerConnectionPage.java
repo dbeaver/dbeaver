@@ -47,7 +47,6 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private Label userNameLabel;
     private Text userNameText;
     private Label passwordLabel;
-    private Text passwordText;
 
     private SQLServerAuthentication[] authSchemas;
     private Combo authCombo;
@@ -176,10 +175,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             passwordLabel.setText(SQLServerUIMessages.dialog_connection_password_label);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            passwordText = new Text(settingsGroup, SWT.BORDER | SWT.PASSWORD);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            passwordText.setLayoutData(gd);
+            passwordText = createPasswordText(settingsGroup, null);
 
             UIUtils.createEmptyLabel(settingsGroup, 2, 1);
         }
@@ -192,7 +188,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(1, false));
 
-            createPasswordControls(secureGroup, passwordText);
+            createPasswordControls(secureGroup);
             trustServerCertificate = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_trust_server_certificate, SQLServerUIMessages.dialog_setting_trust_server_certificate_tip, true, 2);
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }

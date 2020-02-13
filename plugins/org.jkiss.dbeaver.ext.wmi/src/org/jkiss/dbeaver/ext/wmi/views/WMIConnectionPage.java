@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.wmi.views;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -39,15 +38,14 @@ import org.jkiss.utils.CommonUtils;
  */
 public class WMIConnectionPage extends ConnectionPageAbstract
 {
-    public static final String DEFAULT_HOST = "localhost"; //$NON-NLS-1$
-    public static final String DEFAULT_NAMESPACE = "root/cimv2"; //$NON-NLS-1$
+    private static final String DEFAULT_HOST = "localhost"; //$NON-NLS-1$
+    private static final String DEFAULT_NAMESPACE = "root/cimv2"; //$NON-NLS-1$
 
     private Text domainText;
     private Text hostText;
     private Combo namespaceCombo;
     private Combo localeCombo;
     private Text usernameText;
-    private Text passwordText;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_logo.png"); //$NON-NLS-1$
 
@@ -68,14 +66,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         //group.setLayout(new GridLayout(1, true));
         setImageDescriptor(logoImage);
 
-        ModifyListener textListener = new ModifyListener()
-        {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                evaluateURL();
-            }
-        };
+        ModifyListener textListener = e -> evaluateURL();
 
         Composite addrGroup = new Composite(composite, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
@@ -134,13 +125,13 @@ public class WMIConnectionPage extends ConnectionPageAbstract
             Label passwordLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_password);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
+            Text passwordText = createPasswordText(addrGroup, null);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            createPasswordControls(addrGroup, passwordText, 2);
+            createPasswordControls(addrGroup, 2);
         }
 
         setControl(addrGroup);

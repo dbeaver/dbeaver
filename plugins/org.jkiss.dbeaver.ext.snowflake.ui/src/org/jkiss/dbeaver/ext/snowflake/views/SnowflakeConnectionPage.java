@@ -61,7 +61,6 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     private Combo roleText;
     private Combo authTypeCombo;
     private Text usernameText;
-    private Text passwordText;
 
     private static ImageDescriptor logoImage = SnowflakeUIActivator.getImageDescriptor("icons/snowflake_logo.png"); //$NON-NLS-1$
 
@@ -160,14 +159,12 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
 
             UIUtils.createEmptyLabel(addrGroup, 2, 1);
 
-            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_password);
-
-            passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
+            Text passwordText = createPasswordText(addrGroup, SnowlfakeMessages.label_password);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            createPasswordControls(addrGroup, passwordText, 2);
+            createPasswordControls(addrGroup, 2);
 
             UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_role);
 
