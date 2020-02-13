@@ -196,9 +196,11 @@ public class ResultSetUtils
                     if (!(binding instanceof DBDAttributeBindingMeta)) {
                         continue;
                     }
+                    DBDAttributeBindingMeta bindingMeta = (DBDAttributeBindingMeta) binding;
                     //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                     DBSEntityAttribute attr = binding.getEntityAttribute();
                     if (attr == null) {
+                        bindingMeta.setRowIdentifierStatus("No corresponding table column");
                         continue;
                     }
                     DBSEntity attrEntity = attr.getParentObject();
@@ -211,9 +213,11 @@ public class ResultSetUtils
                                     attrEntity,
                                     entityIdentifier);
                                 locatorMap.put(attrEntity, rowIdentifier);
+                            } else {
+                                bindingMeta.setRowIdentifierStatus("Cannot determine unique row identifier");
                             }
                         }
-                        ((DBDAttributeBindingMeta)binding).setRowIdentifier(rowIdentifier);
+                        bindingMeta.setRowIdentifier(rowIdentifier);
                     }
                 }
                 monitor.worked(1);

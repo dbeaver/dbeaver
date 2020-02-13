@@ -78,6 +78,11 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
         return parent.getRowIdentifier();
     }
 
+    @Override
+    public String getRowIdentifierStatus() {
+        return parent.getRowIdentifierStatus();
+    }
+
     @Nullable
     @Override
     public List<DBSEntityReferrer> getReferrers() {

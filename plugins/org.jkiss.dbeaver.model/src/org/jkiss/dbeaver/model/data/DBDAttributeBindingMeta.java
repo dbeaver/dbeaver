@@ -47,6 +47,8 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     @Nullable
     private DBDRowIdentifier rowIdentifier;
     @Nullable
+    private String rowIdentifierStatus;
+    @Nullable
     private List<DBSEntityReferrer> referrers;
     @Nullable
     private DBDPseudoAttribute pseudoAttribute;
@@ -186,6 +188,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         return rowIdentifier;
     }
 
+    @Override
+    public String getRowIdentifierStatus() {
+        return rowIdentifierStatus;
+    }
+
     @Nullable
     @Override
     public List<DBSEntityReferrer> getReferrers() {
@@ -232,6 +239,10 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     public void setRowIdentifier(@Nullable DBDRowIdentifier rowIdentifier) {
         this.rowIdentifier = rowIdentifier;
+    }
+
+    public void setRowIdentifierStatus(@Nullable String rowIdentifierStatus) {
+        this.rowIdentifierStatus = rowIdentifierStatus;
     }
 
     @Override
