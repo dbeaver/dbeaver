@@ -169,9 +169,9 @@ public class ResultSetUtils
                     }
 
                     if (tableColumn != null &&
-                        (sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) &&
-                        bindingMeta.setEntityAttribute(tableColumn, true) &&
-                        rows != null)
+                        bindingMeta.setEntityAttribute(
+                            tableColumn,
+                            ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
                     {
                         // We have new type and new value handler.
                         // We have to fix already fetched values.

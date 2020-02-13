@@ -791,6 +791,27 @@ public class ResultSetModel {
         return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
     }
 
+    public String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
+        if (attribute == null || attribute.getMetaAttribute() == null) {
+            return "Null meta attribute";
+        }
+        if (attribute.getMetaAttribute().isReadOnly()) {
+            return "Attribute is read-only";
+        }
+        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+        if (rowIdentifier == null) {
+            return "No unique identifier found";
+        }
+        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
+        if (!(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
+            return "Underlying entity doesn't support data modification";
+        }
+        if ((dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0) {
+            return "Underlying entity doesn't support data update";
+        }
+        return null;
+    }
+
     public boolean isUpdateInProgress() {
         return updateInProgress;
     }

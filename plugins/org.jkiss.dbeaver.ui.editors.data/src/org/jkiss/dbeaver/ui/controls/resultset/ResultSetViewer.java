@@ -1639,16 +1639,17 @@ public class ResultSetViewer extends Viewer
         UIUtils.dispose(this.sizingGC);
     }
 
-    public boolean isAttributeReadOnly(DBDAttributeBinding attribute)
-    {
-        if (isReadOnly()) {
-            return true;
-        }
-        if (!model.isAttributeReadOnly(attribute)) {
-            return false;
+    @Override
+    public String getAttributeReadOnlyStatus(DBDAttributeBinding attr) {
+        String dataStatus = getReadOnlyStatus();
+        if (dataStatus != null) {
+            return dataStatus;
         }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
-        return !newRow;
+        if (!newRow) {
+            return model.getAttributeReadOnlyStatus(attr);
+        }
+        return null;
     }
 
     private Object savePresentationState() {
@@ -2040,6 +2041,28 @@ public class ResultSetViewer extends Viewer
             executionContext.getDataSource().getInfo().isReadOnlyData();
     }
 
+    @Override
+    public String getReadOnlyStatus() {
+        if (model.isUpdateInProgress()) {
+            return "Update in progress";
+        }
+        if (!(activePresentation instanceof IResultSetEditor) || (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0) {
+            return "Active presentation doesn't support data edit";
+        }
+
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null || !executionContext.isConnected()) {
+            return "No connected to database";
+        }
+        if (!executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
+            return "Data edit restricted";
+        }
+        if (executionContext.getDataSource().getInfo().isReadOnlyData()) {
+            return "Connection is in read-only state";
+        }
+        return null;
+    }
+
     /**
      * Checks that current state of result set allows to insert new rows
      * @return true if new rows insert is allowed
@@ -2047,7 +2070,7 @@ public class ResultSetViewer extends Viewer
     public boolean isInsertable()
     {
         return
-            !isReadOnly() &&
+            getReadOnlyStatus() == null &&
             model.isSingleSource() &&
             model.getVisibleAttributeCount() > 0;
     }
