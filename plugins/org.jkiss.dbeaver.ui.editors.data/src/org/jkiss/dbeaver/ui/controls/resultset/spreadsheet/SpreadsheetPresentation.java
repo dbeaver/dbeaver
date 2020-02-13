@@ -1910,7 +1910,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
                 if (showAttributeIcons) {
-                    return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
+                    DBDAttributeBinding attr = (DBDAttributeBinding) element;
+                    DBPImage objectImage = DBValueFormatting.getObjectImage(attr.getAttribute());
+                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
+                        objectImage = new DBIconComposite(objectImage, false, null, null, null, DBIcon.OVER_LOCK);
+                    }
+                    return DBeaverIcons.getImage(objectImage);
                 }
             }
             return null;
