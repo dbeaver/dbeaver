@@ -393,8 +393,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void initSeparateConnection(@NotNull DBPDataSource dataSource, Runnable onSuccess) {
         DBSInstance dsInstance = dataSource.getDefaultInstance();
-        String[] contextDefaults = EditorUtils.getInputContextDefaults(getEditorInput());
-        if (contextDefaults.length > 0 && contextDefaults[0] != null) {
+        String[] contextDefaults = isRestoreActiveSchemaFromScript() ?
+            EditorUtils.getInputContextDefaults(getEditorInput()) : null;
+        if (!ArrayUtils.isEmpty(contextDefaults) && contextDefaults[0] != null) {
             DBSInstance selectedInstance = DBUtils.findObject(dataSource.getAvailableInstances(), contextDefaults[0]);
             if (selectedInstance != null) {
                 dsInstance = selectedInstance;
@@ -579,8 +580,11 @@ public class SQLEditor extends SQLEditorBase implements
                 monitor.subTask("Open context " + title);
                 DBCExecutionContext newContext = instance.openIsolatedContext(monitor, title, instance.getDefaultContext(monitor, false));
                 // Set context defaults
-                String[] contextDefaultNames = EditorUtils.getInputContextDefaults(getEditorInput());
-                if (!CommonUtils.isEmpty(contextDefaultNames[0]) || !CommonUtils.isEmpty(contextDefaultNames[1])) {
+                String[] contextDefaultNames = isRestoreActiveSchemaFromScript() ?
+                    EditorUtils.getInputContextDefaults(getEditorInput()) : null;
+                if (contextDefaultNames != null && contextDefaultNames.length > 1 &&
+                    (!CommonUtils.isEmpty(contextDefaultNames[0]) || !CommonUtils.isEmpty(contextDefaultNames[1])))
+                {
                     DBExecUtils.setExecutionContextDefaults(monitor, newContext.getDataSource(), newContext, contextDefaultNames[0], null, contextDefaultNames[1]);
                 }
                 SQLEditor.this.executionContext = newContext;
@@ -606,6 +610,11 @@ public class SQLEditor extends SQLEditorBase implements
                 fireDataSourceChange();
             }
         }
+    }
+
+    private boolean isRestoreActiveSchemaFromScript() {
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) &&
+            getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
     }
 
     private class CloseContextJob extends AbstractJob {

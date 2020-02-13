@@ -50,6 +50,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
     private Button saveOnQueryExecution;
     private Button autoSaveOnClose;
+    private Button autoSaveActiveSchema;
 
     private Button csFoldingEnabled;
     private Button csMarkOccurrencesUnderCursor;
@@ -74,6 +75,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
+            store.contains(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) ||
 
             store.contains(SQLPreferenceConstants.FOLDING_ENABLED) ||
             store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR) ||
@@ -105,7 +107,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
         {
             Group autoSaveGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
             autoSaveOnClose = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_close, false);
-            saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, false);
+            saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, false, 1);
+            autoSaveActiveSchema = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_active_schema, false);
         }
 
         // Folding
@@ -152,6 +155,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             autoSaveOnClose.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
+            autoSaveActiveSchema.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA));
 
             csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
             csMarkOccurrencesUnderCursor.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));

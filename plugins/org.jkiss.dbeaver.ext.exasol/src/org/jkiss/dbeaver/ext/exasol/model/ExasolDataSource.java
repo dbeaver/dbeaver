@@ -479,10 +479,6 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		return getSchema(monitor, childName);
 	}
 
-	public ExasolSchema getDefaultSchema() {
-		return (ExasolSchema) DBUtils.getDefaultContext(this, true).getContextDefaults().getDefaultSchema();
-	}
-
 	// --------------
 	// Associations
 	// --------------
