@@ -329,7 +329,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             String sqlValue = SQLUtils.convertValueToSQL(dataSource, attribute, valuePair.getValue());
                             proposals.add(request.getContext().createProposal(
                                 request,
-                                sqlValue,
+                                CommonUtils.toString(valuePair.getValue()),
                                 sqlValue,
                                 sqlValue.length(),
                                 attrImage,
