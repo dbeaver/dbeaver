@@ -18,15 +18,24 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.meta.RuntimeAction;
 
 /**
  * Result set context
  */
 public interface IResultSetContext
 {
+    @RuntimeAction
     boolean supportsAttributes();
 
+    @RuntimeAction
     boolean supportsDocument();
+
+    @RuntimeAction
+    boolean supportsGrouping();
+
+    @RuntimeAction
+    boolean supportsReferences();
 
     String getDocumentContentType();
 
