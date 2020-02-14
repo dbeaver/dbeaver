@@ -40,7 +40,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private char stringEscapeCharacter = '\0';
     private String scriptDelimiterRedefiner;
     private boolean legacySQLDialect;
-    private boolean suportsUpsert;
+    private boolean supportsUpsert;
     private boolean quoteReservedWords;
     private boolean useSearchStringEscape;
     private String dualTable;
@@ -69,8 +69,8 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         this.hasDelimiterAfterQuery = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_QUERY));
         this.hasDelimiterAfterBlock = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_BLOCK));
         this.legacySQLDialect = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
-        this.suportsUpsert = ((GenericDataSource)dataSource).getMetaModel().supportsUpsertStatement();
-        if (this.suportsUpsert) {
+        this.supportsUpsert = ((GenericDataSource)dataSource).getMetaModel().supportsUpsertStatement();
+        if (this.supportsUpsert) {
             addSQLKeyword("UPSERT");
         }
         this.useSearchStringEscape = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_USE_SEARCH_STRING_ESCAPE), false);
@@ -129,7 +129,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     @Override
     public boolean supportsUpsertStatement() {
-        return suportsUpsert;
+        return supportsUpsert;
     }
 
     @Override
