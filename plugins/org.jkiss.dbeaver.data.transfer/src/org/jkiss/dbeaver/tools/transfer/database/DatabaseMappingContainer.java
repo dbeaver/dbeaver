@@ -21,9 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -179,7 +177,16 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             // Seems to be a dynamic query. Execute it to get metadata
             DBPDataSource dataSource = source.getDataSource();
             assert (dataSource != null);
-            try (DBCSession session = DBUtils.openUtilSession(monitor, source, "Read query meta data")) {
+            DBCExecutionContext context;
+            if (source instanceof DBPContextProvider) {
+                context = ((DBPContextProvider) source).getExecutionContext();
+            } else {
+                context = DBUtils.getDefaultContext(source, false);
+            }
+            if (context == null) {
+                throw new DBCException("No execution context");
+            }
+            try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Read query meta data")) {
                 MetadataReceiver receiver = new MetadataReceiver();
                 source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
                 for (DBDAttributeBinding attr : receiver.attributes) {
