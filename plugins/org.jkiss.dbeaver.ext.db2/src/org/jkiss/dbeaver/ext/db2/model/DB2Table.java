@@ -251,7 +251,7 @@ public class DB2Table extends DB2TableBase
         return getContainer().getAssociationCache().getObjects(monitor, getContainer(), this);
     }
 
-    public DBSTableForeignKey getAssociation(DBRProgressMonitor monitor, String ukName) throws DBException
+    public DB2TableForeignKey getAssociation(DBRProgressMonitor monitor, String ukName) throws DBException
     {
         return getContainer().getAssociationCache().getObject(monitor, getContainer(), this, ukName);
     }
