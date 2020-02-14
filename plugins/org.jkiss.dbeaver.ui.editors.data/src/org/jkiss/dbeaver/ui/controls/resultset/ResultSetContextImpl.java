@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.impl.sql.RelationalSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
 
 class ResultSetContextImpl implements IResultSetContext {
@@ -41,6 +44,25 @@ class ResultSetContextImpl implements IResultSetContext {
     @Override
     public boolean supportsDocument() {
         return viewer.getModel().getDocumentAttribute() != null;
+    }
+
+    @Override
+    public boolean supportsGrouping() {
+        DBPDataSource dataSource = viewer.getDataSource();
+        if (dataSource != null) {
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
+            return sqlDialect instanceof RelationalSQLDialect && ((RelationalSQLDialect) sqlDialect).supportsGroupBy();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean supportsReferences() {
+        DBPDataSource dataSource = viewer.getDataSource();
+        if (dataSource != null) {
+            return dataSource.getInfo().supportsReferentialIntegrity();
+        }
+        return false;
     }
 
     @Override

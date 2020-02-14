@@ -143,6 +143,7 @@
                 icon="icons/panel_grouping.png"
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingPanel">
+            <supports if="context.supportsGrouping()"/>
         </panel>
         <panel
                 id="results-references"
@@ -151,6 +152,8 @@
                 icon="icons/panel_references.png"
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.references.ReferencesPanel">
+            <!-- Show references always as we can define virtual foreign keys even if RI is not supported by database -->
+<!--            <supports if="context.supportsReferences()"/>-->
         </panel>
     </extension>
 
