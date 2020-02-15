@@ -1912,7 +1912,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (showAttributeIcons) {
                     DBDAttributeBinding attr = (DBDAttributeBinding) element;
                     DBPImage objectImage = DBValueFormatting.getObjectImage(attr.getAttribute());
-                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
+                    if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) != 0 &&
+                        controller.getAttributeReadOnlyStatus(attr) != null)
+                    {
                         objectImage = new DBIconComposite(objectImage, false, null, null, null, DBIcon.OVER_LOCK);
                     }
                     return DBeaverIcons.getImage(objectImage);
