@@ -39,18 +39,19 @@ public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdat
     public Object execute(ExecutionEvent event) throws ExecutionException {
         GroupBy groupBy = CommonUtils.valueOf(GroupBy.class, event.getParameter("group"), GroupBy.project);
         DatabaseTasksView view = (DatabaseTasksView) HandlerUtil.getActivePart(event);
+        DatabaseTasksTree tasksTree = view.getTasksTree();
         switch (groupBy) {
             case project:
-                view.setGroupByProject(!view.isGroupByProject());
+                tasksTree.setGroupByProject(!tasksTree.isGroupByProject());
                 break;
             case category:
-                view.setGroupByCategory(!view.isGroupByCategory());
+                tasksTree.setGroupByCategory(!tasksTree.isGroupByCategory());
                 break;
             case type:
-                view.setGroupByType(!view.isGroupByType());
+                tasksTree.setGroupByType(!tasksTree.isGroupByType());
                 break;
         }
-        view.regroupTasks();
+        tasksTree.regroupTasks();
 
         return null;
     }
@@ -59,19 +60,20 @@ public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdat
     public void updateElement(UIElement element, Map parameters) {
         DatabaseTasksView taskView = (DatabaseTasksView) UIUtils.findView(UIUtils.getActiveWorkbenchWindow(), DatabaseTasksView.VIEW_ID);
         if (taskView != null) {
+            DatabaseTasksTree tasksTree = taskView.getTasksTree();
             GroupBy groupBy = CommonUtils.valueOf(GroupBy.class, (String)parameters.get("group"), GroupBy.project);
 
             switch (groupBy) {
                 case project:
-                    element.setChecked(taskView.isGroupByProject());
+                    element.setChecked(tasksTree.isGroupByProject());
                     //element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.PROJECT));
                     break;
                 case category:
-                    element.setChecked(taskView.isGroupByCategory());
+                    element.setChecked(tasksTree.isGroupByCategory());
                     //element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.TREE_DATABASE_CATEGORY));
                     break;
                 case type:
-                    element.setChecked(taskView.isGroupByType());
+                    element.setChecked(tasksTree.isGroupByType());
                     //element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.TREE_TASK));
                     break;
             }
