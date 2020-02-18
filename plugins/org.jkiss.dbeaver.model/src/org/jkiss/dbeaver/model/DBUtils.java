@@ -1774,6 +1774,10 @@ public final class DBUtils {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
     }
 
+    public static boolean isSystemObject(Object object) {
+        return object instanceof DBPSystemObject && ((DBPSystemObject) object).isSystem();
+    }
+
     public static boolean isVirtualObject(Object object) {
         return object instanceof DBPVirtualObject && ((DBPVirtualObject) object).isVirtual();
     }

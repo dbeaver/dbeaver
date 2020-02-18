@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
@@ -305,7 +305,7 @@ public class CompareObjectsExecutor {
                     // Skip virtual nodes
                     continue;
                 }
-                if (settings.isSkipSystemObjects() && child.getObject() instanceof DBPSystemObject && ((DBPSystemObject) child.getObject()).isSystem()) {
+                if (settings.isSkipSystemObjects() && DBUtils.isSystemObject(child.getObject())) {
                     // Skip system objects
                     continue;
                 }

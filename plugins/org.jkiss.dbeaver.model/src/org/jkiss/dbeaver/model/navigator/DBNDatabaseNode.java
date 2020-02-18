@@ -517,7 +517,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 // Skip hidden objects
                 continue;
             }
-            if (!showSystem && childItem instanceof DBPSystemObject && ((DBPSystemObject) childItem).isSystem()) {
+            if (!showSystem && DBUtils.isSystemObject(childItem)) {
                 // Skip system objects
                 continue;
             }
