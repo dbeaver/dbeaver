@@ -906,7 +906,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (DBUtils.isNullValue(value)) {
             query.append(" IS NULL"); //$NON-NLS-1$
         } else {
-            query.append("=?"); //$NON-NLS-1$
+            query.append(dialect.cast(attribute, "=?")); //$NON-NLS-1$
         }
     }
 
