@@ -318,6 +318,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (!prevWords.isEmpty()) {
             // Column name?
             String columnName = prevWords.get(prevWords.size() - 1);
+            if (!DBUtils.isQuotedIdentifier(dataSource, columnName)) {
+                int divPos = columnName.indexOf(request.getContext().getSyntaxManager().getStructSeparator());
+                if (divPos != -1) {
+                    columnName = columnName.substring(divPos + 1);
+                }
+            }
             columnName = DBUtils.getUnQuotedIdentifier(dataSource, columnName);
             DBSEntityAttribute attribute = entity.getAttribute(monitor, columnName);
             if (attribute instanceof DBSAttributeEnumerable) {
