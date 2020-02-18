@@ -69,7 +69,7 @@ public class TaskHandlerCopy extends AbstractHandler {
                         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
                         if (activePart instanceof DatabaseTasksView) {
                             UIUtils.asyncExec(() -> {
-                                ((DatabaseTasksView) activePart).getTaskViewer().setSelection(new StructuredSelection(newTask), true);
+                                ((DatabaseTasksView) activePart).getTasksTree().getViewer().setSelection(new StructuredSelection(newTask), true);
                                 ActionUtils.runCommand(DatabaseTasksView.EDIT_TASK_CMD_ID, activePart.getSite());
                             });
                         }

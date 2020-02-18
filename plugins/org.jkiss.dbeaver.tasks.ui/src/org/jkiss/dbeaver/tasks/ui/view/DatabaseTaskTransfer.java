@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tasks.ui.view;
 
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
@@ -27,6 +28,24 @@ import java.util.List;
  * Used to move DBTTask around
  */
 public final class DatabaseTaskTransfer extends LocalObjectTransfer<List<DBTTask>> {
+
+	public static class Data {
+		private Control sourceControl;
+		private List<DBTTask> tasks;
+
+		public Data(Control sourceControl, List<DBTTask> tasks) {
+			this.sourceControl = sourceControl;
+			this.tasks = tasks;
+		}
+
+		public Control getSourceControl() {
+			return sourceControl;
+		}
+
+		public List<DBTTask> getTasks() {
+			return tasks;
+		}
+	}
 
 	private static final DatabaseTaskTransfer INSTANCE = new DatabaseTaskTransfer();
 	private static final String TYPE_NAME = "DBTTask Transfer"//$NON-NLS-1$
