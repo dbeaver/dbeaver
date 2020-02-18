@@ -51,10 +51,6 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
 
         // ResultSet
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING, true);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_READ_METADATA, true);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_READ_REFERENCES, true);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_MAX_ROWS, 200);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, 5000);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE, IValueController.EditType.EDITOR);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE, true);

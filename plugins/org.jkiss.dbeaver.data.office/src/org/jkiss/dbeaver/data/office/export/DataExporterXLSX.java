@@ -33,12 +33,12 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -347,7 +347,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 if (getSite().getSource() instanceof DBSEntity) {
                     sourceEntity = (DBSEntity) getSite().getSource();
                 }
-                ResultSetUtils.bindAttributes(resultSet.getSession(), sourceEntity, resultSet, bindings, null);
+                DBExecUtils.bindAttributes(resultSet.getSession(), sourceEntity, resultSet, bindings, null);
             }
 
             for (DBDAttributeBinding column : columns) {

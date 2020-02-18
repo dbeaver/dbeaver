@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -395,7 +396,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
                             try {
-                                rsv.navigateAssociation(monitor, rsv.getModel(), ResultSetUtils.getAssociationByAttribute(attr), rsv.getSelection().getSelectedRows(), false);
+                                rsv.navigateAssociation(monitor, rsv.getModel(), DBExecUtils.getAssociationByAttribute(attr), rsv.getSelection().getSelectedRows(), false);
                             } catch (DBException e) {
                                 return GeneralUtils.makeExceptionStatus(e);
                             }

@@ -1517,9 +1517,9 @@ public class ResultSetViewer extends Viewer
                 int fetchSize = CommonUtils.toInt(resultSetSize.getText());
                 if (fetchSize > 0 && dataContainer != null && dataContainer.getDataSource() != null) {
                     DBPPreferenceStore store = dataContainer.getDataSource().getContainer().getPreferenceStore();
-                    int oldFetchSize = store.getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS);
+                    int oldFetchSize = store.getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
                     if (oldFetchSize > 0 && oldFetchSize != fetchSize) {
-                        store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, fetchSize);
+                        store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS, fetchSize);
                         PrefUtils.savePreferenceStore(store);
                     }
                 }
@@ -1748,7 +1748,7 @@ public class ResultSetViewer extends Viewer
 
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && dataContainer.getDataSource() != null) {
-            resultSetSize.setText(String.valueOf(dataContainer.getDataSource().getContainer().getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
+            resultSetSize.setText(String.valueOf(dataContainer.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS)));
         }
     }
 
@@ -3343,7 +3343,7 @@ public class ResultSetViewer extends Viewer
         if (getDataContainer() == null) {
             return 0;
         }
-        return getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS);
+        return getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
     }
 
     @NotNull
@@ -4103,7 +4103,7 @@ public class ResultSetViewer extends Viewer
 
     private class ToggleRefreshOnScrollingAction extends ToggleConnectionPreferenceAction {
         ToggleRefreshOnScrollingAction() {
-            super(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling);
+            super(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling);
         }
     }
 
