@@ -274,7 +274,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             });
         }
 
-        saveAsTaskButton = UIUtils.createDialogButton(panel, isTaskEditor() ? "Update configuration in task" : "Save configuration as task", new SelectionAdapter() {
+        saveAsTaskButton = UIUtils.createDialogButton(panel, "Save task", new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 saveTask();
