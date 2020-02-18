@@ -130,7 +130,7 @@ public abstract class JDBCDataSource
         // Obtain connection
         try {
             if (connectionConfigurer != null) {
-                connectionConfigurer.beforeConnection(connectionInfo, connectProps);
+                connectionConfigurer.beforeConnection(monitor, connectionInfo, connectProps);
             }
             final String url = getConnectionURL(connectionInfo);
             if (driverInstance != null) {
@@ -161,7 +161,7 @@ public abstract class JDBCDataSource
                 } finally {
                     if (connectionConfigurer != null) {
                         try {
-                            connectionConfigurer.afterConnection(connectionInfo, connectProps, connection[0], error[0]);
+                            connectionConfigurer.afterConnection(monitor, connectionInfo, connectProps, connection[0], error[0]);
                         } catch (Exception e) {
                             log.debug(e);
                         }
