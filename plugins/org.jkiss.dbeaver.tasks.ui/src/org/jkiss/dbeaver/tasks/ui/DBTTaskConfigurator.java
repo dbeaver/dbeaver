@@ -14,10 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
+package org.jkiss.dbeaver.tasks.ui;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 
 /**
  * Task configurator.
@@ -36,7 +39,7 @@ public interface DBTTaskConfigurator {
         DBRRunnableContext runnableContext,
         @NotNull DBTTaskType taskType);
 
-    Object createTaskConfigWizard(
+    TaskConfigurationWizard createTaskConfigWizard(
         @NotNull DBTTask taskConfiguration);
 
 }

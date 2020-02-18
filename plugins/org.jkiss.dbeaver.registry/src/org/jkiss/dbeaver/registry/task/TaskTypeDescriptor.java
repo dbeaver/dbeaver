@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskCategory;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -44,7 +43,6 @@ public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBT
     private final IConfigurationElement config;
     private final ObjectType handlerImplType;
     private final DBPPropertyDescriptor[] properties;
-    private TaskConfiguratorDescriptor configuratorDescriptor;
 
     TaskTypeDescriptor(TaskCategoryDescriptor category, IConfigurationElement config) {
         super(config);
@@ -122,24 +120,6 @@ public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBT
     @Override
     public DBTTaskHandler createHandler() throws DBException {
         return handlerImplType.createInstance(DBTTaskHandler.class);
-    }
-
-    @Override
-    public boolean supportsConfigurator() {
-        return configuratorDescriptor != null;
-    }
-
-    @NotNull
-    @Override
-    public DBTTaskConfigurator createConfigurator() throws DBException {
-        if (configuratorDescriptor == null) {
-            throw new DBException("No configurator for task type " + getId());
-        }
-        return configuratorDescriptor.createConfigurator();
-    }
-
-    void setConfigurator(TaskConfiguratorDescriptor configurator) {
-        this.configuratorDescriptor = configurator;
     }
 
     @Override

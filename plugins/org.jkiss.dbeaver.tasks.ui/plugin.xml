@@ -4,6 +4,7 @@
 
     <!-- Deprecated extension point, must be replaced with tasks UI configurators -->
     <extension-point id="org.jkiss.dbeaver.tools" name="%extension-point.org.jkiss.dbeaver.tools.name" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.task.ui" name="%extension-point.org.jkiss.dbeaver.task.ui.name" schema="schema/org.jkiss.dbeaver.task.ui.exsd"/>
 
     <extension point="org.eclipse.ui.views">
         <view
@@ -140,7 +141,6 @@
             </menu>
             <command commandId="org.jkiss.dbeaver.ui.tools.menu"/>
         </menuContribution>
-
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.tasks">
             <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="Group by project" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.png"><parameter name="group" value="project"/></command>

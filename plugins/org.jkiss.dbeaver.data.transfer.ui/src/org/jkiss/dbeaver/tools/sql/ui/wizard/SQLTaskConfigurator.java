@@ -17,12 +17,12 @@
 
 package org.jkiss.dbeaver.tools.sql.ui.wizard;
 
-import org.eclipse.jface.wizard.IWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 
 /**
  * SQL task configurator
@@ -35,7 +35,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
     }
 
     @Override
-    public IWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
+    public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
         return new SQLTaskConfigurationWizard(taskConfiguration);
     }
 
