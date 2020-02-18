@@ -70,6 +70,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -1055,7 +1056,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         controller.navigateAssociation(
                             monitor,
                             controller.getModel(),
-                            ResultSetUtils.getAssociationByAttribute(attr),
+                            DBExecUtils.getAssociationByAttribute(attr),
                             Collections.singletonList(row), ctrlPressed);
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);

@@ -511,7 +511,7 @@ public class ResultSetModel {
                 } else if (oldMeta == newMeta) {
                     continue;
                 }
-                if (!ResultSetUtils.equalAttributes(oldMeta, newMeta)) {
+                if (!DBExecUtils.equalAttributes(oldMeta, newMeta)) {
                     update = true;
                     break;
                 }
@@ -681,12 +681,12 @@ public class ResultSetModel {
                         Color background = null, foreground = null;
                         if (acs.rangeCheck) {
                             if (acs.attributeValues != null && acs.attributeValues.length > 1) {
-                                double minValue = ResultSetUtils.makeNumericValue(acs.attributeValues[0]);
-                                double maxValue = ResultSetUtils.makeNumericValue(acs.attributeValues[1]);
+                                double minValue = DBExecUtils.makeNumericValue(acs.attributeValues[0]);
+                                double maxValue = DBExecUtils.makeNumericValue(acs.attributeValues[1]);
                                 if (acs.colorBackground != null && acs.colorBackground2 != null) {
                                     final DBDAttributeBinding binding = entry.getKey();
                                     final Object cellValue = getCellValue(binding, row);
-                                    double value = ResultSetUtils.makeNumericValue(cellValue);
+                                    double value = DBExecUtils.makeNumericValue(cellValue);
                                     if (value >= minValue && value <= maxValue) {
                                         foreground = acs.colorForeground;
                                         RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);

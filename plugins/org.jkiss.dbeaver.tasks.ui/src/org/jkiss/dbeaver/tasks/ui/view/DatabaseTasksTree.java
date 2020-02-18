@@ -633,7 +633,7 @@ public class DatabaseTasksTree {
                 if (!selection.isEmpty()) {
                     List<DBTTask> tasks = new ArrayList<>();
                     StringBuilder buf = new StringBuilder();
-                    for (Object nextSelected : selection) {
+                    for (Object nextSelected : selection.toArray()) {
                         if (!(nextSelected instanceof DBTTask)) {
                             continue;
                         }
