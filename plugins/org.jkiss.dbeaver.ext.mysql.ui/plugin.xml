@@ -216,7 +216,7 @@
         <propertyConfigurator class="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLSSLConfigurator"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.task">
+    <extension point="org.jkiss.dbeaver.task.ui">
         <configurator type="mysqlDatabaseBackup" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
         <configurator type="mysqlDatabaseRestore" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
         <configurator type="mysqlScriptExecute" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>

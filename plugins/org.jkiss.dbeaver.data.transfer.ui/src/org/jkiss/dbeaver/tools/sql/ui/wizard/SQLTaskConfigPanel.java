@@ -30,9 +30,10 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
@@ -66,7 +67,7 @@ class SQLTaskConfigPanel implements DBTTaskConfigPanel {
     }
 
     @Override
-    public void createControl(Object parent, Object wizard, Runnable propertyChangeListener) {
+    public void createControl(Composite parent, TaskConfigurationWizard wizard, Runnable propertyChangeListener) {
         sqlWizard = (SQLTaskConfigurationWizard) wizard;
         this.propertyChangeListener = propertyChangeListener;
 

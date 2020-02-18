@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
+package org.jkiss.dbeaver.tasks.ui;
+
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 
 /**
  * DBTTaskConfigPanel.
@@ -22,7 +25,7 @@ package org.jkiss.dbeaver.model.task;
  */
 public interface DBTTaskConfigPanel
 {
-    void createControl(Object parent, Object wizard, Runnable propertyChangeListener);
+    void createControl(Composite parent, TaskConfigurationWizard wizard, Runnable propertyChangeListener);
 
     void loadSettings();
 

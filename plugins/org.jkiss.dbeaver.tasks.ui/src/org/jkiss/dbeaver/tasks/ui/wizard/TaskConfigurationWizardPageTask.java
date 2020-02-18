@@ -30,10 +30,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskCategory;
+import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
+import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -46,8 +51,7 @@ import java.util.*;
 /**
  * Create task wizard page
  */
-class TaskConfigurationWizardPageTask extends ActiveWizardPage
-{
+class TaskConfigurationWizardPageTask extends ActiveWizardPage {
     private static final Log log = Log.getLog(TaskConfigurationWizardPageTask.class);
 
     private final DBPProject selectedProject;
@@ -69,8 +73,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
 
     private Map<DBTTaskType, TaskConfigurationWizard> taskWizards = new HashMap<>();
 
-    TaskConfigurationWizardPageTask(DBTTask task)
-    {
+    TaskConfigurationWizardPageTask(DBTTask task) {
         super(task == null ? "Create new task" : "Edit task");
         setTitle(task == null ? "New task properties" : "Edit task properties");
         setDescription("Set task name, type and input data");
@@ -87,7 +90,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
 
     @Override
     public TaskConfigurationWizard getWizard() {
-        return (TaskConfigurationWizard)super.getWizard();
+        return (TaskConfigurationWizard) super.getWizard();
     }
 
     public DBTTaskCategory getSelectedCategory() {
@@ -230,7 +233,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             if (task != null)
                 updateTaskTypeSelection();
         }
-        formSash.setWeights(new int[] { 500, 500 });
+        formSash.setWeights(new int[]{500, 500});
 
         setControl(formSash);
     }
@@ -245,9 +248,9 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
             }
         }
 
-        if (selectedTaskType != null && selectedTaskType.supportsConfigurator()) {
+        if (selectedTaskType != null && TaskUIRegistry.getInstance().supportsConfigurator(selectedTaskType)) {
             try {
-                DBTTaskConfigurator configurator = selectedTaskType.createConfigurator();
+                DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(selectedTaskType);
                 DBTTaskConfigPanel configPage = configurator.createInputConfigurator(UIUtils.getDefaultRunnableContext(), selectedTaskType);
                 if (configPage != null) {
                     taskConfigPanel = configPage;
@@ -335,12 +338,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
         }
         TaskConfigurationWizard realWizard = taskWizards.get(selectedTaskType);
         if (realWizard == null) {
-            DBTTaskConfigurator configurator = selectedTaskType.createConfigurator();
+            DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(selectedTaskType);
 
             if (task == null) {
                 task = (TaskImpl) selectedProject.getTaskManager().createTask(selectedTaskType, CommonUtils.notEmpty(taskName), taskDescription, new LinkedHashMap<>());
             }
-            realWizard = (TaskConfigurationWizard) configurator.createTaskConfigWizard(task);
+            realWizard = configurator.createTaskConfigWizard(task);
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();
             ISelection selection = activePart == null || activePart.getSite() == null || activePart.getSite().getSelectionProvider() == null ?

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -42,11 +41,12 @@ import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
@@ -77,7 +77,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
     }
 
     @Override
-    public IWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
+    public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
         return new DataTransferWizard(UIUtils.getDefaultRunnableContext(), taskConfiguration);
     }
 
@@ -104,7 +104,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
         }
         
         @Override
-        public void createControl(Object parent, Object wizard, Runnable propertyChangeListener) {
+        public void createControl(Composite parent, TaskConfigurationWizard wizard, Runnable propertyChangeListener) {
             dtWizard = (DataTransferWizard) wizard;
             boolean isExport = isExport();
 
