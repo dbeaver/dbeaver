@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
@@ -138,6 +139,10 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
             }
         }
         return null;
+    }
+
+    public DBTTask getTask() {
+        return getWizard().getCurrentTask();
     }
 
 }

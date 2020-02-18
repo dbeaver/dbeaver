@@ -23,6 +23,7 @@ import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -288,6 +289,8 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         taskViewer.addDoubleClickListener(event -> ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
         taskViewer.addSelectionChangedListener(event -> loadTaskRuns());
+
+        addDragSourceSupport(taskViewer);
         //viewer.addOpenListener(event -> openCurrentTask());
     }
 
@@ -951,6 +954,54 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 DBWorkbench.getPlatformUI().executeShellProgram(task.getRunLogFolder().getAbsolutePath());
             }
         }
+    }
+
+    public static void addDragSourceSupport(Viewer viewer)
+    {
+        Transfer[] types = new Transfer[] {TextTransfer.getInstance(), DatabaseTaskTransfer.getInstance()};
+        int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
+
+        final DragSource source = new DragSource(viewer.getControl(), operations);
+        source.setTransfer(types);
+        source.addDragListener (new DragSourceAdapter() {
+            private IStructuredSelection selection;
+
+            @Override
+            public void dragStart(DragSourceEvent event) {
+                selection = (IStructuredSelection) viewer.getSelection();
+            }
+
+            @Override
+            public void dragSetData (DragSourceEvent event) {
+                if (!selection.isEmpty()) {
+                    List<DBTTask> tasks = new ArrayList<>();
+                    StringBuilder buf = new StringBuilder();
+                    for (Object nextSelected : selection) {
+                        if (!(nextSelected instanceof DBTTask)) {
+                            continue;
+                        }
+                        DBTTask task = (DBTTask) nextSelected;
+                        tasks.add(task);
+                        String taskName = task.getName();
+                        if (buf.length() > 0) {
+                            buf.append(", ");
+                        }
+                        buf.append(taskName);
+                    }
+                    if (DatabaseTaskTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = tasks;
+                    } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = buf.toString();
+                    }
+                } else {
+                    if (DatabaseTaskTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = Collections.emptyList();
+                    } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = "";
+                    }
+                }
+            }
+        });
     }
 
 }
