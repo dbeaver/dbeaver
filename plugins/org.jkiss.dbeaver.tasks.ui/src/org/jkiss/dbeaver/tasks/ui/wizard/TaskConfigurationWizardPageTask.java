@@ -16,13 +16,12 @@
  */
 package org.jkiss.dbeaver.tasks.ui.wizard;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
@@ -171,6 +170,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage
                     }
                 });
                 addTaskCategories(null, TaskRegistry.getInstance().getRootCategories());
+                taskCategoryTree.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseDoubleClick(MouseEvent e) {
+                        getWizard().getContainer().buttonPressed(IDialogConstants.NEXT_ID);
+                    }
+                });
 
 /*
                 taskTypeCombo = UIUtils.createLabelCombo(formPanel, "Type", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);

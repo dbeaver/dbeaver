@@ -761,12 +761,15 @@ public class UIUtils {
         return button;
     }
 
-    public static ToolItem createToolItem(ToolBar parent, String text, DBPImage icon, SelectionListener selectionListener)
-    {
+    public static ToolItem createToolItem(ToolBar parent, String text, DBPImage icon, SelectionListener selectionListener) {
+        return createToolItem(parent, text, icon != null ? DBeaverIcons.getImage(icon) : null, selectionListener);
+    }
+
+    public static ToolItem createToolItem(ToolBar parent, String text, Image icon, SelectionListener selectionListener) {
         ToolItem button = new ToolItem(parent, SWT.PUSH);
         button.setToolTipText(text);
         if (icon != null) {
-            button.setImage(DBeaverIcons.getImage(icon));
+            button.setImage(icon);
         }
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
