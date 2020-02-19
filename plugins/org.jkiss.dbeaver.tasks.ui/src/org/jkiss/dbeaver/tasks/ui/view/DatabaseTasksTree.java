@@ -390,7 +390,20 @@ public class DatabaseTasksTree {
             }
             Collections.addAll(allTasks, tasks);
         }
-        allTasks.sort((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()));
+        allTasks.sort(this::comparTasksTime);
+    }
+
+    private int comparTasksTime(DBTTask o1, DBTTask o2) {
+        DBTTaskRun lr1 = o1.getLastRun();
+        DBTTaskRun lr2 = o2.getLastRun();
+        if (lr1 == null) {
+            if (lr2 == null) return o1.getName().compareToIgnoreCase(o2.getName());
+            return 1;
+        } else if (lr2 == null) {
+            return -1;
+        } else {
+            return lr2.getStartTime().compareTo(lr1.getStartTime());
+        }
     }
 
     private boolean refreshScheduledTasks() {
@@ -637,7 +650,7 @@ public class DatabaseTasksTree {
         }
     }
 
-    public static void addDragSourceSupport(Viewer viewer)
+    public static void addDragSourceSupport(Viewer viewer, IFilter draggableChecker)
     {
         Transfer[] types = new Transfer[] {TextTransfer.getInstance(), DatabaseTaskTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
@@ -658,6 +671,9 @@ public class DatabaseTasksTree {
                     List<DBTTask> tasks = new ArrayList<>();
                     StringBuilder buf = new StringBuilder();
                     for (Object nextSelected : selection.toArray()) {
+                        if (draggableChecker != null && !draggableChecker.select(nextSelected)) {
+                            continue;
+                        }
                         DBTTask task = null;
                         if (nextSelected instanceof DBTTask) {
                             task  = (DBTTask) nextSelected;
