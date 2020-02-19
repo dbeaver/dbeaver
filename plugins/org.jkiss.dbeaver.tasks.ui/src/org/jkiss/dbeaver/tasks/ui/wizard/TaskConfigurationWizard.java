@@ -159,12 +159,24 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         IWizardPage nextPage = super.getNextPage(page);
         if (nextPage instanceof TaskConfigurationWizardPageSettings &&
             page instanceof TaskConfigurationWizardPageTask &&
-            !TaskUIRegistry.getInstance().supportsConfiguratorPage(((TaskConfigurationWizardPageTask) page).getSelectedTaskType()))
+            !TaskUIRegistry.getInstance().supportsConfiguratorPage(getContainer().getTaskPage().getSelectedTaskType()))
         {
             // Skip settings page (not supported by task type)
             return getNextPage(nextPage);
         }
         return nextPage;
+    }
+
+    @Override
+    public IWizardPage getPreviousPage(IWizardPage page) {
+        IWizardPage prevPage = super.getPreviousPage(page);
+        if (prevPage instanceof TaskConfigurationWizardPageSettings &&
+            !TaskUIRegistry.getInstance().supportsConfiguratorPage(getContainer().getTaskPage().getSelectedTaskType()))
+        {
+            // Skip settings page (not supported by task type)
+            return getPreviousPage(prevPage);
+        }
+        return prevPage;
     }
 
     @Override
@@ -351,6 +363,16 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             // TODO: init transfer for all deserialized producers/consumers
             saveAsTaskButton.setEnabled(/*(getTaskWizard() != null && getTaskWizard().isCurrentTaskSaved()) || */canFinish());
         }
+    }
+
+    @Override
+    public IWizardPage getStartingPage() {
+        IWizardPage startingPage = super.getStartingPage();
+        if (currentTask != null) {
+            // Start from second page for task editor
+            return getNextPage(startingPage);
+        }
+        return startingPage;
     }
 
 }

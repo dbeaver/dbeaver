@@ -85,8 +85,12 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
             setTitle("Edit task properties");
             setDescription("Set task name, type and input data");
         } else {
-            setTitle(curTaskType.getName());
-            setDescription("Set configuration of " + curTaskType.getName());
+            String title = curTaskType.getName();
+            if (getWizard().getCurrentTask() != null) {
+                title += " (" + getWizard().getCurrentTask().getName() + ")";
+            }
+            setTitle(title);
+            setDescription("Configure " + curTaskType.getName() + " settings");
         }
         setPageComplete(determinePageCompletion());
     }
