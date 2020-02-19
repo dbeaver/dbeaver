@@ -83,7 +83,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     public abstract void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state);
 
     public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null && !getContainer().isEditMode();
+        return getCurrentTask() != null && !getContainer().isSelectorMode();
     }
 
     public IStructuredSelection getCurrentSelection() {
@@ -287,7 +287,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     }
 
     public void createTaskSaveButtons(Composite parent, boolean horizontal, int hSpan) {
-        if (getContainer().isEditMode()) {
+        if (getContainer().isSelectorMode()) {
             // Do not create save buttons
             UIUtils.createEmptyLabel(parent, hSpan, 1);
         } else {

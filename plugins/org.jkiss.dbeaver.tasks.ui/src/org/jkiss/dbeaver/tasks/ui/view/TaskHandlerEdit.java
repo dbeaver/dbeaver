@@ -47,6 +47,7 @@ public class TaskHandlerEdit extends AbstractHandler {
                     TaskConfigurationWizard wizard = TaskUIRegistry.getInstance().createConfigurator(taskTypeDescriptor).createTaskConfigWizard(task);
                     if (wizard != null) {
                         TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event), wizard);
+                        dialog.setEditMode(true);
                         dialog.open();
                     }
                 } catch (Throwable e) {

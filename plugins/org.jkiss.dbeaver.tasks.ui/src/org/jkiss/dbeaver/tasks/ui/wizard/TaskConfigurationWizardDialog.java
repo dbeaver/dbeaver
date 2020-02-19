@@ -41,6 +41,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     private TaskConfigurationWizard nestedTaskWizard;
     private TaskConfigurationWizardPageTask taskEditPage;
     private boolean editMode;
+    private boolean selectorMode;
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
         this(window, wizard, null);
@@ -147,15 +148,22 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     }
 
 
+    public boolean isSelectorMode() {
+        return selectorMode;
+    }
+
+    public void setSelectorMode(boolean selectorMode) {
+        this.selectorMode = selectorMode;
+        if (selectorMode) {
+            setFinishButtonLabel("Save");
+        }
+    }
+
     public boolean isEditMode() {
         return editMode;
     }
 
     public void setEditMode(boolean editMode) {
         this.editMode = editMode;
-        if (editMode) {
-            setFinishButtonLabel("Save");
-        }
     }
-
 }
