@@ -108,7 +108,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         tasksTree.getViewer().addDoubleClickListener(event -> ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
         tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns());
 
-        DatabaseTasksTree.addDragSourceSupport(tasksTree.getViewer());
+        DatabaseTasksTree.addDragSourceSupport(tasksTree.getViewer(), null);
     }
 
     private void createTaskRunTable(Composite parent) {
