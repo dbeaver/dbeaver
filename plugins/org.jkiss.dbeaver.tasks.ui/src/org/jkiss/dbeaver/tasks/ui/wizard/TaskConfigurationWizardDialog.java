@@ -40,6 +40,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     private static final Log log = Log.getLog(TaskConfigurationWizardDialog.class);
     private TaskConfigurationWizard nestedTaskWizard;
     private TaskConfigurationWizardPageTask taskEditPage;
+    private boolean editMode;
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
         this(window, wizard, null);
@@ -143,6 +144,18 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
 
     public DBTTask getTask() {
         return getWizard().getCurrentTask();
+    }
+
+
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
+        if (editMode) {
+            setFinishButtonLabel("Save");
+        }
     }
 
 }
