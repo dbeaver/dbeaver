@@ -159,7 +159,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         IWizardPage nextPage = super.getNextPage(page);
         if (nextPage instanceof TaskConfigurationWizardPageSettings &&
             page instanceof TaskConfigurationWizardPageTask &&
-            !TaskUIRegistry.getInstance().supportsConfigurator(((TaskConfigurationWizardPageTask) page).getSelectedTaskType()))
+            !TaskUIRegistry.getInstance().supportsConfiguratorPage(((TaskConfigurationWizardPageTask) page).getSelectedTaskType()))
         {
             // Skip settings page (not supported by task type)
             return getNextPage(nextPage);
