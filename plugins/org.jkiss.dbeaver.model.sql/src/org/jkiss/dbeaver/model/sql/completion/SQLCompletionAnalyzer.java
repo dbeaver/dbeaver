@@ -339,7 +339,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                                 sqlValue,
                                 sqlValue.length(),
                                 attrImage,
-                                DBPKeywordType.OTHER,
+                                DBPKeywordType.LITERAL,
                                 null,
                                 null));
                         }
