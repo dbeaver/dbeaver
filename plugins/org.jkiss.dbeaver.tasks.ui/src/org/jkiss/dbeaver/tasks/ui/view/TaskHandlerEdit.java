@@ -49,7 +49,7 @@ public class TaskHandlerEdit extends AbstractHandler {
                         TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event), wizard);
                         dialog.open();
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
                 }
             }
