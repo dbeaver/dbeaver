@@ -83,7 +83,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     public abstract void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state);
 
     public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null;
+        return getCurrentTask() != null && !getContainer().isEditMode();
     }
 
     public IStructuredSelection getCurrentSelection() {
@@ -287,41 +287,46 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     }
 
     public void createTaskSaveButtons(Composite parent, boolean horizontal, int hSpan) {
-        Composite panel = new Composite(parent, SWT.NONE);
-        if (parent.getLayout() instanceof GridLayout) {
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = hSpan;
-            panel.setLayoutData(gd);
-        }
-        boolean supportsVariables = getTaskType().supportsVariables();
-        panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
+        if (getContainer().isEditMode()) {
+            // Do not create save buttons
+            UIUtils.createEmptyLabel(parent, hSpan, 1);
+        } else {
+            Composite panel = new Composite(parent, SWT.NONE);
+            if (parent.getLayout() instanceof GridLayout) {
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = hSpan;
+                panel.setLayoutData(gd);
+            }
+            boolean supportsVariables = getTaskType().supportsVariables();
+            panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
 
-        if (supportsVariables) {
-            UIUtils.createDialogButton(panel, "Variables ...", new SelectionAdapter() {
+            if (supportsVariables) {
+                UIUtils.createDialogButton(panel, "Variables ...", new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        configureVariables();
+                    }
+                });
+            }
+
+            saveAsTaskButton = UIUtils.createDialogButton(panel, "Save task", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    configureVariables();
+                    saveTask();
                 }
             });
-        }
-
-        saveAsTaskButton = UIUtils.createDialogButton(panel, "Save task", new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                saveTask();
-            }
-        });
-        Link tasksLink = UIUtils.createLink(panel, "<a>Open Tasks view</a>", new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    UIUtils.getActiveWorkbenchWindow().getActivePage().showView(DatabaseTasksView.VIEW_ID);
-                } catch (PartInitException e1) {
-                    DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
+            Link tasksLink = UIUtils.createLink(panel, "<a>Open Tasks view</a>", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    try {
+                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView(DatabaseTasksView.VIEW_ID);
+                    } catch (PartInitException e1) {
+                        DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
+                    }
                 }
-            }
-        });
-        tasksLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            });
+            tasksLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        }
     }
 
     private void configureVariables() {
@@ -368,7 +373,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     @Override
     public IWizardPage getStartingPage() {
         IWizardPage startingPage = super.getStartingPage();
-        if (currentTask != null) {
+        if (getContainer().isEditMode()) {
             // Start from second page for task editor
             return getNextPage(startingPage);
         }
