@@ -20,10 +20,12 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -35,8 +37,6 @@ import org.jkiss.dbeaver.model.task.DBTTaskCategory;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -45,23 +45,18 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
 
 /**
  * Create task wizard page
  */
-class TaskConfigurationWizardPageTask extends ActiveWizardPage {
+class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfigurationWizard> {
     private static final Log log = Log.getLog(TaskConfigurationWizardPageTask.class);
 
     private final DBPProject selectedProject;
-    //private Combo taskTypeCombo;
     private Text taskLabelText;
     private Text taskDescriptionText;
     private Tree taskCategoryTree;
-
-    private Composite configPanelPlaceholder;
-    private DBTTaskConfigPanel taskConfigPanel;
 
     private DBTTaskCategory selectedCategory;
     private DBTTaskType selectedTaskType;
@@ -86,11 +81,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage {
             this.selectedCategory = selectedTaskType.getCategory();
         }
         this.selectedProject = NavigatorUtils.getSelectedProject();
-    }
-
-    @Override
-    public TaskConfigurationWizard getWizard() {
-        return (TaskConfigurationWizard) super.getWizard();
+        setPageComplete(false);
     }
 
     public DBTTaskCategory getSelectedCategory() {
@@ -122,27 +113,14 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage {
     public void createControl(Composite parent) {
         boolean taskSaved = task != null && !CommonUtils.isEmpty(task.getId());
 
-        SashForm formSash = new SashForm(parent, SWT.HORIZONTAL);
-        formSash.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite composite = UIUtils.createComposite(parent, 2);
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite formPanel = UIUtils.createControlGroup(formSash, "Task info", 2, GridData.FILL_BOTH, 0);
+            Composite formPanel = UIUtils.createControlGroup(composite, "Task type", task == null ? 1 : 2, GridData.FILL_BOTH, 0);
             formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            ModifyListener modifyListener = e -> updatePageCompletion();
-
-            taskLabelText = UIUtils.createLabelText(formPanel, "Name", task == null ? "" : CommonUtils.notEmpty(task.getName()), taskSaved ? SWT.NONE : SWT.BORDER);
-            if (taskSaved) {
-                taskLabelText.setEditable(false);
-                //taskLabelText.setEnabled(false);
-            }
-            taskLabelText.addModifyListener(e -> {
-                taskName = taskLabelText.getText();
-                modifyListener.modifyText(e);
-            });
-
             if (task == null) {
-                UIUtils.createControlLabel(formPanel, "Task").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
                 taskCategoryTree = new Tree(formPanel, SWT.BORDER | SWT.SINGLE);
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.heightHint = 100;
@@ -176,31 +154,14 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage {
                 taskCategoryTree.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseDoubleClick(MouseEvent e) {
-                        getWizard().getContainer().buttonPressed(IDialogConstants.NEXT_ID);
+                        if (canFlipToNextPage()) {
+                            getWizard().getContainer().buttonPressed(IDialogConstants.NEXT_ID);
+                        }
                     }
                 });
 
-/*
-                taskTypeCombo = UIUtils.createLabelCombo(formPanel, "Type", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-                taskTypeCombo.addModifyListener(modifyListener);
-                taskTypeCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        DBTTaskType newTaskType;
-                        if (taskTypeCombo.getSelectionIndex() >= 0) {
-                            newTaskType = taskTypes[taskTypeCombo.getSelectionIndex()];
-                        } else {
-                            newTaskType = null;
-                        }
-                        if (selectedTaskType == newTaskType) {
-                            return;
-                        }
-                        selectedTaskType = newTaskType;
-                        updateTaskTypeSelection();
-                    }
-                });
-*/
             } else {
+
                 UIUtils.createControlLabel(formPanel, "Category");
                 Composite catPanel = UIUtils.createComposite(formPanel, 2);
                 UIUtils.createLabel(catPanel, task.getType().getCategory().getIcon());
@@ -211,36 +172,46 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage {
                 UIUtils.createLabel(typePanel, task.getType().getIcon());
                 UIUtils.createLabel(typePanel, task.getType().getName());
             }
+        }
 
-            if (task != null && !CommonUtils.isEmpty(task.getId())) {
-                UIUtils.createLabelText(formPanel, "ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);
+        {
+            Composite formPanel = UIUtils.createControlGroup(composite, "Task info", 2, GridData.FILL_BOTH, 0);
+            formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            ModifyListener modifyListener = e -> updatePageCompletion();
+
+            taskLabelText = UIUtils.createLabelText(formPanel, "Name", task == null ? "" : CommonUtils.notEmpty(task.getName()), SWT.BORDER);
+            if (taskSaved) {
+                taskLabelText.setEditable(false);
+                //taskLabelText.setEnabled(false);
             }
+            taskLabelText.addModifyListener(e -> {
+                taskName = taskLabelText.getText();
+                modifyListener.modifyText(e);
+            });
 
             UIUtils.createControlLabel(formPanel, "Description").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             taskDescriptionText = new Text(formPanel, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
             taskDescriptionText.setText(task == null ? "" : CommonUtils.notEmpty(task.getDescription()));
             taskDescriptionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            ((GridData) taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 3;
+            ((GridData) taskDescriptionText.getLayoutData()).heightHint = taskDescriptionText.getLineHeight() * 6;
             taskDescriptionText.addModifyListener(e -> {
                 taskDescription = taskDescriptionText.getText();
                 modifyListener.modifyText(e);
             });
 
+            if (task != null && !CommonUtils.isEmpty(task.getId())) {
+                UIUtils.createLabelText(formPanel, "Task ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);
+            }
+
             UIUtils.asyncExec(() -> (taskSaved ? taskDescriptionText : taskLabelText).setFocus());
         }
-        {
-            configPanelPlaceholder = UIUtils.createComposite(formSash, 1);
-            if (task != null)
-                updateTaskTypeSelection();
-        }
-        formSash.setWeights(new int[]{500, 500});
 
-        setControl(formSash);
+        setPageComplete(determinePageCompletion());
+        setControl(composite);
     }
 
     private void updateTaskTypeSelection() {
-        UIUtils.disposeChildControls(configPanelPlaceholder);
-        taskConfigPanel = null;
         if (task != null && selectedTaskType != null) {
             if (task.getType() != selectedTaskType) {
                 task.setType(selectedTaskType);
@@ -248,35 +219,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage {
             }
         }
 
-        if (selectedTaskType != null && TaskUIRegistry.getInstance().supportsConfigurator(selectedTaskType)) {
-            try {
-                DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(selectedTaskType);
-                DBTTaskConfigPanel configPage = configurator.createInputConfigurator(UIUtils.getDefaultRunnableContext(), selectedTaskType);
-                if (configPage != null) {
-                    taskConfigPanel = configPage;
-                    taskConfigPanel.createControl(configPanelPlaceholder, getTaskWizard(), this::updatePageCompletion);
-                    if (task != null) {
-                        taskConfigPanel.loadSettings();
-                    }
-                } else {
-                    // Something weird was created
-                    UIUtils.disposeChildControls(configPanelPlaceholder);
-                }
-            } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Task configurator error", "Error creating task configuration UI", e);
-            }
-        }
-        if (taskConfigPanel == null) {
-            Group group = UIUtils.createControlGroup(configPanelPlaceholder, "", 1, GridData.FILL_BOTH, 0);
-            group.setLayoutData(new GridData(GridData.FILL_BOTH));
-            Label emptyLabel = new Label(group, SWT.NONE);
-            emptyLabel.setText(selectedTaskType == null ?
-                (selectedCategory == null ? "Select a task type" : "Select " + selectedCategory.getName() + " task type") : "No configuration");
-            GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER);
-            gd.grabExcessHorizontalSpace = true;
-            gd.grabExcessVerticalSpace = true;
-            emptyLabel.setLayoutData(gd);
-        }
         updatePageCompletion();
         getShell().layout(true, true);
         getWizard().getContainer().updateButtons();
@@ -298,7 +240,9 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage {
     }
 
     private void addTaskTypes(TreeItem parentItem, DBTTaskCategory category) {
-        for (DBTTaskType type : category.getTaskTypes()) {
+        DBTTaskType[] taskTypes = category.getTaskTypes();
+        Arrays.sort(taskTypes, Comparator.comparing(DBTTaskType::getName));
+        for (DBTTaskType type : taskTypes) {
             TreeItem item = new TreeItem(parentItem, SWT.NONE);
             item.setText(type.getName());
             if (type.getIcon() != null) {
@@ -314,17 +258,8 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage {
             setErrorMessage("Enter task name (unique)");
             return false;
         }
-        if (selectedTaskType == null || taskConfigPanel == null) {
+        if (selectedTaskType == null) {
             setErrorMessage("Enter task type");
-            return false;
-        }
-        if (!taskConfigPanel.isComplete()) {
-            String errorMessage = taskConfigPanel.getErrorMessage();
-            if (errorMessage != null) {
-                setErrorMessage(errorMessage);
-            } else {
-                setErrorMessage("Fill task '" + selectedTaskType.getName() + "' parameters");
-            }
             return false;
         }
         setErrorMessage(null);
@@ -350,7 +285,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage {
                 null : activePart.getSite().getSelectionProvider().getSelection();
             realWizard.setContainer(getContainer());
             realWizard.init(workbenchWindow.getWorkbench(), selection instanceof IStructuredSelection ? (IStructuredSelection) selection : null);
-            taskConfigPanel.saveSettings();
 
             taskWizards.put(selectedTaskType, realWizard);
         }
@@ -362,9 +296,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage {
             task.setName(taskLabelText.getText());
             task.setDescription(taskDescriptionText.getText());
             task.setType(selectedTaskType);
-            if (taskConfigPanel != null) {
-                taskConfigPanel.saveSettings();
-            }
         }
     }
 

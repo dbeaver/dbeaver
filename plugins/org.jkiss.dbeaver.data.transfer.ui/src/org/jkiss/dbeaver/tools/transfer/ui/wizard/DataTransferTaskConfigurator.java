@@ -109,7 +109,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             boolean isExport = isExport();
 
             Group group = UIUtils.createControlGroup(
-                (Composite) parent,
+                parent,
                 (DTConstants.TASK_EXPORT.equals(taskType.getId()) ? "Export tables" : "Import into"),
                 1,
                 GridData.FILL_BOTH,

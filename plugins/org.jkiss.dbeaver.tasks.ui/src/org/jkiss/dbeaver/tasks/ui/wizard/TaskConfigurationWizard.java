@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
@@ -135,17 +136,35 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         addTaskConfigPages();
     }
 
+    protected boolean isTaskConfigPage(IWizardPage page) {
+        return page instanceof TaskConfigurationWizardPageTask || page instanceof TaskConfigurationWizardPageSettings;
+    }
+
     protected void addTaskConfigPages() {
         // If we are in task edit mode then add special first page.
         // Do not add it if this is an ew task wizard (because this page is added separately)
         if (isCurrentTaskSaved()) {
             // Task editor. Add first page
             addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
+            addPage(new TaskConfigurationWizardPageSettings(getCurrentTask()));
         }
     }
 
     public boolean isCurrentTaskSaved() {
         return getCurrentTask() != null && getCurrentTask().getProject().getTaskManager().getTaskById(getCurrentTask().getId()) != null;
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        IWizardPage nextPage = super.getNextPage(page);
+        if (nextPage instanceof TaskConfigurationWizardPageSettings &&
+            page instanceof TaskConfigurationWizardPageTask &&
+            !TaskUIRegistry.getInstance().supportsConfigurator(((TaskConfigurationWizardPageTask) page).getSelectedTaskType()))
+        {
+            // Skip settings page (not supported by task type)
+            return getNextPage(nextPage);
+        }
+        return nextPage;
     }
 
     @Override

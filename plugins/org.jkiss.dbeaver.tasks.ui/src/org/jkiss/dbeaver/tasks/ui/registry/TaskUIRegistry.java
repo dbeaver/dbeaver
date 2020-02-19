@@ -67,6 +67,14 @@ public class TaskUIRegistry {
         return taskConfigurators.containsKey(taskType);
     }
 
+    public boolean supportsConfiguratorPage(DBTTaskType type) {
+        TaskConfiguratorDescriptor configuratorDescriptor = taskConfigurators.get(type);
+        if (configuratorDescriptor != null) {
+            return configuratorDescriptor.supportsPanel();
+        }
+        return false;
+    }
+
     public DBTTaskConfigurator createConfigurator(DBTTaskType taskType) throws DBCException {
         TaskConfiguratorDescriptor configuratorDescriptor = taskConfigurators.get(taskType);
         if (configuratorDescriptor == null) {
