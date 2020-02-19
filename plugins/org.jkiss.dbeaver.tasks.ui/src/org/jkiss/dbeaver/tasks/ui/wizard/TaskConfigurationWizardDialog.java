@@ -95,9 +95,9 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.NEXT_ID &&
             getWizard() instanceof TaskConfigurationWizardStub &&
-            getCurrentPage() instanceof TaskConfigurationWizardPageTask)
+            ((TaskConfigurationWizardStub)getWizard()).isLastTaskPreconfigPage(getCurrentPage()))
         {
-            taskEditPage = (TaskConfigurationWizardPageTask) getCurrentPage();
+            taskEditPage = getTaskPage();
             try {
                 TaskConfigurationWizard nextTaskWizard = taskEditPage.getTaskWizard();
                 if (nextTaskWizard != nestedTaskWizard) {
