@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.Nullable;
@@ -63,11 +64,13 @@ public class DatabaseTasksTree {
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
     private final Color colorError;
 
-    public DatabaseTasksTree(Composite composite) {
+    public DatabaseTasksTree(Composite composite, boolean selector) {
         ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
         colorError = colorRegistry.get("org.jkiss.dbeaver.txn.color.reverted.background");
 
-        FilteredTree filteredTree = new FilteredTree(composite, SWT.MULTI | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true);
+        FilteredTree filteredTree = new FilteredTree(composite,
+            SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
+            new NamedObjectPatternFilter(), true);
         filteredTree.setInitialText("Tasks: type a part of task name here");
         taskViewer = filteredTree.getViewer();
         Tree taskTree = taskViewer.getTree();
@@ -371,7 +374,9 @@ public class DatabaseTasksTree {
                 }
             }
         });
-        return new ArrayList<>(types);
+        List<DBTTaskType> sortedTypes = new ArrayList<>(types);
+        sortedTypes.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+        return sortedTypes;
     }
 
     private void refreshTasks() {
@@ -408,6 +413,25 @@ public class DatabaseTasksTree {
             return true;
         }
         return false;
+    }
+
+    public List<DBTTask> getCheckedTasks() {
+        List<DBTTask> tasks = new ArrayList<>();
+        for (TreeItem item : taskViewer.getTree().getItems()) {
+            addCheckedItem(item, tasks);
+        }
+        return tasks;
+    }
+
+    private void addCheckedItem(TreeItem item, List<DBTTask> tasks) {
+        if (item.getChecked()) {
+            if (item.getData() instanceof DBTTask) {
+                tasks.add((DBTTask) item.getData());
+            }
+        }
+        for (TreeItem child : item.getItems()) {
+            addCheckedItem(child, tasks);
+        }
     }
 
     private class TreeListContentProvider implements ITreeContentProvider {

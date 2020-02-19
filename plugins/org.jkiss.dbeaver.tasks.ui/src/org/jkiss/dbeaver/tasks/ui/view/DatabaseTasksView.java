@@ -99,7 +99,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     private void createTaskTree(Composite composite) {
-        tasksTree = new DatabaseTasksTree(composite);
+        tasksTree = new DatabaseTasksTree(composite, false);
 
         MenuManager menuMgr = createTaskContextMenu(tasksTree.getViewer());
         getSite().registerContextMenu(TASKS_VIEW_MENU_ID, menuMgr, tasksTree.getViewer());
