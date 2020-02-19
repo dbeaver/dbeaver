@@ -24,6 +24,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorPart;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
@@ -50,7 +52,7 @@ import java.util.Locale;
 /**
  * SQL Completion proposal
  */
-public class SQLCompletionProposal extends SQLCompletionProposalBase implements ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension4, ICompletionProposalExtension5 {
+public class SQLCompletionProposal extends SQLCompletionProposalBase implements ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension4, ICompletionProposalExtension5, ICompletionProposalExtension6 {
 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
 
@@ -233,4 +235,21 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
         return true;
     }
 
+    @Override
+    public StyledString getStyledDisplayString() {
+        if (getProposalType() == DBPKeywordType.LITERAL) {
+            StyledString styledString = new StyledString();
+            styledString.append(getDisplayString(),
+                StyledString.createColorRegistryStyler(SQLConstants.CONFIG_COLOR_STRING, null));
+            return styledString;
+        } else if (getProposalType() == DBPKeywordType.KEYWORD) {
+            return new StyledString(getDisplayString(),
+                StyledString.createColorRegistryStyler(SQLConstants.CONFIG_COLOR_KEYWORD, null));
+        } else if (getProposalType() == DBPKeywordType.FUNCTION) {
+            return new StyledString(getDisplayString(),
+                StyledString.createColorRegistryStyler(SQLConstants.CONFIG_COLOR_DATATYPE, null));
+        } else {
+            return new StyledString(getDisplayString());
+        }
+    }
 }
