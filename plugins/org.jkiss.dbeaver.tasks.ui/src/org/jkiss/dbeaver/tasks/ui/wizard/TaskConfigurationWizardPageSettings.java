@@ -42,7 +42,7 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
     TaskConfigurationWizardPageSettings(DBTTask task) {
         super(task == null ? "Create new task" : "Edit task");
 
-        setPageComplete(false);
+        setPageComplete(true);
     }
 
     @Override
@@ -55,7 +55,7 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
 
     @Override
     protected boolean determinePageCompletion() {
-        if (!taskConfigPanel.isComplete()) {
+        if (taskConfigPanel != null && !taskConfigPanel.isComplete()) {
             String errorMessage = taskConfigPanel.getErrorMessage();
             if (errorMessage != null) {
                 setErrorMessage(errorMessage);
