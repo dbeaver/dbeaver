@@ -634,10 +634,15 @@ public class DatabaseTasksTree {
                     List<DBTTask> tasks = new ArrayList<>();
                     StringBuilder buf = new StringBuilder();
                     for (Object nextSelected : selection.toArray()) {
-                        if (!(nextSelected instanceof DBTTask)) {
+                        DBTTask task = null;
+                        if (nextSelected instanceof DBTTask) {
+                            task  = (DBTTask) nextSelected;
+                        } else if (nextSelected instanceof DBTTaskReference) {
+                            task = ((DBTTaskReference) nextSelected).getTask();
+                        }
+                        if (task == null) {
                             continue;
                         }
-                        DBTTask task = (DBTTask) nextSelected;
                         tasks.add(task);
                         String taskName = task.getName();
                         if (buf.length() > 0) {
