@@ -46,8 +46,11 @@ public class StreamTransferResultSet implements DBCResultSet {
     private final DBCStatement statement;
     private StreamProducerSettings.EntityMapping entityMapping;
     private List<DBCAttributeMetaData> metaAttrs;
+    // Stream row: values in source attributes order
     private Object[] streamRow;
     private final List<StreamProducerSettings.AttributeMapping> attributeMappings;
+    // Maps target attributes indexes to source attributes indexes
+    // (not indexes in source data, it is controlled by AttributeMapping.sourceAttributeIndex)
     private final int[] targetToSourceMap;
     private DateTimeFormatter dateTimeFormat;
 
@@ -91,7 +94,7 @@ public class StreamTransferResultSet implements DBCResultSet {
             return attr.getDefaultValue();
         }
 
-        Object value = streamRow[sourceIndex];
+        Object value = streamRow[attr.getSourceAttributeIndex()];
         if (value != null && dateTimeFormat != null && attr.getTargetAttribute() != null && attr.getTargetAttribute().getDataKind() == DBPDataKind.DATETIME) {
             // Convert string to timestamp
             try {

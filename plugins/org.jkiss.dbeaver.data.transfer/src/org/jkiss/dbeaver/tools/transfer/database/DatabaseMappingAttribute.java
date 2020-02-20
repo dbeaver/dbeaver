@@ -238,6 +238,6 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     @Override
     public String toString() {
-        return DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
+        return source.getName();
     }
 }
