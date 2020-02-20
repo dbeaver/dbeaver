@@ -58,7 +58,7 @@ public class SQLGeneratorDDL extends SQLGenerator<DBPScriptObject> {
         } catch (DBException e) {
             throw new InvocationTargetException(e);
         }
-        result = sql.toString();
+        result = sql.toString().trim();
     }
 
     @Override
