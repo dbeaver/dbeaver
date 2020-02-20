@@ -32,9 +32,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public abstract class AbstractPopupPanel extends Dialog {
 
-
     private final String title;
     private boolean modeless;
+    private static boolean popupOpen;
+
+    public static boolean isPopupOpen() {
+        return popupOpen;
+    }
 
     protected AbstractPopupPanel(Shell parentShell, String title)
     {
@@ -66,6 +70,16 @@ public abstract class AbstractPopupPanel extends Dialog {
     }
 
     @Override
+    public int open() {
+        popupOpen = true;
+        try {
+            return super.open();
+        } finally {
+            popupOpen = false;
+        }
+    }
+
+    @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(title);
@@ -85,7 +99,7 @@ public abstract class AbstractPopupPanel extends Dialog {
                 @Override
                 public void focusLost(FocusEvent e) {
                     UIUtils.asyncExec(() -> {
-                        handleFocusLost();
+                        handleFocusLost(e);
                     });
                 }
             };
@@ -98,7 +112,7 @@ public abstract class AbstractPopupPanel extends Dialog {
 
     }
 
-    private void handleFocusLost() {
+    private void handleFocusLost(FocusEvent e) {
         Shell shell = getShell();
         if (shell != null) {
             Control focusControl = shell.getDisplay().getFocusControl();

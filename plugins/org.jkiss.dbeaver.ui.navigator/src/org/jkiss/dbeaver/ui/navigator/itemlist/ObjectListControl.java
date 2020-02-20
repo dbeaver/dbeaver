@@ -188,7 +188,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         GridData gd = new GridData(GridData.FILL_BOTH);
         itemsViewer.getControl().setLayoutData(gd);
         //PropertiesContributor.getInstance().addLazyListener(this);
-        ColumnViewerToolTipSupport.enableFor(itemsViewer);
+        new DefaultViewerToolTipSupport(itemsViewer);
 
         // Add selection listener
         itemsViewer.addSelectionChangedListener(event -> {
