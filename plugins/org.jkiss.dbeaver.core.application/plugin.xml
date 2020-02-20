@@ -49,7 +49,7 @@
             <property name="startupForegroundColor" value="000000"/>
             <property name="versionInfoCoord" value="155,265"/>
             <property name="versionInfoSize" value="12"/>
-            <property name="versionInfoColor" value="0,0,0"/>
+            <property name="versionInfoColor" value="100,100,100"/>
             <property name="startupMessageRect" value="323,270,242,25"/>
             <property name="startupProgressRect" value="323,255,242,10"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
@@ -73,7 +73,7 @@
             <property name="startupForegroundColor" value="000000"/>
             <property name="versionInfoCoord" value="155,265"/>
             <property name="versionInfoSize" value="12"/>
-            <property name="versionInfoColor" value="0,0,0"/>
+            <property name="versionInfoColor" value="100,100,100"/>
             <property name="startupMessageRect" value="323,270,242,25"/>
             <property name="startupProgressRect" value="323,255,242,10"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
