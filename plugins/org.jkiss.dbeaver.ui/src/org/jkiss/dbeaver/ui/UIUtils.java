@@ -1969,6 +1969,22 @@ public class UIUtils {
     public static boolean isDark(RGB rgb) {
         return greyLevel(rgb) < 128;
     }
+    
+    /**
+     * Calculate the Contrast color based on Luma(brightness)
+     * https://en.wikipedia.org/wiki/Luma_(video)
+     */
+    public static Color getContrastColor(Color color)
+    {
+    	if(color == null)
+    		return new Color(null,0,0,0);
+    	
+    	double luminance = 1 - ( 0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
+
+        int c = (luminance > 0.5) ? 255 : 0;
+
+        return new Color(null,c,c,c);    	
+    }  
 
     public static void openWebBrowser(String url)
     {
