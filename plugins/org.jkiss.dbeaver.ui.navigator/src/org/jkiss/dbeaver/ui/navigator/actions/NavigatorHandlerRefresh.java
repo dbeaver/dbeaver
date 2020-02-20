@@ -146,9 +146,9 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                         node = node.getParentNode();
                     }
 
-                    if (!showConfirmation(node)) {
-                        continue;
-                    }
+//                    if (!showConfirmation(node)) {
+//                        continue;
+//                    }
                     setName("Refresh '" + node.getNodeName() + "'...");
                     try {
                         DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
