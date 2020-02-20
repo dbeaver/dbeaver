@@ -28,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -163,7 +164,18 @@ public class EntityFigure extends Figure {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
         }
         setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
-        nameLabel.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
+        setNameLabelColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));    
+    }
+    
+    private void setNameLabelColor(Color fallbackColor)
+    {
+        EntityDiagram diagram = part.getDiagram();        
+        EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(part.getEntity().getObject());
+        
+        if(visualInfo == null || visualInfo.bgColor == null)
+        	nameLabel.setForegroundColor(fallbackColor);
+        else
+	        nameLabel.setForegroundColor(UIUtils.getContrastColor(visualInfo.bgColor));
     }
 
     public void setSelected(boolean isSelected)
