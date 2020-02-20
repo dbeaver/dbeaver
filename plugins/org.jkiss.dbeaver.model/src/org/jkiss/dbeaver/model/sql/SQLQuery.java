@@ -28,10 +28,7 @@ import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -132,15 +129,25 @@ public class SQLQuery implements SQLScriptElement {
             statement = CCJSqlParserUtil.parse(text);
             if (statement instanceof Select) {
                 type = SQLQueryType.SELECT;
-                // Detect single source table
+                // Detect single source table (no joins, no group by, no sub-selects)
                 SelectBody selectBody = ((Select) statement).getSelectBody();
                 if (selectBody instanceof PlainSelect) {
                     PlainSelect plainSelect = (PlainSelect) selectBody;
                     if (plainSelect.getFromItem() instanceof Table &&
                         CommonUtils.isEmpty(plainSelect.getJoins()) &&
                         (plainSelect.getGroupBy() == null || CommonUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressions())) &&
-                        CommonUtils.isEmpty(plainSelect.getIntoTables())) {
-                        fillSingleSource((Table) plainSelect.getFromItem());
+                        CommonUtils.isEmpty(plainSelect.getIntoTables()))
+                    {
+                        boolean hasSubSelects = false;
+                        for (SelectItem si : plainSelect.getSelectItems()) {
+                            if (si instanceof SelectExpressionItem && ((SelectExpressionItem) si).getExpression() instanceof SubSelect) {
+                                hasSubSelects = true;
+                                break;
+                            }
+                        }
+                        if (!hasSubSelects) {
+                            fillSingleSource((Table) plainSelect.getFromItem());
+                        }
                     }
                     // Extract select items info
                     final List<SelectItem> items = plainSelect.getSelectItems();
