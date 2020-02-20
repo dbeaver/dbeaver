@@ -1085,6 +1085,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private void toggleBooleanValue(DBDAttributeBinding attr, ResultSetRow row, Object value) {
         boolean nullable = !attr.isRequired();
+        if (value instanceof Number) {
+            value = ((Number) value).byteValue() != 0;
+        }
         if (Boolean.TRUE.equals(value)) {
             value = false;
         } else if (Boolean.FALSE.equals(value)) {
@@ -1705,6 +1708,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (isShowAsCheckbox(attr)) {
                 ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
                 Object cellValue = controller.getModel().getCellValue(attr, row);
+                if (cellValue instanceof Number) {
+                    cellValue = ((Number) cellValue).byteValue() != 0;
+                }
                 if (cellValue instanceof Boolean) {
                     if ((Boolean)cellValue) {
                         return UIIcon.CHECK_ON;
@@ -1901,7 +1907,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
-        return showBooleanAsCheckbox && attr.getDataKind() == DBPDataKind.BOOLEAN;
+        return showBooleanAsCheckbox && attr.getPresentationAttribute().getDataKind() == DBPDataKind.BOOLEAN;
     }
 
     private class GridLabelProvider implements IGridLabelProvider {
