@@ -90,6 +90,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         private ColumnMapping(DBDAttributeBinding sourceAttr) {
             this.sourceAttr = sourceAttr;
         }
+
+        @Override
+        public String toString() {
+            return sourceAttr + "->" + targetAttr;
+        }
     }
 
     public DatabaseTransferConsumer() {
