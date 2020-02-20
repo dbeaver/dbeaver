@@ -137,7 +137,9 @@ public final class DBStructUtils {
         if (ArrayUtils.isEmpty(singleLineComments)) {
             return "";
         }
-        return singleLineComments[0].trim() + " " + DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL) + " " + comment + GeneralUtils.getDefaultLineSeparator();
+        String lf = GeneralUtils.getDefaultLineSeparator();
+        return singleLineComments[0].trim() + " " + DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL) +
+            " " + comment + lf + lf;
     }
 
     private static void addDDLLine(StringBuilder sql, String ddl) {
@@ -147,8 +149,8 @@ public final class DBStructUtils {
             if (!ddl.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                 sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
             }
-            sql.append(GeneralUtils.getDefaultLineSeparator());
-            sql.append(GeneralUtils.getDefaultLineSeparator());
+            String lf = GeneralUtils.getDefaultLineSeparator();
+            sql.append(lf).append(lf).append(lf);
         }
     }
 
