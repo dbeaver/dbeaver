@@ -14,21 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 13, 2004
- */
 package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -156,6 +151,7 @@ public class EntityFigure extends Figure {
     public void refreshColors() {
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
+        setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
         if (part.getEntity().isPrimary()) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_PRIMARY_BACKGROUND));
         } else if (part.getEntity().getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
@@ -163,19 +159,21 @@ public class EntityFigure extends Figure {
         } else {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
         }
-        setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
-        setNameLabelColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));    
     }
-    
-    private void setNameLabelColor(Color fallbackColor)
-    {
-        EntityDiagram diagram = part.getDiagram();        
-        EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(part.getEntity().getObject());
+
+    public void updateTitleForegroundColor() {
+        Color bgColor = getBackgroundColor();
         
-        if(visualInfo == null || visualInfo.bgColor == null)
-        	nameLabel.setForegroundColor(fallbackColor);
+        if(bgColor == null)
+        	nameLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
         else
-	        nameLabel.setForegroundColor(UIUtils.getContrastColor(visualInfo.bgColor));
+	        nameLabel.setForegroundColor(UIUtils.getContrastColor(bgColor));
+    }
+
+    @Override
+    public void setBackgroundColor(Color bg) {
+        super.setBackgroundColor(bg);
+        updateTitleForegroundColor();
     }
 
     public void setSelected(boolean isSelected)
