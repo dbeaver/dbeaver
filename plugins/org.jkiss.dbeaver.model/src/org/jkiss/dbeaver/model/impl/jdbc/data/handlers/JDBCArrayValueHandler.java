@@ -52,7 +52,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, null);
@@ -87,7 +87,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
                 throw new DBCException("Can't determine component data type from " + dataType.getFullTypeName());
             }
             Array array = ((JDBCSession) session).createArrayOf(componentType.getFullTypeName(), new Object[0]);
-            return getValueFromObject(session, type, array, false);
+            return getValueFromObject(session, type, array, false, false);
         } catch (Exception e) {
             throw new DBCException("Error creating JDBC array " + type.getFullTypeName());
         }

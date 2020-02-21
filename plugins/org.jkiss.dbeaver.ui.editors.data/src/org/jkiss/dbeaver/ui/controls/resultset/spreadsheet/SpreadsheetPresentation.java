@@ -577,7 +577,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                                 continue;
                             }
                             Object newValue = attr.getValueHandler().getValueFromObject(
-                                session, attr.getAttribute(), value, true);
+                                session, attr.getAttribute(), value, true, false);
                             new SpreadsheetValueController(
                                 controller,
                                 attr,

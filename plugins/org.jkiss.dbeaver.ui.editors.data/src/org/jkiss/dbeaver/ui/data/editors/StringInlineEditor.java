@@ -98,7 +98,7 @@ public class StringInlineEditor extends BaseValueEditor<Control> {
                 session,
                 valueController.getValueType(),
                 text,
-                false);
+                false, false);
         }
     }
 }

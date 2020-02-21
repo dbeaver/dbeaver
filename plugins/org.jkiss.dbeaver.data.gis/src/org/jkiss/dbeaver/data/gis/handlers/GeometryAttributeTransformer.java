@@ -73,21 +73,22 @@ public class GeometryAttributeTransformer implements DBDAttributeTransformer {
             this.srid = srid;
         }
 
+        @NotNull
         @Override
-        public Class<?> getValueObjectType(DBSTypedObject attribute) {
+        public Class<?> getValueObjectType(@NotNull DBSTypedObject attribute) {
             return realHandler.getValueObjectType(attribute);
         }
 
         @Override
-        public Object fetchValueObject(DBCSession session, DBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException {
+        public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
             Object object = super.fetchValueObject(session, resultSet, type, index);
-            return getValueFromObject(session, type, object, false);
+            return getValueFromObject(session, type, object, false, false);
         }
 
         @Nullable
         @Override
-        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
-            return realHandler.getValueFromObject(session, type, object, copy);
+        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
+            return realHandler.getValueFromObject(session, type, object, copy, false);
         }
 
     }

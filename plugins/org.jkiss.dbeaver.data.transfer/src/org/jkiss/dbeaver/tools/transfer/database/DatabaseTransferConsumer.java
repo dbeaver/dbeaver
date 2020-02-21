@@ -222,7 +222,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 targetSession,
                 targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
                 attrValue,
-                false);
+                false, false);
         }
         executeBatch.add(rowValues);
 

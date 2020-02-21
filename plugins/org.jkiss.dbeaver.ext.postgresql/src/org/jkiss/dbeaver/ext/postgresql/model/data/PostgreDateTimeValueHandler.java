@@ -48,7 +48,7 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @Override
-    public void bindValueObject(DBCSession session, DBCStatement statement, DBSTypedObject type, int index, Object value) throws DBCException {
+    public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, Object value) throws DBCException {
         if (value instanceof String) {
             try {
                 ((JDBCPreparedStatement)statement).setObject(index + 1, value.toString(), Types.OTHER);

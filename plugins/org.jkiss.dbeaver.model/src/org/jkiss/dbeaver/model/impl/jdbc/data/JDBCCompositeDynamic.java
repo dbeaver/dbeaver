@@ -66,7 +66,7 @@ public class JDBCCompositeDynamic extends JDBCComposite {
                     for (int i = 0; i < attrCount; i++) {
                         Object value = attrValues[i];
                         StructAttribute attr = new StructAttribute(this.type, metaData, i);
-                        value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false);
+                        value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false, modified);
                         attributes[i] = attr;
                         values[i] = value;
                     }
@@ -75,7 +75,7 @@ public class JDBCCompositeDynamic extends JDBCComposite {
                     for (int i = 0, attrValuesLength = attrValues.length; i < attrValuesLength; i++) {
                         Object value = attrValues[i];
                         StructAttribute attr = new StructAttribute(this.type, i, value);
-                        value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false);
+                        value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false, modified);
                         attributes[i] = attr;
                         values[i] = value;
                     }

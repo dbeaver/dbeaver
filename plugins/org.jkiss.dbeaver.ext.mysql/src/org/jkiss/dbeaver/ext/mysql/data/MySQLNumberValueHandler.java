@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
@@ -59,8 +60,7 @@ public class MySQLNumberValueHandler extends JDBCNumberValueHandler {
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
-                                 int paramIndex, Object value) throws SQLException
-    {
+                                 int paramIndex, Object value) throws SQLException, DBCException {
         if (value instanceof String) {
             String strValue = (String) value;
             if (paramType.getTypeID() == Types.BIT) {

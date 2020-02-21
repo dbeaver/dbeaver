@@ -103,7 +103,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
             // We need to convert only in case of some value transformations, not when getting it from DB
             return new JDBCContentChars(session.getDataSource(), (String) value);
         }
-        return getValueFromObject(session, type, value, false);
+        return getValueFromObject(session, type, value, false, false);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
     }
 
     @Override
-    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             // Create wrapper using column type
