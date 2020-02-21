@@ -29,7 +29,7 @@ You can download prebuilt binaries from <a href="https://dbeaver.io/download" ta
 DBeaver requires Java (JRE) 1.8+ to run.
 
 * <b>Windows</b> and <b>MacOS X</b> installers include JRE so just use them and don't think about internals.
-* On <b>Linux</b> you may need to install Java manually (usually by running `sudo apt-get install default-jre` or something similar).
+* On <b>Linux</b> you may need to install Java manually (usually by running `sudo apt-get install openjdk-11-jdk` or something similar).
 * If you don't use installer (on Windows or Mac OS X) you may need to download Java (JDK) from <a href="https://adoptopenjdk.net/" target="_blank">Adopt OpenJDK web site</a>.
 
 ## Documentation
