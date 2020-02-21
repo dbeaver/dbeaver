@@ -847,7 +847,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return;
         }
 
-        if (isDirty()) {
+        if (force && isDirty()) {
             if (ConfirmationDialog.showConfirmDialog(
                 ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
                 null,
