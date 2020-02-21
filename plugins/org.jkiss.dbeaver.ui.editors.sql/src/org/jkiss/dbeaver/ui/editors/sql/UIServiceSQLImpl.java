@@ -231,4 +231,9 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     public void openResource(IResource element) {
         SQLEditorHandlerOpenEditor.openResource(element, new SQLNavigatorContext());
     }
+
+    @Override
+    public boolean useIsolatedConnections(DBPContextProvider contextProvider) {
+        return contextProvider.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
+    }
 }
