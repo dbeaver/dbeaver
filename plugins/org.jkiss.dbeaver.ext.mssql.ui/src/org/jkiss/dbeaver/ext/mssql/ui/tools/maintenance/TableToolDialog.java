@@ -1,12 +1,5 @@
 package org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance;
 
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
@@ -23,6 +16,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.GenerateMultiSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLScriptProgressListener;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLScriptStatusDialog;
+
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class TableToolDialog extends GenerateMultiSQLDialog<SQLServerObject> {
 
@@ -76,16 +76,6 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<SQLServerOb
                         // ignore
                     }
                     treeItem.setExpanded(true);
-                }
-            }
-            @Override
-            public void endObjectProcessing(@NotNull SQLServerObject object, Exception error) {
-                super.endObjectProcessing(object, error);
-                if (error != null) {
-                    TreeItem treeItem = getTreeItem(object);
-                    if (treeItem != null) {
-                        treeItem.setText(1, error.getMessage());
-                    }
                 }
             }
         };
