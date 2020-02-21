@@ -1035,16 +1035,18 @@
 
                 <driver
                         id="omnisci_mapd"
-                        label="MapD"
-                        icon="icons/mapd_icon.png"
-                        iconBig="icons/mapd_icon_big.png"
-                        class="com.mapd.jdbc.MapDDriver"
-                        sampleURL="jdbc:mapd:{host}:{port}:{database}"
-                        defaultPort="9092"
-                        description="OmniSci MapD GPU SQL Analytics Engine"
-                        webURL="https://www.omnisci.com/docs/v4.0.0/6_jdbc.html"
+                        label="OmniSci (formerly MapD)"
+                        icon="icons/omnisci_icon.png"
+                        iconBig="icons/omnisci_icon_big.png"
+                        class="com.omnisci.jdbc.OmniSciDriver"
+                        sampleURL="jdbc:omnisci:{host}:{port}:{database}"
+                        defaultPort="6274"
+                        description="OmniSci (formerly MapD) SQL Analytics Engine"
+                        webURL="https://docs.omnisci.com/v5.1.1/6_jdbc.html"
                         categories="analytics,sql">
-                </driver>
+                    <file type="jar" path="maven:/com.omnisci:omnisci-jdbc:RELEASE"/>
+                 </driver>
+
 
                 <!-- CrateDB -->
 
