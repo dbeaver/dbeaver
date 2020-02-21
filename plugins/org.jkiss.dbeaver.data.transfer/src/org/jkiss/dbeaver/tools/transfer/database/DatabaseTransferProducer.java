@@ -165,6 +165,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 }
 
                 try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
+                    Boolean oldAutoCommit = null;
                     try {
                         AbstractExecutionSource transferSource = new AbstractExecutionSource(dataContainer, context, consumer);
                         session.enableLogging(false);
@@ -175,6 +176,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             try {
                                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
                                 if (txnManager != null) {
+                                    oldAutoCommit = txnManager.isAutoCommit();
                                     txnManager.setAutoCommit(monitor, false);
                                 }
                             } catch (DBCException e) {
@@ -235,8 +237,15 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             if (txnManager != null) {
                                 try {
                                     txnManager.commit(session);
-                                } catch (DBCException e) {
+                                } catch (Exception e) {
                                     log.error("Can't finish transaction in data producer connection", e);
+                                }
+                                if (oldAutoCommit != null) {
+                                    try {
+                                        txnManager.setAutoCommit(session.getProgressMonitor(), oldAutoCommit);
+                                    } catch (Exception e) {
+                                        log.error("Can't finish transaction in data producer connection", e);
+                                    }
                                 }
                             }
                         }

@@ -86,11 +86,12 @@ public interface DBDValueHandler extends DBDValueRenderer
      * @param type attribute type
      * @param object source object
      * @param copy copy object
+     * @param validateValue if true then input value will be validated and exception will be thrown on error (e.g. when number cannot be parsed). Otherwise invalid object value will be converted to null.
      * @return initial object value
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
     @Nullable
-    Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy)
+    Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue)
         throws DBCException;
 
     /**

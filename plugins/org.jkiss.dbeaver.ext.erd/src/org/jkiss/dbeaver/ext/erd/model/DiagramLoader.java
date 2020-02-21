@@ -301,7 +301,7 @@ public class DiagramLoader
                     if (!CommonUtils.isEmpty(attrVis)) {
                         visualInfo.attributeVisibility = ERDAttributeVisibility.valueOf(attrVis);
                     }
-                    loadNodeVisualInfo(entityElem, visualInfo);
+                    UIUtils.syncExec(() -> loadNodeVisualInfo(entityElem, visualInfo));
 
                     ElementLoadInfo info = new ElementLoadInfo(tableId, table, null, visualInfo);
                     tableInfos.add(info);

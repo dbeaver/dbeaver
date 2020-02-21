@@ -255,6 +255,15 @@ public interface SQLDialect {
     DBPIdentifierCase storesQuotedCase();
 
     /**
+     * Enables to call particular cast operator or function for special data types.
+     * @param attribute   attribute data to help decide whether cast and how to cast
+     * @param expression      string representation for cast
+     * @return            casted string
+     */
+    @NotNull
+    String getTypeCastClause(DBSAttributeBase attribute, String expression);
+
+    /**
      * Escapes string to make usable inside of SQL queries.
      * Basically it has to escape only ' character which delimits strings.
      * @param string string to escape

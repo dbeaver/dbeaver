@@ -512,7 +512,7 @@ public class PostgreUtils {
     private static Object convertStringToSimpleValue(DBCSession session, DBSTypedObject itemType, String string) throws DBCException {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, itemType);
         if (valueHandler != null) {
-            return valueHandler.getValueFromObject(session, itemType, string, false);
+            return valueHandler.getValueFromObject(session, itemType, string, false, false);
         } else {
             return string;
         }

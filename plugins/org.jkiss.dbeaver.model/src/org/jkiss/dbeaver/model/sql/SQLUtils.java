@@ -541,7 +541,7 @@ public final class SQLUtils {
                     if (inlineCriteria) {
                         conString.append(' ').append(convertValueToSQL(dataSource, constraint.getAttribute(), value));
                     } else {
-                        conString.append(" ?");
+                        conString.append(" ").append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(),"?"));
                     }
                 }
             } else if (operator.getArgumentCount() < 0) {
@@ -582,7 +582,7 @@ public final class SQLUtils {
                     if (inlineCriteria) {
                         conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), itemValue));
                     } else {
-                        conString.append("?");
+                        conString.append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?"));
                     }
                 }
                 conString.append(")");
@@ -596,7 +596,9 @@ public final class SQLUtils {
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
 
-        return convertValueToSQL(dataSource, attribute, valueHandler, value);
+        return dataSource.getSQLDialect().getTypeCastClause(
+            attribute,
+            convertValueToSQL(dataSource, attribute, valueHandler, value));
     }
 
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value) {

@@ -325,6 +325,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
+    public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
+        return expression;
+    }
+
+    @NotNull
+    @Override
     public String escapeString(String string) {
         return string.replace("'", "''");
     }
