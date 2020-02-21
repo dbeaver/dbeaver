@@ -64,11 +64,16 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                     return null;
                 }
                 try {
+                    String procName = "X";
+                    PostgreProcedure function = trigger.getFunction(monitor);
+                    if (function != null) {
+                        procName = function.getFullQualifiedSignature();
+                    }
                     trigger.setName(editPage.getEntityName());
                     trigger.setFunction(editPage.selectedFunction);
                     trigger.setObjectDefinitionText("CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger) + "\n"
                             + "BEFORE UPDATE" + " " + "\n" + "ON " + DBUtils.getQuotedIdentifier(trigger.getTable())
-                            + " FOR EACH ROW" + "\n" + "EXECUTE PROCEDURE " + trigger.getFunction(monitor).getFullQualifiedSignature() + "\n");
+                            + " FOR EACH ROW" + "\n" + "EXECUTE PROCEDURE " + procName + "\n");
                 } catch (DBException e) {
                     log.error(e);
                 }
