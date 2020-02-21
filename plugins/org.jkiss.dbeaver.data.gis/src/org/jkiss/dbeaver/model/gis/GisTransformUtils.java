@@ -25,7 +25,9 @@ import org.cts.crs.ProjectedCRS;
 import org.cts.op.CoordinateOperation;
 import org.cts.op.CoordinateOperationException;
 import org.cts.op.CoordinateOperationFactory;
-import org.cts.registry.*;
+import org.cts.registry.EPSGRegistry;
+import org.cts.registry.RegistryException;
+import org.cts.registry.RegistryManager;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -189,7 +191,7 @@ public class GisTransformUtils {
                 utilSession,
                 valueType,
                 cellValue,
-                false);
+                false, false);
             if (convertedValue instanceof DBGeometry) {
                 return (DBGeometry) convertedValue;
             }

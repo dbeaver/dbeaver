@@ -52,7 +52,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     }
 
     @Override
-    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object != null) {
             String className = object.getClass().getName();
@@ -86,7 +86,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 }
             }
         }
-        return super.getValueFromObject(session, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
     private JDBCCollection convertStringToCollection(@NotNull DBCSession session, @NotNull DBSTypedObject arrayType, @NotNull PostgreDataType itemType, @NotNull String value) throws DBCException {
@@ -105,7 +105,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             DBDValueHandler itemValueHandler = DBUtils.findValueHandler(session, itemType);
             for (int i = 0; i < itemStrings.size(); i++) {
                 Object itemString = itemStrings.get(i);
-                Object itemValue = itemValueHandler.getValueFromObject(session, itemType, itemString, false);
+                Object itemValue = itemValueHandler.getValueFromObject(session, itemType, itemString, false, false);
                 itemValues[i] = itemValue;
             }
             return new JDBCCollection(itemType, itemValueHandler, itemValues);

@@ -47,7 +47,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
         throws DBCException, SQLException
     {
         Object value = resultSet.getObject(index);
-        return getValueFromObject(session, type, value, false);
+        return getValueFromObject(session, type, value, false, false);
     }
 
     @Override

@@ -95,7 +95,7 @@ public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object,
-            boolean copy) throws DBCException {
+                                     boolean copy, boolean validateValue) throws DBCException {
         if (object == null) {
             return new DBGeometry();
         } else if (object instanceof DBGeometry) {

@@ -64,7 +64,7 @@ public class ResultSetUtils
         try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), attribute, "Copy from clipboard")) {
             String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
             return attribute.getValueHandler().getValueFromObject(
-                session, attribute.getAttribute(), strValue, true);
+                session, attribute.getAttribute(), strValue, true, false);
         } finally {
             clipboard.dispose();
         }

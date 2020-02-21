@@ -681,7 +681,7 @@ public class DBExecUtils {
                         try {
                             int pos = attrMeta.getOrdinalPosition();
                             for (Object[] row : rows) {
-                                row[pos] = binding.getValueHandler().getValueFromObject(session, tableColumn, row[pos], false);
+                                row[pos] = binding.getValueHandler().getValueFromObject(session, tableColumn, row[pos], false, false);
                             }
                         } catch (DBCException e) {
                             log.warn("Error resolving attribute '" + binding.getName() + "' values", e);

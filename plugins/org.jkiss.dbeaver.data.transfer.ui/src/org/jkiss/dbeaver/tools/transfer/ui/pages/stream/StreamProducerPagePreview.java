@@ -523,7 +523,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 for (int i = 0; i < attributeMappings.size(); i++) {
                     StreamProducerSettings.AttributeMapping attr = attributeMappings.get(i);
                     Object srcValue = row[i];
-                    Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), srcValue, false);
+                    Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), srcValue, false, activated);
                     String valueStr = attr.getTargetValueHandler().getValueDisplayString(attr.getTargetAttribute(), value, DBDDisplayFormat.UI);
                     strRow[i] = valueStr;
                 }

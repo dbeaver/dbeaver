@@ -66,7 +66,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         return getValueFromObject(session, type,
             fetchBytes(resultSet, index),
-            false);
+            false, invertCoordinates);
     }
 
     @Override
@@ -87,14 +87,15 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         bindBytes(statement, paramIndex, convertGeometryToBinaryFormat(session, value));
     }
 
+    @NotNull
     @Override
-    public Class<?> getValueObjectType(DBSTypedObject attribute) {
+    public Class<?> getValueObjectType(@NotNull DBSTypedObject attribute) {
         return DBGeometry.class;
     }
 
     @NotNull
     @Override
-    public DBGeometry getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public DBGeometry getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         DBGeometry geometry;
         if (object == null) {
             geometry = new DBGeometry();
