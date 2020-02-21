@@ -36,4 +36,5 @@ public interface RelationalSQLDialect extends SQLDialect {
      * @return true if `select count(*) from (select 1,1) z` fails because of duplicate column name
      */
     boolean isAmbiguousCountBroken();
+
 }

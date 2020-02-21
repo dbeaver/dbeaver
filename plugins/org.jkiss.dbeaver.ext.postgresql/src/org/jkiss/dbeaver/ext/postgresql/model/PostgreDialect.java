@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -756,13 +755,14 @@ public class PostgreDialect extends JDBCSQLDialect {
         return new String[] { "DECLARE" };
     }
 
+    @NotNull
     @Override
-    public String cast(DBSAttributeBase attribute, String string) {
+    public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
         String typeName = attribute.getTypeName();
         if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName)) {
-            return string + "::" + typeName;
+            return expression + "::" + typeName;
         }
-        return string;
+        return expression;
     }
 
     @NotNull
