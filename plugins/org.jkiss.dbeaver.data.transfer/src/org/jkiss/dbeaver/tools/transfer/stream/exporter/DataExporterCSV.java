@@ -55,6 +55,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
 
     private static final String DEF_QUOTE_CHAR = "\"";
+    private boolean formatNumbers;
 
     enum HeaderPosition {
         none,
@@ -98,15 +99,10 @@ public class DataExporterCSV extends StreamExporterAbstract {
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = quoteChar != ' ';
-        String quoteStrategyStr = CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS));
-        if (quoteStrategyStr!=null) {
-            quoteStrategy = QuoteStrategy.fromValue(quoteStrategyStr);
-        }
-        try {
-            headerPosition = HeaderPosition.valueOf(String.valueOf(properties.get(PROP_HEADER)));
-        } catch (Exception e) {
-            headerPosition = HeaderPosition.top;
-        }
+        quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
+
+        headerPosition = CommonUtils.valueOf(HeaderPosition.class, String.valueOf(properties.get(PROP_HEADER)), HeaderPosition.top);
+        formatNumbers = CommonUtils.toBoolean(getSite().getProperties().get(PROP_FORMAT_NUMBERS));
     }
 
     @Override
@@ -117,7 +113,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
 
     @Override
     protected DBDDisplayFormat getValueExportFormat(DBDAttributeBinding column) {
-        if (column.getDataKind() == DBPDataKind.NUMERIC && !Boolean.TRUE.equals(getSite().getProperties().get(PROP_FORMAT_NUMBERS))) {
+        if (column.getDataKind() == DBPDataKind.NUMERIC && !formatNumbers) {
             return DBDDisplayFormat.NATIVE;
         }
         return super.getValueExportFormat(column);
