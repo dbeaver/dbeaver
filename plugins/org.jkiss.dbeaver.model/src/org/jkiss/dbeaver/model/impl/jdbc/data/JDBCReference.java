@@ -90,7 +90,7 @@ public class JDBCReference implements DBDReference {
                     Object refValue = value.getObject();
                     session.getProgressMonitor().worked(1);
                     DBDValueHandler valueHandler = DBUtils.findValueHandler(session, type);
-                    refObject = valueHandler.getValueFromObject(session, type, refValue, false);
+                    refObject = valueHandler.getValueFromObject(session, type, refValue, false, false);
                     session.getProgressMonitor().worked(1);
                 } finally {
                     session.getProgressMonitor().done();

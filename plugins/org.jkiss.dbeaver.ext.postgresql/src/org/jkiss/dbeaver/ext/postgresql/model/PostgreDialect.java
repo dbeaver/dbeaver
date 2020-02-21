@@ -757,6 +757,16 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
+    public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
+        String typeName = attribute.getTypeName();
+        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName)) {
+            return expression + "::" + typeName;
+        }
+        return expression;
+    }
+
+    @NotNull
+    @Override
     public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
         if (value.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
             // TODO: we need to add value handlers for all PG data types.

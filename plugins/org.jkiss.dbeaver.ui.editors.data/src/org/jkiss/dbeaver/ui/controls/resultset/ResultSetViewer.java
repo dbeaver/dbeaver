@@ -3779,7 +3779,7 @@ public class ResultSetViewer extends Viewer
                     if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < model.getRowCount()) {
                         Object[] origRow = model.getRowData(currentRowNumber);
                         try {
-                            cells[0] = docAttribute.getValueHandler().getValueFromObject(session, docAttribute, origRow[0], true);
+                            cells[0] = docAttribute.getValueHandler().getValueFromObject(session, docAttribute, origRow[0], true, false);
                         } catch (DBCException e) {
                             log.warn(e);
                         }
@@ -3803,7 +3803,7 @@ public class ResultSetViewer extends Viewer
                             } else {
                                 DBSAttributeBase attribute = metaAttr.getAttribute();
                                 try {
-                                    cells[i] = metaAttr.getValueHandler().getValueFromObject(session, attribute, origRow[i], true);
+                                    cells[i] = metaAttr.getValueHandler().getValueFromObject(session, attribute, origRow[i], true, false);
                                 } catch (DBCException e) {
                                     log.warn(e);
                                     try {

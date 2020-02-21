@@ -92,4 +92,6 @@ public interface UIServiceSQL {
 
     void openResource(IResource element);
 
+    boolean useIsolatedConnections(DBPContextProvider contextProvider);
+
 }

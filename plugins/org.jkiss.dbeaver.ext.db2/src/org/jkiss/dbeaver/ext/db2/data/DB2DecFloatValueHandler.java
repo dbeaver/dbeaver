@@ -55,7 +55,7 @@ public class DB2DecFloatValueHandler extends JDBCNumberValueHandler {
     }
 
     @Override
-    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException {
+    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException, DBCException {
         if (value instanceof BigDecimal) {
             statement.setBigDecimal(paramIndex, (BigDecimal) value);
         } else if (value instanceof Double) {

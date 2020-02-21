@@ -58,7 +58,7 @@ public class PostgreBitStringValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public String getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public String getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         return CommonUtils.toString(object);
     }

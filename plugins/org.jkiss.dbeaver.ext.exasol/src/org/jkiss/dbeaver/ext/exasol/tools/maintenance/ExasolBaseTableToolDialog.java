@@ -109,18 +109,6 @@ public abstract class ExasolBaseTableToolDialog
                 }
         	}
         	
-            @Override
-            public void endObjectProcessing(@NotNull ExasolTableBase exasolTable, Exception exception)
-            {
-                TreeItem treeItem = getTreeItem(exasolTable);
-                if (exception == null) {
-                    treeItem.setText(1, ExasolMessages.dialog_table_tools_success_title);
-                } else {
-                    treeItem.setText(1, exception.getMessage());
-                }
-                UIUtils.packColumns(treeItem.getParent(), false, null);
-            }
-
             // DF: This method is for tools that return resultsets
             @Override
             public void processObjectResults(@NotNull ExasolTableBase exasolTable, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException

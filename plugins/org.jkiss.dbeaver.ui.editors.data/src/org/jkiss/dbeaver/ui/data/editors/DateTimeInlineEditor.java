@@ -55,7 +55,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     public Object extractEditorValue() throws DBException {
         try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
             final String strValue = timeEditor.getValue();
-            return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false);
+            return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false, false);
         }
     }
 

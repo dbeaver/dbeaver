@@ -41,7 +41,7 @@ public class PostgreJSONValueHandler extends JDBCContentValueHandler {
     }
 
     @Override
-    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (PostgreUtils.isPGObject(object)) {
             object = PostgreUtils.extractPGObjectValue(object);
@@ -53,6 +53,6 @@ public class PostgreJSONValueHandler extends JDBCContentValueHandler {
         } else if (object instanceof String) {
             return new PostgreContentJSON(session.getDataSource(), (String) object);
         }
-        return super.getValueFromObject(session, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 }

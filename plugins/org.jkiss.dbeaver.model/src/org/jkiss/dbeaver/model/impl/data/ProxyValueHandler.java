@@ -59,8 +59,8 @@ public class ProxyValueHandler implements DBDValueHandler {
 
     @Nullable
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
-        return target.getValueFromObject(session, type, object, copy);
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
+        return target.getValueFromObject(session, type, object, copy, false);
     }
 
     @Override

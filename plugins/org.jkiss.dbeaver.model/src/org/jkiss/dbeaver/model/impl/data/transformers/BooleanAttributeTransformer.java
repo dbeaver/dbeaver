@@ -76,11 +76,11 @@ public class BooleanAttributeTransformer implements DBDAttributeTransformer {
 
         @Nullable
         @Override
-        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
+        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
             if (object instanceof Number) {
                 return ((Number) object).byteValue() != 0;
             }
-            return super.getValueFromObject(session, type, object, copy);
+            return super.getValueFromObject(session, type, object, copy, validateValue);
         }
     }
 }

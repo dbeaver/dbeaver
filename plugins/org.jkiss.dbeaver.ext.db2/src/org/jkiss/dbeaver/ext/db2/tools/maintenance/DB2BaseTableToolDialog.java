@@ -72,18 +72,6 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
                 }
             }
 
-            @Override
-            public void endObjectProcessing(@NotNull DB2Table db2Table, Exception exception)
-            {
-                TreeItem treeItem = getTreeItem(db2Table);
-                if (exception == null) {
-                    treeItem.setText(1, DB2Messages.dialog_table_tools_success_title);
-                } else {
-                    treeItem.setText(1, exception.getMessage());
-                }
-                UIUtils.packColumns(treeItem.getParent(), false, null);
-            }
-
             // DF: This method is for tools that return resultsets
             @Override
             public void processObjectResults(@NotNull DB2Table db2Table, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException

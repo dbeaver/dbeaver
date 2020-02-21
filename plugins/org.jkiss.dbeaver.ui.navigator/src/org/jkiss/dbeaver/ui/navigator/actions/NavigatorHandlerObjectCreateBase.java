@@ -170,7 +170,11 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         } catch (InterruptedException e) {
             return;
         }
-        final CreateJob<OBJECT_TYPE, CONTAINER_TYPE> job = new CreateJob<OBJECT_TYPE, CONTAINER_TYPE>(commandTarget, objectMaker, parentObject, sourceObject, objectCreator.newObject);
+        if (objectCreator.newObject == null) {
+            DBWorkbench.getPlatformUI().showError("Null new object", "Internal error during object creation: NULL object returned (see logs).");
+            return;
+        }
+        final CreateJob<OBJECT_TYPE, CONTAINER_TYPE> job = new CreateJob<>(commandTarget, objectMaker, parentObject, sourceObject, objectCreator.newObject);
         job.schedule();
     }
 
