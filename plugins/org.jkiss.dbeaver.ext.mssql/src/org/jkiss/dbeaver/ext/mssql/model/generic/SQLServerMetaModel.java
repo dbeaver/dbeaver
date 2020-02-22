@@ -71,6 +71,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return sqlServer;
     }
 
+    private boolean isSapIQ(GenericDataSource dataSource) {
+        return dataSource.getInfo().getDatabaseProductName().contains("SAP IQ");
+    }
+
     @Override
     public SQLServerGenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new SQLServerGenericDataSource(monitor, container, this);
@@ -235,11 +239,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 mdQuery = systemSchema + ".sp_helptext '" +
                     DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'";
             } else {
-                if (hasSybaseSystemView(session, systemSchema, "syssource")) {
+                if (isSapIQ(dataSource)) {
                     mdQuery = "SELECT s.source\n" +
                         "FROM " + systemSchema + ".sysobjects AS so\n" +
-                        "JOIN " + systemSchema + ".sysuser AS u ON u.user_id = so.uid\n" +
-                        "JOIN " + systemSchema + ".syssource AS s ON s.object_id = so.id\n" +
+                        "JOIN sys.sysuser AS u ON u.user_id = so.uid\n" +
+                        "JOIN sys.syssource AS s ON s.object_id = so.id\n" +
                         "WHERE user_name(so.uid)=? AND so.name=?";
                 } else {
                     mdQuery = "SELECT sc.text\n" +
