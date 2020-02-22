@@ -103,7 +103,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
         PrintWriter out = getWriter();
         columns = getSite().getAttributes();
         tableName = getTableName();
-        String outputEncoding = getSite().getOutputEncoding() == null || getSite().getOutputEncoding().length() == 0 ? "UTF-8" : getSite().getOutputEncoding(); 
+        String outputEncoding = getSite().getOutputEncoding();
         out.append("<?xml version=\"1.0\" encoding=\"").append(outputEncoding).append("\"?>").append(CommonUtils.getLineSeparator());
         out.append("<dataset>").append(CommonUtils.getLineSeparator());
     }

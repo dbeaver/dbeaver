@@ -50,6 +50,7 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -665,9 +666,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
         }
 
+        @NotNull
         @Override
         public String getOutputEncoding() {
-            return settings == null ? null : settings.getOutputEncoding();
+            return settings == null ? StandardCharsets.UTF_8.displayName() : settings.getOutputEncoding();
         }
     }
 
