@@ -450,14 +450,23 @@ public class GeneralUtils {
         if (CommonUtils.isEmpty(string)) {
             return string;
         }
+        // We save resolved vars here to avoid resolve recursive cycles
+        List<String> resolvedVars = null;
         try {
             Matcher matcher = VAR_PATTERN.matcher(string);
             int pos = 0;
             while (matcher.find(pos)) {
                 pos = matcher.end();
                 String varName = matcher.group(2);
+                if (resolvedVars != null && resolvedVars.contains(varName)) {
+                    continue;
+                }
                 String varValue = resolver.get(varName);
                 if (varValue != null) {
+                    if (resolvedVars == null) {
+                        resolvedVars = new ArrayList<>();
+                        resolvedVars.add(varName);
+                    }
                     if (matcher.start() == 0 && matcher.end() == string.length() - 1) {
                         string = varValue;
                     } else {
