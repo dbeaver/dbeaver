@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -552,6 +553,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (rootContainer == null) {
             return;
         }
+        DBCExecutionContext executionContext = request.getContext().getExecutionContext();
+        if (executionContext == null) {
+            return;
+        }
 
         DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
@@ -561,7 +566,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)
         DBSObjectContainer selectedContainers[];
         {
-            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(monitor, request.getContext().getExecutionContext());
+            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(monitor, executionContext);
             selectedContainers = new DBSObjectContainer[selectedObjects.length];
             for (int i = 0; i < selectedObjects.length; i++) {
                 selectedContainers[i] = DBUtils.getAdapter(DBSObjectContainer.class, selectedObjects[i]);
@@ -605,7 +610,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         if (structureAssistant != null) {
                             Collection<DBSObjectReference> references = structureAssistant.findObjectsByMask(
                                 monitor,
-                                request.getContext().getExecutionContext(),
+                                executionContext,
                                 null,
                                 structureAssistant.getAutoCompleteObjectTypes(),
                                 request.getWordDetector().removeQuotes(token),
