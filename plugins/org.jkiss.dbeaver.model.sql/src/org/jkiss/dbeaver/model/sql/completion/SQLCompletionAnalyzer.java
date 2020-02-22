@@ -773,6 +773,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (request.getQueryType() == SQLCompletionRequest.QueryType.EXEC) {
             return;
         }
+        if (parent instanceof DBSAlias) {
+            DBSObject realParent = ((DBSAlias) parent).getTargetObject(monitor);
+            if (realParent == null) {
+                log.debug("Can't get synonym target object");
+            } else {
+                parent = realParent;
+            }
+        }
         SQLWordPartDetector wordDetector = request.getWordDetector();
         if (startPart != null) {
             startPart = wordDetector.removeQuotes(startPart).toUpperCase(Locale.ENGLISH);
