@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAlias;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -89,6 +90,9 @@ public class EntityHyperlink implements IHyperlink
             monitor.beginTask("Resolve object " + reference.getName(), 1);
             try {
                 DBSObject object = reference.resolveObject(monitor);
+                if (object instanceof DBSAlias) {
+                    object = ((DBSAlias) object).getTargetObject(monitor);
+                }
                 node = DBNUtils.getNodeByObject(monitor, object, true);
 
                 if (node != null) {
