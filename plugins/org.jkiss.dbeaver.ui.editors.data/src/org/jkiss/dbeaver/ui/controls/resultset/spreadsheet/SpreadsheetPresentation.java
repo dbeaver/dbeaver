@@ -397,6 +397,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             spreadsheet.setCursor(cell, false, false);
         }*/
         spreadsheet.getHorizontalScrollBarProxy().setSelection(viewState.hScrollSelection);
+        spreadsheet.setDefaultFocusRow();
     }
 
     private void updateGridCursor(GridCell cell)
