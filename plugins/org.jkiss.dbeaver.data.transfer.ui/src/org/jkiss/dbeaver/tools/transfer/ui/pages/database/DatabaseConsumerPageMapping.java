@@ -376,7 +376,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject)element;
                 if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
-                    String newName = transformTargetName(mapping.getSource().getName());
+                    String newName = transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()));
                     setValue(element, newName);
                     return newName;
                 }
@@ -504,7 +504,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 DBSObjectContainer container = settings.getContainer();
                 for (DBSObject child : container.getChildren(new VoidProgressMonitor())) {
                     if (child instanceof DBSDataManipulator) {
-                        items.add(transformTargetName(child.getName()));
+                        items.add(transformTargetName(DBUtils.getQuotedIdentifier(child)));
                     }
                 }
 
@@ -521,7 +521,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             if (mapping.getParent().getTarget() instanceof DBSEntity) {
                 DBSEntity parentEntity = (DBSEntity)mapping.getParent().getTarget();
                 for (DBSEntityAttribute attr : parentEntity.getAttributes(new VoidProgressMonitor())) {
-                    items.add(transformTargetName(attr.getName()));
+                    items.add(transformTargetName(DBUtils.getQuotedIdentifier(attr)));
                 }
             }
 
