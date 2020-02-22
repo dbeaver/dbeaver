@@ -401,6 +401,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     String name = CommonUtils.toString(value);
                     DBPDataSource dataSource = settings.getTargetDataSource((DatabaseMappingObject) element);
                     if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE) && dataSource != null) {
+                        name = DBUtils.getQuotedIdentifier(dataSource, name);
                         name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
                     setMappingTarget((DatabaseMappingObject) element, name);
