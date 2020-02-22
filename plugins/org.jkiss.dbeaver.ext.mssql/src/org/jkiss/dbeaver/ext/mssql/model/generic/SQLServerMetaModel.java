@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +56,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     private static final Log log = Log.getLog(SQLServerMetaModel.class);
 
     private final boolean sqlServer;
+    private final Map<String, Boolean> sysViewsCache = new HashMap<>();
 
     public SQLServerMetaModel() {
         this(true);
@@ -228,12 +230,23 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         ServerType serverType = getServerType();
         String systemSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog.getName(), getSystemSchema());
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            String mdQuery = serverType == ServerType.SQL_SERVER ?
-                systemSchema + ".sp_helptext '" + DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'"
-                :
-                "SELECT sc.text\n" +
-                "FROM " + systemSchema + ".sysobjects so, " + systemSchema + ".syscomments sc\n" +
-                "WHERE user_name(so.uid)=? AND so.name=? and sc.id = so.id";
+            String mdQuery;
+            if (serverType == ServerType.SQL_SERVER) {
+                mdQuery = systemSchema + ".sp_helptext '" +
+                    DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'";
+            } else {
+                if (hasSybaseSystemView(session, systemSchema, "syssource")) {
+                    mdQuery = "SELECT s.source\n" +
+                        "FROM " + systemSchema + ".sysobjects AS so\n" +
+                        "JOIN " + systemSchema + ".sysuser AS u ON u.user_id = so.uid\n" +
+                        "JOIN " + systemSchema + ".syssource AS s ON s.object_id = so.id\n" +
+                        "WHERE user_name(so.uid)=? AND so.name=?";
+                } else {
+                    mdQuery = "SELECT sc.text\n" +
+                        "FROM " + systemSchema + ".sysobjects so, " + systemSchema + ".syscomments sc\n" +
+                        "WHERE user_name(so.uid)=? AND so.name=? and sc.id = so.id";
+                }
+            }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(mdQuery)) {
                 if (serverType == ServerType.SYBASE) {
                     dbStat.setString(1, schema);
@@ -250,6 +263,20 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
+    }
+
+    private boolean hasSybaseSystemView(JDBCSession session, String systemSchema, String viewName) throws SQLException {
+        Boolean check;
+        synchronized (sysViewsCache) {
+            check = sysViewsCache.get(viewName);
+        }
+        if (check == null) {
+            check = JDBCUtils.queryString(session, "SELECT name from " + systemSchema + ".sysobjects where name=?", viewName) != null;
+            synchronized (sysViewsCache) {
+                sysViewsCache.put(viewName, check);
+            }
+        }
+        return check;
     }
 
     public ServerType getServerType() {
