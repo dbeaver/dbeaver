@@ -163,7 +163,8 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (CommonUtils.isEmpty(name)) {
             name = source.getName();
         }
-        return name;
+        DBSObjectContainer container = parent.getSettings().getContainer();
+        return container == null ? name : DBUtils.getQuotedIdentifier(container.getDataSource(), name);
     }
 
     @Override
