@@ -24,6 +24,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
@@ -37,16 +39,18 @@ import org.jkiss.dbeaver.ui.ClipboardData;
 import org.jkiss.dbeaver.ui.CopyMode;
 import org.jkiss.dbeaver.ui.IClipboardSource;
 import org.jkiss.dbeaver.ui.UIUtils;
-//import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.BeanUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+//import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 
 public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler implements IElementUpdater {
 
@@ -56,6 +60,16 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        Control focusControl = HandlerUtil.getActiveShell(event).getDisplay().getFocusControl();
+        if (focusControl != null && !(focusControl instanceof Composite)) {
+            try {
+                BeanUtils.invokeObjectMethod(focusControl, "copy");
+                return null;
+            } catch (Throwable throwable) {
+                // No copy method
+            }
+        }
+
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);

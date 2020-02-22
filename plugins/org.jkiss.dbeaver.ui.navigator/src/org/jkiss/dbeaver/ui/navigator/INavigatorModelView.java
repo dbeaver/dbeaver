@@ -28,6 +28,10 @@ public interface INavigatorModelView
 {
     String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
     String NAVIGATOR_VIEW_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator.view";
+    // Control-based handler activation disabled for now (as it requires workbench site and thus doesn't work in dialogs)
+    // However current handlers also don't work in dialogs as they are mapped on activePart.
+    // TODO: find some solution.
+    String NAVIGATOR_CONTROL_ID = "org.jkiss.dbeaver.core.ui.navigator.control";
 
     DBNNode getRootNode();
     
