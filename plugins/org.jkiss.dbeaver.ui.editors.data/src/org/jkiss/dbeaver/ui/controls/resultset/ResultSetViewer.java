@@ -3495,23 +3495,18 @@ public class ResultSetViewer extends Viewer
                             if (!metadataChanged) {
                                 // Seems to be refresh
                                 // Restore original position
-                                // It also updates panels
-                                if (!restorePresentationState(presentationState)) {
-                                    updatePanelsContent(false);
-                                }
-                            } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
+                                restorePresentationState(presentationState);
+                            }
+                            if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
                                 if (getCurrentRow() == null) {
                                     setCurrentRow(getModel().getRow(focusRow));
                                 }
                                 if (getActivePresentation().getCurrentAttribute() == null) {
                                     getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
                                 }
-                                updatePanelsContent(false);
                             }
                         }
-                        if (metadataChanged) {
-                            activePresentation.updateValueView();
-                        }
+                        activePresentation.updateValueView();
 
                         if (!scroll) {
                             if (dataFilter != null) {
@@ -3521,6 +3516,7 @@ public class ResultSetViewer extends Viewer
                                 redrawData(visibilityChanged, false);
                             }
                         }
+                        updatePanelsContent(true);
                         if (getStatistics() == null || !getStatistics().isEmpty()) {
                             if (error == null) {
                                 // Update status (update execution statistics)

@@ -2773,8 +2773,11 @@ public abstract class LightGrid extends Canvas {
         addListener(SWT.MouseWheel, this::onMouseWheel);
     }
 
-    private void onFocusIn()
-    {
+    private void onFocusIn() {
+        setDefaultFocusRow();
+    }
+
+    public void setDefaultFocusRow() {
         if (getItemCount() > 0 && focusItem < 0) {
             focusItem = 0;
         }
