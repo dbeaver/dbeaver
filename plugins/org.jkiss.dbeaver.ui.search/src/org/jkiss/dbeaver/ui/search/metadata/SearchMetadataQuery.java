@@ -137,6 +137,7 @@ public class SearchMetadataQuery implements ISearchQuery {
 
             return Status.OK_STATUS;
         } catch (DBException e) {
+            log.debug(e);
             return GeneralUtils.makeExceptionStatus(e);
         }
     }
