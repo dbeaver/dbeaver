@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,8 +39,8 @@ public class SQLScriptExecuteSettings {
 
     private static final Log log = Log.getLog(SQLScriptExecuteSettings.class);
 
+    private List<DBPDataSourceContainer> dataSources = new ArrayList<>();
     private List<String> scriptFiles = new ArrayList<>();
-    private DBPDataSourceContainer dataSourceContainer;
 
     private boolean autoCommit;
     private DBPTransactionIsolation transactionIsolation;
@@ -55,12 +56,12 @@ public class SQLScriptExecuteSettings {
         this.scriptFiles = scriptFiles;
     }
 
-    public DBPDataSourceContainer getDataSourceContainer() {
-        return dataSourceContainer;
+    public List<DBPDataSourceContainer> getDataSources() {
+        return dataSources;
     }
 
-    public void setDataSourceContainer(DBPDataSourceContainer dataSourceContainer) {
-        this.dataSourceContainer = dataSourceContainer;
+    public void setDataSources(List<DBPDataSourceContainer> dataSources) {
+        this.dataSources = dataSources;
     }
 
     public boolean isIgnoreErrors() {
@@ -96,12 +97,32 @@ public class SQLScriptExecuteSettings {
     }
 
     public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
+        // Legacy config support (single datasource
         String projectName = JSONUtils.getString(config, "project");
         DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
         if (project != null) {
             String dataSourceContainerId = JSONUtils.getString(config, "dataSourceContainer");
             if (!CommonUtils.isEmpty(dataSourceContainerId)) {
-                dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceContainerId);
+                DBPDataSourceContainer dataSource = project.getDataSourceRegistry().getDataSource(dataSourceContainerId);
+                if (dataSource != null) {
+                    dataSources.add(dataSource);
+                }
+            }
+        } else {
+            // Modern config (datasource list)
+            List<Map<String, Object>> dsConfig = JSONUtils.getObjectList(config, "dataSources");
+            for (Map<String, Object> dsInfo : dsConfig) {
+                projectName = JSONUtils.getString(dsInfo, "project");
+                project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                if (project != null) {
+                    String dataSourceContainerId = JSONUtils.getString(dsInfo, "dataSource");
+                    if (!CommonUtils.isEmpty(dataSourceContainerId)) {
+                        DBPDataSourceContainer dataSource = project.getDataSourceRegistry().getDataSource(dataSourceContainerId);
+                        if (dataSource != null) {
+                            dataSources.add(dataSource);
+                        }
+                    }
+                }
             }
         }
         scriptFiles = JSONUtils.deserializeStringList(config, "scriptFiles");
@@ -113,9 +134,15 @@ public class SQLScriptExecuteSettings {
     }
 
     public void saveConfiguration(Map<String, Object> config) {
-        config.put("project", dataSourceContainer == null ? null : dataSourceContainer.getProject().getName());
-        config.put("dataSourceContainer", dataSourceContainer == null ? null : dataSourceContainer.getId());
         config.put("scriptFiles", scriptFiles);
+        List<Map<String, Object>> dsConfig = new ArrayList<>();
+        config.put("dataSources", dsConfig);
+        for (DBPDataSourceContainer ds : dataSources) {
+            Map<String, Object> dsInfo = new LinkedHashMap<>();
+            dsInfo.put("project", ds.getProject().getName());
+            dsInfo.put("dataSource", ds.getId());
+            dsConfig.add(dsInfo);
+        }
 
         config.put("ignoreErrors", ignoreErrors);
         config.put("dumpQueryResultsToLog", dumpQueryResultsToLog);

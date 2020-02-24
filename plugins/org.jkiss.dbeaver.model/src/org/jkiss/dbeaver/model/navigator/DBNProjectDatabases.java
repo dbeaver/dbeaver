@@ -229,10 +229,18 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return dataSources;
     }
 
-    public DBNDataSource getDataSource(String id)
-    {
+    public DBNDataSource getDataSource(String id) {
         for (DBNDataSource dataSource : dataSources) {
             if (dataSource.getDataSourceContainer().getId().equals(id)) {
+                return dataSource;
+            }
+        }
+        return null;
+    }
+
+    public DBNDataSource getDataSource(DBPDataSourceContainer ds) {
+        for (DBNDataSource dataSource : dataSources) {
+            if (dataSource.getDataSourceContainer() == ds) {
                 return dataSource;
             }
         }

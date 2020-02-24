@@ -88,7 +88,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
             }
         });
         if (multiSelector) {
-            final CheckboxTreeViewer viewer = (CheckboxTreeViewer) dataSourceTree.getViewer();
+            final CheckboxTreeViewer viewer = dataSourceTree.getCheckboxViewer();
 
             checkboxTreeManager = new DatabaseObjectsTreeManager(runnableContext, viewer,
                 new Class[]{DBSDataContainer.class});
@@ -138,7 +138,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
     }
 
     public boolean hasCheckedNodes() {
-        for (Object element : ((CheckboxTreeViewer) dataSourceTree.getViewer()).getCheckedElements()) {
+        for (Object element : dataSourceTree.getCheckboxViewer().getCheckedElements()) {
             if (element instanceof DBNNode) {
                 return true;
             }
@@ -147,7 +147,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
     }
 
     public List<DBNNode> getCheckedNodes() {
-        Object[] checkedElements = ((CheckboxTreeViewer) dataSourceTree.getViewer()).getCheckedElements();
+        Object[] checkedElements = dataSourceTree.getCheckboxViewer().getCheckedElements();
         List<DBNNode> result = new ArrayList<>(checkedElements.length);
         for (Object element : checkedElements) {
             if (element instanceof DBNNode) {

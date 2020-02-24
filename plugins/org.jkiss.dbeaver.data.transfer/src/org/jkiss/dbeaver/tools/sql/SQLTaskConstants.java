@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.tools.sql;
 /**
  * SQL tasks constants
  */
-public class SQLTConstants {
+public class SQLTaskConstants {
 
     public static final String TASK_SCRIPT_EXECUTE = "scriptExecute";
 
