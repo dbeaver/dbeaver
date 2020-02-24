@@ -636,7 +636,7 @@ public final class SQLUtils {
                     strValue = sqlDialect.escapeString(strValue);
                 }
                 strValue = '\'' + strValue + '\'';
-                return sqlDialect.cast(attribute, strValue);
+                return sqlDialect.getTypeCastClause(attribute, strValue);
             default:
                 if (sqlDialect != null) {
                     return sqlDialect.escapeScriptValue(attribute, value, strValue);
