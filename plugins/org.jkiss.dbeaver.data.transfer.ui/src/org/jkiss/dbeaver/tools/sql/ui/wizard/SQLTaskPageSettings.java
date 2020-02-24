@@ -109,6 +109,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
                 scriptFilter);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
+            gd.widthHint = 400;
             scriptsTree.setLayoutData(gd);
             scriptsTree.getViewer().addFilter(new ViewerFilter() {
                 @Override
@@ -147,7 +148,10 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
             };
 
             dataSourceTree = new DatabaseNavigatorTree(connectionsGroup, projectNode.getDatabases(), SWT.SINGLE | SWT.BORDER | SWT.CHECK, false, dsFilter);
-            dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 300;
+            gd.widthHint = 400;
+            dataSourceTree.setLayoutData(gd);
             //dataSourceTree.getViewer().getTree().setHeaderVisible(true);
             dataSourceTree.getViewer().addSelectionChangedListener(event -> {
                 updateSelectedDataSources();
