@@ -237,6 +237,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         return treeViewer;
     }
 
+    @NotNull
+    public CheckboxTreeViewer getCheckboxViewer() {
+        return (CheckboxTreeViewer) treeViewer;
+    }
+
     @Override
     public void nodeChanged(final DBNEvent event)
     {

@@ -103,7 +103,7 @@
     <extension point="org.jkiss.dbeaver.task.ui">
         <configurator type="dataExport" class="org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferTaskConfigurator"/>
         <configurator type="dataImport" class="org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferTaskConfigurator"/>
-        <configurator type="scriptExecute" class="org.jkiss.dbeaver.tools.sql.ui.wizard.SQLTaskConfigurator"/>
+        <configurator type="scriptExecute" class="org.jkiss.dbeaver.tools.sql.ui.wizard.SQLTaskConfigurator" supportsPanel="false"/>
     </extension>
 
 </plugin>

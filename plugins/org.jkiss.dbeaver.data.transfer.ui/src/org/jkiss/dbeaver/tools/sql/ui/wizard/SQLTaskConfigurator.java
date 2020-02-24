@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 
@@ -30,8 +31,8 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 public class SQLTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
-    public SQLTaskConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
-        return new SQLTaskConfigPanel(runnableContext, taskType);
+    public DBTTaskConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
+        return null;
     }
 
     @Override
