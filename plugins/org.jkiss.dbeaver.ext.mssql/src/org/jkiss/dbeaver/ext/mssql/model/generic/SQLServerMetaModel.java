@@ -72,7 +72,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private boolean isSapIQ(GenericDataSource dataSource) {
-        return dataSource.getInfo().getDatabaseProductName().contains("SAP IQ");
+        return dataSource.getInfo().getDatabaseProductName().contains("IQ SAP");
     }
 
     @Override
