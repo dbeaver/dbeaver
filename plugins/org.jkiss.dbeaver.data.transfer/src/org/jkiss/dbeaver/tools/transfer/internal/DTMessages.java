@@ -110,7 +110,17 @@ public class DTMessages extends NLS {
 	public static String data_transfer_db_consumer_column_mappings;
 	public static String data_transfer_db_consumer_ddl;
 
-    static {
+	public static String sql_script_task_title;
+	public static String sql_script_task_page_settings_title;
+	public static String sql_script_task_page_settings_description;
+	public static String sql_script_task_page_settings_group_files;
+	public static String sql_script_task_page_settings_group_connections;
+	public static String sql_script_task_page_settings_group_script;
+	public static String sql_script_task_page_settings_option_ignore_errors;
+	public static String sql_script_task_page_settings_option_dump_results;
+	public static String sql_script_task_page_settings_option_auto_commit;
+
+	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, DTMessages.class);
 	}
