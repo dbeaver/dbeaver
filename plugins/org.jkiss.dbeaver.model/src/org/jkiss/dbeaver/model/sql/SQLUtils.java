@@ -635,7 +635,8 @@ public final class SQLUtils {
                 if (sqlDialect != null) {
                     strValue = sqlDialect.escapeString(strValue);
                 }
-                return '\'' + strValue + '\'';
+                strValue = '\'' + strValue + '\'';
+                return sqlDialect.getTypeCastClause(attribute, strValue);
             default:
                 if (sqlDialect != null) {
                     return sqlDialect.escapeScriptValue(attribute, value, strValue);
@@ -889,7 +890,7 @@ public final class SQLUtils {
                     String testLine = scriptLine.trim();
                     if (testLine.lastIndexOf(delimiter) != (testLine.length() - delimiter.length())) {
                         script.append(delimiter);
-                    }    
+                    }
                 } else {
                     script.append(lineSeparator);
                 }
