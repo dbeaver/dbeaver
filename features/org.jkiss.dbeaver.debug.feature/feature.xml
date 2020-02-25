@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.debug.feature"
       label="%featureName"
-      version="6.1.17.qualifier"
+      version="6.1.18.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -18,7 +18,7 @@
    </license>
 
    <requires>
-      <import feature="org.jkiss.dbeaver.ui.feature" version="6.1.0" match="compatible"/>
+      <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="compatible"/>
       <import plugin="org.eclipse.debug.core" version="0.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.debug.ui" version="0.0.0" match="greaterOrEqual"/>
    </requires>

@@ -140,7 +140,7 @@
 
                     <replace provider="mssql" driver="mssql_jdbc_ms_new"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.4.1.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[8.2.0.jre8]" bundle="!drivers.mssql.new"/>
                     <!--<file type="jar" path="maven:/com.microsoft.azure:adal4j:RELEASE" optional="true" />-->
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/auth/x86/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/auth/x64/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
@@ -168,7 +168,7 @@
 
                     <replace provider="mssql" driver="mssql_jdbc_azure"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.4.1.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[8.2.0.jre8]" bundle="!drivers.mssql.new"/>
                     <file type="jar" path="drivers/mssql/new/mssql-jdbc.jar" bundle="drivers.mssql.new"/>
 
                     <!-- Active directory auth -->
@@ -291,7 +291,7 @@
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
                     <parameter name="script-delimiter-after-query" value="true"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.4.1.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[8.2.0.jre8]" bundle="!drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/auth/x86/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/auth/x64/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
 

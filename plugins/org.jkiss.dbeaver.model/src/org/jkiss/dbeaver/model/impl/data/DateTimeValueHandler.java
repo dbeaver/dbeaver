@@ -41,7 +41,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             return null;
@@ -69,7 +69,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
     @Override
     public Object generateDefaultValue(DBCSession session, DBSTypedObject type) {
         try {
-            return getValueFromObject(session, type, new Date(), false);
+            return getValueFromObject(session, type, new Date(), false, false);
         } catch (DBCException e) {
             log.debug("Error getting current time stamp", e);
             return null;

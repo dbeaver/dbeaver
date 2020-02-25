@@ -78,7 +78,7 @@ class ScriptsExportWizardPage extends WizardPage {
             return false;
         }
         selectedResources.clear();
-        CheckboxTreeViewer viewer = (CheckboxTreeViewer) scriptsNavigator.getViewer();
+        CheckboxTreeViewer viewer = scriptsNavigator.getCheckboxViewer();
         for (Object obj : viewer.getCheckedElements()) {
             if (obj instanceof DBNResource) {
                 selectedResources.add((DBNResource) obj);

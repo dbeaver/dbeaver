@@ -75,19 +75,6 @@ public class TaskRegistry implements DBTTaskRegistry
             }
 
             for (IConfigurationElement ext : extElements) {
-                if ("configurator".equals(ext.getName())) {
-                    String typeId = ext.getAttribute("type");
-                    TaskTypeDescriptor taskType = getTaskType(typeId);
-                    if (taskType == null) {
-                        log.debug("Task type '" + typeId + "' not found. Skip configurator.");
-                    } else {
-                        TaskConfiguratorDescriptor configDescriptor = new TaskConfiguratorDescriptor(taskType, ext);
-                        taskType.setConfigurator(configDescriptor);
-                    }
-                }
-            }
-
-            for (IConfigurationElement ext : extElements) {
                 if ("scheduler".equals(ext.getName())) {
                     SchedulerDescriptor descriptor = new SchedulerDescriptor(ext);
                     schedulers.add(descriptor);

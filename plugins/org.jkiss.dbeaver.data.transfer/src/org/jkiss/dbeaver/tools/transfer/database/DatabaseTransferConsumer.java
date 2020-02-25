@@ -90,6 +90,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         private ColumnMapping(DBDAttributeBinding sourceAttr) {
             this.sourceAttr = sourceAttr;
         }
+
+        @Override
+        public String toString() {
+            return sourceAttr + "->" + targetAttr;
+        }
     }
 
     public DatabaseTransferConsumer() {
@@ -217,7 +222,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 targetSession,
                 targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
                 attrValue,
-                false);
+                false, false);
         }
         executeBatch.add(rowValues);
 
@@ -419,7 +424,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     {
                         switch (containerMapping.getMappingType()) {
                             case create:
-                                DBSObject newTarget = container.getChild(monitor, containerMapping.getTargetName());
+                                DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
                                 if (newTarget == null) {
                                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
                                 } else if (!(newTarget instanceof DBSDataManipulator)) {

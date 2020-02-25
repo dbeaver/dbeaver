@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
@@ -82,7 +83,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     public abstract void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state);
 
     public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null;
+        return getCurrentTask() != null && !getContainer().isSelectorMode();
     }
 
     public IStructuredSelection getCurrentSelection() {
@@ -135,17 +136,47 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
         addTaskConfigPages();
     }
 
+    protected boolean isTaskConfigPage(IWizardPage page) {
+        return page instanceof TaskConfigurationWizardPageTask || page instanceof TaskConfigurationWizardPageSettings;
+    }
+
     protected void addTaskConfigPages() {
         // If we are in task edit mode then add special first page.
         // Do not add it if this is an ew task wizard (because this page is added separately)
         if (isCurrentTaskSaved()) {
             // Task editor. Add first page
             addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
+            addPage(new TaskConfigurationWizardPageSettings(getCurrentTask()));
         }
     }
 
     public boolean isCurrentTaskSaved() {
         return getCurrentTask() != null && getCurrentTask().getProject().getTaskManager().getTaskById(getCurrentTask().getId()) != null;
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        IWizardPage nextPage = super.getNextPage(page);
+        if (nextPage instanceof TaskConfigurationWizardPageSettings &&
+            page instanceof TaskConfigurationWizardPageTask &&
+            !TaskUIRegistry.getInstance().supportsConfiguratorPage(getContainer().getTaskPage().getSelectedTaskType()))
+        {
+            // Skip settings page (not supported by task type)
+            return getNextPage(nextPage);
+        }
+        return nextPage;
+    }
+
+    @Override
+    public IWizardPage getPreviousPage(IWizardPage page) {
+        IWizardPage prevPage = super.getPreviousPage(page);
+        if (prevPage instanceof TaskConfigurationWizardPageSettings &&
+            !TaskUIRegistry.getInstance().supportsConfiguratorPage(getContainer().getTaskPage().getSelectedTaskType()))
+        {
+            // Skip settings page (not supported by task type)
+            return getPreviousPage(prevPage);
+        }
+        return prevPage;
     }
 
     @Override
@@ -256,41 +287,46 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     }
 
     public void createTaskSaveButtons(Composite parent, boolean horizontal, int hSpan) {
-        Composite panel = new Composite(parent, SWT.NONE);
-        if (parent.getLayout() instanceof GridLayout) {
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = hSpan;
-            panel.setLayoutData(gd);
-        }
-        boolean supportsVariables = getTaskType().supportsVariables();
-        panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
+        if (getContainer().isSelectorMode()) {
+            // Do not create save buttons
+            UIUtils.createEmptyLabel(parent, hSpan, 1);
+        } else {
+            Composite panel = new Composite(parent, SWT.NONE);
+            if (parent.getLayout() instanceof GridLayout) {
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = hSpan;
+                panel.setLayoutData(gd);
+            }
+            boolean supportsVariables = getTaskType().supportsVariables();
+            panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
 
-        if (supportsVariables) {
-            UIUtils.createDialogButton(panel, "Variables ...", new SelectionAdapter() {
+            if (supportsVariables) {
+                UIUtils.createDialogButton(panel, "Variables ...", new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        configureVariables();
+                    }
+                });
+            }
+
+            saveAsTaskButton = UIUtils.createDialogButton(panel, "Save task", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    configureVariables();
+                    saveTask();
                 }
             });
-        }
-
-        saveAsTaskButton = UIUtils.createDialogButton(panel, "Save task", new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                saveTask();
-            }
-        });
-        Link tasksLink = UIUtils.createLink(panel, "<a>Open Tasks view</a>", new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    UIUtils.getActiveWorkbenchWindow().getActivePage().showView(DatabaseTasksView.VIEW_ID);
-                } catch (PartInitException e1) {
-                    DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
+            Link tasksLink = UIUtils.createLink(panel, "<a>Open Tasks view</a>", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    try {
+                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView(DatabaseTasksView.VIEW_ID);
+                    } catch (PartInitException e1) {
+                        DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
+                    }
                 }
-            }
-        });
-        tasksLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            });
+            tasksLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        }
     }
 
     private void configureVariables() {
@@ -332,6 +368,16 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             // TODO: init transfer for all deserialized producers/consumers
             saveAsTaskButton.setEnabled(/*(getTaskWizard() != null && getTaskWizard().isCurrentTaskSaved()) || */canFinish());
         }
+    }
+
+    @Override
+    public IWizardPage getStartingPage() {
+        IWizardPage startingPage = super.getStartingPage();
+        if (getContainer().isEditMode()) {
+            // Start from second page for task editor
+            return getNextPage(startingPage);
+        }
+        return startingPage;
     }
 
 }

@@ -95,7 +95,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     @Override
     public Object extractEditorValue() throws DBException {
         final String strValue = timeEditor.getValue();
-        return getValueController().getValueHandler().getValueFromObject(null, getValueController().getValueType(), strValue, false);
+        return getValueController().getValueHandler().getValueFromObject(null, getValueController().getValueType(), strValue, false, false);
     }
 
     @Override

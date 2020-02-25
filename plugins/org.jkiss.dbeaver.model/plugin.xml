@@ -191,6 +191,15 @@
             </propertyGroup>
         </transformer>
         <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.BooleanAttributeTransformer"
+                id="boolean"
+                name="Boolean"
+                description="Represents numbers as booleans"
+                applyByDefault="false"
+                custom="true">
+            <type kind="NUMERIC"/>
+        </transformer>
+        <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDAttributeTransformer"
                 id="org.jkiss.dbeaver.core.UUIDAttributeTransformer"
                 name="UUID"

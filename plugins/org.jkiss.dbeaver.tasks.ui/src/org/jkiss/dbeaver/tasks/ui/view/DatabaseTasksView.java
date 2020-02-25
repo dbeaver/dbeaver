@@ -26,16 +26,16 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -53,6 +53,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
@@ -99,7 +100,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     private void createTaskTree(Composite composite) {
-        tasksTree = new DatabaseTasksTree(composite);
+        tasksTree = new DatabaseTasksTree(composite, false);
 
         MenuManager menuMgr = createTaskContextMenu(tasksTree.getViewer());
         getSite().registerContextMenu(TASKS_VIEW_MENU_ID, menuMgr, tasksTree.getViewer());
@@ -108,7 +109,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         tasksTree.getViewer().addDoubleClickListener(event -> ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
         tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns());
 
-        DatabaseTasksTree.addDragSourceSupport(tasksTree.getViewer());
+        DatabaseTasksTree.addDragSourceSupport(tasksTree.getViewer(), null);
     }
 
     private void createTaskRunTable(Composite parent) {
@@ -404,7 +405,15 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 File runLog = task.getRunLog(taskRun);
                 if (runLog.exists()) {
                     try {
-                        EditorUtils.openExternalFileEditor(runLog, getSite().getWorkbenchWindow());
+                        IEditorPart editorPart = EditorUtils.openExternalFileEditor(runLog, getSite().getWorkbenchWindow());
+                        // Set UTF8 encoding
+                        if (editorPart instanceof ITextEditor) {
+                            IDocumentProvider prov = ((ITextEditor) editorPart).getDocumentProvider();
+                            if (prov instanceof TextFileDocumentProvider) {
+                                ((TextFileDocumentProvider) prov).setEncoding(editorPart.getEditorInput(), StandardCharsets.UTF_8.name());
+                                prov.resetDocument(editorPart.getEditorInput());
+                            }
+                        }
                     } catch (Exception e) {
                         DBWorkbench.getPlatformUI().showError("Open log error", "Error while opening task execution log", e);
                     }

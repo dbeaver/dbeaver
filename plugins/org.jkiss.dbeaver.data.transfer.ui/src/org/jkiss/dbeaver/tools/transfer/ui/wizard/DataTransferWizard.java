@@ -379,7 +379,8 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     }
 
     protected boolean isPageValid(IWizardPage page) {
-        return page instanceof DataTransferPagePipes ||
+        return isTaskConfigPage(page) ||
+            page instanceof DataTransferPagePipes ||
             page instanceof DataTransferPageSettings ||
             page instanceof DataTransferPageFinal ||
             isPageValid(page, settings.getProducer()) ||

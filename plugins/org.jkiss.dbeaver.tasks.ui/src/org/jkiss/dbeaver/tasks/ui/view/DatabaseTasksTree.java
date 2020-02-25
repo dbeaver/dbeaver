@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.Nullable;
@@ -63,11 +64,13 @@ public class DatabaseTasksTree {
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
     private final Color colorError;
 
-    public DatabaseTasksTree(Composite composite) {
+    public DatabaseTasksTree(Composite composite, boolean selector) {
         ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
         colorError = colorRegistry.get("org.jkiss.dbeaver.txn.color.reverted.background");
 
-        FilteredTree filteredTree = new FilteredTree(composite, SWT.MULTI | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true);
+        FilteredTree filteredTree = new FilteredTree(composite,
+            SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
+            new NamedObjectPatternFilter(), true);
         filteredTree.setInitialText("Tasks: type a part of task name here");
         taskViewer = filteredTree.getViewer();
         Tree taskTree = taskViewer.getTree();
@@ -371,7 +374,9 @@ public class DatabaseTasksTree {
                 }
             }
         });
-        return new ArrayList<>(types);
+        List<DBTTaskType> sortedTypes = new ArrayList<>(types);
+        sortedTypes.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+        return sortedTypes;
     }
 
     private void refreshTasks() {
@@ -385,7 +390,20 @@ public class DatabaseTasksTree {
             }
             Collections.addAll(allTasks, tasks);
         }
-        allTasks.sort((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()));
+        allTasks.sort(this::comparTasksTime);
+    }
+
+    private int comparTasksTime(DBTTask o1, DBTTask o2) {
+        DBTTaskRun lr1 = o1.getLastRun();
+        DBTTaskRun lr2 = o2.getLastRun();
+        if (lr1 == null) {
+            if (lr2 == null) return o1.getName().compareToIgnoreCase(o2.getName());
+            return 1;
+        } else if (lr2 == null) {
+            return -1;
+        } else {
+            return lr2.getStartTime().compareTo(lr1.getStartTime());
+        }
     }
 
     private boolean refreshScheduledTasks() {
@@ -408,6 +426,25 @@ public class DatabaseTasksTree {
             return true;
         }
         return false;
+    }
+
+    public List<DBTTask> getCheckedTasks() {
+        List<DBTTask> tasks = new ArrayList<>();
+        for (TreeItem item : taskViewer.getTree().getItems()) {
+            addCheckedItem(item, tasks);
+        }
+        return tasks;
+    }
+
+    private void addCheckedItem(TreeItem item, List<DBTTask> tasks) {
+        if (item.getChecked()) {
+            if (item.getData() instanceof DBTTask) {
+                tasks.add((DBTTask) item.getData());
+            }
+        }
+        for (TreeItem child : item.getItems()) {
+            addCheckedItem(child, tasks);
+        }
     }
 
     private class TreeListContentProvider implements ITreeContentProvider {
@@ -613,7 +650,7 @@ public class DatabaseTasksTree {
         }
     }
 
-    public static void addDragSourceSupport(Viewer viewer)
+    public static void addDragSourceSupport(Viewer viewer, IFilter draggableChecker)
     {
         Transfer[] types = new Transfer[] {TextTransfer.getInstance(), DatabaseTaskTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
@@ -633,11 +670,19 @@ public class DatabaseTasksTree {
                 if (!selection.isEmpty()) {
                     List<DBTTask> tasks = new ArrayList<>();
                     StringBuilder buf = new StringBuilder();
-                    for (Object nextSelected : selection) {
-                        if (!(nextSelected instanceof DBTTask)) {
+                    for (Object nextSelected : selection.toArray()) {
+                        if (draggableChecker != null && !draggableChecker.select(nextSelected)) {
                             continue;
                         }
-                        DBTTask task = (DBTTask) nextSelected;
+                        DBTTask task = null;
+                        if (nextSelected instanceof DBTTask) {
+                            task  = (DBTTask) nextSelected;
+                        } else if (nextSelected instanceof DBTTaskReference) {
+                            task = ((DBTTaskReference) nextSelected).getTask();
+                        }
+                        if (task == null) {
+                            continue;
+                        }
                         tasks.add(task);
                         String taskName = task.getName();
                         if (buf.length() > 0) {

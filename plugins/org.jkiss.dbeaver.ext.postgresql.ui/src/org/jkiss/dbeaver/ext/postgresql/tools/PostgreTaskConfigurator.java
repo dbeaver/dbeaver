@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
-import org.eclipse.jface.wizard.IWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
@@ -25,9 +24,10 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolConfigPanel;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 
 /**
  * PostgreSQL task configurator
@@ -42,7 +42,7 @@ public class PostgreTaskConfigurator implements DBTTaskConfigurator {
     }
 
     @Override
-    public IWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
+    public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
         switch (taskConfiguration.getType().getId()) {
             case PostgreSQLTasks.TASK_DATABASE_BACKUP:
                 return new PostgreBackupWizard(taskConfiguration);

@@ -640,7 +640,7 @@ public final class DBUtils {
     @Nullable
     public static Object makeNullValue(@NotNull DBCSession session, @NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type) throws DBCException
     {
-        return valueHandler.getValueFromObject(session, type, null, false);
+        return valueHandler.getValueFromObject(session, type, null, false, false);
     }
 
     @NotNull

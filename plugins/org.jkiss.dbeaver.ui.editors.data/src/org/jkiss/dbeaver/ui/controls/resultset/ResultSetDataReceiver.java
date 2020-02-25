@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -160,7 +161,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
                 if (dataContainer instanceof DBSEntity) {
                     entity = (DBSEntity) dataContainer;
                 }
-                ResultSetUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
+                DBExecUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
             } catch (Throwable e) {
                 errorList.add(e);
             }
@@ -178,7 +179,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
             resultSetViewer.setData(tmpRows, focusRow);
         } else {
             monitor.subTask("Append data");
-            boolean resetOldRows = getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING);
+            boolean resetOldRows = getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
             resultSetViewer.appendData(tmpRows, resetOldRows);
         }
         // Check for more data

@@ -99,7 +99,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (copy && object != null) {
             if (object instanceof DBDObject) {

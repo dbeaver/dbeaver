@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -188,7 +189,7 @@ public final class DBValueFormatting {
     }
 
     @Nullable
-    public static Number convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter)
+    public static Number convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter, boolean validateValue) throws DBCException
     {
         if (text == null || text.length() == 0) {
             return null;
@@ -219,6 +220,9 @@ public final class DBValueFormatting {
             try {
                 return (Number)formatter.parseValue(text, hintType);
             } catch (ParseException e1) {
+                if (validateValue) {
+                    throw new DBCException("Can't parse numeric value [" + text + "] using formatter", e);
+                }
                 log.debug("Can't parse numeric value [" + text + "] using formatter: " + e.getMessage());
                 return null;
             }

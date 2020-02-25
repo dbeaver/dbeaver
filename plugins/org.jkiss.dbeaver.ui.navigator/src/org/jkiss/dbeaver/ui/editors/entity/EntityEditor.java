@@ -847,6 +847,18 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return;
         }
 
+        if (force && isDirty()) {
+            if (ConfirmationDialog.showConfirmDialog(
+                ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+                null,
+                NavigatorPreferences.CONFIRM_ENTITY_REVERT,
+                ConfirmationDialog.QUESTION,
+                getTitle()) != IDialogConstants.YES_ID)
+            {
+                return;
+            }
+        }
+
         if (source instanceof DBNEvent && ((DBNEvent) source).getNodeChange() == DBNEvent.NodeChange.REFRESH) {
             // This may happen if editor was refreshed indirectly (it is a child of refreshed node)
             //force = true;

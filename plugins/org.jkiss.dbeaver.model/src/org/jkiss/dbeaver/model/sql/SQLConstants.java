@@ -58,7 +58,9 @@ public class SQLConstants {
         KEYWORD_INTO,
         "TABLE",
         "VIEW",
-        KEYWORD_JOIN
+        KEYWORD_JOIN,
+        KEYWORD_TRUNCATE,
+        KEYWORD_MERGE,
     };
 
     public static final String[] COLUMN_KEYWORDS = {

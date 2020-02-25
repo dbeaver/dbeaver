@@ -35,7 +35,7 @@ public class H2GISGeometryValueHandler extends GISGeometryValueHandler {
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         return getValueFromObject(session, type,
             resultSet.getObject(index),
-            false);
+            false, false);
     }
 
     /*

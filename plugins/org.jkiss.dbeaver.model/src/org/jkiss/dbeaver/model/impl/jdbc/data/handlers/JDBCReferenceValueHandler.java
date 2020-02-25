@@ -78,7 +78,7 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public JDBCReference getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public JDBCReference getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         String typeName;
         try {

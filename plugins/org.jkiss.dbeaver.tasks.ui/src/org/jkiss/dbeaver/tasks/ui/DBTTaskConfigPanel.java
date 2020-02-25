@@ -14,13 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.sql;
+package org.jkiss.dbeaver.tasks.ui;
+
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 
 /**
- * SQL tasks constants
+ * DBTTaskConfigPanel.
+ * TODO: move it to UI module and use real classes instead of Object
  */
-public class SQLTConstants {
+public interface DBTTaskConfigPanel
+{
+    void createControl(Composite parent, TaskConfigurationWizard wizard, Runnable propertyChangeListener);
 
-    public static final String TASK_SCRIPT_EXECUTE = "scriptExecute";
+    void loadSettings();
+
+    void saveSettings();
+
+    boolean isComplete();
+
+    String getErrorMessage();
 
 }

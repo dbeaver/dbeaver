@@ -118,12 +118,12 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
-            // Search all objects
-            searchAllObjects(session, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
-
             if (ArrayUtils.contains(objectTypes, OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY) && objects.size() < maxResults) {
                 // Search constraints
                 findConstraintsByMask(session, schema, objectNameMask, objectTypes, maxResults, objects);
+            } else {
+                // Search all objects
+                searchAllObjects(session, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
             }
             // Sort objects. Put ones in the current schema first
             final OracleSchema activeSchema = executionContext.getContextDefaults().getDefaultSchema();
@@ -165,10 +165,10 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + OracleUtils.getSysCatalogHint((OracleDataSource) session.getDataSource()) + " OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE\n" +
-                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, (OracleDataSource) session.getDataSource(), "VIEWS") + "\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, (OracleDataSource) session.getDataSource(), "CONSTRAINTS") + "\n" +
                 "WHERE CONSTRAINT_NAME like ?" + (!hasFK ? " AND CONSTRAINT_TYPE<>'R'" : "") +
                 (schema != null ? " AND OWNER=?" : ""))) {
-            dbStat.setString(1, constrNameMask);
+            dbStat.setString(1, constrNameMask.toUpperCase());
             if (schema != null) {
                 dbStat.setString(2, schema.getName());
             }

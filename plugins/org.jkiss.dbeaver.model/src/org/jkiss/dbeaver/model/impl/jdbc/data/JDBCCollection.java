@@ -422,7 +422,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 // This may happen in case of multidimensional array
                 itemValue = makeCollectionFromJavaArray(session, elementType, elementValueHandler, item);
             } else {
-                itemValue = elementValueHandler.getValueFromObject(session, elementType, item, false);
+                itemValue = elementValueHandler.getValueFromObject(session, elementType, item, false, true);
             }
             contents[i] = itemValue;
         }

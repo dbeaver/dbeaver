@@ -51,7 +51,7 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         if (object != null) {
             String className = object.getClass().getName();
             if (className.startsWith(OracleConstants.TIMESTAMP_CLASS_NAME)) {
@@ -62,7 +62,7 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
                 }
             }
         }
-        return super.getValueFromObject(session, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
     private static Object getTimestampReadMethod(Class<?> aClass, Connection connection, Object object) throws Exception {

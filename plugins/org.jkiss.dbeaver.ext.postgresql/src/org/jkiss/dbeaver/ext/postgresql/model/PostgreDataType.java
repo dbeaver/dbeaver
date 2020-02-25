@@ -270,6 +270,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
     }
 
+    public static String[] getOidTypes() {
+      return OID_TYPES;
+    }
+
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {

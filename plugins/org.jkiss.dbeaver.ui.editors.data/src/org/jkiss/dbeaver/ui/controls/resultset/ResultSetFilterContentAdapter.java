@@ -1,12 +1,18 @@
-package org.jkiss.dbeaver.ui.contentassist;
+package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ui.contentassist.StyledTextContentAdapter;
 
-public class SmartStyledTextContentAdapter extends StyledTextContentAdapter {
+public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
 
-    public SmartStyledTextContentAdapter() {
+    private final ResultSetViewer viewer;
+
+    public ResultSetFilterContentAdapter(ResultSetViewer viewer) {
+        this.viewer = viewer;
     }
 
     @Override
@@ -17,7 +23,11 @@ public class SmartStyledTextContentAdapter extends StyledTextContentAdapter {
 
         if (selection.x == selection.y) {
             // Try to replace text under cursor contents starts with
-            String contentsUC = contents.toUpperCase();
+            String contentsUC = contents.toUpperCase().trim();
+            DBPDataSource dataSource = viewer.getDataSource();
+            if (dataSource != null) {
+                contentsUC = DBUtils.getUnQuotedIdentifier(dataSource, contentsUC);
+            }
             for (int i = selection.x - 1; i >= 0; i--) {
                 String prefix = curValue.substring(i, selection.x);
                 if (contentsUC.startsWith(prefix)) {

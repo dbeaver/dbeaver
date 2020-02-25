@@ -108,9 +108,13 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
             curValue.getClass() :
             valueController.getValueHandler().getValueObjectType(valueController.getValueType());
         try {
-            return DBValueFormatting.convertStringToNumber(text, hintType, formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, valueController.getValueType()));
+            return DBValueFormatting.convertStringToNumber(
+                text,
+                hintType,
+                formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, valueController.getValueType()),
+                true);
         } catch (Exception e) {
-            log.error(e);
+            log.debug(e);
             return null;
         }
     }
