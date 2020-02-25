@@ -111,7 +111,7 @@ class SQLTaskScriptSelectorDialog extends BaseDialog {
     private void updateSelectedScripts() {
         selectedScripts.clear();
         for (Object element : scriptsTree.getCheckboxViewer().getCheckedElements()) {
-            if (element instanceof DBNResource) {
+            if (element instanceof DBNResource && ((DBNResource) element).getResource() instanceof IFile) {
                 selectedScripts.add((DBNResource) element);
             }
         }
