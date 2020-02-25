@@ -91,7 +91,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
         {
             Composite filesGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_files, 2, GridData.FILL_BOTH, 0);
 
-            scriptsViewer = new TableViewer(filesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+            scriptsViewer = new TableViewer(filesGroup, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             scriptsViewer.setContentProvider(new ListContentProvider());
             scriptsViewer.getTable().setHeaderVisible(true);
             scriptsViewer.setLabelProvider(new ColumnLabelProvider() {
@@ -121,7 +121,11 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
                 public void widgetSelected(SelectionEvent e) {
                     SQLTaskScriptSelectorDialog dialog = new SQLTaskScriptSelectorDialog(getShell(), projectNode);
                     if (dialog.open() == IDialogConstants.OK_ID) {
-                        selectedScripts.addAll(dialog.getSelectedScripts());
+                        for (DBNResource script : dialog.getSelectedScripts()) {
+                            if (!selectedScripts.contains(script)) {
+                                selectedScripts.add(script);
+                            }
+                        }
                         refreshScripts();
                     }
                 }
@@ -177,7 +181,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
         {
             Composite connectionsGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_connections, 2, GridData.FILL_BOTH, 0);
 
-            dataSourceViewer = new TableViewer(connectionsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+            dataSourceViewer = new TableViewer(connectionsGroup, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             dataSourceViewer.setContentProvider(new ListContentProvider());
             //dataSourceViewer.getTable().setHeaderVisible(true);
             dataSourceViewer.setLabelProvider(new ColumnLabelProvider() {
@@ -205,7 +209,11 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
                 public void widgetSelected(SelectionEvent e) {
                     SQLTaskDataSourceSelectorDialog dialog = new SQLTaskDataSourceSelectorDialog(getShell(), projectNode);
                     if (dialog.open() == IDialogConstants.OK_ID) {
-                        selectedDataSources.addAll(dialog.getSelectedDataSources());
+                        for (DBNDataSource ds : dialog.getSelectedDataSources()) {
+                            if (!selectedDataSources.contains(ds)) {
+                                selectedDataSources.add(ds);
+                            }
+                        }
                         refreshDataSources();
                     }
                 }

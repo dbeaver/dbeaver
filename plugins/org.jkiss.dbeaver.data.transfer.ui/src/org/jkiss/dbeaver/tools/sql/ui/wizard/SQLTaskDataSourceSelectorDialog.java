@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.sql.ui.wizard;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
@@ -158,15 +154,6 @@ class SQLTaskDataSourceSelectorDialog extends BaseDialog {
             }
         });
         columnController.createColumns(true);
-    }
-
-    private boolean isResourceApplicable(DBNResource element) {
-        IResource resource = element.getResource();
-        if (resource instanceof IFolder) {
-            // FIXME: this is a hack
-            return "script folder".equals(element.getNodeType());
-        }
-        return resource instanceof IContainer || (resource instanceof IFile && "sql".equals(resource.getFileExtension()));
     }
 
 }
