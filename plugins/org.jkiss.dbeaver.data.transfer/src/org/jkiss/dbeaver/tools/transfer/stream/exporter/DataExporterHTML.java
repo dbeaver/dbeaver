@@ -36,22 +36,30 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.Map;
 
 /**
  * HTML Exporter
  */
 public class DataExporterHTML extends StreamExporterAbstract {
 
-  private String name;
+    private static final String PROP_HEADER = "header";
+
+    private String name;
     private static final int IMAGE_FRAME_SIZE = 200;
 
     private DBDAttributeBinding[] columns;
     private int rowCount = 0;
 
+    private boolean outputHeader = true;
+
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
+
+        Map<Object, Object> properties = site.getProperties();
+        outputHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), outputHeader);
     }
 
     @Override
@@ -64,15 +72,15 @@ public class DataExporterHTML extends StreamExporterAbstract {
     public void exportHeader(DBCSession session) throws DBException, IOException
     {
         name = getSite().getSource().getName();
-		columns = getSite().getAttributes();
+        columns = getSite().getAttributes();
         printHeader();
     }
 
     private void printHeader()
     {
         PrintWriter out = getWriter();
-  	  out.write("<html>");
-      out.write("<head><style>" +
+        out.write("<html>");
+        out.write("<head><style>" +
               "table {border: medium solid #6495ed;" + 
               "border-collapse: collapse;" + 
               "width: 100%;} " +
@@ -91,10 +99,12 @@ public class DataExporterHTML extends StreamExporterAbstract {
               ".odd{background:#e8edff;}" +
               "img{padding:5px; border:solid; border-color: #dddddd #aaaaaa #aaaaaa #dddddd; border-width: 1px 2px 2px 1px; background-color:white;}" +
               "</style></head>");
-      out.write("<body><table>");
+        out.write("<body><table>");
 
         out.write("<tr>");
-        writeTableTitle(name, columns.length);
+        if (outputHeader) {
+            writeTableTitle(name, columns.length);
+        }
         out.write("</tr>");
         out.write("<tr>");
         for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
