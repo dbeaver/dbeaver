@@ -16,33 +16,37 @@
  */
 package org.jkiss.dbeaver.tools.sql.ui.wizard;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.*;
 
 /**
@@ -56,7 +60,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
     private Button ignoreErrorsCheck;
     private Button dumpQueryCheck;
     private Button autoCommitCheck;
-    private DatabaseNavigatorTree scriptsTree;
+    private TableViewer scriptsTree;
     private DatabaseNavigatorTree dataSourceTree;
 
     private List<DBNResource> selectedScripts = new ArrayList<>();
@@ -85,53 +89,88 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
         DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
 
         {
-            Composite filesGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_files, 1, GridData.FILL_BOTH, 0);
+            Composite filesGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_files, 2, GridData.FILL_BOTH, 0);
 
-            INavigatorFilter scriptFilter = new INavigatorFilter() {
+            scriptsTree = new TableViewer(filesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+            scriptsTree.setContentProvider(new ListContentProvider());
+            scriptsTree.getTable().setHeaderVisible(true);
+            scriptsTree.setLabelProvider(new ColumnLabelProvider() {
                 @Override
-                public boolean filterFolders() {
-                    return true;
+                public String getText(Object element) {
+                    return ((DBNResource) element).getResource().getProjectRelativePath().toString();
+                }
+                @Override
+                public Image getImage(Object element) {
+                    return DBeaverIcons.getImage(((DBNResource)element).getNodeIconDefault());
                 }
 
-                @Override
-                public boolean isLeafObject(Object object) {
-                    return object instanceof DBNResource && ((DBNResource) object).getResource() instanceof IFile;
-                }
+            });
+            SQLTaskScriptSelectorDialog.createScriptColumns(scriptsTree);
 
+            final Table scriptTable = scriptsTree.getTable();
+            scriptTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            ToolBar buttonsToolbar = new ToolBar(filesGroup, SWT.VERTICAL);
+            buttonsToolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            ToolItem addItem = UIUtils.createToolItem(buttonsToolbar, "Add script", UIIcon.ROW_ADD, new SelectionAdapter() {
                 @Override
-                public boolean select(Object element) {
-                    return element instanceof DBNLocalFolder || element instanceof DBNResource;
-                }
-            };
-            scriptsTree = new DatabaseNavigatorTree(
-                filesGroup,
-                projectNode,
-                SWT.SINGLE | SWT.BORDER | SWT.CHECK,
-                false,
-                scriptFilter);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
-            gd.widthHint = 400;
-            scriptsTree.setLayoutData(gd);
-            scriptsTree.getViewer().addFilter(new ViewerFilter() {
-                @Override
-                public boolean select(Viewer viewer, Object parentElement, Object element) {
-                    if (element instanceof TreeNodeSpecial) {
-                        return true;
+                public void widgetSelected(SelectionEvent e) {
+                    SQLTaskScriptSelectorDialog dialog = new SQLTaskScriptSelectorDialog(getShell(), projectNode);
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        selectedScripts.addAll(dialog.getSelectedScripts());
+                        refreshScripts();
                     }
-                    if (element instanceof DBNResource) {
-                        return isResourceApplicable((DBNResource) element);
-                    }
-                    return false;
                 }
             });
-            scriptsTree.getViewer().addSelectionChangedListener(event -> {
-                updateSelectedScripts();
+            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, "Remove script", UIIcon.ROW_DELETE, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ISelection selection = scriptsTree.getSelection();
+                    if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+                        for (Object element : ((IStructuredSelection) selection).toArray()) {
+                            if (element instanceof DBNResource) {
+                                selectedScripts.remove(element);
+                            }
+                        }
+                        refreshScripts();
+                    }
+                }
             });
-            scriptsTree.getViewer().expandToLevel(2);
-            scriptsTree.getViewer().getTree().setHeaderVisible(true);
-            createScriptColumns();
+            UIUtils.createToolBarSeparator(buttonsToolbar, SWT.HORIZONTAL);
+            ToolItem moveUpItem = UIUtils.createToolItem(buttonsToolbar, "Move script up", UIIcon.ARROW_UP, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    int selectionIndex = scriptTable.getSelectionIndex();
+                    if (selectionIndex > 0) {
+                        DBNResource prevScript = selectedScripts.get(selectionIndex - 1);
+                        selectedScripts.set(selectionIndex - 1, selectedScripts.get(selectionIndex));
+                        selectedScripts.set(selectionIndex, prevScript);
+                        refreshScripts();
+                    }
+                }
+            });
+            ToolItem moveDownItem = UIUtils.createToolItem(buttonsToolbar, "Move script down", UIIcon.ARROW_DOWN, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    int selectionIndex = scriptTable.getSelectionIndex();
+                    if (selectionIndex < scriptTable.getItemCount() - 1) {
+                        DBNResource nextScript = selectedScripts.get(selectionIndex + 1);
+                        selectedScripts.set(selectionIndex + 1, selectedScripts.get(selectionIndex));
+                        selectedScripts.set(selectionIndex, nextScript);
+                        refreshScripts();
+                    }
+                }
+            });
+            scriptsTree.addSelectionChangedListener(event -> {
+                int selectionIndex = scriptTable.getSelectionIndex();
+                deleteItem.setEnabled(selectionIndex >= 0);
+                moveUpItem.setEnabled(selectionIndex > 0);
+                moveDownItem.setEnabled(selectionIndex < scriptTable.getItemCount() - 1);
+            });
+            deleteItem.setEnabled(false);
+        }
 
+        {
             Composite connectionsGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_connections, 1, GridData.FILL_BOTH, 0);
 
             INavigatorFilter dsFilter = new INavigatorFilter() {
@@ -150,7 +189,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
             };
 
             dataSourceTree = new DatabaseNavigatorTree(connectionsGroup, projectNode.getDatabases(), SWT.SINGLE | SWT.BORDER | SWT.CHECK, false, dsFilter);
-            gd = new GridData(GridData.FILL_BOTH);
+            GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 400;
             dataSourceTree.setLayoutData(gd);
@@ -176,25 +215,21 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
         setControl(composite);
     }
 
+    private void refreshScripts() {
+        scriptsTree.refresh(true, true);
+        updateSelectedScripts();
+    }
+
     private void updateSelectedScripts() {
         DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
 
-        List<DBNResource> newCheckedScripts = new ArrayList<>();
         Set<DBPDataSourceContainer> dataSources = new LinkedHashSet<>();
-        for (Object element : scriptsTree.getCheckboxViewer().getCheckedElements()) {
-            if (element instanceof DBNResource) {
-                newCheckedScripts.add((DBNResource) element);
-                Collection<DBPDataSourceContainer> resDS = ((DBNResource) element).getAssociatedDataSources();
-                if (!CommonUtils.isEmpty(resDS)) {
-                    dataSources.addAll(resDS);
-                }
+        for (DBNResource element : selectedScripts) {
+            Collection<DBPDataSourceContainer> resDS = element.getAssociatedDataSources();
+            if (!CommonUtils.isEmpty(resDS)) {
+                dataSources.addAll(resDS);
             }
         }
-        if (newCheckedScripts.equals(selectedScripts)) {
-            return;
-        }
-        selectedScripts.clear();
-        selectedScripts.addAll(newCheckedScripts);
 
         if (!dataSources.isEmpty()) {
             List<DBNDataSource> checkedDataSources = new ArrayList<>();
@@ -226,55 +261,6 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
         }
     }
 
-    private void createScriptColumns() {
-        final ILabelProvider mainLabelProvider = (ILabelProvider) scriptsTree.getViewer().getLabelProvider();
-        ViewerColumnController columnController = new ViewerColumnController("sqlTaskScriptViewer", scriptsTree.getViewer());
-        columnController.setForceAutoSize(true);
-        columnController.addColumn(ModelMessages.model_navigator_Name, "Script", SWT.LEFT, true, true, new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                return mainLabelProvider.getText(element);
-            }
-            @Override
-            public Image getImage(Object element) {
-                return mainLabelProvider.getImage(element);
-            }
-            @Override
-            public String getToolTipText(Object element) {
-                if (mainLabelProvider instanceof IToolTipProvider) {
-                    return ((IToolTipProvider) mainLabelProvider).getToolTipText(element);
-                }
-                return null;
-            }
-        });
-
-        columnController.addColumn(ModelMessages.model_navigator_Connection, "Script datasource", SWT.LEFT, true, true, new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                if (element instanceof DBNResource) {
-                    Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
-                    if (!CommonUtils.isEmpty(containers)) {
-                        StringBuilder text = new StringBuilder();
-                        for (DBPDataSourceContainer container : containers) {
-                            if (text.length() > 0) {
-                                text.append(", ");
-                            }
-                            text.append(container.getName());
-                        }
-                        return text.toString();
-                    }
-                }
-                return "";
-            }
-
-            @Override
-            public Image getImage(Object element) {
-                return null;
-            }
-        });
-        columnController.createColumns(true);
-    }
-
     @Override
     public void activatePage() {
         updatePageCompletion();
@@ -296,15 +282,6 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
         }
         setErrorMessage(null);
         return true;
-    }
-
-    private boolean isResourceApplicable(DBNResource element) {
-        IResource resource = element.getResource();
-        if (resource instanceof IFolder) {
-            // FIXME: this is a hack
-            return "script folder".equals(element.getNodeType());
-        }
-        return resource instanceof IContainer || (resource instanceof IFile && "sql".equals(resource.getFileExtension()));
     }
 
     public void loadSettings() {
@@ -330,10 +307,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
                 }
             }
         }
-        if (!selectedScripts.isEmpty()) {
-            scriptsTree.getCheckboxViewer().setCheckedElements(selectedScripts.toArray());
-            scriptsTree.getCheckboxViewer().reveal(selectedScripts.get(0));
-        }
+        scriptsTree.setInput(selectedScripts);
 
         for (DBPDataSourceContainer dataSource : settings.getDataSources()) {
             DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(dataSource.getProject());
