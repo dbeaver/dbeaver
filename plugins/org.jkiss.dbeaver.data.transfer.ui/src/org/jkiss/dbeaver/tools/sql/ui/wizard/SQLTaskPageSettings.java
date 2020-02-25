@@ -30,9 +30,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -61,9 +63,9 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
     private List<DBNDataSource> selectedDataSources = new ArrayList<>();
 
     SQLTaskPageSettings(SQLTaskConfigurationWizard wizard) {
-        super("SQL Script execute");
-        setTitle("SQL Script execute settings");
-        setDescription("Select scripts and connections). Each script will be executed in all selected connections.");
+        super(DTMessages.sql_script_task_title);
+        setTitle(DTMessages.sql_script_task_page_settings_title);
+        setDescription(DTMessages.sql_script_task_page_settings_description);
         this.sqlWizard = wizard;
     }
 
@@ -83,7 +85,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
         DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
 
         {
-            Composite filesGroup = UIUtils.createControlGroup(mainGroup, "Files", 1, GridData.FILL_BOTH, 0);
+            Composite filesGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_files, 1, GridData.FILL_BOTH, 0);
 
             INavigatorFilter scriptFilter = new INavigatorFilter() {
                 @Override
@@ -130,7 +132,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
             scriptsTree.getViewer().getTree().setHeaderVisible(true);
             createScriptColumns();
 
-            Composite connectionsGroup = UIUtils.createControlGroup(mainGroup, "Connections", 1, GridData.FILL_BOTH, 0);
+            Composite connectionsGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_connections, 1, GridData.FILL_BOTH, 0);
 
             INavigatorFilter dsFilter = new INavigatorFilter() {
                 @Override
@@ -160,11 +162,11 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
         }
 
         {
-            Composite settingsGroup = UIUtils.createControlGroup(composite, "Script settings", 3, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite settingsGroup = UIUtils.createControlGroup(composite, DTMessages.sql_script_task_page_settings_group_script, 3, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            ignoreErrorsCheck = UIUtils.createCheckbox(settingsGroup, "Ignore Errors", "", dtSettings.isIgnoreErrors(), 1);
-            dumpQueryCheck = UIUtils.createCheckbox(settingsGroup, "Dump query results to log file", "", dtSettings.isDumpQueryResultsToLog(), 1);
-            autoCommitCheck = UIUtils.createCheckbox(settingsGroup, "Auto-commit", "", dtSettings.isAutoCommit(), 1);
+            ignoreErrorsCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_ignore_errors, "", dtSettings.isIgnoreErrors(), 1);
+            dumpQueryCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_dump_results, "", dtSettings.isDumpQueryResultsToLog(), 1);
+            autoCommitCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_auto_commit, "", dtSettings.isAutoCommit(), 1);
         }
 
         getWizard().createTaskSaveButtons(composite, true, 1);
@@ -228,7 +230,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
         final ILabelProvider mainLabelProvider = (ILabelProvider) scriptsTree.getViewer().getLabelProvider();
         ViewerColumnController columnController = new ViewerColumnController("sqlTaskScriptViewer", scriptsTree.getViewer());
         columnController.setForceAutoSize(true);
-        columnController.addColumn("Name", "Script", SWT.LEFT, true, true, new ColumnLabelProvider() {
+        columnController.addColumn(ModelMessages.model_navigator_Name, "Script", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return mainLabelProvider.getText(element);
@@ -246,7 +248,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
             }
         });
 
-        columnController.addColumn("DataSource", "Script datasource", SWT.LEFT, true, true, new ColumnLabelProvider() {
+        columnController.addColumn(ModelMessages.model_navigator_Connection, "Script datasource", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 if (element instanceof DBNResource) {
