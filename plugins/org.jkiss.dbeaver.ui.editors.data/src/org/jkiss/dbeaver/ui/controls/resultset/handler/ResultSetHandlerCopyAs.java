@@ -117,11 +117,11 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
-            DBWorkbench.getPlatformUI().showError("Copy As " + processor.getName(), ModelMessages.error_not_connected_to_database);
+            DBWorkbench.getPlatformUI().showError("Copy as " + processor.getName(), ModelMessages.error_not_connected_to_database);
             return;
         }
 
-        AbstractJob exportJob = new AbstractJob("Copy As " + processor.getName()) {
+        AbstractJob exportJob = new AbstractJob("Copy as " + processor.getName()) {
 
             {
                 setUser(true);
