@@ -88,11 +88,15 @@ public class QMUtils {
                 if (txnInfo != null) {
                     QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
                     QMMStatementExecuteInfo execInfo = sp.getLastExecute();
-                    for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
-                        if (exec.isTransactional()) {
-                            return true;
-                        }
+                    if (execInfo != null) {
+                        // If transaction was enabled all statements are transactional
+                        return true;
                     }
+//                    for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
+//                        if (exec.isTransactional()) {
+//                            return true;
+//                        }
+//                    }
                 }
             }
         }
@@ -134,7 +138,7 @@ public class QMUtils {
                     for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
                         execCount++;
                         DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
-                        if (exec.isTransactional() && !exec.hasError() && purpose != DBCExecutionPurpose.META && purpose != DBCExecutionPurpose.UTIL) {
+                        if (!exec.hasError() && purpose != DBCExecutionPurpose.META && purpose != DBCExecutionPurpose.UTIL) {
                             txnStartTime = exec.getOpenTime();
                             updateCount++;
                         }
@@ -146,6 +150,9 @@ public class QMUtils {
             } else {
                 txnMode = false;
             }
+        }
+        if (txnStartTime <= 0) {
+            txnStartTime = System.currentTimeMillis();
         }
         return new QMTransactionState(execCount, updateCount, txnMode, txnStartTime);
     }
