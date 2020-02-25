@@ -24,5 +24,6 @@ public enum DBPKeywordType {
     KEYWORD,
     FUNCTION,
     TYPE,
+    LITERAL,
     OTHER
 }

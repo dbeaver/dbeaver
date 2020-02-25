@@ -520,6 +520,8 @@ public class ProjectMetadata implements DBPProject {
         protected IStatus run(DBRProgressMonitor monitor) {
             setName("Project '" + ProjectMetadata.this.getName() + "' sync job");
 
+            ContentUtils.makeFileBackup(getMetadataFolder(true).getFile(new Path(METADATA_STORAGE_FILE)));
+
             synchronized (metadataSync) {
                 File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);
                 if (CommonUtils.isEmpty(resourceProperties) && !mdFile.exists()) {
@@ -527,8 +529,6 @@ public class ProjectMetadata implements DBPProject {
                     return Status.OK_STATUS;
                 }
                 try {
-                    ContentUtils.makeFileBackup(getMetadataFolder(true).getFile(new Path(METADATA_STORAGE_FILE)));
-
                     if (!CommonUtils.isEmpty(resourceProperties)) {
                         try (Writer mdWriter = new OutputStreamWriter(new FileOutputStream(mdFile), StandardCharsets.UTF_8)) {
                             try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {

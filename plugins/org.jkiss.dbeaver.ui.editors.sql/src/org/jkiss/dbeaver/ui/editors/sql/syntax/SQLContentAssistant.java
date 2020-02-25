@@ -24,6 +24,7 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 public class SQLContentAssistant extends ContentAssistant {
     public SQLContentAssistant() {
         super(); // Sync. Maybe we should make it async
+        enableColoredLabels(true);
     }
 
     @Override

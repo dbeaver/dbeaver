@@ -272,7 +272,7 @@
         </tools>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.task">
+    <extension point="org.jkiss.dbeaver.task.ui">
         <configurator type="pgDatabaseBackup" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>
         <configurator type="pgDatabaseRestore" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>
         <configurator type="pgScriptExecute" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>

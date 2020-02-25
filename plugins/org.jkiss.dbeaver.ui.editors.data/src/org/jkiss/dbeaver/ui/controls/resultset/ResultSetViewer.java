@@ -1517,9 +1517,9 @@ public class ResultSetViewer extends Viewer
                 int fetchSize = CommonUtils.toInt(resultSetSize.getText());
                 if (fetchSize > 0 && dataContainer != null && dataContainer.getDataSource() != null) {
                     DBPPreferenceStore store = dataContainer.getDataSource().getContainer().getPreferenceStore();
-                    int oldFetchSize = store.getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS);
+                    int oldFetchSize = store.getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
                     if (oldFetchSize > 0 && oldFetchSize != fetchSize) {
-                        store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, fetchSize);
+                        store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS, fetchSize);
                         PrefUtils.savePreferenceStore(store);
                     }
                 }
@@ -1748,7 +1748,7 @@ public class ResultSetViewer extends Viewer
 
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && dataContainer.getDataSource() != null) {
-            resultSetSize.setText(String.valueOf(dataContainer.getDataSource().getContainer().getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
+            resultSetSize.setText(String.valueOf(dataContainer.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS)));
         }
     }
 
@@ -3343,7 +3343,7 @@ public class ResultSetViewer extends Viewer
         if (getDataContainer() == null) {
             return 0;
         }
-        return getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS);
+        return getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
     }
 
     @NotNull
@@ -3495,23 +3495,18 @@ public class ResultSetViewer extends Viewer
                             if (!metadataChanged) {
                                 // Seems to be refresh
                                 // Restore original position
-                                // It also updates panels
-                                if (!restorePresentationState(presentationState)) {
-                                    updatePanelsContent(false);
-                                }
-                            } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
+                                restorePresentationState(presentationState);
+                            }
+                            if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
                                 if (getCurrentRow() == null) {
                                     setCurrentRow(getModel().getRow(focusRow));
                                 }
                                 if (getActivePresentation().getCurrentAttribute() == null) {
                                     getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
                                 }
-                                updatePanelsContent(false);
                             }
                         }
-                        if (metadataChanged) {
-                            activePresentation.updateValueView();
-                        }
+                        activePresentation.updateValueView();
 
                         if (!scroll) {
                             if (dataFilter != null) {
@@ -3521,6 +3516,7 @@ public class ResultSetViewer extends Viewer
                                 redrawData(visibilityChanged, false);
                             }
                         }
+                        updatePanelsContent(true);
                         if (getStatistics() == null || !getStatistics().isEmpty()) {
                             if (error == null) {
                                 // Update status (update execution statistics)
@@ -3779,7 +3775,7 @@ public class ResultSetViewer extends Viewer
                     if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < model.getRowCount()) {
                         Object[] origRow = model.getRowData(currentRowNumber);
                         try {
-                            cells[0] = docAttribute.getValueHandler().getValueFromObject(session, docAttribute, origRow[0], true);
+                            cells[0] = docAttribute.getValueHandler().getValueFromObject(session, docAttribute, origRow[0], true, false);
                         } catch (DBCException e) {
                             log.warn(e);
                         }
@@ -3803,7 +3799,7 @@ public class ResultSetViewer extends Viewer
                             } else {
                                 DBSAttributeBase attribute = metaAttr.getAttribute();
                                 try {
-                                    cells[i] = metaAttr.getValueHandler().getValueFromObject(session, attribute, origRow[i], true);
+                                    cells[i] = metaAttr.getValueHandler().getValueFromObject(session, attribute, origRow[i], true, false);
                                 } catch (DBCException e) {
                                     log.warn(e);
                                     try {
@@ -4103,7 +4099,7 @@ public class ResultSetViewer extends Viewer
 
     private class ToggleRefreshOnScrollingAction extends ToggleConnectionPreferenceAction {
         ToggleRefreshOnScrollingAction() {
-            super(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling);
+            super(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling);
         }
     }
 

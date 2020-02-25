@@ -333,6 +333,16 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     @Override
+    public void create() {
+        super.create();
+
+        if (propertySource != null && propertySource.getPropertyDescriptors2().length == 0 && !selector) {
+            // No properties
+            UIUtils.asyncExec(this::okPressed);
+        }
+    }
+
+    @Override
     protected void okPressed()
     {
         saveTransformerSettings();

@@ -78,8 +78,9 @@ public class HANAXyzmModeFinder {
             inspectPolygon((Polygon) g);
         } else if (g instanceof GeometryCollection) {
             inspectCollection((GeometryCollection) g);
+        } else {
+            throw new AssertionError("Unknown geometry type " + g.getClass());
         }
-        throw new AssertionError();
     }
 
     private void inspectPoint(Point p) {

@@ -51,7 +51,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         try {
             Object object = resultSet.getObject(index);
-            return getValueFromObject(session, type, object,false);
+            return getValueFromObject(session, type, object,false, false);
         } catch (SQLException e) {
             if (e.getCause() instanceof IllegalArgumentException) {
                 // Try to parse as WKG
@@ -98,7 +98,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         if (object == null) {
             return new DBGeometry();
         } else if (object instanceof DBGeometry) {

@@ -689,11 +689,12 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread)
         throws DBException
     {
-        try {
-            getOriginal().close();
-        }
-        catch (SQLException e) {
-            throw new DBCException(e, getExecutionContext());
+        if (context.isConnected()) {
+            try {
+                getOriginal().close();
+            } catch (SQLException e) {
+                throw new DBCException(e, getExecutionContext());
+            }
         }
     }
 

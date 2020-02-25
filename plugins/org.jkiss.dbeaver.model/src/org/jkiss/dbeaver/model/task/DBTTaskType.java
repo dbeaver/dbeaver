@@ -53,9 +53,4 @@ public interface DBTTaskType {
     @NotNull
     DBTTaskHandler createHandler() throws DBException;
 
-    boolean supportsConfigurator();
-
-    @NotNull
-    DBTTaskConfigurator createConfigurator() throws DBException;
-
 }

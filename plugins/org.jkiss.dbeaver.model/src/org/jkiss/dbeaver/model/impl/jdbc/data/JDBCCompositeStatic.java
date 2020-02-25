@@ -72,7 +72,7 @@ public class JDBCCompositeStatic extends JDBCComposite {
                     }
                     Object value = attrValues != null ? attrValues[ordinalPosition] : null;
                     DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attr);
-                    value = valueHandler.getValueFromObject(session, attr, value, false);
+                    value = valueHandler.getValueFromObject(session, attr, value, false, modified);
                     values[ordinalPosition] = value;
                 }
             } else {

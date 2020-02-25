@@ -16,20 +16,14 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.code.NotNull;
+
 /**
- * DBTTaskConfigPanel.
- * TODO: move it to UI module and use real classes instead of Object
+ * Task reference.
  */
-public interface DBTTaskConfigPanel
-{
-    void createControl(Object parent, Object wizard, Runnable propertyChangeListener);
+public interface DBTTaskReference {
 
-    void loadSettings();
-
-    void saveSettings();
-
-    boolean isComplete();
-
-    String getErrorMessage();
+    @NotNull
+    DBTTask getTask();
 
 }

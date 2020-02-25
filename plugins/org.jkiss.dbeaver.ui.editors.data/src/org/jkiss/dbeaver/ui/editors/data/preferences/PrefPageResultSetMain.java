@@ -75,10 +75,10 @@ public class PrefPageResultSetMain extends TargetPrefPage
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) ||
-            store.contains(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING) ||
-            store.contains(ResultSetPreferences.RESULT_SET_MAX_ROWS) ||
+            store.contains(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING) ||
+            store.contains(ModelPreferences.RESULT_SET_MAX_ROWS) ||
             store.contains(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
-            store.contains(ResultSetPreferences.RESULT_SET_READ_METADATA) ||
+            store.contains(ModelPreferences.RESULT_SET_READ_METADATA) ||
             store.contains(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
             store.contains(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT) ||
             store.contains(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
@@ -174,12 +174,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         try {
             autoFetchNextSegmentCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
-            rereadOnScrollingCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING));
-            resultSetSize.setText(store.getString(ResultSetPreferences.RESULT_SET_MAX_ROWS));
+            rereadOnScrollingCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING));
+            resultSetSize.setText(store.getString(ModelPreferences.RESULT_SET_MAX_ROWS));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             serverSideOrderingCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE));
-            readQueryMetadata.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_READ_METADATA));
-            readQueryReferences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_READ_REFERENCES));
+            readQueryMetadata.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_METADATA));
+            readQueryReferences.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES));
             queryCancelTimeout.setText(store.getString(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT));
             filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
 
@@ -204,12 +204,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING, rereadOnScrollingCheck.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
+            store.setValue(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, rereadOnScrollingCheck.getSelection());
+            store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
+            store.setValue(ModelPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
+            store.setValue(ModelPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
             store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
 
@@ -232,12 +232,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_MAX_ROWS);
+        store.setToDefault(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
+        store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_READ_METADATA);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_READ_REFERENCES);
+        store.setToDefault(ModelPreferences.RESULT_SET_READ_METADATA);
+        store.setToDefault(ModelPreferences.RESULT_SET_READ_REFERENCES);
         store.setToDefault(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
         store.setToDefault(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
 

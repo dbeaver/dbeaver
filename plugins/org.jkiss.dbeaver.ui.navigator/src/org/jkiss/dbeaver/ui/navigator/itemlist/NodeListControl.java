@@ -102,6 +102,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
 
         DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
+
+//        if (workbenchSite != null) {
+//            UIUtils.addFocusTracker(workbenchSite, INavigatorModelView.NAVIGATOR_CONTROL_ID, getItemsViewer().getControl());
+//        }
     }
 
     protected void openNodeEditor(DBNNode node) {

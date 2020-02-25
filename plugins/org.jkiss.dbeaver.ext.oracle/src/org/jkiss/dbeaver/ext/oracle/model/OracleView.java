@@ -117,7 +117,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
     {
         if (viewText == null) {
             try {
-                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.FULL, options);
+                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.COMPACT, options);
             } catch (DBException e) {
                 log.warn("Error getting view definition from system package", e);
             }

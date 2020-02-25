@@ -40,6 +40,8 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     private static final Log log = Log.getLog(TaskConfigurationWizardDialog.class);
     private TaskConfigurationWizard nestedTaskWizard;
     private TaskConfigurationWizardPageTask taskEditPage;
+    private boolean editMode;
+    private boolean selectorMode;
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
         this(window, wizard, null);
@@ -95,9 +97,9 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.NEXT_ID &&
             getWizard() instanceof TaskConfigurationWizardStub &&
-            getCurrentPage() instanceof TaskConfigurationWizardPageTask)
+            ((TaskConfigurationWizardStub)getWizard()).isLastTaskPreconfigPage(getCurrentPage()))
         {
-            taskEditPage = (TaskConfigurationWizardPageTask) getCurrentPage();
+            taskEditPage = getTaskPage();
             try {
                 TaskConfigurationWizard nextTaskWizard = taskEditPage.getTaskWizard();
                 if (nextTaskWizard != nestedTaskWizard) {
@@ -145,4 +147,23 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
         return getWizard().getCurrentTask();
     }
 
+
+    public boolean isSelectorMode() {
+        return selectorMode;
+    }
+
+    public void setSelectorMode(boolean selectorMode) {
+        this.selectorMode = selectorMode;
+        if (selectorMode) {
+            setFinishButtonLabel("Save");
+        }
+    }
+
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
+    }
 }
