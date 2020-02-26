@@ -105,9 +105,11 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     @Override
     protected long getDDLFeatures(GenericTableColumn object) {
         long features = 0;
-        Object shortDrop = object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_SHORT);
-        if (shortDrop != null && CommonUtils.toBoolean(shortDrop)) {
+        if (CommonUtils.toBoolean(object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_SHORT))) {
             features |= DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP;
+        }
+        if (CommonUtils.toBoolean(object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_BRACKETS))) {
+            features |= DDL_FEATURE_USER_BRACKETS_IN_DROP;
         }
         return features;
     }

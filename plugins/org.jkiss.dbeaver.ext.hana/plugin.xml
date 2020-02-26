@@ -109,6 +109,7 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUMMY"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA &quot;?&quot;"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="ddl-drop-column-brackets" value="true"/>
                 </driver>
             </drivers>
 
