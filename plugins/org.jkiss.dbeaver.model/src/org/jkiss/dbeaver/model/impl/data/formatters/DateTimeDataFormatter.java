@@ -24,6 +24,7 @@ import org.jkiss.utils.time.ExtendedDateFormat;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
@@ -77,7 +78,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     public Object parseValue(String value, Class<?> typeHint) throws ParseException
     {
         if (typeHint != null && TemporalAccessor.class.isAssignableFrom(typeHint)) {
-            return dateTimeFormatter.parse(value);
+            return LocalDateTime.parse(value, dateTimeFormatter);
         }
         return dateFormat.parse(value);
     }
