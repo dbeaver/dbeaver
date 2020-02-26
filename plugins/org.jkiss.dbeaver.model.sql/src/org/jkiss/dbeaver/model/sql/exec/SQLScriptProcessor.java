@@ -104,8 +104,8 @@ public class SQLScriptProcessor {
 
                 boolean oldAutoCommit = txnManager == null || txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
-                if (txnManager != null && !oldAutoCommit && newAutoCommit) {
-                    txnManager.setAutoCommit(monitor, true);
+                if (txnManager != null && oldAutoCommit != newAutoCommit) {
+                    txnManager.setAutoCommit(monitor, newAutoCommit);
                 }
 
                 monitor.beginTask("Execute queries (" + queries.size() + ")", queries.size());
@@ -152,8 +152,8 @@ public class SQLScriptProcessor {
                 }
 
                 // Restore transactions settings
-                if (txnManager != null && !oldAutoCommit && newAutoCommit) {
-                    txnManager.setAutoCommit(monitor, false);
+                if (txnManager != null && oldAutoCommit != newAutoCommit) {
+                    txnManager.setAutoCommit(monitor, oldAutoCommit);
                 }
                 if (session.isLoggingEnabled()) {
                     QMUtils.getDefaultHandler().handleScriptEnd(session);
