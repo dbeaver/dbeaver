@@ -66,7 +66,9 @@ public class SSHTunnelImpl implements DBWTunnel {
             if (implDesc == null) {
                 throw new DBException("Can't find SSH tunnel implementation");
             }
-            implementation = implDesc.getImplClass().createInstance(SSHImplementation.class);
+            if (implementation == null || implementation.getClass() != implDesc.getImplClass().getObjectClass()) {
+                implementation = implDesc.getImplClass().createInstance(SSHImplementation.class);
+            }
         } catch (Throwable e) {
             throw new DBException("Can't create SSH tunnel implementation", e);
         }
@@ -78,7 +80,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     {
         if (implementation != null) {
             implementation.closeTunnel(monitor);
-            implementation = null;
+            // Do not nullify tunnel to keep saved tunnel port number (#7952)
         }
     }
 
