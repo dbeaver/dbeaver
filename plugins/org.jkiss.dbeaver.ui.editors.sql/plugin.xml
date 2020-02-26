@@ -868,9 +868,11 @@
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.completion" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion" name="%page.org.jkiss.dbeaver.preferences.main.sql.completion.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
         </page>
+<!--
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.dialects" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLDialects" name="%page.org.jkiss.dbeaver.preferences.main.sql.dialects.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
         </page>
+-->
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.resources" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLResources" name="%page.org.jkiss.dbeaver.preferences.main.sql.resources.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
         </page>
@@ -894,10 +896,12 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
+<!--
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.dialects" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLDialects" name="%pref.page.name.sql.dialects">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
+-->
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.completion" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion" name="%pref.page.name.sql.completion">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
