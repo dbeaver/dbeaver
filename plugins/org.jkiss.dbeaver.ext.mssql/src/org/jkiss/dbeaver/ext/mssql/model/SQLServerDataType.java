@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -295,8 +296,8 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case "uniqueidentifier":
                 return DBPDataKind.STRING;
 
-            case "geography":
-            case "geometry":
+            case SQLServerConstants.TYPE_GEOGRAPHY:
+            case SQLServerConstants.TYPE_GEOMETRY:
             case "hierarchyid":
                 return DBPDataKind.BINARY;
             case "money":

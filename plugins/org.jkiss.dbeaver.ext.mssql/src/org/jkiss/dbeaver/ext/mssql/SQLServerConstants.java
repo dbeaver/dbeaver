@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class SQLServerConstants {
@@ -46,6 +44,8 @@ public class SQLServerConstants {
     public static final String TYPE_UNIQUEIDENTIFIER = "uniqueidentifier";
     public static final String TYPE_NVARCHAR = "nvarchar";
     public static final String TYPE_NCHAR = "nchar";
+    public static final String TYPE_GEOMETRY = "geometry";
+    public static final String TYPE_GEOGRAPHY = "geography";
 
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";

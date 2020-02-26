@@ -170,7 +170,10 @@ public class SQLServerDialect extends JDBCSQLDialect {
                 default:
                     return null;
             }
+        } else if (SQLServerConstants.TYPE_GEOGRAPHY.equals(typeName) || SQLServerConstants.TYPE_GEOMETRY.equals(typeName)) {
+            return null;
         }
+
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
