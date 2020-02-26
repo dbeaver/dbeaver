@@ -83,7 +83,7 @@ public abstract class TemporalAccessorValueHandler extends BaseValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value == null || value instanceof String) {
-            return super.getValueDisplayString(column, null, format);
+            return super.getValueDisplayString(column, value, format);
         }
         try {
             return getFormatter(column).formatValue(value);

@@ -26,6 +26,7 @@ import java.text.FieldPosition;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
 import java.util.Map;
@@ -78,7 +79,11 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     public Object parseValue(String value, Class<?> typeHint) throws ParseException
     {
         if (typeHint != null && TemporalAccessor.class.isAssignableFrom(typeHint)) {
-            return LocalDateTime.parse(value, dateTimeFormatter);
+            try {
+                return LocalDateTime.parse(value, dateTimeFormatter);
+            } catch (DateTimeParseException e) {
+                throw new ParseException(e.getParsedString(), e.getErrorIndex());
+            }
         }
         return dateFormat.parse(value);
     }
