@@ -35,11 +35,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.Map;
 
 /**
  * HTML Exporter
  */
 public class DataExporterHTML extends StreamExporterAbstract {
+
+    private static final String PROP_HEADER = "header";
 
     private String name;
     private static final int IMAGE_FRAME_SIZE = 200;
@@ -47,9 +50,14 @@ public class DataExporterHTML extends StreamExporterAbstract {
     private DBDAttributeBinding[] columns;
     private int rowCount = 0;
 
+    private boolean outputHeader = true;
+
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
         super.init(site);
+
+        Map<Object, Object> properties = site.getProperties();
+        outputHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), outputHeader);
     }
 
     @Override
@@ -91,7 +99,9 @@ public class DataExporterHTML extends StreamExporterAbstract {
         out.write("<body>\n<table>");
 
         out.write("<tr>");
-        writeTableTitle(name, columns.length);
+        if (outputHeader) {
+            writeTableTitle(name, columns.length);
+        }
         out.write("</tr>");
         out.write("<tr>");
         for (DBDAttributeBinding column : columns) {
