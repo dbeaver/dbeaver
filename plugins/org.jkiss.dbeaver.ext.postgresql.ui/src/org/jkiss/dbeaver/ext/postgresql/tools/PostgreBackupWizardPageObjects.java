@@ -149,6 +149,11 @@ class PostgreBackupWizardPageObjects extends AbstractToolWizardPage<PostgreBacku
         updateState();
     }
 
+    @Override
+    public void deactivatePage() {
+        saveState();
+    }
+
     private void loadSettings() {
         checkedObjects.clear();
         schemasTable.removeAll();

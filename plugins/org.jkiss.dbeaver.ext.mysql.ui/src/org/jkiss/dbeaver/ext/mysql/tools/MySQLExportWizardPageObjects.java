@@ -41,8 +41,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 
 class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWizard>
@@ -141,6 +141,11 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     @Override
     public void activatePage() {
         loadSettings();
+    }
+
+    @Override
+    public void deactivatePage() {
+        saveState();
     }
 
     private void loadSettings() {
