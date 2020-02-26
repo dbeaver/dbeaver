@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -50,6 +51,9 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     // as now we use server timestamp format by default
     private static final boolean MANAGE_SERVER_TIME_ZONE = true;
 
+    private static final ImageDescriptor LOG_MYSQL = MySQLUIActivator.getImageDescriptor("icons/mysql_logo.png");
+    private static final ImageDescriptor LOGO_MARIADB = MySQLUIActivator.getImageDescriptor("icons/mariadb_logo.png");
+
     private Text hostText;
     private Text portText;
     private Text dbText;
@@ -57,8 +61,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
-    //private static ImageDescriptor MYSQL_LOGO_IMG = MySQLUIActivator.getImageDescriptor("icons/mysql_logo.png");
-    //private static ImageDescriptor MARIADB_LOGO_IMG = MySQLUIActivator.getImageDescriptor("icons/mariadb_logo.png");
     private Combo serverTimezoneCombo;
 
 
@@ -170,9 +172,9 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             // We set image only once at activation
             // There is a bug in Eclipse which leads to SWTException after wizard image change
             if (driver != null && driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
-                setImageDescriptor(MySQLUIActivator.getImageDescriptor("icons/mariadb_logo.png"));
+                setImageDescriptor(LOGO_MARIADB);
             } else {
-                setImageDescriptor(MySQLUIActivator.getImageDescriptor("icons/mysql_logo.png"));
+                setImageDescriptor(LOG_MYSQL);
             }
         }
 
