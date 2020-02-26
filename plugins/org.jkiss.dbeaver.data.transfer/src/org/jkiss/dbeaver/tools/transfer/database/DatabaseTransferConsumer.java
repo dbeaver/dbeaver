@@ -182,7 +182,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBSAttributeBase[] attributes = targetAttributes.toArray(new DBSAttributeBase[0]);
 
         if (targetObject instanceof DBSDataManipulatorExt) {
-            ((DBSDataManipulatorExt) targetObject).beforeDataChange(session, DBSManipulationType.INSERT, attributes, executionSource);
+            ((DBSDataManipulatorExt) targetObject).beforeDataChange(targetSession, DBSManipulationType.INSERT, attributes, executionSource);
         }
 
         executeBatch = targetObject.insertData(
@@ -287,7 +287,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         } finally {
             if (targetObject instanceof DBSDataManipulatorExt) {
                 ((DBSDataManipulatorExt) targetObject).afterDataChange(
-                    session,
+                    targetSession,
                     DBSManipulationType.INSERT,
                     targetAttributes.toArray(new DBSAttributeBase[0]),
                     new AbstractExecutionSource(sourceObject, targetContext, this));
