@@ -149,7 +149,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         List<String> prevWords = wordDetector.getPrevWords();
                         boolean waitsForValue = rootObject instanceof DBSEntity &&
                             !CommonUtils.isEmpty(prevWords) &&
-                            !CommonUtils.isEmpty(wordDetector.getPrevDelimiter());
+                            !CommonUtils.isEmpty(wordDetector.getPrevDelimiter()) &&
+                            !wordDetector.getPrevDelimiter().endsWith(")");
                         if (waitsForValue) {
                             makeProposalsFromAttributeValues(dataSource, wordDetector, (DBSEntity) rootObject);
                         }
