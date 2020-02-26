@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -179,6 +180,13 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected void updateDriverInfo(DBPDriver driver) {
 
+    }
+
+    @Override
+    public void setImageDescriptor(ImageDescriptor desc) {
+        if (getImage() == null) {
+            super.setImageDescriptor(desc);
+        }
     }
 
     protected Text createPasswordText(Composite parent, String label) {
