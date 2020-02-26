@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
@@ -813,5 +816,18 @@ public class PostgreDialect extends JDBCSQLDialect {
     @Override
     public String[] getNonTransactionKeywords() {
         return POSTGRE_NON_TRANSACTIONAL_KEYWORDS;
+    }
+
+    @Override
+    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        if (dataKind == DBPDataKind.DATETIME) {
+            {
+                Integer scale = column.getScale();
+                if (scale != null) {
+                    return "(" + scale + ')';
+                }
+            }
+        }
+        return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 }
