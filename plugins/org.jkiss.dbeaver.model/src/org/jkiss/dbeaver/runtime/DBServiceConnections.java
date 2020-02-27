@@ -15,26 +15,18 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.ui;
+package org.jkiss.dbeaver.runtime;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Connections Service
  */
-public interface UIServiceConnections {
+public interface DBServiceConnections {
 
-    void openConnectionEditor(DBPDataSourceContainer dataSourceContainer);
-
-    void connectDataSource(DBPDataSourceContainer dataSourceContainer, DBRProgressListener onFinish);
-
-    void disconnectDataSource(DBPDataSourceContainer dataSourceContainer);
-
-    void closeActiveTransaction(DBRProgressMonitor monitor, DBCExecutionContext context, boolean commitTxn);
-
-    boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts);
+    void initConnection(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer, DBRProgressListener onFinish) throws DBException;
 
 }

@@ -111,7 +111,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
-        initExporter(session.getProgressMonitor());
+        try {
+            initExporter(session.getProgressMonitor());
+        } catch (DBException e) {
+            throw new DBCException("Error initializing exporter");
+        }
 
         AbstractExecutionSource executionSource = new AbstractExecutionSource(sourceObject, targetContext, this);
 
@@ -300,7 +304,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         closeExporter();
     }
 
-    private void initExporter(DBRProgressMonitor monitor) throws DBCException {
+    private void initExporter(DBRProgressMonitor monitor) throws DBException {
         DBSObject targetDB = checkTargetContainer(monitor);
 
         DBPDataSourceContainer dataSourceContainer = targetDB.getDataSource().getContainer();
@@ -333,7 +337,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBCException {
+    private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
         if (targetObject == null) {
             if (settings.getContainerNode() != null && settings.getContainerNode().getDataSource() == null) {
                 // Init connection
