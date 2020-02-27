@@ -32,5 +32,5 @@ public interface UIServiceSecurity {
 
     String askForPasswordChange(@NotNull String title, @NotNull String currentPassword);
 
-    boolean validatePassword(DBASecureStorage secureStorage, String title, String message);
+    boolean validatePassword(DBASecureStorage secureStorage, String title, String message, boolean forceEncryption);
 }

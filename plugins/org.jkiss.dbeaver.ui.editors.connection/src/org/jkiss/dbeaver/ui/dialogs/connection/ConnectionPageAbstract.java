@@ -245,7 +245,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             if (!serviceSecurity.validatePassword(
                 site.getProject().getSecureStorage(),
                 "Enter project password",
-                "Enter project master password to unlock connection password view"))
+                "Enter project master password to unlock connection password view",
+                true))
             {
                 return;
             }
