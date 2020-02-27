@@ -75,10 +75,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private volatile ConfigSaver configSaver;
 
     public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project) {
-        this(platform, project, true);
-    }
-
-    public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project, boolean loadAllDataSources) {
         this.platform = platform;
         this.project = project;
 
