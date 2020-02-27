@@ -625,8 +625,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                     flushConfig();
                 }
             }
+
+            {
+                // Call external configurations
+                Map<String, Object> searchOptions = new LinkedHashMap<>();
+                for (DataSourceConfigurationStorageDescriptor cfd : DataSourceProviderRegistry.getInstance().getDataSourceConfigurationStorages()) {
+                    try {
+                        cfd.getInstance().loadDataSources(this, searchOptions);
+                    } catch (Exception e) {
+                        log.error("Error loading data sources from storage '" + cfd.getName() + "'", e);
+                    }
+                }
+            }
         } catch (CoreException e) {
-            log.error("Error reading datasources configuration", e);
+            log.error("Error reading data sources configuration", e);
         }
 
         // Reflect changes

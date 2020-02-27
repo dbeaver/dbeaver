@@ -20,9 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -83,7 +81,7 @@ class DataSourceOrigin implements DBPDataSourceConfigurationStorage
     }
 
     @Override
-    public void loadDataSources(DBRProgressMonitor monitor, DBPProject project, Map<String, Object> options) throws DBException {
+    public void loadDataSources(DBPDataSourceRegistry registry, Map<String, Object> options) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
