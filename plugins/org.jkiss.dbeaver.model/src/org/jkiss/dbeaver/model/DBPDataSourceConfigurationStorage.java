@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,7 +35,7 @@ public interface DBPDataSourceConfigurationStorage {
 
     String getStatus();
 
-    void loadDataSources(DBPDataSourceRegistry registry, Map<String, Object> options)
+    List<? extends DBPDataSourceContainer> loadDataSources(DBPDataSourceRegistry registry, Map<String, Object> options)
         throws DBException;
 
     // Used for secure credentials save/load (it is a prt of credentials file name)

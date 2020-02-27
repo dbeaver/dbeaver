@@ -94,9 +94,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public DataSourceRegistry(DataSourceRegistry source, ProjectMetadata project, boolean copyDataSources) {
         this.platform = source.platform;
         this.project = project;
-        if (copyDataSources) {
+        {
+            // Copy all or only provided datasources.
+            // Provided datasources are needed for global model mode
             for (DataSourceDescriptor ds : source.dataSources) {
-                dataSources.add(new DataSourceDescriptor(ds, this));
+                if (copyDataSources || ds.isProvided()) {
+                    dataSources.add(new DataSourceDescriptor(ds, this, false));
+                }
             }
         }
 
@@ -577,8 +581,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     @Override
-    public void loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull IFile fromFile) {
-        loadDataSources(fromFile, false, true, new ParseResults(), configurationStorage);
+    public List<? extends DBPDataSourceContainer> loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull IFile fromFile) {
+        ParseResults parseResults = new ParseResults();
+        loadDataSources(fromFile, false, true, parseResults, configurationStorage);
+        return new ArrayList<>(parseResults.addedDataSources);
     }
 
     private void loadDataSources(boolean refresh) {
@@ -626,27 +632,31 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 }
             }
 
-            {
-                // Call external configurations
-                Map<String, Object> searchOptions = new LinkedHashMap<>();
-                for (DataSourceConfigurationStorageDescriptor cfd : DataSourceProviderRegistry.getInstance().getDataSourceConfigurationStorages()) {
-                    try {
-                        cfd.getInstance().loadDataSources(this, searchOptions);
-                    } catch (Exception e) {
-                        log.error("Error loading data sources from storage '" + cfd.getName() + "'", e);
-                    }
-                }
-            }
         } catch (CoreException e) {
             log.error("Error reading data sources configuration", e);
         }
 
+        {
+            // Call external configurations
+            Map<String, Object> searchOptions = new LinkedHashMap<>();
+            for (DataSourceConfigurationStorageDescriptor cfd : DataSourceProviderRegistry.getInstance().getDataSourceConfigurationStorages()) {
+                try {
+                    List<? extends DBPDataSourceContainer> loadedDS = cfd.getInstance().loadDataSources(this, searchOptions);
+                    if (!loadedDS.isEmpty()) {
+                        parseResults.addedDataSources.addAll(loadedDS);
+                    }
+                } catch (Exception e) {
+                    log.error("Error loading data sources from storage '" + cfd.getName() + "'", e);
+                }
+            }
+        }
+
         // Reflect changes
         if (refresh) {
-            for (DataSourceDescriptor ds : parseResults.updatedDataSources) {
+            for (DBPDataSourceContainer ds : parseResults.updatedDataSources) {
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, ds);
             }
-            for (DataSourceDescriptor ds : parseResults.addedDataSources) {
+            for (DBPDataSourceContainer ds : parseResults.addedDataSources) {
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, ds);
             }
 
@@ -865,8 +875,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     static class ParseResults {
-        Set<DataSourceDescriptor> updatedDataSources = new LinkedHashSet<>();
-        Set<DataSourceDescriptor> addedDataSources = new LinkedHashSet<>();
+        Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
+        Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
     }
 
     private class DisconnectTask implements DBRRunnableWithProgress {
