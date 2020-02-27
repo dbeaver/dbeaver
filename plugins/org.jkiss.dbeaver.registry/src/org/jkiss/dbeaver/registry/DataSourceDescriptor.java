@@ -176,6 +176,10 @@ public class DataSourceDescriptor
         this(source, source.registry, true);
     }
 
+    /**
+     * Copies datasource configuration
+     * @param setDefaultOrigin sets origin to default (in order to allow connection copy-paste with following save in default configuration)
+     */
     public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultOrigin)
     {
         this.registry = registry;
