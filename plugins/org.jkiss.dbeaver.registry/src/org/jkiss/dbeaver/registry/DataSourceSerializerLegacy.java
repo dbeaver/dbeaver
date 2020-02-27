@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -48,7 +49,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.ByteArrayInputStream;
@@ -79,7 +79,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     @Override
     public void saveDataSources(
         DBRProgressMonitor monitor,
-        DataSourceOrigin origin,
+        DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources,
         IFile configFile) throws DBException, IOException
     {
@@ -89,7 +89,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
-                if (origin.isDefault()) {
+                if (configurationStorage.isDefault()) {
                     // Folders (only for default origin)
                     for (DataSourceFolder folder : registry.getAllFolders()) {
                         saveFolder(xml, folder);
@@ -105,7 +105,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 }
 
                 // Filters
-                if (origin.isDefault()) {
+                if (configurationStorage.isDefault()) {
                     try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
                         for (DBSObjectFilter cf : registry.getSavedFilters()) {
                             if (!cf.isEmpty()) {
@@ -134,12 +134,12 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(IFile configFile, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults)
+    public void parseDataSources(IFile configFile, DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults)
         throws DBException, IOException
     {
         try {
             SAXReader parser = new SAXReader(configFile.getContents());
-            final DataSourcesParser dsp = new DataSourcesParser(registry, origin, refresh, parseResults);
+            final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
             parser.parse(dsp);
         } catch (Exception ex) {
             throw new DBException("Datasource config parse error", ex);
@@ -422,7 +422,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     private class DataSourcesParser implements SAXListener {
         DataSourceRegistry registry;
         DataSourceDescriptor curDataSource;
-        DataSourceOrigin origin;
+        DBPDataSourceConfigurationStorage origin;
         boolean refresh;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
@@ -432,7 +432,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         private DataSourceRegistry.ParseResults parseResults;
         private boolean passwordReadCanceled = false;
 
-        private DataSourcesParser(DataSourceRegistry registry, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) {
+        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) {
             this.registry = registry;
             this.origin = origin;
             this.refresh = refresh;
@@ -716,8 +716,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         }
 
         @Override
-        public void saxText(SAXReader reader, String data)
-            throws XMLException {
+        public void saxText(SAXReader reader, String data) {
             if (isDescription && curDataSource != null) {
                 curDataSource.setDescription(data);
             } else if (curCommand != null) {
@@ -729,8 +728,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
-            throws XMLException {
+        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
             switch (localName) {
                 case RegistryConstants.TAG_DATA_SOURCE:
                     curDataSource = null;

@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,9 +31,13 @@ public interface DBPDataSourceConfigurationStorage {
 
     boolean isValid();
 
+    boolean isDefault();
+
     String getStatus();
 
-    List<DBPDataSourceContainer> getPreconfiguredDataSources(DBRProgressMonitor monitor, DBPProject project, Map<String, Object> options)
+    void loadDataSources(DBRProgressMonitor monitor, DBPProject project, Map<String, Object> options)
         throws DBException;
 
+    // Used for secure credentials save/load (it is a prt of credentials file name)
+    String getConfigurationFileSuffix();
 }

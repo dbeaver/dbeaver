@@ -102,7 +102,7 @@ public class DataSourceDescriptor
     @NotNull
     private final DBPDataSourceRegistry registry;
     @NotNull
-    private final DataSourceOrigin origin;
+    private final DBPDataSourceConfigurationStorage origin;
     @NotNull
     private DriverDescriptor driver;
     @NotNull
@@ -157,7 +157,7 @@ public class DataSourceDescriptor
 
     DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
-        @NotNull DataSourceOrigin origin,
+        @NotNull DBPDataSourceConfigurationStorage origin,
         @NotNull String id,
         @NotNull DriverDescriptor driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
@@ -241,6 +241,12 @@ public class DataSourceDescriptor
     public DriverDescriptor getDriver()
     {
         return driver;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceConfigurationStorage getConfigurationStorage() {
+        return origin;
     }
 
     @NotNull
@@ -562,7 +568,7 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    DataSourceOrigin getOrigin() {
+    DBPDataSourceConfigurationStorage getOrigin() {
         return origin;
     }
 

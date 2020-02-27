@@ -78,6 +78,12 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @NotNull
     @Override
+    public DBPDataSourceConfigurationStorage getConfigurationStorage() {
+        throw new IllegalStateException("Stream datasource doesn't have config storage");
+    }
+
+    @NotNull
+    @Override
     public DBPPlatform getPlatform() {
         return DBWorkbench.getPlatform();
     }

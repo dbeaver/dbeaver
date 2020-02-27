@@ -75,6 +75,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private volatile ConfigSaver configSaver;
 
     public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project) {
+        this(platform, project, true);
+    }
+
+    public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project, boolean loadAllDataSources) {
         this.platform = platform;
         this.project = project;
 
@@ -224,6 +228,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return null;
     }
 
+    @NotNull
     @Override
     public List<? extends DBPDataSourceContainer> getDataSourcesByProfile(@NotNull DBWNetworkProfile profile) {
         List<DataSourceDescriptor> dsCopy;
@@ -234,6 +239,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return dsCopy;
     }
 
+    @NotNull
     @Override
     public List<DataSourceDescriptor> getDataSources() {
         List<DataSourceDescriptor> dsCopy;
@@ -244,11 +250,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return dsCopy;
     }
 
+    @NotNull
     @Override
     public DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig) {
         return new DataSourceDescriptor(this, DataSourceDescriptor.generateNewId(driver), (DriverDescriptor) driver, connConfig);
     }
 
+    @NotNull
     @Override
     public DBPDataSourceContainer createDataSource(DBPDataSourceContainer source) {
         DataSourceDescriptor newDS = new DataSourceDescriptor((DataSourceDescriptor) source);
@@ -256,11 +264,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return newDS;
     }
 
+    @NotNull
     @Override
     public List<DataSourceFolder> getAllFolders() {
         return dataSourceFolders;
     }
 
+    @NotNull
     @Override
     public List<DataSourceFolder> getRootFolders() {
         List<DataSourceFolder> rootFolders = new ArrayList<>();
@@ -433,7 +443,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     ////////////////////////////////////////////////////
     // Data sources
 
-    public void addDataSource(DBPDataSourceContainer dataSource) {
+    public void addDataSource(@NotNull DBPDataSourceContainer dataSource) {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         addDataSourceToList(descriptor);
         if (!dataSource.isTemporary()) {
@@ -463,7 +473,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    public void updateDataSource(DBPDataSourceContainer dataSource) {
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) {
         if (!(dataSource instanceof DataSourceDescriptor)) {
             return;
         }
@@ -494,14 +504,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     @Override
-    public void addDataSourceListener(DBPEventListener listener) {
+    public void addDataSourceListener(@NotNull DBPEventListener listener) {
         synchronized (dataSourceListeners) {
             dataSourceListeners.add(listener);
         }
     }
 
     @Override
-    public boolean removeDataSourceListener(DBPEventListener listener) {
+    public boolean removeDataSourceListener(@NotNull DBPEventListener listener) {
         synchronized (dataSourceListeners) {
             return dataSourceListeners.remove(listener);
         }
@@ -566,6 +576,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return result;
     }
 
+    @Override
+    public void loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull IFile fromFile) {
+        loadDataSources(fromFile, false, true, new ParseResults(), configurationStorage);
+    }
 
     private void loadDataSources(boolean refresh) {
         if (!project.isOpen()) {
@@ -638,7 +652,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    private void loadDataSources(IFile fromFile, boolean refresh, boolean modern, ParseResults parseResults) {
+    private void loadDataSources(@NotNull IFile fromFile, boolean refresh, boolean modern, @NotNull ParseResults parseResults) {
         boolean extraConfig = !fromFile.getName().equalsIgnoreCase(modern ? MODERN_CONFIG_FILE_NAME : LEGACY_CONFIG_FILE_NAME);
         DataSourceOrigin origin;
         synchronized (origins) {
@@ -648,13 +662,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 origins.put(fromFile, origin);
             }
         }
+        loadDataSources(fromFile, refresh, modern, parseResults, origin);
+    }
+
+    private void loadDataSources(@NotNull IFile fromFile, boolean refresh, boolean modern, @NotNull ParseResults parseResults, @NotNull DBPDataSourceConfigurationStorage configurationStorage) {
         if (!fromFile.exists()) {
             return;
         }
 
         try {
             DataSourceSerializer serializer = modern ? new DataSourceSerializerModern(this) : new DataSourceSerializerLegacy(this);
-            serializer.parseDataSources(fromFile, origin, refresh, parseResults);
+            serializer.parseDataSources(fromFile, configurationStorage, refresh, parseResults);
             updateProjectNature();
         } catch (Exception ex) {
             log.error("Error loading datasource config from " + fromFile.getFullPath(), ex);
