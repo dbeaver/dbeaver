@@ -83,7 +83,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     void updateDataSource(@NotNull DBPDataSourceContainer dataSource);
 
-    void loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull IFile fromFile);
+    @NotNull
+    List<? extends DBPDataSourceContainer> loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull IFile fromFile);
 
     @NotNull
     List<? extends DBPDataSourceFolder> getAllFolders();

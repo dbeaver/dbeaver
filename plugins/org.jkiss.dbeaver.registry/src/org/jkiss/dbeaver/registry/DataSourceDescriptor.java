@@ -173,13 +173,13 @@ public class DataSourceDescriptor
 
     // Copy constructor
     public DataSourceDescriptor(@NotNull DataSourceDescriptor source) {
-        this(source, source.registry);
+        this(source, source.registry, true);
     }
 
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry)
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultOrigin)
     {
         this.registry = registry;
-        this.origin = ((DataSourceRegistry)registry).getDefaultOrigin();
+        this.origin = setDefaultOrigin ? ((DataSourceRegistry)registry).getDefaultOrigin() : source.origin;
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
@@ -1367,7 +1367,7 @@ public class DataSourceDescriptor
 
     @Override
     public DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry) {
-        DataSourceDescriptor copy = new DataSourceDescriptor(this, forRegistry);
+        DataSourceDescriptor copy = new DataSourceDescriptor(this, forRegistry, true);
         copy.setId(DataSourceDescriptor.generateNewId(copy.getDriver()));
         return copy;
     }
