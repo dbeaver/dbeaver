@@ -17,18 +17,25 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Map;
 
 /**
  * DataSourceOrigin
  */
-class DataSourceOrigin
+class DataSourceOrigin implements DBPDataSourceConfigurationStorage
 {
     private final IFile sourceFile;
     private final boolean isDefault;
     private final String configSuffix;
 
-    public DataSourceOrigin(IFile sourceFile, boolean isDefault) {
+    DataSourceOrigin(IFile sourceFile, boolean isDefault) {
         this.sourceFile = sourceFile;
         this.isDefault = isDefault;
 
@@ -43,20 +50,41 @@ class DataSourceOrigin
 
     }
 
+    @Override
+    public String getStorageId() {
+        return "file://" + sourceFile.getFullPath().toString();
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public String getStatus() {
+        return "Valid";
+    }
+
     public String getName() {
         return sourceFile.getName();
     }
 
-    public String getConfigSuffix() {
+    public String getConfigurationFileSuffix() {
         return configSuffix;
     }
 
+    @Override
     public boolean isDefault() {
         return isDefault;
     }
 
     public IFile getSourceFile() {
         return sourceFile;
+    }
+
+    @Override
+    public void loadDataSources(DBRProgressMonitor monitor, DBPProject project, Map<String, Object> options) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override

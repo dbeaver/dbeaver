@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
@@ -30,14 +31,14 @@ interface DataSourceSerializer
 {
     void saveDataSources(
         DBRProgressMonitor monitor,
-        DataSourceOrigin origin,
+        DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources,
         IFile configFile)
         throws DBException, IOException;
 
     void parseDataSources(
         IFile configFile,
-        DataSourceOrigin origin,
+        DBPDataSourceConfigurationStorage configurationStorage,
         boolean refresh,
         DataSourceRegistry.ParseResults parseResults)
         throws DBException, IOException;

@@ -30,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
@@ -90,7 +91,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     @Override
     public void saveDataSources(
         DBRProgressMonitor monitor,
-        DataSourceOrigin origin,
+        DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources,
         IFile configFile) throws DBException, IOException
     {
@@ -101,7 +102,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 jsonWriter.beginObject();
 
                 // Save folders
-                if (origin.isDefault()) {
+                if (configurationStorage.isDefault()) {
                     jsonWriter.name("folders");
                     jsonWriter.beginObject();
                     // Folders (only for default origin)
@@ -139,7 +140,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     jsonWriter.endObject();
                 }
 
-                if (origin.isDefault()) {
+                if (configurationStorage.isDefault()) {
                     if (!virtualModels.isEmpty()) {
                         // Save virtual models
                         jsonWriter.name("virtual-models");
@@ -241,7 +242,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             saveSecureCredentialsFile(
                 monitor.getNestedMonitor(),
                 (IFolder) configFile.getParent(),
-                origin);
+                configurationStorage);
         }
     }
 
@@ -290,8 +291,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
     }
 
-    private void saveSecureCredentialsFile(IProgressMonitor monitor, IFolder parent, DataSourceOrigin origin) {
-        IFile credFile = parent.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+    private void saveSecureCredentialsFile(IProgressMonitor monitor, IFolder parent, DBPDataSourceConfigurationStorage origin) {
+        IFile credFile = parent.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
         try {
             ContentUtils.makeFileBackup(credFile);
             if (secureProperties.isEmpty()) {
@@ -307,11 +308,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(IFile configFile, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) throws IOException {
+    public void parseDataSources(IFile configFile, DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults) throws IOException {
         // Read secured creds file
         IFolder mdFolder = registry.getProject().getMetadataFolder(false);
         if (mdFolder.exists()) {
-            IFile credFile = mdFolder.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+            IFile credFile = mdFolder.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
             if (credFile.exists()) {
                 try {
                     String credJson = loadConfigFile(credFile, true);
@@ -426,7 +427,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (newDataSource) {
                     dataSource = new DataSourceDescriptor(
                         registry,
-                        origin,
+                        configurationStorage,
                         id,
                         driver,
                         new DBPConnectionConfiguration());

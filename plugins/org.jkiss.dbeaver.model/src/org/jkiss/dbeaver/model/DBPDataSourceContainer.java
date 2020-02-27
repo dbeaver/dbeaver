@@ -59,6 +59,9 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     DBPDriver getDriver();
 
     @NotNull
+    DBPDataSourceConfigurationStorage getConfigurationStorage();
+
+    @NotNull
     DBPPlatform getPlatform();
 
     /**
