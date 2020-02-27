@@ -71,6 +71,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final List<EditorContributionDescriptor> editorContributors = new ArrayList<>();
     private final Map<String, List<EditorContributionDescriptor>> contributionCategoryMap = new HashMap<>();
 
+    private final List<DataSourceConfigurationStorageDescriptor> dataSourceConfigurationStorageDescriptors = new ArrayList<>();
+
     private DataSourceProviderRegistry()
     {
     }
@@ -205,6 +207,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
 
+        // Load DS configuration configuration storages
+        {
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceConfigurationStorageDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                DataSourceConfigurationStorageDescriptor descriptor = new DataSourceConfigurationStorageDescriptor(ext);
+                dataSourceConfigurationStorageDescriptors.add(descriptor);
+            }
+        }
     }
 
     public void dispose()
@@ -220,6 +230,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
         this.dataSourceProviders.clear();
         this.resourceContributions.clear();
+        this.dataSourceConfigurationStorageDescriptors.clear();
     }
 
     @Override
@@ -361,6 +372,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
+    //////////////////////////////////////////////
+    // Connection types
+
     public Collection<DBPConnectionType> getConnectionTypes()
     {
         return connectionTypes.values();
@@ -423,6 +437,16 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             log.warn("Error saving drivers", ex);
         }
     }
+
+    //////////////////////////////////////////////
+    // Configuration storages
+
+    public List<DataSourceConfigurationStorageDescriptor> getDataSourceConfigurationStorages() {
+        return dataSourceConfigurationStorageDescriptors;
+    }
+
+    //////////////////////////////////////////////
+    // Driver resources
 
     /**
      * Searches for resource within external resources provided by plugins
