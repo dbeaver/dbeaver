@@ -271,7 +271,13 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         if (containerNode instanceof DBNDataSource && containerNode.getDataSource() == null) {
             try {
                 runnableContext.run(true, true,
-                    monitor -> containerNode.initializeNode(monitor, null));
+                    monitor -> {
+                        try {
+                            containerNode.initializeNode(monitor, null);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    });
             } catch (InvocationTargetException e) {
                 DBWorkbench.getPlatformUI().showError("Init connection", "Error connecting to datasource", e.getTargetException());
             } catch (InterruptedException e) {

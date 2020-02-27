@@ -185,6 +185,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
     }
 
+/*
     static DBNDatabaseNode getTargetBookmarkNode(DBRProgressMonitor monitor, DBNBookmark bookmark)
     {
         IFile resource = (IFile) bookmark.getResource();
@@ -213,6 +214,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
         return null;
     }
+*/
 
     public static void createBookmark(final DBNDatabaseNode node, String title, IFolder folder) throws DBException
     {

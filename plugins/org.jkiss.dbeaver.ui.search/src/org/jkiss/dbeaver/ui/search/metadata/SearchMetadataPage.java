@@ -161,15 +161,20 @@ public class SearchMetadataPage extends AbstractSearchPage {
                         for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
                             if (node instanceof DBNDataSource) {
                                 DBNDataSource dsNode = (DBNDataSource) node;
-                                dsNode.initializeNode(null, status -> {
-                                    if (status.isOK()) {
-                                        UIUtils.asyncExec(() -> {
-                                            if (!dataSourceTree.isDisposed()) {
-                                                fillObjectTypes();
-                                            }
-                                        });
-                                    }
-                                });
+                                try {
+                                    dsNode.initializeNode(null, status -> {
+                                        if (status.isOK()) {
+                                            UIUtils.asyncExec(() -> {
+                                                if (!dataSourceTree.isDisposed()) {
+                                                    fillObjectTypes();
+                                                }
+                                            });
+                                        }
+                                    });
+                                } catch (DBException e) {
+                                    // shouldn't be here
+                                    log.error(e);
+                                }
                                 break;
                             }
                         }

@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -143,10 +143,9 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     }
 
     @Override
-    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProgressListener onFinish)
-    {
+    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProgressListener onFinish) throws DBException {
         if (!dataSource.isConnected()) {
-            UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+            DBServiceConnections serviceConnections = DBWorkbench.getService(DBServiceConnections.class);
             if (serviceConnections != null) {
                 serviceConnections.initConnection(monitor, dataSource, onFinish);
             }
