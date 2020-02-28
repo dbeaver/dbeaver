@@ -8,5 +8,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-     - name: stylelinter
-     - uses: actions-hub/stylelint@v1.1.2
+      - name: stylelinter
+      - uses: actions-hub/stylelint@v1.1.2
