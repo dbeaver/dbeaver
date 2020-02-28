@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -42,6 +46,7 @@ import java.util.List;
 public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
 
     public static final int SHOW_GLOBAL_FILTERS_ID = 1000;
+    private static final String DIALOG_ID = "DBeaver.EditBootstrapQueriesDialog";
 
     private DataSourceDescriptor dataSourceDescriptor;
     private List<String> queries;
@@ -132,6 +137,16 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
                 removeButton.setEnabled(selectionIndex >= 0);
             }
         });
+        queriesTable.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                int sbWidth = 0;
+                if (queriesTable.getVerticalBar() != null) {
+                    sbWidth = queriesTable.getVerticalBar().getSize().x;
+                }
+                queriesTable.getColumn(0).setWidth(queriesTable.getSize().x - queriesTable.getBorderWidth() * 2 - sbWidth);
+            }
+        });
 
         ignoreErrorButton = UIUtils.createCheckbox(composite, CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_ignore_error_lable, ignoreErrors);
         VariablesHintLabel variablesHintLabel = new VariablesHintLabel(
@@ -143,7 +158,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSourceDescriptor, dataSourceDescriptor.getConnectionConfiguration()));
         }
 
-        UIUtils.packColumns(queriesTable, true);
+        UIUtils.asyncExec(() -> UIUtils.packColumns(queriesTable, true));
 
         return composite;
     }
@@ -158,6 +173,11 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
             values.add(value);
         }
         return values;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getSettingsSection(DBeaverActivator.getInstance().getDialogSettings(), DIALOG_ID);
     }
 
     @Override
