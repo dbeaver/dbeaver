@@ -50,7 +50,9 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
                 param.setValue(strValue);
                 param.setVariableSet(true);
             } else {
-                param.setVariableSet(false);
+                if (!useDefaults) {
+                    param.setVariableSet(false);
+                }
             }
         }
         boolean allSet = true;
