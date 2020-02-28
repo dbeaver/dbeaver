@@ -46,6 +46,7 @@
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.task.run" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/run.png"/>
         <image commandId="org.jkiss.dbeaver.task.create" icon="icons/task_create.png"/>
+        <image commandId="org.jkiss.dbeaver.task.edit" icon="icons/task_edit.png"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
@@ -155,7 +156,7 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
             <separator name="tasks" visible="true"/>
-            <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
+            <command commandId="org.eclipse.ui.views.showView" icon="icons/task_list.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
             </command>
         </menuContribution>
@@ -166,7 +167,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.menu.tasks">
             <command commandId="org.jkiss.dbeaver.task.create"/>
-            <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
+            <command commandId="org.eclipse.ui.views.showView" icon="icons/task_list.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
             </command>
             <separator name="tasks" visible="true"/>
