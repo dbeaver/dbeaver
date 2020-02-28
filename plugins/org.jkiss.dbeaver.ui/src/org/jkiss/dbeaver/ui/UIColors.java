@@ -38,7 +38,7 @@ public class UIColors {
 
     public static Color getColor(int index) {
         RGB[] extraDsColors = UIColors.EXTRA_DS_COLORS;
-        if (index > extraDsColors.length) {
+        if (index >= extraDsColors.length) {
             index = index % extraDsColors.length;
         }
         return UIUtils.getSharedColor(extraDsColors[index]);
