@@ -1,0 +1,12 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+     - name: stylelinter
+     - uses: actions-hub/stylelint@v1.1.2
