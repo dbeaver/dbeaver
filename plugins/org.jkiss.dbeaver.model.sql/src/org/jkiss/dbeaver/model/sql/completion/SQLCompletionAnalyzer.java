@@ -139,20 +139,29 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 DBPObject rootObject = null;
                 if (queryType == SQLCompletionRequest.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Try to detect current table
-                    rootObject = getTableFromAlias((DBSObjectContainer)dataSource, null);
-                    if (rootObject instanceof DBSEntity && SQLConstants.KEYWORD_ON.equals(wordDetector.getPrevKeyWord())) {
-                        // Join?
-                        if (makeJoinColumnProposals((DBSObjectContainer)dataSource, (DBSEntity)rootObject)) {
-                            return;
-                        }
-                    } else if (!request.isSimpleMode()) {
-                        List<String> prevWords = wordDetector.getPrevWords();
-                        boolean waitsForValue = rootObject instanceof DBSEntity &&
-                            !CommonUtils.isEmpty(prevWords) &&
-                            !CommonUtils.isEmpty(wordDetector.getPrevDelimiter()) &&
-                            !wordDetector.getPrevDelimiter().endsWith(")");
-                        if (waitsForValue) {
-                            makeProposalsFromAttributeValues(dataSource, wordDetector, (DBSEntity) rootObject);
+                    rootObject = getTableFromAlias((DBSObjectContainer)dataSource, null, true);
+                    if (rootObject instanceof DBSEntity) {
+                        switch (prevKeyWord) {
+                            case SQLConstants.KEYWORD_ON:
+                                // Join?
+                                if (makeJoinColumnProposals((DBSObjectContainer) dataSource, (DBSEntity) rootObject)) {
+                                    return;
+                                }
+                                // Fall-thru
+                            case SQLConstants.KEYWORD_WHERE:
+                            case SQLConstants.KEYWORD_AND:
+                            case SQLConstants.KEYWORD_OR:
+                                if (!request.isSimpleMode()) {
+                                    List<String> prevWords = wordDetector.getPrevWords();
+                                    boolean waitsForValue = rootObject instanceof DBSEntity &&
+                                        !CommonUtils.isEmpty(prevWords) &&
+                                        !CommonUtils.isEmpty(wordDetector.getPrevDelimiter()) &&
+                                        !wordDetector.getPrevDelimiter().endsWith(")");
+                                    if (waitsForValue) {
+                                        makeProposalsFromAttributeValues(dataSource, wordDetector, (DBSEntity) rootObject);
+                                    }
+                                }
+                                break;
                         }
                     }
                 } else if (dataSource instanceof DBSObjectContainer) {
@@ -170,7 +179,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 }
                 if (queryType == SQLCompletionRequest.QueryType.JOIN && !proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
                     // Filter out non-joinable tables
-                    DBSObject leftTable = getTableFromAlias((DBSObjectContainer) dataSource, null);
+                    DBSObject leftTable = getTableFromAlias((DBSObjectContainer) dataSource, null, true);
                     if (leftTable instanceof DBSEntity) {
                         filterNonJoinableProposals((DBSEntity)leftTable);
                     }
@@ -189,14 +198,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     String tableAlias = divPos == -1 ? null : wordPart.substring(0, divPos);
                     if (tableAlias == null && !CommonUtils.isEmpty(wordPart)) {
                         // May be an incomplete table alias. Try to find such table
-                        rootObject = getTableFromAlias(sc, wordPart);
+                        rootObject = getTableFromAlias(sc, wordPart, false);
                         if (rootObject != null) {
                             // Found alias - no proposals
                             searchFinished = true;
                             return;
                         }
                     }
-                    rootObject = getTableFromAlias(sc, tableAlias);
+                    rootObject = getTableFromAlias(sc, tableAlias, false);
                     if (rootObject == null && tableAlias != null) {
                         // Maybe alias ss a table name
                         SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
@@ -604,7 +613,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (childObject == null) {
                 if (i == 0) {
                     // Assume it's a table alias ?
-                    childObject = getTableFromAlias(sc, token);
+                    childObject = getTableFromAlias(sc, token, false);
                     if (childObject == null && !request.isSimpleMode()) {
                         // Search using structure assistant
                         DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
@@ -672,7 +681,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     @Nullable
-    private DBSObject getTableFromAlias(DBSObjectContainer sc, @Nullable String token)
+    private DBSObject getTableFromAlias(DBSObjectContainer sc, @Nullable String token, boolean firstMatch)
     {
         if (token == null) {
             token = "";
@@ -731,7 +740,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             String testQuery = SQLUtils.stripComments(request.getContext().getSyntaxManager().getDialect(), activeQuery.getText()) + " ";
             Matcher matcher = aliasPattern.matcher(testQuery);
             while (matcher.find()) {
-                if (!nameList.isEmpty() && matcher.start() > request.getDocumentOffset() - activeQuery.getOffset()) {
+                if (!nameList.isEmpty() && (firstMatch || matcher.start() > request.getDocumentOffset() - activeQuery.getOffset())) {
                     // Do not search after cursor
                     break;
                 }
