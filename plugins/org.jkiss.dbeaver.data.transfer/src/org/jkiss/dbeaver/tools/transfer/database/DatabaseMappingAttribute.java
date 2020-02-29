@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,9 +122,10 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     if (CommonUtils.isEmpty(targetName)) {
                         targetName = source.getName();
                     }
-                    target = DBUtils.findObject(
-                        ((DBSEntity) parent.getTarget()).getAttributes(monitor), targetName);
-                    if (target != null) {
+                    DBSEntity targetEntity = (DBSEntity) parent.getTarget();
+                    this.target = DBUtils.findObject(
+                        targetEntity.getAttributes(monitor), DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName));
+                    if (this.target != null) {
                         mappingType = DatabaseMappingType.existing;
                     } else {
                         mappingType = DatabaseMappingType.create;
@@ -219,7 +220,8 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSDataManipulator targetEntity = parent.getTarget();
                     if (targetEntity instanceof DBSEntity) {
-                        this.target = ((DBSEntity) targetEntity).getAttribute(new VoidProgressMonitor(), targetName);
+                        this.target = ((DBSEntity) targetEntity).getAttribute(new VoidProgressMonitor(),
+                            DBUtils.getUnQuotedIdentifier(((DBSEntity)targetEntity).getDataSource(), targetName));
                     }
                 }
 
