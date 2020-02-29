@@ -176,6 +176,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
             taskManager.updateTaskConfiguration(task);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
+            return;
         }
 
         super.okPressed();
