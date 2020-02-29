@@ -258,6 +258,13 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             setErrorMessage("Enter task name (unique)");
             return false;
         }
+        if (task == null) {
+            DBTTask task2 = selectedProject.getTaskManager().getTaskByName(taskName);
+            if (task2 != null) {
+                setErrorMessage("Task '" + taskName + "' already exists in project '" + selectedProject.getName() + "'");
+                return false;
+            }
+        }
         if (selectedTaskType == null) {
             setErrorMessage("Enter task type");
             return false;
