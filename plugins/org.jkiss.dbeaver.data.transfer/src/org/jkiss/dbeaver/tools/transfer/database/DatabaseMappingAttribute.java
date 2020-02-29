@@ -220,7 +220,8 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSDataManipulator targetEntity = parent.getTarget();
                     if (targetEntity instanceof DBSEntity) {
-                        this.target = ((DBSEntity) targetEntity).getAttribute(new VoidProgressMonitor(), targetName);
+                        this.target = ((DBSEntity) targetEntity).getAttribute(new VoidProgressMonitor(),
+                            DBUtils.getUnQuotedIdentifier(((DBSEntity)targetEntity).getDataSource(), targetName));
                     }
                 }
 
