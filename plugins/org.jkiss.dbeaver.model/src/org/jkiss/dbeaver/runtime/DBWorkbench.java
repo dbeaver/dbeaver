@@ -52,6 +52,10 @@ public class DBWorkbench {
         return platformInstance;
     }
 
+    public static <T extends DBPPlatform> T getPlatform(Class<T> pc) {
+        return pc.cast(getPlatform());
+    }
+
     public static DBPPlatformUI getPlatformUI() {
         if (platformUIInstance == null) {
             synchronized (DBWorkbench.class) {
