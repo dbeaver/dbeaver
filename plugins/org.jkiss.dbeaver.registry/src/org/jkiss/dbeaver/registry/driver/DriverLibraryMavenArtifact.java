@@ -165,7 +165,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     public String getExternalURL(DBRProgressMonitor monitor) {
         MavenArtifactVersion localVersion = getArtifactVersion(monitor);
         if (localVersion != null) {
-            return localVersion.getExternalURL(MavenArtifact.FILE_JAR);
+            return localVersion.getExternalURL();
         }
         return null;
     }
