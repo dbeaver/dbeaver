@@ -974,7 +974,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         // Make class loader
         this.classLoader = new DriverClassLoader(
                 this,
-                libraryURLs.toArray(new URL[libraryURLs.size()]),
+                libraryURLs.toArray(new URL[0]),
                 getDataSourceProvider().getClass().getClassLoader());
     }
 

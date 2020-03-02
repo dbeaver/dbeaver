@@ -174,8 +174,9 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     }
 
     public File getCacheFile() {
+        String fileExt = getPackagingFileExtension();
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
-            String externalURL = getExternalURL(MavenArtifact.FILE_JAR);
+            String externalURL = getExternalURL(fileExt);
             try {
                 return RuntimeUtils.getLocalFileFromURL(new URL(externalURL));
 //                return new File(new URL(externalURL).toURI());
@@ -184,7 +185,20 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 return new File(externalURL);
             }
         }
-        return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + artifact.getVersionFileName(version, MavenArtifact.FILE_JAR));
+        return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + artifact.getVersionFileName(version, fileExt));
+    }
+
+    public String getExternalURL() {
+        return artifact.getFileURL(version, getPackagingFileExtension());
+    }
+
+    @NotNull
+    private String getPackagingFileExtension() {
+        String fileExt = packaging;
+        if (CommonUtils.isEmpty(fileExt)) {
+            fileExt = MavenArtifact.FILE_JAR;
+        }
+        return fileExt;
     }
 
     public String getExternalURL(String fileType) {
