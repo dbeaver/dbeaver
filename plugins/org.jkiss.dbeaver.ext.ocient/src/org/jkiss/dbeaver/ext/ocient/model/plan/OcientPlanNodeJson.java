@@ -81,8 +81,25 @@ public class OcientPlanNodeJson extends OcientPlanNode implements DBPPropertySou
             } else {
                 if ("type".equals(propName)) {
                     this.name = value.getAsString();
+                } 
+                
+                
+                if ("totalCost".equals(propName)) {
+                	Double cost =  Double.parseDouble(value.getAsString());
+                	String strValue = Double.toString(cost / 1000) + " seconds";
+                	nodeProps.put(propName, strValue);
+
                 }
-                nodeProps.put(propName, value.getAsString());
+                else if ("indexMemUsage".equals(propName) || "queryMemUsage".equals(propName)) {
+                	Double cost =  Double.parseDouble(value.getAsString());
+                	String strValue = Double.toString(cost / 1000000000) + " GB";
+                	nodeProps.put(propName, strValue);
+
+                }
+                else {
+                	
+                	nodeProps.put(propName, value.getAsString());
+                }
             }
         }
     }

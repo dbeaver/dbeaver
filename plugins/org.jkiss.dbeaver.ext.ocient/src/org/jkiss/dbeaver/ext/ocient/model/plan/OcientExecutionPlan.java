@@ -90,10 +90,14 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
 
         JsonObject planObject = gson.fromJson(explainString, JsonObject.class);
         JsonObject planRoot = planObject.getAsJsonObject("rootNode");
+        JsonObject planHeader = planObject.getAsJsonObject("header");
         rootNodes = new ArrayList<>();
-
+        
+        OcientPlanNodeJson headerNode = new OcientPlanNodeJson(null, "header", planHeader);
         OcientPlanNodeJson rootNode = new OcientPlanNodeJson(null, "Root", planRoot);
+        rootNodes.add(headerNode);
         rootNodes.add(rootNode);
+
     }
 
     private String getExplainString(DBCSession session, String sql) throws DBCException
