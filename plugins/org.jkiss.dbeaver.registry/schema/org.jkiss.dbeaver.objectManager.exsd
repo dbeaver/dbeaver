@@ -3,7 +3,7 @@
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.objectManager" name="Object managers"/>
+         <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.objectManager" name="Object managers"/>
       </appInfo>
       <documentation>
          Non-UI services which can creade/delete/change database objects.
