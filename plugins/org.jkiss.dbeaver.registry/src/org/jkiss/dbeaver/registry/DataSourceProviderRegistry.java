@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
-import org.jkiss.dbeaver.model.connection.DBPConnectionType;
-import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
-import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
-import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptorSerializerLegacy;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -66,11 +63,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
-    private final Map<String, ExternalResourceDescriptor> resourceContributions = new HashMap<>();
+    private final Map<String, ExternalResourceDescriptor> resourceContributions = new LinkedHashMap<>();
 
     private final List<EditorContributionDescriptor> editorContributors = new ArrayList<>();
     private final Map<String, List<EditorContributionDescriptor>> contributionCategoryMap = new HashMap<>();
 
+    private final Map<String, DataSourceAuthModelDescriptor> authModels = new LinkedHashMap<>();
     private final List<DataSourceConfigurationStorageDescriptor> dataSourceConfigurationStorageDescriptors = new ArrayList<>();
 
     private DataSourceProviderRegistry()
@@ -204,6 +202,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         resourceContributions.put(alias, resource);
                     }
                 }
+            }
+        }
+
+        // Load external resources information
+        {
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceAuthModelDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                DataSourceAuthModelDescriptor descriptor = new DataSourceAuthModelDescriptor(ext);
+                authModels.put(descriptor.getName(), descriptor);
             }
         }
 
@@ -443,6 +450,24 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     public List<DataSourceConfigurationStorageDescriptor> getDataSourceConfigurationStorages() {
         return dataSourceConfigurationStorageDescriptors;
+    }
+
+    //////////////////////////////////////////////
+    // Auth models
+
+    public DataSourceAuthModelDescriptor getAuthModel(String id) {
+        return authModels.get(id);
+    }
+
+    public List<DataSourceAuthModelDescriptor> getAllAuthModels() {
+        return new ArrayList<>(authModels.values());
+    }
+
+    @Override
+    public List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDataSourceContainer dataSourceContainer) {
+        List<DataSourceAuthModelDescriptor> models = new ArrayList<>();
+        models.addAll(authModels.values());
+        return models;
     }
 
     //////////////////////////////////////////////

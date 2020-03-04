@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -127,6 +128,8 @@ public abstract class JDBCDataSource
 
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
 
+        DBAAuthModel authModel = connectionInfo.getAuthModel();
+
         // Obtain connection
         try {
             if (connectionConfigurer != null) {
@@ -168,13 +171,20 @@ public abstract class JDBCDataSource
                     }
                 }
             };
+
+            authModel.initAuthentication(monitor, container, connectionInfo, connectProps);
             boolean openTaskFinished;
-            if (openTimeout <= 0) {
-                openTaskFinished = true;
-                connectTask.run(monitor);
-            } else {
-                openTaskFinished = RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
+            try {
+                if (openTimeout <= 0) {
+                    openTaskFinished = true;
+                    connectTask.run(monitor);
+                } else {
+                    openTaskFinished = RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
+                }
+            } finally {
+                authModel.endAuthentication(container, connectionInfo, connectProps);
             }
+
             if (error[0] != null) {
                 throw error[0];
             }

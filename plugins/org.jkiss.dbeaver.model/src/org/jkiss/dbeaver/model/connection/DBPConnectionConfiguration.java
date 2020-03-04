@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -335,6 +338,15 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public String getAuthModelId() {
         return authModelId;
+    }
+
+    @NotNull
+    public DBAAuthModel getAuthModel() {
+        if (!CommonUtils.isEmpty(authModelId)) {
+            DBPAuthModelDescriptor authModelDesc = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
+            return authModelDesc == null ? null : authModelDesc.getInstance();
+        }
+        return DBAAuthDatabaseNative.INSTANCE;
     }
 
     public void setAuthModelId(String authModelId) {

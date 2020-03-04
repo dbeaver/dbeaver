@@ -32,6 +32,10 @@ public interface DBPDataSourceProviderRegistry {
     DBPDataSourceProviderDescriptor getDataSourceProvider(String id);
     DBPDataSourceProviderDescriptor makeFakeProvider(String providerID);
 
+    DBPAuthModelDescriptor getAuthModel(String id);
+    List<? extends DBPAuthModelDescriptor> getAllAuthModels();
+    List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDataSourceContainer dataSourceContainer);
+
     DBPConnectionType getConnectionType(String id, DBPConnectionType defaultType);
     void addConnectionType(DBPConnectionType connectionType);
     void removeConnectionType(DBPConnectionType connectionType);

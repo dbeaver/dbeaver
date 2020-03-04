@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Map;
+import java.util.Properties;
 
 /**
  * Database native auth model.
@@ -33,13 +33,15 @@ import java.util.Map;
  */
 public class DBAAuthDatabaseNative implements DBAAuthModel {
 
+    public static final DBAAuthDatabaseNative INSTANCE = new DBAAuthDatabaseNative();
+
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Map<String, Object> connProperties) throws DBException {
+    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
 
     }
 
     @Override
-    public void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Map<String, Object> connProperties) throws DBException {
+    public void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) {
 
     }
 
