@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -81,7 +82,10 @@ public class SQLGeneratorContributor extends CompoundContributionItem {
         } else {
             List<DBPObject> objects = new ArrayList<>();
             for (Object obj : structuredSelection.toList()) {
-                if (obj instanceof DBSWrapper) {
+                DBSObject adaptedObject = GeneralUtils.adapt(obj, DBSObject.class);
+                if (adaptedObject != null) {
+                    objects.add(adaptedObject);
+                } else if (obj instanceof DBSWrapper) {
                     objects.add(((DBSWrapper) obj).getObject());
                 } else if (obj instanceof DBPObject) {
                     objects.add((DBPObject) obj);
