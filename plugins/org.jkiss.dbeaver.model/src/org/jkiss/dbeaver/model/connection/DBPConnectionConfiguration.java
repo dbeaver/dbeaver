@@ -54,7 +54,9 @@ public class DBPConnectionConfiguration implements DBPObject {
     private String clientHomeId;
 
     private String configProfileName;
-    private String userProfileName;
+
+    private String authModelId;
+    private Map<String, String> authProperties;
 
     @NotNull
     private final Map<String, String> properties;
@@ -71,9 +73,9 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public DBPConnectionConfiguration() {
         this.connectionType = DBPConnectionType.DEFAULT_TYPE;
-        this.properties = new HashMap<>();
-        this.providerProperties = new HashMap<>();
-        this.events = new HashMap<>();
+        this.properties = new LinkedHashMap<>();
+        this.providerProperties = new LinkedHashMap<>();
+        this.events = new LinkedHashMap<>();
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
@@ -89,11 +91,12 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.url = info.url;
         this.clientHomeId = info.clientHomeId;
         this.configProfileName = info.configProfileName;
-        this.userProfileName = info.userProfileName;
+        this.authModelId = info.authModelId;
+        this.authProperties = info.authProperties == null ? null : new LinkedHashMap<>(info.authProperties);
         this.connectionType = info.connectionType;
-        this.properties = new HashMap<>(info.properties);
-        this.providerProperties = new HashMap<>(info.providerProperties);
-        this.events = new HashMap<>(info.events.size());
+        this.properties = new LinkedHashMap<>(info.properties);
+        this.providerProperties = new LinkedHashMap<>(info.providerProperties);
+        this.events = new LinkedHashMap<>(info.events.size());
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
             this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
         }
@@ -317,17 +320,38 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.configProfileName = configProfileName;
     }
 
-    public String getUserProfileName() {
-        return userProfileName;
+    public void setConfigProfile(DBWNetworkProfile profile) {
+        if (profile == null) {
+            configProfileName = null;
+        } else {
+            configProfileName = profile.getProfileName();
+            for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
+                if (handlerConfig.isEnabled()) {
+                    updateHandler(new DBWHandlerConfiguration(handlerConfig));
+                }
+            }
+        }
     }
 
-    public void setUserProfileName(String userProfileName) {
-        this.userProfileName = userProfileName;
+    public String getAuthModelId() {
+        return authModelId;
+    }
+
+    public void setAuthModelId(String authModelId) {
+        this.authModelId = authModelId;
+    }
+
+    public Map<String, String> getAuthProperties() {
+        return authProperties;
+    }
+
+    public void setAuthProperties(Map<String, String> authProperties) {
+        this.authProperties = authProperties;
     }
 
     @Override
     public String toString() {
-        return "Connection: " + (url == null ? databaseName : url);
+        return "ConnectionConfiguration: " + (url == null ? databaseName : url);
     }
 
     @Override
@@ -346,7 +370,8 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalOrEmptyStrings(this.url, source.url) &&
                 CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
                 CommonUtils.equalObjects(this.configProfileName, source.configProfileName) &&
-                CommonUtils.equalObjects(this.userProfileName, source.userProfileName) &&
+                CommonUtils.equalObjects(this.authModelId, source.authModelId) &&
+                CommonUtils.equalObjects(this.authProperties, source.authProperties) &&
                 CommonUtils.equalObjects(this.connectionType, source.connectionType) &&
                 CommonUtils.equalObjects(this.properties, source.properties) &&
                 CommonUtils.equalObjects(this.providerProperties, source.providerProperties) &&
@@ -364,12 +389,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         userName = GeneralUtils.replaceVariables(userName, variableResolver);
         userPassword = GeneralUtils.replaceVariables(userPassword, variableResolver);
         url = GeneralUtils.replaceVariables(url, variableResolver);
-        for (Map.Entry<String, String> prop : this.properties.entrySet()) {
-            prop.setValue(GeneralUtils.replaceVariables(prop.getValue(), variableResolver));
-        }
-        for (Map.Entry<String, String> prop : this.providerProperties.entrySet()) {
-            prop.setValue(GeneralUtils.replaceVariables(prop.getValue(), variableResolver));
-        }
+
+        resolveDynamicVariablesInMap(this.properties, variableResolver);
+        resolveDynamicVariablesInMap(this.authProperties, variableResolver);
+        resolveDynamicVariablesInMap(this.providerProperties, variableResolver);
         for (DBWHandlerConfiguration handler : handlers) {
             if (handler.isEnabled()) {
                 handler.resolveDynamicVariables(variableResolver);
@@ -378,16 +401,12 @@ public class DBPConnectionConfiguration implements DBPObject {
         bootstrap.resolveDynamicVariables(variableResolver);
     }
 
-    public void setConfigProfile(DBWNetworkProfile profile) {
-        if (profile == null) {
-            configProfileName = null;
-        } else {
-            configProfileName = profile.getProfileName();
-            for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
-                if (handlerConfig.isEnabled()) {
-                    updateHandler(new DBWHandlerConfiguration(handlerConfig));
-                }
-            }
+    private void resolveDynamicVariablesInMap(Map<String, String> map, IVariableResolver variableResolver) {
+        if (map == null) {
+            return;
+        }
+        for (Map.Entry<String, String> prop : map.entrySet()) {
+            prop.setValue(GeneralUtils.replaceVariables(prop.getValue(), variableResolver));
         }
     }
 
