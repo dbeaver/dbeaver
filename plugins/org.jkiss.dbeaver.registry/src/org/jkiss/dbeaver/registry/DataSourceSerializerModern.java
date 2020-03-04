@@ -474,7 +474,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                     config.setClientHomeId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_HOME));
                     config.setConfigProfileName(JSONUtils.getString(cfgObject, "config-profile"));
-                    config.setUserProfileName(JSONUtils.getString(cfgObject, "user-profile"));
                     config.setConnectionType(
                         DataSourceProviderRegistry.getInstance().getConnectionType(
                             JSONUtils.getString(cfgObject, RegistryConstants.ATTR_TYPE), DBPConnectionType.DEFAULT_TYPE));
@@ -488,6 +487,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                     config.setProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROPERTIES));
                     config.setProviderProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
+                    config.setAuthModelId(JSONUtils.getString(cfgObject, "auth-model"));
+                    config.setAuthProperties(JSONUtils.deserializeStringMapOrNull(cfgObject, "auth-properties"));
 
                     // Events
                     for (Map.Entry<String, Map<String, Object>> eventObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_EVENTS)) {
@@ -729,9 +730,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
             }
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
-            JSONUtils.fieldNE(json, "user-profile", connectionInfo.getUserProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
+            JSONUtils.fieldNE(json, "auth-model", connectionInfo.getAuthModelId());
+            JSONUtils.serializeProperties(json, "auth-properties", connectionInfo.getAuthProperties());
 
             // Save events
             if (!ArrayUtils.isEmpty(connectionInfo.getDeclaredEvents())) {

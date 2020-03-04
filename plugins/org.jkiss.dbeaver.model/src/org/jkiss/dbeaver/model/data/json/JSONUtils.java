@@ -340,6 +340,19 @@ public class JSONUtils {
         return result;
     }
 
+    @Nullable
+    public static Map<String, String> deserializeStringMapOrNull(Map<String, Object> map, String name) {
+        Object propMap = map.get(name);
+        if (propMap instanceof Map && !((Map) propMap).isEmpty()) {
+            Map<String, String> result = new LinkedHashMap<>();
+            for (Map.Entry<?,?> pe : ((Map<?, ?>) propMap).entrySet()) {
+                result.put(CommonUtils.toString(pe.getKey()), CommonUtils.toString(pe.getValue()));
+            }
+            return result;
+        }
+        return null;
+    }
+
     @NotNull
     public static List<String> deserializeStringList(Map<String, Object> map, String name) {
         List<String> result = new ArrayList<>();

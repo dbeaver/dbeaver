@@ -721,8 +721,7 @@ public class DataSourceDescriptor
         try {
             // Resolve variables
             if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
-                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()) ||
-                !CommonUtils.isEmpty(connectionInfo.getUserProfileName()))
+                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()))
             {
                 this.resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
                 // Update config from profile
@@ -736,9 +735,6 @@ public class DataSourceDescriptor
                             }
                         }
                     }
-                }
-                if (!CommonUtils.isEmpty(resolvedConnectionInfo.getUserProfileName())) {
-
                 }
                 // Process variables
                 if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {

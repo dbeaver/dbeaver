@@ -17,8 +17,11 @@
 
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -29,12 +32,13 @@ public interface DBAAuthModel {
 
     /**
      * Called before connection opening. May modify any connection configuration properties
+     *
      * @param configuration connection configuration
-     * @param authProperties auth model specific options.
+     * @param connProperties auth model specific options.
      * @throws DBException on error
      */
-    void initAuthentication(DBPConnectionConfiguration configuration, Map<String, Object> authProperties) throws DBException;
+    void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Map<String, Object> connProperties) throws DBException;
 
-    void endAuthentication(DBPConnectionConfiguration configuration, Map<String, Object> authProperties) throws DBException;
+    void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Map<String, Object> connProperties) throws DBException;
 
 }
