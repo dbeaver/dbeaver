@@ -235,7 +235,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         synchronized (dataSources) {
             dsCopy = CommonUtils.copyList(dataSources);
         }
-        dsCopy.removeIf(ds -> !CommonUtils.equalObjects(ds.getConnectionConfiguration().getUserProfileName(), profile.getProfileName()));
+        dsCopy.removeIf(ds -> !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileName(), profile.getProfileName()));
         return dsCopy;
     }
 
