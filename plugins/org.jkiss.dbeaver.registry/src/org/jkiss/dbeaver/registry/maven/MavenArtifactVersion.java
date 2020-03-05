@@ -195,7 +195,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     @NotNull
     private String getPackagingFileExtension() {
         String fileExt = packaging;
-        if (CommonUtils.isEmpty(fileExt)) {
+        if (CommonUtils.isEmpty(fileExt) || fileExt.equals(MavenArtifact.PACKAGING_BUNDLE)) {
             fileExt = MavenArtifact.FILE_JAR;
         }
         return fileExt;
