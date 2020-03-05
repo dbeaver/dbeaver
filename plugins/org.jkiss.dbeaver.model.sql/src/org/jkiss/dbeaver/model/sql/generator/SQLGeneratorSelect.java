@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 public class SQLGeneratorSelect extends SQLGeneratorTable {
-    private boolean columnList;
+    private boolean columnList = true;
 
     public void setColumnList(boolean columnList) {
         this.columnList = columnList;
