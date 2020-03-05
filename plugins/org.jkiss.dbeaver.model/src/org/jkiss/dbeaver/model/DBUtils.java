@@ -344,7 +344,13 @@ public final class DBUtils {
                 // Not found - try to find in selected object
                 DBSObject selectedObject = getSelectedObject(executionContext);
                 if (selectedObject instanceof DBSObjectContainer) {
-                    sc = ((DBSObjectContainer) selectedObject).getChild(monitor, containerName);
+                    if (selectedObject instanceof DBSSchema && CommonUtils.equalObjects(schemaName, selectedObject.getName()) ||
+                        selectedObject instanceof DBSCatalog && CommonUtils.equalObjects(catalogName, selectedObject.getName())) {
+                        // Selected object is a catalog or schema which is also specified as catalogName/schemaName -
+                        sc = selectedObject;
+                    } else {
+                        sc = ((DBSObjectContainer) selectedObject).getChild(monitor, containerName);
+                    }
                 }
                 if (!(sc instanceof DBSObjectContainer)) {
                     return null;
