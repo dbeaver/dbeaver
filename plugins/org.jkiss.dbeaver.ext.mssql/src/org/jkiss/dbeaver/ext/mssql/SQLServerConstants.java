@@ -37,6 +37,8 @@ public class SQLServerConstants {
 
     public static final String DEFAULT_SCHEMA_NAME = "dbo";
 
+    public static final String TYPE_DATE = "date";
+    public static final String TYPE_TIME = "time";
     public static final String TYPE_DATETIME = "datetime";
     public static final String TYPE_DATETIME2 = "datetime2";
     public static final String TYPE_SMALLDATETIME = "smalldatetime";
