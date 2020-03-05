@@ -275,14 +275,14 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case "float":
                 return DBPDataKind.NUMERIC;
 
-            case "date":
-            case "datetime":
-            case "datetime2":
-            case "smalldatetime":
-            case "time":
+            case SQLServerConstants.TYPE_DATETIME:
+            case SQLServerConstants.TYPE_DATETIME2:
+            case SQLServerConstants.TYPE_SMALLDATETIME:
+            case SQLServerConstants.TYPE_DATE:
+            case SQLServerConstants.TYPE_TIME:
                 return DBPDataKind.DATETIME;
 
-            case "datetimeoffset":
+            case SQLServerConstants.TYPE_DATETIMEOFFSET:
                 return DBPDataKind.STRING;
 
             case "binary":
