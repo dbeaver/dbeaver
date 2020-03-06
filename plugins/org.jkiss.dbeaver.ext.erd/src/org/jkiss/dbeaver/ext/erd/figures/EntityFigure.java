@@ -89,9 +89,13 @@ public class EntityFigure extends Figure {
         layout.marginWidth = 0;
 */
 
-        ToolbarLayout layout = new ToolbarLayout();
-        layout.setHorizontal(false);
-        layout.setStretchMinorAxis(true);
+        GridLayout layout = new GridLayout(1, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
+        //layout.setHorizontal(false);
+        //layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
 
         LineBorder border = new LineBorder(getBorderColor(), ERDConstants.DEFAULT_ENTITY_BORDER_WIDTH);
@@ -99,12 +103,12 @@ public class EntityFigure extends Figure {
         setBorder(border);
         setOpaque(true);
 
-        add(nameLabel);
+        add(nameLabel, new GridData(GridData.FILL_HORIZONTAL));
         if (descLabel != null) {
-            add(descLabel);
+            add(descLabel, new GridData(GridData.FILL_HORIZONTAL));
         }
-        add(keyFigure);
-        add(attributeFigure);
+        add(keyFigure, new GridData(GridData.FILL_HORIZONTAL));
+        add(attributeFigure, new GridData(GridData.FILL_BOTH));
 
         refreshColors();
     }
