@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.ext.erd.part.NodePart;
 public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 {
 
+	private static final boolean ALLOW_ENTITY_RESIZE = true;
+
 	@Override
     protected Command createAddCommand(EditPart child, Object constraint)
 	{
@@ -62,7 +64,7 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 		Rectangle newBounds = (Rectangle) constraint;
 
         // Restrict resize for entities
-        if (nodePart instanceof EntityPart) {
+        if (!ALLOW_ENTITY_RESIZE && nodePart instanceof EntityPart) {
             if (oldBounds.width != newBounds.width && newBounds.width != -1)
                 return null;
             if (oldBounds.height != newBounds.height && newBounds.height != -1)
@@ -103,4 +105,11 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 		return null;
 	}
 
+	@Override
+	public Command getCommand(Request request) {
+		if (REQ_RESIZE.equals(request.getType())) {
+			return null;//getHost();
+		}
+		return super.getCommand(request);
+	}
 }
