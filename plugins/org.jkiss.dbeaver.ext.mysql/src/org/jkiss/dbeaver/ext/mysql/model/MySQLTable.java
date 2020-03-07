@@ -518,6 +518,7 @@ public class MySQLTable extends MySQLTableBase
         getContainer().constraintCache.clearObjectCache(this);
         getContainer().indexCache.clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);
+        this.referenceCache = null;
 
         return super.refreshObject(monitor);
     }
