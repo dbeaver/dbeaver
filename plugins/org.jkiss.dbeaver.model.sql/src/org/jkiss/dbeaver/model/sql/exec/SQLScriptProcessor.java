@@ -104,7 +104,7 @@ public class SQLScriptProcessor {
 
                 boolean oldAutoCommit = txnManager == null || txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
-                if (txnManager != null && oldAutoCommit != newAutoCommit) {
+                if (txnManager != null && txnManager.isSupportsTransactions() && oldAutoCommit != newAutoCommit) {
                     txnManager.setAutoCommit(monitor, newAutoCommit);
                 }
 
@@ -134,7 +134,7 @@ public class SQLScriptProcessor {
                 monitor.done();
 
                 // Commit data
-                if (txnManager != null && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
+                if (txnManager != null && txnManager.isSupportsTransactions() && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
                     monitor.beginTask("Finish transaction", 1);
                     if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
                         if (commitType != SQLScriptCommitType.NO_COMMIT) {
@@ -152,7 +152,7 @@ public class SQLScriptProcessor {
                 }
 
                 // Restore transactions settings
-                if (txnManager != null && oldAutoCommit != newAutoCommit) {
+                if (txnManager != null && txnManager.isSupportsTransactions() && oldAutoCommit != newAutoCommit) {
                     txnManager.setAutoCommit(monitor, oldAutoCommit);
                 }
                 if (session.isLoggingEnabled()) {
