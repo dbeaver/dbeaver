@@ -155,6 +155,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private int rowBatchSize;
     private IValueEditor activeInlineEditor;
 
+    private int highlightScopeFirstLine;
+    private int highlightScopeLastLine;
+    private Color highlightScopeColor;
+
     public SpreadsheetPresentation() {
         findReplaceTarget = new SpreadsheetFindReplaceTarget(this);
 
@@ -361,6 +365,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     protected void performHorizontalScroll(int scrollCount) {
         spreadsheet.scrollHorizontally(scrollCount);
+    }
+
+    void highlightRows(int firstLine, int lastLine, Color color) {
+        this.highlightScopeFirstLine = firstLine;
+        this.highlightScopeLastLine = lastLine;
+        this.highlightScopeColor = color;
     }
 
     /////////////////////////////////////////////////
@@ -1262,6 +1272,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     ///////////////////////////////////////////////
     // Selection provider
 
+    public int getHighlightScopeFirstLine() {
+        return highlightScopeFirstLine;
+    }
+
+    public int getHighlightScopeLastLine() {
+        return highlightScopeLastLine;
+    }
+
     @Override
     public IResultSetSelection getSelection() {
         return new SpreadsheetSelectionImpl();
@@ -1792,12 +1810,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
 
             if (findReplaceTarget.isSessionActive()) {
-                java.util.regex.Pattern searchPattern = findReplaceTarget.getSearchPattern();
-                if (searchPattern != null) {
-                    String cellText = getCellText(colElement, rowElement);
-                    if (searchPattern.matcher(cellText).find()) {
-                        return backgroundMatched;
+                boolean hasScope = highlightScopeFirstLine >= 0 && highlightScopeLastLine >= 0;
+                boolean inScope = hasScope && row.getVisualNumber() >= highlightScopeFirstLine && row.getVisualNumber() <= highlightScopeLastLine;
+                if (!hasScope || inScope) {
+                    java.util.regex.Pattern searchPattern = findReplaceTarget.getSearchPattern();
+                    if (searchPattern != null) {
+                        String cellText = getCellText(colElement, rowElement);
+                        if (searchPattern.matcher(cellText).find()) {
+                            return backgroundMatched;
+                        }
                     }
+                }
+                if (!recordMode && inScope) {
+                    return highlightScopeColor != null ? highlightScopeColor : backgroundSelected;
                 }
             }
 
