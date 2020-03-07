@@ -202,7 +202,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     }
 
     @Override
-    public Collection<DB2TableReference> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return Collections.emptyList();
     }
