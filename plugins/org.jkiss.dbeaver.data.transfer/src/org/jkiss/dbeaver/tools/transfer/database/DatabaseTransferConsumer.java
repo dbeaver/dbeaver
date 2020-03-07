@@ -272,7 +272,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         if (settings.isUseTransactions() && needCommit) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
-            if (txnManager != null && !txnManager.isAutoCommit()) {
+            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 txnManager.commit(targetSession);
             }
         }
@@ -323,7 +323,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         targetSession.enableLogging(false);
 
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
-        if (txnManager != null) {
+        if (txnManager != null && txnManager.isSupportsTransactions()) {
             oldAutoCommit = txnManager.isAutoCommit();
             if (settings.isUseTransactions()) {
                 if (oldAutoCommit) {
@@ -646,7 +646,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             dbStat.executeStatement();
         }
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-        if (txnManager != null && !txnManager.isAutoCommit()) {
+        if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
             // Commit DDL changes
             txnManager.commit(session);
         }
