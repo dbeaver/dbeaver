@@ -106,6 +106,7 @@ public class MySQLTable extends MySQLTableBase
     private final PartitionCache partitionCache = new PartitionCache();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
+    private volatile List<MySQLTableForeignKey> referenceCache;
 
     public MySQLTable(MySQLCatalog catalog)
     {
@@ -219,7 +220,10 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return loadForeignKeys(monitor, true);
+        if (referenceCache == null) {
+            referenceCache = loadForeignKeys(monitor, true);
+        }
+        return referenceCache;
     }
 
     @Override
