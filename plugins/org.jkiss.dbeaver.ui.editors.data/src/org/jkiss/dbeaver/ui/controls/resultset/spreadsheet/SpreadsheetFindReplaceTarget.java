@@ -21,19 +21,23 @@ import org.eclipse.jface.text.IFindReplaceTargetExtension;
 import org.eclipse.jface.text.IFindReplaceTargetExtension3;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -54,6 +58,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     SpreadsheetFindReplaceTarget(SpreadsheetPresentation owner)
     {
         this.owner = owner;
+        this.scopeHighlightColor = UIStyles.getDefaultTextColor("AbstractTextEditor.Color.FindScope", SWT.COLOR_LIST_SELECTION);
     }
 
     public boolean isSessionActive() {
@@ -83,13 +88,11 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public Point getSelection()
     {
-        Collection<GridPos> selection = owner.getSpreadsheet().getSelection();
-        if (selection.isEmpty()) {
-            return new Point(-1, -1);
-        } else {
-            GridPos pos = selection.iterator().next();
-            return new Point(pos.col, pos.row);
-        }
+        Collection<Integer> rowSelection = owner.getSpreadsheet().getRowSelection();
+        int minRow = rowSelection.stream().mapToInt(v -> v).min().orElse(-1);
+        int maxRow = rowSelection.stream().mapToInt(v -> v).max().orElse(-1);
+
+        return new Point(minRow, maxRow);
     }
 
     @Override
@@ -142,8 +145,12 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     }
 
     @Override
-    public void setScope(IRegion scope)
-    {
+    public void setScope(IRegion scope) {
+        if (scope == null || scope.getLength() == 0) {
+            owner.highlightRows(-1, -1, null);
+        } else {
+            owner.highlightRows(scope.getOffset(), scope.getLength(), scopeHighlightColor);
+        }
     }
 
     @Override
@@ -155,9 +162,15 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public void setSelection(int offset, int length)
     {
+        int columnCount = owner.getSpreadsheet().getColumnCount();
+        List<GridPos> selRows = new ArrayList<>();
+        for (int rowNum = 0; rowNum < length; rowNum++) {
+            for (int col = 0; col < columnCount; col++) {
+                selRows.add(new GridPos(col, offset + rowNum));
+            }
+        }
         owner.setSelection(
-            new StructuredSelection(
-                new GridPos(offset, length)));
+            new StructuredSelection(selRows));
     }
 
     @Override
@@ -185,10 +198,20 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         int rowCount = spreadsheet.getItemCount();
         int columnCount = spreadsheet.getColumnCount();
         Collection<GridPos> selection = spreadsheet.getSelection();
+        int firstRow = owner.getHighlightScopeFirstLine();
+        if (firstRow < 0) firstRow = 0;
+        int lastRow = owner.getHighlightScopeLastLine();
+        if (lastRow >= rowCount) lastRow = rowCount - 1;
+
         GridPos startPosition = selection.isEmpty() ? null : selection.iterator().next();
         if (startPosition == null) {
-            // From the beginning
-            startPosition = new GridPos(0, 0);
+            int startRow = searchForward ? firstRow : lastRow;
+            if (startRow >= 0) {
+                startPosition = new GridPos(0, startRow);
+            } else {
+                // From the beginning
+                startPosition = new GridPos(0, 0);
+            }
         }
         Pattern findPattern;
         if (regExSearch) {
@@ -217,14 +240,14 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                     curPosition.row--;
                 }
             }
-            if (curPosition.row < 0 || curPosition.row >= rowCount) {
+            if (curPosition.row < firstRow || curPosition.row > lastRow) {
                 if (offset == -1) {
                     // Wrap search - redo search one more time
                     offset = 0;
                     if (searchForward) {
-                        curPosition = new GridPos(0, 0);
+                        curPosition = new GridPos(0, firstRow);
                     } else {
-                        curPosition = new GridPos(columnCount - 1, rowCount - 1);
+                        curPosition = new GridPos(columnCount - 1, lastRow);
                     }
                 } else {
                     // Not found
