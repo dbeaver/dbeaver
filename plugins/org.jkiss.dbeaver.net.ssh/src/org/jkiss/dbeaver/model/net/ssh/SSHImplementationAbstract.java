@@ -22,7 +22,6 @@ import com.jcraft.jsch.agentproxy.USocketFactory;
 import com.jcraft.jsch.agentproxy.connector.PageantConnector;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,7 +80,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             throw new DBException("SSH port not specified");
         }
         if (CommonUtils.isEmpty(configuration.getUserName())) {
-            throw new DBException("SSH user not specified");
+            configuration.setUserName(System.getProperty(StandardConstants.ENV_USER_NAME));
         }
         if (sshLocalPort == 0) {
             if (savedLocalPort != 0) {
