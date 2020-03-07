@@ -46,6 +46,7 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -67,6 +68,7 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.text.DatabaseMarkerAnnotationModel;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 /**
@@ -265,10 +267,16 @@ public abstract class SQLEditorNested<T extends DBSObject>
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor) {
                         try {
-                            sourceText = getSourceText(monitor);
-                            if (sourceText == null) {
-                                sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
-                            }
+                            DBExecUtils.tryExecuteRecover(monitor, getDataSource(), param -> {
+                                try {
+                                    sourceText = getSourceText(monitor);
+                                    if (sourceText == null) {
+                                        sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
+                                    }
+                                } catch (DBException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                            });
                             return Status.OK_STATUS;
                         } catch (Exception e) {
                             sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
