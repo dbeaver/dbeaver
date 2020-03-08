@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -121,6 +122,11 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 log.error(e);
             }
         }
+    }
+
+    @Override
+    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
+        return !((PostgreIndex)index).isPrimaryKeyIndex() && super.isIncludeIndexInDDL(index);
     }
 
 }
