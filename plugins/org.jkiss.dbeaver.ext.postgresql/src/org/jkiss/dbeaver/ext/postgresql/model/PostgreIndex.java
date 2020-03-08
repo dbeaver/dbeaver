@@ -263,7 +263,9 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
 
     @Override
     public boolean isHidden() {
-        return isPrimaryKeyIndex;
+        // We show all indexes (#8126)
+        return false;
+        //return isPrimaryKeyIndex;
     }
 
     @Override
