@@ -87,6 +87,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 activeReferenceKey = fkCombo.getSelectedItem();
+                if (activeReferenceKey == null) {
+                    return;
+                }
                 refreshKeyValues(true);
 
                 // Save active keys in virtual entity props
