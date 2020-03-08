@@ -131,9 +131,12 @@ public class NavigatorUtils {
         return result;
     }
 
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer)
-    {
-        MenuManager menuMgr = createContextMenu(workbenchSite, viewer, null);
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer) {
+        addContextMenu(workbenchSite, viewer, viewer);
+    }
+
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, ISelectionProvider selectionProvider) {
+        MenuManager menuMgr = createContextMenu(workbenchSite, viewer, selectionProvider, null);
         if (workbenchSite instanceof IWorkbenchPartSite) {
             ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, viewer);
         } else if (workbenchSite instanceof IPageSite) {
@@ -141,7 +144,11 @@ public class NavigatorUtils {
         }
     }
 
-    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener)
+    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener) {
+        return createContextMenu(workbenchSite, viewer, viewer, menuListener);
+    }
+
+    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final ISelectionProvider selectionProvider, final IMenuListener menuListener)
     {
         final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
@@ -188,8 +195,8 @@ public class NavigatorUtils {
 
             manager.add(new Separator());
 
-            final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-            final DBNNode selectedNode = getSelectedNode(viewer);
+            final ISelection selection = selectionProvider.getSelection();
+            final DBNNode selectedNode = getSelectedNode(selectionProvider);
             if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
                 addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
             }
@@ -205,8 +212,11 @@ public class NavigatorUtils {
             if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
                 manager.add(new Separator());
                 // Add properties button
-                if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement()) && selection.getFirstElement() instanceof DBNResource) {
-                    manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
+                if (selection instanceof IStructuredSelection) {
+                    Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+                    if (PreferencesUtil.hasPropertiesContributors(firstElement) && firstElement instanceof DBNResource) {
+                        manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
+                    }
                 }
 
                 if (selectedNode.isPersisted()) {
