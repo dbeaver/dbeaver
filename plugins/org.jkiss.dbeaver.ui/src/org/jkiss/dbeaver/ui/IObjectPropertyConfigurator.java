@@ -23,7 +23,11 @@ import org.eclipse.swt.widgets.Composite;
  */
 public interface IObjectPropertyConfigurator<T>
 {
-    void createControl(Composite parent);
+    /**
+     * @param parent                 Parent composite
+     * @param propertyChangeListener Can be called upon UI control change to update page completness and other things.
+     */
+    void createControl(Composite parent, Runnable propertyChangeListener);
 
     void loadSettings(T configuration);
 

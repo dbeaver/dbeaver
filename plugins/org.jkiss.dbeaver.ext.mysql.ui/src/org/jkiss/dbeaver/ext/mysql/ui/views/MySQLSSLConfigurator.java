@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ext.mysql.ui.views;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -44,7 +47,7 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
 //    private Button debugSSL;
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(Composite parent, Runnable propertyChangeListener) {
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);

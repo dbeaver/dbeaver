@@ -77,6 +77,11 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
         return icon;
     }
 
+    @Override
+    public String getImplClassName() {
+        return implType.getImplName();
+    }
+
     @NotNull
     public DBAAuthModel getInstance()
     {

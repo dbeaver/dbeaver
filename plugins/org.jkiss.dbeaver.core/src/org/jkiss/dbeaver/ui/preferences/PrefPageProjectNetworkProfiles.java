@@ -54,8 +54,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * PrefPageProjectResourceSettings
@@ -304,7 +304,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        configurator.createControl(handlerComposite);
+        configurator.createControl(handlerComposite, this::updateApplyButton);
 
         enableHandlerContent(descriptor);
     }

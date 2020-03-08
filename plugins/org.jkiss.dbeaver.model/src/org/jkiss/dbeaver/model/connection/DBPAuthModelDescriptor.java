@@ -31,6 +31,8 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
 
     DBPImage getIcon();
 
+    String getImplClassName();
+
     DBAAuthModel getInstance();
 
 }

@@ -459,7 +459,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         return authModels.get(id);
     }
 
-    public List<DataSourceAuthModelDescriptor> getAllAuthModels() {
+    public List<DBPAuthModelDescriptor> getAllAuthModels() {
         return new ArrayList<>(authModels.values());
     }
 

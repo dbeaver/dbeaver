@@ -10,6 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tasks.native,
+ com.sun.jna.platform,
  com.google.gson
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

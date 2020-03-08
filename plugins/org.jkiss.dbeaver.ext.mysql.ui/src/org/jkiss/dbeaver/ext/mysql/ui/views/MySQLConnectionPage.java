@@ -22,10 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.MySQLUIActivator;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
@@ -35,7 +32,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,7 +42,7 @@ import java.util.TimeZone;
 /**
  * MySQLConnectionPage
  */
-public class MySQLConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
+public class MySQLConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage
 {
     // disable Server time zone manage - it confuses users and makes very little sense
     // as now we use server timestamp format by default
@@ -57,7 +54,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     private Text hostText;
     private Text portText;
     private Text dbText;
-    private Text usernameText;
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
@@ -82,59 +78,35 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         };
         final int fontHeight = UIUtils.getFontHeight(composite);
 
-        Composite addrGroup = UIUtils.createPlaceholder(composite, 2);
-        GridLayout gl = new GridLayout(2, false);
-        addrGroup.setLayout(gl);
+        Composite addrGroup = new Composite(composite, SWT.NONE);
+        addrGroup.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        Label hostLabel = UIUtils.createControlLabel(addrGroup, MySQLUIMessages.dialog_connection_host);
-        hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        Group serverGroup = UIUtils.createControlGroup(addrGroup, "Server", 2, GridData.FILL_HORIZONTAL, 0);
 
-        hostText = new Text(addrGroup, SWT.BORDER);
+        Label hostLabel = UIUtils.createControlLabel(serverGroup, MySQLUIMessages.dialog_connection_host);
+        Composite hostComposite = UIUtils.createComposite(serverGroup, 3);
+        hostComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        hostText = new Text(hostComposite, SWT.BORDER);
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         hostText.addModifyListener(textListener);
 
-        Label portLabel = UIUtils.createControlLabel(addrGroup, MySQLUIMessages.dialog_connection_port);
-        portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        portText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.widthHint = fontHeight * 10;
-        portText.setLayoutData(gd);
+        portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, "", SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        ((GridData)portText.getLayoutData()).widthHint = fontHeight * 10;
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(textListener);
 
-        Label dbLabel = UIUtils.createControlLabel(addrGroup, MySQLUIMessages.dialog_connection_database);
-        dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        dbText = new Text(addrGroup, SWT.BORDER);
-        dbText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        dbText = UIUtils.createLabelText(serverGroup, MySQLUIMessages.dialog_connection_database, "", SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
         dbText.addModifyListener(textListener);
 
-        Label usernameLabel = UIUtils.createControlLabel(addrGroup, MySQLUIMessages.dialog_connection_user_name);
-        usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        createAuthPanel(addrGroup, 1);
 
-        usernameText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.widthHint = fontHeight * 20;
-        usernameText.setLayoutData(gd);
-        usernameText.addModifyListener(textListener);
-
-        Label passwordLabel = UIUtils.createControlLabel(addrGroup, MySQLUIMessages.dialog_connection_password);
-        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        Composite passPH = UIUtils.createPlaceholder(addrGroup, 2, 5);
-        passPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createPasswordText(passPH, null);
-        passwordText.addModifyListener(textListener);
-
-        createPasswordControls(passPH);
-
-        UIUtils.createHorizontalLine(addrGroup, 2, 10);
+        Group advancedGroup = UIUtils.createControlGroup(addrGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
         if (MANAGE_SERVER_TIME_ZONE) {
-            serverTimezoneCombo = UIUtils.createLabelCombo(addrGroup, MySQLUIMessages.dialog_connection_server_timezone, SWT.DROP_DOWN);
+            serverTimezoneCombo = UIUtils.createLabelCombo(advancedGroup, MySQLUIMessages.dialog_connection_server_timezone, SWT.DROP_DOWN);
             serverTimezoneCombo.add(MySQLUIMessages.dialog_connection_auto_detect);
             {
                 String[] tzList = TimeZone.getAvailableIDs();
@@ -146,7 +118,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             serverTimezoneCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
 
-        homesSelector = new ClientHomesSelector(addrGroup, MySQLUIMessages.dialog_connection_local_client, false);
+        homesSelector = new ClientHomesSelector(advancedGroup, MySQLUIMessages.dialog_connection_local_client, false);
         gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
         homesSelector.getPanel().setLayoutData(gd);
 
@@ -157,7 +129,8 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     @Override
     public boolean isComplete()
     {
-        return hostText != null && portText != null && 
+        return super.isComplete() &&
+            hostText != null && portText != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
             !CommonUtils.isEmpty(portText.getText());
     }
@@ -199,16 +172,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         if (dbText != null) {
             dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
         }
-        if (usernameText != null) {
-            if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-                usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
-            } else if (site.isNew()) {
-                usernameText.setText(MySQLConstants.DEFAULT_USER);
-            }
-        }
-        if (passwordText != null) {
-            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
-        }
         if (serverTimezoneCombo != null) {
             String tzProp = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
             if (CommonUtils.isEmpty(tzProp)) {
@@ -235,12 +198,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         }
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
-        }
-        if (usernameText != null) {
-            connectionInfo.setUserName(usernameText.getText().trim());
-        }
-        if (passwordText != null) {
-            connectionInfo.setUserPassword(passwordText.getText());
         }
         if (serverTimezoneCombo != null) {
             if (serverTimezoneCombo.getSelectionIndex() == 0 || CommonUtils.isEmpty(serverTimezoneCombo.getText())) {

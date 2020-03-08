@@ -267,6 +267,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (pageCreated && isAutoLayoutAvailable()) {
                 UIUtils.asyncExec(() -> UIUtils.resizeShell(getWizard().getContainer().getShell()));
             }
+        } catch (Throwable e) {
+            DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
         } finally {
             pageArea.setRedraw(true);
         }
