@@ -54,7 +54,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
     private Combo sslFactoryCombo;
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(Composite parent, Runnable propertyChangeListener) {
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);

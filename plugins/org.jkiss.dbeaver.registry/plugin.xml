@@ -53,4 +53,12 @@
             handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+            id="native"
+            label="Database Native"
+            description="Database native authentication (name/password)"
+            class="org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative"/>
+    </extension>
+
 </plugin>

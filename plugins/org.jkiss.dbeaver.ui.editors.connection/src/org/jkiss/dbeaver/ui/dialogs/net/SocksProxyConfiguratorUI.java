@@ -42,7 +42,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
     private Button savePasswordCheckbox;
 
     @Override
-    public void createControl(Composite parent)
+    public void createControl(Composite parent, Runnable propertyChangeListener)
     {
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, true));

@@ -75,7 +75,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private VariablesHintLabel variablesHintLabel;
 
     @Override
-    public void createControl(Composite parent)
+    public void createControl(Composite parent, Runnable propertyChangeListener)
     {
         final Composite composite = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);

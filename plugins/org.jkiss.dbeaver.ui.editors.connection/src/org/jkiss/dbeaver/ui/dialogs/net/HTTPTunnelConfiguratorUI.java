@@ -28,7 +28,7 @@ import java.util.LinkedHashMap;
 public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWHandlerConfiguration> {
 
     @Override
-    public void createControl(Composite parent)
+    public void createControl(Composite parent, Runnable propertyChangeListener)
     {
     }
 

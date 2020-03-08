@@ -134,7 +134,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        configurator.createControl(handlerComposite);
+        configurator.createControl(handlerComposite, this::updatePageCompletion);
     }
 
     @Override
