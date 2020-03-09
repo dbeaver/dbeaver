@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -46,7 +47,7 @@ public class PostgreServerType extends AbstractDescriptor {
         icon = iconToImage(config.getAttribute("logo"));
 
         defaultDatabase = config.getAttribute("defaultDatabase");
-        defaultUser = config.getAttribute("defaultUser");
+        defaultUser = CommonUtils.notNull(config.getAttribute("defaultUser"), PostgreConstants.DEFAULT_USER);
         supportsCustomConnectionURL = CommonUtils.getBoolean(config.getAttribute("customURL"), false);
     }
 

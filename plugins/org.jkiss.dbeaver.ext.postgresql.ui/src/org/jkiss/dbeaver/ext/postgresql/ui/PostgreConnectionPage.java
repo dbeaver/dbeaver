@@ -17,13 +17,12 @@
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
@@ -36,7 +35,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,12 +44,11 @@ import java.util.Locale;
 /**
  * PostgreConnectionPage
  */
-public class PostgreConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
+public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage
 {
     private Text hostText;
     private Text portText;
     private Text dbText;
-    private Text usernameText;
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
@@ -71,66 +69,43 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             }
         };
 
-        Composite addrGroup = UIUtils.createPlaceholder(composite, 4);
-        GridLayout gl = new GridLayout(4, false);
-        addrGroup.setLayout(gl);
+        Composite mainGroup = new Composite(composite, SWT.NONE);
+        mainGroup.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
-        addrGroup.setLayoutData(gd);
+        mainGroup.setLayoutData(gd);
 
-        Label hostLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_host);
-        hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        Group addrGroup = UIUtils.createControlGroup(mainGroup, "Server", 4, GridData.FILL_HORIZONTAL, 0);
 
-        hostText = new Text(addrGroup, SWT.BORDER);
+        hostText = UIUtils.createLabelText(addrGroup, PostgreMessages.dialog_setting_connection_host, null, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
 
-        Label portLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_port);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        portLabel.setLayoutData(gd);
-
-        portText = new Text(addrGroup, SWT.BORDER);
+        portText = UIUtils.createLabelText(addrGroup, PostgreMessages.dialog_setting_connection_port, null, SWT.BORDER);
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
         gd.widthHint = 40;
         portText.setLayoutData(gd);
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(textListener);
 
-        Label dbLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_database);
-        dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        dbText = new Text(addrGroup, SWT.BORDER);
+        dbText = UIUtils.createLabelText(addrGroup, PostgreMessages.dialog_setting_connection_database, null, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
 
-        Label usernameLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_user);
-        usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        createAuthPanel(mainGroup, 1);
 
-        usernameText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        usernameText.setLayoutData(gd);
-        usernameText.addModifyListener(textListener);
+        Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-        UIUtils.createEmptyLabel(addrGroup, 2, 1);
-
-        createPasswordText(addrGroup, PostgreMessages.dialog_setting_connection_password);
-        passwordText.addModifyListener(textListener);
-
-        createPasswordControls(addrGroup, 2);
-
-        UIUtils.createHorizontalLine(addrGroup, 4, 10);
-
-        homesSelector = new ClientHomesSelector(addrGroup, PostgreMessages.dialog_setting_connection_localClient, false);
+        homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
         gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
         homesSelector.getPanel().setLayoutData(gd);
 
-        createDriverPanel(addrGroup);
-        setControl(addrGroup);
+        createDriverPanel(mainGroup);
+        setControl(mainGroup);
     }
 
     @Override
@@ -142,22 +117,21 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     }
 
     @Override
-    public void loadSettings()
-    {
-        super.loadSettings();
-
+    public void loadSettings() {
+        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         final DBPDriver driver = site.getDriver();
 
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
-        {
-            ImageDescriptor logo = DBeaverIcons.getImageDescriptor(serverType.getIcon());
-            if (logo != null) {
-                setImageDescriptor(logo);
-            }
+
+        if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getUserName())) {
+            connectionInfo.setUserName(serverType.getDefaultUser());
         }
 
+        super.loadSettings();
+
+        setImageDescriptor(DBeaverIcons.getImageDescriptor(serverType.getIcon()));
+
         // Load values from new connection info
-        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         if (hostText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
@@ -167,7 +141,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
         if (portText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                portText.setText(String.valueOf(connectionInfo.getHostPort()));
+                portText.setText(connectionInfo.getHostPort());
             } else if (getSite().isNew()) {
                 if (driver.getDefaultPort() != null) {
                     portText.setText(driver.getDefaultPort());
@@ -190,19 +164,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             }
             dbText.setText(databaseName);
         }
-        if (usernameText != null) {
-            String userName = CommonUtils.notEmpty(connectionInfo.getUserName());
-            if (site.isNew() && CommonUtils.isEmpty(userName)) {
-                userName = serverType.getDefaultUser();
-                if (CommonUtils.isEmpty(userName)) {
-                    userName = PostgreConstants.DEFAULT_DATABASE;
-                }
-            }
-            usernameText.setText(userName);
-        }
-        if (passwordText != null) {
-            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
-        }
         homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
 
         activated = true;
@@ -220,12 +181,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
-        }
-        if (usernameText != null) {
-            connectionInfo.setUserName(usernameText.getText().trim());
-        }
-        if (passwordText != null) {
-            connectionInfo.setUserPassword(passwordText.getText());
         }
         if (homesSelector != null) {
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
