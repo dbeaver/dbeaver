@@ -76,7 +76,7 @@ public class CreateProcedurePage extends BaseObjectEditPage {
         createExtraControls(propsGroup);
 
         if (typeCombo != null) {
-            typeCombo.select(0);
+            typeCombo.select(getDefaultProcedureType() == DBSProcedureType.FUNCTION ? 1 : 0);
         }
 
         return propsGroup;
@@ -97,6 +97,10 @@ public class CreateProcedurePage extends BaseObjectEditPage {
 
     public DBSProcedureType getPredefinedProcedureType() {
         return null;
+    }
+
+    public DBSProcedureType getDefaultProcedureType() {
+        return DBSProcedureType.PROCEDURE;
     }
 
     public String getProcedureName() {
