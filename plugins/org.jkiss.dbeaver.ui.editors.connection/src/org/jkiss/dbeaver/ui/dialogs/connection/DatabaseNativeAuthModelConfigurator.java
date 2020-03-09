@@ -47,7 +47,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     public void createControl(Composite authPanel, Runnable propertyChangeListener) {
         int fontHeight = UIUtils.getFontHeight(authPanel);
 
-        Label usernameLabel = UIUtils.createControlLabel(authPanel, "User");
+        Label usernameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_username);
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         usernameText = new Text(authPanel, SWT.BORDER);
@@ -56,7 +56,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(e -> propertyChangeListener.run());
 
-        Label passwordLabel = UIUtils.createControlLabel(authPanel, "Password");
+        Label passwordLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         Composite passPH = UIUtils.createPlaceholder(authPanel, 2, 5);
@@ -131,7 +131,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         if (supportsPasswordView) {
             userManagementToolbar = new ToolBar(panel, SWT.HORIZONTAL);
             ToolItem showPasswordLabel = new ToolItem(userManagementToolbar, SWT.NONE);
-            showPasswordLabel.setToolTipText("Show password on screen");
+            showPasswordLabel.setToolTipText(UIConnectionMessages.dialog_connection_auth_label_show_password);
             showPasswordLabel.setImage(DBeaverIcons.getImage(UIIcon.SHOW_ALL_DETAILS));
             showPasswordLabel.addSelectionListener(new SelectionAdapter() {
                 @Override

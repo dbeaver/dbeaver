@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TabFolder;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.Comparator;
 import java.util.List;
@@ -51,8 +53,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     private IObjectPropertyConfigurator<DBPDataSourceContainer> authModelConfigurator;
 
     protected void createAuthPanel(Composite parent, int hSpan) {
-
-        modelConfigPlaceholder = UIUtils.createControlGroup(parent, "Authentication", 2, GridData.FILL_HORIZONTAL, 0);
+        modelConfigPlaceholder = UIUtils.createControlGroup(parent, UIConnectionMessages.dialog_connection_auth_group, 2, GridData.FILL_HORIZONTAL, 0);
         ((GridData)modelConfigPlaceholder.getLayoutData()).horizontalSpan = hSpan;
     }
 
@@ -89,7 +90,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     protected void showAuthModelSettings() {
         UIUtils.disposeChildControls(modelConfigPlaceholder);
 
-        Label authModelLabel = UIUtils.createControlLabel(modelConfigPlaceholder, "Authentication");
+        Label authModelLabel = UIUtils.createControlLabel(modelConfigPlaceholder, UIConnectionMessages.dialog_connection_auth_group);
         Combo authModelCombo = new Combo(modelConfigPlaceholder, SWT.DROP_DOWN | SWT.READ_ONLY);
         authModelCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         authModelCombo.addSelectionListener(new SelectionAdapter() {
@@ -124,6 +125,14 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         if (authModelConfigurator != null) {
             authModelConfigurator.createControl(modelConfigPlaceholder, () -> getSite().updateButtons());
             authModelConfigurator.loadSettings(getSite().getActiveDataSource());
+
+            if (modelConfigPlaceholder.getSize().x > 0) {
+                // Re-layout
+                TabFolder parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, TabFolder.class);
+                if (parentFolder != null) {
+                    parentFolder.layout(true, true);
+                }
+            }
         }
     }
 
@@ -139,4 +148,5 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     public boolean isComplete() {
         return authModelConfigurator == null || authModelConfigurator.isComplete();
     }
+
 }

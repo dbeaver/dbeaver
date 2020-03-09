@@ -58,10 +58,12 @@ public class UIConnectionMessages extends NLS {
     public static String controls_connection_properties_category_user_properties;
     public static String controls_connection_properties_dialog_new_property_title;
 
+    public static String dialog_connection_auth_group;
     public static String dialog_connection_auth_checkbox_save_password;
     public static String dialog_connection_auth_group_user_cridentials;
     public static String dialog_connection_auth_label_password;
     public static String dialog_connection_auth_label_username;
+    public static String dialog_connection_auth_label_show_password;
 
     public static String dialog_connection_network_socket_label_host;
     public static String dialog_connection_network_socket_label_port;

@@ -93,12 +93,12 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         hostText.addModifyListener(textListener);
 
-        portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, "", SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, null, SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         ((GridData)portText.getLayoutData()).widthHint = fontHeight * 10;
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(textListener);
 
-        dbText = UIUtils.createLabelText(serverGroup, MySQLUIMessages.dialog_connection_database, "", SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+        dbText = UIUtils.createLabelText(serverGroup, MySQLUIMessages.dialog_connection_database, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
         dbText.addModifyListener(textListener);
 
         createAuthPanel(addrGroup, 1);
@@ -127,8 +127,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
     }
 
     @Override
-    public boolean isComplete()
-    {
+    public boolean isComplete() {
         return super.isComplete() &&
             hostText != null && portText != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
@@ -136,11 +135,16 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
     }
 
     @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
+        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
+        DBPDriver driver = getSite().getDriver();
+
+        if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getUserName())) {
+            connectionInfo.setUserName(MySQLConstants.DEFAULT_USER);
+        }
+
         super.loadSettings();
 
-        DBPDriver driver = getSite().getDriver();
         {
             // We set image only once at activation
             // There is a bug in Eclipse which leads to SWTException after wizard image change
@@ -152,7 +156,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
         }
 
         // Load values from new connection info
-        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         if (hostText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());

@@ -2044,4 +2044,15 @@ public class UIUtils {
     public static Font getMonospaceFont() {
         return JFaceResources.getFont(JFaceResources.TEXT_FONT);
     }
+
+    public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
+        while (control != null) {
+            if (parentType.isInstance(control)) {
+                return parentType.cast(control);
+            }
+            control = control.getParent();
+        }
+        return null;
+    }
+
 }
