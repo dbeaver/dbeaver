@@ -158,6 +158,10 @@
             <separator name="tasks" visible="true"/>
             <command commandId="org.eclipse.ui.views.showView" icon="icons/task_list.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
+
+                <visibleWhen checkEnabled="true">
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                </visibleWhen>
             </command>
         </menuContribution>
 
