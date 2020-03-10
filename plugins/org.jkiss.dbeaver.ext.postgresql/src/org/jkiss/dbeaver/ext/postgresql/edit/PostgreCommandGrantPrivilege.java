@@ -92,7 +92,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             objectType = PostgreUtils.getObjectTypeName(object);
         }
 
-        String grantedCols, grantedTypedObject = "";
+        String grantedCols = "", grantedTypedObject = "";
         if (object instanceof PostgreTableColumn) {
             grantedCols = "(" + DBUtils.getQuotedIdentifier(object) + ")";
             grantedTypedObject = ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
