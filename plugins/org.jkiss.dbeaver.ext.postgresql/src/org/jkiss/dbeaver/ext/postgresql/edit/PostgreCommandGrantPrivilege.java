@@ -91,14 +91,16 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         } else {
             objectType = PostgreUtils.getObjectTypeName(object);
         }
-        String grantScript =
-            grant ?
-                (object instanceof PostgreTableColumn ?
-                    "GRANT " + privName + "(" + DBUtils.getQuotedIdentifier(object) + ") ON " + ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " TO " + roleName :
-                    "GRANT " + privName + " ON " + objectType + " " + objectName + " TO " + roleName) :
-                (object instanceof PostgreTableColumn ?
-                    "REVOKE " + privName + "(" + DBUtils.getQuotedIdentifier(object) + ") ON " + ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " FROM " + roleName :
-                    "REVOKE " + privName + " ON " + objectType + " " + objectName + " FROM " + roleName);
+
+        String grantedCols, grantedTypedObject = "";
+        if (object instanceof PostgreTableColumn) {
+            grantedCols = "(" + DBUtils.getQuotedIdentifier(object) + ")";
+            grantedTypedObject = ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        } else {
+            grantedTypedObject = objectType + " " + objectName;
+        }
+
+        String grantScript = (grant ? "GRANT " : "REVOKE ") + privName + grantedCols + " ON " + grantedTypedObject + (grant ? " TO " : " FROM ") + roleName;
         if (grant && withGrantOption) {
             grantScript += " WITH GRANT OPTION";
         }
