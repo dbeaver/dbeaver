@@ -193,10 +193,8 @@ public class RuntimeUtils {
         final MonitoringTask monitoringTask = new MonitoringTask(task);
         Job monitorJob = new AbstractJob(taskName) {
             {
-                if (hidden) {
-                    setSystem(true);
-                    setUser(false);
-                }
+                setSystem(hidden);
+                setUser(!hidden);
             }
 
             @Override

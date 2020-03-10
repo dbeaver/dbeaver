@@ -34,13 +34,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.struct.DBSInstance;
-import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -188,22 +185,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     if (!databaseObject.isPersisted()) {
                         return null;
                     }
-                    if (DBUtils.getDefaultContext(databaseObject, false) == null) {
-                        // Not connected - try to connect
-                        DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(databaseObject);
-                        if (ownerInstance instanceof DBSInstanceLazy && !((DBSInstanceLazy)ownerInstance).isInstanceConnected()) {
-                            if (!RuntimeUtils.runTask(monitor -> {
-                                try {
-                                    ((DBSInstanceLazy) ownerInstance).checkInstanceConnection(monitor);
-                                } catch (DBException e) {
-                                    throw new InvocationTargetException(e);
-                                }
-                            }, "Initiate instance connection",
-                                dnNode.getDataSourceContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT))) {
-                                return null;
-                            }
-                        }
-                        //
+                    if (DBUtils.getOrOpenDefaultContext(databaseObject, false) == null) {
+                        return null;
                     }
 
                     if (selectedNode instanceof DBNDatabaseObject) {

@@ -1913,6 +1913,27 @@ public final class DBUtils {
             instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
 
+    public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) {
+        DBCExecutionContext context = DBUtils.getDefaultContext(object, meta);
+        if (context == null) {
+            // Not connected - try to connect
+            DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(object);
+            if (ownerInstance instanceof DBSInstanceLazy && !((DBSInstanceLazy)ownerInstance).isInstanceConnected()) {
+                if (!RuntimeUtils.runTask(monitor -> {
+                        try {
+                            ((DBSInstanceLazy) ownerInstance).checkInstanceConnection(monitor);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }, "Initiate instance connection",
+                    object.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT))) {
+                    return null;
+                }
+                context = DBUtils.getDefaultContext(object, meta);
+            }
+        }
+        return context;
+    }
     public static List<DBPDataSourceRegistry> getAllRegistries(boolean forceLoad) {
         List<DBPDataSourceRegistry> result = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
