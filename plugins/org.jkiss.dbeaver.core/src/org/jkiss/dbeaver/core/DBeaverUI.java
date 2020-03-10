@@ -25,6 +25,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -418,6 +419,14 @@ public class DBeaverUI implements DBPPlatformUI {
     @Override
     public void executeShellProgram(String shellCommand) {
         UIUtils.asyncExec(() -> UIUtils.launchProgram(shellCommand));
+    }
+
+    @Override
+    public void readAndDispatchEvents() {
+        Display currentDisplay = Display.getCurrent();
+        if (currentDisplay != null) {
+            currentDisplay.readAndDispatch();
+        }
     }
 
 }

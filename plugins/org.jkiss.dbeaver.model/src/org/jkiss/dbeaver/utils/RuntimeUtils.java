@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -221,6 +222,7 @@ public class RuntimeUtils {
             }
             try {
                 Thread.sleep(50);
+                DBWorkbench.getPlatformUI().readAndDispatchEvents();
             } catch (InterruptedException e) {
                 log.debug("Task '" + taskName + "' was interrupted");
                 break;

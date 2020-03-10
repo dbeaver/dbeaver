@@ -202,4 +202,9 @@ public class ConsoleUserInterface implements DBPPlatformUI {
             log.error(e);
         }
     }
+
+    @Override
+    public void readAndDispatchEvents() {
+
+    }
 }
