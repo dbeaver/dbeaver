@@ -27,6 +27,7 @@ import java.sql.SQLException;
 public class PostgrePrivilegeGrant {
 
     public enum Kind {
+        SCHEMA,
         TABLE,
         SEQUENCE,
         FUNCTION,
