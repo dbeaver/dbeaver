@@ -52,6 +52,16 @@ public class GreenplumSchema extends PostgreSchema {
     }
 
     @Override
+    public Collection<? extends JDBCTable> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return greenplumTableCache.getTypedObjects(monitor, this, PostgreTableReal.class);
+    }
+
+    @Override
+    public JDBCTable getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+        return greenplumTableCache.getObject(monitor, this, childName);
+    }
+
+    @Override
     public Collection<GreenplumTable> getTables(DBRProgressMonitor monitor) throws DBException {
         return greenplumTableCache.getTypedObjects(monitor, this, GreenplumTable.class)
                 .stream()
