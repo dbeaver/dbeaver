@@ -752,6 +752,9 @@ public class PostgreUtils {
     // https://github.com/pgjdbc/pgjdbc/blob/master/pgjdbc/src/main/java/org/postgresql/jdbc/PgArray.java
     public static List<Object> parseArrayString(String fieldString, String delimiter) {
         List<Object> arrayList  = new ArrayList<>();
+        if (CommonUtils.isEmpty(fieldString)) {
+            return arrayList;
+        }
 
         int dimensionsCount = 1;
         char delim = delimiter.charAt(0);//connection.getTypeInfo().getArrayDelimiter(oid);
