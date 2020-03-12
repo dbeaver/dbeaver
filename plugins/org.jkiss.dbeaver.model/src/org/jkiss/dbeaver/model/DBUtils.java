@@ -2109,4 +2109,13 @@ public final class DBUtils {
         return "Object";
     }
 
+    @Nullable
+    public static DBSDataType getDataType(@NotNull DBSTypedObject typedObject) {
+        if (typedObject instanceof DBSDataType) {
+            return (DBSDataType) typedObject;
+        } else if (typedObject instanceof DBSTypedObjectEx) {
+            return ((DBSTypedObjectEx) typedObject).getDataType();
+        }
+        return null;
+    }
 }
