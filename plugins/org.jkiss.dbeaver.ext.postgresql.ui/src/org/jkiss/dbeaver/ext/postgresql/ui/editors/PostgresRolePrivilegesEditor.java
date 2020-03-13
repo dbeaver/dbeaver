@@ -265,7 +265,9 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                         kind = PostgrePrivilegeGrant.Kind.FUNCTION;
                         objectName = ((PostgreProcedure) permissionsOwner).getUniqueName();
                     } else {
-                        if (permissionsOwner instanceof PostgreSequence) {
+                        if (permissionsOwner instanceof PostgreSchema) {
+                            kind = PostgrePrivilegeGrant.Kind.SCHEMA;
+                        } else if (permissionsOwner instanceof PostgreSequence) {
                             kind = PostgrePrivilegeGrant.Kind.SEQUENCE;
                         } else {
                             kind = PostgrePrivilegeGrant.Kind.TABLE;
