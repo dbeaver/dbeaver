@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,10 +132,14 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         GenericCatalog defaultCatalog = context.getDefaultCatalog();
         String entityName = null;
         if (defaultCatalog != null && context.supportsCatalogChange()) {
-            entityName = defaultCatalog.getName();
+            if (this.getDefaultCatalog() != defaultCatalog) {
+                entityName = defaultCatalog.getName();
+            }
         } else if (context.supportsSchemaChange()) {
             GenericSchema defaultSchema = context.getDefaultSchema();
-            entityName = defaultSchema == null ? null : defaultSchema.getName();
+            if (defaultSchema != null && this.getDefaultSchema() != defaultSchema) {
+                entityName = defaultSchema.getName();
+            }
         }
         if (entityName != null) {
             GenericDataSource dataSource = getDataSource();
@@ -156,10 +160,10 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                         dbStat.execute();
                     }
                 }
+                selectedEntityName = entityName;
             } catch (SQLException e) {
                 throw new DBCException(e, this);
             }
-            selectedEntityName = entityName;
         }
     }
 

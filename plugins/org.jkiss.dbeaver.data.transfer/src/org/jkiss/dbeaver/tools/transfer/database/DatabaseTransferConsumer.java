@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +90,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         private ColumnMapping(DBDAttributeBinding sourceAttr) {
             this.sourceAttr = sourceAttr;
         }
+
+        @Override
+        public String toString() {
+            return sourceAttr + "->" + targetAttr;
+        }
     }
 
     public DatabaseTransferConsumer() {
@@ -106,7 +111,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
-        initExporter(session.getProgressMonitor());
+        try {
+            initExporter(session.getProgressMonitor());
+        } catch (DBException e) {
+            throw new DBCException("Error initializing exporter");
+        }
 
         AbstractExecutionSource executionSource = new AbstractExecutionSource(sourceObject, targetContext, this);
 
@@ -177,7 +186,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBSAttributeBase[] attributes = targetAttributes.toArray(new DBSAttributeBase[0]);
 
         if (targetObject instanceof DBSDataManipulatorExt) {
-            ((DBSDataManipulatorExt) targetObject).beforeDataChange(session, DBSManipulationType.INSERT, attributes, executionSource);
+            ((DBSDataManipulatorExt) targetObject).beforeDataChange(targetSession, DBSManipulationType.INSERT, attributes, executionSource);
         }
 
         executeBatch = targetObject.insertData(
@@ -217,7 +226,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 targetSession,
                 targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
                 attrValue,
-                false);
+                false, false);
         }
         executeBatch.add(rowValues);
 
@@ -263,7 +272,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         if (settings.isUseTransactions() && needCommit) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
-            if (txnManager != null && !txnManager.isAutoCommit()) {
+            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 txnManager.commit(targetSession);
             }
         }
@@ -282,7 +291,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         } finally {
             if (targetObject instanceof DBSDataManipulatorExt) {
                 ((DBSDataManipulatorExt) targetObject).afterDataChange(
-                    session,
+                    targetSession,
                     DBSManipulationType.INSERT,
                     targetAttributes.toArray(new DBSAttributeBase[0]),
                     new AbstractExecutionSource(sourceObject, targetContext, this));
@@ -295,7 +304,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         closeExporter();
     }
 
-    private void initExporter(DBRProgressMonitor monitor) throws DBCException {
+    private void initExporter(DBRProgressMonitor monitor) throws DBException {
         DBSObject targetDB = checkTargetContainer(monitor);
 
         DBPDataSourceContainer dataSourceContainer = targetDB.getDataSource().getContainer();
@@ -314,7 +323,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         targetSession.enableLogging(false);
 
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
-        if (txnManager != null) {
+        if (txnManager != null && txnManager.isSupportsTransactions()) {
             oldAutoCommit = txnManager.isAutoCommit();
             if (settings.isUseTransactions()) {
                 if (oldAutoCommit) {
@@ -328,7 +337,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBCException {
+    private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
         if (targetObject == null) {
             if (settings.getContainerNode() != null && settings.getContainerNode().getDataSource() == null) {
                 // Init connection
@@ -419,7 +428,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     {
                         switch (containerMapping.getMappingType()) {
                             case create:
-                                DBSObject newTarget = container.getChild(monitor, containerMapping.getTargetName());
+                                DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
                                 if (newTarget == null) {
                                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
                                 } else if (!(newTarget instanceof DBSDataManipulator)) {
@@ -637,7 +646,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             dbStat.executeStatement();
         }
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-        if (txnManager != null && !txnManager.isAutoCommit()) {
+        if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
             // Commit DDL changes
             txnManager.commit(session);
         }

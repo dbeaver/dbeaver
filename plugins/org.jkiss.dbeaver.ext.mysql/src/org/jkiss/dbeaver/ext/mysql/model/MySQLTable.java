@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,6 +106,7 @@ public class MySQLTable extends MySQLTableBase
     private final PartitionCache partitionCache = new PartitionCache();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
+    private volatile List<MySQLTableForeignKey> referenceCache;
 
     public MySQLTable(MySQLCatalog catalog)
     {
@@ -219,7 +220,10 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return loadForeignKeys(monitor, true);
+        if (referenceCache == null) {
+            referenceCache = loadForeignKeys(monitor, true);
+        }
+        return referenceCache;
     }
 
     @Override
@@ -514,6 +518,7 @@ public class MySQLTable extends MySQLTableBase
         getContainer().constraintCache.clearObjectCache(this);
         getContainer().indexCache.clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);
+        this.referenceCache = null;
 
         return super.refreshObject(monitor);
     }

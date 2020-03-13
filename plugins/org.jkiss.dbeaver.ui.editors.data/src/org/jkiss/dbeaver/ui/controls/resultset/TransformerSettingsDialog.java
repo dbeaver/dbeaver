@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -330,6 +330,16 @@ class TransformerSettingsDialog extends BaseDialog {
     {
 		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+    }
+
+    @Override
+    public void create() {
+        super.create();
+
+        if (propertySource != null && propertySource.getPropertyDescriptors2().length == 0 && !selector) {
+            // No properties
+            UIUtils.asyncExec(this::okPressed);
+        }
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,41 +40,36 @@ import java.util.List;
  */
 public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableReference, DB2TableKeyColumn> {
 
-    private static final String SQL_REF_TAB;
-    private static final String SQL_REF_ALL;
+    public static final String SQL_REF_TAB;
+    public static final String SQL_REF_ALL;
 
     static {
-        StringBuilder sb = new StringBuilder(256);
-        sb.append(" SELECT R.*");
-        sb.append("      , KCU.COLNAME");
-        sb.append("      , KCU.COLSEQ");
-        sb.append("   FROM SYSCAT.REFERENCES R");
-        sb.append("       ,SYSCAT.KEYCOLUSE KCU");
-        sb.append("  WHERE R.REFTABSCHEMA = ?");
-        sb.append("    AND R.REFTABNAME = ?");
-        sb.append("    AND KCU.CONSTNAME = R.REFKEYNAME");
-        sb.append("    AND KCU.TABSCHEMA = R.REFTABSCHEMA");
-        sb.append("    AND KCU.TABNAME   = R.REFTABNAME");
-        sb.append("  ORDER BY R.REFKEYNAME");
-        sb.append("         , KCU.COLSEQ");
-        sb.append(" WITH UR");
-        SQL_REF_TAB = sb.toString();
+        SQL_REF_TAB = " SELECT R.*" +
+            "      , KCU.COLNAME" +
+            "      , KCU.COLSEQ" +
+            "   FROM SYSCAT.REFERENCES R" +
+            "       ,SYSCAT.KEYCOLUSE KCU" +
+            "  WHERE R.REFTABSCHEMA = ?" +
+            "    AND R.REFTABNAME = ?" +
+            "    AND KCU.CONSTNAME = R.REFKEYNAME" +
+            "    AND KCU.TABSCHEMA = R.REFTABSCHEMA" +
+            "    AND KCU.TABNAME   = R.REFTABNAME" +
+            "  ORDER BY R.REFKEYNAME" +
+            "         , KCU.COLSEQ" +
+            " WITH UR";
 
-        sb.setLength(0);
-
-        sb.append(" SELECT R.*");
-        sb.append("      , KCU.COLNAME");
-        sb.append("      , KCU.COLSEQ");
-        sb.append("   FROM SYSCAT.REFERENCES R");
-        sb.append("       ,SYSCAT.KEYCOLUSE KCU");
-        sb.append("  WHERE R.REFTABSCHEMA = ?");
-        sb.append("    AND KCU.CONSTNAME = R.REFKEYNAME");
-        sb.append("    AND KCU.TABSCHEMA = R.REFTABSCHEMA");
-        sb.append("    AND KCU.TABNAME   = R.REFTABNAME");
-        sb.append("  ORDER BY R.REFKEYNAME");
-        sb.append("         , KCU.COLSEQ");
-        sb.append(" WITH UR");
-        SQL_REF_ALL = sb.toString();
+        SQL_REF_ALL = " SELECT R.*" +
+            "      , KCU.COLNAME" +
+            "      , KCU.COLSEQ" +
+            "   FROM SYSCAT.REFERENCES R" +
+            "       ,SYSCAT.KEYCOLUSE KCU" +
+            "  WHERE R.REFTABSCHEMA = ?" +
+            "    AND KCU.CONSTNAME = R.REFKEYNAME" +
+            "    AND KCU.TABSCHEMA = R.REFTABSCHEMA" +
+            "    AND KCU.TABNAME   = R.REFTABNAME" +
+            "  ORDER BY R.REFKEYNAME" +
+            "         , KCU.COLSEQ" +
+            " WITH UR";
     }
 
     public DB2TableReferenceCache(DB2TableCache tableCache)

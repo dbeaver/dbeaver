@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
             syntaxManager.init(dataSource);
             SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
             ruleManager.loadRules(dataSource, false);
-            SQLParserContext parserContext = new SQLParserContext(this, syntaxManager, ruleManager, new Document(query.getText()));
+            SQLParserContext parserContext = new SQLParserContext(this, syntaxManager, ruleManager, new Document(query.getOriginalText()));
             sqlQuery.setParameters(SQLScriptParser.parseParameters(parserContext, 0, sqlQuery.getLength()));
             if (!scriptContext.fillQueryParameters(sqlQuery, CommonUtils.isBitSet(flags, DBSDataContainer.FLAG_REFRESH))) {
                 // User canceled

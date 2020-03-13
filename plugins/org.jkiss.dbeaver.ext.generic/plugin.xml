@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,6 +156,7 @@
                 </propertyGroup>
                 <propertyGroup label="DDL" description="DDL generation options">
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
+                    <property id="ddl-drop-column-brackets" label="Drop column - usee brackets" description="Use 'ALTER TABLE DROP (column-name)'" type="boolean" required="false" defaultValue="false"/>
                     <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="Formatting" description="SQL values formats">
@@ -1035,16 +1036,18 @@
 
                 <driver
                         id="omnisci_mapd"
-                        label="MapD"
-                        icon="icons/mapd_icon.png"
-                        iconBig="icons/mapd_icon_big.png"
-                        class="com.mapd.jdbc.MapDDriver"
-                        sampleURL="jdbc:mapd:{host}:{port}:{database}"
-                        defaultPort="9092"
-                        description="OmniSci MapD GPU SQL Analytics Engine"
-                        webURL="https://www.omnisci.com/docs/v4.0.0/6_jdbc.html"
+                        label="OmniSci (formerly MapD)"
+                        icon="icons/omnisci_icon.png"
+                        iconBig="icons/omnisci_icon_big.png"
+                        class="com.omnisci.jdbc.OmniSciDriver"
+                        sampleURL="jdbc:omnisci:{host}:{port}:{database}"
+                        defaultPort="6274"
+                        description="OmniSci (formerly MapD) SQL Analytics Engine"
+                        webURL="https://docs.omnisci.com/v5.1.1/6_jdbc.html"
                         categories="analytics,sql">
-                </driver>
+                    <file type="jar" path="maven:/com.omnisci:omnisci-jdbc:RELEASE"/>
+                 </driver>
+
 
                 <!-- CrateDB -->
 

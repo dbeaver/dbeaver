@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -376,7 +376,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject)element;
                 if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
-                    String newName = transformTargetName(mapping.getSource().getName());
+                    String newName = transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()));
                     setValue(element, newName);
                     return newName;
                 }
@@ -401,6 +401,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     String name = CommonUtils.toString(value);
                     DBPDataSource dataSource = settings.getTargetDataSource((DatabaseMappingObject) element);
                     if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE) && dataSource != null) {
+                        name = DBUtils.getQuotedIdentifier(dataSource, name);
                         name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
                     setMappingTarget((DatabaseMappingObject) element, name);
@@ -503,7 +504,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 DBSObjectContainer container = settings.getContainer();
                 for (DBSObject child : container.getChildren(new VoidProgressMonitor())) {
                     if (child instanceof DBSDataManipulator) {
-                        items.add(transformTargetName(child.getName()));
+                        items.add(transformTargetName(DBUtils.getQuotedIdentifier(child)));
                     }
                 }
 
@@ -520,7 +521,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             if (mapping.getParent().getTarget() instanceof DBSEntity) {
                 DBSEntity parentEntity = (DBSEntity)mapping.getParent().getTarget();
                 for (DBSEntityAttribute attr : parentEntity.getAttributes(new VoidProgressMonitor())) {
-                    items.add(transformTargetName(attr.getName()));
+                    items.add(transformTargetName(DBUtils.getQuotedIdentifier(attr)));
                 }
             }
 

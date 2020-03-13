@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -49,6 +48,7 @@ import org.jkiss.dbeaver.runtime.properties.IPropertySourceEditable;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCollection;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceMap;
+import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -111,7 +111,8 @@ public class PropertyTreeViewer extends TreeViewer {
         treeControl.addListener(SWT.PaintItem, new PaintListener());
         this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
 
-        ColumnViewerToolTipSupport.enableFor(this, ToolTip.NO_RECREATE);
+        new DefaultViewerToolTipSupport(this);
+
 
         TreeViewerColumn column = new TreeViewerColumn(this, SWT.NONE);
         //column.getColumn().setWidth(200);

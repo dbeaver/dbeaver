@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,8 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
     public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
+    public static final long DDL_FEATURE_USER_BRACKETS_IN_DROP = 2;
+
     public static final String QUOTE = "'";
 
     protected interface ColumnModifier<OBJECT_TYPE extends DBPObject> {
@@ -163,10 +165,18 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
+        boolean useBrackets = hasDDLFeature(command.getObject(), DDL_FEATURE_USER_BRACKETS_IN_DROP);
+        StringBuilder ddl = new StringBuilder();
+        ddl.append("ALTER TABLE ").append(DBUtils.getObjectFullName(command.getObject().getParentObject(), DBPEvaluationContext.DDL));
+        ddl.append(" DROP ");
+        if (useBrackets) ddl.append('(');
+        if (!hasDDLFeature(command.getObject(), DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP)) {
+            ddl.append("COLUMN ");
+        }
+        ddl.append(DBUtils.getQuotedIdentifier(command.getObject()));
+        if (useBrackets) ddl.append(')');
         actions.add(
-            new SQLDatabasePersistAction(
-                ModelMessages.model_jdbc_drop_table_column, "ALTER TABLE " + DBUtils.getObjectFullName(command.getObject().getParentObject(), DBPEvaluationContext.DDL) + //$NON-NLS-2$
-                    " DROP " + (hasDDLFeature(command.getObject(), DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            new SQLDatabasePersistAction( ModelMessages.model_jdbc_drop_table_column, ddl.toString())
         );
     }
 

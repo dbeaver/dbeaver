@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -265,10 +265,9 @@ public class SQLScriptParser
                         String queryText = document.get(statementStart, tokenOffset - statementStart);
                         queryText = SQLUtils.fixLineFeeds(queryText);
 
-                        boolean isDDLQuery = firstKeyword != null && ArrayUtils.contains(dialect.getDDLKeywords(), firstKeyword.toUpperCase(Locale.ENGLISH));
                         if (isDelimiter && (keepDelimiters ||
                             (hasBlocks && dialect.isDelimiterAfterQuery()) ||
-                            (isDDLQuery && dialect.isDelimiterAfterBlock() && SQLConstants.BLOCK_END.equalsIgnoreCase(lastKeyword))))
+                            (needsDelimiterAfterBlock(firstKeyword, lastKeyword, dialect))))
                         {
                             if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                                 // Add delimiter in the end of query. Do this only for semicolon delimiters.
@@ -312,6 +311,31 @@ public class SQLScriptParser
                 }
             }
         }
+    }
+
+    // FIXME: special workaround for Oracle
+    private static boolean needsDelimiterAfterBlock(String firstKeyword, String lastKeyword, SQLDialect dialect) {
+        if (!dialect.isDelimiterAfterBlock()) {
+            return false;
+        }
+        if (firstKeyword == null) {
+            return false;
+        }
+        if (!SQLConstants.BLOCK_END.equalsIgnoreCase(lastKeyword)) {
+            return false;
+        }
+        firstKeyword = firstKeyword.toUpperCase(Locale.ENGLISH);
+
+        String[][] blockBoundStrings = dialect.getBlockBoundStrings();
+        if (blockBoundStrings != null) {
+            for (String[] bb : blockBoundStrings) {
+                if (bb[0].equals(firstKeyword)) {
+                    return true;
+                }
+            }
+        }
+        return ArrayUtils.contains(dialect.getBlockHeaderStrings(), firstKeyword) ||
+            ArrayUtils.contains(dialect.getDDLKeywords(), firstKeyword);
     }
 
     private static int countLineFeeds(final IDocument document, final int offset, final int length) {

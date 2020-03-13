@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 /**
  * UIServiceConnectionsImpl
  */
-public class UIServiceConnectionsImpl implements UIServiceConnections {
+public class UIServiceConnectionsImpl implements DBServiceConnections, UIServiceConnections {
 
     private static final Log log = Log.getLog(UIServiceConnectionsImpl.class);
 

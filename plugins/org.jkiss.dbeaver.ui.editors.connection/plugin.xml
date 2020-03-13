@@ -6,4 +6,8 @@
     <extension-point id="org.jkiss.dbeaver.dataSourceView" name="%extension-point.org.jkiss.dbeaver.dataSourceView.name" schema="schema/org.jkiss.dbeaver.dataSourceView.exsd"/>
     <extension-point id="org.jkiss.dbeaver.ui.propertyConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.propertyConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.propertyConfigurator.exsd"/>
 
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
+    </extension>
+
 </plugin>

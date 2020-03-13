@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -267,6 +267,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (pageCreated && isAutoLayoutAvailable()) {
                 UIUtils.asyncExec(() -> UIUtils.resizeShell(getWizard().getContainer().getShell()));
             }
+        } catch (Throwable e) {
+            DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
         } finally {
             pageArea.setRedraw(true);
         }

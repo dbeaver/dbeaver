@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -512,7 +512,7 @@ public class PostgreUtils {
     private static Object convertStringToSimpleValue(DBCSession session, DBSTypedObject itemType, String string) throws DBCException {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, itemType);
         if (valueHandler != null) {
-            return valueHandler.getValueFromObject(session, itemType, string, false);
+            return valueHandler.getValueFromObject(session, itemType, string, false, false);
         } else {
             return string;
         }
@@ -752,6 +752,9 @@ public class PostgreUtils {
     // https://github.com/pgjdbc/pgjdbc/blob/master/pgjdbc/src/main/java/org/postgresql/jdbc/PgArray.java
     public static List<Object> parseArrayString(String fieldString, String delimiter) {
         List<Object> arrayList  = new ArrayList<>();
+        if (CommonUtils.isEmpty(fieldString)) {
+            return arrayList;
+        }
 
         int dimensionsCount = 1;
         char delim = delimiter.charAt(0);//connection.getTypeInfo().getArrayDelimiter(oid);

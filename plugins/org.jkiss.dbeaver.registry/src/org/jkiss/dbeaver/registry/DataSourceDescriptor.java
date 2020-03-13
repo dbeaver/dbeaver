@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public class DataSourceDescriptor
     @NotNull
     private final DBPDataSourceRegistry registry;
     @NotNull
-    private final DataSourceOrigin origin;
+    private final DBPDataSourceConfigurationStorage origin;
     @NotNull
     private DriverDescriptor driver;
     @NotNull
@@ -157,7 +157,7 @@ public class DataSourceDescriptor
 
     DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
-        @NotNull DataSourceOrigin origin,
+        @NotNull DBPDataSourceConfigurationStorage origin,
         @NotNull String id,
         @NotNull DriverDescriptor driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
@@ -173,13 +173,17 @@ public class DataSourceDescriptor
 
     // Copy constructor
     public DataSourceDescriptor(@NotNull DataSourceDescriptor source) {
-        this(source, source.registry);
+        this(source, source.registry, true);
     }
 
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry)
+    /**
+     * Copies datasource configuration
+     * @param setDefaultOrigin sets origin to default (in order to allow connection copy-paste with following save in default configuration)
+     */
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultOrigin)
     {
         this.registry = registry;
-        this.origin = ((DataSourceRegistry)registry).getDefaultOrigin();
+        this.origin = setDefaultOrigin ? ((DataSourceRegistry)registry).getDefaultOrigin() : source.origin;
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
@@ -241,6 +245,12 @@ public class DataSourceDescriptor
     public DriverDescriptor getDriver()
     {
         return driver;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceConfigurationStorage getConfigurationStorage() {
+        return origin;
     }
 
     @NotNull
@@ -562,7 +572,7 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    DataSourceOrigin getOrigin() {
+    DBPDataSourceConfigurationStorage getOrigin() {
         return origin;
     }
 
@@ -711,8 +721,7 @@ public class DataSourceDescriptor
         try {
             // Resolve variables
             if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
-                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()) ||
-                !CommonUtils.isEmpty(connectionInfo.getUserProfileName()))
+                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()))
             {
                 this.resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
                 // Update config from profile
@@ -726,9 +735,6 @@ public class DataSourceDescriptor
                             }
                         }
                     }
-                }
-                if (!CommonUtils.isEmpty(resolvedConnectionInfo.getUserProfileName())) {
-
                 }
                 // Process variables
                 if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
@@ -1361,7 +1367,7 @@ public class DataSourceDescriptor
 
     @Override
     public DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry) {
-        DataSourceDescriptor copy = new DataSourceDescriptor(this, forRegistry);
+        DataSourceDescriptor copy = new DataSourceDescriptor(this, forRegistry, true);
         copy.setId(DataSourceDescriptor.generateNewId(copy.getDriver()));
         return copy;
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -181,6 +182,13 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     }
 
+    @Override
+    public void setImageDescriptor(ImageDescriptor desc) {
+        if (getImage() == null) {
+            super.setImageDescriptor(desc);
+        }
+    }
+
     protected Text createPasswordText(Composite parent, String label) {
         if (label != null) {
             UIUtils.createControlLabel(parent, label);
@@ -237,7 +245,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             if (!serviceSecurity.validatePassword(
                 site.getProject().getSecureStorage(),
                 "Enter project password",
-                "Enter project master password to unlock connection password view"))
+                "Enter project master password to unlock connection password view",
+                true))
             {
                 return;
             }

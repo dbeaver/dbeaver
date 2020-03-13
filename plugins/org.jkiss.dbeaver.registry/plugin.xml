@@ -5,8 +5,11 @@
     <extension-point id="org.jkiss.dbeaver.pluginService" name="%extension-point.org.jkiss.dbeaver.pluginService.name" schema="schema/org.jkiss.dbeaver.pluginService.exsd"/>
 
     <!-- Non UI extensions -->
+    <extension-point id="org.jkiss.dbeaver.objectManager" name="%extension-point.org.jkiss.dbeaver.objectManager.name" schema="schema/org.jkiss.dbeaver.objectManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.mavenRepository" name="%extension-point.org.jkiss.dbeaver.mavenRepository.name" schema="schema/org.jkiss.dbeaver.mavenRepository.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="%extension-point.org.jkiss.dbeaver.dataSourceProvider.name" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceStorage" name="%extension-point.org.jkiss.dbeaver.dataSourceStorage.name" schema="schema/org.jkiss.dbeaver.dataSourceStorage.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceAuth" name="%extension-point.org.jkiss.dbeaver.dataSourceAuth.name" schema="schema/org.jkiss.dbeaver.dataSourceAuth.exsd"/>
     <extension-point id="org.jkiss.dbeaver.driverManager" name="%extension-point.org.jkiss.dbeaver.driverManager.name" schema="schema/org.jkiss.dbeaver.driverManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="%extension-point.org.jkiss.dbeaver.resourceHandler.name" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="%extension-point.org.jkiss.dbeaver.networkHandler.name" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
@@ -48,6 +51,14 @@
             secured="true"
             order="10"
             handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+            id="native"
+            label="Database Native"
+            description="Database native authentication (name/password)"
+            class="org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative"/>
     </extension>
 
 </plugin>

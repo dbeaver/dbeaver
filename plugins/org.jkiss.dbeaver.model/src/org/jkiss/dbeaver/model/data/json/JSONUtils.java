@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -338,6 +338,19 @@ public class JSONUtils {
             }
         }
         return result;
+    }
+
+    @Nullable
+    public static Map<String, String> deserializeStringMapOrNull(Map<String, Object> map, String name) {
+        Object propMap = map.get(name);
+        if (propMap instanceof Map && !((Map) propMap).isEmpty()) {
+            Map<String, String> result = new LinkedHashMap<>();
+            for (Map.Entry<?,?> pe : ((Map<?, ?>) propMap).entrySet()) {
+                result.put(CommonUtils.toString(pe.getKey()), CommonUtils.toString(pe.getValue()));
+            }
+            return result;
+        }
+        return null;
     }
 
     @NotNull

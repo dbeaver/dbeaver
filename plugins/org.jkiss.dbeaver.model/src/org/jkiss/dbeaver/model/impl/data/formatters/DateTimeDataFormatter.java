@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import org.jkiss.utils.time.ExtendedDateFormat;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
 import java.util.Map;
@@ -77,7 +79,11 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     public Object parseValue(String value, Class<?> typeHint) throws ParseException
     {
         if (typeHint != null && TemporalAccessor.class.isAssignableFrom(typeHint)) {
-            return dateTimeFormatter.parse(value);
+            try {
+                return LocalDateTime.parse(value, dateTimeFormatter);
+            } catch (DateTimeParseException e) {
+                throw new ParseException(e.getParsedString(), e.getErrorIndex());
+            }
         }
         return dateFormat.parse(value);
     }

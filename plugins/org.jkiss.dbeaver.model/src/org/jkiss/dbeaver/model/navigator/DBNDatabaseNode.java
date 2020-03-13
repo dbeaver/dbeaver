@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -293,7 +293,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return locked || super.isLocked();
     }
 
-    public boolean initializeNode(DBRProgressMonitor monitor, DBRProgressListener onFinish) {
+    public boolean initializeNode(DBRProgressMonitor monitor, DBRProgressListener onFinish) throws DBException {
         if (onFinish != null) {
             onFinish.onTaskFinished(Status.OK_STATUS);
         }
@@ -517,7 +517,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 // Skip hidden objects
                 continue;
             }
-            if (!showSystem && childItem instanceof DBPSystemObject && ((DBPSystemObject) childItem).isSystem()) {
+            if (!showSystem && DBUtils.isSystemObject(childItem)) {
                 // Skip system objects
                 continue;
             }

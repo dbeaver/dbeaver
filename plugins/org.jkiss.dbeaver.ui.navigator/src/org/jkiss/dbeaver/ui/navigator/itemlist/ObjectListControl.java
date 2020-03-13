@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -188,7 +188,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         GridData gd = new GridData(GridData.FILL_BOTH);
         itemsViewer.getControl().setLayoutData(gd);
         //PropertiesContributor.getInstance().addLazyListener(this);
-        ColumnViewerToolTipSupport.enableFor(itemsViewer);
+        new DefaultViewerToolTipSupport(itemsViewer);
 
         // Add selection listener
         itemsViewer.addSelectionChangedListener(event -> {

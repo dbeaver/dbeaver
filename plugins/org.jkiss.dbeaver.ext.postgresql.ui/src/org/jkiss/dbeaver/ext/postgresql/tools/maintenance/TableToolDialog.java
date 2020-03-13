@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -103,17 +101,6 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreObje
                         // ignore
                     }
                     treeItem.setExpanded(true);
-                }
-            }
-
-            @Override
-            public void endObjectProcessing(@NotNull PostgreObject object, Exception error) {
-                super.endObjectProcessing(object, error);
-                if (error != null) {
-                    TreeItem treeItem = getTreeItem(object);
-                    if (treeItem != null) {
-                        treeItem.setText(1, error.getMessage());
-                    }
                 }
             }
         };

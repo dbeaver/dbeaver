@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * PostgreArrayValueHandler
@@ -52,7 +50,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     }
 
     @Override
-    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object != null) {
             String className = object.getClass().getName();
@@ -86,7 +84,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 }
             }
         }
-        return super.getValueFromObject(session, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
     private JDBCCollection convertStringToCollection(@NotNull DBCSession session, @NotNull DBSTypedObject arrayType, @NotNull PostgreDataType itemType, @NotNull String value) throws DBCException {
@@ -105,19 +103,15 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             DBDValueHandler itemValueHandler = DBUtils.findValueHandler(session, itemType);
             for (int i = 0; i < itemStrings.size(); i++) {
                 Object itemString = itemStrings.get(i);
-                Object itemValue = itemValueHandler.getValueFromObject(session, itemType, itemString, false);
+                Object itemValue = itemValueHandler.getValueFromObject(session, itemType, itemString, false, false);
                 itemValues[i] = itemValue;
             }
             return new JDBCCollection(itemType, itemValueHandler, itemValues);
         } else {
-            List<String> strings = new ArrayList<>(10);
-            StringTokenizer st = new StringTokenizer(value, delimiter);
-            while (st.hasMoreTokens()) {
-                strings.add(st.nextToken());
-            }
+            List<Object> strings = PostgreUtils.parseArrayString(value, delimiter);
             Object[] contents = new Object[strings.size()];
             for (int i = 0; i < strings.size(); i++) {
-                contents[i] = PostgreUtils.convertStringToValue(session, itemType, strings.get(i), false);
+                contents[i] = PostgreUtils.convertStringToValue(session, itemType, String.valueOf(strings.get(i)), false);
             }
             return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
         }

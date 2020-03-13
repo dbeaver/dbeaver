@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,8 +174,9 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     }
 
     public File getCacheFile() {
+        String fileExt = getPackagingFileExtension();
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
-            String externalURL = getExternalURL(MavenArtifact.FILE_JAR);
+            String externalURL = getExternalURL(fileExt);
             try {
                 return RuntimeUtils.getLocalFileFromURL(new URL(externalURL));
 //                return new File(new URL(externalURL).toURI());
@@ -184,7 +185,20 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 return new File(externalURL);
             }
         }
-        return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + artifact.getVersionFileName(version, MavenArtifact.FILE_JAR));
+        return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + artifact.getVersionFileName(version, fileExt));
+    }
+
+    public String getExternalURL() {
+        return artifact.getFileURL(version, getPackagingFileExtension());
+    }
+
+    @NotNull
+    private String getPackagingFileExtension() {
+        String fileExt = packaging;
+        if (CommonUtils.isEmpty(fileExt) || fileExt.equals(MavenArtifact.PACKAGING_BUNDLE)) {
+            fileExt = MavenArtifact.FILE_JAR;
+        }
+        return fileExt;
     }
 
     public String getExternalURL(String fileType) {

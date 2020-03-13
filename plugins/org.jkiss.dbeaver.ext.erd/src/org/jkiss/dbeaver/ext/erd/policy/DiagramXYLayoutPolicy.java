@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.ext.erd.part.NodePart;
 public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 {
 
+	private static final boolean ALLOW_ENTITY_RESIZE = true;
+
 	@Override
     protected Command createAddCommand(EditPart child, Object constraint)
 	{
@@ -62,7 +64,7 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 		Rectangle newBounds = (Rectangle) constraint;
 
         // Restrict resize for entities
-        if (nodePart instanceof EntityPart) {
+        if (!ALLOW_ENTITY_RESIZE && nodePart instanceof EntityPart) {
             if (oldBounds.width != newBounds.width && newBounds.width != -1)
                 return null;
             if (oldBounds.height != newBounds.height && newBounds.height != -1)
@@ -103,4 +105,11 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 		return null;
 	}
 
+	@Override
+	public Command getCommand(Request request) {
+		if (REQ_RESIZE.equals(request.getType())) {
+			return null;//getHost();
+		}
+		return super.getCommand(request);
+	}
 }

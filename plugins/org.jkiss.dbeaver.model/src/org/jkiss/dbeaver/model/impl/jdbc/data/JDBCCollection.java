@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -422,7 +422,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 // This may happen in case of multidimensional array
                 itemValue = makeCollectionFromJavaArray(session, elementType, elementValueHandler, item);
             } else {
-                itemValue = elementValueHandler.getValueFromObject(session, elementType, item, false);
+                itemValue = elementValueHandler.getValueFromObject(session, elementType, item, false, true);
             }
             contents[i] = itemValue;
         }

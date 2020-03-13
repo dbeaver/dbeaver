@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
@@ -27,9 +28,13 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2TableTablespaceListProvider;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableTriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.*;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
@@ -40,13 +45,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -56,6 +63,8 @@ import java.util.Map;
  */
 public class DB2Table extends DB2TableBase
     implements DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer {
+
+    protected static final Log log = Log.getLog(DB2Table.class);
 
     private static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
@@ -67,6 +76,7 @@ public class DB2Table extends DB2TableBase
     // Dependent of DB2 Version. OK because the folder is hidden in plugin.xml
     private DBSObjectCache<DB2Table, DB2TablePartition> partitionCache;
     private DBSObjectCache<DB2Table, DB2TablePeriod> periodCache;
+    private volatile List<DB2TableForeignKey> referenceCache = null;
 
     private DB2TableStatus status;
     private DB2TableType type;
@@ -175,6 +185,7 @@ public class DB2Table extends DB2TableBase
         getContainer().getConstraintCache().clearObjectCache(this);
         getContainer().getAssociationCache().clearObjectCache(this);
         getContainer().getReferenceCache().clearObjectCache(this);
+        this.referenceCache = null;
 
         super.refreshObject(monitor);
 
@@ -251,21 +262,46 @@ public class DB2Table extends DB2TableBase
         return getContainer().getAssociationCache().getObjects(monitor, getContainer(), this);
     }
 
-    public DBSTableForeignKey getAssociation(DBRProgressMonitor monitor, String ukName) throws DBException
+    public DB2TableForeignKey getAssociation(DBRProgressMonitor monitor, String ukName) throws DBException
     {
         return getContainer().getAssociationCache().getObject(monitor, getContainer(), this, ukName);
     }
 
     @Override
     @Association
-    public Collection<DB2TableReference> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
-        return getContainer().getReferenceCache().getObjects(monitor, getContainer(), this);
-    }
-
-    public DBSTableForeignKey getReference(DBRProgressMonitor monitor, String ukName) throws DBException
-    {
-        return getContainer().getReferenceCache().getObject(monitor, getContainer(), this, ukName);
+    public List<DB2TableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (referenceCache != null) {
+            return new ArrayList<>(referenceCache);
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Find table references")) {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT R.* FROM SYSCAT.REFERENCES R\n" +
+                    "WHERE R.REFTABSCHEMA = ? AND R.REFTABNAME = ?\n" +
+                    "ORDER BY R.REFKEYNAME\n" +
+                    "WITH UR");
+            dbStat.setString(1, this.getSchema().getName());
+            dbStat.setString(2, this.getName());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                List<DB2TableForeignKey> result = new ArrayList<>();
+                while (dbResult.nextRow()) {
+                    String ownerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
+                    String ownerTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
+                    String fkName = JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTNAME");
+                    DB2Table ownerTable = DB2Utils.findTableBySchemaNameAndName(
+                        session.getProgressMonitor(), this.getDataSource(), ownerSchemaName, ownerTableName);
+                    if (ownerTable == null) {
+                        log.error("Cannot find reference owner table " + ownerSchemaName + "." + ownerTableName);
+                        continue;
+                    }
+                    DB2TableForeignKey fk = ownerTable.getAssociation(monitor, fkName);
+                    result.add(fk);
+                }
+                referenceCache = result;
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading table references", e);
+        }
+        return referenceCache;
     }
 
     @Association

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException {
-        Object value = super.getValueFromObject(session, type, object, copy);
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
+        Object value = super.getValueFromObject(session, type, object, copy, validateValue);
         if (value instanceof Date) {
             switch (type.getTypeID()) {
                 case Types.TIME:
@@ -97,7 +97,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                         return dbResults.getDate(index + 1);
                     default:
                         Object value = dbResults.getObject(index + 1);
-                        return getValueFromObject(session, type, value, false);
+                        return getValueFromObject(session, type, value, false, false);
                 }
             } else {
                 return resultSet.getAttributeValue(index);

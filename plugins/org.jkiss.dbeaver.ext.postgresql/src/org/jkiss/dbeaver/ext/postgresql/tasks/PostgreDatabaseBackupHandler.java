@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
@@ -91,6 +92,13 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             cmd.add("--no-owner");
         }
 
+        if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+            String outFileName = getOutputFileName(settings, arg);
+
+            cmd.add("--file");
+            cmd.add(new File(settings.getOutputFolder(), outFileName).getAbsolutePath());
+        }
+
         // Objects
         if (settings.getExportObjects().isEmpty()) {
             // no dump
@@ -126,32 +134,39 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
 
-        String outFileName = GeneralUtils.replaceVariables(settings.getOutputFilePattern(), name -> {
-            switch (name) {
-                case NativeToolUtils.VARIABLE_DATABASE:
-                    return arg.getDatabase().getName();
-                case NativeToolUtils.VARIABLE_HOST:
-                    return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
-                case NativeToolUtils.VARIABLE_TABLE:
-                    final Iterator<PostgreTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
-                    if (iterator != null && iterator.hasNext()) {
-                        return iterator.next().getName();
-                    } else {
-                        return "null";
-                    }
-                case NativeToolUtils.VARIABLE_TIMESTAMP:
-                    return RuntimeUtils.getCurrentTimeStamp();
-                case NativeToolUtils.VARIABLE_DATE:
-                    return RuntimeUtils.getCurrentDate();
-                default:
-                    System.getProperty(name);
-            }
-            return null;
-        });
+        if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+            String outFileName = getOutputFileName(settings, arg);
 
-        File outFile = new File(settings.getOutputFolder(), outFileName);
-        DumpCopierJob job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile, log);
-        job.start();
+            File outFile = new File(settings.getOutputFolder(), outFileName);
+            DumpCopierJob job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile, log);
+            job.start();
+        }
+    }
+
+    @NotNull
+    private String getOutputFileName(PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg) {
+        return GeneralUtils.replaceVariables(settings.getOutputFilePattern(), name -> {
+                switch (name) {
+                    case NativeToolUtils.VARIABLE_DATABASE:
+                        return arg.getDatabase().getName();
+                    case NativeToolUtils.VARIABLE_HOST:
+                        return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
+                    case NativeToolUtils.VARIABLE_TABLE:
+                        final Iterator<PostgreTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
+                        if (iterator != null && iterator.hasNext()) {
+                            return iterator.next().getName();
+                        } else {
+                            return "null";
+                        }
+                    case NativeToolUtils.VARIABLE_TIMESTAMP:
+                        return RuntimeUtils.getCurrentTimeStamp();
+                    case NativeToolUtils.VARIABLE_DATE:
+                        return RuntimeUtils.getCurrentDate();
+                    default:
+                        System.getProperty(name);
+                }
+                return null;
+            });
     }
 
 }

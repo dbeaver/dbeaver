@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
@@ -31,6 +32,8 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.model.sql.exec.SQLScriptProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
@@ -66,17 +69,16 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
     }
 
     private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, Writer logStream, @NotNull DBTTaskExecutionListener listener, SQLScriptExecuteSettings settings) throws DBException {
+        log.debug("SQL Scripts Execute");
+
         // Start consumers
         listener.taskStarted(settings);
 
-        log.debug("SQL Script Execute");
-
-        DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
         Throwable error = null;
         try {
             runnableContext.run(true, true, monitor -> {
                 try {
-                    runScripts(monitor, task, dataSourceContainer, settings, log, logStream);
+                    runScripts(monitor, task, settings, log, logStream);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
@@ -94,15 +96,8 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         log.debug("SQL script execute completed");
     }
 
-    private void runScripts(DBRProgressMonitor monitor, DBTTask task, DBPDataSourceContainer dataSourceContainer, SQLScriptExecuteSettings settings, Log log, Writer logStream) throws DBException {
-        if (!dataSourceContainer.isConnected()) {
-            dataSourceContainer.connect(monitor, true, true);
-        }
-        DBPDataSource dataSource = dataSourceContainer.getDataSource();
-        if (dataSource == null) {
-            throw new DBException("Can't obtain data source connection");
-        }
-        DBCExecutionContext executionContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
+    private void runScripts(DBRProgressMonitor monitor, DBTTask task, SQLScriptExecuteSettings settings, Log log, Writer logStream) throws DBException {
+        List<DBPDataSourceContainer> dataSources = settings.getDataSources();
 
         for (String filePath : settings.getScriptFiles()) {
             IFile sqlFile = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
@@ -110,7 +105,31 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
                 try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
                     String sqlScriptContent = IOUtils.readToString(fileReader);
                     try {
-                        processScript(monitor, task, settings, executionContext, filePath, sqlScriptContent, log, logStream);
+                        for (DBPDataSourceContainer dataSourceContainer : dataSources) {
+                            if (!dataSourceContainer.isConnected()) {
+                                dataSourceContainer.connect(monitor, true, true);
+                            }
+                            DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                            if (dataSource == null) {
+                                throw new DBException("Can't obtain data source connection");
+                            }
+                            DBCExecutionContext executionContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
+
+                            log.debug("> Execute script [" + filePath + "] in [" + dataSourceContainer.getName() + "]");
+                            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                            if (contextDefaults != null) {
+                                DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+                                if (defaultCatalog != null) {
+                                    log.debug("> Default catalog: " + defaultCatalog.getName());
+                                }
+                                DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                                if (defaultSchema != null) {
+                                    log.debug("> Default schema: " + defaultSchema.getName());
+                                }
+                            }
+
+                            processScript(monitor, task, settings, executionContext, filePath, sqlScriptContent, log, logStream);
+                        }
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }

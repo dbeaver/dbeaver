@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -31,7 +32,6 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -51,11 +51,11 @@ public final class DBValueFormatting {
     static {
         //NATIVE_FLOAT_FORMATTER.setMaximumFractionDigits(NumberDataFormatter.MAX_FLOAT_FRACTION_DIGITS);
         NATIVE_FLOAT_FORMATTER.setDecimalSeparatorAlwaysShown(false);
-        NATIVE_FLOAT_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
+        //NATIVE_FLOAT_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
 
         //NATIVE_DOUBLE_FORMATTER.setMaximumFractionDigits(340);
         NATIVE_DOUBLE_FORMATTER.setDecimalSeparatorAlwaysShown(false);
-        NATIVE_DOUBLE_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
+        //NATIVE_DOUBLE_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
     }
 
     @NotNull
@@ -188,7 +188,7 @@ public final class DBValueFormatting {
     }
 
     @Nullable
-    public static Number convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter)
+    public static Number convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter, boolean validateValue) throws DBCException
     {
         if (text == null || text.length() == 0) {
             return null;
@@ -219,6 +219,9 @@ public final class DBValueFormatting {
             try {
                 return (Number)formatter.parseValue(text, hintType);
             } catch (ParseException e1) {
+                if (validateValue) {
+                    throw new DBCException("Can't parse numeric value [" + text + "] using formatter", e);
+                }
                 log.debug("Can't parse numeric value [" + text + "] using formatter: " + e.getMessage());
                 return null;
             }

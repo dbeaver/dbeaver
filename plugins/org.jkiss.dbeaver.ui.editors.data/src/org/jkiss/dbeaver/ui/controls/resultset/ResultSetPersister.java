@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -945,7 +945,7 @@ class ResultSetPersister {
                 return;
             }
             for (int i = 0; i < curAttributes.length; i++) {
-                if (!ResultSetUtils.equalAttributes(curAttributes[i].getMetaAttribute(), attributes.get(i))) {
+                if (!DBExecUtils.equalAttributes(curAttributes[i].getMetaAttribute(), attributes.get(i))) {
                     log.debug("Attribute '" + curAttributes[i].getMetaAttribute() + "' doesn't match '" + attributes.get(i).getName() + "'");
                     return;
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,12 +192,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
-                                 int paramIndex, Object value) throws SQLException
-    {
+                                 int paramIndex, Object value) throws SQLException, DBCException {
         if (value instanceof String) {
             String strValue = (String) value;
             // Some number. Actually we shouldn't be here
-            Number number = DBValueFormatting.convertStringToNumber(strValue, getNumberType(paramType), formatter);
+            Number number = DBValueFormatting.convertStringToNumber(strValue, getNumberType(paramType), formatter, true);
             if (number != null) {
                 value = number;
             } else if (!strValue.isEmpty()) {
@@ -306,7 +305,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
 
     @Nullable
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             return null;
@@ -318,7 +317,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                 // Empty string means NULL value
                 return null;
             }
-            return DBValueFormatting.convertStringToNumber(strValue, getNumberType(type), formatter);
+            return DBValueFormatting.convertStringToNumber(strValue, getNumberType(type), formatter, validateValue);
         } else if (object instanceof Boolean) {
             return (Boolean) object ? 1 : 0;
         } else {

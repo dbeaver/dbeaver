@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,15 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
+import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContext;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.utils.CommonUtils;
@@ -34,6 +38,7 @@ import java.util.Locale;
  * ResultSetPresentationDescriptor
  */
 public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
+    private static final Log log = Log.getLog(ResultSetPanelDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resultset.panel"; //NON-NLS-1 //$NON-NLS-1$
 
@@ -48,6 +53,7 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
     private final List<IResultSetPresentation.PresentationType> supportedPresentationTypes = new ArrayList<>();
     private final List<String> supportedPresentations = new ArrayList<>();
     private final List<String> supportedDataSources = new ArrayList<>();
+    private final List<JexlExpression> supportedExpressions = new ArrayList<>();
 
     public ResultSetPanelDescriptor(IConfigurationElement config) {
         super(config);
@@ -67,6 +73,15 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
             String id = supports.getAttribute("id");
             if (!CommonUtils.isEmpty(id)) {
                 supportedPresentations.add(id);
+            }
+
+            String expr = supports.getAttribute("if");
+            if (!CommonUtils.isEmpty(expr)) {
+                try {
+                    supportedExpressions.add(parseExpression(expr));
+                } catch (DBException e) {
+                    log.debug(e);
+                }
             }
         }
 
@@ -98,13 +113,20 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
         return showByDefault;
     }
 
-    public boolean supportedBy(DBPDataSource dataSource, String presentationId, IResultSetPresentation.PresentationType presentationType) {
+    public boolean supportedBy(IResultSetContext context, DBPDataSource dataSource, String presentationId, IResultSetPresentation.PresentationType presentationType) {
         if (!supportedDataSources.isEmpty()) {
             if (dataSource == null) {
                 return false;
             }
             if (!supportedDataSources.contains(dataSource.getContainer().getDriver().getProviderId())) {
                 return false;
+            }
+        }
+        if (!supportedExpressions.isEmpty()) {
+            for (JexlExpression expr : supportedExpressions) {
+                if (!Boolean.TRUE.equals(expr.evaluate(AbstractDescriptor.makeContext(dataSource, context)))) {
+                    return false;
+                }
             }
         }
         if (supportedPresentations.isEmpty() && supportedPresentationTypes.isEmpty()) {

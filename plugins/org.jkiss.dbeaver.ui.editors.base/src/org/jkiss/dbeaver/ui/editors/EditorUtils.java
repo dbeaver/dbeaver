@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -333,7 +333,7 @@ public class EditorUtils {
         return null;
     }
 
-    public static void openExternalFileEditor(File file, IWorkbenchWindow window) {
+    public static IEditorPart openExternalFileEditor(File file, IWorkbenchWindow window) {
         try {
             IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
             if (desc == null) {
@@ -341,9 +341,10 @@ public class EditorUtils {
             }
             IFileStore fileStore = EFS.getStore(file.toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
-            IDE.openEditor(window.getActivePage(), input, desc.getId());
+            return IDE.openEditor(window.getActivePage(), input, desc.getId());
         } catch (CoreException e) {
             log.error("Can't open editor from file '" + file.getAbsolutePath(), e);
+            return null;
         }
     }
 
