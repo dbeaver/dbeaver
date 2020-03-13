@@ -1373,7 +1373,7 @@
                     webURL=""
                     description="Ocient JDBC driver"
                     categories="sql,analytic">
-                    <file type="jar" path="https://s3-us-west-2.amazonaws.com/ocient.com/ocient-jdbc4-1.0.jar"/>
+                    <file type="jar" path="maven:/com.ocient:ocient-jdbc4:RELEASE"/>
                 </driver>
 
             </drivers>
