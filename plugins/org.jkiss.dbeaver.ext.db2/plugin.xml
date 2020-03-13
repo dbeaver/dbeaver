@@ -3,7 +3,7 @@
 <!--
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2014 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -382,18 +382,8 @@
                     
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
 
-                    <fileSource url="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
-                        name="DB2 JCC drivers"
-                        instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
-<!--
-                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
-                        name="DB2 10.5 GA drivers"
-                        instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
--->
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.0.0]" bundle="!drivers.db2"/>
+
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
                     <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
 

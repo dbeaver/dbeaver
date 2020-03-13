@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 
@@ -39,16 +40,17 @@ public class TaskHandlerEdit extends AbstractHandler {
             if (element instanceof DBTTask) {
                 DBTTask task = (DBTTask) element;
                 DBTTaskType taskTypeDescriptor = task.getType();
-                if (!taskTypeDescriptor.supportsConfigurator()) {
+                if (!TaskUIRegistry.getInstance().supportsConfigurator(taskTypeDescriptor)) {
                     return null;
                 }
                 try {
-                    Object wizard = taskTypeDescriptor.createConfigurator().createTaskConfigWizard(task);
-                    if (wizard instanceof TaskConfigurationWizard) {
-                        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event), (TaskConfigurationWizard) wizard);
+                    TaskConfigurationWizard wizard = TaskUIRegistry.getInstance().createConfigurator(taskTypeDescriptor).createTaskConfigWizard(task);
+                    if (wizard != null) {
+                        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event), wizard);
+                        dialog.setEditMode(true);
                         dialog.open();
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
                 }
             }

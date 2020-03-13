@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -761,12 +761,15 @@ public class UIUtils {
         return button;
     }
 
-    public static ToolItem createToolItem(ToolBar parent, String text, DBPImage icon, SelectionListener selectionListener)
-    {
+    public static ToolItem createToolItem(ToolBar parent, String text, DBPImage icon, SelectionListener selectionListener) {
+        return createToolItem(parent, text, icon != null ? DBeaverIcons.getImage(icon) : null, selectionListener);
+    }
+
+    public static ToolItem createToolItem(ToolBar parent, String text, Image icon, SelectionListener selectionListener) {
         ToolItem button = new ToolItem(parent, SWT.PUSH);
         button.setToolTipText(text);
         if (icon != null) {
-            button.setImage(DBeaverIcons.getImage(icon));
+            button.setImage(icon);
         }
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
@@ -1966,6 +1969,21 @@ public class UIUtils {
     public static boolean isDark(RGB rgb) {
         return greyLevel(rgb) < 128;
     }
+    
+    /**
+     * Calculate the Contrast color based on Luma(brightness)
+     * https://en.wikipedia.org/wiki/Luma_(video)
+     */
+    public static Color getContrastColor(Color color) {
+        if (color == null)
+            return new Color(null, 0, 0, 0);
+
+        double luminance = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
+
+        int c = (luminance > 0.5) ? 255 : 0;
+
+        return new Color(null, c, c, c);
+    }  
 
     public static void openWebBrowser(String url)
     {
@@ -2026,4 +2044,15 @@ public class UIUtils {
     public static Font getMonospaceFont() {
         return JFaceResources.getFont(JFaceResources.TEXT_FONT);
     }
+
+    public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
+        while (control != null) {
+            if (parentType.isInstance(control)) {
+                return parentType.cast(control);
+            }
+            control = control.getParent();
+        }
+        return null;
+    }
+
 }

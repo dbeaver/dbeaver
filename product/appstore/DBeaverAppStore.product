@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.core.application.appstore" application="org.jkiss.dbeaver.core.application.appstore" version="6.3.5.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.core.application.appstore" application="org.jkiss.dbeaver.core.application.appstore" version="7.0.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -37,7 +37,7 @@
         <url>https://dbeaver.io/about/</url>
         <text>
     DBeaver - Universal Database Manager
-    Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+    Copyright (C) 2010-2020 DBeaver Corp and others
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.

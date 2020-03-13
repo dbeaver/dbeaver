@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.impl.sql.RelationalSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
 
 class ResultSetContextImpl implements IResultSetContext {
@@ -41,6 +44,25 @@ class ResultSetContextImpl implements IResultSetContext {
     @Override
     public boolean supportsDocument() {
         return viewer.getModel().getDocumentAttribute() != null;
+    }
+
+    @Override
+    public boolean supportsGrouping() {
+        DBPDataSource dataSource = viewer.getDataSource();
+        if (dataSource != null) {
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
+            return sqlDialect instanceof RelationalSQLDialect && ((RelationalSQLDialect) sqlDialect).supportsGroupBy();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean supportsReferences() {
+        DBPDataSource dataSource = viewer.getDataSource();
+        if (dataSource != null) {
+            return dataSource.getInfo().supportsReferentialIntegrity();
+        }
+        return false;
     }
 
     @Override

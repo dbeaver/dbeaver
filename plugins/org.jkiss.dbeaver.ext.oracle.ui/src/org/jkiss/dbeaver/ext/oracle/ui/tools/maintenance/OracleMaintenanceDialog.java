@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -58,15 +57,6 @@ public abstract class OracleMaintenanceDialog<T extends DBSObject> extends Gener
             public void processObjectResults(@NotNull T object, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException {
             }
 
-            @Override
-            public void endObjectProcessing(@NotNull T object, Exception error) {
-                super.endObjectProcessing(object, error);
-                TreeItem treeItem = getTreeItem(object);
-                if (treeItem != null) {
-                    treeItem.setText(1, error == null ? "Done" : error.getMessage());
-                }
-
-            }
         };
     }
 }

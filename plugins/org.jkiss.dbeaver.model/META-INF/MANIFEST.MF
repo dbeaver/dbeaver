@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 1.0.116.qualifier
-Bundle-Release-Date: 20200217
+Bundle-Version: 1.0.117.qualifier
+Bundle-Release-Date: 20200302
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
@@ -13,6 +13,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.access,
  org.jkiss.dbeaver.model.admin.sessions,
  org.jkiss.dbeaver.model.admin.locks,
+ org.jkiss.dbeaver.model.auth,
  org.jkiss.dbeaver.model.app,
  org.jkiss.dbeaver.model.connection,
  org.jkiss.dbeaver.model.data,
@@ -30,6 +31,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.impl,
  org.jkiss.dbeaver.model.impl.admin.locks,
  org.jkiss.dbeaver.model.impl.app,
+ org.jkiss.dbeaver.model.impl.auth,
  org.jkiss.dbeaver.model.impl.data,
  org.jkiss.dbeaver.model.impl.data.formatters,
  org.jkiss.dbeaver.model.impl.data.transformers,

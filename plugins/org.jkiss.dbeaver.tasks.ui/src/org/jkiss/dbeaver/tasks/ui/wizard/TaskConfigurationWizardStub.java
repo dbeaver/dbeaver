@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 import java.util.Map;
@@ -54,6 +55,7 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard {
     @Override
     public void addPages() {
         addPage(new TaskConfigurationWizardPageTask(null));
+        addPage(new TaskConfigurationWizardPageSettings(null));
         addPage(new TaskConfigurationVoidPage());
     }
 
@@ -83,6 +85,14 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard {
     @Override
     public boolean performFinish() {
         return false;//wizard.performFinish();
+    }
+
+    public boolean isLastTaskPreconfigPage(IWizardPage page) {
+        return page instanceof TaskConfigurationWizardPageSettings ||
+            (page instanceof TaskConfigurationWizardPageTask &&
+                ((TaskConfigurationWizardPageTask) page).getSelectedTaskType() != null &&
+                !TaskUIRegistry.getInstance().supportsConfiguratorPage(((TaskConfigurationWizardPageTask) page).getSelectedTaskType()));
+
     }
 
     class TaskConfigurationVoidPage extends ActiveWizardPage

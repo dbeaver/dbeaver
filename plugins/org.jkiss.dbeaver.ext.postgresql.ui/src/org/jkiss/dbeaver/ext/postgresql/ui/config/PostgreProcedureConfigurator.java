@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
                 if (!editPage.edit()) {
                     return null;
                 }
-                if (editPage.getPredefinedProcedureType() == DBSProcedureType.FUNCTION) {
+                if (editPage.getProcedureType() == DBSProcedureType.FUNCTION) {
                     newProcedure.setKind(PostgreProcedureKind.f);
                     newProcedure.setReturnType(editPage.getReturnType());
                 } else {
@@ -63,13 +63,13 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
                 newProcedure.setName(editPage.getProcedureName());
                 newProcedure.setLanguage(editPage.getLanguage());
                 newProcedure.setObjectDefinitionText(
-                    "CREATE OR REPLACE FUNCTION " + newProcedure.getFullQualifiedSignature() +
+                    "CREATE OR REPLACE " + editPage.getProcedureType() + " " + newProcedure.getFullQualifiedSignature() +
                     (newProcedure.getReturnType() == null ? "" : "\n\tRETURNS " + newProcedure.getReturnType().getFullyQualifiedName(DBPEvaluationContext.DDL)) +
                     "\n\tLANGUAGE " + editPage.getLanguage().getName() +
-                    "\nAS $$" +
+                    "\nAS $" + editPage.getProcedureType().name().toLowerCase() + "$" +
                     "\n\tBEGIN\n" +
                     "\n\tEND;" +
-                    "\n$$\n"
+                    "\n$" + editPage.getProcedureType().name().toLowerCase() + "$\n"
                 );
                 return newProcedure;
             }
@@ -94,6 +94,11 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
             if (parent.getDataSource().isServerVersionAtLeast(11, 0)) {
                 return null;
             }
+            return DBSProcedureType.FUNCTION;
+        }
+
+        @Override
+        public DBSProcedureType getDefaultProcedureType() {
             return DBSProcedureType.FUNCTION;
         }
 

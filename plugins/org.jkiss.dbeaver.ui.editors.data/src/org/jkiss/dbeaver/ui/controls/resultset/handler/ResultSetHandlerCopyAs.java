@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
@@ -116,11 +117,11 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
-            DBWorkbench.getPlatformUI().showError("Copy As " + processor.getName(), ModelMessages.error_not_connected_to_database);
+            DBWorkbench.getPlatformUI().showError("Copy as " + processor.getName(), ModelMessages.error_not_connected_to_database);
             return;
         }
 
-        AbstractJob exportJob = new AbstractJob("Copy As " + processor.getName()) {
+        AbstractJob exportJob = new AbstractJob("Copy as " + processor.getName()) {
 
             {
                 setUser(true);
@@ -159,6 +160,13 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);
                     DatabaseProducerSettings producerSettings = new DatabaseProducerSettings();
                     producerSettings.setOpenNewConnections(false);
+                    if (resultSet.isHasMoreData()) {
+                        // For long resultsets we may need to open new connection
+                        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+                        if (serviceSQL != null) {
+                            producerSettings.setOpenNewConnections(serviceSQL.useIsolatedConnections(resultSet));
+                        }
+                    }
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
                     producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));

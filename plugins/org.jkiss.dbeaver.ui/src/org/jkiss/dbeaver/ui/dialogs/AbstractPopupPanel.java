@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public abstract class AbstractPopupPanel extends Dialog {
 
-
     private final String title;
     private boolean modeless;
+    private static boolean popupOpen;
+
+    public static boolean isPopupOpen() {
+        return popupOpen;
+    }
 
     protected AbstractPopupPanel(Shell parentShell, String title)
     {
@@ -66,6 +70,16 @@ public abstract class AbstractPopupPanel extends Dialog {
     }
 
     @Override
+    public int open() {
+        popupOpen = true;
+        try {
+            return super.open();
+        } finally {
+            popupOpen = false;
+        }
+    }
+
+    @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(title);
@@ -85,7 +99,7 @@ public abstract class AbstractPopupPanel extends Dialog {
                 @Override
                 public void focusLost(FocusEvent e) {
                     UIUtils.asyncExec(() -> {
-                        handleFocusLost();
+                        handleFocusLost(e);
                     });
                 }
             };
@@ -98,7 +112,7 @@ public abstract class AbstractPopupPanel extends Dialog {
 
     }
 
-    private void handleFocusLost() {
+    private void handleFocusLost(FocusEvent e) {
         Shell shell = getShell();
         if (shell != null) {
             Control focusControl = shell.getDisplay().getFocusControl();

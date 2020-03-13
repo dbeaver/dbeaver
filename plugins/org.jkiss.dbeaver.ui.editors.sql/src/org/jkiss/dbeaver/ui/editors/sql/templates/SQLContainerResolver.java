@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class SQLContainerResolver<T extends DBSObjectContainer> extends SQLObjec
         if (names.isEmpty()) {
             // Nothing found - maybe we should go deeper in active container
             DBSObjectContainer activeContainer = DBUtils.getSelectedObject(executionContext, DBSObjectContainer.class);
-            if (activeContainer != null) {
+            if (activeContainer != null && activeContainer != container) {
                 makeProposalsFromChildren(monitor, executionContext, activeContainer, names);
             }
         }

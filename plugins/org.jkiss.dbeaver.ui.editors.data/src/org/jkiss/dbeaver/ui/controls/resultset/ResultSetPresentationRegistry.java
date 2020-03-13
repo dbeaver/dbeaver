@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,10 +120,10 @@ public class ResultSetPresentationRegistry {
         return null;
     }
 
-    public List<ResultSetPanelDescriptor> getSupportedPanels(DBPDataSource dataSource, String presentationId, IResultSetPresentation.PresentationType presentationType) {
+    public List<ResultSetPanelDescriptor> getSupportedPanels(IResultSetContext context, DBPDataSource dataSource, String presentationId, IResultSetPresentation.PresentationType presentationType) {
         List<ResultSetPanelDescriptor> result = new ArrayList<>();
         for (ResultSetPanelDescriptor panel : panels) {
-            if (panel.supportedBy(dataSource, presentationId, presentationType)) {
+            if (panel.supportedBy(context, dataSource, presentationId, presentationType)) {
                 result.add(panel);
             }
         }

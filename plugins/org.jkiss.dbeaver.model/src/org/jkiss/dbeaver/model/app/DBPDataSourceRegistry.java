@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -60,26 +61,35 @@ public interface DBPDataSourceRegistry extends DBPObject {
     @Nullable
     DBPDataSourceContainer findDataSourceByName(String name);
 
+    @NotNull
     List<? extends DBPDataSourceContainer> getDataSourcesByProfile(@NotNull DBWNetworkProfile profile);
 
+    @NotNull
     List<? extends DBPDataSourceContainer> getDataSources();
 
+    @NotNull
     DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig);
 
+    @NotNull
     DBPDataSourceContainer createDataSource(DBPDataSourceContainer source);
 
-    void addDataSourceListener(DBPEventListener listener);
+    void addDataSourceListener(@NotNull DBPEventListener listener);
 
-    boolean removeDataSourceListener(DBPEventListener listener);
+    boolean removeDataSourceListener(@NotNull DBPEventListener listener);
 
-    void addDataSource(DBPDataSourceContainer dataSource);
+    void addDataSource(@NotNull DBPDataSourceContainer dataSource);
 
-    void removeDataSource(DBPDataSourceContainer dataSource);
+    void removeDataSource(@NotNull DBPDataSourceContainer dataSource);
 
-    void updateDataSource(DBPDataSourceContainer dataSource);
+    void updateDataSource(@NotNull DBPDataSourceContainer dataSource);
 
+    @NotNull
+    List<? extends DBPDataSourceContainer> loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull IFile fromFile);
+
+    @NotNull
     List<? extends DBPDataSourceFolder> getAllFolders();
 
+    @NotNull
     List<? extends DBPDataSourceFolder> getRootFolders();
 
     DBPDataSourceFolder getFolder(String path);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class SQLServerConstants {
@@ -39,6 +37,8 @@ public class SQLServerConstants {
 
     public static final String DEFAULT_SCHEMA_NAME = "dbo";
 
+    public static final String TYPE_DATE = "date";
+    public static final String TYPE_TIME = "time";
     public static final String TYPE_DATETIME = "datetime";
     public static final String TYPE_DATETIME2 = "datetime2";
     public static final String TYPE_SMALLDATETIME = "smalldatetime";
@@ -46,6 +46,8 @@ public class SQLServerConstants {
     public static final String TYPE_UNIQUEIDENTIFIER = "uniqueidentifier";
     public static final String TYPE_NVARCHAR = "nvarchar";
     public static final String TYPE_NCHAR = "nchar";
+    public static final String TYPE_GEOMETRY = "geometry";
+    public static final String TYPE_GEOGRAPHY = "geography";
 
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";

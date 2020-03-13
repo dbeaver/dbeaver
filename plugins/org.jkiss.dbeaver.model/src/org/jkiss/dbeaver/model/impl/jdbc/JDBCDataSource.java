@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -127,10 +128,12 @@ public abstract class JDBCDataSource
 
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
 
+        DBAAuthModel authModel = connectionInfo.getAuthModel();
+
         // Obtain connection
         try {
             if (connectionConfigurer != null) {
-                connectionConfigurer.beforeConnection(connectionInfo, connectProps);
+                connectionConfigurer.beforeConnection(monitor, connectionInfo, connectProps);
             }
             final String url = getConnectionURL(connectionInfo);
             if (driverInstance != null) {
@@ -161,20 +164,27 @@ public abstract class JDBCDataSource
                 } finally {
                     if (connectionConfigurer != null) {
                         try {
-                            connectionConfigurer.afterConnection(connectionInfo, connectProps, connection[0], error[0]);
+                            connectionConfigurer.afterConnection(monitor, connectionInfo, connectProps, connection[0], error[0]);
                         } catch (Exception e) {
                             log.debug(e);
                         }
                     }
                 }
             };
+
+            authModel.initAuthentication(monitor, container, connectionInfo, connectProps);
             boolean openTaskFinished;
-            if (openTimeout <= 0) {
-                openTaskFinished = true;
-                connectTask.run(monitor);
-            } else {
-                openTaskFinished = RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
+            try {
+                if (openTimeout <= 0) {
+                    openTaskFinished = true;
+                    connectTask.run(monitor);
+                } else {
+                    openTaskFinished = RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
+                }
+            } finally {
+                authModel.endAuthentication(container, connectionInfo, connectProps);
             }
+
             if (error[0] != null) {
                 throw error[0];
             }

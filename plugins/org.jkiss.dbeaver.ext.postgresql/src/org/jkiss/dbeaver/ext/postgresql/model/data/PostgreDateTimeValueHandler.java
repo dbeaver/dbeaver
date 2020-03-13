@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @Override
-    public void bindValueObject(DBCSession session, DBCStatement statement, DBSTypedObject type, int index, Object value) throws DBCException {
+    public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, Object value) throws DBCException {
         if (value instanceof String) {
             try {
                 ((JDBCPreparedStatement)statement).setObject(index + 1, value.toString(), Types.OTHER);

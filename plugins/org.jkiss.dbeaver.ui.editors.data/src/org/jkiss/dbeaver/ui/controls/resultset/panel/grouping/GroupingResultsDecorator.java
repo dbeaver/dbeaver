@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.dnd.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -70,9 +69,9 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
             return ResultSetMessages.results_decorator_no_connected_to_db;
         }
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
-        if (dialect == null || !dialect.supportsSubqueries()) {
+        /*if (dialect == null) {
             return NLS.bind(ResultSetMessages.results_decorator_grouping_is_not_supported, dataSource.getContainer().getDriver().getFullName());
-        } else {
+        } else */{
             if (container.getGroupAttributes().isEmpty()) {
                 return ResultSetMessages.results_decorator_drag_and_drop_results_column;
             } else {

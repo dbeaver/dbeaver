@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
+import com.sun.jna.platform.win32.Advapi32Util;
+import com.sun.jna.platform.win32.WinReg;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -34,7 +36,6 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.WindowsRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -151,17 +152,17 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         OSDescriptor localSystem = DBWorkbench.getPlatform().getLocalSystem();
         if (localSystem.isWindows()) {
             try {
-                List<String> homeKeys = WindowsRegistry.getInstance().readStringSubKeys(WindowsRegistry.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY);
-                if (homeKeys != null) {
-                    for (String homeKey : homeKeys) {
-                        Map<String, String> valuesMap = WindowsRegistry.getInstance().readStringValues(WindowsRegistry.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY + "\\" + homeKey);
-                        if (valuesMap != null) {
+                if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY)) {
+                    String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY);
+                    if (homeKeys != null) {
+                        for (String homeKey : homeKeys) {
+                            Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY + "\\" + homeKey);
                             for (String key : valuesMap.keySet()) {
                                 if (PostgreConstants.PG_INSTALL_PROP_BASE_DIRECTORY.equalsIgnoreCase(key)) {
-                                    String baseDir = CommonUtils.removeTrailingSlash(valuesMap.get(PostgreConstants.PG_INSTALL_PROP_BASE_DIRECTORY));
-                                    String version = valuesMap.get(PostgreConstants.PG_INSTALL_PROP_VERSION);
-                                    String branding = valuesMap.get(PostgreConstants.PG_INSTALL_PROP_BRANDING);
-                                    String dataDir = valuesMap.get(PostgreConstants.PG_INSTALL_PROP_DATA_DIRECTORY);
+                                    String baseDir = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(PostgreConstants.PG_INSTALL_PROP_BASE_DIRECTORY)));
+                                    String version = CommonUtils.toString(valuesMap.get(PostgreConstants.PG_INSTALL_PROP_VERSION));
+                                    String branding = CommonUtils.toString(valuesMap.get(PostgreConstants.PG_INSTALL_PROP_BRANDING));
+                                    String dataDir = CommonUtils.toString(valuesMap.get(PostgreConstants.PG_INSTALL_PROP_DATA_DIRECTORY));
                                     localServers.put(homeKey, new PostgreServerHome(homeKey, baseDir, version, branding, dataDir));
                                     break;
                                 }

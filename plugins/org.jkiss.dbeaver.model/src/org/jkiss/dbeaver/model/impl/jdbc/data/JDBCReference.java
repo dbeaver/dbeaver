@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public class JDBCReference implements DBDReference {
                     Object refValue = value.getObject();
                     session.getProgressMonitor().worked(1);
                     DBDValueHandler valueHandler = DBUtils.findValueHandler(session, type);
-                    refObject = valueHandler.getValueFromObject(session, type, refValue, false);
+                    refObject = valueHandler.getValueFromObject(session, type, refValue, false, false);
                     session.getProgressMonitor().worked(1);
                 } finally {
                     session.getProgressMonitor().done();

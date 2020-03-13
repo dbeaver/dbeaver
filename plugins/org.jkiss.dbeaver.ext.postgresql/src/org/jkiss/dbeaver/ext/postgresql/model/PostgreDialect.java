@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
@@ -757,6 +760,16 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
+    public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
+        String typeName = attribute.getTypeName();
+        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName)) {
+            return expression + "::" + typeName;
+        }
+        return expression;
+    }
+
+    @NotNull
+    @Override
     public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
         if (value.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
             // TODO: we need to add value handlers for all PG data types.
@@ -803,5 +816,18 @@ public class PostgreDialect extends JDBCSQLDialect {
     @Override
     public String[] getNonTransactionKeywords() {
         return POSTGRE_NON_TRANSACTIONAL_KEYWORDS;
+    }
+
+    @Override
+    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        if (dataKind == DBPDataKind.DATETIME) {
+            {
+                Integer scale = column.getScale();
+                if (scale != null) {
+                    return "(" + scale + ')';
+                }
+            }
+        }
+        return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 }

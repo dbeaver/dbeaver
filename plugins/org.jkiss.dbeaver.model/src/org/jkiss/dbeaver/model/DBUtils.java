@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -344,7 +344,13 @@ public final class DBUtils {
                 // Not found - try to find in selected object
                 DBSObject selectedObject = getSelectedObject(executionContext);
                 if (selectedObject instanceof DBSObjectContainer) {
-                    sc = ((DBSObjectContainer) selectedObject).getChild(monitor, containerName);
+                    if (selectedObject instanceof DBSSchema && CommonUtils.equalObjects(schemaName, selectedObject.getName()) ||
+                        selectedObject instanceof DBSCatalog && CommonUtils.equalObjects(catalogName, selectedObject.getName())) {
+                        // Selected object is a catalog or schema which is also specified as catalogName/schemaName -
+                        sc = selectedObject;
+                    } else {
+                        sc = ((DBSObjectContainer) selectedObject).getChild(monitor, containerName);
+                    }
                 }
                 if (!(sc instanceof DBSObjectContainer)) {
                     return null;
@@ -640,7 +646,7 @@ public final class DBUtils {
     @Nullable
     public static Object makeNullValue(@NotNull DBCSession session, @NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type) throws DBCException
     {
-        return valueHandler.getValueFromObject(session, type, null, false);
+        return valueHandler.getValueFromObject(session, type, null, false, false);
     }
 
     @NotNull
@@ -1774,6 +1780,10 @@ public final class DBUtils {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
     }
 
+    public static boolean isSystemObject(Object object) {
+        return object instanceof DBPSystemObject && ((DBPSystemObject) object).isSystem();
+    }
+
     public static boolean isVirtualObject(Object object) {
         return object instanceof DBPVirtualObject && ((DBPVirtualObject) object).isVirtual();
     }
@@ -1903,6 +1913,27 @@ public final class DBUtils {
             instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
 
+    public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) {
+        DBCExecutionContext context = DBUtils.getDefaultContext(object, meta);
+        if (context == null) {
+            // Not connected - try to connect
+            DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(object);
+            if (ownerInstance instanceof DBSInstanceLazy && !((DBSInstanceLazy)ownerInstance).isInstanceConnected()) {
+                if (!RuntimeUtils.runTask(monitor -> {
+                        try {
+                            ((DBSInstanceLazy) ownerInstance).checkInstanceConnection(monitor);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }, "Initiate instance connection",
+                    object.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT))) {
+                    return null;
+                }
+                context = DBUtils.getDefaultContext(object, meta);
+            }
+        }
+        return context;
+    }
     public static List<DBPDataSourceRegistry> getAllRegistries(boolean forceLoad) {
         List<DBPDataSourceRegistry> result = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
@@ -2078,4 +2109,13 @@ public final class DBUtils {
         return "Object";
     }
 
+    @Nullable
+    public static DBSDataType getDataType(@NotNull DBSTypedObject typedObject) {
+        if (typedObject instanceof DBSDataType) {
+            return (DBSDataType) typedObject;
+        } else if (typedObject instanceof DBSTypedObjectEx) {
+            return ((DBSTypedObjectEx) typedObject).getDataType();
+        }
+        return null;
+    }
 }

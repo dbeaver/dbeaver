@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 connect(monitor, null, null, null, false);
             }
             if (schema != null && !CommonUtils.equalObjects(schema, activeSchema)) {
-                setDefaultSchema(monitor, schema);
+                changeDefaultSchema(monitor, schema, true);
             }
             DBUtils.fireObjectSelectionChange(oldInstance, catalog);
         } catch (DBException e) {
@@ -114,10 +114,10 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     @Override
     public void setDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema) throws DBCException {
-        setDefaultSchema(monitor, schema, true);
+        setDefaultCatalog(monitor, schema.getDatabase(), schema);
     }
 
-    public void setDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect) throws DBCException {
+    void changeDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect) throws DBCException {
         PostgreSchema oldActiveSchema = this.activeSchema;
         if (oldActiveSchema == schema) {
             return;

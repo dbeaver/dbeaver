@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -170,7 +170,11 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         } catch (InterruptedException e) {
             return;
         }
-        final CreateJob<OBJECT_TYPE, CONTAINER_TYPE> job = new CreateJob<OBJECT_TYPE, CONTAINER_TYPE>(commandTarget, objectMaker, parentObject, sourceObject, objectCreator.newObject);
+        if (objectCreator.newObject == null) {
+            //DBWorkbench.getPlatformUI().showError("Null new object", "Internal error during object creation: NULL object returned (see logs).");
+            return;
+        }
+        final CreateJob<OBJECT_TYPE, CONTAINER_TYPE> job = new CreateJob<>(commandTarget, objectMaker, parentObject, sourceObject, objectCreator.newObject);
         job.schedule();
     }
 

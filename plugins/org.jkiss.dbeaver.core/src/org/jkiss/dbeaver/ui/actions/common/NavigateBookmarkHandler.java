@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -78,11 +79,15 @@ public class NavigateBookmarkHandler extends NavigatorHandlerObjectBase {
                 }
 
                 NavigatorViewBase navigatorView = activeNavigatorView;
-                dsNode.initializeNode(null, status -> {
-                    if (status.isOK()) {
-                        UIUtils.syncExec(() -> BookmarksHandlerImpl.navigateNodeByPath(navigatorView, dsNode, storage));
-                    }
-                });
+                try {
+                    dsNode.initializeNode(null, status -> {
+                        if (status.isOK()) {
+                            UIUtils.syncExec(() -> BookmarksHandlerImpl.navigateNodeByPath(navigatorView, dsNode, storage));
+                        }
+                    });
+                } catch (DBException e) {
+                    log.error(e);
+                }
             }
         }
 

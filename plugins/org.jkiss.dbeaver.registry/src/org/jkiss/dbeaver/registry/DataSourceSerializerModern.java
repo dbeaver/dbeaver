@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
@@ -90,7 +91,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     @Override
     public void saveDataSources(
         DBRProgressMonitor monitor,
-        DataSourceOrigin origin,
+        DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources,
         IFile configFile) throws DBException, IOException
     {
@@ -101,7 +102,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 jsonWriter.beginObject();
 
                 // Save folders
-                if (origin.isDefault()) {
+                if (configurationStorage.isDefault()) {
                     jsonWriter.name("folders");
                     jsonWriter.beginObject();
                     // Folders (only for default origin)
@@ -139,7 +140,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     jsonWriter.endObject();
                 }
 
-                if (origin.isDefault()) {
+                if (configurationStorage.isDefault()) {
                     if (!virtualModels.isEmpty()) {
                         // Save virtual models
                         jsonWriter.name("virtual-models");
@@ -241,7 +242,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             saveSecureCredentialsFile(
                 monitor.getNestedMonitor(),
                 (IFolder) configFile.getParent(),
-                origin);
+                configurationStorage);
         }
     }
 
@@ -290,8 +291,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
     }
 
-    private void saveSecureCredentialsFile(IProgressMonitor monitor, IFolder parent, DataSourceOrigin origin) {
-        IFile credFile = parent.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+    private void saveSecureCredentialsFile(IProgressMonitor monitor, IFolder parent, DBPDataSourceConfigurationStorage origin) {
+        IFile credFile = parent.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
         try {
             ContentUtils.makeFileBackup(credFile);
             if (secureProperties.isEmpty()) {
@@ -307,11 +308,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(IFile configFile, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) throws IOException {
+    public void parseDataSources(IFile configFile, DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults) throws IOException {
         // Read secured creds file
         IFolder mdFolder = registry.getProject().getMetadataFolder(false);
         if (mdFolder.exists()) {
-            IFile credFile = mdFolder.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+            IFile credFile = mdFolder.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
             if (credFile.exists()) {
                 try {
                     String credJson = loadConfigFile(credFile, true);
@@ -426,7 +427,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (newDataSource) {
                     dataSource = new DataSourceDescriptor(
                         registry,
-                        origin,
+                        configurationStorage,
                         id,
                         driver,
                         new DBPConnectionConfiguration());
@@ -473,7 +474,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                     config.setClientHomeId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_HOME));
                     config.setConfigProfileName(JSONUtils.getString(cfgObject, "config-profile"));
-                    config.setUserProfileName(JSONUtils.getString(cfgObject, "user-profile"));
                     config.setConnectionType(
                         DataSourceProviderRegistry.getInstance().getConnectionType(
                             JSONUtils.getString(cfgObject, RegistryConstants.ATTR_TYPE), DBPConnectionType.DEFAULT_TYPE));
@@ -487,6 +487,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                     config.setProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROPERTIES));
                     config.setProviderProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
+                    config.setAuthModelId(JSONUtils.getString(cfgObject, "auth-model"));
+                    config.setAuthProperties(JSONUtils.deserializeStringMapOrNull(cfgObject, "auth-properties"));
 
                     // Events
                     for (Map.Entry<String, Map<String, Object>> eventObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_EVENTS)) {
@@ -728,9 +730,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
             }
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
-            JSONUtils.fieldNE(json, "user-profile", connectionInfo.getUserProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
+            JSONUtils.fieldNE(json, "auth-model", connectionInfo.getAuthModelId());
+            JSONUtils.serializeProperties(json, "auth-properties", connectionInfo.getAuthProperties());
 
             // Save events
             if (!ArrayUtils.isEmpty(connectionInfo.getDeclaredEvents())) {

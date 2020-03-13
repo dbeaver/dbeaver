@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,9 +105,11 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     @Override
     protected long getDDLFeatures(GenericTableColumn object) {
         long features = 0;
-        Object shortDrop = object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_SHORT);
-        if (shortDrop != null && CommonUtils.toBoolean(shortDrop)) {
+        if (CommonUtils.toBoolean(object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_SHORT))) {
             features |= DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP;
+        }
+        if (CommonUtils.toBoolean(object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_BRACKETS))) {
+            features |= DDL_FEATURE_USER_BRACKETS_IN_DROP;
         }
         return features;
     }

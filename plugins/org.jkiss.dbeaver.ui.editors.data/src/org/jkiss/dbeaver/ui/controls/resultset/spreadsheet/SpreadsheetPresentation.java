@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -153,6 +154,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean showBooleanAsCheckbox;
     private int rowBatchSize;
     private IValueEditor activeInlineEditor;
+
+    private int highlightScopeFirstLine;
+    private int highlightScopeLastLine;
+    private Color highlightScopeColor;
 
     public SpreadsheetPresentation() {
         findReplaceTarget = new SpreadsheetFindReplaceTarget(this);
@@ -362,6 +367,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         spreadsheet.scrollHorizontally(scrollCount);
     }
 
+    void highlightRows(int firstLine, int lastLine, Color color) {
+        this.highlightScopeFirstLine = firstLine;
+        this.highlightScopeLastLine = lastLine;
+        this.highlightScopeColor = color;
+    }
+
     /////////////////////////////////////////////////
     // State
 
@@ -396,6 +407,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             spreadsheet.setCursor(cell, false, false);
         }*/
         spreadsheet.getHorizontalScrollBarProxy().setSelection(viewState.hScrollSelection);
+        spreadsheet.setDefaultFocusRow();
     }
 
     private void updateGridCursor(GridCell cell)
@@ -576,7 +588,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                                 continue;
                             }
                             Object newValue = attr.getValueHandler().getValueFromObject(
-                                session, attr.getAttribute(), value, true);
+                                session, attr.getAttribute(), value, true, false);
                             new SpreadsheetValueController(
                                 controller,
                                 attr,
@@ -1055,7 +1067,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         controller.navigateAssociation(
                             monitor,
                             controller.getModel(),
-                            ResultSetUtils.getAssociationByAttribute(attr),
+                            DBExecUtils.getAssociationByAttribute(attr),
                             Collections.singletonList(row), ctrlPressed);
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
@@ -1084,6 +1096,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private void toggleBooleanValue(DBDAttributeBinding attr, ResultSetRow row, Object value) {
         boolean nullable = !attr.isRequired();
+        if (value instanceof Number) {
+            value = ((Number) value).byteValue() != 0;
+        }
         if (Boolean.TRUE.equals(value)) {
             value = false;
         } else if (Boolean.FALSE.equals(value)) {
@@ -1256,6 +1271,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     ///////////////////////////////////////////////
     // Selection provider
+
+    public int getHighlightScopeFirstLine() {
+        return highlightScopeFirstLine;
+    }
+
+    public int getHighlightScopeLastLine() {
+        return highlightScopeLastLine;
+    }
 
     @Override
     public IResultSetSelection getSelection() {
@@ -1704,6 +1727,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (isShowAsCheckbox(attr)) {
                 ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
                 Object cellValue = controller.getModel().getCellValue(attr, row);
+                if (cellValue instanceof Number) {
+                    cellValue = ((Number) cellValue).byteValue() != 0;
+                }
                 if (cellValue instanceof Boolean) {
                     if ((Boolean)cellValue) {
                         return UIIcon.CHECK_ON;
@@ -1784,12 +1810,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
 
             if (findReplaceTarget.isSessionActive()) {
-                java.util.regex.Pattern searchPattern = findReplaceTarget.getSearchPattern();
-                if (searchPattern != null) {
-                    String cellText = getCellText(colElement, rowElement);
-                    if (searchPattern.matcher(cellText).find()) {
-                        return backgroundMatched;
+                boolean hasScope = highlightScopeFirstLine >= 0 && highlightScopeLastLine >= 0;
+                boolean inScope = hasScope && row.getVisualNumber() >= highlightScopeFirstLine && row.getVisualNumber() <= highlightScopeLastLine;
+                if (!hasScope || inScope) {
+                    java.util.regex.Pattern searchPattern = findReplaceTarget.getSearchPattern();
+                    if (searchPattern != null) {
+                        String cellText = getCellText(colElement, rowElement);
+                        if (searchPattern.matcher(cellText).find()) {
+                            return backgroundMatched;
+                        }
                     }
+                }
+                if (!recordMode && inScope) {
+                    return highlightScopeColor != null ? highlightScopeColor : backgroundSelected;
                 }
             }
 
@@ -1900,7 +1933,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
-        return showBooleanAsCheckbox && attr.getDataKind() == DBPDataKind.BOOLEAN;
+        return showBooleanAsCheckbox && attr.getPresentationAttribute().getDataKind() == DBPDataKind.BOOLEAN;
     }
 
     private class GridLabelProvider implements IGridLabelProvider {
@@ -1912,7 +1945,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (showAttributeIcons) {
                     DBDAttributeBinding attr = (DBDAttributeBinding) element;
                     DBPImage objectImage = DBValueFormatting.getObjectImage(attr.getAttribute());
-                    if (controller.getAttributeReadOnlyStatus(attr) != null) {
+                    if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) != 0 &&
+                        controller.getAttributeReadOnlyStatus(attr) != null)
+                    {
                         objectImage = new DBIconComposite(objectImage, false, null, null, null, DBIcon.OVER_LOCK);
                     }
                     return DBeaverIcons.getImage(objectImage);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ class ScriptsExportWizardPage extends WizardPage {
             return false;
         }
         selectedResources.clear();
-        CheckboxTreeViewer viewer = (CheckboxTreeViewer) scriptsNavigator.getViewer();
+        CheckboxTreeViewer viewer = scriptsNavigator.getCheckboxViewer();
         for (Object obj : viewer.getCheckedElements()) {
             if (obj instanceof DBNResource) {
                 selectedResources.add((DBNResource) obj);

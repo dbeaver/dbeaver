@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mysql;
 
+import com.sun.jna.platform.win32.Advapi32Util;
+import com.sun.jna.platform.win32.WinReg;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -31,7 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.WindowsRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
@@ -189,14 +190,14 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                 // Search MySQL entries
                 {
                     final String registryRoot = localSystem.is64() ? REGISTRY_ROOT_MYSQL_64 : REGISTRY_ROOT_MYSQL_32;
-                    List<String> homeKeys = WindowsRegistry.getInstance().readStringSubKeys(WindowsRegistry.HKEY_LOCAL_MACHINE, registryRoot);
-                    if (homeKeys != null) {
-                        for (String homeKey : homeKeys) {
-                            Map<String, String> valuesMap = WindowsRegistry.getInstance().readStringValues(WindowsRegistry.HKEY_LOCAL_MACHINE, registryRoot + "\\" + homeKey);
-                            if (valuesMap != null) {
+                    if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, registryRoot)) {
+                        String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, registryRoot);
+                        if (homeKeys != null) {
+                            for (String homeKey : homeKeys) {
+                                Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, registryRoot + "\\" + homeKey);
                                 for (String key : valuesMap.keySet()) {
                                     if (SERER_LOCATION_KEY.equalsIgnoreCase(key)) {
-                                        String serverPath = CommonUtils.removeTrailingSlash(valuesMap.get(key));
+                                        String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(key)));
                                         if (new File(serverPath, "bin").exists()) {
                                             localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
                                         }
@@ -207,18 +208,16 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                     }
                 }
                 // Search MariaDB entries
-                {
-                    List<String> homeKeys = WindowsRegistry.getInstance().readStringSubKeys(WindowsRegistry.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB);
+                if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB)) {
+                    String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB);
                     if (homeKeys != null) {
                         for (String homeKey : homeKeys) {
-                            Map<String, String> valuesMap = WindowsRegistry.getInstance().readStringValues(WindowsRegistry.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB + "\\" + homeKey);
-                            if (valuesMap != null) {
-                                for (String key : valuesMap.keySet()) {
-                                    if (INSTALLDIR_KEY.equalsIgnoreCase(key)) {
-                                        String serverPath = CommonUtils.removeTrailingSlash(valuesMap.get(key));
-                                        if (new File(serverPath, "bin").exists()) {
-                                            localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
-                                        }
+                            Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MARIADB + "\\" + homeKey);
+                            for (String key : valuesMap.keySet()) {
+                                if (INSTALLDIR_KEY.equalsIgnoreCase(key)) {
+                                    String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(key)));
+                                    if (new File(serverPath, "bin").exists()) {
+                                        localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
                                     }
                                 }
                             }

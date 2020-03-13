@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.task;
+package org.jkiss.dbeaver.tasks.ui.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * TaskTypeDescriptor
@@ -31,12 +33,14 @@ public class TaskConfiguratorDescriptor extends AbstractContextDescriptor {
     private final TaskTypeDescriptor type;
     private final IConfigurationElement config;
     private final ObjectType implType;
+    private final boolean supportsPanel;
 
     TaskConfiguratorDescriptor(TaskTypeDescriptor type, IConfigurationElement config) {
         super(config);
         this.type = type;
         this.config = config;
         this.implType = new ObjectType(config, "class");
+        this.supportsPanel = CommonUtils.getBoolean(config.getAttribute("supportsPanel"), true);
     }
 
     @NotNull
@@ -64,4 +68,7 @@ public class TaskConfiguratorDescriptor extends AbstractContextDescriptor {
         return implType.getImplName();
     }
 
+    public boolean supportsPanel() {
+        return supportsPanel;
+    }
 }

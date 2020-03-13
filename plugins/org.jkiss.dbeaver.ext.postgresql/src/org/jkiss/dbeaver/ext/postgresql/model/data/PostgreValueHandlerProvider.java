@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -34,8 +35,12 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
-    {
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject) {
+//        // FIXME: This doesn't work as data type information is not available during RS metadata reading
+//        DBSDataType dataType = DBUtils.getDataType(typedObject);
+//        if (dataType instanceof PostgreDataType && ((PostgreDataType) dataType).getTypeCategory() == PostgreTypeCategory.E) {
+//            return PostgreEnumValueHandler.INSTANCE;
+//        }
         int typeID = typedObject.getTypeID();
         switch (typeID) {
             case Types.ARRAY:
@@ -47,7 +52,7 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
             case Types.TIME_WITH_TIMEZONE:
             case Types.TIMESTAMP:
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                if (((PostgreDataSource)dataSource).getServerType().supportsTemporalAccessor()) {
+                if (((PostgreDataSource) dataSource).getServerType().supportsTemporalAccessor()) {
                     return new PostgreTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
                 } else {
                     return new PostgreDateTimeValueHandler(preferences.getDataFormatterProfile());
@@ -71,6 +76,9 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
                     case PostgreConstants.TYPE_INTERVAL:
                         return PostgreIntervalValueHandler.INSTANCE;
                     default:
+                        if (typedObject.getDataKind() == DBPDataKind.STRING) {
+                            return PostgreStringValueHandler.INSTANCE;
+                        }
                         return null;
                 }
         }

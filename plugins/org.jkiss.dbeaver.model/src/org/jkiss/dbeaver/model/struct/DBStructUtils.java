@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -84,6 +86,7 @@ public final class DBStructUtils {
 
         // Good tables: generate full DDL
         for (T table : goodTableList) {
+            sql.append(getObjectNameComment(table, "definition"));
             addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
         }
         {
@@ -104,37 +107,50 @@ public final class DBStructUtils {
             Map<String, Object> optionsNoFK = new HashMap<>(options);
             optionsNoFK.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
             for (T table : goodCycleTableList) {
+                sql.append(getObjectNameComment(table, "definition"));
                 addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsNoFK, addComments));
             }
             Map<String, Object> optionsOnlyFK = new HashMap<>(options);
             optionsOnlyFK.put(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS, true);
             for (T table : goodCycleTableList) {
+                sql.append(getObjectNameComment(table, "foreign keys"));
                 addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsOnlyFK, addComments));
             }
 
             // the rest - tables which can't split their DDL
             for (T table : cycleTableList) {
+                sql.append(getObjectNameComment(table, "definition"));
                 addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
             }
         }
         // Views: generate them after all tables.
         // TODO: find view dependencies and generate them in right order
         for (T table : viewList) {
+            sql.append(getObjectNameComment(table, "source"));
             addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
         }
         monitor.done();
     }
 
+    private static String getObjectNameComment(DBSObject object, String comment) {
+        String[] singleLineComments = object.getDataSource().getSQLDialect().getSingleLineComments();
+        if (ArrayUtils.isEmpty(singleLineComments)) {
+            return "";
+        }
+        String lf = GeneralUtils.getDefaultLineSeparator();
+        return singleLineComments[0].trim() + " " + DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL) +
+            " " + comment + lf + lf;
+    }
+
     private static void addDDLLine(StringBuilder sql, String ddl) {
         ddl = ddl.trim();
         if (!CommonUtils.isEmpty(ddl)) {
-            if (sql.length() > 0) {
-                sql.append("\n\n");
-            }
             sql.append(ddl);
             if (!ddl.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                 sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
             }
+            String lf = GeneralUtils.getDefaultLineSeparator();
+            sql.append(lf).append(lf).append(lf);
         }
     }
 

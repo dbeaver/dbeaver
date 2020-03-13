@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,18 +109,6 @@ public abstract class ExasolBaseTableToolDialog
                 }
         	}
         	
-            @Override
-            public void endObjectProcessing(@NotNull ExasolTableBase exasolTable, Exception exception)
-            {
-                TreeItem treeItem = getTreeItem(exasolTable);
-                if (exception == null) {
-                    treeItem.setText(1, ExasolMessages.dialog_table_tools_success_title);
-                } else {
-                    treeItem.setText(1, exception.getMessage());
-                }
-                UIUtils.packColumns(treeItem.getParent(), false, null);
-            }
-
             // DF: This method is for tools that return resultsets
             @Override
             public void processObjectResults(@NotNull ExasolTableBase exasolTable, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException

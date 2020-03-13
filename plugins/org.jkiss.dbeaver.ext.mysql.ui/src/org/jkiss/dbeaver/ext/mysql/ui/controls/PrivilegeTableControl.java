@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -150,7 +153,7 @@ public class PrivilegeTableControl extends Composite {
             //Button grantCheck = (Button)item.getData("grant");
             boolean checked = false;//, grantOption = false;
             for (MySQLGrant grant : grants) {
-                if (isStatic != grant.isStatic()) {
+                if (isStatic && !grant.isStatic()) {
                     continue;
                 }
                 if (grant.isAllPrivileges() || (ArrayUtils.contains(grant.getPrivileges(), privilege))) {

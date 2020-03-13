@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -541,7 +541,7 @@ public final class SQLUtils {
                     if (inlineCriteria) {
                         conString.append(' ').append(convertValueToSQL(dataSource, constraint.getAttribute(), value));
                     } else {
-                        conString.append(" ?");
+                        conString.append(" ").append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(),"?"));
                     }
                 }
             } else if (operator.getArgumentCount() < 0) {
@@ -582,7 +582,7 @@ public final class SQLUtils {
                     if (inlineCriteria) {
                         conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), itemValue));
                     } else {
-                        conString.append("?");
+                        conString.append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?"));
                     }
                 }
                 conString.append(")");
@@ -596,7 +596,9 @@ public final class SQLUtils {
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
 
-        return convertValueToSQL(dataSource, attribute, valueHandler, value);
+        return dataSource.getSQLDialect().getTypeCastClause(
+            attribute,
+            convertValueToSQL(dataSource, attribute, valueHandler, value));
     }
 
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value) {
@@ -633,7 +635,8 @@ public final class SQLUtils {
                 if (sqlDialect != null) {
                     strValue = sqlDialect.escapeString(strValue);
                 }
-                return '\'' + strValue + '\'';
+                strValue = '\'' + strValue + '\'';
+                return sqlDialect.getTypeCastClause(attribute, strValue);
             default:
                 if (sqlDialect != null) {
                     return sqlDialect.escapeScriptValue(attribute, value, strValue);
@@ -887,7 +890,7 @@ public final class SQLUtils {
                     String testLine = scriptLine.trim();
                     if (testLine.lastIndexOf(delimiter) != (testLine.length() - delimiter.length())) {
                         script.append(delimiter);
-                    }    
+                    }
                 } else {
                     script.append(lineSeparator);
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,8 +104,8 @@ public class SQLScriptProcessor {
 
                 boolean oldAutoCommit = txnManager == null || txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
-                if (txnManager != null && !oldAutoCommit && newAutoCommit) {
-                    txnManager.setAutoCommit(monitor, true);
+                if (txnManager != null && txnManager.isSupportsTransactions() && oldAutoCommit != newAutoCommit) {
+                    txnManager.setAutoCommit(monitor, newAutoCommit);
                 }
 
                 monitor.beginTask("Execute queries (" + queries.size() + ")", queries.size());
@@ -134,7 +134,7 @@ public class SQLScriptProcessor {
                 monitor.done();
 
                 // Commit data
-                if (txnManager != null && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
+                if (txnManager != null && txnManager.isSupportsTransactions() && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
                     monitor.beginTask("Finish transaction", 1);
                     if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
                         if (commitType != SQLScriptCommitType.NO_COMMIT) {
@@ -152,8 +152,8 @@ public class SQLScriptProcessor {
                 }
 
                 // Restore transactions settings
-                if (txnManager != null && !oldAutoCommit && newAutoCommit) {
-                    txnManager.setAutoCommit(monitor, false);
+                if (txnManager != null && txnManager.isSupportsTransactions() && oldAutoCommit != newAutoCommit) {
+                    txnManager.setAutoCommit(monitor, oldAutoCommit);
                 }
                 if (session.isLoggingEnabled()) {
                     QMUtils.getDefaultHandler().handleScriptEnd(session);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -59,16 +59,21 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
 
             @Override
             protected PostgreTrigger runTask() {
-                TriggerEditPage editPage = new TriggerEditPage(trigger.getDataSource());
+                TriggerEditPage editPage = new TriggerEditPage(trigger);
                 if (!editPage.edit()) {
                     return null;
                 }
                 try {
                     trigger.setName(editPage.getEntityName());
                     trigger.setFunction(editPage.selectedFunction);
+                    String procName = "X";
+                    PostgreProcedure function = trigger.getFunction(monitor);
+                    if (function != null) {
+                        procName = function.getFullQualifiedSignature();
+                    }
                     trigger.setObjectDefinitionText("CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger) + "\n"
-                            + "BEFORE UPDATE" + " " + "\n" + "ON " + DBUtils.getQuotedIdentifier(trigger.getTable())
-                            + " FOR EACH ROW" + "\n" + "EXECUTE PROCEDURE " + trigger.getFunction(monitor).getFullQualifiedSignature() + "\n");
+                            + "BEFORE UPDATE" + " " + "\n" + "ON " + trigger.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)
+                            + " FOR EACH ROW" + "\n" + "EXECUTE PROCEDURE " + (function == null ? procName : function.getFullyQualifiedName(DBPEvaluationContext.DDL))+ "()\n");
                 } catch (DBException e) {
                     log.error(e);
                 }
@@ -79,14 +84,16 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
 
     public class TriggerEditPage extends EntityEditPage {
 
+        PostgreTrigger trigger;
         CSmartSelector functionCombo;
         PostgreProcedure selectedFunction;
         Text processIdText;
         
         public TriggerEditPage editPage;
 
-        public TriggerEditPage(DBPDataSource dataSource) {
-            super(dataSource, DBSEntityType.TRIGGER);
+        public TriggerEditPage(PostgreTrigger trigger) {
+            super(trigger.getDataSource(), DBSEntityType.TRIGGER);
+            this.trigger = trigger;
         }
         
         public TriggerEditPage getEditPage() {
@@ -98,7 +105,9 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
             Composite pageContents = (Composite) super.createPageContents(parent);
             UIUtils.createControlLabel(pageContents, "Trigger function");
             functionCombo = new PostgreProcedureSelector(pageContents, parent);
-            functionCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.widthHint = UIUtils.getFontHeight(functionCombo) * 30;
+            functionCombo.setLayoutData(gd);
             return pageContents;
         }
 
@@ -127,7 +136,7 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
             protected void dropDown(boolean drop) {
                 if (drop) {
                     DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-                    DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(getDataSource());
+                    DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(trigger.getDatabase());
                     if (dsNode != null) {
                         DBNNode curNode = selectedFunction == null ? null
                                 : navigatorModel.getNodeByObject(selectedFunction);

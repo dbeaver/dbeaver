@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -906,7 +906,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (DBUtils.isNullValue(value)) {
             query.append(" IS NULL"); //$NON-NLS-1$
         } else {
-            query.append("=?"); //$NON-NLS-1$
+            query.append("=").append(dialect.getTypeCastClause(attribute, "?")); //$NON-NLS-1$
         }
     }
 

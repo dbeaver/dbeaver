@@ -109,6 +109,7 @@
                     order="20">
                 <propertyGroup label="%dataTransfer.processor.html.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.html.property.extension.label" defaultValue="html"/>
+                    <property id="header" label="%dataTransfer.processor.html.property.header.name" type="boolean" description="%dataTransfer.processor.html.property.header.description" defaultValue="true"/>
                     <property id="extractImages" label="%dataTransfer.processor.html.property.images.name" type="boolean" description="%dataTransfer.processor.html.property.images.description" defaultValue="true"/>
                 </propertyGroup>
             </processor>
@@ -179,7 +180,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="common" name="Common" description="Common database tasks" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/table.png"/>
+        <category id="common" name="Common" description="Common database tasks" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"/>
 
         <task id="dataExport" name="Data export" description="Data export task" icon="icons/export.png" type="common" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport" supportsVariables="true">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>

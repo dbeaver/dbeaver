@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,11 +27,12 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
@@ -69,10 +70,10 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
     }
 
     @Override
-    public void createControl(Object parent, Object wizard, Runnable propertyChangeListener) {
+    public void createControl(Composite parent, TaskConfigurationWizard wizard, Runnable propertyChangeListener) {
         ieWizard = (AbstractToolWizard) wizard;
         {
-            Group databasesGroup = UIUtils.createControlGroup((Composite) parent, "Select target database", 1, GridData.FILL_BOTH, 0);
+            Group databasesGroup = UIUtils.createControlGroup(parent, "Select target database", 1, GridData.FILL_BOTH, 0);
 
             selectorPanel = new DatabaseObjectsSelectorPanel(
                 databasesGroup,

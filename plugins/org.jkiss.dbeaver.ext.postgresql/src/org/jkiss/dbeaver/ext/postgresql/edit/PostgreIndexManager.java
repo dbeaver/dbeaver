@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,15 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
         if (!indexColumn.isAscending()) {
             decl.append(" DESC"); //$NON-NLS-1$
         }
+    }
+
+    @Override
+    public void deleteObject(DBECommandContext commandContext, PostgreIndex object, Map<String, Object> options) throws DBException {
+        if (object.isPrimaryKeyIndex()) {
+            throw new DBException("You can not drop constraint-based unique index.\n" +
+                "Try to drop constraint '" + object.getName() + "'.");
+        }
+        super.deleteObject(commandContext, object, options);
     }
 
     @Override

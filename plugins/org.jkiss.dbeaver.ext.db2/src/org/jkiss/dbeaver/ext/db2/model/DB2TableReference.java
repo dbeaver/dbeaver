@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -44,6 +45,7 @@ import java.util.List;
  * @author Denis Forveille
  */
 public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements DBSTableForeignKey {
+    private static final Log log = Log.getLog(DB2TableReference.class);
 
     private DB2Table refTable;
 
@@ -52,7 +54,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
 
     private List<DB2TableKeyColumn> columns;
 
-    private DB2TableUniqueKey referencedKey;
+    private DB2TableForeignKey referencedKey;
 
     // -----------------
     // Constructors
@@ -66,7 +68,14 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
         String refTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
         String constName = JDBCUtils.safeGetString(dbResult, "CONSTNAME");
         refTable = DB2Utils.findTableBySchemaNameAndName(monitor, db2Table.getDataSource(), refSchemaName, refTableName);
-        referencedKey = refTable.getConstraint(monitor, constName);
+        if (refTable == null) {
+            log.debug("Reference table '" + refTableName + "' not found in schema '" + refSchemaName + "'");
+        } else {
+            referencedKey = refTable.getAssociation(monitor, constName);
+            if (referencedKey == null) {
+                log.debug("Foreign key '" + constName + "' not found in table '" + refTable.getName() + "'");
+            }
+        }
 
         deleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));
         updateRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "UPDATERULE"));
@@ -119,7 +128,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
     @Nullable
     @Override
     @Property(id = "reference", viewable = false)
-    public DB2TableUniqueKey getReferencedConstraint()
+    public DB2TableForeignKey getReferencedConstraint()
     {
         return referencedKey;
     }

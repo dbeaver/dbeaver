@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 DBeaver Corp and others
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,7 +195,7 @@ public class HANAWKBWriter {
 
         writeCoordinateSequence(shell.getCoordinateSequence(), xyzmMode, buffer);
         for (int i = 0; i < numHoles; ++i) {
-            LineString hole = polygon.getInteriorRingN(0);
+            LineString hole = polygon.getInteriorRingN(i);
             writeCoordinateSequence(hole.getCoordinateSequence(), xyzmMode, buffer);
         }
     }

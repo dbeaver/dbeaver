@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,19 +71,6 @@ public class TaskRegistry implements DBTTaskRegistry
                     TaskCategoryDescriptor taskType = getTaskCategory(typeId);
                     TaskTypeDescriptor taskDescriptor = new TaskTypeDescriptor(taskType, ext);
                     taskDescriptors.put(taskDescriptor.getId(), taskDescriptor);
-                }
-            }
-
-            for (IConfigurationElement ext : extElements) {
-                if ("configurator".equals(ext.getName())) {
-                    String typeId = ext.getAttribute("type");
-                    TaskTypeDescriptor taskType = getTaskType(typeId);
-                    if (taskType == null) {
-                        log.debug("Task type '" + typeId + "' not found. Skip configurator.");
-                    } else {
-                        TaskConfiguratorDescriptor configDescriptor = new TaskConfiguratorDescriptor(taskType, ext);
-                        taskType.setConfigurator(configDescriptor);
-                    }
                 }
             }
 

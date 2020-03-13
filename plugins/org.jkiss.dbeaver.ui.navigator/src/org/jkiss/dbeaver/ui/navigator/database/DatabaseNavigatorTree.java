@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
@@ -93,6 +94,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         });
 
         treeViewer = doCreateTreeViewer(this, style);
+//        treeViewer.getTree().addFocusListener(new FocusAdapter() {
+//            @Override
+//            public void focusGained(FocusEvent e) {
+//                super.focusGained(e);
+//            }
+//        });
 
         treeViewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         treeViewer.setUseHashlookup(true);
@@ -109,7 +116,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             setInput(rootNode);
         }
 
-        ColumnViewerToolTipSupport.enableFor(treeViewer);
+        new DefaultViewerToolTipSupport(treeViewer);
 
         initEditor();
     }
@@ -228,6 +235,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     public TreeViewer getViewer()
     {
         return treeViewer;
+    }
+
+    @NotNull
+    public CheckboxTreeViewer getCheckboxViewer() {
+        return (CheckboxTreeViewer) treeViewer;
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class TaskHandlerCopy extends AbstractHandler {
                         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
                         if (activePart instanceof DatabaseTasksView) {
                             UIUtils.asyncExec(() -> {
-                                ((DatabaseTasksView) activePart).getTaskViewer().setSelection(new StructuredSelection(newTask), true);
+                                ((DatabaseTasksView) activePart).getTasksTree().getViewer().setSelection(new StructuredSelection(newTask), true);
                                 ActionUtils.runCommand(DatabaseTasksView.EDIT_TASK_CMD_ID, activePart.getSite());
                             });
                         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,16 +92,16 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
 
         @Nullable
         @Override
-        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
+        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
             if (pattern == null) {
-                return super.getValueFromObject(session, type, object, copy);
+                return super.getValueFromObject(session, type, object, copy, validateValue);
             } else if (DBUtils.isNullValue(object)) {
                 return null;
             } else {
                 try {
                     Object[] parsedValues = messageFormat.parse(object.toString());
                     if (parsedValues.length > 0) {
-                        return super.getValueFromObject(session, type, parsedValues[0], copy);
+                        return super.getValueFromObject(session, type, parsedValues[0], copy, validateValue);
                     }
                     return object;
                 } catch (ParseException e) {

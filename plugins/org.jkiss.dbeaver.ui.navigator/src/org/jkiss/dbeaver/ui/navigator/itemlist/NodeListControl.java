@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
 
         // Add context menu
-        NavigatorUtils.addContextMenu(workbenchSite, getItemsViewer());
+        NavigatorUtils.addContextMenu(workbenchSite, getItemsViewer(), this.selectionProvider);
 
         setDoubleClickHandler(event -> {
             // Run default node action
@@ -102,6 +102,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
 
         DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
+
+//        if (workbenchSite != null) {
+//            UIUtils.addFocusTracker(workbenchSite, INavigatorModelView.NAVIGATOR_CONTROL_ID, getItemsViewer().getControl());
+//        }
     }
 
     protected void openNodeEditor(DBNNode node) {

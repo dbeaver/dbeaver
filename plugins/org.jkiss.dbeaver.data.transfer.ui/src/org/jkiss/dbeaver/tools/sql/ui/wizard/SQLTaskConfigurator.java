@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@
 
 package org.jkiss.dbeaver.tools.sql.ui.wizard;
 
-import org.eclipse.jface.wizard.IWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 
 /**
  * SQL task configurator
@@ -30,12 +31,12 @@ import org.jkiss.dbeaver.model.task.DBTTaskType;
 public class SQLTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
-    public SQLTaskConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
-        return new SQLTaskConfigPanel(runnableContext, taskType);
+    public DBTTaskConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
+        return null;
     }
 
     @Override
-    public IWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
+    public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
         return new SQLTaskConfigurationWizard(taskConfiguration);
     }
 

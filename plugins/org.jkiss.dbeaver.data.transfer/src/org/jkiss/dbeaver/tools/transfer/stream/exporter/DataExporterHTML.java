@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,77 +30,84 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.Map;
 
 /**
  * HTML Exporter
  */
 public class DataExporterHTML extends StreamExporterAbstract {
 
-  private String name;
+    private static final String PROP_HEADER = "header";
+
+    private String name;
     private static final int IMAGE_FRAME_SIZE = 200;
 
     private DBDAttributeBinding[] columns;
     private int rowCount = 0;
 
+    private boolean outputHeader = true;
+
     @Override
-    public void init(IStreamDataExporterSite site) throws DBException
-    {
+    public void init(IStreamDataExporterSite site) throws DBException {
         super.init(site);
+
+        Map<Object, Object> properties = site.getProperties();
+        outputHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), outputHeader);
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
     }
 
     @Override
-    public void exportHeader(DBCSession session) throws DBException, IOException
-    {
+    public void exportHeader(DBCSession session) throws DBException, IOException {
         name = getSite().getSource().getName();
-		columns = getSite().getAttributes();
+        columns = getSite().getAttributes();
         printHeader();
     }
 
-    private void printHeader()
-    {
+    private void printHeader() {
         PrintWriter out = getWriter();
-  	  out.write("<html>");
-      out.write("<head><style>" +
-              "table {border: medium solid #6495ed;" + 
-              "border-collapse: collapse;" + 
-              "width: 100%;} " +
-              "th{font-family: monospace;" + 
-              "border: thin solid #6495ed;" + 
+        out.write("<!DOCTYPE html>\n<html>\n");
+        out.write("<head>\n" +
+            "<meta charset=\"" + getSite().getOutputEncoding() + "\"/>" +
+            "<style>\n" +
+            "table {border: medium solid #6495ed;" +
+            "border-collapse: collapse;" +
+            "width: 100%;} " +
+            "th{font-family: monospace;" +
+            "border: thin solid #6495ed;" +
 //              "width: 50%;" +
-              "padding: 5px;" + 
-              "background-color: #D0E3FA;"+ 
-              "background-image: url(sky.jpg);}"  +
-              "td{font-family: sans-serif;" + 
-              "border: thin solid #6495ed;" + 
+            "padding: 5px;" +
+            "background-color: #D0E3FA;" +
+            "background-image: url(sky.jpg);}" +
+            "td{font-family: sans-serif;" +
+            "border: thin solid #6495ed;" +
 //              "width: 50%;" +
-              "padding: 5px;" + 
-              "text-align: center;" + 
-              "background-color: #ffffff;}" +
-              ".odd{background:#e8edff;}" +
-              "img{padding:5px; border:solid; border-color: #dddddd #aaaaaa #aaaaaa #dddddd; border-width: 1px 2px 2px 1px; background-color:white;}" +
-              "</style></head>");
-      out.write("<body><table>");
+            "padding: 5px;" +
+            "text-align: center;" +
+            "background-color: #ffffff;}" +
+            ".odd{background:#e8edff;}" +
+            "img{padding:5px; border:solid; border-color: #dddddd #aaaaaa #aaaaaa #dddddd; border-width: 1px 2px 2px 1px; background-color:white;}" +
+            "</style>\n</head>\n");
+        out.write("<body>\n<table>");
 
         out.write("<tr>");
-        writeTableTitle(name, columns.length);
+        if (outputHeader) {
+            writeTableTitle(name, columns.length);
+        }
         out.write("</tr>");
         out.write("<tr>");
-        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
-            String colName = columns[i].getLabel();
+        for (DBDAttributeBinding column : columns) {
+            String colName = column.getLabel();
             if (CommonUtils.isEmpty(colName)) {
-                colName = columns[i].getName();
+                colName = column.getName();
             }
             writeTextCell(colName, true);
         }
@@ -108,8 +115,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
-    {
+    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException {
         PrintWriter out = getWriter();
         out.write("<tr" + (rowCount++ % 2 == 0 ? " class=\"odd\"" : "") + ">");
         for (int i = 0; i < row.length; i++) {
@@ -119,7 +125,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
             } else if (row[i] instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
-                DBDContent content = (DBDContent)row[i];
+                DBDContent content = (DBDContent) row[i];
                 try {
                     DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                     out.write("<td>");
@@ -131,8 +137,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
                         }
                     }
                     out.write("</td>");
-                }
-                finally {
+                } finally {
                     content.release();
                 }
             } else {
@@ -140,8 +145,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
                 boolean isImage = row[i] instanceof File && stringValue != null && stringValue.endsWith(".jpg");
                 if (isImage) {
                     writeImageCell((File) row[i]);
-                }
-                else {
+                } else {
                     writeTextCell(stringValue, false);
                 }
             }
@@ -154,43 +158,37 @@ public class DataExporterHTML extends StreamExporterAbstract {
         getWriter().write("</table></body></html>");
     }
 
-    private void writeTableTitle(String value, int columns)
-    {
+    private void writeTableTitle(String value, int columns) {
         PrintWriter out = getWriter();
         out.write(String.format("<th colspan=\"%d\">", columns));
         if (value == null) {
             out.write("&nbsp;");
-        }
-        else {
+        } else {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
             out.write(value);
         }
         out.write("</th>");
     }
 
-    private void writeTextCell(String value, boolean header)
-    {
+    private void writeTextCell(String value, boolean header) {
         PrintWriter out = getWriter();
         out.write(header ? "<th>" : "<td>");
         if (value == null) {
             out.write("&nbsp;");
-        }
-        else {
+        } else {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
             out.write(value);
         }
         out.write(header ? "</th>" : "</td>");
     }
 
-    private void writeImageCell(File file) throws DBException
-    {
+    private void writeImageCell(File file) throws DBException {
         PrintWriter out = getWriter();
         out.write("<td>");
         if (file == null || !file.exists()) {
             out.write("&nbsp;");
-        }
-        else {
-            Image image = null;
+        } else {
+            BufferedImage image = null;
             try {
                 image = ImageIO.read(file);
             } catch (IOException e) {
@@ -201,18 +199,17 @@ public class DataExporterHTML extends StreamExporterAbstract {
                 String imagePath = file.getAbsolutePath();
                 imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
 
-                int width = ((BufferedImage) image).getWidth();
-                int height = ((BufferedImage) image).getHeight();
+                int width = image.getWidth();
+                int height = image.getHeight();
                 int rwidth = width;
                 int rheight = height;
 
                 if (width > IMAGE_FRAME_SIZE || height > IMAGE_FRAME_SIZE) {
-                    float scale = 1;
+                    float scale;
                     if (width > height) {
-                        scale = IMAGE_FRAME_SIZE /(float)width;
-                    }
-                    else {
-                        scale = IMAGE_FRAME_SIZE /(float)height;
+                        scale = IMAGE_FRAME_SIZE / (float) width;
+                    } else {
+                        scale = IMAGE_FRAME_SIZE / (float) height;
                     }
                     rwidth = (int) (rwidth * scale);
                     rheight = (int) (rheight * scale);
@@ -220,21 +217,19 @@ public class DataExporterHTML extends StreamExporterAbstract {
                 out.write("<a href=\"" + imagePath + "\">");
                 out.write("<img src=\"" + imagePath + "\" width=\"" + rwidth + "\" height=\"" + rheight + "\" />");
                 out.write("</a>");
-            }
-            else {
+            } else {
                 out.write("&nbsp;");
             }
         }
         out.write("</td>");
     }
 
-    private void writeCellValue(Reader reader) throws IOException
-    {
+    private void writeCellValue(Reader reader) throws IOException {
         try {
             PrintWriter out = getWriter();
             // Copy reader
-            char buffer[] = new char[2000];
-            for (;;) {
+            char[] buffer = new char[2000];
+            for (; ; ) {
                 int count = reader.read(buffer);
                 if (count <= 0) {
                     break;
@@ -242,8 +237,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
                 for (int i = 0; i < count; i++) {
                     if (buffer[i] == '<') {
                         out.write("&lt;");
-                    }
-                    else if (buffer[i] == '>') {
+                    } else if (buffer[i] == '>') {
                         out.write("&gt;");
                     }
                     if (buffer[i] == '&') {
@@ -257,8 +251,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
         }
     }
 
-    public boolean saveBinariesAsImages()
-    {
+    public boolean saveBinariesAsImages() {
         return true;
     }
 }
