@@ -1680,7 +1680,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public Object getCellValue(Object colElement, Object rowElement, boolean formatString)
+        public Object getCellValue(Object colElement, Object rowElement, boolean formatString, boolean lockData)
         {
             DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
             if (isShowAsCheckbox(attr)) {
@@ -1691,7 +1691,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             Object value = controller.getModel().getCellValue(attr, row);
 
             boolean recordMode = controller.isRecordMode();
-            if (rowNum > 0 &&
+            if (!lockData &&
+                rowNum > 0 &&
                 rowNum == controller.getModel().getRowCount() - 1 &&
                 autoFetchSegments &&
                 (recordMode || spreadsheet.isRowVisible(rowNum)) && controller.isHasMoreData())
@@ -1748,7 +1749,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public String getCellText(Object colElement, Object rowElement)
         {
-            return String.valueOf(getCellValue(colElement, rowElement, true));
+            return String.valueOf(getCellValue(colElement, rowElement, true, false));
         }
 
         @Nullable
@@ -1771,7 +1772,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
-            Object value = getCellValue(colElement, rowElement, false);
+            Object value = getCellValue(colElement, rowElement, false, false);
             if (DBUtils.isNullValue(value)) {
                 return foregroundNull;
             } else {
@@ -2082,7 +2083,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public Object getValue()
         {
-            return spreadsheet.getContentProvider().getCellValue(curRow, binding, false);
+            return spreadsheet.getContentProvider().getCellValue(curRow, binding, false, false);
         }
 
         @Override
