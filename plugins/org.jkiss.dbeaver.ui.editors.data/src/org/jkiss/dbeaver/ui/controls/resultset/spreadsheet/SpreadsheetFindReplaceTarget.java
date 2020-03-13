@@ -240,7 +240,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                     curPosition.row--;
                 }
             }
-            if (curPosition.row < firstRow || curPosition.row > lastRow) {
+            if ((firstRow >= 0 && curPosition.row < firstRow) || (lastRow >= 0 && curPosition.row > lastRow)) {
                 if (offset == -1) {
                     // Wrap search - redo search one more time
                     offset = 0;
