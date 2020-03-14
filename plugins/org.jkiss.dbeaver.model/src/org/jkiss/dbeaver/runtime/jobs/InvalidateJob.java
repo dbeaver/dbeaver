@@ -122,6 +122,7 @@ public class InvalidateJob extends DataSourceJob
                 totalContexts++;
                 if (networkOK) {
                     long startTime = System.currentTimeMillis();
+                    Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
                     try {
                         final DBCExecutionContext.InvalidateResult result = context.invalidateContext(monitor, disconnectOnFailure);
                         if (result != DBCExecutionContext.InvalidateResult.ERROR) {
@@ -135,7 +136,7 @@ public class InvalidateJob extends DataSourceJob
                         invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
                     } finally {
                         timeSpent += (System.currentTimeMillis() - startTime);
-
+                        instance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
                     }
                 }
             }
