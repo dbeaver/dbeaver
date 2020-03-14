@@ -23,12 +23,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
+import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -50,6 +52,7 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
     private WMINamespace rootNamespace;
     private final SQLDialect dialect;
     private final long id;
+    private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
 
     public WMIDataSource(DBPDataSourceContainer container)
         throws DBException
@@ -213,6 +216,12 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
     public void shutdown(DBRProgressMonitor monitor)
     {
         this.close();
+    }
+
+    @NotNull
+    @Override
+    public DBPExclusiveResource getExclusiveLock() {
+        return exclusiveLock;
     }
 
     @Association

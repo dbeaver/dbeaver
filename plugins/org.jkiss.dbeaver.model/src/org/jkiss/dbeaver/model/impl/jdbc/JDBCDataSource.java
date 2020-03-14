@@ -365,9 +365,14 @@ public abstract class JDBCDataSource
     public void shutdown(DBRProgressMonitor monitor)
     {
         for (JDBCRemoteInstance instance : getAvailableInstances()) {
-            monitor.subTask("Disconnect from '" + instance.getName() + "'");
-            instance.shutdown(monitor);
-            monitor.worked(1);
+            Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
+            try {
+                monitor.subTask("Disconnect from '" + instance.getName() + "'");
+                instance.shutdown(monitor);
+                monitor.worked(1);
+            } finally {
+                instance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
+            }
         }
         defaultRemoteInstance = null;
     }

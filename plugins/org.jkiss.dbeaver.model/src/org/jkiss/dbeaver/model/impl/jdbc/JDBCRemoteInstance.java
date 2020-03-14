@@ -21,8 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -44,6 +46,7 @@ public class JDBCRemoteInstance implements DBSInstance {
     protected JDBCExecutionContext metaContext;
     @NotNull
     private final List<JDBCExecutionContext> allContexts = new ArrayList<>();
+    private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
 
     protected JDBCRemoteInstance(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDataSource dataSource, boolean initContext)
         throws DBException {
@@ -150,6 +153,12 @@ public class JDBCRemoteInstance implements DBSInstance {
     @Override
     public void shutdown(DBRProgressMonitor monitor) {
         shutdown(monitor, false);
+    }
+
+    @NotNull
+    @Override
+    public DBPExclusiveResource getExclusiveLock() {
+        return exclusiveLock;
     }
 
     /**
