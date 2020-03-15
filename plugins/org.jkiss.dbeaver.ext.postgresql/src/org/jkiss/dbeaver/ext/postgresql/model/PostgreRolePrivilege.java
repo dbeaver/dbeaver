@@ -74,8 +74,9 @@ public class PostgreRolePrivilege extends PostgrePrivilege {
     }
 
     public String getFullObjectName() {
-        return DBUtils.getQuotedIdentifier(getDataSource(), schemaName) + "." +
-            (kind == PostgrePrivilegeGrant.Kind.FUNCTION ? objectName : DBUtils.getQuotedIdentifier(getDataSource(), objectName));
+        return DBUtils.getQuotedIdentifier(getDataSource(), schemaName) +
+            (kind == PostgrePrivilegeGrant.Kind.SCHEMA ? "" :
+                ("." + (kind == PostgrePrivilegeGrant.Kind.FUNCTION ? objectName : DBUtils.getQuotedIdentifier(getDataSource(), objectName))));
     }
 
     @Override

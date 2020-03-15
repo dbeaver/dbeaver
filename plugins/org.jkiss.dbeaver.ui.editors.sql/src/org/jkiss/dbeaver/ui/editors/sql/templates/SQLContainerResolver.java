@@ -70,7 +70,7 @@ public class SQLContainerResolver<T extends DBSObjectContainer> extends SQLObjec
         if (names.isEmpty()) {
             // Nothing found - maybe we should go deeper in active container
             DBSObjectContainer activeContainer = DBUtils.getSelectedObject(executionContext, DBSObjectContainer.class);
-            if (activeContainer != null) {
+            if (activeContainer != null && activeContainer != container) {
                 makeProposalsFromChildren(monitor, executionContext, activeContainer, names);
             }
         }

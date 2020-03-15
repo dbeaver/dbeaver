@@ -22,11 +22,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.utils.CommonUtils;
 
@@ -151,14 +151,7 @@ public class ValueManagerDescriptor extends AbstractDescriptor
                 return true;
             }
             if (info.extension != null) {
-                DBSDataType dataType;
-                if (typedObject instanceof DBSDataType) {
-                    dataType = (DBSDataType) typedObject;
-                } else if (typedObject instanceof DBSTypedObjectEx) {
-                    dataType = ((DBSTypedObjectEx) typedObject).getDataType();
-                } else {
-                    dataType = null;
-                }
+                DBSDataType dataType = DBUtils.getDataType(typedObject);
                 if (dataType != null && CommonUtils.equalObjects(info.extension, CommonUtils.toString(dataType.geTypeExtension()))) {
                     return true;
                 }
