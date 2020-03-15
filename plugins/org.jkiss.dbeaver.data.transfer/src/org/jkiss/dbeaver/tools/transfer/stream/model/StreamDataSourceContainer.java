@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
@@ -55,6 +56,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     private File inputFile;
     private String name;
+    private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
 
     StreamDataSourceContainer(File inputFile) {
         this.inputFile = inputFile;
@@ -324,6 +326,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry) {
         return null;
+    }
+
+    @Override
+    public DBPExclusiveResource getExclusiveLock() {
+        return exclusiveLock;
     }
 
     @Override
