@@ -497,6 +497,7 @@
             <type standard="ARRAY"/>
             <type standard="STRUCT"/>
             <type kind="DATETIME"/>
+            <type kind="STRING"/>
             <type name="HSTORE"/>
             <type name="JSON"/>
             <type name="JSONB"/>

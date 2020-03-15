@@ -66,7 +66,11 @@ public interface IGridContentProvider extends IContentProvider {
      */
     int getCellState(Object colElement, Object rowElement, @Nullable String cellText);
 
-    Object getCellValue(Object colElement, Object rowElement, boolean formatString);
+    /**
+     * @param formatString  Format string values or return raw values
+     * @param lockData     Block any automatic data fetch/refresh
+     */
+    Object getCellValue(Object colElement, Object rowElement, boolean formatString, boolean lockData);
 
     @NotNull
     String getCellText(Object colElement, Object rowElement);
