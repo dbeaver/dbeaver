@@ -54,6 +54,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private Color scopeHighlightColor;
     private boolean replaceAll;
     private boolean sessionActive = false;
+    private List<GridPos> originalSelection = null;
 
     SpreadsheetFindReplaceTarget(SpreadsheetPresentation owner)
     {
@@ -125,6 +126,8 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     {
         this.sessionActive = true;
         this.owner.getControl().redraw();
+        this.originalSelection = new ArrayList<>(owner.getSpreadsheet().getSelection());
+        this.owner.highlightRows(-1, -1, null);
     }
 
     @Override
@@ -134,7 +137,8 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         this.searchPattern = null;
         Control control = this.owner.getControl();
         if (control != null && !control.isDisposed()) {
-            control.redraw();
+            owner.getSpreadsheet().deselectAll();
+            owner.getSpreadsheet().selectCells(this.originalSelection);
         }
     }
 
@@ -148,6 +152,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public void setScope(IRegion scope) {
         if (scope == null || scope.getLength() == 0) {
             owner.highlightRows(-1, -1, null);
+            if (scope == null) {
+                owner.getSpreadsheet().deselectAll();
+                owner.getSpreadsheet().selectCells(this.originalSelection);
+            }
         } else {
             owner.highlightRows(scope.getOffset(), scope.getLength(), scopeHighlightColor);
         }
