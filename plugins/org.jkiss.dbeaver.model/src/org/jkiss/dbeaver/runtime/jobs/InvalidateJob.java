@@ -99,21 +99,32 @@ public class InvalidateJob extends DataSourceJob
         List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
 
         DBPDataSourceContainer container = dataSource.getContainer();
-        DBWNetworkHandler[] activeHandlers = container.getActiveNetworkHandlers();
-        boolean networkOK = true;
-        int goodContextsNumber = 0, aliveContextsNumber = 0;
-        if (activeHandlers != null && activeHandlers.length > 0) {
-            for (DBWNetworkHandler nh : activeHandlers) {
-                monitor.subTask("Invalidate network [" + container.getName() + "]");
-                try {
-                    nh.invalidateHandler(monitor, dataSource);
-                } catch (Exception e) {
-                    invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
-                    networkOK = false;
-                    break;
+
+        boolean networkOK;
+        int goodContextsNumber, aliveContextsNumber;
+
+        Object dsLock = container.getExclusiveLock().acquireExclusiveLock();
+        try {
+            DBWNetworkHandler[] activeHandlers = container.getActiveNetworkHandlers();
+            networkOK = true;
+            aliveContextsNumber = 0;
+            goodContextsNumber = 0;
+            if (activeHandlers != null && activeHandlers.length > 0) {
+                for (DBWNetworkHandler nh : activeHandlers) {
+                    monitor.subTask("Invalidate network [" + container.getName() + "]");
+                    try {
+                        nh.invalidateHandler(monitor, dataSource);
+                    } catch (Exception e) {
+                        invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
+                        networkOK = false;
+                        break;
+                    }
                 }
             }
+        } finally {
+            container.getExclusiveLock().releaseExclusiveLock(dsLock);
         }
+
         // Invalidate datasource
         int totalContexts = 0;
         monitor.subTask("Invalidate connections of [" + container.getName() + "]");
