@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -88,7 +89,7 @@ public class PostgreRolePrivilege extends PostgrePrivilege {
     public int compareTo(@NotNull PostgrePrivilege o) {
         if (o instanceof PostgreRolePrivilege) {
             final int res = schemaName.compareTo(((PostgreRolePrivilege)o).schemaName);
-            return res != 0 ? res : objectName.compareTo(((PostgreRolePrivilege)o).objectName);
+            return res != 0 ? res : CommonUtils.compare(objectName, ((PostgreRolePrivilege)o).objectName);
         }
         return 0;
     }
