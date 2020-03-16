@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.properties.*;
@@ -281,14 +282,16 @@ public class CompareObjectsExecutor {
         // Compare children
         int nodeCount = nodes.size();
         List<DBNDatabaseNode[]> allChildren = new ArrayList<>(nodeCount);
+        // Use submonitor to avoid huge number of tasks
+        DBRProgressMonitor subMonitor = new SubTaskProgressMonitor(monitor);
         for (int i = 0; i < nodeCount; i++) {
             DBNDatabaseNode node = nodes.get(i);
             // Cache structure if possible
             if (node.getObject() instanceof DBSObjectContainer) {
-                ((DBSObjectContainer) node.getObject()).cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
+                ((DBSObjectContainer) node.getObject()).cacheStructure(subMonitor, DBSObjectContainer.STRUCT_ALL);
             }
             try {
-                DBNDatabaseNode[] children = node.getChildren(monitor);
+                DBNDatabaseNode[] children = node.getChildren(subMonitor);
                 allChildren.add(children);
             } catch (Exception e) {
                 log.warn("Error reading child nodes for compare", e);
