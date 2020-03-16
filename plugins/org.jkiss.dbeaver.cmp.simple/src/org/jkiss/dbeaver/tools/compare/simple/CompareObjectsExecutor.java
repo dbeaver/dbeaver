@@ -174,7 +174,7 @@ public class CompareObjectsExecutor {
         try {
             if (nodes.size() > 1) {
                 // Go deeper only if we have more than one node
-                if (!settings.isCompareOnlyStructure() && !(nodes.get(0) instanceof DBNDatabaseFolder)) {
+                if (!(nodes.get(0) instanceof DBNDatabaseFolder)) {
                     compareProperties(monitor, nodes);
                 }
 
@@ -187,6 +187,8 @@ public class CompareObjectsExecutor {
 
     private void compareProperties(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes) throws DBException, InterruptedException
     {
+        boolean onlyStruct = settings.isCompareOnlyStructure();
+
         // Clear compare singletons
         this.initializedCount = 0;
         this.initializeError = null;
@@ -206,7 +208,7 @@ public class CompareObjectsExecutor {
                 if (initializeError != null) {
                     throw new DBException(initializeError.getMessage());
                 }
-                Thread.sleep(100);
+                Thread.sleep(50);
                 if (monitor.isCanceled()) {
                     throw new InterruptedException();
                 }
@@ -227,8 +229,13 @@ public class CompareObjectsExecutor {
                 break;
             }
         }
+
         boolean compareScripts = compareLazyProperties && settings.isCompareScripts();
         compareLazyProperties = compareLazyProperties && settings.isCompareLazyProperties();
+
+        if (onlyStruct && !compareScripts) {
+            return;
+        }
 
         // Load all properties
         for (DBNDatabaseNode node : nodes) {
@@ -243,11 +250,12 @@ public class CompareObjectsExecutor {
             }
             PropertyCollector propertySource = new PropertyCollector(databaseObject, compareLazyProperties || compareScripts);
             for (ObjectPropertyDescriptor prop : properties) {
+                boolean isScriptProperty = prop.getId().equals(DBConstants.PARAM_OBJECT_DEFINITION_TEXT) || prop.getId().equals(DBConstants.PARAM_EXTENDED_DEFINITION_TEXT);
                 if (prop.isLazy()) {
                     if (!compareLazyProperties) {
                         if (compareScripts) {
                             // Only DBPScriptObject methods
-                            if (!prop.getId().equals(DBConstants.PARAM_OBJECT_DEFINITION_TEXT) && !prop.getId().equals(DBConstants.PARAM_EXTENDED_DEFINITION_TEXT)) {
+                            if (!isScriptProperty) {
                                 continue;
                             }
                         } else {
@@ -258,6 +266,9 @@ public class CompareObjectsExecutor {
                     if (prop.isHidden()) {
                         continue;
                     }
+                }
+                if (onlyStruct && !isScriptProperty) {
+                    continue;
                 }
                 Object propertyValue = propertySource.getPropertyValue(monitor, databaseObject, prop, true);
                 synchronized (PROPS_LOCK) {
