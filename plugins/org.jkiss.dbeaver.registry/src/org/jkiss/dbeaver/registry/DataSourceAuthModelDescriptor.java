@@ -85,6 +85,7 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
     private final String description;
     private DBPImage icon;
     private List<DataSourceInfo> dataSources = new ArrayList<>();
+    private List<String> replaces = new ArrayList<>();
 
     private DBAAuthModel instance;
 
@@ -103,6 +104,10 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
         for (IConfigurationElement dsConfig : config.getChildren("datasource")) {
             this.dataSources.add(new DataSourceInfo(dsConfig));
         }
+        for (IConfigurationElement dsConfig : config.getChildren("replace")) {
+            this.replaces.add(dsConfig.getAttribute("model"));
+        }
+
     }
 
     public String getId() {
@@ -150,6 +155,10 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
             }
         }
         return false;
+    }
+
+    public List<String> getReplaces() {
+        return replaces;
     }
 
     @Override
