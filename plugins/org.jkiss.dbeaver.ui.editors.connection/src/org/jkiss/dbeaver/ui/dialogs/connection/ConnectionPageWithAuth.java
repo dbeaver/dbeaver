@@ -20,10 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -109,6 +106,12 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         if (selectedAuthModel != null) {
             authModelCombo.select(allAuthModels.indexOf(selectedAuthModel));
         }
+        boolean authSelectorVisible = allAuthModels.size() >= 2;
+        authModelLabel.setVisible(authSelectorVisible);
+        ((GridData)authModelLabel.getLayoutData()).exclude = !authSelectorVisible;
+        authModelCombo.setVisible(authSelectorVisible);
+        ((GridData)authModelCombo.getLayoutData()).exclude = !authSelectorVisible;
+        ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
         {
             authModelConfigurator = null;
