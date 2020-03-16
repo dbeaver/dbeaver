@@ -151,6 +151,7 @@
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.postgresql.ui.PostgreSSLConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.postgresql.model.AuthModelPgPass" uiClass="org.jkiss.dbeaver.ext.postgresql.ui.PostgreAuthPgPassConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.tools">
