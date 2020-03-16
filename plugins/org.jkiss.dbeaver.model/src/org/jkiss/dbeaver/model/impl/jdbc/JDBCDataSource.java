@@ -172,7 +172,11 @@ public abstract class JDBCDataSource
                 }
             };
 
-            authModel.initAuthentication(monitor, container, connectionInfo, connectProps);
+            try {
+                authModel.initAuthentication(monitor, container, connectionInfo, connectProps);
+            } catch (DBException e) {
+                throw new DBCException("Authentication error", e);
+            }
             boolean openTaskFinished;
             try {
                 if (openTimeout <= 0) {

@@ -210,7 +210,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceAuthModelDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
                 DataSourceAuthModelDescriptor descriptor = new DataSourceAuthModelDescriptor(ext);
-                authModels.put(descriptor.getName(), descriptor);
+                authModels.put(descriptor.getId(), descriptor);
             }
         }
 
