@@ -55,6 +55,10 @@ public class PostgreDialect extends JDBCSQLDialect {
 //        {"LOOP", "END LOOP"}
     };
 
+    private static final String[] EXEC_KEYWORDS = {
+        "CALL"
+    };
+
     //region KeyWords
 
     public static String[] POSTGRE_EXTRA_KEYWORDS = new String[]{
@@ -723,6 +727,12 @@ public class PostgreDialect extends JDBCSQLDialect {
         if (dataSource instanceof PostgreDataSource) {
             ((PostgreDataSource) dataSource).getServerType().configureDialect(this);
         }
+    }
+
+    @NotNull
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 
     @Override
