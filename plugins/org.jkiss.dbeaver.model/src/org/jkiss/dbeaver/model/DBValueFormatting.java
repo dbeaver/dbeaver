@@ -43,8 +43,8 @@ import java.util.Locale;
  */
 public final class DBValueFormatting {
 
-    public static final DecimalFormat NATIVE_FLOAT_FORMATTER = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-    public static final DecimalFormat NATIVE_DOUBLE_FORMATTER = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+    public static final DecimalFormat NATIVE_FLOAT_FORMATTER = new DecimalFormat("#.#########", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+    public static final DecimalFormat NATIVE_DOUBLE_FORMATTER = new DecimalFormat("#.################", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
     private static final Log log = Log.getLog(DBValueFormatting.class);
 
