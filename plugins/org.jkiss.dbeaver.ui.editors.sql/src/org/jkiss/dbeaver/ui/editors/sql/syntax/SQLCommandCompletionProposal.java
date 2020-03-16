@@ -14,6 +14,8 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 
+import java.util.Collections;
+
 
 /**
  * A command completion proposal.
@@ -26,12 +28,13 @@ public class SQLCommandCompletionProposal extends SQLCompletionProposal {
             SQLCommandHandlerDescriptor descriptor)
     {
         super(request,
-                descriptor.getId(),
-                descriptor.getId(),
-                descriptor.getId().length(),
-                descriptor.getIcon(),
+            descriptor.getId(),
+            descriptor.getId(),
+            descriptor.getId().length(),
+            descriptor.getIcon(),
             DBPKeywordType.OTHER,
-                descriptor.getDescription(),
-                null);
+            descriptor.getDescription(),
+            null,
+            Collections.emptyMap());
     }
 }
