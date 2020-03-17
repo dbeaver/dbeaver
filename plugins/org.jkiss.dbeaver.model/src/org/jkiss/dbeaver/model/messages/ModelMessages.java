@@ -165,6 +165,14 @@ public class ModelMessages extends NLS {
 
 	public static String dbp_connection_type_table_test_database;
 
+    public static String dialog_connection_wizard_start_connection_monitor_close;
+    public static String dialog_connection_wizard_start_connection_monitor_start;
+    public static String dialog_connection_wizard_start_connection_monitor_subtask_test;
+    public static String dialog_connection_wizard_start_connection_monitor_success;
+    public static String dialog_connection_wizard_start_connection_monitor_connected;
+    public static String dialog_connection_wizard_start_connection_monitor_thread;
+    public static String dialog_connection_wizard_start_dialog_error_message;
+
     static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
