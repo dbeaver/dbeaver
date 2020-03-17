@@ -353,6 +353,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.authModelId = authModelId;
     }
 
+    public String getAuthProperty(String name) {
+        return authProperties == null ? null : authProperties.get(name);
+    }
+
     public Map<String, String> getAuthProperties() {
         return authProperties;
     }
