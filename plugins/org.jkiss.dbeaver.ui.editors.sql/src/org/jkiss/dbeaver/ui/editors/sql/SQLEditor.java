@@ -1980,7 +1980,7 @@ public class SQLEditor extends SQLEditorBase implements
                     getSite().getShell(),
                     SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
                     ConfirmationDialog.QUESTION_WITH_CANCEL,
-                    tabsToClose.size());
+                    tabsToClose.size() + 4);
                 if (confirmResult == IDialogConstants.CANCEL_ID) {
                     return false;
                 }
