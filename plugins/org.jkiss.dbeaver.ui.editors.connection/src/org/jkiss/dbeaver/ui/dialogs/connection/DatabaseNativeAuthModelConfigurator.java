@@ -45,44 +45,46 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     @Override
     public void createControl(Composite authPanel, Runnable propertyChangeListener) {
-        int fontHeight = UIUtils.getFontHeight(authPanel);
-
         Label usernameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_username);
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+        createUserNameControls(authPanel, propertyChangeListener);
+
+        createPasswordControls(authPanel, propertyChangeListener);
+    }
+
+    protected void createUserNameControls(Composite authPanel, Runnable propertyChangeListener) {
+        int fontHeight = UIUtils.getFontHeight(authPanel);
 
         usernameText = new Text(authPanel, SWT.BORDER);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = fontHeight * 20;
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(e -> propertyChangeListener.run());
-
-        Label passwordLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_password);
-        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-        Composite passPH = UIUtils.createPlaceholder(authPanel, 2, 5);
-        passPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        createPasswordText(passPH, null);
-        passwordText.addModifyListener(e -> propertyChangeListener.run());
-
-        createPasswordControls(passPH);
     }
 
     @Override
     public void loadSettings(DBPDataSourceContainer dataSource) {
         this.dataSource = dataSource;
 
-        this.usernameText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserName()));
-        this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
-        this.savePasswordCheck.setSelection(dataSource.isSavePassword());
+        if (this.usernameText != null) {
+            this.usernameText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserName()));
+        }
+        if (this.passwordText != null) {
+            this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
+            this.savePasswordCheck.setSelection(dataSource.isSavePassword());
+        }
     }
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
-        dataSource.getConnectionConfiguration().setUserName(this.usernameText.getText());
-        dataSource.getConnectionConfiguration().setUserPassword(this.passwordText.getText());
-        dataSource.setSavePassword(this.savePasswordCheck.getSelection());
-
+        if (this.usernameText != null) {
+            dataSource.getConnectionConfiguration().setUserName(this.usernameText.getText());
+        }
+        if (this.passwordText != null) {
+            dataSource.getConnectionConfiguration().setUserPassword(this.passwordText.getText());
+            dataSource.setSavePassword(this.savePasswordCheck.getSelection());
+        }
     }
 
     @Override
@@ -106,20 +108,22 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         return passwordText;
     }
 
-    protected void createPasswordControls(Composite parent) {
-        createPasswordControls(parent, 1);
-    }
+    protected void createPasswordControls(Composite parent, Runnable propertyChangeListener) {
+        Label passwordLabel = UIUtils.createLabel(parent, UIConnectionMessages.dialog_connection_auth_label_password);
+        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-    protected void createPasswordControls(Composite parent, int hSpan) {
+        Composite passPH = UIUtils.createComposite(parent, 2);
+        passPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        createPasswordText(passPH, null);
+        passwordText.addModifyListener(e -> propertyChangeListener.run());
+
         // We don't support password preview in standard project secure storage (as we need password encryption)
         UIServiceSecurity serviceSecurity = DBWorkbench.getService(UIServiceSecurity.class);
         boolean supportsPasswordView = serviceSecurity != null;
 
-        Composite panel = UIUtils.createComposite(parent, supportsPasswordView ? 2 : 1);
+        Composite panel = UIUtils.createComposite(passPH, supportsPasswordView ? 2 : 1);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        if (hSpan > 1) {
-            gd.horizontalSpan = hSpan;
-        }
         panel.setLayoutData(gd);
 
         savePasswordCheck = UIUtils.createCheckbox(panel,
