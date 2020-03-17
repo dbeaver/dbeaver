@@ -61,8 +61,8 @@ public class ConnectJob extends AbstractJob
     {
         try {
             connectThread = getThread();
-            String oldName = connectThread.getName();
-            if (reflect) {
+            String oldName = connectThread == null ? null : connectThread.getName();
+            if (reflect && connectThread != null) {
                 connectThread.setName(getName());
             }
 
@@ -71,7 +71,7 @@ public class ConnectJob extends AbstractJob
 
                 connectStatus = connected ? Status.OK_STATUS : Status.CANCEL_STATUS;
             } finally {
-                if (connectThread != null) {
+                if (connectThread != null && oldName != null) {
                     connectThread.setName(oldName);
                     connectThread = null;
                 }
