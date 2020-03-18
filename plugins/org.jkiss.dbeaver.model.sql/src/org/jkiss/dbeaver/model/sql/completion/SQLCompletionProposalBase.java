@@ -31,11 +31,14 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * SQL Completion proposal
  */
 public class SQLCompletionProposalBase {
+
+    public static final String PARAM_EXEC = "exec";
 
     private static final Log log = Log.getLog(SQLCompletionProposalBase.class);
 
@@ -71,6 +74,7 @@ public class SQLCompletionProposalBase {
 
     private DBPImage image;
     private DBPNamedObject object;
+    private Map<String, Object> params;
     private int proposalScore;
 
     public SQLCompletionProposalBase(
@@ -82,7 +86,8 @@ public class SQLCompletionProposalBase {
         @Nullable DBPImage image,
         DBPKeywordType proposalType,
         String description,
-        DBPNamedObject object)
+        DBPNamedObject object,
+        Map<String, Object> params)
     {
         this.context = context;
         DBPDataSource dataSource = context.getDataSource();
@@ -100,6 +105,7 @@ public class SQLCompletionProposalBase {
         setPosition(wordPartDetector);
 
         this.object = object;
+        this.params = params;
     }
 
     public SQLCompletionContext getContext() {
@@ -198,13 +204,19 @@ public class SQLCompletionProposalBase {
             }
             if (object instanceof DBSProcedure) {
                 // Ad parameter marks
+                boolean isExec = CommonUtils.toBoolean(params.get(PARAM_EXEC));
+
                 Collection<? extends DBSProcedureParameter> parameters = ((DBSProcedure) object).getParameters(monitor);
                 if (!CommonUtils.isEmpty(parameters)) {
                     StringBuilder params = new StringBuilder();
                     for (DBSProcedureParameter param : parameters) {
                         if (param.getParameterKind().isInput()) {
                             if (params.length() > 0) params.append(", ");
-                            params.append(":").append(param.getName());
+                            if (isExec) {
+                                params.append(":").append(param.getName());
+                            } else {
+                                params.append(param.getParameterType().getFullTypeName());
+                            }
                         }
                     }
                     return "(" + params.toString() + ")";

@@ -214,4 +214,5 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry);
 
+    DBPExclusiveResource getExclusiveLock();
 }

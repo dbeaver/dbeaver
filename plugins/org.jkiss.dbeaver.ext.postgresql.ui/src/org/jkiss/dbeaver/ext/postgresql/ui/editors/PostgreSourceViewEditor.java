@@ -36,13 +36,17 @@ import java.util.Map;
  * PostgreSourceViewEditor
  */
 public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject> {
-    
-    private Boolean showPermissions;
-    private boolean showColumnComments = true;
-    private boolean showFullDDL = false;
 
-    public PostgreSourceViewEditor()
-    {
+    private static final String PROP_SHOW_PERMISSIONS = "pg.source.editor.showPermissions";
+    private static final String PROP_COLUMN_COMMENTS = "pg.source.editor.showColumnComments";
+    private static final String PROP_FULL_DDL = "pg.source.editor.showFullDDL";
+
+    private Boolean showPermissions;
+    private Boolean showColumnComments;
+    private Boolean showFullDDL;
+
+    public PostgreSourceViewEditor() {
+
     }
 
     @Override
@@ -55,9 +59,25 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         return true;
     }
 
-    public boolean getShowPermissions() {
-        // By default permissions enabled only for tables
-        return showPermissions != null ? showPermissions : getSourceObject() instanceof PostgreTableBase;
+    private boolean getShowPermissions() {
+        if (showPermissions == null) {
+            showPermissions = getPreferenceStore().getBoolean(PROP_SHOW_PERMISSIONS);
+        }
+        return showPermissions;
+    }
+
+    private Boolean getShowColumnComments() {
+        if (showColumnComments == null) {
+            showColumnComments = getPreferenceStore().getBoolean(PROP_COLUMN_COMMENTS);
+        }
+        return showColumnComments;
+    }
+
+    private Boolean getShowFullDDL() {
+        if (showFullDDL == null) {
+            showFullDDL = getPreferenceStore().getBoolean(PROP_FULL_DDL);
+        }
+        return showFullDDL;
     }
 
     @Override
@@ -82,11 +102,12 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     {
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_TABLE_EXTERNAL));
                         setToolTipText("Show DDL for all schema objects");
-                        setChecked(showFullDDL);
+                        setChecked(getShowFullDDL());
                     }
                     @Override
                     public void run() {
                         showFullDDL = isChecked();
+                        getPreferenceStore().setValue(PROP_FULL_DDL, showFullDDL);
                         refreshPart(PostgreSourceViewEditor.this, true);
                     }
                 }, true));
@@ -108,7 +129,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     }
                 }, true));
         }
-        if (sourceObject instanceof PostgrePrivilegeOwner || sourceObject instanceof PostgreSchema) {
+        if (sourceObject instanceof PostgrePrivilegeOwner) {
             contributionManager.add(ActionUtils.makeActionContribution(
                 new Action("Show permissions", Action.AS_CHECK_BOX) {
                 {
@@ -119,6 +140,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                 @Override
                 public void run() {
                     showPermissions = isChecked();
+                    getPreferenceStore().setValue(PROP_SHOW_PERMISSIONS, showPermissions);
                     refreshPart(PostgreSourceViewEditor.this, true);
                 }
             }, true));
@@ -129,11 +151,12 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     {
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TYPE_TEXT));
                         setToolTipText("Show column comments in table definition");
-                        setChecked(showColumnComments);
+                        setChecked(getShowColumnComments());
                     }
                     @Override
                     public void run() {
                         showColumnComments = isChecked();
+                        getPreferenceStore().setValue(PROP_COLUMN_COMMENTS, showPermissions);
                         refreshPart(PostgreSourceViewEditor.this, true);
                     }
                 }, true));
@@ -146,8 +169,8 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         boolean inDebug = isInDebugMode();
         options.put(DBPScriptObject.OPTION_DEBUGGER_SOURCE, inDebug);
         options.put(PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS, getShowPermissions());
-        options.put(PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS, showColumnComments);
-        options.put(PostgreConstants.OPTION_DDL_SHOW_FULL, showFullDDL);
+        options.put(PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS, getShowColumnComments());
+        options.put(PostgreConstants.OPTION_DDL_SHOW_FULL, getShowFullDDL());
         return options;
     }
 

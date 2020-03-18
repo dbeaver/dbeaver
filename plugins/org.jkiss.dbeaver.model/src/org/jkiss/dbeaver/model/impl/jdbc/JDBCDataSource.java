@@ -172,7 +172,11 @@ public abstract class JDBCDataSource
                 }
             };
 
-            authModel.initAuthentication(monitor, container, connectionInfo, connectProps);
+            try {
+                authModel.initAuthentication(monitor, container, connectionInfo, connectProps);
+            } catch (DBException e) {
+                throw new DBCException("Authentication error", e);
+            }
             boolean openTaskFinished;
             try {
                 if (openTimeout <= 0) {
@@ -365,9 +369,14 @@ public abstract class JDBCDataSource
     public void shutdown(DBRProgressMonitor monitor)
     {
         for (JDBCRemoteInstance instance : getAvailableInstances()) {
-            monitor.subTask("Disconnect from '" + instance.getName() + "'");
-            instance.shutdown(monitor);
-            monitor.worked(1);
+            Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
+            try {
+                monitor.subTask("Disconnect from '" + instance.getName() + "'");
+                instance.shutdown(monitor);
+                monitor.worked(1);
+            } finally {
+                instance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
+            }
         }
         defaultRemoteInstance = null;
     }

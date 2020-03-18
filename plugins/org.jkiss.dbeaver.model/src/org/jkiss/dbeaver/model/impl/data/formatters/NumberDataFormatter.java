@@ -85,8 +85,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
                 // just skip it
             }
         }
-        Object useTypeScale = CommonUtils.toString(properties.get(NumberFormatSample.PROP_USE_TYPE_SCALE));
-        if (type != null && CommonUtils.toBoolean(useTypeScale)) {
+        if (type != null && CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_USE_TYPE_SCALE))) {
             if (type.getScale() != null && type.getScale() > 0) {
                 int fractionDigits = type.getScale();
                 if (fractionDigits > MAX_DEFAULT_FRACTIONS_DIGITS) fractionDigits = MAX_DEFAULT_FRACTIONS_DIGITS;

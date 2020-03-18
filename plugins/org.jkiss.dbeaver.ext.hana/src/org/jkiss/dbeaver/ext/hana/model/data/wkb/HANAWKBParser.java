@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.MessageFormat;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateSequenceFactory;
 import org.locationtech.jts.geom.Geometry;
@@ -216,8 +217,23 @@ public class HANAWKBParser {
     }
 
     private LinearRing parseLinearRing() {
-        CoordinateSequence cs = readCoordinateSequence();
+        CoordinateSequence cs = patchRing(readCoordinateSequence());
         return factory.createLinearRing(cs);
+    }
+
+    private CoordinateSequence patchRing(CoordinateSequence cs) {
+        if ((cs.size() >= 4) || (cs.size() == 0)) {
+            return cs;
+        }
+        Coordinate[] coords = new Coordinate[4];
+        for (int i = 0; i < cs.size(); ++i) {
+            coords[i] = cs.getCoordinate(i);
+        }
+        for (int i = cs.size(); i < 4; ++i) {
+            coords[i] = cs.getCoordinate(0);
+        }
+        CoordinateSequenceFactory csf = factory.getCoordinateSequenceFactory();
+        return csf.create(coords);
     }
 
     private CoordinateSequence readCoordinateSequence() {

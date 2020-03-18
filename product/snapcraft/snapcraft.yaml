@@ -1,32 +1,32 @@
 name: dbeaver-ce
-version: latest
-summary: Universal Database Tool
 description: |
-  Free multi-platform database tool for developers, SQL programmers,
-  database administrators and analysts. Supports all popular databases
-  MySQL, PostgreSQL, MariaDB, SQLite, Oracle, DB2, SQL Server, Sybase,
-  MS Access, Teradata, Firebird, Derby, etc.
+  Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. Supports all popular databases: MySQL PostgreSQL, MariaDB, SQLite, Oracle, DB2, SQL Server, Sybase, MS Access, Teradata, Firebird, Derby, etc.
 grade: stable
+adopt-info: dbeaver-ce
+
+base: core18
 confinement: strict
+
 architectures:
   - build-on: [amd64, i386]
     run-on: amd64
 
 apps:
   dbeaver-ce:
-    command: desktop-launch $SNAP/usr/share/dbeaver/dbeaver
-    desktop: usr/share/applications/dbeaver.desktop
+    command: $SNAP/usr/share/dbeaver/dbeaver
+    extensions: [ gnome-3-28 ]
+    common-id: dbeaver
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-8-openjdk-amd64
       PATH: $JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
       FONTCONFIG_FILE: $SNAP/etc/fonts
       _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA
+      # Fallback to XWayland if running in a Wayland session.
+      DISABLE_WAYLAND: 1
     plugs:
-      - desktop
       - network
-      - x11
       - home
-      - desktop-legacy
+      - removable-media
 
 parts:
   dbeaver-ce:
@@ -42,45 +42,35 @@ parts:
       - x11-xserver-utils
       - libxss1
       - libgconf2-4
-      - libcurl3
-      - libgtk-3-dev
+      - libcurl4
       - xdg-utils
+      - mariadb-client
+      - mysql-client
     override-build: |
+      set -e
       snapcraftctl build
-      DEB_API="https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb"
-      DEB_URL=$(curl -w "%{url_effective}\n" -I -L -s -S "${DEB_API}" -o /dev/null)
-      VERSION=$(echo "${DEB_URL}" | cut -d'/' -f6)
-      echo $VERSION > $SNAPCRAFT_STAGE/version
-      # Correct path to icon.
-      sed -i 's|Icon=dbeaver|Icon=/usr/share/dbeaver/dbeaver\.png|' ${SNAPCRAFT_PART_INSTALL}/usr/share/applications/dbeaver.desktop
+      VERSION=$(echo $SNAPCRAFT_PART_INSTALL/usr/share/dbeaver/plugins/org.jkiss.dbeaver.core_*.jar)
+      VERSION="${VERSION##*_}"
+      VERSION="${VERSION%.*}"
+      snapcraftctl set-version "$VERSION"
+    parse-info: [usr/share/metainfo/dbeaver.appdata.xml]
 
-  desktop-gnome-platform:
-    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-    source-subdir: gtk
-    plugin: make
-    make-parameters: ["FLAVOR=gtk3"]
-    build-packages:
-      - gcc
-    override-build: |
-      snapcraftctl build
-      mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
-      
-plugs:
-  # GTK libraries
-  gnome-3-26-1604:
-    interface: content
-    target: $SNAP/gnome-platform
-    default-provider: gnome-3-26-1604
-  # Common GTK themes
-  gtk-3-themes:
-    interface: content
-    target: $SNAP/data-dir/themes
-    default-provider: gtk-common-themes
-  icon-themes:
-    interface: content
-    target: $SNAP/data-dir/icons
-    default-provider: gtk-common-themes
-  sound-themes:
-    interface: content
-    target: $SNAP/data-dir/sounds
-    default-provider: gtk-common-themes
+  # This part removes all the files in this snap which already exist in
+  # connected content and base snaps. Since these files will be available
+  # at runtime from the content and base snaps, they do not need to be
+  # included in this snap itself.
+  #
+  # More info: https://snapcraft-utils-library.readthedocs.io/en/latest/lib/cleanup.html 
+  #
+  cleanup:
+    after:  # Make this part run last; list all your other parts here
+      - dbeaver-ce
+    plugin: nil
+    build-snaps:  # List all content-snaps and base snaps you're using here
+      - core18
+      - gnome-3-28-1804
+    override-prime: |
+      set -eux
+      for snap in "core18" "gnome-3-28-1804"; do  # List all content-snaps and base snaps you're using here
+        cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
+      done

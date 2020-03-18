@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -61,5 +62,8 @@ public interface DBSInstance extends DBSObject
     DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException;
 
     void shutdown(DBRProgressMonitor monitor);
+
+    @NotNull
+    DBPExclusiveResource getExclusiveLock();
 
 }

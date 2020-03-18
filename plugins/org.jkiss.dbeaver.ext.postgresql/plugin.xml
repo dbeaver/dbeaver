@@ -33,7 +33,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.postgresql.fdw.config">
-        <fdw id="postgresql" fdwId="postgres_fdw" databases="postgres" name="PostgreSQL" description="Default FDW for PostgreSQL servers" docURL="https://www.postgresql.org/docs/current/postgres-fdw.html">
+        <fdw id="postgresql" fdwId="postgres_fdw" databases="postgresql" name="PostgreSQL" description="Default FDW for PostgreSQL servers" docURL="https://www.postgresql.org/docs/current/postgres-fdw.html">
             <propertyGroup label="Options">
                 <property id="host" description="Host name" defaultValue="${host}"/>
                 <property id="port" description="Port number" defaultValue="${port}"/>
@@ -541,6 +541,16 @@
                 handlerClass="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"/>
         </handler>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+            id="postgres_pgpass"
+            label="PgPass"
+            description="PostgreSQL PGPASS password"
+            class="org.jkiss.dbeaver.ext.postgresql.model.AuthModelPgPass">
+            <datasource id="postgresql"/>
+        </authModel>
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">

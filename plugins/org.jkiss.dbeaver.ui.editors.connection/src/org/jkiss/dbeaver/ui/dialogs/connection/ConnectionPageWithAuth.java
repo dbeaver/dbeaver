@@ -20,14 +20,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
+import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
@@ -75,7 +73,15 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             }
         }
         if (selectedAuthModel == null) {
-            if (allAuthModels.size() == 1) {
+            // Set default to native
+            for (DBPAuthModelDescriptor amd : allAuthModels) {
+                if (amd.getId().equals(DBAAuthDatabaseNative.ID)) {
+                    selectedAuthModel = amd;
+                    break;
+                }
+            }
+            if (selectedAuthModel == null) {
+                // First one
                 selectedAuthModel = allAuthModels.get(0);
             }
         }
@@ -88,6 +94,11 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     }
 
     protected void showAuthModelSettings() {
+        TabFolder parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, TabFolder.class);
+        if (parentFolder != null) {
+            parentFolder.setRedraw(false);
+        }
+
         UIUtils.disposeChildControls(modelConfigPlaceholder);
 
         Label authModelLabel = UIUtils.createControlLabel(modelConfigPlaceholder, UIConnectionMessages.dialog_connection_auth_group);
@@ -109,6 +120,12 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         if (selectedAuthModel != null) {
             authModelCombo.select(allAuthModels.indexOf(selectedAuthModel));
         }
+        boolean authSelectorVisible = allAuthModels.size() >= 2;
+        authModelLabel.setVisible(authSelectorVisible);
+        ((GridData)authModelLabel.getLayoutData()).exclude = !authSelectorVisible;
+        authModelCombo.setVisible(authSelectorVisible);
+        ((GridData)authModelCombo.getLayoutData()).exclude = !authSelectorVisible;
+        ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
         {
             authModelConfigurator = null;
@@ -125,20 +142,21 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         if (authModelConfigurator != null) {
             authModelConfigurator.createControl(modelConfigPlaceholder, () -> getSite().updateButtons());
             authModelConfigurator.loadSettings(getSite().getActiveDataSource());
+        }
 
-            if (modelConfigPlaceholder.getSize().x > 0) {
-                // Re-layout
-                TabFolder parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, TabFolder.class);
-                if (parentFolder != null) {
-                    parentFolder.layout(true, true);
-                }
-            }
+        if (modelConfigPlaceholder.getSize().x > 0 && parentFolder != null) {
+            parentFolder.layout(true, true);
+        }
+        if (parentFolder != null) {
+            parentFolder.setRedraw(true);
         }
     }
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
         super.saveSettings(dataSource);
+        dataSource.getConnectionConfiguration().setAuthModelId(
+            selectedAuthModel == null ? null : selectedAuthModel.getId());
         if (authModelConfigurator != null) {
             authModelConfigurator.saveSettings(dataSource);
         }

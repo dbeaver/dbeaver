@@ -33,6 +33,8 @@ import java.util.Properties;
  */
 public class DBAAuthDatabaseNative implements DBAAuthModel {
 
+    public static final String ID = "native";
+
     public static final DBAAuthDatabaseNative INSTANCE = new DBAAuthDatabaseNative();
 
     @Override

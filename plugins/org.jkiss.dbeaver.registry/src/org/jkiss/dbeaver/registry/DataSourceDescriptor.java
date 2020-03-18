@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.*;
@@ -145,6 +146,7 @@ public class DataSourceDescriptor
     private DBWTunnel tunnelHandler;
     @NotNull
     private DBVModel virtualModel;
+    private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
 
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
@@ -768,56 +770,62 @@ public class DataSourceDescriptor
 
             monitor.beginTask("Connect to " + getName(), tunnelConfiguration != null ? 3 : 2);
 
-            // Setup proxy handler
-            if (proxyConfiguration != null) {
-                monitor.subTask("Initialize proxy");
-                proxyHandler = proxyConfiguration.createHandler(DBWNetworkHandler.class);
-                proxyHandler.initializeHandler(monitor, registry.getPlatform(), proxyConfiguration, resolvedConnectionInfo);
-            }
+            // Use ds exclusive lock to initialize network handlers
+            Object dsLock = exclusiveLock.acquireExclusiveLock();
+            try {
+                // Setup proxy handler
+                if (proxyConfiguration != null) {
+                    monitor.subTask("Initialize proxy");
+                    proxyHandler = proxyConfiguration.createHandler(DBWNetworkHandler.class);
+                    proxyHandler.initializeHandler(monitor, registry.getPlatform(), proxyConfiguration, resolvedConnectionInfo);
+                }
 
-            if (tunnelConfiguration != null) {
-                monitor.subTask("Initialize tunnel");
-                tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
-                try {
-                    if (!tunnelConfiguration.isSavePassword()) {
-                        DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
-                        if (rc != DBWTunnel.AuthCredentials.NONE) {
-                            if (!askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
-                                updateDataSourceObject(this);
-                                tunnelHandler = null;
-                                return false;
+                if (tunnelConfiguration != null) {
+                    monitor.subTask("Initialize tunnel");
+                    tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
+                    try {
+                        if (!tunnelConfiguration.isSavePassword()) {
+                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
+                            if (rc != DBWTunnel.AuthCredentials.NONE) {
+                                if (!askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
+                                    updateDataSourceObject(this);
+                                    tunnelHandler = null;
+                                    return false;
+                                }
                             }
                         }
-                    }
 
-                    DBExecUtils.startContextInitiation(this);
-                    try {
-                        resolvedConnectionInfo = tunnelHandler.initializeHandler(monitor, registry.getPlatform(), tunnelConfiguration, resolvedConnectionInfo);
-                    } finally {
-                        DBExecUtils.finishContextInitiation(this);
+                        DBExecUtils.startContextInitiation(this);
+                        try {
+                            resolvedConnectionInfo = tunnelHandler.initializeHandler(monitor, registry.getPlatform(), tunnelConfiguration, resolvedConnectionInfo);
+                        } finally {
+                            DBExecUtils.finishContextInitiation(this);
+                        }
+                    } catch (Exception e) {
+                        throw new DBCException("Can't initialize tunnel", e);
                     }
-                } catch (Exception e) {
-                    throw new DBCException("Can't initialize tunnel", e);
+                    monitor.worked(1);
                 }
+
+                monitor.subTask("Connect to data source");
+
+                this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
+                this.connectTime = new Date();
                 monitor.worked(1);
-            }
 
-            monitor.subTask("Connect to data source");
-
-            this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
-            this.connectTime = new Date();
-            monitor.worked(1);
-
-            if (initialize) {
-                monitor.subTask("Initialize data source");
-                try {
-                    dataSource.initialize(monitor);
-                } catch (Throwable e) {
-                    log.error("Error initializing datasource", e);
+                if (initialize) {
+                    monitor.subTask("Initialize data source");
+                    try {
+                        dataSource.initialize(monitor);
+                    } catch (Throwable e) {
+                        log.error("Error initializing datasource", e);
+                    }
                 }
-            }
 
-            this.connectFailed = false;
+                this.connectFailed = false;
+            } finally {
+                exclusiveLock.releaseExclusiveLock(dsLock);
+            }
 
             processEvents(monitor, DBPConnectionEventType.AFTER_CONNECT);
 
@@ -1370,6 +1378,11 @@ public class DataSourceDescriptor
         DataSourceDescriptor copy = new DataSourceDescriptor(this, forRegistry, true);
         copy.setId(DataSourceDescriptor.generateNewId(copy.getDriver()));
         return copy;
+    }
+
+    @Override
+    public DBPExclusiveResource getExclusiveLock() {
+        return exclusiveLock;
     }
 
     public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)

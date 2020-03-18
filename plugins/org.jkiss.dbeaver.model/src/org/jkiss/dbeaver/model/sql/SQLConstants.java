@@ -80,6 +80,8 @@ public class SQLConstants {
         "DROP",
     };
 
+    public static final String KEYWORD_FUNCTION = "FUNCTION";
+    public static final String KEYWORD_PROCEDURE = "PROCEDURE";
     public static final String[] SQL2003_RESERVED_KEYWORDS = {
         "ALL",
         "ALLOCATE",
@@ -168,7 +170,7 @@ public class SQLConstants {
         "FREE",
         "FROM",
         "FULL",
-        "FUNCTION",
+        KEYWORD_FUNCTION,
         "FUSION",
         "GET",
         "GLOBAL",
@@ -242,7 +244,7 @@ public class SQLConstants {
         "PRECISION",
         "PREPARE",
         "PRIMARY",
-        "PROCEDURE",
+        KEYWORD_PROCEDURE,
         "RANGE",
         "RANK",
         "READS",

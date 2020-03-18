@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
@@ -216,7 +217,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 monitor.done();
             });
 
-            MessageDialog.openInformation(hostText.getShell(), CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
+            MessageDialog.openInformation(hostText.getShell(), ModelMessages.dialog_connection_wizard_start_connection_monitor_success,
                 "Connected!\n\nClient version: " + tunnelVersions[0] + "\nServer version: " + tunnelVersions[1]);
         } catch (InvocationTargetException ex) {
             DBWorkbench.getPlatformUI().showError(

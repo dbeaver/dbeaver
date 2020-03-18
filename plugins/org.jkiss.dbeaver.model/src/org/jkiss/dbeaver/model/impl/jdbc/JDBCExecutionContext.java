@@ -87,6 +87,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         }
         boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
         DBExecUtils.startContextInitiation(dataSource.getContainer());
+        Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
         try {
             this.connection = dataSource.openConnection(monitor, this, purpose);
             if (this.connection == null) {
@@ -158,6 +159,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             }
         } finally {
             DBExecUtils.finishContextInitiation(dataSource.getContainer());
+            instance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
         }
     }
 
@@ -211,7 +213,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @NotNull
     @Override
     public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure)
-        throws DBException {
+        throws DBException
+    {
         if (this.connection == null) {
             connect(monitor);
             return InvalidateResult.CONNECTED;

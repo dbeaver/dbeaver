@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
+import java.util.Map;
+
 /**
  * SQLContextInformer
  */
@@ -108,7 +110,16 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
     }
 
     @Override
-    public SQLCompletionProposalBase createProposal(@NotNull SQLCompletionRequest request, @NotNull String displayString, @NotNull String replacementString, int cursorPosition, @Nullable DBPImage image, @NotNull DBPKeywordType proposalType, @Nullable String description, @Nullable DBPNamedObject object) {
+    public SQLCompletionProposalBase createProposal(
+        @NotNull SQLCompletionRequest request,
+        @NotNull String displayString,
+        @NotNull String replacementString,
+        int cursorPosition,
+        @Nullable DBPImage image,
+        @NotNull DBPKeywordType proposalType,
+        @Nullable String description,
+        @Nullable DBPNamedObject object,
+        @NotNull Map<String, Object> params) {
         return new SQLCompletionProposal(
             request,
             displayString,
@@ -117,7 +128,8 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
             image,
             proposalType,
             description,
-            object);
+            object,
+            params);
     }
 
     private DBPPreferenceStore getActivePreferenceStore() {
