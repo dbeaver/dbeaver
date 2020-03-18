@@ -26,6 +26,7 @@ apps:
     plugs:
       - network
       - home
+      - removable-media
 
 parts:
   dbeaver-ce:
