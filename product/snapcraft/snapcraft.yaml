@@ -26,7 +26,7 @@ apps:
     plugs:
       - network
       - home
-
+      - removable-media
 parts:
   dbeaver-ce:
     source: https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
