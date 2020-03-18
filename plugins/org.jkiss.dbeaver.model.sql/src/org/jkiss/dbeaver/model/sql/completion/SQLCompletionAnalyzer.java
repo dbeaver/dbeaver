@@ -94,7 +94,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         request.setQueryType(null);
         SQLWordPartDetector wordDetector = request.getWordDetector();
         SQLSyntaxManager syntaxManager = request.getContext().getSyntaxManager();
-        String prevKeyWord = request.getWordDetector().getPrevKeyWord();
+        String prevKeyWord = wordDetector.getPrevKeyWord();
         {
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
@@ -102,13 +102,17 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
                         request.setQueryType(null);
                     } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
-                        !CommonUtils.isEmpty(request.getWordDetector().getPrevWords()) &&
-                        ("(".equals(request.getWordDetector().getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
+                        !CommonUtils.isEmpty(wordDetector.getPrevWords()) &&
+                        ("(".equals(wordDetector.getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
                     {
                         request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
                     } else if (SQLConstants.KEYWORD_JOIN.equals(prevKeyWord)) {
                         request.setQueryType(SQLCompletionRequest.QueryType.JOIN);
                     } else {
+                        if (!CommonUtils.isEmpty(wordDetector.getPrevWords()) && CommonUtils.isEmpty(wordDetector.getPrevDelimiter())) {
+                            // Seems to be table alias
+                            return;
+                        }
                         request.setQueryType(SQLCompletionRequest.QueryType.TABLE);
                     }
                 } else if (syntaxManager.getDialect().isAttributeQueryWord(prevKeyWord)) {
@@ -215,7 +219,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             sqlDialect.getCatalogSeparator(),
                             sqlDialect.getIdentifierQuoteStrings(),
                             false);
-                        rootObject = SQLSearchUtils.findObjectByFQN(monitor, sc, request.getContext().getExecutionContext(), Arrays.asList(allNames), !request.isSimpleMode(), request.getWordDetector());
+                        rootObject = SQLSearchUtils.findObjectByFQN(monitor, sc, request.getContext().getExecutionContext(), Arrays.asList(allNames), !request.isSimpleMode(), wordDetector);
                     }
                 }
                 if (rootObject != null) {
@@ -263,7 +267,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             } else if (ArrayUtils.contains(sqlDialect.getQueryKeywords(), prevKeyWord.toUpperCase(Locale.ENGLISH))) {
                 // SELECT ..
                 // Limit with FROM if we already have some expression
-                String delimiter = request.getWordDetector().getPrevDelimiter();
+                String delimiter = wordDetector.getPrevDelimiter();
                 if (!CommonUtils.isEmpty(wordDetector.getPrevWords()) && (CommonUtils.isEmpty(delimiter) || delimiter.endsWith(")"))) {
                     // last expression ends with space or with ")"
                     allowedKeywords = new HashSet<>();
