@@ -219,4 +219,8 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
         int shift = startOffset - delimiterOffset;
         startOffset -= shift;
     }
+
+    public void shiftOffset(int offset) {
+        startOffset += offset;
+    }
 }

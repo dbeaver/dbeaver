@@ -118,7 +118,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 } else if (syntaxManager.getDialect().isAttributeQueryWord(prevKeyWord)) {
                     request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
                     if (!request.isSimpleMode() && CommonUtils.isEmpty(request.getWordPart()) && wordDetector.getPrevDelimiter().equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN)) {
-                        wordDetector.moveToDelimiter();
+                        wordDetector.shiftOffset(-SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN.length());
                         searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
                     }
                 } else if (SQLUtils.isExecQuery(syntaxManager.getDialect(), prevKeyWord)) {
