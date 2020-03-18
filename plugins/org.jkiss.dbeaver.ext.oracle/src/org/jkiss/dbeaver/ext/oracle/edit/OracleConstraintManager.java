@@ -67,27 +67,27 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     protected String getDropConstraintPattern(OracleTableConstraint constraint)
     {
         String clause = "CONSTRAINT"; //$NON-NLS-1$;
-/*
-        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-            clause = "PRIMARY KEY"; //$NON-NLS-1$
-        } else {
-            clause = "CONSTRAINT"; //$NON-NLS-1$
-        }
-*/
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
+        String tableType = constraint.getTable().isView() ? "VIEW" : "TABLE";
+
+        return "ALTER " + tableType + " " + PATTERN_ITEM_TABLE + " DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
     {
-    	OracleTableConstraint constraint = (OracleTableConstraint) command.getObject();
+    	OracleTableConstraint constraint = command.getObject();
+        boolean isView = constraint.getTable().isView();
+        String tableType = isView ? "VIEW" : "TABLE";
     	OracleTableBase table = constraint.getTable();
         actions.add(
                 new SQLDatabasePersistAction(
                     ModelMessages.model_jdbc_create_new_constraint,
-                    "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(monitor, table, command, options) +
-                    " "  + (constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" )
+                    "ALTER " + tableType + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                        "\nADD " + getNestedDeclaration(monitor, table, command, options) +
+                    "\n"  + (!isView && constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" ) +
+                    (isView ? " NOVALIDATE" : "")
                 	));
     }
 
