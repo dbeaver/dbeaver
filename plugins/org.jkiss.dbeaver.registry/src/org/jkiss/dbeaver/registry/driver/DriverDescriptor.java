@@ -1104,6 +1104,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return DriverUtils.extractZipArchives(result);
     }
 
+    List<DriverFileInfo> getCachedFiles(DBPDriverLibrary library) {
+        return resolvedFiles.get(library);
+    }
+
     private void checkDriverVersion(DBRProgressMonitor monitor) throws IOException {
         for (DBPDriverLibrary library : libraries) {
             final Collection<String> availableVersions = library.getAvailableVersions(monitor);
