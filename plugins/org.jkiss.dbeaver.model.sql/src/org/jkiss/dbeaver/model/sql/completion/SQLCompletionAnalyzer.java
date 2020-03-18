@@ -199,8 +199,21 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     if (selectedObject instanceof DBSObjectContainer) {
                         sc = (DBSObjectContainer)selectedObject;
                     }
-                    int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
-                    String tableAlias = divPos == -1 ? null : wordPart.substring(0, divPos);
+                    SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
+                    String tableAlias = null;
+                    if (ALL_COLUMNS_PATTERN.equals(wordPart)) {
+                        if (!CommonUtils.isEmpty(wordDetector.getPrevWords())) {
+                            String prevWord = wordDetector.getPrevWords().get(0);
+                            if (prevWord.contains(sqlDialect.getCatalogSeparator())) {
+                                int divPos = prevWord.lastIndexOf(sqlDialect.getCatalogSeparator());
+                                tableAlias = prevWord.substring(0, divPos);
+                            }
+                        }
+                    }
+                    if (tableAlias == null) {
+                        int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
+                        tableAlias = divPos == -1 ? null : wordPart.substring(0, divPos);
+                    }
                     if (tableAlias == null && !CommonUtils.isEmpty(wordPart)) {
                         // May be an incomplete table alias. Try to find such table
                         rootObject = getTableFromAlias(sc, wordPart, false);
@@ -213,7 +226,6 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     rootObject = getTableFromAlias(sc, tableAlias, false);
                     if (rootObject == null && tableAlias != null) {
                         // Maybe alias ss a table name
-                        SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
                         String[] allNames = SQLUtils.splitFullIdentifier(
                             tableAlias,
                             sqlDialect.getCatalogSeparator(),
