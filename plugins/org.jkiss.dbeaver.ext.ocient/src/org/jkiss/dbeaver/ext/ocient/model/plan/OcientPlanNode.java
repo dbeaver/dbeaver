@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 
 /**
  * Abstract plan node
-
+ * 
  */
 public abstract class OcientPlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode {
 

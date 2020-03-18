@@ -3,11 +3,6 @@
 
 <plugin>
 
-        <!--
-    <extension point="org.jkiss.dbeaver.generic.meta">
--        <meta id="ocient" class="org.jkiss.dbeaver.ext.ocient.model.OcientMetaModel" driverClass="com.ocient.jdbc.JDBCDriver"/>
-    </extension>
-        -->
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.ocient.OcientDataSourceProvider"

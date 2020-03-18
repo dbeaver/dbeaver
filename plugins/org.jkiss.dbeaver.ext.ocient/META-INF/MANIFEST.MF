@@ -13,3 +13,6 @@ Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.ocient
 Import-Package: com.google.gson
+Export-Package: org.jkiss.dbeaver.ext.ocient,
+ org.jkiss.dbeaver.ext.ocient.model,
+ org.jkiss.dbeaver.ext.ocient.model.plan

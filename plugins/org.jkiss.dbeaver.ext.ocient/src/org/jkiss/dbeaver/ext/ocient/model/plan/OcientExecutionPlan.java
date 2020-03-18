@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.ocient.model.plan;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import org.jkiss.dbeaver.ext.ocient.model.OcientDataSource;
-import org.jkiss.dbeaver.ext.ocient.model.plan.OcientPlanNodeJson;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -31,91 +33,76 @@ import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 public class OcientExecutionPlan extends AbstractExecutionPlan {
-
 
     private String query;
     private List<OcientPlanNodeJson> rootNodes;
-    private OcientDataSource dataSource;
-
 
     private static final Gson gson = new Gson();
 
-    public OcientExecutionPlan(String query)
-    {
-        this.query = query;
+    public OcientExecutionPlan(String query) {
+	this.query = query;
     }
 
     public OcientExecutionPlan(String query, List<OcientPlanNodeJson> rootNodes) {
-        this.query = query;
-        this.rootNodes = rootNodes;
+	this.query = query;
+	this.rootNodes = rootNodes;
     }
 
     @Override
     public Object getPlanFeature(String feature) {
-        if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
-            DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature) ||
-            DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature))
-        {
-            return true;
-        }
-        return super.getPlanFeature(feature);
+	if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) || DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature)
+		|| DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
+	    return true;
+	}
+	return super.getPlanFeature(feature);
     }
 
     @Override
-    public String getQueryString()
-    {
-        return query;
+    public String getQueryString() {
+	return query;
     }
 
     @Override
     public String getPlanQueryString() {
-        return "explain json" + query;
+	return "explain json" + query;
     }
 
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options)
-    {
-        return rootNodes;
+    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+	return rootNodes;
     }
 
-    public void explain(DBCSession session) throws DBCException
-    {
-        String explainString = getExplainString(session, getPlanQueryString());
+    public void explain(DBCSession session) throws DBCException {
+	String explainString = getExplainString(session);
 
-        JsonObject planObject = gson.fromJson(explainString, JsonObject.class);
-        JsonObject planRoot = planObject.getAsJsonObject("rootNode");
-        JsonObject planHeader = planObject.getAsJsonObject("header");
-        rootNodes = new ArrayList<>();
-        
-        OcientPlanNodeJson headerNode = new OcientPlanNodeJson(null, "header", planHeader);
-        OcientPlanNodeJson rootNode = new OcientPlanNodeJson(null, "Root", planRoot);
-        rootNodes.add(headerNode);
-        rootNodes.add(rootNode);
+	JsonObject planObject = gson.fromJson(explainString, JsonObject.class);
+	JsonObject planRoot = planObject.getAsJsonObject("rootNode");
+	JsonObject planHeader = planObject.getAsJsonObject("header");
+	rootNodes = new ArrayList<>();
+
+	OcientPlanNodeJson headerNode = new OcientPlanNodeJson(null, "header", planHeader);
+	OcientPlanNodeJson rootNode = new OcientPlanNodeJson(null, "Root", planRoot);
+	rootNodes.add(headerNode);
+	rootNodes.add(rootNode);
 
     }
 
-    private String getExplainString(DBCSession session, String sql) throws DBCException
-    {
-        JDBCSession connection = (JDBCSession) session;
-        String plan = "";
-        try {
-            JDBCPreparedStatement dbStat = connection.prepareStatement(getPlanQueryString());
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            while (dbResult.next()) {
-                String planLine = dbResult.getString(1);
-                plan += planLine;
-            }
-            dbResult.close();
+    private String getExplainString(DBCSession session) throws DBCException {
+	JDBCSession connection = (JDBCSession) session;
+	String plan = "";
+	try {
+	    JDBCPreparedStatement dbStat = connection.prepareStatement(getPlanQueryString());
+	    JDBCResultSet dbResult = dbStat.executeQuery();
+	    while (dbResult.next()) {
+		String planLine = dbResult.getString(1);
+		plan += planLine;
+	    }
+	    dbResult.close();
 
-        } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
-        }
-        return plan;
+	} catch (SQLException e) {
+	    throw new DBCException(e, session.getExecutionContext());
+	}
+	return plan;
     }
 }
