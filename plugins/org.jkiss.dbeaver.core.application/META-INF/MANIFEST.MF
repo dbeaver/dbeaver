@@ -5,8 +5,8 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.core.application;singleton:=true
 Bundle-Activator: org.jkiss.dbeaver.core.application.internal.CoreApplicationActivator
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 7.0.0.qualifier
-Bundle-Release-Date: 20200302
+Bundle-Version: 7.0.1.qualifier
+Bundle-Release-Date: 20200323
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jkiss.dbeaver.core.application,
  org.jkiss.dbeaver.core.application.rpc,
