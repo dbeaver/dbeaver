@@ -17,12 +17,10 @@
 package org.jkiss.dbeaver.ext.ocient.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
 public class OcientSQLDialect extends GenericSQLDialect {
 
     public OcientSQLDialect() {
-        super("Ocient SQL");
+	super("Ocient SQL");
     }
 }
