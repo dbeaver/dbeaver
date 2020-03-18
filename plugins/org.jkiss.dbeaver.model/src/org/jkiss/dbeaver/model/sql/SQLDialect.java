@@ -189,6 +189,10 @@ public interface SQLDialect {
     @Nullable
     String getScriptDelimiterRedefiner();
 
+    /**
+     * SQL block statements (BEGIN/END).
+     * Null if not supported
+     */
     @Nullable
     String[][] getBlockBoundStrings();
 
@@ -342,6 +346,12 @@ public interface SQLDialect {
      * You need to check query results to ensure that it is not transactional.
      */
     boolean isTransactionModifyingQuery(String queryString);
+
+    @Nullable
+    String[] getTransactionCommitKeywords();
+
+    @Nullable
+    String[] getTransactionRollbackKeywords();
 
     @Nullable
     String getColumnTypeModifiers(DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind);

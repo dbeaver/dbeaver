@@ -68,6 +68,9 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
 
+    private static final String[] COMMIT_KEYWORDS = { SQLConstants.KEYWORD_COMMIT };
+    private static final String[] ROLLBACK_KEYWORDS = { SQLConstants.KEYWORD_ROLLBACK };
+
     protected BasicSQLDialect() {
         loadStandardKeywords();
     }
@@ -274,6 +277,18 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     @Override
     public boolean isDelimiterAfterBlock() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public String[] getTransactionCommitKeywords() {
+        return COMMIT_KEYWORDS;
+    }
+
+    @Nullable
+    @Override
+    public String[] getTransactionRollbackKeywords() {
+        return ROLLBACK_KEYWORDS;
     }
 
     @Override
