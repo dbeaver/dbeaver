@@ -17,9 +17,12 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
 import org.jkiss.dbeaver.ext.oracle.model.OracleView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -28,7 +31,6 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -41,7 +43,18 @@ import java.util.Map;
 /**
  * OracleViewManager
  */
-public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema> {
+public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema> {
+
+    private static final Class<?>[] CHILD_TYPES = {
+        OracleTableConstraint.class,
+        OracleTableForeignKey.class,
+    };
+
+    @NotNull
+    @Override
+    public Class<?>[] getChildTypes() {
+        return CHILD_TYPES;
+    }
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
@@ -80,7 +93,7 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
         createOrReplaceViewQuery(monitor, actions, command);
     }
 
