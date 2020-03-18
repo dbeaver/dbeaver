@@ -449,6 +449,18 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return isTransactionModifyingKeyword(firstKeyword);
     }
 
+    @Nullable
+    @Override
+    public String[] getTransactionCommitKeywords() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String[] getTransactionRollbackKeywords() {
+        return null;
+    }
+
     protected boolean isTransactionModifyingKeyword(String firstKeyword) {
         if (getKeywordType(firstKeyword) != DBPKeywordType.KEYWORD) {
             return false;
@@ -472,7 +484,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return false;
     }
 
-    private boolean containsKeyword(String[] keywords, String keyword) {
+    private static boolean containsKeyword(String[] keywords, String keyword) {
         if (keywords == null) {
             return false;
         }

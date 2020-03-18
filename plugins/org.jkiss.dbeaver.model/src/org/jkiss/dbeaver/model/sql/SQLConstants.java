@@ -51,6 +51,12 @@ public class SQLConstants {
     public static final String KEYWORD_NULL = "NULL";
     public static final String KEYWORD_IN = "IN";
 
+    public static final String KEYWORD_FUNCTION = "FUNCTION";
+    public static final String KEYWORD_PROCEDURE = "PROCEDURE";
+
+    public static final String KEYWORD_COMMIT = "COMMIT";
+    public static final String KEYWORD_ROLLBACK = "ROLLBACK";
+
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
         KEYWORD_UPDATE,
@@ -80,8 +86,6 @@ public class SQLConstants {
         "DROP",
     };
 
-    public static final String KEYWORD_FUNCTION = "FUNCTION";
-    public static final String KEYWORD_PROCEDURE = "PROCEDURE";
     public static final String[] SQL2003_RESERVED_KEYWORDS = {
         "ALL",
         "ALLOCATE",
@@ -118,7 +122,7 @@ public class SQLConstants {
         "COLLATE",
         "COLLECT",
         "COLUMN",
-        "COMMIT",
+        KEYWORD_COMMIT,
         "CONDITION",
         "CONNECT",
         "CONSTRAINT",
@@ -260,7 +264,7 @@ public class SQLConstants {
         "RETURNS",
         "REVOKE",
         "RIGHT",
-        "ROLLBACK",
+        KEYWORD_ROLLBACK,
         "ROLLUP",
         "ROW",
         "ROW_NUMBER",
