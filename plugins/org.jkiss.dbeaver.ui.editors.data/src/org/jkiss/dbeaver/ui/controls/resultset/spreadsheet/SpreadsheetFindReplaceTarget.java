@@ -54,6 +54,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private Color scopeHighlightColor;
     private boolean replaceAll;
     private boolean sessionActive = false;
+    private List<GridPos> originalSelection = null;
 
     SpreadsheetFindReplaceTarget(SpreadsheetPresentation owner)
     {
@@ -104,7 +105,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         }
         Spreadsheet spreadsheet = owner.getSpreadsheet();
         GridCell cell = spreadsheet.posToCell(selection);
-        String value = cell == null ? "" : spreadsheet.getContentProvider().getCellText(cell.col, cell.row);
+        String value = cell == null ? "" : CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, true, true));
         return CommonUtils.toString(value);
     }
 
@@ -125,6 +126,8 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     {
         this.sessionActive = true;
         this.owner.getControl().redraw();
+        this.originalSelection = new ArrayList<>(owner.getSpreadsheet().getSelection());
+        this.owner.highlightRows(-1, -1, null);
     }
 
     @Override
@@ -134,7 +137,8 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         this.searchPattern = null;
         Control control = this.owner.getControl();
         if (control != null && !control.isDisposed()) {
-            control.redraw();
+            owner.getSpreadsheet().deselectAll();
+            owner.getSpreadsheet().selectCells(this.originalSelection);
         }
     }
 
@@ -148,6 +152,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public void setScope(IRegion scope) {
         if (scope == null || scope.getLength() == 0) {
             owner.highlightRows(-1, -1, null);
+            if (scope == null) {
+                owner.getSpreadsheet().deselectAll();
+                owner.getSpreadsheet().selectCells(this.originalSelection);
+            }
         } else {
             owner.highlightRows(scope.getOffset(), scope.getLength(), scopeHighlightColor);
         }
@@ -201,7 +209,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         int firstRow = owner.getHighlightScopeFirstLine();
         if (firstRow < 0) firstRow = 0;
         int lastRow = owner.getHighlightScopeLastLine();
-        if (lastRow >= rowCount) lastRow = rowCount - 1;
+        if (lastRow >= rowCount || lastRow < 0) lastRow = rowCount - 1;
 
         GridPos startPosition = selection.isEmpty() ? null : selection.iterator().next();
         if (startPosition == null) {
@@ -261,7 +269,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             } else {
                 GridCell cell = spreadsheet.posToCell(curPosition);
                 if (cell != null) {
-                    cellText = spreadsheet.getContentProvider().getCellText(cell.col, cell.row);
+                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, true, true));
                 } else {
                     continue;
                 }
@@ -274,7 +282,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 spreadsheet.setFocusColumn(curPosition.col);
                 spreadsheet.setFocusItem(curPosition.row);
                 spreadsheet.setCellSelection(curPosition);
-                spreadsheet.showSelection();
+                if (curPosition.row >= spreadsheet.getTopIndex() && curPosition.row < spreadsheet.getBottomIndex()) {
+                    // Do not scroll to invisible rows to avoid scrolling and slow update
+                    spreadsheet.showSelection();
+                }
                 searchPattern = findPattern;
                 return curPosition.row;
             }
@@ -292,7 +303,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         if (cell == null) {
             return;
         }
-        String oldValue = owner.getSpreadsheet().getContentProvider().getCellText(cell.col, cell.row);
+        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(cell.col, cell.row, true, true));
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);

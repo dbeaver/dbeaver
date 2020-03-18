@@ -51,8 +51,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
         return new DatabaseLazyEditorInput(memento);
     }
 
-    public static void saveState(IMemento memento, DatabaseEditorInput input)
-    {
+    public static void saveState(IMemento memento, DatabaseEditorInput input) {
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_SAVE_EDITORS_STATE)) {
             return;
         }

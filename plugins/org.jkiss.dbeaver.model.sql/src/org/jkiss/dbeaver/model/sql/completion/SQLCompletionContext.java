@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 
+import java.util.Map;
+
 /**
  * SQL Completion proposal
  */
@@ -68,6 +70,7 @@ public interface SQLCompletionContext {
         @Nullable DBPImage image,
         @NotNull DBPKeywordType proposalType,
         @Nullable String description,
-        @Nullable DBPNamedObject object);
+        @Nullable DBPNamedObject object,
+        @NotNull Map<String, Object> params);
 
 }

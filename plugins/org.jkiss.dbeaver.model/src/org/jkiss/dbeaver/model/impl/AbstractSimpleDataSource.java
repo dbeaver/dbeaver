@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -43,6 +44,7 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
     protected EXEC_CONTEXT executionContext;
     @NotNull
     protected List<EXEC_CONTEXT> allContexts = new ArrayList<>();
+    private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
 
     public AbstractSimpleDataSource(@NotNull DBPDataSourceContainer container) {
         this.container = container;
@@ -101,6 +103,12 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
     @Override
     public abstract EXEC_CONTEXT openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException;
 
+    @NotNull
+    @Override
+    public DBPExclusiveResource getExclusiveLock() {
+        return exclusiveLock;
+    }
+
     public void addExecutionContext(EXEC_CONTEXT context) {
         allContexts.add(context);
     }
@@ -119,6 +127,16 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
     @Override
     public Collection<? extends DBSInstance> getAvailableInstances() {
         return Collections.singletonList(this);
+    }
+
+    @Override
+    public void shutdown(DBRProgressMonitor monitor) {
+        Object lock = this.exclusiveLock.acquireExclusiveLock();
+        try {
+            executionContext.close();
+        } finally {
+            this.exclusiveLock.releaseExclusiveLock(lock);
+        }
     }
 
 }

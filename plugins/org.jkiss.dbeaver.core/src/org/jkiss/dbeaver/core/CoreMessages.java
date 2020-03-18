@@ -131,13 +131,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_connection_init_description;
 	public static String dialog_connection_wizard_final_group_other;
 
-	public static String dialog_connection_wizard_start_connection_monitor_close;
-	public static String dialog_connection_wizard_start_connection_monitor_start;
-	public static String dialog_connection_wizard_start_connection_monitor_subtask_test;
-	public static String dialog_connection_wizard_start_connection_monitor_success;
-	public static String dialog_connection_wizard_start_connection_monitor_connected;
-	public static String dialog_connection_wizard_start_connection_monitor_thread;
-	public static String dialog_connection_wizard_start_dialog_error_message;
 	public static String dialog_connection_wizard_start_dialog_error_title;
 	public static String dialog_connection_wizard_start_dialog_interrupted_message;
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;

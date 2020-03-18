@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * SQL Completion proposal
@@ -66,9 +67,10 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
         @Nullable DBPImage image,
         DBPKeywordType proposalType,
         String description,
-        DBPNamedObject object)
+        DBPNamedObject object,
+        Map<String, Object> params)
     {
-        super(request.getContext(), request.getWordDetector(), displayString, replacementString, cursorPosition, image, proposalType, description, object);
+        super(request.getContext(), request.getWordDetector(), displayString, replacementString, cursorPosition, image, proposalType, description, object, params);
         int divPos = this.replacementFull.lastIndexOf(getContext().getSyntaxManager().getStructSeparator());
         if (divPos == -1) {
             this.replacementLast = null;

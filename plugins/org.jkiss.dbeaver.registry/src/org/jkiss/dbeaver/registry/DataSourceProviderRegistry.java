@@ -210,7 +210,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceAuthModelDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
                 DataSourceAuthModelDescriptor descriptor = new DataSourceAuthModelDescriptor(ext);
-                authModels.put(descriptor.getName(), descriptor);
+                authModels.put(descriptor.getId(), descriptor);
             }
         }
 
@@ -466,7 +466,17 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     @Override
     public List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDataSourceContainer dataSourceContainer) {
         List<DataSourceAuthModelDescriptor> models = new ArrayList<>();
-        models.addAll(authModels.values());
+        List<String> replaced = new ArrayList<>();
+        for (DataSourceAuthModelDescriptor amd : authModels.values()) {
+            if (amd.appliesTo(dataSourceContainer, null)) {
+                models.add(amd);
+                replaced.addAll(amd.getReplaces());
+            }
+        }
+        if (!replaced.isEmpty()) {
+            models.removeIf(
+                dataSourceAuthModelDescriptor -> replaced.contains(dataSourceAuthModelDescriptor.getId()));
+        }
         return models;
     }
 

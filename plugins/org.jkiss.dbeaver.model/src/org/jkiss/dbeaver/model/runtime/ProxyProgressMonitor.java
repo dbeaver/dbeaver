@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class ProxyProgressMonitor implements DBRProgressMonitor, IProgressMonitor {
 
-    private DBRProgressMonitor original;
+    protected DBRProgressMonitor original;
 
     public ProxyProgressMonitor(DBRProgressMonitor original)
     {

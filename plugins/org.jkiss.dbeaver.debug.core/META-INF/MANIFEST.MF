@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.debug.core;singleton:=true
-Bundle-Version: 1.0.57.qualifier
-Bundle-Release-Date: 20200302
+Bundle-Version: 1.0.58.qualifier
+Bundle-Release-Date: 20200323
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.osgi.services,

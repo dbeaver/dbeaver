@@ -9,8 +9,8 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../../</relativePath>
     </parent>
-    <version>7.0.0-SNAPSHOT</version>
-    <artifactId>ce-appstore</artifactId>
+    <version>7.0.1-SNAPSHOT</version>
+    <artifactId>appstore</artifactId>
     <packaging>eclipse-repository</packaging>
     <name>DBeaver CE AppStore</name>
 

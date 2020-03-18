@@ -42,10 +42,12 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     private transient volatile Session session;
 
     @Override
-    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, String sshLocalHost, int sshLocalPort, String sshRemoteHost, int sshRemotePort) throws DBException, IOException {
+    protected synchronized void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String sshHost, int aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, String sshLocalHost, int sshLocalPort, String sshRemoteHost, int sshRemotePort) throws DBException, IOException {
         try {
-            jsch = new JSch();
-            JSch.setLogger(new LoggerProxy());
+            if (jsch == null) {
+                jsch = new JSch();
+                JSch.setLogger(new LoggerProxy());
+            }
 
             String autoTypeString = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_AUTH_TYPE));
             AuthType authType = CommonUtils.isEmpty(autoTypeString) ?
@@ -100,7 +102,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     }
 
     @Override
-    public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
+    public synchronized void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
         if (session != null) {
             RuntimeUtils.runTask(monitor1 -> {
                 if (session != null) {
@@ -116,12 +118,12 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     }
 
     @Override
-    public String getClientVersion() {
+    public synchronized String getClientVersion() {
         return session == null ? null : session.getClientVersion();
     }
 
     @Override
-    public String getServerVersion() {
+    public synchronized String getServerVersion() {
         return session == null ? null : session.getServerVersion();
     }
 
