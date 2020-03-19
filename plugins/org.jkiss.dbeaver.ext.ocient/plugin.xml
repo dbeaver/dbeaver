@@ -23,7 +23,6 @@
                         description="Ocient JDBC driver"
                         webURL=""
                         categories="sql,analytic">
-                    <replace provider="generic" driver="ocient_generic"/>
                     <file type="jar" path="maven:/com.ocient:ocient-jdbc4:RELEASE"/>
                 </driver>
              </drivers>

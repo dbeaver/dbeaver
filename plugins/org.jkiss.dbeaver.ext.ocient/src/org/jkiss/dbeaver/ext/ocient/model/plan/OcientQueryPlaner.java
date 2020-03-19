@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,19 @@
  */
 package org.jkiss.dbeaver.ext.ocient.model.plan;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.plan.*;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
+import org.jkiss.utils.CommonUtils;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -23,24 +36,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
-import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
-import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
-import org.jkiss.utils.CommonUtils;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
 
 /**
  * PostgreQueryPlaner
