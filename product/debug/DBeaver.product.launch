@@ -256,6 +256,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.mysql.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.mysql@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.netezza@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.ocient@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.opendistro@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.oracle.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.oracle@default:default"/>
