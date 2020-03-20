@@ -37,8 +37,8 @@ import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -83,9 +83,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         // Remove project listener
-        DBeaverCore core = DBeaverCore.getInstance();
-        if (core != null) {
-            DBPWorkspace workspace = core.getWorkspace();
+        DBPPlatform platform = DBWorkbench.getPlatform();
+        if (platform != null) {
+            DBPWorkspace workspace = platform.getWorkspace();
             workspace.removeProjectListener(this);
         }
 

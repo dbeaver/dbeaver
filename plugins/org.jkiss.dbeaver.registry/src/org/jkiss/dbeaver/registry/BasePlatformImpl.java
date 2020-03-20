@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
-import org.jkiss.dbeaver.model.app.DBPGlobalEventManager;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -59,7 +56,7 @@ import java.util.Locale;
  *
  * Base implementation of DBeaver platform
  */
-public abstract class BasePlatformImpl implements DBPPlatform {
+public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLanguageManager {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
 
@@ -194,6 +191,7 @@ public abstract class BasePlatformImpl implements DBPPlatform {
         return language;
     }
 
+    @Override
     public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
         if (CommonUtils.equalObjects(language, this.language)) {
             return;

@@ -24,7 +24,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
@@ -201,7 +200,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 connectionConfig.setHostPort(configuration.getStringProperty(SSHConstants.PROP_PORT));
                 try {
                     monitor.subTask("Initialize tunnel");
-                    tunnel.initializeHandler(monitor, DBeaverCore.getInstance(), configuration, connectionConfig);
+                    tunnel.initializeHandler(monitor, DBWorkbench.getPlatform(), configuration, connectionConfig);
                     monitor.worked(1);
                     // Get info
                     tunnelVersions[0] = tunnel.getImplementation().getClientVersion();
