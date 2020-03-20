@@ -4,7 +4,7 @@
         label="%featureName"
         version="7.0.1.qualifier"
         provider-name="%providerName"
-        plugin="org.jkiss.dbeaver.core.application">
+        plugin="org.jkiss.dbeaver.ui.app.standalone">
 
     <description>
         %description
@@ -24,6 +24,6 @@
 
     <includes id="org.jkiss.dbeaver.standalone.feature" version="0.0.0"/>
 
-    <plugin id="org.jkiss.dbeaver.core.application" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ui.app.standalone" download-size="0" install-size="0" version="0.0.0"/>
 
 </feature>

@@ -13,6 +13,6 @@ Require-Bundle: org.eclipse.ui.forms,
  org.eclipse.ui,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.core.application,
+ org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.model
 Automatic-Module-Name: org.jkiss.dbeaver.ext.ui.tipoftheday
