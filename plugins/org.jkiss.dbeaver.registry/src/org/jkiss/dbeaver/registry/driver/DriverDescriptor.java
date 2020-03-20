@@ -142,11 +142,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<ReplaceInfo> driverReplacements = new ArrayList<>();
     private DriverDescriptor replacedBy;
 
-    private final Map<Object, Object> defaultParameters = new HashMap<>();
-    private final Map<Object, Object> customParameters = new HashMap<>();
+    private final Map<String, Object> defaultParameters = new HashMap<>();
+    private final Map<String, Object> customParameters = new HashMap<>();
 
-    private final Map<Object, Object> defaultConnectionProperties = new HashMap<>();
-    private final Map<Object, Object> customConnectionProperties = new HashMap<>();
+    private final Map<String, Object> defaultConnectionProperties = new HashMap<>();
+    private final Map<String, Object> customConnectionProperties = new HashMap<>();
 
     private Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
 
@@ -350,15 +350,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    Map<Object, Object> getDefaultParameters() {
+    Map<String, Object> getDefaultParameters() {
         return defaultParameters;
     }
 
-    Map<Object, Object> getCustomParameters() {
+    Map<String, Object> getCustomParameters() {
         return customParameters;
     }
 
-    Map<Object, Object> getCustomConnectionProperties() {
+    Map<String, Object> getCustomConnectionProperties() {
         return customConnectionProperties;
     }
 
@@ -819,13 +819,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
-    public Map<Object, Object> getDefaultConnectionProperties() {
+    public Map<String, Object> getDefaultConnectionProperties() {
         return defaultConnectionProperties;
     }
 
     @NotNull
     @Override
-    public Map<Object, Object> getConnectionProperties() {
+    public Map<String, Object> getConnectionProperties() {
         return customConnectionProperties;
     }
 
@@ -833,18 +833,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         customConnectionProperties.put(name, value);
     }
 
-    public void setConnectionProperties(Map<Object, Object> parameters) {
+    public void setConnectionProperties(Map<String, Object> parameters) {
         customConnectionProperties.clear();
         customConnectionProperties.putAll(parameters);
     }
 
-    public Map<Object, Object> getDefaultDriverParameters() {
+    public Map<String, Object> getDefaultDriverParameters() {
         return defaultParameters;
     }
 
     @NotNull
     @Override
-    public Map<Object, Object> getDriverParameters() {
+    public Map<String, Object> getDriverParameters() {
         return customParameters;
     }
 
@@ -870,7 +870,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    public void setDriverParameters(Map<Object, Object> parameters) {
+    public void setDriverParameters(Map<String, Object> parameters) {
         customParameters.clear();
         customParameters.putAll(parameters);
     }

@@ -81,7 +81,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
             connectionProps);
     }
 
-    public PropertySourceCustom makeProperties(DBPDriver driver, Map<Object, Object> properties)
+    public PropertySourceCustom makeProperties(DBPDriver driver, Map<?, ?> properties)
     {
         driverProvidedProperties = null;
         customProperties = null;
@@ -161,7 +161,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         }
     }
 
-    private void loadCustomProperties(DBPDriver driver, Map<Object, Object> properties)
+    private void loadCustomProperties(DBPDriver driver, Map<?, ?> properties)
     {
         // Collect all driver (and all other) properties
         Set<String> propNames = new TreeSet<>();

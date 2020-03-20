@@ -142,9 +142,9 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
             if (!CommonUtils.isEmpty(driver.getCustomParameters())) {
                 json.name("driver-parameters");
                 json.beginObject();
-                for (Map.Entry<Object, Object> paramEntry : driver.getCustomParameters().entrySet()) {
+                for (Map.Entry<String, Object> paramEntry : driver.getCustomParameters().entrySet()) {
                     if (!CommonUtils.equalObjects(paramEntry.getValue(), driver.getDefaultParameters().get(paramEntry.getKey()))) {
-                        json.name(CommonUtils.toString(paramEntry.getKey()));
+                        json.name(paramEntry.getKey());
                         json.value(CommonUtils.toString(paramEntry.getValue()));
                     }
                 }
@@ -155,7 +155,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
             if (!CommonUtils.isEmpty(driver.getCustomConnectionProperties())) {
                 json.name("connection-properties");
                 json.beginObject();
-                for (Map.Entry<Object, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {
+                for (Map.Entry<String, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {
                     if (!CommonUtils.equalObjects(propEntry.getValue(), driver.getDefaultConnectionProperties().get(propEntry.getKey()))) {
                         json.name(CommonUtils.toString(propEntry.getKey()));
                         json.value(CommonUtils.toString(propEntry.getValue()));

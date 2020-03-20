@@ -126,20 +126,20 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             }
 
             // Parameters
-            for (Map.Entry<Object, Object> paramEntry : driver.getCustomParameters().entrySet()) {
+            for (Map.Entry<String, Object> paramEntry : driver.getCustomParameters().entrySet()) {
                 if (!CommonUtils.equalObjects(paramEntry.getValue(), driver.getDefaultParameters().get(paramEntry.getKey()))) {
                     try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_PARAMETER)) {
-                        xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(paramEntry.getKey()));
+                        xml.addAttribute(RegistryConstants.ATTR_NAME, paramEntry.getKey());
                         xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(paramEntry.getValue()));
                     }
                 }
             }
 
             // Properties
-            for (Map.Entry<Object, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {
+            for (Map.Entry<String, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {
                 if (!CommonUtils.equalObjects(propEntry.getValue(), driver.getDefaultConnectionProperties().get(propEntry.getKey()))) {
                     try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_PROPERTY)) {
-                        xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(propEntry.getKey()));
+                        xml.addAttribute(RegistryConstants.ATTR_NAME, propEntry.getKey());
                         xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(propEntry.getValue()));
                     }
                 }
