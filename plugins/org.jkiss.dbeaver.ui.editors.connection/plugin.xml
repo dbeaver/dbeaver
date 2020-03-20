@@ -10,4 +10,16 @@
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
     </extension>
 
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.core.driver.manager" name="%command.org.jkiss.dbeaver.core.driver.manager.name" description="%command.org.jkiss.dbeaver.core.driver.manager.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/driver_manager.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.driver.DriverManagerDialogHandler"/>
+    </extension>
+
 </plugin>

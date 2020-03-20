@@ -38,7 +38,6 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -163,7 +163,7 @@ public class DriverSelectViewer extends Viewer {
         filterComposite.setFont(composite.getFont());
 
         filterText = new Text(filterComposite, SWT.SINGLE);
-        filterText.setMessage(CoreMessages.dialog_connection_driver_treecontrol_initialText);
+        filterText.setMessage(UIConnectionMessages.dialog_connection_driver_treecontrol_initialText);
         filterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filterText.addModifyListener(e -> textChanged());
         filterText.addKeyListener(new KeyAdapter() {
@@ -239,7 +239,7 @@ public class DriverSelectViewer extends Viewer {
         if (forceClassic || getCurrentSelectorViewType() == SelectorViewType.tree) {
             if (!forceClassic) {
                 switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-                switchItem.setText(CoreMessages.viewer_selector_control_text_gallery);
+                switchItem.setText(UIConnectionMessages.viewer_selector_control_text_gallery);
                 switchItem.setSelection(true);
             }
 
@@ -252,7 +252,7 @@ public class DriverSelectViewer extends Viewer {
             });
         } else {
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
-            switchItem.setText(CoreMessages.viewer_selector_control_text_classic);
+            switchItem.setText(UIConnectionMessages.viewer_selector_control_text_classic);
             switchItem.setSelection(false);
 
             selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE);

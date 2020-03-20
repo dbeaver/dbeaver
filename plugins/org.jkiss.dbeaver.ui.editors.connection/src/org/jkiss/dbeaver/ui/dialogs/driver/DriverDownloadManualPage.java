@@ -22,11 +22,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverFileInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverFileSource;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,7 +36,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
     private Table filesTable;
 
     DriverDownloadManualPage() {
-        super(CoreMessages.dialog_driver_download_manual_page_config_driver_file, CoreMessages.dialog_driver_download_manual_page_download_driver_file, null);
+        super(UIConnectionMessages.dialog_driver_download_manual_page_config_driver_file, UIConnectionMessages.dialog_driver_download_manual_page_download_driver_file, null);
         setPageComplete(false);
     }
 
@@ -44,13 +44,13 @@ class DriverDownloadManualPage extends DriverDownloadPage {
     public void createControl(Composite parent) {
         final DBPDriver driver = getWizard().getDriver();
 
-        setMessage(NLS.bind(CoreMessages.dialog_driver_download_manual_page_download_config_driver_file, driver.getFullName()));
+        setMessage(NLS.bind(UIConnectionMessages.dialog_driver_download_manual_page_download_config_driver_file, driver.getFullName()));
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Link infoText = new Link(composite, SWT.NONE);
-        infoText.setText(NLS.bind(CoreMessages.dialog_driver_download_manual_page_driver_file_missing_text, driver.getFullName()));
+        infoText.setText(NLS.bind(UIConnectionMessages.dialog_driver_download_manual_page_driver_file_missing_text, driver.getFullName()));
         infoText.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -60,7 +60,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoText.setLayoutData(gd);
 
-        Group filesGroup = UIUtils.createControlGroup(composite, CoreMessages.dialog_driver_download_manual_page_driver_file, 1, -1, -1);
+        Group filesGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.dialog_driver_download_manual_page_driver_file, 1, -1, -1);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 10;
         filesGroup.setLayoutData(gd);
@@ -82,9 +82,9 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         filesTable = new Table(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
         filesTable.setHeaderVisible(true);
         filesTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        UIUtils.createTableColumn(filesTable, SWT.LEFT, CoreMessages.dialog_driver_download_manual_page_column_file);
-        UIUtils.createTableColumn(filesTable, SWT.LEFT, CoreMessages.dialog_driver_download_manual_page_column_required);
-        UIUtils.createTableColumn(filesTable, SWT.LEFT, CoreMessages.dialog_driver_download_manual_page_column_description);
+        UIUtils.createTableColumn(filesTable, SWT.LEFT, UIConnectionMessages.dialog_driver_download_manual_page_column_file);
+        UIUtils.createTableColumn(filesTable, SWT.LEFT, UIConnectionMessages.dialog_driver_download_manual_page_column_required);
+        UIUtils.createTableColumn(filesTable, SWT.LEFT, UIConnectionMessages.dialog_driver_download_manual_page_column_description);
 
         sourceCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -111,7 +111,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         for (DBPDriverFileInfo file : fileSource.getFiles()) {
             new TableItem(filesTable, SWT.NONE).setText(new String[] {
                 file.getName(),
-                !file.isOptional() ? CoreMessages.dialog_driver_download_manual_page_yes : CoreMessages.dialog_driver_download_manual_page_no,
+                !file.isOptional() ? UIConnectionMessages.dialog_driver_download_manual_page_yes : UIConnectionMessages.dialog_driver_download_manual_page_no,
                 CommonUtils.notEmpty(file.getDescription()) });
         }
     }

@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
@@ -31,6 +30,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -63,7 +63,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(NLS.bind(CoreMessages.dialog_edit_driver_text_driver_library, driver.getName(), library.getDisplayName())); //$NON-NLS-2$
+        getShell().setText(NLS.bind(UIConnectionMessages.dialog_edit_driver_text_driver_library, driver.getName(), library.getDisplayName())); //$NON-NLS-2$
         getShell().setImage(DBeaverIcons.getImage(library.getIcon()));
 
         Composite group = (Composite) super.createDialogArea(parent);
@@ -71,14 +71,14 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         gd.widthHint = 500;
         group.setLayoutData(gd);
 
-        Group propsGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_edit_driver_info, 2, -1, -1);
+        Group propsGroup = UIUtils.createControlGroup(group, UIConnectionMessages.dialog_edit_driver_info, 2, -1, -1);
         propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_driver, driver.getName(), SWT.BORDER | SWT.READ_ONLY);
-        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_library, library.getDisplayName(), SWT.BORDER | SWT.READ_ONLY);
-        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_path, library.getPath(), SWT.BORDER | SWT.READ_ONLY);
-        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_version, library.getVersion(), SWT.BORDER | SWT.READ_ONLY);
-        Text fileText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_file, "", SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_driver, driver.getName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_library, library.getDisplayName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_path, library.getPath(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_version, library.getVersion(), SWT.BORDER | SWT.READ_ONLY);
+        Text fileText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_file, "", SWT.BORDER | SWT.READ_ONLY);
 
         TabFolder tabs = new TabFolder(group, SWT.HORIZONTAL | SWT.FLAT);
         tabs.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -117,8 +117,8 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         });
 
         TabItem depsTab = new TabItem(tabs, SWT.NONE);
-        depsTab.setText(CoreMessages.dialog_edit_driver_tab_depencencies);
-        depsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_depencencies_tooltip);
+        depsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_depencencies);
+        depsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_depencencies_tooltip);
         depsTab.setControl(paramsGroup);
     }
 
@@ -126,7 +126,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         Composite detailsGroup = new Composite(tabs, SWT.NONE);
         detailsGroup.setLayout(new GridLayout(1, false));
 
-        UIUtils.createControlLabel(detailsGroup, CoreMessages.dialog_edit_driver_label_description);
+        UIUtils.createControlLabel(detailsGroup, UIConnectionMessages.dialog_edit_driver_label_description);
         Text descriptionText = new Text(detailsGroup, SWT.READ_ONLY | SWT.BORDER);
         descriptionText.setText(CommonUtils.notEmpty(library.getDescription()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -134,76 +134,28 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         descriptionText.setLayoutData(gd);
 
         TabItem detailsTab = new TabItem(tabs, SWT.NONE);
-        detailsTab.setText(CoreMessages.dialog_edit_driver_tab_detail);
-        detailsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_detail_tooltip);
+        detailsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_detail);
+        detailsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_detail_tooltip);
         detailsTab.setControl(detailsGroup);
     }
 
-
-    /*
-        private void createParametersTab(TabFolder group)
-        {
-            Composite paramsGroup = new Composite(group, SWT.NONE);
-            paramsGroup.setLayout(new GridLayout(1, false));
-
-            parametersEditor = new PropertyTreeViewer(paramsGroup, SWT.BORDER);
-            driverPropertySource = new PropertySourceCustom(
-                driver.getProviderDescriptor().getDriverProperties(),
-                driver.getDriverParameters());
-            driverPropertySource.setDefaultValues(driver.getDefaultDriverParameters());
-            parametersEditor.loadProperties(driverPropertySource);
-
-            TabItem paramsTab = new TabItem(group, SWT.NONE);
-            paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_advanced_parameters);
-            paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_advanced_parameters);
-            paramsTab.setControl(paramsGroup);
-        }
-
-        private void createConnectionPropertiesTab(TabFolder group)
-        {
-            Composite paramsGroup = new Composite(group, SWT.NONE);
-            paramsGroup.setLayout(new GridLayout(1, false));
-
-            connectionPropertiesEditor = new ConnectionPropertiesControl(paramsGroup, SWT.BORDER);
-            connectionPropertySource = connectionPropertiesEditor.makeProperties(driver, driver.getConnectionProperties());
-            connectionPropertiesEditor.loadProperties(connectionPropertySource);
-
-
-            TabItem paramsTab = new TabItem(group, SWT.NONE);
-            paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_connection_properties);
-            paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_connection_properties);
-            paramsTab.setControl(paramsGroup);
-        }
-
-        private void createClientHomesTab(TabFolder group)
-        {
-            clientHomesPanel = new ClientHomesPanel(group, SWT.NONE);
-            clientHomesPanel.loadHomes(driver);
-            clientHomesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            TabItem paramsTab = new TabItem(group, SWT.NONE);
-            paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
-            paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
-            paramsTab.setControl(clientHomesPanel);
-        }
-    */
     private void createLicenseTab(TabFolder group)
     {
         Composite paramsGroup = new Composite(group, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
         Text licenseText = new Text(paramsGroup, SWT.BORDER | SWT.WRAP | SWT.MULTI | SWT.V_SCROLL);
-        licenseText.setText(CoreMessages.dialog_edit_driver_text_license);
+        licenseText.setText(UIConnectionMessages.dialog_edit_driver_text_license);
         licenseText.setEditable(false);
-        licenseText.setMessage(CoreMessages.dialog_edit_driver_text_driver_license);
+        licenseText.setMessage(UIConnectionMessages.dialog_edit_driver_text_driver_license);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 200;
         //gd.grabExcessVerticalSpace = true;
         licenseText.setLayoutData(gd);
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
-        paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_license);
-        paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_license);
+        paramsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_name_license);
+        paramsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_tooltip_license);
         paramsTab.setControl(paramsGroup);
     }
 

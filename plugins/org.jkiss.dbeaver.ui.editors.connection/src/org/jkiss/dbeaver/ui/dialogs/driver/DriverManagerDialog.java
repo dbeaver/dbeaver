@@ -28,7 +28,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -101,7 +101,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
         }
 
-        getShell().setText(CoreMessages.dialog_driver_manager_title);
+        getShell().setText(UIConnectionMessages.dialog_driver_manager_title);
         getShell().setMinimumSize(300, 300);
         dialogImage = DBeaverIcons.getImageDescriptor(UIIcon.DRIVER_MANAGER);
         getShell().setImage(dialogImage.createImage());
@@ -123,7 +123,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             buttonBar.setLayoutData(gd);
 
-            newButton = UIUtils.createPushButton(buttonBar, CoreMessages.dialog_driver_manager_button_new, null, new SelectionAdapter() {
+            newButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_new, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     createDriver();
@@ -131,7 +131,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             });
             newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            copyButton = UIUtils.createPushButton(buttonBar, CoreMessages.dialog_driver_manager_button_copy, null, new SelectionAdapter() {
+            copyButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_copy, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     copyDriver();
@@ -139,7 +139,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             });
             copyButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            editButton = UIUtils.createPushButton(buttonBar, CoreMessages.dialog_driver_manager_button_edit, null, new SelectionAdapter() {
+            editButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_edit, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     editDriver();
@@ -147,7 +147,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             });
             editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            deleteButton = UIUtils.createPushButton(buttonBar, CoreMessages.dialog_driver_manager_button_delete, null, new SelectionAdapter() {
+            deleteButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_delete, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     deleteDriver();
@@ -173,10 +173,10 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 legend.setLayoutData(gd);
 
                 UIUtils.createLabel(legend, DBIcon.OVER_LAMP);
-                UIUtils.createLabel(legend, CoreMessages.dialog_driver_manager_label_user_defined);
+                UIUtils.createLabel(legend, UIConnectionMessages.dialog_driver_manager_label_user_defined);
 
                 UIUtils.createLabel(legend, DBIcon.OVER_ERROR);
-                UIUtils.createLabel(legend, CoreMessages.dialog_driver_manager_label_unavailable);
+                UIUtils.createLabel(legend, UIConnectionMessages.dialog_driver_manager_label_unavailable);
 
             }
 
@@ -372,17 +372,17 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private void deleteDriver() {
         List<DBPDataSourceContainer> usedDS = DriverUtils.getUsedBy(selectedDriver, DataSourceRegistry.getAllDataSources());
         if (!usedDS.isEmpty()) {
-            StringBuilder message = new StringBuilder(NLS.bind(CoreMessages.dialog_driver_manager_message_cant_delete_text, selectedDriver.getName()));
+            StringBuilder message = new StringBuilder(NLS.bind(UIConnectionMessages.dialog_driver_manager_message_cant_delete_text, selectedDriver.getName()));
             for (DBPDataSourceContainer ds : usedDS) {
                 message.append("\n - ").append(ds.getName());
             }
-            UIUtils.showMessageBox(getShell(), CoreMessages.dialog_driver_manager_message_cant_delete_title, message.toString(), SWT.ICON_ERROR);
+            UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_driver_manager_message_cant_delete_title, message.toString(), SWT.ICON_ERROR);
             return;
         }
         if (UIUtils.confirmAction(
             getShell(),
-            CoreMessages.dialog_driver_manager_message_delete_driver_title,
-            CoreMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?")) {
+            UIConnectionMessages.dialog_driver_manager_message_delete_driver_title,
+            UIConnectionMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?")) {
             selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
             selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
             treeControl.refresh();

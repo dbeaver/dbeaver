@@ -14,15 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.ui.actions.datasource;
 
 /**
- * Core module commands (some).
+ * Connection commands
  */
-public interface CoreCommands
+public interface ConnectionCommands
 {
 
-
-    String CMD_LINK_EDITOR = "org.jkiss.dbeaver.core.navigator.linkeditor";
-
+    String CMD_CONNECT = "org.jkiss.dbeaver.core.connect";
+    String CMD_DISCONNECT = "org.jkiss.dbeaver.core.disconnect";
+    String CMD_DISCONNECT_ALL = "org.jkiss.dbeaver.core.disconnectAll";
+    String CMD_DISCONNECT_OTHER = "org.jkiss.dbeaver.core.disconnectOther";
+    String CMD_INVALIDATE = "org.jkiss.dbeaver.core.invalidate";
+    String CMD_COMMIT = "org.jkiss.dbeaver.core.commit";
+    String CMD_ROLLBACK = "org.jkiss.dbeaver.core.rollback";
+    String CMD_TOGGLE_AUTOCOMMIT = "org.jkiss.dbeaver.core.txn.autocommit"; //$NON-NLS-1$
 }
