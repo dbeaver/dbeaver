@@ -4,7 +4,7 @@
         label="%featureName"
         version="7.0.1.qualifier"
         provider-name="%providerName"
-        plugin="org.jkiss.dbeaver.core.application">
+        plugin="org.jkiss.dbeaver.ui.app.standalone">
 
     <description>
         %description

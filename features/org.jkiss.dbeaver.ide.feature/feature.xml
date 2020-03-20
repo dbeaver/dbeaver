@@ -4,7 +4,7 @@
         label="%featureName"
         version="7.0.1.qualifier"
         provider-name="%providerName"
-        plugin="org.jkiss.dbeaver.core.eclipse">
+        plugin="org.jkiss.dbeaver.ui.app.eclipse">
 
     <description>
         %description
@@ -24,6 +24,6 @@
     <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.debug.feature" version="0.0.0"/>
 
-    <plugin id="org.jkiss.dbeaver.core.eclipse" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ui.app.eclipse" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>

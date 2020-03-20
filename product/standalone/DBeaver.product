@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="7.0.1.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product" application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="7.0.1.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -15,7 +15,7 @@
       </vmArgsMac>
    </launcherArgs>
 
-   <splash location="org.jkiss.dbeaver.core.application"/>
+   <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
 
    <launcher name="dbeaver">
       <linux icon="/icons/dbeaver.xpm"/>

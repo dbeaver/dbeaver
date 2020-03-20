@@ -16,7 +16,6 @@
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.sql</module>
         <module>org.jkiss.dbeaver.registry</module>
-        <module>org.jkiss.dbeaver.core</module>
 
         <module>org.jkiss.dbeaver.ui</module>
         <module>org.jkiss.dbeaver.ui.editors.acl</module>
@@ -42,8 +41,9 @@
         <module>org.jkiss.dbeaver.debug.core</module>
         <module>org.jkiss.dbeaver.debug.ui</module>
 
-        <module>org.jkiss.dbeaver.core.application</module>
-        <module>org.jkiss.dbeaver.core.eclipse</module>
+        <module>org.jkiss.dbeaver.core</module>
+        <module>org.jkiss.dbeaver.ui.app.standalone</module>
+        <module>org.jkiss.dbeaver.ui.app.eclipse</module>
 
         <module>org.jkiss.dbeaver.ext.generic</module>
         <module>org.jkiss.dbeaver.ext.generic.ui</module>

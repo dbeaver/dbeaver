@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.pde.ui.RuntimeWorkbench">
     <booleanAttribute key="append.args" value="true"/>
-    <stringAttribute key="application" value="org.jkiss.dbeaver.core.application.standalone"/>
+    <stringAttribute key="application" value="org.jkiss.dbeaver.ui.app.standalone.standalone"/>
     <booleanAttribute key="askclear" value="true"/>
     <booleanAttribute key="automaticAdd" value="false"/>
     <booleanAttribute key="automaticValidate" value="true"/>
@@ -21,7 +21,7 @@
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
     <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m"/>
     <stringAttribute key="pde.version" value="3.3"/>
-    <stringAttribute key="product" value="org.jkiss.dbeaver.core.application.product"/>
+    <stringAttribute key="product" value="org.jkiss.dbeaver.ui.app.standalone.product"/>
     <stringAttribute key="productFile" value="\org.jkiss.dbeaver.ce.standalone\DBeaver.product"/>
     <setAttribute key="selected_target_bundles">
         <setEntry value="com.github.jsqlparser@default:default"/>
@@ -219,7 +219,7 @@
     <setAttribute key="selected_workspace_bundles">
         <setEntry value="org.jkiss.dbeaver.cmp.simple.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.cmp.simple@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.core.application@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ui.app.standalone@default:default"/>
         <setEntry value="org.jkiss.dbeaver.core@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.gis.view@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.gis@default:default"/>
