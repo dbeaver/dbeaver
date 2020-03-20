@@ -171,7 +171,7 @@
         <setEntry value="org.eclipse.osgi@-1:true"/>
         <setEntry value="org.eclipse.platform@default:default"/>
         <setEntry value="org.eclipse.search@default:default"/>
-        <setEntry value="org.eclipse.swt.win32.win32.x86_64@default:default"/>
+        <setEntry value="org.eclipse.swt.win32.win32.x86_64@default:false"/>
         <setEntry value="org.eclipse.swt@default:default"/>
         <setEntry value="org.eclipse.team.core@default:default"/>
         <setEntry value="org.eclipse.team.ui@default:default"/>
@@ -219,8 +219,8 @@
     <setAttribute key="selected_workspace_bundles">
         <setEntry value="org.jkiss.dbeaver.cmp.simple.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.cmp.simple@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ui.app.standalone@default:default"/>
         <setEntry value="org.jkiss.dbeaver.core@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.data.console@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.gis.view@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.gis@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.office@default:default"/>
@@ -289,6 +289,7 @@
         <setEntry value="org.jkiss.dbeaver.tasks.native.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.tasks.native@default:default"/>
         <setEntry value="org.jkiss.dbeaver.tasks.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ui.app.standalone@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.charts@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.dashboard@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.editors.acl@default:default"/>
