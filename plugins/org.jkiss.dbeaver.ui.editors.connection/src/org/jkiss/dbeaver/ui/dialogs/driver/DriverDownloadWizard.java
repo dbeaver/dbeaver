@@ -22,10 +22,10 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class DriverDownloadWizard extends Wizard implements IExportWizard {
@@ -43,7 +43,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         this.dependencies = dependencies;
         this.updateVersion = updateVersion;
         this.forceDownload = forceDownload;
-        setWindowTitle(updateVersion ? CoreMessages.dialog_driver_download_wizard_title_upload_files : CoreMessages.dialog_driver_download_wizard_title_setup_files);
+        setWindowTitle(updateVersion ? UIConnectionMessages.dialog_driver_download_wizard_title_upload_files : UIConnectionMessages.dialog_driver_download_wizard_title_setup_files);
         setNeedsProgressMonitor(isAutoDownloadWizard());
         loadSettings();
     }
@@ -95,7 +95,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
-        setWindowTitle(CoreMessages.dialog_driver_download_wizard_title_setting);
+        setWindowTitle(UIConnectionMessages.dialog_driver_download_wizard_title_setting);
         setNeedsProgressMonitor(isAutoDownloadWizard());
         setHelpAvailable(false);
     }
@@ -113,9 +113,9 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     public String getFinishText() {
         if (isAutoDownloadWizard()) {
-            return CoreMessages.dialog_driver_download_wizard_download;
+            return UIConnectionMessages.dialog_driver_download_wizard_download;
         } else {
-            return CoreMessages.dialog_driver_download_wizard_open_download;
+            return UIConnectionMessages.dialog_driver_download_wizard_open_download;
         }
     }
 

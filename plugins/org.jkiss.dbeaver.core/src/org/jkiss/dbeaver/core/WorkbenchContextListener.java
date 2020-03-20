@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -222,7 +223,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                 activationResults = contextService.activateContext(RESULTS_CONTEXT_ID);
             }
             // Refresh auto-commit element state (#3315)
-            ActionUtils.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
+            ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT);
             // Refresh OpenSeparateConnection
             ActionUtils.fireCommandRefresh(SQLEditorCommands.CMD_TOGGLE_SEPARATE_CONNECTION);
         }

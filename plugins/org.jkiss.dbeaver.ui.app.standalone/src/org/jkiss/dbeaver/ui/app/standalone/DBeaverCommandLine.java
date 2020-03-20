@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -213,7 +213,7 @@ public class DBeaverCommandLine
             exitAfterExecute = true;
         }
         if (commandLine.hasOption(PARAM_DISCONNECT_ALL)) {
-            controller.executeWorkbenchCommand(CoreCommands.CMD_DISCONNECT_ALL);
+            controller.executeWorkbenchCommand(ConnectionCommands.CMD_DISCONNECT_ALL);
             exitAfterExecute = true;
         }
 
