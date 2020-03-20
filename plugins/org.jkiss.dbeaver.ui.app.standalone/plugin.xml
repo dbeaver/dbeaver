@@ -347,7 +347,7 @@
     <extension point="org.eclipse.ui.splashHandlers">
         <splashHandler class="org.jkiss.dbeaver.ui.app.standalone.DBeaverSplashHandler" id="org.jkiss.dbeaver.ui.splash.interactive"/>
         <splashHandlerProductBinding productId="org.jkiss.dbeaver.ui.app.standalone.product" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
-        <splashHandlerProductBinding productId="org.jkiss.dbeaver.core.appstore.product" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
+        <splashHandlerProductBinding productId="org.jkiss.dbeaver.ui.app.standalone.appstore" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
     </extension>
 
     <extension point="org.eclipse.ui.helpSupport">
