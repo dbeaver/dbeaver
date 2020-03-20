@@ -36,7 +36,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -191,7 +191,7 @@ public class AboutBoxDialog extends InformationDialog
         gd.horizontalAlignment = GridData.CENTER;
         siteLink.setLayoutData(gd);
 
-        String infoDetails = DBeaverCore.getInstance().getApplication().getInfoDetails();
+        String infoDetails = DBWorkbench.getPlatform().getApplication().getInfoDetails();
         if (!CommonUtils.isEmpty(infoDetails)) {
             Text extraText = new Text(group, SWT.MULTI | SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
             extraText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

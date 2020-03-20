@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
@@ -57,7 +56,7 @@ public class DBeaverVersionChecker extends AbstractJob {
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
-        if (monitor.isCanceled() || DBeaverCore.isClosing()) {
+        if (monitor.isCanceled() || DBWorkbench.getPlatform().isShuttingDown()) {
             return Status.CANCEL_STATUS;
         }
         boolean showUpdateDialog = showAlways;
@@ -100,7 +99,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
         VersionDescriptor versionDescriptor = null;
         try {
-            versionDescriptor = new VersionDescriptor(DBeaverCore.getInstance(), updateURL);
+            versionDescriptor = new VersionDescriptor(DBWorkbench.getPlatform(), updateURL);
         } catch (IOException e) {
             log.debug(e);
         }

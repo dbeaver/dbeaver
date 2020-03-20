@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
+import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
@@ -93,7 +93,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             workspaceLanguage = UIUtils.createLabelCombo(groupLanguage, CoreMessages.pref_page_ui_general_combo_language, CoreMessages.pref_page_ui_general_combo_language_tip, SWT.READ_ONLY | SWT.DROP_DOWN);
             workspaceLanguage.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             List<PlatformLanguageDescriptor> languages = PlatformLanguageRegistry.getInstance().getLanguages();
-            DBPPlatformLanguage pLanguage = DBeaverCore.getInstance().getLanguage();
+            DBPPlatformLanguage pLanguage = DBWorkbench.getPlatform().getLanguage();
             for (int i = 0; i < languages.size(); i++) {
                 PlatformLanguageDescriptor lang = languages.get(i);
                 workspaceLanguage.add(lang.getLabel());
@@ -187,9 +187,9 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
             try {
-                DBPPlatformLanguage curLanguage = DBeaverCore.getInstance().getLanguage();
+                DBPPlatformLanguage curLanguage = DBWorkbench.getPlatform().getLanguage();
                 if (curLanguage != language) {
-                    DBeaverCore.getInstance().setPlatformLanguage(language);
+                    ((DBPPlatformLanguageManager)DBWorkbench.getPlatform()).setPlatformLanguage(language);
 
                     if (UIUtils.confirmAction(
                         getShell(),

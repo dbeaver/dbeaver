@@ -38,13 +38,13 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -320,7 +320,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         if (usedDataSources.containsKey(container) &&
             event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
             Boolean.FALSE.equals(event.getEnabled()) &&
-            !DBeaverCore.isClosing())
+            !DBWorkbench.getPlatform().isShuttingDown())
         {
             // Close editor only if it is simple disconnect
             // Workbench shutdown doesn't close editor

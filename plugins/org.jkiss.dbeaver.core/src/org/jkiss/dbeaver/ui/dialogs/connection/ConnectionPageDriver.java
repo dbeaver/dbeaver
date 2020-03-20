@@ -25,11 +25,11 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -89,7 +89,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         }
 
         connectionProject = wizard.getSelectedProject();
-        final List<DBPProject> projects = DBeaverCore.getInstance().getWorkspace().getProjects();
+        final List<DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
         if (projects.size() == 1) {
             if (connectionProject == null) {
                 connectionProject = projects.get(0);

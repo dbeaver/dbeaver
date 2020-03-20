@@ -55,7 +55,6 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
@@ -479,7 +478,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             } else if (selection.size() == 1) {
                 status = CommonUtils.toString(selection.getFirstElement());
             } else {
-                status = String.valueOf(selection.size()) + " objects";
+                status = selection.size() + " objects";
             }
             if (progressControl != null) {
                 progressControl.setInfo(status);
@@ -1103,9 +1102,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         // log.debug(message);
                         List<Status> messageStatuses = new ArrayList<>(errorMessages.size());
                         for (String error : errorMessages) {
-                            messageStatuses.add(new Status(Status.ERROR, DBeaverCore.getCorePluginID(), error));
+                            messageStatuses.add(new Status(Status.ERROR, ERDActivator.PLUGIN_ID, error));
                         }
-                        MultiStatus status = new MultiStatus(DBeaverCore.getCorePluginID(), 0, messageStatuses.toArray(new IStatus[messageStatuses.size()]), null, null);
+                        MultiStatus status = new MultiStatus(ERDActivator.PLUGIN_ID, 0, messageStatuses.toArray(new IStatus[0]), null, null);
 
                         DBWorkbench.getPlatformUI().showError(
                                 "Diagram loading errors",
