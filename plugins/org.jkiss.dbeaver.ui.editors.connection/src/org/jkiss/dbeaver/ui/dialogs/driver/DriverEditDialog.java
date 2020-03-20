@@ -787,8 +787,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 
-        driver.setDriverParameters(driverPropertySource.getPropertiesWithDefaults());
-        driver.setConnectionProperties(connectionPropertySource.getProperties());
+        driver.setDriverParameters(CommonUtils.makeStringMap(driverPropertySource.getPropertiesWithDefaults()));
+        driver.setConnectionProperties(CommonUtils.makeStringMap(connectionPropertySource.getProperties()));
 
         // Store client homes
         if (clientHomesPanel != null) {
@@ -847,7 +847,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 UIUtils.asyncExec(() -> {
                     DriverEditDialog dialog = new DriverEditDialog(
                         UIUtils.getActiveWorkbenchShell(),
-                        (DriverDescriptor) dataSource.getContainer().getDriver());
+                        dataSource.getContainer().getDriver());
                     dialog.open();
                 });
                 super.buttonPressed(IDialogConstants.OK_ID);

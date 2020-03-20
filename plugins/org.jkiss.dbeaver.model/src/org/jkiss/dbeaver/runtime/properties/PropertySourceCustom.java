@@ -83,7 +83,7 @@ public class PropertySourceCustom implements DBPPropertySource {
         this.defaultValues = defaultValues;
     }
 
-    public void addDefaultValues(Map<Object, Object> defaultValues)
+    public void addDefaultValues(Map<?, ?> defaultValues)
     {
         this.defaultValues.putAll(defaultValues);
     }

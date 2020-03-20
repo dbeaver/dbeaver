@@ -671,6 +671,14 @@ public class CommonUtils {
         return getBoolean(optionValue, defValue);
     }
 
+    public static Map<String, Object> makeStringMap(Map<Object, Object> objMap) {
+        Map<String, Object> strMap = new LinkedHashMap<>(objMap.size());
+        for (Map.Entry<Object, Object> e : objMap.entrySet()) {
+            strMap.put(toString(e.getKey(), null), e.getValue());
+        }
+        return strMap;
+    }
+
     public static String fixedLengthString(String string, int length) {
         return String.format("%1$"+length+ "s", string);
     }

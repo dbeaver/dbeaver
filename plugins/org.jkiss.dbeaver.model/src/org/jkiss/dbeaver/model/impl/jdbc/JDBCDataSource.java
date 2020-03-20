@@ -220,9 +220,9 @@ public abstract class JDBCDataSource
     protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
         {
             // Use driver properties
-            final Map<Object, Object> driverProperties = container.getDriver().getConnectionProperties();
-            for (Map.Entry<Object,Object> prop : driverProperties.entrySet()) {
-                connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
+            final Map<String, Object> driverProperties = container.getDriver().getConnectionProperties();
+            for (Map.Entry<String, Object> prop : driverProperties.entrySet()) {
+                connectProps.setProperty(prop.getKey(), CommonUtils.toString(prop.getValue()));
             }
         }
 

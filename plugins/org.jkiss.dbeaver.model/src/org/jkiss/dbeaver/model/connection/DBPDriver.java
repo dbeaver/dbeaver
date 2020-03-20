@@ -114,13 +114,13 @@ public interface DBPDriver extends DBPNamedObject
     Collection<DBPPropertyDescriptor> getConnectionPropertyDescriptors();
 
     @NotNull
-    Map<Object, Object> getDefaultConnectionProperties();
+    Map<String, Object> getDefaultConnectionProperties();
 
     @NotNull
-    Map<Object, Object> getConnectionProperties();
+    Map<String, Object> getConnectionProperties();
 
     @NotNull
-    Map<Object, Object> getDriverParameters();
+    Map<String, Object> getDriverParameters();
 
     @Nullable
     Object getDriverParameter(String name);
