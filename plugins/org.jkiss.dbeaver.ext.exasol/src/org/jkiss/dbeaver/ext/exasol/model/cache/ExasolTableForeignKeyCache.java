@@ -41,7 +41,7 @@ public final class ExasolTableForeignKeyCache
     extends JDBCCompositeCache<ExasolSchema, ExasolTable, ExasolTableForeignKey, ExasolTableKeyColumn> {
 
     private static final String SQL_FK_TAB =
-        "select\r\n" +
+        "/*snapshot execution*/ select\r\n" +
             "		CONSTRAINT_NAME,CONSTRAINT_TABLE,CONSTRAINT_SCHEMA,constraint_owner,c.constraint_enabled,constraint_Type," +
             "cc.column_name,cc.ordinal_position,cc.referenced_schema,cc.referenced_table,cc.referenced_column" +
             "	from\r\n" +
@@ -68,7 +68,7 @@ public final class ExasolTableForeignKeyCache
             "	order by\r\n" +
             "		ORDINAL_POSITION";
     private static final String SQL_FK_ALL =
-        "select\r\n" +
+        "/*snapshot execution*/ select\r\n" +
             "		CONSTRAINT_NAME,CONSTRAINT_TABLE,CONSTRAINT_SCHEMA,constraint_owner,c.constraint_enabled,constraint_Type," +
             "cc.column_name,cc.ordinal_position,cc.referenced_schema,cc.referenced_table,cc.referenced_column" +
             "	from\r\n" +

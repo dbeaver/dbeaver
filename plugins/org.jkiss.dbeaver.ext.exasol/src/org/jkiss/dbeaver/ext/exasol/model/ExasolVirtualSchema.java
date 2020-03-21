@@ -56,7 +56,7 @@ public class ExasolVirtualSchema extends ExasolSchema  {
 		
 		virtualSchemaParameterCache = new JDBCObjectSimpleCache<>(
 				ExasolVirtualSchemaParameter.class, 
-				"select\r\n" + 
+				"/*snapshot execution*/ select\r\n" + 
 				"	property_name,\r\n" + 
 				"	property_value\r\n" + 
 				"from\r\n" + 

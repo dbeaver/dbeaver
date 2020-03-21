@@ -87,7 +87,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         this.owner = owner;
         this.scriptCache = new ExasolJDBCObjectSimpleCacheLiterals<>(
         		ExasolScript.class,
-        		"select "
+        		"/*snapshot execution*/ select "
         		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
         		+ "from SYS." + tablePrefix + "_SCRIPTS a inner join SYS." + tablePrefix + "_OBJECTS b "
         		+ "on a.SCRIPT_OBJECT_ID  = b.object_id and b.object_type = 'SCRIPT' where a.script_schema = '%s' "
@@ -95,7 +95,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         		name);
 
         this.functionCache = new ExasolJDBCObjectSimpleCacheLiterals<>(ExasolFunction.class,
-                "SELECT\n" + 
+                "/*snapshot execution*/ SELECT\n" + 
                 "    F.*,\n" + 
                 "    O.CREATED\n" + 
                 "FROM\n" + 
@@ -294,7 +294,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     {
     	if (!refreshed && this.objectId != null) {
 	    	JDBCSession session = DBUtils.openMetaSession(monitor, this, ExasolMessages.read_schema_details );
-	    	try (JDBCPreparedStatement stmt = session.prepareStatement("SELECT * FROM SYS."+getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL)+"_OBJECT_SIZES WHERE OBJECT_ID = ?"))
+	    	try (JDBCPreparedStatement stmt = session.prepareStatement("/*snapshot execution*/ SELECT * FROM SYS."+getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL)+"_OBJECT_SIZES WHERE OBJECT_ID = ?"))
 	    	{
 	    		stmt.setInt(1, this.objectId);
 	    		try (JDBCResultSet dbResult = stmt.executeQuery()) 
