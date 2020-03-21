@@ -24,8 +24,9 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
+import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
@@ -37,7 +38,7 @@ import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,21 +50,16 @@ import java.util.Locale;
 /**
  * OracleConnectionPage
  */
-public class OracleConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
-{
-    //static final Log log = Log.getLog(OracleConnectionPage.class);
+public class OracleConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage {
 
     private Text hostText;
     private Text portText;
     private Combo sidServiceCombo;
     private Combo serviceNameCombo;
-    private Text userNameText;
-    private Combo userRoleCombo;
     private Combo tnsNameCombo;
 	private TabFolder connectionTypeFolder;
     private ClientHomesSelector oraHomeSelector;
     private Text connectionUrlText;
-    private Button osAuthCheck;
 
     private ControlsListener controlModifyListener;
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
@@ -110,8 +106,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             }
         });
 
-        final Group securityGroup = UIUtils.createControlGroup(addrGroup, OracleUIMessages.dialog_connection_security_group, 4, GridData.FILL_HORIZONTAL, 0);
-        createSecurityGroup(securityGroup);
+        createAuthPanel(addrGroup, 1);
 
         Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -257,52 +252,6 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         connectionUrlText.addModifyListener(controlModifyListener);
     }
 
-    private void createSecurityGroup(Composite parent)
-    {
-        Label userNameLabel = UIUtils.createControlLabel(parent, OracleUIMessages.dialog_connection_user_name);
-        userNameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        userNameText = new Text(parent, SWT.BORDER);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        userNameText.setLayoutData(gd);
-        userNameText.addModifyListener(controlModifyListener);
-
-        Label userRoleLabel = UIUtils.createControlLabel(parent, OracleUIMessages.dialog_connection_role);
-        userRoleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        userRoleCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
-        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(userRoleCombo) * 10;
-        userRoleCombo.setLayoutData(gd);
-        userRoleCombo.add(OracleConnectionRole.NORMAL.getTitle());
-        userRoleCombo.add(OracleConnectionRole.SYSDBA.getTitle());
-        userRoleCombo.add(OracleConnectionRole.SYSOPER.getTitle());
-        userRoleCombo.select(0);
-
-        createPasswordText(parent, OracleUIMessages.dialog_connection_password);
-        passwordText.addModifyListener(controlModifyListener);
-
-        osAuthCheck = UIUtils.createCheckbox(parent, OracleUIMessages.dialog_connection_os_authentication, false);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = 2;
-        osAuthCheck.setLayoutData(gd);
-        osAuthCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                boolean osAuth = osAuthCheck.getSelection();
-                userNameText.setEnabled(!osAuth);
-                passwordText.setEnabled(!osAuth);
-                savePasswordCheck.setEnabled(!osAuth);
-            }
-        });
-
-        createPasswordControls(parent, 4);
-
-        parent.setTabList(new Control[]{userNameText, passwordText.getParent(), userRoleCombo, osAuthCheck});
-    }
-
     private void createClientHomeGroup(Composite bottomControls)
     {
         oraHomeSelector = new ClientHomesSelector(bottomControls, OracleUIMessages.dialog_connection_ora_home) {
@@ -410,23 +359,17 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 break;
         }
 
-        if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
-            userNameText.setEnabled(false);
-            passwordText.setEnabled(false);
-            savePasswordCheck.setEnabled(false);
-            osAuthCheck.setSelection(true);
-        } else {
-            userNameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
-            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
-            osAuthCheck.setSelection(false);
-        }
-
-        final String roleName = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
-        if (roleName != null) {
-            userRoleCombo.setText(roleName.toUpperCase(Locale.ENGLISH));
-        }
-
         activated = true;
+    }
+
+    @NotNull
+    @Override
+    protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
+        // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
+        if (CommonUtils.toBoolean(dataSource.getConnectionConfiguration().getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
+            return OracleAuthOS.ID;
+        }
+        return super.getDefaultAuthModelId(dataSource);
     }
 
     @Override
@@ -449,23 +392,6 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText());
                 break;
-        }
-        if (osAuthCheck.getSelection()) {
-            connectionInfo.setUserName("");
-            connectionInfo.setUserPassword(""); //$NON-NLS-1$
-            connectionInfo.setProviderProperty(OracleConstants.OS_AUTH_PROP, String.valueOf(true));
-        } else {
-            connectionInfo.setUserName(userNameText.getText());
-            connectionInfo.setUserPassword(passwordText.getText());
-            connectionInfo.removeProviderProperty(OracleConstants.OS_AUTH_PROP);
-        }
-
-        connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());
-
-        if (userRoleCombo.getSelectionIndex() > 0) {
-            connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase(Locale.ENGLISH));
-        } else {
-            connectionInfo.getProviderProperties().remove(OracleConstants.PROP_INTERNAL_LOGON);
         }
 
         super.saveSettings(dataSource);

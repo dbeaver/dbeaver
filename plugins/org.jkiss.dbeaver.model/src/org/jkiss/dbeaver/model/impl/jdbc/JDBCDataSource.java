@@ -123,7 +123,7 @@ public abstract class JDBCDataSource
             }
         }
 
-        DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
+        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration(container.getActualConnectionConfiguration());
         Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
 
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
@@ -152,6 +152,12 @@ public abstract class JDBCDataSource
             int openTimeout = getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
             final Driver driverInstanceFinal = driverInstance;
 
+            try {
+                authModel.initAuthentication(monitor, container, connectionInfo, connectProps);
+            } catch (DBException e) {
+                throw new DBCException("Authentication error", e);
+            }
+
             DBRRunnableWithProgress connectTask = monitor1 -> {
                 try {
                     if (driverInstanceFinal == null) {
@@ -172,11 +178,6 @@ public abstract class JDBCDataSource
                 }
             };
 
-            try {
-                authModel.initAuthentication(monitor, container, connectionInfo, connectProps);
-            } catch (DBException e) {
-                throw new DBCException("Authentication error", e);
-            }
             boolean openTaskFinished;
             try {
                 if (openTimeout <= 0) {

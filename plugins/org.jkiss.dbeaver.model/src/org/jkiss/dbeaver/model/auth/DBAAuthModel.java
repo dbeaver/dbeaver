@@ -33,7 +33,7 @@ public interface DBAAuthModel {
     /**
      * Called before connection opening. May modify any connection configuration properties
      *
-     * @param configuration connection configuration
+     * @param configuration connection configuration. Can be modified, changes will affect only current connection initiation.
      * @param connProperties auth model specific options.
      * @throws DBException on error
      */
