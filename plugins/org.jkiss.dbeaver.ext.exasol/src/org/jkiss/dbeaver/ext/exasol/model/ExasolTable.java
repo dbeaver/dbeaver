@@ -64,7 +64,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private Boolean hasPartitionKey;
     private ExasolTablePartitionColumnCache tablePartitionColumnCache = new ExasolTablePartitionColumnCache();
     
-    private static String readAdditionalTableInfo = "SELECT" + 
+    private static String readAdditionalTableInfo = "/*snapshot execution*/ SELECT" + 
             "    * " + 
             "FROM" + 
             "    (" + 
@@ -110,7 +110,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
             "    table_schema," + 
             "    o.table_name" + 
             "";
-    private static String readTableSize =         "SELECT " + 
+    private static String readTableSize =         "/*snapshot execution*/ SELECT " + 
             "    * " + 
             "FROM " + 
             "    ( " + 

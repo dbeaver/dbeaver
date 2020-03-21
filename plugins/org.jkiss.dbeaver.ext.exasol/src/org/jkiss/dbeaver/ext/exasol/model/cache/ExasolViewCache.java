@@ -41,7 +41,7 @@ import java.sql.SQLException;
  */
 public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, ExasolTableColumn> {
 
-	private static final String SQL_COLS_VIEW = "SELECT " + 
+	private static final String SQL_COLS_VIEW = "/*snapshot execution*/ SELECT " + 
 			"c.* " + 
 			"FROM " + 
 			"SYS.%s_COLUMNS c " + 
@@ -50,7 +50,7 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 			"AND COLUMN_TABLE = '%s' " + 
 			"ORDER BY " + 
 			"COLUMN_ORDINAL_POSITION ";
-	private static final String SQL_COLS_ALL = "SELECT " + 
+	private static final String SQL_COLS_ALL = "/*snapshot execution*/ SELECT " + 
 			"c.* " + 
 			"FROM " + 
 			"SYS.%s_COLUMNS c " + 
@@ -60,7 +60,7 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 			"COLUMN_ORDINAL_POSITION ";
 
 	private static final String SQL_COLS_SYS_VIEW = ""
-			+ "SELECT OBJECT_ID as COLUMN_OBJECT_ID, " + 
+			+ "/*snapshot execution*/ SELECT OBJECT_ID as COLUMN_OBJECT_ID, " + 
 			"	TABLE_CAT, " + 
 			"	TABLE_SCHEM as COLUMN_SCHEMA, " + 
 			"	TABLE_NAME as COLUMN_TABLE, " + 
@@ -93,7 +93,7 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 			"WHERE table_schem = '%s' AND table_name = '%s'";
 
 	private static final String SQL_COLS_SYS_ALL = ""
-			+ "SELECT OBJECT_ID as COLUMN_OBJECT_ID, " + 
+			+ "/*snapshot execution*/ SELECT OBJECT_ID as COLUMN_OBJECT_ID, " + 
 			"	TABLE_CAT, " + 
 			"	TABLE_SCHEM as COLUMN_SCHEMA, " + 
 			"	TABLE_NAME as COLUMN_TABLE, " + 
