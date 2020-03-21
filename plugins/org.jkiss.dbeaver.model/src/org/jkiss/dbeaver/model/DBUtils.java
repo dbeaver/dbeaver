@@ -344,6 +344,12 @@ public final class DBUtils {
                 // Not found - try to find in selected object
                 DBSObject selectedObject = getSelectedObject(executionContext);
                 if (selectedObject instanceof DBSObjectContainer) {
+                    if (selectedObject instanceof DBSSchema && selectedObject.getParentObject() instanceof DBSCatalog && CommonUtils.isEmpty(catalogName) &&
+                        !CommonUtils.equalObjects(schemaName, selectedObject.getName()))
+                    {
+                        // We search for schema and active object is schema. Let's search our schema in catalog
+                        selectedObject = selectedObject.getParentObject();
+                    }
                     if (selectedObject instanceof DBSSchema && CommonUtils.equalObjects(schemaName, selectedObject.getName()) ||
                         selectedObject instanceof DBSCatalog && CommonUtils.equalObjects(catalogName, selectedObject.getName())) {
                         // Selected object is a catalog or schema which is also specified as catalogName/schemaName -
