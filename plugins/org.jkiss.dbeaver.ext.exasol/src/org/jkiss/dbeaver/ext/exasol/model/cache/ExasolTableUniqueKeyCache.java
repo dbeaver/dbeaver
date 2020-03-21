@@ -39,7 +39,7 @@ public final class ExasolTableUniqueKeyCache
     extends JDBCCompositeCache<ExasolSchema, ExasolTable, ExasolTableUniqueKey, ExasolTableKeyColumn> {
 
     private static final String SQL_UK_TAB =
-        "SELECT\r\n" + 
+        "/*snapshot execution*/ SELECT\r\n" + 
         "	C.CONSTRAINT_SCHEMA,\r\n" + 
         "	c.CONSTRAINT_TABLE,\r\n" + 
         "	c.CONSTRAINT_NAME,\r\n" + 
@@ -75,7 +75,7 @@ public final class ExasolTableUniqueKeyCache
         "	ORDINAL_POSITION";
     
     private static final String SQL_UK_ALL =
-    		"SELECT\r\n" + 
+    		"/*snapshot execution*/ SELECT\r\n" + 
     		"	C.CONSTRAINT_SCHEMA,\r\n" + 
     		"	c.CONSTRAINT_TABLE,\r\n" + 
     		"	c.CONSTRAINT_NAME,\r\n" + 

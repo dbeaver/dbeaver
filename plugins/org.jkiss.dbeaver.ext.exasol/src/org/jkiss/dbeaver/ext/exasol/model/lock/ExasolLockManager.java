@@ -37,7 +37,7 @@ public class ExasolLockManager extends LockGraphManager
 		implements DBAServerLockManager<ExasolLock, ExasolLockItem> {
 	
 	public static final String LOCK_QUERY = 
-			"WITH LOCKED AS (\r\n" + 
+			"/*snapshot execution*/ WITH LOCKED AS (\r\n" + 
 			"SELECT \r\n" + 
 			"w.SESSION_ID AS w_session_id,w.login_time as w_login_time,\r\n" + 
 			"w.user_name AS w_user_name,\r\n" + 
@@ -93,7 +93,7 @@ public class ExasolLockManager extends LockGraphManager
 			;
 	
 	public static final String LOCK_ITEM_QUERY = 
-			"with\r\n" + 
+			"/*snapshot execution*/ with\r\n" + 
 			"	EXA_SQL as (\r\n" + 
 			"		select\r\n" + 
 			"			SESSION_ID,\r\n" + 

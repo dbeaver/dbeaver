@@ -41,7 +41,7 @@ import java.sql.SQLException;
 public class ExasolExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<DBSCatalog, ExasolSchema> {
     private static final Log log = Log.getLog(ExasolExecutionContext.class);
 
-    private static final String GET_CURRENT_SCHEMA = "SELECT CURRENT_SCHEMA";
+    private static final String GET_CURRENT_SCHEMA = "/*snapshot execution*/ SELECT CURRENT_SCHEMA";
     private static final String SET_CURRENT_SCHEMA = "OPEN SCHEMA \"%s\"";
 
     private String activeSchemaName;
