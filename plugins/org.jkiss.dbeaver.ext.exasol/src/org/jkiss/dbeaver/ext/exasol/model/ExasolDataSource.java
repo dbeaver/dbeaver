@@ -120,7 +120,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		} catch (SQLException e) {
 			LOG.warn("Error reading active schema", e);
 		}
-		String schemaSQL = "select schema_name as object_name,schema_owner as OWNER,CAST(NULL AS TIMESTAMP) AS created, schema_comment as OBJECT_COMMENT, SCHEMA_OBJECT_ID from SYS.EXA_SCHEMAS s  ";
+		String schemaSQL = "/*snapshot execution*/ select schema_name as object_name,schema_owner as OWNER,CAST(NULL AS TIMESTAMP) AS created, schema_comment as OBJECT_COMMENT, SCHEMA_OBJECT_ID from SYS.EXA_SCHEMAS s  ";
 		
 		if (exasolCurrentUserPrivileges.getatLeastV6()) {
 			
@@ -130,7 +130,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 			//build virtual schema cache for >V6 databases
 			virtualSchemaCache = new JDBCObjectSimpleCache<>(
 					ExasolVirtualSchema.class,
-					"select" + 
+					"/*snapshot execution*/ select" + 
 					"	s.SCHEMA_NAME as OBJECT_NAME," + 
 					"	s.SCHEMA_OWNER AS OWNER," + 
 					"CAST(NULL AS TIMESTAMP) AS created, " +
@@ -162,19 +162,19 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		}
 
 		this.userCache = new JDBCObjectSimpleCache<>(ExasolUser.class,
-					"select * from SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.USER)  +"_USERS ORDER BY USER_NAME");
+					"/*snapshot execution*/ select * from SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.USER)  +"_USERS ORDER BY USER_NAME");
 		this.roleCache = new JDBCObjectSimpleCache<>(ExasolRole.class, "SELECT ROLE_NAME,CREATED,ROLE_PRIORITY AS USER_PRIORITY,ROLE_COMMENT FROM SYS." + this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_ROLES ORDER BY ROLE_NAME");
 		
 		this.connectionCache = new JDBCObjectSimpleCache<>(
-				ExasolConnection.class, "SELECT * FROM SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_CONNECTIONS ORDER BY CONNECTION_NAME");
+				ExasolConnection.class, "/*snapshot execution*/ SELECT * FROM SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_CONNECTIONS ORDER BY CONNECTION_NAME");
 		
 		if (exasolCurrentUserPrivileges.hasPriorityGroups()) {
 			this.priorityGroupCache = new JDBCObjectSimpleCache<>(
-				ExasolPriorityGroup.class, "SELECT * FROM SYS.EXA_PRIORITY_GROUPS ORDER BY PRIORITY_GROUP_NAME"
+				ExasolPriorityGroup.class, "/*snapshot execution*/ SELECT * FROM SYS.EXA_PRIORITY_GROUPS ORDER BY PRIORITY_GROUP_NAME"
 				);
 			
 			this.securityPolicyCache = new JDBCObjectSimpleCache<>(ExasolSecurityPolicy.class,
-					"SELECT SYSTEM_VALUE FROM sys.EXA_PARAMETERS WHERE PARAMETER_NAME = 'PASSWORD_SECURITY_POLICY'"
+					"/*snapshot execution*/ SELECT SYSTEM_VALUE FROM sys.EXA_PARAMETERS WHERE PARAMETER_NAME = 'PASSWORD_SECURITY_POLICY'"
 					);
 		} else {
 			this.priorityGroupCache = new DBSObjectCache<ExasolDataSource, ExasolPriorityGroup>() {
@@ -245,14 +245,14 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		if (exasolCurrentUserPrivileges.getUserHasDictionaryAccess())
 		{
 			this.connectionGrantCache =  new JDBCObjectSimpleCache<>(
-					ExasolConnectionGrant.class,"SELECT c.*,P.ADMIN_OPTION,P.GRANTEE FROM SYS.EXA_DBA_CONNECTION_PRIVS P "
+					ExasolConnectionGrant.class,"/*snapshot execution*/ SELECT c.*,P.ADMIN_OPTION,P.GRANTEE FROM SYS.EXA_DBA_CONNECTION_PRIVS P "
 							+ "INNER JOIN SYS.EXA_DBA_CONNECTIONS C on P.GRANTED_CONNECTION = C.CONNECTION_NAME ORDER BY P.GRANTEE,C.CONNECTION_NAME ");
 		}
 		
 		if (exasolCurrentUserPrivileges.getUserHasDictionaryAccess())
 		{
 			this.baseTableGrantCache = new JDBCObjectSimpleCache<>(
-					ExasolBaseObjectGrant.class,"SELECT " + 
+					ExasolBaseObjectGrant.class,"/*snapshot execution*/ SELECT " + 
 							"	OBJECT_SCHEMA," + 
 							"	OBJECT_TYPE," + 
 							"	GRANTEE," + 
@@ -278,14 +278,14 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		{
 			this.systemGrantCache = new JDBCObjectSimpleCache<>(
 					ExasolSystemGrant.class,
-					"SELECT GRANTEE,PRIVILEGE,ADMIN_OPTION FROM SYS.EXA_DBA_SYS_PRIVS ORDER BY GRANTEE,PRIVILEGE");
+					"/*snapshot execution*/ SELECT GRANTEE,PRIVILEGE,ADMIN_OPTION FROM SYS.EXA_DBA_SYS_PRIVS ORDER BY GRANTEE,PRIVILEGE");
 		}
 		
 		if (exasolCurrentUserPrivileges.getUserHasDictionaryAccess())
 		{
 			this.roleGrantCache = new JDBCObjectSimpleCache<>(
 					ExasolRoleGrant.class,
-					"select r.*,p.ADMIN_OPTION,p.GRANTEE from EXA_DBA_ROLES r "
+					"/*snapshot execution*/ select r.*,p.ADMIN_OPTION,p.GRANTEE from EXA_DBA_ROLES r "
 					+ "INNER JOIN  EXA_DBA_ROLE_PRIVS p ON p.GRANTED_ROLE = r.ROLE_NAME ORDER BY P.GRANTEE,R.ROLE_NAME"
 					);
 		}

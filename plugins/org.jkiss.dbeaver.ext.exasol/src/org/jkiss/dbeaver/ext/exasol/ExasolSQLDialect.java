@@ -57,7 +57,7 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
         	JDBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), dataSource, "" );
         	try (JDBCStatement stmt = session.createStatement())
         	{
-        		try (JDBCResultSet dbResult = stmt.executeQuery("SELECT KEYWORD,RESERVED FROM  EXA_SQL_KEYWORDS")) 
+        		try (JDBCResultSet dbResult = stmt.executeQuery("/*snapshot execution*/ SELECT KEYWORD,RESERVED FROM  EXA_SQL_KEYWORDS")) 
         		{
         			
         			while(dbResult.next())

@@ -46,11 +46,11 @@ import java.util.stream.Collectors;
 public class ExasolUtils {
 
     // select columns of tables
-    private static final String TABLE_QUERY_COLUMNS = "SELECT * FROM EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA='%s' AND COLUMN_TABLE='%s' ORDER BY COLUMN_ORDINAL_POSITION";
+    private static final String TABLE_QUERY_COLUMNS = "/*snapshot execution*/ SELECT * FROM EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA='%s' AND COLUMN_TABLE='%s' ORDER BY COLUMN_ORDINAL_POSITION";
 
     // list sessions
-    private static final String SESS_DBA_QUERY = "select * from exa_dba_sessions";
-    private static final String SESS_ALL_QUERY = "select * from exa_ALL_sessions";
+    private static final String SESS_DBA_QUERY = "/*snapshot execution*/ select * from exa_dba_sessions";
+    private static final String SESS_ALL_QUERY = "/*snapshot execution*/ select * from exa_ALL_sessions";
 
     private static final Log LOG = Log.getLog(ExasolUtils.class);
 

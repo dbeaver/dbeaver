@@ -101,7 +101,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
             JDBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), this, "Read Table Details");
             try (JDBCStatement stmt = session.createStatement())
             {
-                String sql = String.format("SELECT VIEW_OWNER,VIEW_TEXT FROM SYS.EXA_ALL_VIEWS WHERE VIEW_SCHEMA = '%s' and VIEW_NAME = '%s'",
+                String sql = String.format("/*snapshot execution*/ SELECT VIEW_OWNER,VIEW_TEXT FROM SYS.EXA_ALL_VIEWS WHERE VIEW_SCHEMA = '%s' and VIEW_NAME = '%s'",
                         ExasolUtils.quoteString(this.getSchema().getName()),
                         ExasolUtils.quoteString(this.getName())
                         );

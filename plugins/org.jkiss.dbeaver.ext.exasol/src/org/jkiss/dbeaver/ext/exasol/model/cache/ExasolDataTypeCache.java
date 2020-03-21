@@ -36,7 +36,7 @@ public final class ExasolDataTypeCache
     private LongKeyMap<ExasolDataType> dataTypeMap = new LongKeyMap<>();
 	
 	private static final String SQL_TYPE_CACHE =
-        "select * from SYS.EXA_SQL_TYPES";
+        "/*snapshot execution*/ select * from SYS.EXA_SQL_TYPES";
 
 	@NotNull
     @Override

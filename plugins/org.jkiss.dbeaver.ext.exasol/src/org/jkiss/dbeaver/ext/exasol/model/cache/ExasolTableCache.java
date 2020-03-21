@@ -36,7 +36,7 @@ import java.sql.SQLException;
 public final class ExasolTableCache
 		extends JDBCStructCache<ExasolSchema, ExasolTable, ExasolTableColumn> {
 
-	private static final String SQL_COLS_TAB = "SELECT " + 
+	private static final String SQL_COLS_TAB = "/*snapshot execution*/ SELECT " + 
 			"c.* " + 
 			"FROM " + 
 			"SYS.%s_COLUMNS c " + 
@@ -45,7 +45,7 @@ public final class ExasolTableCache
 			"AND COLUMN_TABLE = '%s' " + 
 			"ORDER BY " + 
 			"COLUMN_ORDINAL_POSITION ";
-	private static final String SQL_COLS_ALL = "SELECT " + 
+	private static final String SQL_COLS_ALL = "/*snapshot execution*/ SELECT " + 
 			"c.* " + 
 			"FROM " + 
 			"SYS.%s_COLUMNS c " + 
@@ -54,7 +54,7 @@ public final class ExasolTableCache
 			"ORDER BY " + 
 			"COLUMN_ORDINAL_POSITION ";
 	
-	private static final String SQL_TABLES = "SELECT * FROM \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'TABLE' order by TABLE_NAME";
+	private static final String SQL_TABLES = "/*snapshot execution*/ SELECT * FROM \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'TABLE' order by TABLE_NAME";
 
 	public ExasolTableCache()
 	{
