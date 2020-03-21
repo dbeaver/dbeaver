@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -279,8 +280,16 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
 
     @Override
     protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
+        String userName = connectionInfo.getUserName();
+        if (!DBAAuthDatabaseNative.ID.equals(connectionInfo.getAuthModelId())) {
+            return userName;
+        }
+        // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
+        if (!CommonUtils.isEmpty(userName) && userName.contains(" AS ")) {
+            return userName;
+        }
         final String role = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
-        return role == null ? connectionInfo.getUserName() : connectionInfo.getUserName() + " AS " + role;
+        return role == null ? userName : userName + " AS " + role;
     }
 
     @Override
@@ -306,6 +315,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
             appName = appName.replace('(', '_').replace(')', '_'); // Replace brackets - Oracle don't like them
             connectionsProps.put("v$session.program", CommonUtils.truncateString(appName, 48));
         }
+        // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
         if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
             connectionsProps.put("v$session.osuser", System.getProperty(StandardConstants.ENV_USER_NAME));
         }

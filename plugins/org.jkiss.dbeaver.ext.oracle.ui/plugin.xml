@@ -124,6 +124,11 @@
         </editor>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthDatabaseNative" uiClass="org.jkiss.dbeaver.ext.oracle.ui.config.OracleAuthDatabaseNativeConfigurator"/>
+<!--        <propertyConfigurator class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS" uiClass="org.jkiss.dbeaver.ext.oracle.ui.config.OracleAuthOSConfigurator"/>-->
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <editorContribution editorId="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="oracle"/>

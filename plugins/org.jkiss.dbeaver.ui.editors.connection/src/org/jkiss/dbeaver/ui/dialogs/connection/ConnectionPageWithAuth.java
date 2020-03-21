@@ -21,6 +21,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -73,9 +74,10 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             }
         }
         if (selectedAuthModel == null) {
+            String defaultAuthModelId = getDefaultAuthModelId(activeDataSource);
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
-                if (amd.getId().equals(DBAAuthDatabaseNative.ID)) {
+                if (amd.getId().equals(defaultAuthModelId)) {
                     selectedAuthModel = amd;
                     break;
                 }
@@ -87,6 +89,11 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         }
 
         changeAuthModel();
+    }
+
+    @NotNull
+    protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
+        return DBAAuthDatabaseNative.ID;
     }
 
     private void changeAuthModel() {

@@ -348,6 +348,24 @@
         </provider>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="oracle_native"
+                label="Database Native"
+                description="Oracle native authentication (name/password)"
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthDatabaseNative">
+            <replace model="native"/>
+            <datasource id="oracle"/>
+        </authModel>
+        <authModel
+                id="oracle_os"
+                label="OS Authentication"
+                description="Oracle current OS authentication"
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS">
+            <datasource id="oracle"/>
+        </authModel>
+    </extension>
+
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNNode" class="org.jkiss.dbeaver.ext.oracle.model.OracleObjectAdapter">
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
