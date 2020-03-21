@@ -119,6 +119,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
                     selectedAuthModel = newAuthModel;
                     showAuthModelSettings();
                 }
+                modelConfigPlaceholder.setFocus();
             }
         });
         for (DBPAuthModelDescriptor model : allAuthModels) {
