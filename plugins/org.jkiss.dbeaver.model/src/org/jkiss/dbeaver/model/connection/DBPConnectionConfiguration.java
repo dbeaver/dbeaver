@@ -365,6 +365,13 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.authProperties = authProperties;
     }
 
+    public void setAuthProperty(String name, String value) {
+        if (authProperties == null) {
+            authProperties = new HashMap<>();
+        }
+        this.authProperties.put(name, value);
+    }
+
     @Override
     public String toString() {
         return "ConnectionConfiguration: " + (url == null ? databaseName : url);
