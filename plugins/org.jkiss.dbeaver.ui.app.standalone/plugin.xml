@@ -116,6 +116,8 @@
 
         <image commandId="org.eclipse.ui.navigate.collapseAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/collapse_all.png" disabledIcon="icons/eclipse/collapse_all_d.png"/>
         <image commandId="org.eclipse.ui.navigate.expandAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/expand_all.png" disabledIcon="icons/eclipse/expand_all_d.png"/>
+
+        <image commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" icon="icons/eclipse/search.png" disabledIcon="icons/eclipse/search_d.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">
@@ -269,6 +271,8 @@
         <!--<key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Y"/>-->
         <key commandId="org.eclipse.ui.edit.text.join.lines" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+J"/>
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
+
+        <key commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" contextId="org.eclipse.ui.contexts.window" sequence="CTRL+ALT+SHIFT+F" schemeId="org.jkiss.dbeaver.defaultKeyScheme"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

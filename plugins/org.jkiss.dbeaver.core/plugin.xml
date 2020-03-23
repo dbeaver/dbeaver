@@ -545,6 +545,9 @@
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
+                <command commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
             <toolbar id="dbeaver-transactions" label="%toolbar.dbeaver-transactions.label">
