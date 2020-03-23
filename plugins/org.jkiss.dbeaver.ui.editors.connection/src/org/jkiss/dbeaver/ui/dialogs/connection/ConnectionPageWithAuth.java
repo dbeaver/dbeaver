@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Comparator;
 import java.util.List;
@@ -150,6 +151,14 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         if (authModelConfigurator != null) {
             authModelConfigurator.createControl(modelConfigPlaceholder, () -> getSite().updateButtons());
             authModelConfigurator.loadSettings(getSite().getActiveDataSource());
+        } else {
+            if (selectedAuthModel != null && !CommonUtils.isEmpty(selectedAuthModel.getDescription())) {
+                Label descLabel = new Label(modelConfigPlaceholder, SWT.NONE);
+                descLabel.setText(selectedAuthModel.getDescription());
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 2;
+                descLabel.setLayoutData(gd);
+            }
         }
 
         if (modelConfigPlaceholder.getSize().x > 0 && parentFolder != null) {

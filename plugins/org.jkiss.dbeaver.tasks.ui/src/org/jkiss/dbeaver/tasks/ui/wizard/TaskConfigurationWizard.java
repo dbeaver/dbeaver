@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -282,7 +283,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
 
     public void createTaskSaveGroup(Composite parent) {
         Group taskGroup = UIUtils.createControlGroup(
-            parent, "Task", 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            parent, TaskUIMessages.task_config_wizard_group_task_label, 2, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
         createTaskSaveButtons(taskGroup, false, 1);
     }
 

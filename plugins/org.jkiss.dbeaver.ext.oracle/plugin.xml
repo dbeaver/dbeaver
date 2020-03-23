@@ -360,7 +360,7 @@
         <authModel
                 id="oracle_os"
                 label="OS Authentication"
-                description="Oracle current OS authentication"
+                description="OS authentication allows Oracle to pass control of user authentication to the operating system."
                 class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS">
             <datasource id="oracle"/>
         </authModel>
