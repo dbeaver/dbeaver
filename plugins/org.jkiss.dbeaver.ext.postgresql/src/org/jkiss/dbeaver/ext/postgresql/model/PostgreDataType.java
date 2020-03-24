@@ -96,6 +96,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private boolean isNotNull;
     private long baseTypeId;
     private int typeMod;
+    private String baseTypeName;
     private int arrayDim;
     private long collationId;
     private String defaultValue;
@@ -183,6 +184,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull");
         this.baseTypeId = JDBCUtils.safeGetLong(dbResult, "typbasetype");
         this.typeMod = JDBCUtils.safeGetInt(dbResult, "typtypmod");
+        this.baseTypeName = JDBCUtils.safeGetString(dbResult, "base_type_name");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "typndims");
         if (getDataSource().getServerType().supportsCollations()) {
             this.collationId = JDBCUtils.safeGetLong(dbResult, "typcollation");
@@ -585,7 +587,12 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 break;
             }
             case d: {
-                sql.append("CREATE DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ").append(getBaseType(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL));
+                sql.append("CREATE DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ");
+                if (baseTypeName != null) {
+                    sql.append(baseTypeName);
+                } else {
+                    sql.append(getBaseType(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL));
+                }
                 PostgreCollation collation = getCollationId(monitor);
                 if (collation != null) {
                     sql.append("\n\tCOLLATE ").append(collation.getName());
