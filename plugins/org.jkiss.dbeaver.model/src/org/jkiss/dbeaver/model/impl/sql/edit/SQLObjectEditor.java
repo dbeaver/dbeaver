@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.cache.DBSCompositeCache;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -335,8 +336,14 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                 }
                 DBSObjectCache<? extends DBSObject, OBJECT_TYPE> objectsCache = getObjectsCache(newObject);
                 if (objectsCache != null) {
-                    OBJECT_TYPE cachedObject = DBUtils.findObject(objectsCache.getCachedObjects(), objectName);
-                    if (cachedObject != null && cachedObject != newObject) {
+                    List<OBJECT_TYPE> cachedObjects;
+                    if (objectsCache instanceof DBSCompositeCache) {
+                        cachedObjects = ((DBSCompositeCache) objectsCache).getCachedObjects(newObject.getParentObject());
+                    } else {
+                        cachedObjects = objectsCache.getCachedObjects();
+                    }
+                    OBJECT_TYPE cachedObject = DBUtils.findObject(cachedObjects, objectName);
+                    if (cachedObject != null && cachedObject != newObject && cachedObject.isPersisted()) {
                         throw new DBException(DBUtils.getObjectTypeName(newObject) + " '" + objectName + "' already exists");
                     }
                 }
