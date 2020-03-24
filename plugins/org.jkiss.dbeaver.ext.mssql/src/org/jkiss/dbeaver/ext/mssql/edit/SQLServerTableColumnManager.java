@@ -152,7 +152,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
                     "Add column comment",
                     "EXEC " + SQLServerUtils.getSystemTableName(column.getTable().getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
                         " 'MS_Description', " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
-                        " 'user', '" + column.getTable().getSchema().getName() + "'," +
+                        " 'schema', '" + column.getTable().getSchema().getName() + "'," +
                         " 'table', '" + column.getTable().getName() + "'," +
                         " 'column', '" + column.getName() + "'"));
         }
