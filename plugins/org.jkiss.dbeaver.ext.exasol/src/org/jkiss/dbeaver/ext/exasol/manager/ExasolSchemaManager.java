@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -172,7 +173,7 @@ public class ExasolSchemaManager
 
         if (command.getProperties().size() >= 1) {
             if (command.getProperties().containsKey("description")) {
-                String script = "COMMENT ON SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " IS '" + ExasolUtils.quoteString(schema.getDescription()) + "'";
+                String script = "COMMENT ON SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " IS '" + ExasolUtils.quoteString(CommonUtils.notNull(schema.getDescription(), "")) + "'";
                 actionList.add(
                     new SQLDatabasePersistAction("Change comment on Schema", script)
                 );
