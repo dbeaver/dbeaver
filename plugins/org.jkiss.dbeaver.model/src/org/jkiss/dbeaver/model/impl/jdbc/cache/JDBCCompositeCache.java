@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
+import org.jkiss.dbeaver.model.struct.cache.DBSCompositeCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -51,6 +52,7 @@ public abstract class JDBCCompositeCache<
     OBJECT extends DBSObject,
     ROW_REF extends DBSObject>
     extends AbstractObjectCache<OWNER, OBJECT>
+    implements DBSCompositeCache<PARENT, OBJECT>
 {
     protected static final Log log = Log.getLog(JDBCCompositeCache.class);
     private static final String DEFAULT_OBJECT_NAME = "#DBOBJ";
@@ -129,6 +131,7 @@ public abstract class JDBCCompositeCache<
         return result;
     }
 
+    @Override
     public List<OBJECT> getCachedObjects(PARENT forParent)
     {
         if (forParent == null) {
@@ -181,15 +184,32 @@ public abstract class JDBCCompositeCache<
     public void removeObject(@NotNull OBJECT object, boolean resetFullCache)
     {
         super.removeObject(object, resetFullCache);
-        objectCache.remove(getParent(object));
+        synchronized (objectCache) {
+            PARENT parent = getParent(object);
+            if (resetFullCache) {
+                objectCache.remove(parent);
+            } else {
+                List<OBJECT> subCache = objectCache.get(parent);
+                if (subCache != null) {
+                    subCache.remove(object);
+                }
+            }
+        }
     }
 
+    @Override
     public void clearObjectCache(PARENT forParent)
     {
         if (forParent == null) {
             super.clearCache();
+            objectCache.clear();
         } else {
-            objectCache.remove(forParent);
+            List<OBJECT> removedObjects = objectCache.remove(forParent);
+            if (removedObjects != null) {
+                for (OBJECT obj : removedObjects) {
+                    super.removeObject(obj, false);
+                }
+            }
         }
     }
 

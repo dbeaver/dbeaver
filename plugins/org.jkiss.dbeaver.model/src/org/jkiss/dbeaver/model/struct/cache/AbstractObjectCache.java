@@ -303,7 +303,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 final Field[] fields = theClass.getDeclaredFields();
                 for (Field field : fields) {
                     final int modifiers = field.getModifiers();
-                    if (Modifier.isStatic(modifiers)) {
+                    if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
                         continue;
                     }
                     field.setAccessible(true);
@@ -312,6 +312,10 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                     if (DBSObjectCache.class.isAssignableFrom(field.getType())) {
                         if (dstValue != null) {
                             ((DBSObjectCache) dstValue).clearCache();
+                        }
+                    } else if (Collection.class.isAssignableFrom(field.getType())) {
+                        if (dstValue != null) {
+                            ((Collection) dstValue).clear();
                         }
                     } else {
                         if (isPropertyGroupField(field)) {

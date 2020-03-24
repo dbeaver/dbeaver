@@ -55,7 +55,7 @@ public class SQLServerTable extends SQLServerTableBase
 
     private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
     private String ddl;
-    private volatile List<SQLServerTableForeignKey> references;
+    private volatile transient List<SQLServerTableForeignKey> references;
 
     public SQLServerTable(SQLServerSchema schema)
     {
