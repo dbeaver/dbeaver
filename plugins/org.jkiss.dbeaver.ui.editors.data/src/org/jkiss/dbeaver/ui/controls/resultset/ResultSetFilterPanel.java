@@ -368,24 +368,16 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         filterComposite.setBackground(filtersText.getBackground());
 
         {
-            String displayName = getActiveSourceQuery();
-            if (displayName != null) {
-                if (prevQuery == null || !prevQuery.equals(displayName)) {
-                    prevQuery = displayName;
-                }
-                Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
-                Matcher m = mlCommentsPattern.matcher(displayName);
-                if (m.find()) {
-                    displayName = m.replaceAll("");
-                }
-
-                displayName = displayName.replaceAll("--.+", "");
-                displayName = CommonUtils.compactWhiteSpaces(displayName);
-                activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
-                if (CommonUtils.isEmpty(activeDisplayName)) {
-                    activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
-                }
+            String displayName = getActiveSourceQueryNormalized();
+            if (prevQuery == null || !prevQuery.equals(displayName)) {
+                prevQuery = displayName;
             }
+
+            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
+            if (CommonUtils.isEmpty(activeDisplayName)) {
+                activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
+            }
+
             if (enableFilters && !CommonUtils.equalObjects(prevQuery, displayName)) {
                 filtersHistory.clear();
             }
@@ -469,6 +461,21 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         return displayName;
     }
 
+    @NotNull
+    private String getActiveSourceQueryNormalized() {
+        String displayName = getActiveSourceQuery();
+        Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
+        Matcher m = mlCommentsPattern.matcher(displayName);
+        if (m.find()) {
+            displayName = m.replaceAll("");
+        }
+
+        displayName = displayName.replaceAll("--.+", "");
+        displayName = CommonUtils.compactWhiteSpaces(displayName);
+
+        return displayName;
+    }
+
     private void loadFiltersHistory(String query) {
         filtersHistory.clear();
         try {
@@ -510,7 +517,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         filtersHistory.add(whereCondition);
         if (!oldFilter) {
             try {
-                viewer.getFilterManager().saveQueryFilterValue(getActiveSourceQuery(), whereCondition);
+                viewer.getFilterManager().saveQueryFilterValue(getActiveSourceQueryNormalized(), whereCondition);
             } catch (Throwable e) {
                 log.debug("Error saving filter", e);
             }
@@ -932,7 +939,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             case SWT.DEL:
                                 final String filterValue = item.getText();
                                 try {
-                                    viewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQuery(), filterValue);
+                                    viewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQueryNormalized(), filterValue);
                                 } catch (DBException e1) {
                                     log.warn("Error deleting filter value [" + filterValue + "]", e1);
                                 }
