@@ -65,6 +65,7 @@ public class GenericTableIndexConfigurator implements DBEObjectConfigurator<Gene
                 }
                 idxName.append("_IDX");
                 index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
+                index.setUnique(editPage.isUnique());
                 return index;
             }
         }.execute();
