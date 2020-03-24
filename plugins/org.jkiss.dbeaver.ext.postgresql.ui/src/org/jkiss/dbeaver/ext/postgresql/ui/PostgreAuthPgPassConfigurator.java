@@ -56,6 +56,7 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
         dataSource.getConnectionConfiguration().setUserName(this.usernameText.getText());
+        dataSource.setSavePassword(true);
     }
 
     @Override
