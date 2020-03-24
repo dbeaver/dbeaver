@@ -635,7 +635,9 @@ public final class SQLUtils {
                 if (sqlDialect != null) {
                     strValue = sqlDialect.escapeString(strValue);
                 }
-                strValue = '\'' + strValue + '\'';
+                if (!(strValue.startsWith("'") && strValue.endsWith("'"))) {
+                    strValue = '\'' + strValue + '\'';
+                }
                 return sqlDialect.getTypeCastClause(attribute, strValue);
             default:
                 if (sqlDialect != null) {

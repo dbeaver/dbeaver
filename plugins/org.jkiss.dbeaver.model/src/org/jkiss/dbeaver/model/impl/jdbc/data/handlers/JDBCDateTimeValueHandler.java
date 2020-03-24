@@ -183,7 +183,11 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                     }
                 }
             } else if (value instanceof String) {
-                return "'" + super.getValueDisplayString(column, value, format) + "'";
+                String strValue = (String) value;
+                if (!strValue.startsWith("'") && !strValue.endsWith("'")) {
+                    strValue = "'" + strValue + "'";
+                }
+                return super.getValueDisplayString(column, strValue, format);
             }
         }
         return super.getValueDisplayString(column, value, format);
