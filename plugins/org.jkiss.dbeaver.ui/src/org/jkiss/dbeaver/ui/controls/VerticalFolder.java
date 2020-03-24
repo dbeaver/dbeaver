@@ -22,7 +22,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -99,4 +102,12 @@ public class VerticalFolder extends Canvas {
         addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
     }
 
+    @Override
+    public void redraw() {
+        super.redraw();
+
+        for (VerticalButton b : items) {
+            b.redraw();
+        }
+    }
 }
