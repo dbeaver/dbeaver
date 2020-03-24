@@ -152,7 +152,7 @@ public class ActionUtils
         return new CommandContributionItem(contributionParameters);
     }
 
-    public static boolean isCommandEnabled(String commandId, IWorkbenchPartSite site)
+    public static boolean isCommandEnabled(String commandId, IServiceLocator site)
     {
         if (commandId != null && site != null) {
             try {

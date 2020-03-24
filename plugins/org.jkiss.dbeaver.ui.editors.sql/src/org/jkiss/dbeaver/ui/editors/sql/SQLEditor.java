@@ -2075,6 +2075,8 @@ public class SQLEditor extends SQLEditorBase implements
             resultsSash.setMaximizedControl(null);
         }
 
+        sideToolBar.redraw();
+
         lastExecutionContext = executionContext;
         syntaxLoaded = true;
     }
