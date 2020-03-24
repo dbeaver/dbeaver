@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateSchemaDialog;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -172,7 +173,7 @@ public class ExasolSchemaManager
         ExasolSchema schema = command.getObject();
 
         if (command.getProperties().size() >= 1) {
-            if (command.getProperties().containsKey("description")) {
+            if (command.getProperties().containsKey(DBConstants.PROP_ID_DESCRIPTION)) {
                 String script = "COMMENT ON SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " IS '" + ExasolUtils.quoteString(CommonUtils.notNull(schema.getDescription(), "")) + "'";
                 actionList.add(
                     new SQLDatabasePersistAction("Change comment on Schema", script)
