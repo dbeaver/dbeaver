@@ -768,7 +768,11 @@ public class DataSourceDescriptor
                 }
             }
 
-            monitor.beginTask("Connect to " + getName(), tunnelConfiguration != null ? 3 : 2);
+            String target = getActualConnectionConfiguration().getUrl();
+            if (CommonUtils.isEmpty(target)) {
+                target = getName();
+            }
+            monitor.beginTask("Connect to " + target, tunnelConfiguration != null ? 3 : 2);
 
             // Use ds exclusive lock to initialize network handlers
             Object dsLock = exclusiveLock.acquireExclusiveLock();
