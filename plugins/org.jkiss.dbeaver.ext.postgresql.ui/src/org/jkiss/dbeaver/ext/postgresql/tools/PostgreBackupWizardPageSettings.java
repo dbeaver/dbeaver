@@ -85,19 +85,26 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         compressCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         compressCombo.add("");
         for (int i = 0; i <= 9; i++) {
-            compressCombo.add(String.valueOf(i));
+            String compStr = String.valueOf(i);
+            compressCombo.add(compStr);
+            if (compStr.equals(wizard.getSettings().getCompression())) {
+                compressCombo.select(i);
+            }
         }
-        compressCombo.select(0);
+        if (compressCombo.getSelectionIndex() < 0) {
+            compressCombo.select(0);
+        }
         compressCombo.addSelectionListener(changeListener);
 
         UIUtils.createControlLabel(formatGroup, PostgreMessages.wizard_backup_page_setting_label_encoding);
         encodingCombo = UIUtils.createEncodingCombo(formatGroup, null);
         encodingCombo.addSelectionListener(changeListener);
+        encodingCombo.setText(wizard.getSettings().getEncoding());
 
         useInsertsCheck = UIUtils.createCheckbox(formatGroup,
         	PostgreMessages.wizard_backup_page_setting_checkbox_use_insert,
             null,
-            false,
+            wizard.getSettings().isUseInserts(),
             2
         );
         useInsertsCheck.addSelectionListener(changeListener);
@@ -105,7 +112,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         noPrivilegesCheck = UIUtils.createCheckbox(formatGroup,
             PostgreMessages.wizard_backup_page_setting_checkbox_no_privileges,
             null,
-            false,
+            wizard.getSettings().isNoPrivileges(),
             2
         );
         noPrivilegesCheck.addSelectionListener(changeListener);
@@ -113,7 +120,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         noOwnerCheck = UIUtils.createCheckbox(formatGroup,
             PostgreMessages.wizard_backup_page_setting_checkbox_no_owner,
             null,
-            false,
+            wizard.getSettings().isNoOwner(),
             2
         );
         noOwnerCheck.addSelectionListener(changeListener);
@@ -166,16 +173,18 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
     public void saveState() {
         super.saveState();
 
-        String fileName = outputFolderText.getText();
-        wizard.getSettings().setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
-        wizard.getSettings().setOutputFilePattern(outputFileText.getText());
+        PostgreDatabaseBackupSettings settings = wizard.getSettings();
 
-        wizard.getSettings().setFormat(PostgreDatabaseBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);
-        wizard.getSettings().setCompression(compressCombo.getText());
-        wizard.getSettings().setEncoding(encodingCombo.getText());
-        wizard.getSettings().setUseInserts(useInsertsCheck.getSelection());
-        wizard.getSettings().setNoPrivileges(noPrivilegesCheck.getSelection());
-        wizard.getSettings().setNoOwner(noOwnerCheck.getSelection());
+        String fileName = outputFolderText.getText();
+        settings.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+        settings.setOutputFilePattern(outputFileText.getText());
+
+        settings.setFormat(PostgreDatabaseBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);
+        settings.setCompression(compressCombo.getText());
+        settings.setEncoding(encodingCombo.getText());
+        settings.setUseInserts(useInsertsCheck.getSelection());
+        settings.setNoPrivileges(noPrivilegesCheck.getSelection());
+        settings.setNoOwner(noOwnerCheck.getSelection());
     }
 
 }

@@ -60,7 +60,10 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
         super.fillProcessParameters(settings, arg, cmd);
 
         if (settings.isCleanFirst()) {
-            cmd.add("-c");
+            cmd.add("--clean");
+        }
+        if (settings.isNoOwner()) {
+            cmd.add("--no-owner");
         }
     }
 
