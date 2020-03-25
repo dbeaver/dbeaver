@@ -25,7 +25,7 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_group_task_label;
 	public static String task_config_wizard_button_save_task;
 	public static String task_config_wizard_link_open_tasks_view;
-	public static String task_config_wizard_e_show_view;
+	public static String task_config_wizard_error_show_view;
 
 	static {
 		// initialize resource bundle

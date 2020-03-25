@@ -322,7 +322,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
                     try {
                         UIUtils.getActiveWorkbenchWindow().getActivePage().showView(DatabaseTasksView.VIEW_ID);
                     } catch (PartInitException e1) {
-                        DBWorkbench.getPlatformUI().showError(TaskUIMessages.task_config_wizard_e_show_view, "Error opening database tasks view", e1);
+                        DBWorkbench.getPlatformUI().showError(TaskUIMessages.task_config_wizard_error_show_view, "Error opening database tasks view", e1);
                     }
                 }
             });
