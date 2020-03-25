@@ -17,19 +17,23 @@
  */
 package org.jkiss.dbeaver.ext.exasol;
 
+import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
-import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 
 public class ExasolValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences,
             DBSTypedObject typedObject) {
+        if (typedObject.getDataKind() == DBPDataKind.DATETIME) {
+            return new JDBCDateTimeValueHandler(preferences.getDataFormatterProfile());
+        }
         String typeID = typedObject.getTypeName();
 
         switch (typeID) {
