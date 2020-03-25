@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -38,7 +37,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 public class ExasolPriorityGroupDialog extends BaseDialog {
 
     private String name = "";
-    private int weight;
+    private int weight = -1;
     private String comment = "";
 
     public ExasolPriorityGroupDialog(Shell parentShell, ExasolPriorityGroup group) {
@@ -68,10 +67,14 @@ public class ExasolPriorityGroupDialog extends BaseDialog {
             @Override
             public void modifyText(ModifyEvent e) {
                 name = nameText.getText();
-                weight = Integer.parseInt(weightText.getText());
+                try {
+                	if (weightText.getText().length()>0)
+                		weight = Integer.parseInt(weightText.getText());
+				} catch (NumberFormatException ex) {
+				}
                 comment = commentText.getText();
                 //enable/disable OK button   
-                if (name.isEmpty() | weight == -1) {
+                if (name.isEmpty() | weight == -1 | weight > 1000 | weight < 1) {
                     getButton(IDialogConstants.OK_ID).setEnabled(false);
                 } else {
                     getButton(IDialogConstants.OK_ID).setEnabled(true);
@@ -81,6 +84,7 @@ public class ExasolPriorityGroupDialog extends BaseDialog {
 
         nameText.addModifyListener(mod);
         commentText.addModifyListener(mod);
+        weightText.addModifyListener(mod);
         return composite;
     }
 
