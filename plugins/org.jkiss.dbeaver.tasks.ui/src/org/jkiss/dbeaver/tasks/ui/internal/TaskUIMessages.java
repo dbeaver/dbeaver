@@ -22,7 +22,10 @@ import org.eclipse.osgi.util.NLS;
 public class TaskUIMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages"; //$NON-NLS-1$
 
+	public static String task_config_wizard_group_save_task_label;
 	public static String task_config_wizard_group_task_label;
+	public static String task_config_wizard_group_open_task_view_label;
+	public static String task_config_wizard_group_show_view_label;
 
 	static {
 		// initialize resource bundle
