@@ -226,7 +226,12 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     @Override
     @Property(viewable = true, editable = false, order = 4)
     public DBPDataKind getDataKind() {
-        return typeDesc == null ? DBPDataKind.UNKNOWN : typeDesc.dataKind;
+    	if (typeDesc == null)
+    	{
+    		return DBPDataKind.UNKNOWN;
+    	} else {
+    		return typeDesc.dataKind;
+    	}
     }
 
 
