@@ -147,7 +147,11 @@ public class DBWHandlerConfiguration {
     }
 
     public boolean getBooleanProperty(@NotNull String name) {
-        return CommonUtils.getBoolean(this.properties.get(name), false);
+        return this.getBooleanProperty(name, false);
+    }
+
+    public boolean getBooleanProperty(@NotNull String name, boolean defValue) {
+        return CommonUtils.getBoolean(this.properties.get(name), defValue);
     }
 
     public void setProperty(@NotNull String name, @Nullable Object value) {
