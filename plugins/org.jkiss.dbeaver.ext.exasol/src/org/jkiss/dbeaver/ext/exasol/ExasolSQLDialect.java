@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.exasol;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -29,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -108,6 +111,18 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     @Override
     public String[] getExecuteKeywords() {
         return new String[]{};
+    }
+
+    @Override
+    public String escapeScriptValue(DBSAttributeBase attribute, Object value, String strValue) {
+    	switch(attribute.getDataKind())
+    	{
+    		case NUMERIC:
+    		case BOOLEAN:
+    			return strValue;
+    		default:
+    	        return '\'' + escapeString(strValue) + '\'';
+    	}
     }
 
 }
