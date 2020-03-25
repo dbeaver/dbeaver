@@ -156,8 +156,12 @@ public class MySQLDataSource extends JDBCDataSource {
         final DBACertificateStorage securityManager = getContainer().getPlatform().getCertificateStorage();
 
         props.put("useSSL", "true");
-        props.put("verifyServerCertificate", sslConfig.getStringProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT));
-        props.put("requireSSL", sslConfig.getStringProperty(MySQLConstants.PROP_REQUIRE_SSL));
+        if (isMariaDB()) {
+            props.put("trustServerCertificate", String.valueOf(!sslConfig.getBooleanProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT)));
+        } else {
+            props.put("verifyServerCertificate", sslConfig.getStringProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT));
+            props.put("requireSSL", sslConfig.getStringProperty(MySQLConstants.PROP_REQUIRE_SSL));
+        }
 
         final String caCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT);
         final String clientCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT);
@@ -174,8 +178,12 @@ public class MySQLDataSource extends JDBCDataSource {
                 securityManager.deleteCertificate(getContainer(), "ssl");
             }
             final String ksPath = makeKeyStorePath(securityManager.getKeyStorePath(getContainer(), "ssl"));
-            props.put("clientCertificateKeyStoreUrl", ksPath);
-            props.put("trustCertificateKeyStoreUrl", ksPath);
+            if (isMariaDB()) {
+                props.put("trustStore", ksPath);
+            } else {
+                props.put("clientCertificateKeyStoreUrl", ksPath);
+                props.put("trustCertificateKeyStoreUrl", ksPath);
+            }
         }
         final String cipherSuites = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CIPHER_SUITES);
         if (!CommonUtils.isEmpty(cipherSuites)) {
