@@ -34,6 +34,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
 
     private String inputFile;
     private boolean cleanFirst;
+    private boolean noOwner;
 
     private PostgreDatabaseRestoreInfo restoreInfo;
 
@@ -53,6 +54,14 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         this.cleanFirst = cleanFirst;
     }
 
+    public boolean isNoOwner() {
+        return noOwner;
+    }
+
+    public void setNoOwner(boolean noOwner) {
+        this.noOwner = noOwner;
+    }
+
     public PostgreDatabaseRestoreInfo getRestoreInfo() {
         return restoreInfo;
     }
@@ -67,6 +76,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
 
         inputFile = store.getString("pg.restore.inputFile");
         cleanFirst = store.getBoolean("pg.restore.cleanFirst");
+        noOwner = store.getBoolean("pg.restore.noOwner");
 
         if (store instanceof DBPPreferenceMap) {
             String catalogId = store.getString("pg.restore.database");
@@ -99,6 +109,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
 
         store.setValue("pg.restore.inputFile", inputFile);
         store.setValue("pg.restore.cleanFirst", cleanFirst);
+        store.setValue("pg.restore.noOwner", noOwner);
         store.setValue("pg.restore.database", DBUtils.getObjectFullId(restoreInfo.getDatabase()));
     }
 

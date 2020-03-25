@@ -32,6 +32,7 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
     private TextWithOpenFile inputFileText;
     private Combo formatCombo;
     private Button cleanFirstButton;
+    private Button noOwnerCheck;
 
     PostgreRestoreWizardPageSettings(PostgreRestoreWizard wizard)
     {
@@ -65,16 +66,25 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
         cleanFirstButton = UIUtils.createCheckbox(formatGroup,
         	PostgreMessages.wizard_restore_page_setting_btn_clean_first,
             null,
-            false,
+            wizard.getSettings().isCleanFirst(),
             2
         );
         cleanFirstButton.addListener(SWT.Selection, updateListener);
+
+        noOwnerCheck = UIUtils.createCheckbox(formatGroup,
+            PostgreMessages.wizard_backup_page_setting_checkbox_no_owner,
+            null,
+            wizard.getSettings().isNoOwner(),
+            2
+        );
+        noOwnerCheck.addListener(SWT.Selection, updateListener);
 
         Group inputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_restore_page_setting_label_input, 2, GridData.FILL_HORIZONTAL, 0);
         UIUtils.createControlLabel(inputGroup, PostgreMessages.wizard_restore_page_setting_label_backup_file);
         inputFileText = new TextWithOpenFile(inputGroup, PostgreMessages.wizard_restore_page_setting_label_choose_backup_file, new String[] {"*.backup","*.sql","*"});
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
+        //inputFileText.setText(wizard.getSettings().getInputFile());
 
         createExtraArgsInput(inputGroup);
 
@@ -92,6 +102,7 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
         settings.setFormat(PostgreDatabaseBackupSettings.ExportFormat.values()[formatCombo.getSelectionIndex()]);
         settings.setInputFile(inputFileText.getText());
         settings.setCleanFirst(cleanFirstButton.getSelection());
+        settings.setNoOwner(noOwnerCheck.getSelection());
     }
 
     @Override
