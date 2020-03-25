@@ -109,8 +109,9 @@
     <plugin id="com.sun.jna" download-size="0" install-size="0" version="0.0.0"/>
     <plugin id="com.sun.jna.platform" download-size="0" install-size="0" version="0.0.0"/>
 
-    <!-- Quick search -->
+    <!-- Quick search. Includes minimized ant bundle. -->
 
+    <plugin id="org.apache.ant" download-size="0" install-size="0" version="1.10.0"/>
     <plugin id="org.eclipse.text.quicksearch" download-size="0" install-size="0" version="0.0.0"/>
 
     <!-- GEF -->
