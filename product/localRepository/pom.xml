@@ -55,8 +55,10 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
 								<!-- Bouncy castle left here for backward compatibility (older DBeaver versions still require it. To remove in future versions -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:LATEST</id></artifact>
-								<!-- Ant minimized -->
+<!--
+								&lt;!&ndash; Ant minimized &ndash;&gt;
 								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
+-->
 
 								<!-- Batik -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id></artifact>
