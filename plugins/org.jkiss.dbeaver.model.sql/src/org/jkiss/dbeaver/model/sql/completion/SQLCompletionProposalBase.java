@@ -160,6 +160,10 @@ public class SQLCompletionProposalBase {
             } else {
                 replacementLength = curOffset - startOffset;
             }
+            if (dataSource != null && DBUtils.isQuotedIdentifier(dataSource, fullWord)) {
+                // Replace closing quote (#6244)
+                replacementLength++;
+            }
         } else {
             int startOffset = fullWord.indexOf(structSeparator);
             int endOffset = fullWord.indexOf(structSeparator, curOffset);
