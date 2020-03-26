@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -39,7 +40,7 @@ import java.util.Date;
 /**
  * SQLiteValueHandler
  */
-public class SQLiteValueHandler extends JDBCAbstractValueHandler {
+public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDValueHandlerConfigurable {
 
     private static final Log log = Log.getLog(SQLiteValueHandler.class);
 
@@ -111,4 +112,9 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value, format);
     }
 
+    @Override
+    public void refreshValueHandlerConfiguration(DBSTypedObject type) {
+        this.numberFormatter = null;
+        this.timestampFormatter = null;
+    }
 }

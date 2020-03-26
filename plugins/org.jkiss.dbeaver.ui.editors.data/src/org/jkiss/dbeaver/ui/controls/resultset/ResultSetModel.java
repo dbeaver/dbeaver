@@ -279,6 +279,19 @@ public class ResultSetModel {
         return null;
     }
 
+    void refreshValueHandlersConfiguration() {
+        for (DBDAttributeBinding binding : attributes) {
+            DBDValueHandler valueHandler = binding.getValueHandler();
+            if (valueHandler instanceof DBDValueHandlerConfigurable) {
+                ((DBDValueHandlerConfigurable) valueHandler).refreshValueHandlerConfiguration(binding);
+            }
+            DBDValueRenderer valueRenderer = binding.getValueRenderer();
+            if (valueRenderer != valueHandler && valueRenderer instanceof DBDValueHandlerConfigurable) {
+                ((DBDValueHandlerConfigurable) valueRenderer).refreshValueHandlerConfiguration(binding);
+            }
+        }
+    }
+
     public DBVEntity getVirtualEntity(boolean create) {
         DBSEntity entity = isSingleSource() ? getSingleSource() : null;
         return getVirtualEntity(entity, create);

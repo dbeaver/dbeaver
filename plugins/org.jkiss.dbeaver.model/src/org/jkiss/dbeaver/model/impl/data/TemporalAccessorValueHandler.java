@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
@@ -35,16 +36,20 @@ import java.util.Date;
 /**
  * Date/time value handler
  */
-public abstract class TemporalAccessorValueHandler extends BaseValueHandler {
+public abstract class TemporalAccessorValueHandler extends BaseValueHandler implements DBDValueHandlerConfigurable {
 
     protected static final Log log = Log.getLog(TemporalAccessorValueHandler.class);
 
     private final DBDDataFormatterProfile formatterProfile;
     protected DBDDataFormatter formatter;
 
-    public TemporalAccessorValueHandler(DBDDataFormatterProfile formatterProfile)
-    {
+    public TemporalAccessorValueHandler(DBDDataFormatterProfile formatterProfile) {
         this.formatterProfile = formatterProfile;
+    }
+
+    @Override
+    public void refreshValueHandlerConfiguration(DBSTypedObject type) {
+        this.formatter = null;
     }
 
     @NotNull

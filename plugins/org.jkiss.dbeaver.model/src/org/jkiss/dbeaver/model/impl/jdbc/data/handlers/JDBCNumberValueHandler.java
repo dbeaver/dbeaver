@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -41,21 +38,20 @@ import java.sql.Types;
 /**
  * JDBC number value handler
  */
-public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements DBDValueDefaultGenerator {
+public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements DBDValueHandlerConfigurable, DBDValueDefaultGenerator {
 
     private static final Log log = Log.getLog(JDBCNumberValueHandler.class);
-    private DBSTypedObject type;
+
+    private final DBDDataFormatterProfile formatterProfile;
     private DBDDataFormatter formatter;
 
-    public JDBCNumberValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile)
-    {
-        this.type = type;
-        try {
-            formatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, type);
-        } catch (Exception e) {
-            log.error("Can't create formatter for number value handler", e); //$NON-NLS-1$
-            formatter = DefaultDataFormatter.INSTANCE;
-        }
+    public JDBCNumberValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
+        this.formatterProfile = formatterProfile;
+    }
+
+    @Override
+    public void refreshValueHandlerConfiguration(DBSTypedObject type) {
+        this.formatter = null;
     }
 
     /**
@@ -82,6 +78,14 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         }
         if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {
             return DBValueFormatting.convertNumberToNativeString((Number) value);
+        }
+        if (formatter == null) {
+            try {
+                formatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, column);
+            } catch (Exception e) {
+                log.error("Can't create formatter for number value handler", e); //$NON-NLS-1$
+                formatter = DefaultDataFormatter.INSTANCE;
+            }
         }
         return formatter.formatValue(value);
     }
