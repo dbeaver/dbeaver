@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
@@ -33,7 +34,7 @@ import java.util.Date;
 /**
  * Customizable date/time value handler
  */
-public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
+public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler implements DBDValueHandlerConfigurable {
 
     protected static final Log log = Log.getLog(DateTimeCustomValueHandler.class);
 
@@ -116,6 +117,11 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
             formatter = getFormatter(column, getFormatterId(column));
         }
         return formatter;
+    }
+
+    @Override
+    public void refreshValueHandlerConfiguration(DBSTypedObject type) {
+        this.formatter = null;
     }
 
     @NotNull

@@ -1427,6 +1427,7 @@ public class ResultSetViewer extends Viewer
                 this.updateFiltersText();
             }
         }
+        model.refreshValueHandlersConfiguration();
         activePresentation.refreshData(attributesChanged || (rowsChanged && recordMode), false, true);
         //this.updateStatusMessage();
     }
@@ -1980,8 +1981,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void appendData(List<Object[]> rows, boolean resetOldRows)
-    {
+    void appendData(List<Object[]> rows, boolean resetOldRows) {
         model.appendData(rows, resetOldRows);
 
         UIUtils.asyncExec(() -> {
