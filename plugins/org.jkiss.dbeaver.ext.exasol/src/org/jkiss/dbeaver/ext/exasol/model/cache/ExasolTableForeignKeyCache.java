@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -38,7 +37,7 @@ import java.util.List;
  * @author Karl
  */
 public final class ExasolTableForeignKeyCache
-    extends JDBCCompositeCache<ExasolSchema, ExasolTable, ExasolTableForeignKey, ExasolTableKeyColumn> {
+    extends JDBCCompositeCache<ExasolSchema, ExasolTable, ExasolTableForeignKey, ExasolTableForeignKeyColumn> {
 
     private static final String SQL_FK_TAB =
         "/*snapshot execution*/ select\r\n" +
@@ -112,7 +111,7 @@ public final class ExasolTableForeignKeyCache
         }
         JDBCStatement dbStat = session.createStatement();
         
-        ((JDBCStatementImpl) dbStat).setQueryString(sql);
+        dbStat.setQueryString(sql);
         
         return dbStat;
 
@@ -120,31 +119,48 @@ public final class ExasolTableForeignKeyCache
 
     @Nullable
     @Override
-    protected ExasolTableForeignKey fetchObject(JDBCSession session, ExasolSchema ExasolSchema, ExasolTable ExasolTable,
-                                                String constName, JDBCResultSet dbResult) throws SQLException, DBException {
+    protected ExasolTableForeignKey fetchObject(
+        JDBCSession session, ExasolSchema ExasolSchema, ExasolTable ExasolTable,
+        String constName, JDBCResultSet dbResult) throws SQLException, DBException
+    {
         return new ExasolTableForeignKey(session.getProgressMonitor(), ExasolTable, dbResult);
     }
 
     @Nullable
     @Override
-    protected ExasolTableKeyColumn[] fetchObjectRow(JDBCSession session, ExasolTable ExasolTable, ExasolTableForeignKey object,
-                                                    JDBCResultSet dbResult) throws SQLException, DBException {
+    protected ExasolTableForeignKeyColumn[] fetchObjectRow(
+        JDBCSession session, ExasolTable table, ExasolTableForeignKey object,
+        JDBCResultSet dbResult) throws SQLException, DBException {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
-        ExasolTableColumn tableColumn = ExasolTable.getAttribute(session.getProgressMonitor(), colName);
+        ExasolTableColumn tableColumn = table.getAttribute(session.getProgressMonitor(), colName);
         if (tableColumn == null) {
-            log.info("ExasolTableForeignKeyCache : Column '" + colName + "' not found in table '" + ExasolTable.getFullyQualifiedName(DBPEvaluationContext.UI)
-                + "' ??");
+            log.error("ExasolTableForeignKeyCache : Column '" + colName + "' not found in table '" + table.getFullyQualifiedName(DBPEvaluationContext.UI) + "' ??");
             return null;
-        } else {
-            return new ExasolTableKeyColumn[]{
-                new ExasolTableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "ORDINAL_POSITION"))
-            };
         }
+        ExasolTable refTable = object.getReferencedConstraint() == null ? null : object.getReferencedConstraint().getTable();
+        if (refTable == null) {
+            log.error("ExasolTableForeignKeyCache : RefTable not found for FK '" + object.getFullyQualifiedName(DBPEvaluationContext.UI) + "' ??");
+            return null;
+        }
+        String refColName = JDBCUtils.safeGetString(dbResult, "REFERENCED_COLUMN");
+        ExasolTableColumn refColumn = refTable.getAttribute(session.getProgressMonitor(), refColName);
+        if (refColumn == null) {
+            log.error("ExasolTableForeignKeyCache : RefColumn '" + refColName + "' not found in table '" + table.getFullyQualifiedName(DBPEvaluationContext.UI) + "' ??");
+            return null;
+        }
+
+        return new ExasolTableForeignKeyColumn[]{
+            new ExasolTableForeignKeyColumn(
+                object,
+                tableColumn,
+                refColumn,
+                JDBCUtils.safeGetInt(dbResult, "ORDINAL_POSITION"))
+        };
     }
 
     @Override
-    protected void cacheChildren(DBRProgressMonitor monitor, ExasolTableForeignKey constraint, List<ExasolTableKeyColumn> rows) {
+    protected void cacheChildren(DBRProgressMonitor monitor, ExasolTableForeignKey constraint, List<ExasolTableForeignKeyColumn> rows) {
         constraint.setColumns(rows);
     }
 

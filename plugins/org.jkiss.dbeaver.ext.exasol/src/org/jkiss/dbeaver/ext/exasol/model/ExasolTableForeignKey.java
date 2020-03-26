@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -47,7 +46,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
     private ExasolTable refTable;
     private String constName;
     private Boolean enabled;
-    private List<ExasolTableKeyColumn> columns;
+    private List<ExasolTableForeignKeyColumn> columns;
     
     
     private ExasolTableUniqueKey referencedKey;
@@ -124,11 +123,11 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
     // Columns
     // -----------------
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<ExasolTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
-    public void setColumns(List<ExasolTableKeyColumn> columns) {
+    public void setColumns(List<ExasolTableForeignKeyColumn> columns) {
         this.columns = columns;
     }
 
