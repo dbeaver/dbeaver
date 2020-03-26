@@ -80,8 +80,6 @@ public class CoreMessages extends NLS {
     public static String confirm_version_check_message;
     public static String confirm_version_check_toggleMessage;
 
-	public static String controls_driver_tree_column_connections;
-	public static String controls_driver_tree_column_name;
 	public static String controls_itemlist_action_copy;
 
 	public static String model_navigator__connections;
