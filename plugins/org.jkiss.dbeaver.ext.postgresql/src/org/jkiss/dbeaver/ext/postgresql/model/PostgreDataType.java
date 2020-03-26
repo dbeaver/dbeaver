@@ -831,17 +831,21 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                     case PostgreOid.BYTEA:
                         valueType = Types.BINARY;
                         break;
-                    case PostgreOid.CHAR_ARRAY:
-                        valueType = Types.CHAR;
-                        break;
                     case PostgreOid.BPCHAR:
                         valueType = Types.CHAR;
                         break;
                     case PostgreOid.XML:
                         valueType = Types.SQLXML;
                         break;
+                    case PostgreOid.NAME:
+                        valueType = Types.VARCHAR;
+                        break;
+                    case PostgreOid.OID:
+                    case PostgreOid.BOX:
+                        valueType = Types.OTHER;
+                        break;
                     default:
-                        if (typElem > 0) {
+                        if (typElem > 0 && typeLength < 0) {
                             valueType = Types.ARRAY;
                         } else {
                             valueType = Types.OTHER;
