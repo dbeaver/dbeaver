@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -183,8 +184,13 @@ public class ResultSetViewer extends Viewer
 
     @NotNull
     private final IResultSetContainer container;
+
     @NotNull
     private final ResultSetDataReceiver dataReceiver;
+
+    @NotNull
+    private final DBPPreferenceListener dataPropertyListener;
+    private long lastPropertyUpdateTime;
 
     // Current row/col number
     @Nullable
@@ -219,6 +225,13 @@ public class ResultSetViewer extends Viewer
         this.container = container;
         this.decorator = container.createResultSetDecorator();
         this.dataReceiver = new ResultSetDataReceiver(this);
+        this.dataPropertyListener = event -> {
+            DBPDataSourceContainer dataSourceContainer = null;
+            if (event.getSource() instanceof IDataSourceContainerProvider) {
+                dataSourceContainer = ((IDataSourceContainerProvider) event.getSource()).getDataSourceContainer();
+            }
+            handleDataPropertyChange(dataSourceContainer, event.getProperty(), event.getOldValue(), event.getNewValue());
+        };
 
         this.filterManager = GeneralUtils.adapt(this, IResultSetFilterManager.class);
         if (this.filterManager == null) {
@@ -355,10 +368,24 @@ public class ResultSetViewer extends Viewer
 
         updateFiltersText();
 
+        // Listen datasource events (like connect/disconnect/update)
         DBPProject project = container.getProject();
         if (project != null) {
             project.getDataSourceRegistry().addDataSourceListener(this);
         }
+
+        // Listen property change
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
+        DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(dataPropertyListener);
+    }
+
+    private void handleDataPropertyChange(@Nullable DBPDataSourceContainer dataSource, @NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
+        if (lastPropertyUpdateTime > 0 && System.currentTimeMillis() - lastPropertyUpdateTime < 200) {
+            // Do not update too often (theme change may trigger this hundreds of times)
+            return;
+        }
+        lastPropertyUpdateTime = System.currentTimeMillis();
+        UIUtils.asyncExec(() -> redrawData(false, false));
     }
 
     @Override
@@ -511,8 +538,7 @@ public class ResultSetViewer extends Viewer
     // Misc
 
     @NotNull
-    public DBPPreferenceStore getPreferenceStore()
-    {
+    public DBPPreferenceStore getPreferenceStore() {
         DBCExecutionContext context = getExecutionContext();
         if (context != null) {
             return context.getDataSource().getContainer().getPreferenceStore();
@@ -1617,6 +1643,9 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().removePropertyChangeListener(dataPropertyListener);
+        DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(dataPropertyListener);
+
         if (activePresentation != null) {
             activePresentation.dispose();
         }
@@ -2152,9 +2181,8 @@ public class ResultSetViewer extends Viewer
     public void showReferencesMenu(boolean openInNewWindow) {
         MenuManager[] menuManager = new MenuManager[1];
         try {
-            UIUtils.runInProgressService(monitor -> {
-                menuManager[0] = createRefTablesMenu(monitor, openInNewWindow);
-            });
+            UIUtils.runInProgressService(monitor ->
+                menuManager[0] = createRefTablesMenu(monitor, openInNewWindow));
         } catch (InvocationTargetException e) {
             log.error(e.getTargetException());
         } catch (InterruptedException e) {
@@ -2543,7 +2571,6 @@ public class ResultSetViewer extends Viewer
             refreshData(null);
         }
     }
-
 
     private class TransformerAction extends Action {
         private final DBDAttributeBinding attribute;
