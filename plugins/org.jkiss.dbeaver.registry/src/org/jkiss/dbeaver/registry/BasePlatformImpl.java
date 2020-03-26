@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
@@ -74,11 +75,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
         log.debug("Initialize base platform...");
 
         DBPPreferenceStore prefsStore = getPreferenceStore();
-        //' Global pref events forwarder
+        // Global pref events forwarder
         prefsStore.addPropertyChangeListener(event -> {
             // Forward event to all data source preferences
             for (DBPDataSourceContainer ds : DataSourceRegistry.getAllDataSources()) {
-                ds.getPreferenceStore().firePropertyChangeEvent(event.getProperty(), event.getOldValue(), event.getNewValue());
+                ((AbstractPreferenceStore)ds.getPreferenceStore()).firePropertyChangeEvent(prefsStore, event.getProperty(), event.getOldValue(), event.getNewValue());
             }
         });
 

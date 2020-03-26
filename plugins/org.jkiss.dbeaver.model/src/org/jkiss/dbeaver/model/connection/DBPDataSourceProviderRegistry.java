@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.util.List;
 
@@ -44,5 +45,8 @@ public interface DBPDataSourceProviderRegistry {
     DBPDriver findDriver(String driverIdOrName);
 
     DBPEditorContribution[] getContributedEditors(String category, DBPDataSourceContainer dataSource);
+
+    // This pref store can be used to listen preference changes in ANY datasource.
+    DBPPreferenceStore getGlobalDataSourcePreferenceStore();
 
 }

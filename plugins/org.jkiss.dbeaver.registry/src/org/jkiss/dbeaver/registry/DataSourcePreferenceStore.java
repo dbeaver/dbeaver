@@ -16,8 +16,13 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -27,7 +32,7 @@ import java.util.Map;
 /**
  * DataSourcePreferenceStore
  */
-public class DataSourcePreferenceStore extends SimplePreferenceStore
+public class DataSourcePreferenceStore extends SimplePreferenceStore implements IDataSourceContainerProvider
 {
     private final DataSourceDescriptor dataSourceDescriptor;
 
@@ -47,11 +52,6 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore
         }
     }
 
-    public DataSourceDescriptor getDataSourceDescriptor()
-    {
-        return dataSourceDescriptor;
-    }
-
     @Override
     public void save()
         throws IOException
@@ -59,4 +59,20 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore
         dataSourceDescriptor.getRegistry().flushConfig();
     }
 
+    @Nullable
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceDescriptor;
+    }
+
+    @Override
+    public void firePropertyChangeEvent(String name, Object oldValue, Object newValue) {
+        super.firePropertyChangeEvent(name, oldValue, newValue);
+
+        // Forward event to global DS prefs store
+        DBPPreferenceStore gps = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore();
+        if (gps instanceof AbstractPreferenceStore) {
+            ((AbstractPreferenceStore) gps).firePropertyChangeEvent(this, name, oldValue, newValue);
+        }
+    }
 }

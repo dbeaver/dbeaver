@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.connection.*;
+import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptorSerializerLegacy;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -71,8 +74,26 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final Map<String, DataSourceAuthModelDescriptor> authModels = new LinkedHashMap<>();
     private final List<DataSourceConfigurationStorageDescriptor> dataSourceConfigurationStorageDescriptors = new ArrayList<>();
 
+    private final DBPPreferenceStore globalDataSourcePreferenceStore;
+
     private DataSourceProviderRegistry()
     {
+        globalDataSourcePreferenceStore = new SimplePreferenceStore() {
+            @Override
+            public void addPropertyChangeListener(DBPPreferenceListener listener) {
+                super.addPropertyChangeListener(listener);
+            }
+
+            @Override
+            public void removePropertyChangeListener(DBPPreferenceListener listener) {
+                super.removePropertyChangeListener(listener);
+            }
+
+            @Override
+            public void save() throws IOException {
+                // do nothing
+            }
+        };
     }
 
     public void loadExtensions(IExtensionRegistry registry)
@@ -315,6 +336,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
         return ecCopy.toArray(new DBPEditorContribution[0]);
+    }
+
+    @Override
+    public DBPPreferenceStore getGlobalDataSourcePreferenceStore() {
+        return globalDataSourcePreferenceStore;
     }
 
     //////////////////////////////////////////////
