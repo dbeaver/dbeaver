@@ -618,7 +618,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 defFolderId = editorDefaults.folderId;
             }
             if (defFolderId != null) {
-                ((ITabbedFolderContainer)activeEditor).switchFolder(defFolderId);
+                String folderId = defFolderId;
+                UIUtils.asyncExec(() -> {
+                    ((ITabbedFolderContainer)activeEditor).switchFolder(folderId);
+                });
             }
         }
 
