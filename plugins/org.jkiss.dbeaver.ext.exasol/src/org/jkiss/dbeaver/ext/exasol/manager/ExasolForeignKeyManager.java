@@ -3,7 +3,7 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableKeyColumn;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateForeignKeyDialog;
@@ -58,11 +58,16 @@ public class ExasolForeignKeyManager
                     return null;
                 }
 
-                List<ExasolTableKeyColumn> columns = new ArrayList<ExasolTableKeyColumn>();
+                List<ExasolTableForeignKeyColumn> columns = new ArrayList<>();
                 int cnt = 0;
                 for (ExasolCreateForeignKeyDialog.FKColumnInfo column : editPage.getColumns()) {
                     try {
-                        columns.add(new ExasolTableKeyColumn(foreignKey, table.getAttribute(monitor, column.getOwnColumn().getName()), ++cnt));
+                        ExasolTable refTable = foreignKey.getReferencedConstraint().getTable();
+                        columns.add(new ExasolTableForeignKeyColumn(
+                            foreignKey,
+                            table.getAttribute(monitor, column.getOwnColumn().getName()),
+                            refTable.getAttribute(monitor, column.getRefColumn().getName()),
+                            ++cnt));
                     } catch (DBException e) {
                         log.error("Could not get Attribute Information from Table");
                         return null;
