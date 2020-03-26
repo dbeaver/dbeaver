@@ -282,7 +282,8 @@ class ReferencesResultsContainer implements IResultSetContainer {
                         }
                         UIUtils.syncExec(() -> fillKeysCombo());
                     } catch (DBException e) {
-                        return GeneralUtils.makeExceptionStatus(e);
+                        log.debug("Error reading references", e);
+                        // Do not show errors. References or FKs may be unsupported by current database
                     }
                     return Status.OK_STATUS;
                 }
