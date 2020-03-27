@@ -305,8 +305,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
             try {
                 // Patch URL with new database name
-                conConfig.setDatabaseName(instance.getName());
-                conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
+                if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
+                    conConfig.setDatabaseName(instance.getName());
+                    conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
+                } else {
+                    //String url = conConfig.getUrl();
+                }
 
                 pgConnection = super.openConnection(monitor, context, purpose);
             }
