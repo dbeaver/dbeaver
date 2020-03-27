@@ -246,7 +246,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         synchronized (dataSources) {
             dsCopy = CommonUtils.copyList(dataSources);
         }
-        dsCopy.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+        dsCopy.sort((o1, o2) -> CommonUtils.notNull(o1.getName(), o1.getId()).compareToIgnoreCase(
+            CommonUtils.notNull(o2.getName(), o2.getId())));
         return dsCopy;
     }
 
