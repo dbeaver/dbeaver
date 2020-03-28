@@ -275,6 +275,9 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
                     return dataType.getTypeName() + "(" + Long.toString(this.maxLength) + ")";
                 case "DECIMAL":
                     return dataType.getTypeName() + "(" + Long.toString(this.maxLength) + "," + Long.toString(this.scale) + ")";
+                case "HASHTYPE":
+                	return dataType.getTypeName() + "(" + Long.toString(this.maxLength) + " byte)";
+                    
                 default:
                     return dataType.getTypeName();
             }

@@ -2,8 +2,10 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolRoleDialog;
@@ -115,6 +117,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options) {
         ExasolRole obj = command.getObject();
+        ExasolPriority priority = obj.getPriority();
 
         if (command.getProperties().containsKey("description")) {
 
@@ -122,8 +125,15 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
         }
 
         if (command.getProperties().containsKey("priority")) {
-            String script = String.format("GRANT PRIORITY GROUP %s to %s", DBUtils.getQuotedIdentifier(obj.getPriority()), DBUtils.getQuotedIdentifier(obj));
-            actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_assign_priority_group, script));
+        	String script = "";
+        	if (ExasolConstants.CONSUMER_GROUP_CLASS.equals(priority.getClass().getName())) { 
+        		script = String.format("ALTER ROLE %s SET CONSUMER_GROUP = %s", DBUtils.getQuotedIdentifier(obj), DBUtils.getQuotedIdentifier(priority));
+                actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_assign_priority_group, script));
+        	}
+        	else if (ExasolConstants.PRIORITY_GROUP_CLASS.equals(priority.getClass().getName())) {
+        		script = String.format("GRANT PRIORITY GROUP %s to %s", DBUtils.getQuotedIdentifier(priority), DBUtils.getQuotedIdentifier(obj));
+                actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_assign_priority_group, script));
+			} 
         }
 
 

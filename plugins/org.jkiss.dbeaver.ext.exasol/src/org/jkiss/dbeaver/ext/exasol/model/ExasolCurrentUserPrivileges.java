@@ -117,9 +117,17 @@ public class ExasolCurrentUserPrivileges {
     
     public Boolean hasPriorityGroups()
     {
-    	if ((getatLeastV6() && getMinorVersion() >= 1) || (getMajorVersion() > 6) )
-    		return true;
-    	return false;
+    	return getatLeastV6() && getMinorVersion() >= 1  && getMajorVersion() < 7;
+    }
+    
+    public Boolean hasPasswortPolicy()
+    {
+    	return getatLeastV6() && getMinorVersion() >= 1  && getMajorVersion() >= 7;
+    }
+    
+    public Boolean hasConsumerGroups()
+    {
+    	return getMajorVersion() >= 7;
     }
 
 

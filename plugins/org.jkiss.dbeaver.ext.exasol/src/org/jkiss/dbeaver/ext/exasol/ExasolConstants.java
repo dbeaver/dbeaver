@@ -47,6 +47,8 @@ public class ExasolConstants {
     public static final String DRV_ENCRYPT = DBConstants.INTERNAL_PROP_PREFIX + "encrypt";
     public static final String DRV_BACKUP_HOST_LIST = DBConstants.INTERNAL_PROP_PREFIX + "backupHostList";
     public static final String DRV_USE_BACKUP_HOST_LIST = DBConstants.INTERNAL_PROP_PREFIX + "useBackupHostList";
+    public static final String CONSUMER_GROUP_CLASS = "org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup";
+    public static final String PRIORITY_GROUP_CLASS = "org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup";
 
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(
