@@ -21,6 +21,16 @@ import org.eclipse.osgi.util.NLS;
 
 public class ExasolMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.exasol.ExasolResources"; //$NON-NLS-1$
+	public static String manager_consumer_drop;
+	public static String manager_consumer_rename;
+	public static String dialog_consumer_precedence;
+	public static String manager_consumer_create;
+	public static String dialog_create_consumer_group;
+	public static String dialog_consumer_group_name;
+	public static String dialog_consumer_group_user_limit;
+	public static String dialog_consumer_group_cpu_weight;
+	public static String dialog_consumer_group_group_limit;
+	public static String dialog_consumer_group_session_limit;
 	public static String dialog_schema_drop_title;
 	public static String dialog_schema_drop_message;
 	public static String dialog_connection_alter_message;
@@ -30,14 +40,6 @@ public class ExasolMessages extends NLS {
 	public static String dialog_table_tools_result;
 
 	public static String dialog_general_continue;
-
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, ExasolMessages.class);
-	}
-
-	private ExasolMessages() {
-	}
 
 	public static String editors_exasol_session_editor_title_kill_session;
 	public static String editors_exasol_session_editor_action_kill;
@@ -97,6 +99,16 @@ public class ExasolMessages extends NLS {
 	public static String label_host_list;
 	public static String label_security;
 	public static String label_use_backup_host_list;
+	public static String manager_consumer_alter;
+
+	static {
+		// initialize resource bundle
+		NLS.initializeMessages(BUNDLE_NAME, ExasolMessages.class);
+	}
+
+	private ExasolMessages() {
+	}
+
 	
 
 }

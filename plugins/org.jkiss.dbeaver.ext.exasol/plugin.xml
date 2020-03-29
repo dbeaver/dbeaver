@@ -380,6 +380,18 @@
                    </items>
                 </folder>
                 <folder
+                      icon="#folder_database"
+                      label="%tree.consumergroups.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup"
+                      visibleIf="object.dataSource.hasConsumerGroups">
+                   <items
+                         icon="#database"
+                         label="%tree.consumergroup.node.name"
+                         path="consumergroup"
+                         property="consumerGroups">
+                   </items>
+                </folder>
+                <folder
                       description="%tree.security.node.description"
                       icon="#folder_info"
                       label="%tree.security.node.name"
@@ -458,6 +470,10 @@
         <manager
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPriorityGroupManager"
               objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolConsumerGroupManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup">
         </manager>
         <manager
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSecurityPolicyManager"

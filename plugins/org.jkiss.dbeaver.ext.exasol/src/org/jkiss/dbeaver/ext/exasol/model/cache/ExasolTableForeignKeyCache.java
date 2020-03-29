@@ -98,8 +98,7 @@ public final class ExasolTableForeignKeyCache
         super(tableCache, ExasolTable.class, "CONSTRAINT_TABLE", "CONSTRAINT_NAME");
     }
 
-    @SuppressWarnings("rawtypes")
-	@NotNull
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, ExasolSchema exasolSchema, ExasolTable forTable)
         throws SQLException {
