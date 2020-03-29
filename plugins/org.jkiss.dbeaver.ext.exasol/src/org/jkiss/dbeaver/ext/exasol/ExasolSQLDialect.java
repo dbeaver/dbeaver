@@ -89,6 +89,13 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
 		ArrayList<String> value = new ArrayList<String>() {{
 			add("KERBEROS");
 			add("JDBC");
+			add("BYTE");
+			add("BIT");
+			add("PRECEDENCE");
+			add("GROUP_TEMP_DB_RAM_LIMIT");
+			add("USER_TEMP_DB_RAM_LIMIT");
+			add("SESSION_TEMP_DB_RAM_LIMIT");
+			add("CPU_WEIGHT");
 		}};
 		
 		this.addKeywords(value, DBPKeywordType.OTHER);

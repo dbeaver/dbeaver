@@ -24,7 +24,10 @@ import java.util.Collection;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolCurrentUserPrivileges;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -39,7 +42,7 @@ public abstract class ExasolGrantee
 		implements DBPSaveableObject, DBPRefreshableObject {
 	
 	private ExasolDataSource dataSource;
-	private ExasolPriorityGroup priority;
+	private ExasolPriority priority;
 	private boolean persisted;
 
 	private static final Log log = Log.getLog(ExasolGrantee.class);
@@ -49,16 +52,21 @@ public abstract class ExasolGrantee
 	public ExasolGrantee(ExasolDataSource dataSource, ResultSet resultSet)
 	{
 		this.dataSource = dataSource;
+		ExasolCurrentUserPrivileges userPriv = this.dataSource.getUserPriviliges();
 		if (resultSet != null) {
 			this.persisted = true;
 	        try {
-				this.priority = dataSource.getPriorityGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
+	        	if (userPriv.hasPriorityGroups())
+	        		this.priority = dataSource.getPriorityGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
+	        	if (userPriv.hasConsumerGroups())
+	        		this.priority = dataSource.getConsumGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
 			} catch (DBException e) {
 				this.priority = null;
 			}
 		} else {
 			this.persisted = false;
 		}
+		
 	}
 	
 	public ExasolGrantee(ExasolDataSource dataSource, Boolean persisted)
@@ -204,18 +212,17 @@ public abstract class ExasolGrantee
 		
 	}
 
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = PriorityListProvider.class)
-    public ExasolPriorityGroup getPriority()
+    @Property(viewable = true,   editable = true, updatable = true, order = 20, listProvider = PriorityListProvider.class)
+    public ExasolPriority getPriority()
     {
     	return priority;
     }
     
-    public void setPriority(ExasolPriorityGroup priority) {
+    public void setPriority(ExasolPriority priority) {
 		this.priority = priority;
 	}
     
-    
-    
+
     public static class PriorityListProvider implements IPropertyValueListProvider<ExasolGrantee> {
 
 		@Override
@@ -227,8 +234,14 @@ public abstract class ExasolGrantee
 		public Object[] getPossibleValues(ExasolGrantee object) {
 			ExasolDataSource dataSource = object.getDataSource();
 			try {
-				Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
-				return priorityGroups.toArray(new Object[priorityGroups.size()]);
+				if (dataSource.getUserPriviliges().hasConsumerGroups())
+				{
+					Collection<ExasolConsumerGroup> consumerGroups = dataSource.getConsumerGroups(new VoidProgressMonitor());
+					return consumerGroups.toArray(new Object[consumerGroups.size()]);
+				} else {
+					Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
+					return priorityGroups.toArray(new Object[priorityGroups.size()]);
+				}
 			} catch (DBException e) {
 				log.error(e);
 				return new Object[0];

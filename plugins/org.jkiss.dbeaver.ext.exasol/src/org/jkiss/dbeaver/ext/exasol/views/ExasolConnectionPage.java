@@ -46,10 +46,6 @@ import java.util.Locale;
 public class ExasolConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage {
 
     private Label backupHostLabel;
-
-    public ExasolConnectionPage() {
-    }
-
     private Text hostText;
     private Text backupHostText;
     private Text portText;
@@ -204,11 +200,8 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
 
         String encryptComm = connectionInfo.getProviderProperty(ExasolConstants.DRV_ENCRYPT);
 
-        if (encryptComm != null) {
-            if (encryptComm.equals("1")) //$NON-NLS-1$
+        if (encryptComm != null &&  "1".equals(encryptComm)) 
                 this.encryptCommunication.setEnabled(true);
-        }
-
     }
 
     @Override
