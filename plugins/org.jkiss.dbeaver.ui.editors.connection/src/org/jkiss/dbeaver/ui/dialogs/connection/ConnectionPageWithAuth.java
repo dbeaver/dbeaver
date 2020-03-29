@@ -57,6 +57,10 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         ((GridData)modelConfigPlaceholder.getLayoutData()).horizontalSpan = hSpan;
     }
 
+    protected Composite getAuthPanelComposite() {
+        return modelConfigPlaceholder;
+    }
+
     @Override
     public void loadSettings() {
         super.loadSettings();
