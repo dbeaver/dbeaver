@@ -82,6 +82,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsFunctionCreate() {
+        return true;
+    }
+
+    @Override
     public boolean supportsRules() {
         return true;
     }
@@ -209,7 +214,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public boolean supportFunctionDefRead() {
+    public boolean supportsFunctionDefRead() {
         return dataSource.isServerVersionAtLeast(8, 4);
     }
 

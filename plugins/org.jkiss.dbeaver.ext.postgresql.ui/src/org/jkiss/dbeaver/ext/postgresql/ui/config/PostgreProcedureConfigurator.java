@@ -61,11 +61,14 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
                     newProcedure.setKind(PostgreProcedureKind.p);
                 }
                 newProcedure.setName(editPage.getProcedureName());
-                newProcedure.setLanguage(editPage.getLanguage());
+                PostgreLanguage language = editPage.getLanguage();
+                if (language != null) {
+                    newProcedure.setLanguage(language);
+                }
                 newProcedure.setObjectDefinitionText(
                     "CREATE OR REPLACE " + editPage.getProcedureType() + " " + newProcedure.getFullQualifiedSignature() +
                     (newProcedure.getReturnType() == null ? "" : "\n\tRETURNS " + newProcedure.getReturnType().getFullyQualifiedName(DBPEvaluationContext.DDL)) +
-                    "\n\tLANGUAGE " + editPage.getLanguage().getName() +
+                    (language == null ? "" : "\n\tLANGUAGE " + language.getName()) +
                     "\nAS $" + editPage.getProcedureType().name().toLowerCase() + "$" +
                     "\n\tBEGIN\n" +
                     "\n\tEND;" +

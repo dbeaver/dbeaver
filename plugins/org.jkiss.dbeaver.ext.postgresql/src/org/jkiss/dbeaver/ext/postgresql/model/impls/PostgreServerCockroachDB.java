@@ -74,6 +74,11 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsFunctionCreate() {
+        return false;
+    }
+
+    @Override
     public boolean supportsRules() {
         return false;
     }
@@ -134,7 +139,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportFunctionDefRead() {
+    public boolean supportsFunctionDefRead() {
         return false;
     }
 
