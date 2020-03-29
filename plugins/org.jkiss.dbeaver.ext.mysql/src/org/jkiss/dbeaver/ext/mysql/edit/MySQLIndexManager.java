@@ -18,12 +18,16 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
+import org.jkiss.dbeaver.ext.mysql.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -31,12 +35,13 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * MySQL index manager
  */
-public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTable> {
+public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTable> implements DBEObjectRenamer<MySQLTableIndex> {
 
     @Nullable
     @Override
@@ -89,5 +94,24 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
             decl.append(" DESC"); //$NON-NLS-1$
         }
     }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext, MySQLTableIndex object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    {
+        final MySQLDataSource dataSource = command.getObject().getDataSource();
+        actions.add(
+            new SQLDatabasePersistAction(
+                "Rename table",
+                "ALTER TABLE " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    "\nRENAME INDEX " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) +
+                    " TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
+        );
+    }
+
 
 }
