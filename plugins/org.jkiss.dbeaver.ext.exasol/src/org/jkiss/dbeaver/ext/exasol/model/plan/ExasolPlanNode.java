@@ -34,10 +34,6 @@ public class ExasolPlanNode extends AbstractExecutionPlanNode {
     private ExasolPlanNode parent;
     private Collection<ExasolPlanNode> listNestedNodes = new ArrayList<>(64);
 
-    public Collection<ExasolPlanNode> getListNestedNodes() {
-        return listNestedNodes;
-    }
-
     private int stmtId;
     private String commandName;
     private String commandClass;
@@ -56,6 +52,9 @@ public class ExasolPlanNode extends AbstractExecutionPlanNode {
     private Double netTransfer;
     private String detailInfo;
 
+    public Collection<ExasolPlanNode> getListNestedNodes() {
+        return listNestedNodes;
+    }
 
     public ExasolPlanNode(ExasolPlanNode parent, ResultSet dbResult) {
         this.parent = parent;

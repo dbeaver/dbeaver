@@ -32,7 +32,7 @@ public class ExasolConsumerGroup extends ExasolPriority implements DBPRefreshabl
 	private BigDecimal groupId = new BigDecimal(-1);
 	
 	public ExasolConsumerGroup(ExasolDataSource dataSource, String name, Integer precedence, Integer cpuWeight, BigDecimal groupRamLimit, 
-			BigDecimal userRamLimit, BigDecimal sessionRamLimit, String comment, int weight ) {
+			BigDecimal userRamLimit, BigDecimal sessionRamLimit, String comment) {
 		super(dataSource, name, comment);
 		this.cpuWeight = cpuWeight;
 		this.groupRamLimit = groupRamLimit;

@@ -57,7 +57,7 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     @Override
     protected ExasolConsumerGroup createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
                                                        Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-    	ExasolConsumerGroup group = new ExasolConsumerGroup((ExasolDataSource) container, "PG", null, null, null, null, null, null, -1);
+    	ExasolConsumerGroup group = new ExasolConsumerGroup((ExasolDataSource) container, "PG", null, null, null, null, null, null);
         return new UITask<ExasolConsumerGroup>() {
             @Override
             protected ExasolConsumerGroup runTask() {
@@ -84,13 +84,13 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
 
         String script = String.format("CREATE CONSUMER GROUP %s WITH CPU_WEIGHT = %d", DBUtils.getQuotedIdentifier(group), group.getCpuWeight());
         
-        if (! (group.getGroupRamLimit() == null))
+        if (group.getGroupRamLimit() != null)
         	script+=String.format(",GROUP_TEMP_DB_RAM_LIMIT=%d", group.getGroupRamLimit().longValue());
-        if (! (group.getUserRamLimit() == null))
+        if (group.getUserRamLimit() != null)
         	script+=String.format(",USER_TEMP_DB_RAM_LIMIT=%d", group.getUserRamLimit().longValue());
-        if (! (group.getSessionRamLimit() == null))
+        if (group.getSessionRamLimit() != null)
         	script+=String.format(",SESSION_TEMP_DB_RAM_LIMIT=%d", group.getSessionRamLimit().longValue());
-        if (! (group.getPrecedence() == null))
+        if (group.getPrecedence() != null)
         	script+=String.format(",PRECEDENCE=%d", group.getPrecedence().intValue());
         
 

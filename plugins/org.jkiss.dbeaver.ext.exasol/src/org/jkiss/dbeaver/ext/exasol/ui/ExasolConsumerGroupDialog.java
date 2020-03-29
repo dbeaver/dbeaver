@@ -46,9 +46,11 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
     private BigDecimal sessionRamLimit = null;
     private BigDecimal precedence = null;
     private String comment = "";
+    private ExasolConsumerGroup group;
 
     public ExasolConsumerGroupDialog(Shell parentShell, ExasolConsumerGroup group) {
         super(parentShell, ExasolMessages.dialog_create_consumer_group, null);
+        this.group = group;
     }
 
     @Override
@@ -99,7 +101,7 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
                 for (Entry<Text, BigDecimal> entry  : limits.entrySet()) {
                 	String text = entry.getKey().getText();
                 	BigDecimal value = entry.getValue();
-                    if (! ("".compareTo(text) ==0) )
+                    if ( "".compareTo(text) !=0 )
                     {
                     	try {
     						value = new BigDecimal(text);
@@ -122,6 +124,10 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
         cpuWeightText.addModifyListener(mod);
         
         return composite;
+    }
+    
+    public ExasolConsumerGroup getConsumerGroup() {
+    	return this.group;
     }
 
     public String getName() {
@@ -153,7 +159,18 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
 		return Integer.valueOf(precedence.intValue());
 	}
 
-
+	@Override
+	protected void okPressed() {
+		// TODO Auto-generated method stub
+		super.okPressed();
+		this.group.setCpuWeight(getCpuWeight());
+		this.group.setDescription(getComment());
+		this.group.setGroupRamLimit(getGroupRamLimit());
+		this.group.setName(getName());
+		this.group.setPrecedence(getPrecedence());
+		this.group.setSessionRamLimit(getSessionRamLimit());
+		this.group.setUserRamLimit(getUserRamLimit());
+	}
     
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
