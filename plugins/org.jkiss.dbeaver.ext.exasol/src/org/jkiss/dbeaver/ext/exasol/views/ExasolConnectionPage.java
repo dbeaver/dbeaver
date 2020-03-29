@@ -200,11 +200,8 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
 
         String encryptComm = connectionInfo.getProviderProperty(ExasolConstants.DRV_ENCRYPT);
 
-        if (encryptComm != null) {
-            if ("1".equals(encryptComm)) //$NON-NLS-1$
+        if (encryptComm != null &&  "1".equals(encryptComm)) 
                 this.encryptCommunication.setEnabled(true);
-        }
-
     }
 
     @Override
