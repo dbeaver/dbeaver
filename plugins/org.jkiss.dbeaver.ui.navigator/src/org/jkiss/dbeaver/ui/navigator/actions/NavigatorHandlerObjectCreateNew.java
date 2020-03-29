@@ -205,7 +205,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (!CommonUtils.isEmpty(metaChildren)) {
                 Class<?> nodeClass = ((DBNContainer) node).getChildrenClass();
                 String nodeType = metaChildren.get(0).getChildrenType(node.getDataSource(), null);
-                DBPImage nodeIcon = metaChildren.get(0).getIcon(node);
+                DBPImage nodeIcon = node.getNodeIconDefault();//metaChildren.get(0).getIcon(node);
                 if (nodeClass != null && nodeType != null) {
                     if (isCreateSupported(node, nodeClass)) {
                         IContributionItem item = makeCreateContributionItem(
