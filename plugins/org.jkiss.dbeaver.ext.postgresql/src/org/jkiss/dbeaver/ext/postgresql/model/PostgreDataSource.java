@@ -119,6 +119,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
             catalogQuery.append("\nORDER BY db.datname");
             try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
+                // Read server version info here - it is needed during database metadata fetch (#8061)
+                getDataSource().readDatabaseServerVersion(bootstrapConnection.getMetaData());
+                // Get all databases
                 try (PreparedStatement dbStat = bootstrapConnection.prepareStatement(catalogQuery.toString())) {
                     if (catalogFilters != null) {
                         JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);

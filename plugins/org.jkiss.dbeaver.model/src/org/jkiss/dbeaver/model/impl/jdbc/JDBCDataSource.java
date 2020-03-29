@@ -390,12 +390,7 @@ public abstract class JDBCDataSource
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
-            try {
-                databaseMajorVersion = metaData.getDatabaseMajorVersion();
-                databaseMinorVersion = metaData.getDatabaseMinorVersion();
-            } catch (Throwable e) {
-                log.error("Error determining server version", e);
-            }
+            readDatabaseServerVersion(metaData);
 
             if (this.sqlDialect instanceof JDBCSQLDialect) {
                 try {
@@ -417,6 +412,15 @@ public abstract class JDBCDataSource
                 log.warn("NULL datasource info was created");
                 dataSourceInfo = new JDBCDataSourceInfo(container);
             }
+        }
+    }
+
+    protected void readDatabaseServerVersion(DatabaseMetaData metaData) {
+        try {
+            databaseMajorVersion = metaData.getDatabaseMajorVersion();
+            databaseMinorVersion = metaData.getDatabaseMinorVersion();
+        } catch (Throwable e) {
+            log.error("Error determining server version", e);
         }
     }
 
