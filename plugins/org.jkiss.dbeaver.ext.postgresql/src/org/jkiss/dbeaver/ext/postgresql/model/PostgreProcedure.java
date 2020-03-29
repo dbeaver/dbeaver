@@ -369,7 +369,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     {
         String procDDL;
         boolean omitHeader = CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE);
-        if (!getDataSource().getServerType().supportFunctionDefRead() || omitHeader) {
+        if (isPersisted() && (!getDataSource().getServerType().supportsFunctionDefRead() || omitHeader)) {
             if (procSrc == null) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                     procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
@@ -485,10 +485,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 }
             }
         }
-        String delimiter = "$$";//"$" + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
-        decl.append("AS ").append(delimiter).append(" ");
+        String delimiter = "$$";// + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
+        decl.append("AS ").append(delimiter).append("\n");
         if (!CommonUtils.isEmpty(functionBody)) {
-            decl.append("\t").append(functionBody).append(" ");
+            decl.append("\t").append(functionBody).append("\n");
         }
         decl.append(delimiter).append(lineSeparator);
 

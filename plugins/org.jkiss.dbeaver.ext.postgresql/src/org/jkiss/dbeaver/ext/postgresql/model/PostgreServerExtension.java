@@ -46,6 +46,10 @@ public interface PostgreServerExtension
 
     boolean supportsTriggers();
 
+    boolean supportsFunctionDefRead();
+
+    boolean supportsFunctionCreate();
+
     boolean supportsRules();
 
     boolean supportsExtensions();
@@ -73,8 +77,6 @@ public interface PostgreServerExtension
     boolean supportsClientInfo();
 
     boolean supportsRelationSizeCalc();
-
-    boolean supportFunctionDefRead();
 
     boolean supportsExplainPlan();
 

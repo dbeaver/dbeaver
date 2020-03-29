@@ -42,7 +42,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportFunctionDefRead() {
+    public boolean supportsFunctionDefRead() {
         return false;
     }
 
