@@ -211,7 +211,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
             return serviceSQL.openSQLViewer(
-                commandContext.getExecutionContext(), dialogTitle, UIIcon.SQL_PREVIEW, script.toString(), true) == IDialogConstants.PROCEED_ID;
+                commandContext.getExecutionContext(), dialogTitle, UIIcon.SQL_PREVIEW, script.toString(), true, false) == IDialogConstants.PROCEED_ID;
         }
 
         return false;

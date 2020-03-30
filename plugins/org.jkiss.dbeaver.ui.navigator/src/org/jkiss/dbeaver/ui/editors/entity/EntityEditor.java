@@ -1056,10 +1056,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
 //                    allowSave);
                 result = serviceSQL.openSQLViewer(
                     getExecutionContext(),
-                    allowSave ? UINavigatorMessages.editors_entity_dialog_persist_title : UINavigatorMessages.editors_entity_dialog_preview_title,
+                    getDatabaseObject().getName() + " - " + (allowSave ? UINavigatorMessages.editors_entity_dialog_persist_title : UINavigatorMessages.editors_entity_dialog_preview_title),
                     UIIcon.SQL_PREVIEW,
                     script.toString(),
-                    allowSave);
+                    allowSave,
+                    true);
             } else {
                 result = IDialogConstants.OK_ID;
             }
