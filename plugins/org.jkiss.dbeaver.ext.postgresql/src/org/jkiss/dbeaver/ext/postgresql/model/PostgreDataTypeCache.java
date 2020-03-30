@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -109,24 +108,25 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         }
     }
 
+    private static String getBaseTypeNameClause(@NotNull PostgreDataSource dataSource) {
+        if (dataSource.isServerVersionAtLeast(7, 3)) {
+            return "format_type(nullif(t.typbasetype, 0), t.typtypmod) base_type_name";
+        } else {
+            return "NULL base_type_name";
+        }
+    }
+
     @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException
     {
         // Initially cache only base types (everything but composite and arrays)
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT t.oid,t.*,c.relkind");
-        if (owner.getDataSource().isServerVersionAtLeast(7, 3)) {
-            sql.append(", format_type(nullif(t.typbasetype, 0), t.typtypmod) base_type_name");
-        }
-        sql.append("\n" +
-            "FROM pg_catalog.pg_type t" +
+        String sql =
+            "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(owner.getDataSource()) +
+            "\nFROM pg_catalog.pg_type t" +
             "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
-            "\nWHERE typnamespace=? ");
-        if (PostgreUtils.supportsTypeCategory(session.getDataSource())) {
-            //sql.append("AND t.typcategory <> 'A'");
-        }
-        sql.append("\nORDER by t.oid");
+            "\nWHERE typnamespace=? " +
+            "\nORDER by t.oid";
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         dbStat.setLong(1, owner.getObjectId());
         return dbStat;
@@ -156,7 +156,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         // Initially cache only base types (everything but composite and arrays)
         try (JDBCSession session = database.getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by OID")) {
             try (final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT t.oid,t.*,c.relkind FROM pg_catalog.pg_type t" +
+                "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(database.getDataSource()) + " FROM pg_catalog.pg_type t" +
                     "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
                     "\nWHERE t.oid=? ")) {
                 dbStat.setLong(1, oid);
@@ -183,7 +183,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         // Initially cache only base types (everything but composite and arrays)
         try (JDBCSession session = database.getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by name")) {
             try (final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT t.oid,t.* FROM pg_catalog.pg_type t" +
+                "SELECT t.oid,t.*," + getBaseTypeNameClause(database.getDataSource()) + " FROM pg_catalog.pg_type t" +
                     "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
                     "\nWHERE t.typname=? ")) {
                 dbStat.setString(1, name);
