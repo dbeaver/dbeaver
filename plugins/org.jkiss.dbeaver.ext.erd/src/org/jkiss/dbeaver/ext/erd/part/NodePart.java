@@ -72,7 +72,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
      * @param bounds The bounds to set.
      */
     public void setBounds(Rectangle bounds) {
-        this.bounds = bounds;
+        this.modifyBounds(bounds);
     }
 
     /**
