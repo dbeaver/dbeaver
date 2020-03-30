@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -38,7 +39,7 @@ public class AuthModelPgPass implements DBAAuthModel {
 
     @Override
     public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
-        loadPasswordFromPgPass(configuration);
+        loadPasswordFromPgPass(configuration, connProperties);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class AuthModelPgPass implements DBAAuthModel {
 
     }
 
-    private void loadPasswordFromPgPass(DBPConnectionConfiguration configuration) throws DBException {
+    private void loadPasswordFromPgPass(DBPConnectionConfiguration configuration, Properties connProperties) throws DBException {
         String pgPassPath = System.getenv(PGPASSFILE_ENV_VARIABLE);
         if (CommonUtils.isEmpty(pgPassPath)) {
             if (RuntimeUtils.isPlatformWindows()) {
@@ -90,7 +91,7 @@ public class AuthModelPgPass implements DBAAuthModel {
                     if (!user.equals("*")) {
                         configuration.setUserName(user);
                     }
-                    configuration.setUserPassword(password);
+                    connProperties.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, password);
                     return;
                 }
             }
