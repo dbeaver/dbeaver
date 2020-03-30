@@ -329,7 +329,7 @@ public class SQLQueryJob extends DataSourceJob
 
         if (!skipConfirmation && getDataSourceContainer().getConnectionConfiguration().getConnectionType().isConfirmExecute()) {
             // Validate all transactional queries
-            if (!SQLSemanticProcessor.isSelectQuery(element.getText())) {
+            if (!SQLSemanticProcessor.isSelectQuery(session.getDataSource().getSQLDialect(), element.getText())) {
 
                 int confirmResult = confirmQueryExecution((SQLQuery)element, queries.size() > 1);
                 switch (confirmResult) {

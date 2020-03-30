@@ -21,11 +21,14 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.StringProvider;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -34,9 +37,12 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -51,10 +57,29 @@ public class SQLSemanticProcessor {
 
     private static final String NESTED_QUERY_AlIAS = "z_q";
 
-    public static boolean isSelectQuery(String query)
+
+    public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql));
+        try {
+            if (dialect != null) {
+                // Enable square brackets
+                for (String[] qs : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
+                    if (qs.length == 2 && "[".equals(qs[0]) && "]".equals(qs[1])) {
+                        parser.withSquareBracketQuotation(true);
+                        break;
+                    }
+                }
+            }
+            return parser.Statement();
+        } catch (Exception e) {
+            throw new DBCException("Error parsing SQL query", e);
+        }
+    }
+
+    public static boolean isSelectQuery(SQLDialect dialect, String query)
     {
         try {
-            Statement statement = CCJSqlParserUtil.parse(query);
+            Statement statement = parseQuery(dialect, query);
             return
                 statement instanceof Select &&
                 ((Select) statement).getSelectBody() instanceof PlainSelect &&
@@ -83,7 +108,7 @@ public class SQLSemanticProcessor {
 
     public static String injectFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         try {
-            Statement statement = CCJSqlParserUtil.parse(sqlQuery);
+            Statement statement = parseQuery(dataSource.getSQLDialect(), sqlQuery);
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
                 PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
                 if (patchSelectQuery(dataSource, select, dataFilter)) {
