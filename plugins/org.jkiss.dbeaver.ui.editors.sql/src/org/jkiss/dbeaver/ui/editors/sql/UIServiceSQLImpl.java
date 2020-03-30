@@ -60,7 +60,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     private static final Log log = Log.getLog(UIServiceSQLImpl.class);
 
     @Override
-    public int openSQLViewer(DBCExecutionContext context, String title, DBPImage image, String text, boolean showSaveButton) {
+    public int openSQLViewer(DBCExecutionContext context, String title, DBPImage image, String text, boolean showSaveButton, boolean showOpenEditorButton) {
         ViewSQLDialog dialog = new ViewSQLDialog(
             UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
             () -> context,
@@ -69,6 +69,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
             text
         );
         dialog.setShowSaveButton(showSaveButton);
+        dialog.setShowOpenEditorButton(showOpenEditorButton);
         return dialog.open();
     }
 

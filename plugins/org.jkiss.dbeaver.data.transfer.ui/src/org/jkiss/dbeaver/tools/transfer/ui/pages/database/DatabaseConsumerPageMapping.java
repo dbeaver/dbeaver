@@ -724,7 +724,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 "Target DDL",
                 null,
                 ddl[0],
-                false);
+                false, false);
         }
     }
 

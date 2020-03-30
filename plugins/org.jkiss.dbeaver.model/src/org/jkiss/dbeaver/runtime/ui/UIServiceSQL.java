@@ -40,6 +40,7 @@ public interface UIServiceSQL {
      * Shows SQL preview dialog
      *
      * @param showSaveButton shows Save button
+     * @param showOpenEditorButton shows Open in editor button
      * @return IDialogConstants.*_ID
      */
     int openSQLViewer(
@@ -47,7 +48,8 @@ public interface UIServiceSQL {
         String title,
         @Nullable DBPImage image,
         String text,
-        boolean showSaveButton);
+        boolean showSaveButton,
+        boolean showOpenEditorButton);
 
     String openSQLEditor(
         @Nullable DBPContextProvider contextProvider,

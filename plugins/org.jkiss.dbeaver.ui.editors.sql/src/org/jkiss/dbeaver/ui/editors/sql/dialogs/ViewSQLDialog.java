@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 public class ViewSQLDialog extends BaseSQLDialog {
@@ -39,6 +42,7 @@ public class ViewSQLDialog extends BaseSQLDialog {
     private boolean showSaveButton = false;
     private boolean enlargeViewPanel = true;
     private boolean wordWrap = false;
+    private boolean showOpenEditorButton;
 
     public ViewSQLDialog(final IWorkbenchPartSite parentSite, @Nullable DBPContextProvider contextProvider, String title, @Nullable DBPImage image, String text)
     {
@@ -60,6 +64,10 @@ public class ViewSQLDialog extends BaseSQLDialog {
 
     public void setEnlargeViewPanel(boolean enlargeViewPanel) {
         this.enlargeViewPanel = enlargeViewPanel;
+    }
+
+    public void setShowOpenEditorButton(boolean showOpenEditorButton) {
+        this.showOpenEditorButton = showOpenEditorButton;
     }
 
     @Override
@@ -102,6 +110,9 @@ public class ViewSQLDialog extends BaseSQLDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
+        if (showOpenEditorButton) {
+            createButton(parent, IDialogConstants.OPEN_ID, ResultSetMessages.dialog_text_view_open_editor, true);
+        }
         if (showSaveButton) {
             createButton(parent, IDialogConstants.PROCEED_ID, SQLEditorMessages.dialog_view_sql_button_persist, true);
             createCopyButton(parent);
@@ -130,7 +141,20 @@ public class ViewSQLDialog extends BaseSQLDialog {
     @Override
     protected void buttonPressed(int buttonId)
     {
-        if (buttonId == IDialogConstants.PROCEED_ID) {
+        if (buttonId == IDialogConstants.OPEN_ID) {
+            String title = getTitle();
+            String text = getText();
+            UIUtils.asyncExec(() ->
+                {
+                    SQLEditorHandlerOpenEditor.openSQLConsole(
+                        UIUtils.getActiveWorkbenchWindow(),
+                        new SQLNavigatorContext(contextProvider.getExecutionContext()),
+                        title,
+                        text);
+                }
+            );
+            close();
+        } else if (buttonId == IDialogConstants.PROCEED_ID) {
             setReturnCode(IDialogConstants.PROCEED_ID);
             close();
         } else {
@@ -142,4 +166,5 @@ public class ViewSQLDialog extends BaseSQLDialog {
     protected DBCExecutionContext getExecutionContext() {
         return contextProvider.getExecutionContext();
     }
+
 }
