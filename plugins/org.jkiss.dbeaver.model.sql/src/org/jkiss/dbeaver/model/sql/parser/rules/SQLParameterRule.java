@@ -46,13 +46,14 @@ public class SQLParameterRule implements TPRule {
     {
         scanner.unread();
         int prevChar = scanner.read();
+        char namedPrefix = namedParameterPrefix.charAt(0);
         if (Character.isJavaIdentifierPart(prevChar) ||
-            prevChar == namedParameterPrefix.charAt(0) || prevChar == anonymousParameterMark || prevChar == '\\' || prevChar == '/')
+            prevChar == namedPrefix || prevChar == anonymousParameterMark || prevChar == '\\' || prevChar == '/' || (prevChar == '[' && namedPrefix == ':'))
         {
             return TPTokenAbstract.UNDEFINED;
         }
         int c = scanner.read();
-        if (c != TPCharacterScanner.EOF && (c == anonymousParameterMark || c == namedParameterPrefix.charAt(0))) {
+        if (c != TPCharacterScanner.EOF && (c == anonymousParameterMark || c == namedPrefix)) {
             buffer.setLength(0);
             do {
                 buffer.append((char) c);
@@ -67,7 +68,7 @@ public class SQLParameterRule implements TPRule {
                 }
             }
             if (syntaxManager.isParametersEnabled()) {
-                if (buffer.charAt(0) == namedParameterPrefix.charAt(0) && buffer.length() > 1) {
+                if (buffer.charAt(0) == namedPrefix && buffer.length() > 1) {
                     boolean validChars = true;
                     for (int i = 1; i < buffer.length(); i++) {
                         if (!Character.isJavaIdentifierPart(buffer.charAt(i))) {
