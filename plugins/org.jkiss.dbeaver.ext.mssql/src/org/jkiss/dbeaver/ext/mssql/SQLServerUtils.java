@@ -77,10 +77,31 @@ public class SQLServerUtils {
             "use " + DBUtils.getQuotedIdentifier(session.getDataSource(), schema));
     }
 
+    public static void setCurrentSchema(JDBCSession session, String currentUser, String schema) throws SQLException {
+        if (!CommonUtils.isEmpty(currentUser)) {
+            JDBCUtils.executeSQL(session,
+                "alter user " + DBUtils.getQuotedIdentifier(session.getDataSource(), currentUser) +
+                    " with default_schema = " + DBUtils.getQuotedIdentifier(session.getDataSource(), schema));
+        }
+    }
+
+    public static String getCurrentUser(JDBCSession session) throws SQLException {
+        // See https://stackoverflow.com/questions/4101863/sql-server-current-user-name
+        return JDBCUtils.queryString(
+            session,
+            "select original_login()");
+    }
+
     public static String getCurrentDatabase(JDBCSession session) throws SQLException {
         return JDBCUtils.queryString(
             session,
             "select db_name()");
+    }
+
+    public static String getCurrentSchema(JDBCSession session) throws SQLException {
+        return JDBCUtils.queryString(
+            session,
+            "select schema_name()");
     }
 
     public static boolean isShowAllSchemas(DBPDataSource dataSource) {
@@ -215,4 +236,5 @@ public class SQLServerUtils {
         }
         return ddl;
     }
+
 }
