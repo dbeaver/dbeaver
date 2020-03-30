@@ -776,9 +776,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (curAttribute == null) {
             curAttribute = getFocusAttribute();
         }
-        if (curAttribute != null) {
-            spreadsheet.showColumn(curAttribute);
-        }
     }
 
     @Override
