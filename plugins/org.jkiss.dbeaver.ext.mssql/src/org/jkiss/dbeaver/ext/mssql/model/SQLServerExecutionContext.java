@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -43,6 +42,8 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
     //private SQLServerDatabase activeDatabase;
     private String activeDatabaseName;
+    private String activeSchemaName;
+    private String currentUser;
 
     SQLServerExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance, purpose);
@@ -72,7 +73,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
     @Override
     public SQLServerSchema getDefaultSchema() {
         SQLServerDatabase defaultCatalog = getDefaultCatalog();
-        return defaultCatalog == null ? null : defaultCatalog.getSchema(SQLServerConstants.DEFAULT_SCHEMA_NAME);
+        return defaultCatalog == null ? null : defaultCatalog.getSchema(activeSchemaName);
     }
 
     @Override
@@ -108,17 +109,44 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
     @Override
     public void setDefaultSchema(DBRProgressMonitor monitor, SQLServerSchema schema) throws DBCException {
-        throw new DBCFeatureNotSupportedException();
+        if (activeSchemaName != null && activeSchemaName.equals(schema.getName())) {
+            return;
+        }
+        final SQLServerSchema oldActiveSchema = getDefaultSchema();
+
+        if (!setCurrentSchema(monitor, schema.getName())) {
+            return;
+        }
+        activeDatabaseName = schema.getName();
+
+        // Send notifications
+        DBUtils.fireObjectSelectionChange(oldActiveSchema, schema);
     }
 
     @Override
     public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         // Check default active schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active database")) {
+            try {
+                currentUser = SQLServerUtils.getCurrentUser(session);
+            } catch (Throwable e) {
+                log.debug("Error getting current user: " + e.getMessage());
+            }
+            try {
+                activeSchemaName = SQLServerUtils.getCurrentSchema(session);
+            } catch (Throwable e) {
+                log.debug("Error getting current schema: " + e.getMessage());
+            }
+            if (CommonUtils.isEmpty(activeSchemaName)) {
+                activeSchemaName = SQLServerConstants.DEFAULT_SCHEMA_NAME;
+            }
             if (useBootstrapSettings) {
                 DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName()) && supportsCatalogChange()) {
                     setCurrentDatabase(monitor, bootstrap.getDefaultCatalogName());
+                }
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName()) && supportsSchemaChange()) {
+                    setCurrentSchema(monitor, bootstrap.getDefaultSchemaName());
                 }
             }
 
@@ -147,6 +175,17 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active database")) {
             SQLServerUtils.setCurrentDatabase(session, databaseName);
             activeDatabaseName = databaseName;
+            return true;
+        } catch (SQLException e) {
+            log.error(e);
+            return false;
+        }
+    }
+
+    private boolean setCurrentSchema(DBRProgressMonitor monitor, String schemaName) {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
+            SQLServerUtils.setCurrentSchema(session, currentUser, schemaName);
+            activeSchemaName = schemaName;
             return true;
         } catch (SQLException e) {
             log.error(e);
