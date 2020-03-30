@@ -281,7 +281,8 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
     @Override
     protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
         String userName = connectionInfo.getUserName();
-        if (!DBAAuthDatabaseNative.ID.equals(connectionInfo.getAuthModelId())) {
+        String authModelId = connectionInfo.getAuthModelId();
+        if (!CommonUtils.isEmpty(authModelId) && !DBAAuthDatabaseNative.ID.equals(authModelId)) {
             return userName;
         }
         // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
