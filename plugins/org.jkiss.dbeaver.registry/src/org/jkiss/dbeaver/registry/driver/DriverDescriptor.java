@@ -207,7 +207,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.allowsEmptyPassword = copyFrom.allowsEmptyPassword;
             this.licenseRequired = copyFrom.licenseRequired;
             this.customDriverLoader = copyFrom.customDriverLoader;
-            this.useURLTemplate = copyFrom.customDriverLoader;
+            this.useURLTemplate = copyFrom.useURLTemplate;
             this.promoted = copyFrom.promoted;
             this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
             for (DriverFileSource fs : copyFrom.fileSources) {
