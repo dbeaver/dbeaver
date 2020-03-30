@@ -140,7 +140,7 @@ public class MySQLGrant implements DBAPrivilegeGrant {
 
     public boolean matches(MySQLCatalog catalog)
     {
-        return (catalog == null && isAllCatalogs()) || (catalog != null && SQLUtils.matchesLike(catalog.getName(), catalogName));
+        return (catalog == null && isAllCatalogs()) || (catalog != null && !isAllCatalogs() && SQLUtils.matchesLike(catalog.getName(), catalogName));
     }
 
     public boolean matches(MySQLTableBase table)
