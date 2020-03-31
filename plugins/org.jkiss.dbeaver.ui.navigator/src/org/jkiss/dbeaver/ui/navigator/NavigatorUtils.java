@@ -199,36 +199,7 @@ public class NavigatorUtils {
 
             manager.add(new Separator());
 
-            final ISelection selection = selectionProvider.getSelection();
-            final DBNNode selectedNode = getSelectedNode(selectionProvider);
-            if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
-                addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
-            }
-
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
-
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS_END));
-
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS_END));
-            manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
-
-            if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
-                manager.add(new Separator());
-                // Add properties button
-                if (selection instanceof IStructuredSelection) {
-                    Object firstElement = ((IStructuredSelection) selection).getFirstElement();
-                    if (PreferencesUtil.hasPropertiesContributors(firstElement) && firstElement instanceof DBNResource) {
-                        manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
-                    }
-                }
-
-                if (selectedNode.isPersisted()) {
-                    // Add refresh button
-                    manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
-                }
-            }
-            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            addStandardMenuItem(workbenchSite, manager, selectionProvider);
 
             if (menuListener != null) {
                 menuListener.menuAboutToShow(manager);
@@ -239,6 +210,39 @@ public class NavigatorUtils {
         control.setMenu(menu);
 
         return menuMgr;
+    }
+
+    public static void addStandardMenuItem(IWorkbenchSite workbenchSite, IMenuManager manager, ISelectionProvider selectionProvider) {
+        final ISelection selection = selectionProvider.getSelection();
+        final DBNNode selectedNode = getSelectedNode(selectionProvider);
+        if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
+            addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
+        }
+
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
+
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS_END));
+
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS_END));
+        manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
+
+        if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
+            manager.add(new Separator());
+            // Add properties button
+            if (selection instanceof IStructuredSelection) {
+                Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+                if (PreferencesUtil.hasPropertiesContributors(firstElement) && firstElement instanceof DBNResource) {
+                    manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
+                }
+            }
+
+            if (selectedNode.isPersisted()) {
+                // Add refresh button
+                manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
+            }
+        }
+        manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
 
     private static void addSetDefaultObjectAction(IWorkbenchSite workbenchSite, IMenuManager manager, DBNNode selectedNode) {
