@@ -1003,20 +1003,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     });
                 }
             });
-            breadcrumbsPanel.addMouseTrackListener(new MouseTrackListener() {
-                @Override
-                public void mouseEnter(MouseEvent e) {
-                }
-
-                @Override
-                public void mouseExit(MouseEvent e) {
-                }
-
-                @Override
-                public void mouseHover(MouseEvent e) {
-
-                }
-            });
         }
 
         return bcComposite;
