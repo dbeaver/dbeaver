@@ -680,6 +680,18 @@
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            <menu label="%menu.org.jkiss.dbeaver.core.connection.settings.label">
+                <dynamic id="org.jkiss.dbeaver.core.connection.settings" class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor">
+                </dynamic>
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </menu>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate">
                 <visibleWhen checkEnabled="true"/>
             </command>
