@@ -38,6 +38,7 @@ public class StatusLineContributionItemEx extends ContributionItem {
     private String text = "";
     private String toolTip = "";
     private Runnable doubleClickListener;
+    private int maxWidth = 0;
 
     public StatusLineContributionItemEx(String id) {
         super(id);
@@ -65,8 +66,10 @@ public class StatusLineContributionItemEx extends ContributionItem {
 
         // compute the size of the label to get the width hint for the contribution
         Point preferredSize = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        int widthHint = preferredSize.x;
+        int widthHint = Math.max(maxWidth, preferredSize.x);
         int heightHint = preferredSize.y;
+
+        maxWidth = widthHint;
 
         StatusLineLayoutData data = new StatusLineLayoutData();
         data.widthHint = widthHint;

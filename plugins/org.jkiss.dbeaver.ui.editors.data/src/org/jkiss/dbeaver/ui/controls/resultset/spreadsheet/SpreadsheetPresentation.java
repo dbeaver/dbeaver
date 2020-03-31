@@ -1371,7 +1371,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return controller.isRecordMode();
     }
 
-    private class SpreadsheetSelectionImpl implements IResultSetSelection {
+    private class SpreadsheetSelectionImpl implements IResultSetSelection, IResultSetSelectionExt {
 
         @Nullable
         @Override
@@ -1478,6 +1478,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return (ResultSetRow) (controller.isRecordMode() ?
                 controller.getCurrentRow() :
                 spreadsheet.getRowElement(((GridPos) element).row));
+        }
+
+        @Override
+        public int getSelectedColumnCount() {
+            return spreadsheet.getColumnSelectionSize();
+        }
+
+        @Override
+        public int getSelectedRowCount() {
+            return spreadsheet.getRowSelectionSize();
+        }
+
+        @Override
+        public int getSelectedCellCount() {
+            return spreadsheet.getCellSelectionSize();
         }
     }
 

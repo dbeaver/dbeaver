@@ -147,6 +147,8 @@ public class ResultSetViewer extends Viewer
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
+    static final String RSV_STATUS_FIELD = "ResultSetViewer.Status";
+
     private IResultSetFilterManager filterManager;
     @NotNull
     private final IWorkbenchPartSite site;
@@ -168,6 +170,7 @@ public class ResultSetViewer extends Viewer
     private Composite statusBar;
     private StatusLabel statusLabel;
     private ActiveStatusMessage rowCountLabel;
+    private Text selectionStatLabel;
     private Text resultSetSize;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
@@ -367,6 +370,8 @@ public class ResultSetViewer extends Viewer
         }
 
         updateFiltersText();
+
+        addListener(new ResultSetStatListener(this));
 
         // Listen datasource events (like connect/disconnect/update)
         DBPProject project = container.getProject();
@@ -1434,10 +1439,12 @@ public class ResultSetViewer extends Viewer
 
     private void createStatusBar()
     {
-        statusBar = new Composite(viewerPanel, SWT.NONE);
+        Composite statusComposite = UIUtils.createPlaceholder(viewerPanel, 3);
+        statusComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        statusBar = new Composite(statusComposite, SWT.NONE);
         statusBar.setBackgroundMode(SWT.INHERIT_FORCE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        statusBar.setLayoutData(gd);
+        statusBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
         RowLayout toolbarsLayout = new RowLayout(SWT.HORIZONTAL);
         toolbarsLayout.marginTop = 0;
@@ -1578,10 +1585,21 @@ public class ResultSetViewer extends Viewer
             //rowCountLabel.setLayoutData();
             CSSUtils.setCSSClass(rowCountLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             rowCountLabel.setMessage("Row Count");
+            rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
 
             UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
-            statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
-            statusLabel.setLayoutData(new RowData(30 * fontHeight, SWT.DEFAULT));
+
+            selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
+            selectionStatLabel.setToolTipText("Selected rows/columns/cells");
+            CSSUtils.setCSSClass(selectionStatLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
+            Label filler = new Label(statusComposite, SWT.NONE);
+            filler.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            statusLabel = new StatusLabel(statusComposite, SWT.NONE, this);
+            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END);
+            gd.widthHint = 30 * fontHeight;
+            statusLabel.setLayoutData(gd);
             CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             statusBar.addListener(SWT.Resize, event -> {
@@ -3334,6 +3352,14 @@ public class ResultSetViewer extends Viewer
 
     public void updateRowCount() {
         rowCountLabel.executeAction();
+    }
+
+    public void setSelectionStatistics(String stats) {
+        if (stats.equals(selectionStatLabel.getText())) {
+            return;
+        }
+        selectionStatLabel.setText(stats);
+        statusBar.layout(true, true);
     }
 
     /**
