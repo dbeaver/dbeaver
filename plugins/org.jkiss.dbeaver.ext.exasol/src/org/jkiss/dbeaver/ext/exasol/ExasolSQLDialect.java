@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class ExasolSQLDialect extends JDBCSQLDialect {
 
@@ -45,44 +47,37 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     public ExasolSQLDialect() {
         super("Exasol");
     }
+    
+    public void addExtraFunctions(String... functions) {
+        super.addFunctions(Arrays.asList(functions));
+    }
+
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         
+        Collections.addAll(tableQueryWords, "DESC");
         
         try {
-            for (String kw : metaData.getSQLKeywords().split(",")) {
-                this.addSQLKeyword(kw);
-            } 
-            
+          
         	JDBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), dataSource, "" );
         	try (JDBCStatement stmt = session.createStatement())
         	{
-        		try (JDBCResultSet dbResult = stmt.executeQuery("/*snapshot execution*/ SELECT KEYWORD,RESERVED FROM  EXA_SQL_KEYWORDS")) 
+        		try (JDBCResultSet dbResult = stmt.executeQuery("/*snapshot execution*/ SELECT \"VALUE\" FROM \"$ODBCJDBC\".DB_METADATA WHERE name = 'aggregateFunctions'")) 
         		{
         			
-        			while(dbResult.next())
+        			if (dbResult.next())
         			{
-        				Boolean isReserved = dbResult.getBoolean(2);
         				String keyWord = dbResult.getString(1);
-        				DBPKeywordType type = DBPKeywordType.OTHER;
-        				if (isReserved)
-        					type = DBPKeywordType.KEYWORD;
         				
-        				if (  
-        					! (this.getMatchedKeywords(keyWord).stream().anyMatch(k -> k.equals(keyWord)))
-        				) {
-        					@SuppressWarnings("serial")
-							ArrayList<String> value = new ArrayList<String>() {{
-    							add(keyWord);
-    						}};
-        					this.addKeywords(value, type);;
-        				}
+        				String[] aggregateFunctions = keyWord.split(",");
+        				this.addExtraFunctions(aggregateFunctions);
+        				
         			}
         		}
         	}
         } catch (SQLException e) {
-            LOG.warn("Could not retrieve reserved keyword list from Exasol dictionary");
+            LOG.warn("Could not retrieve functions list from Exasol dictionary");
         }
         
 		@SuppressWarnings("serial")
@@ -98,7 +93,8 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
 			add("CPU_WEIGHT");
 		}};
 		
-		this.addKeywords(value, DBPKeywordType.OTHER);
+		this.addKeywords(value, DBPKeywordType.KEYWORD);
+		
     }
 
     @NotNull
@@ -115,7 +111,7 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public String[] getExecuteKeywords() {
-        return new String[]{};
+        return new String[]{"EXECUTE SCRIPT"};
     }
 
     @Override
