@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
+import org.eclipse.ui.internal.PartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.Nullable;
@@ -229,6 +230,28 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             if (CommonUtils.equalObjects(curFolderId, folderId1)) {
                 return;
             }
+
+            IActionBars actionBars = getEditorSite().getActionBars();
+            MultiPageEditorPart mainEditor = ((MultiPageEditorSite) getSite()).getMultiPageEditor();
+            IWorkbenchPartSite mainEditorSite = mainEditor.getSite();
+            if (mainEditorSite instanceof PartSite) {
+                ((PartSite) mainEditorSite).deactivateActionBars(true);
+            }
+
+            ITabbedFolder activeFolder = folderComposite.getActiveFolder();
+            if (activeFolder instanceof TabbedFolderPageEditor) {
+                IEditorActionBarContributor activeFolderContributor = pageContributors.get(activeFolder);
+                if (activeFolderContributor != null) {
+                    // FIXME: do not add extra contributions as they will be there forever (never cleaned up)
+//                    if (activeFolderContributor instanceof EditorActionBarContributor) {
+//                        ((EditorActionBarContributor) activeFolderContributor).contributeToStatusLine(
+//                            actionBars.getStatusLineManager());
+//                    }
+                    activeFolderContributor.setActiveEditor(((TabbedFolderPageEditor) activeFolder).getEditor());
+                }
+            }
+            actionBars.updateActionBars();
+
             synchronized (folderListeners) {
                 curFolderId = folderId1;
                 for (ITabbedFolderListener listener : folderListeners) {
