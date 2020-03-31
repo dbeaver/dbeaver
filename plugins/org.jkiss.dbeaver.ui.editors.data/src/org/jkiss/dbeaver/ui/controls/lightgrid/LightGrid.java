@@ -4111,9 +4111,12 @@ public abstract class LightGrid extends Canvas {
         return cells;
     }
 
+    public int getCellSelectionSize() {
+        return selectedCells.size();
+    }
+
     @NotNull
-    public List<Object> getColumnSelection()
-    {
+    public List<Object> getColumnSelection() {
         if (selectedColumns.isEmpty()) {
             return Collections.emptyList();
         }
@@ -4124,6 +4127,10 @@ public abstract class LightGrid extends Canvas {
         return selection;
     }
 
+    public int getColumnSelectionSize() {
+        return selectedColumns.size();
+    }
+
     /**
      * Returns selected rows indexes
      * @return indexes of selected rows
@@ -4131,6 +4138,10 @@ public abstract class LightGrid extends Canvas {
     public Collection<Integer> getRowSelection()
     {
         return Collections.unmodifiableCollection(selectedRows.keySet());
+    }
+
+    public int getRowSelectionSize() {
+        return selectedRows.size();
     }
 
     private void getCells(GridColumn col, List<GridPos> cells)
