@@ -147,8 +147,6 @@ public class ResultSetViewer extends Viewer
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
-    static final String RSV_STATUS_FIELD = "ResultSetViewer.Status";
-
     private IResultSetFilterManager filterManager;
     @NotNull
     private final IWorkbenchPartSite site;
@@ -2417,6 +2415,10 @@ public class ResultSetViewer extends Viewer
         viewMenu.add(new Separator());
         viewMenu.add(new ColorizeDataTypesToggleAction());
         viewMenu.add(new DataFormatsPreferencesAction());
+        viewMenu.add(new Separator());
+        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, "Show selected row count"));
+        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS, "Show selected column count"));
+        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS, "Show selected cell count"));
     }
 
     private void fillVirtualModelMenu(@NotNull IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
@@ -4079,7 +4081,7 @@ public class ResultSetViewer extends Viewer
                 return new IContributionItem[0];
             }
             List<IContributionItem> items = rsv.fillPanelsMenu();
-            return items.toArray(new IContributionItem[items.size()]);
+            return items.toArray(new IContributionItem[0]);
         }
     }
 
@@ -4102,7 +4104,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private class DataFormatsPreferencesAction extends Action {
-        public DataFormatsPreferencesAction() {
+        DataFormatsPreferencesAction() {
             super(ResultSetMessages.controls_resultset_viewer_action_data_formats);
         }
 
@@ -4131,18 +4133,40 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isChecked()
         {
-            return getPreferenceStore().getBoolean(prefId);
+            return getActionPreferenceStore().getBoolean(prefId);
         }
 
         @Override
         public void run()
         {
-            DBPPreferenceStore preferenceStore = getPreferenceStore();
+            DBPPreferenceStore preferenceStore = getActionPreferenceStore();
             preferenceStore.setValue(
                 prefId,
                 !preferenceStore.getBoolean(prefId));
         }
+
+        DBPPreferenceStore getActionPreferenceStore() {
+            return ResultSetViewer.this.getPreferenceStore();
+        }
     }
+
+    private class ToggleSelectionStatAction extends ToggleConnectionPreferenceAction {
+        ToggleSelectionStatAction(String prefId, String title) {
+            super(prefId, title);
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
+        }
+
+        @Override
+        DBPPreferenceStore getActionPreferenceStore() {
+            return DBWorkbench.getPlatform().getPreferenceStore();
+        }
+    }
+
 
     private class ToggleServerSideOrderingAction extends ToggleConnectionPreferenceAction {
         ToggleServerSideOrderingAction() {

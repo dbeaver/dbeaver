@@ -39,10 +39,10 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.progress.UIJob;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 class ResultSetStatListener extends ResultSetListenerAdapter {
     private final ResultSetViewer viewer;
-    private String slText;
     private SLUpdateJob updateJob;
 
     ResultSetStatListener(ResultSetViewer viewer) {
@@ -54,12 +54,6 @@ class ResultSetStatListener extends ResultSetListenerAdapter {
         IResultSetSelection selection = viewer.getSelection();
         IWorkbenchPartSite site = viewer.getSite();
         if (site instanceof IEditorSite && selection instanceof IResultSetSelectionExt) {
-            IResultSetSelectionExt selExt = (IResultSetSelectionExt) selection;
-            if (selExt.getSelectedCellCount() < 2) {
-                slText = "";
-            } else {
-                slText = "" + selExt.getSelectedRowCount() + "/" + selExt.getSelectedColumnCount() + "/" + selExt.getSelectedCellCount();
-            }
             // Use job with 100ms delay to avoid event spam
             if (this.updateJob == null) {
                 this.updateJob = new SLUpdateJob();
@@ -78,6 +72,20 @@ class ResultSetStatListener extends ResultSetListenerAdapter {
 
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
+            IResultSetSelectionExt selection = (IResultSetSelectionExt) viewer.getSelection();
+            DBPPreferenceStore preferenceStore = viewer.getPreferenceStore();
+            String slText = "";
+            if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS)) {
+                slText = "Rows: " + selection.getSelectedRowCount();// + "/" + selExt.getSelectedColumnCount() + "/" + selExt.getSelectedCellCount();
+            }
+            if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS)) {
+                if (!slText.isEmpty()) slText += ", ";
+                slText += "Cols: " + selection.getSelectedColumnCount();
+            }
+            if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS)) {
+                if (!slText.isEmpty()) slText += ", ";
+                slText += "Cells: " + selection.getSelectedCellCount();
+            }
             viewer.setSelectionStatistics(slText);
             return Status.OK_STATUS;
         }
