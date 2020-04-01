@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -153,6 +154,11 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         if (parent instanceof DBNDatabaseNode) {
             if (navigatorTree.getNavigatorFilter() != null && navigatorTree.getNavigatorFilter().isLeafObject(parent)) {
                 return false;
+            }
+            if (((DBNDatabaseNode) parent).getDataSourceContainer().getNavigatorSettings().isShowOnlyEntities()) {
+                if (((DBNDatabaseNode) parent).getObject() instanceof DBSEntity) {
+                    return false;
+                }
             }
         }
         return parent instanceof DBNNode && ((DBNNode) parent).hasChildren(true);
