@@ -201,7 +201,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 for (IDialogPage subPage : subPages) {
                     addPage(item, subPage, maxSize);
                 }
-                item.setExpanded(true);
+                //item.setExpanded(true);
             }
         }
 
