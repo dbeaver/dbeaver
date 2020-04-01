@@ -142,12 +142,12 @@ public abstract class DBXTreeNode
     /**
      * Human readable node type
      */
-    public abstract String getNodeType(@Nullable DBPDataSource dataSource, @Nullable String locale);
+    public abstract String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
     /**
      * Human readable child nodes type
      */
-    public abstract String getChildrenType(@Nullable DBPDataSource dataSource, @Nullable String locale);
+    public abstract String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
     public boolean isNavigable()
     {

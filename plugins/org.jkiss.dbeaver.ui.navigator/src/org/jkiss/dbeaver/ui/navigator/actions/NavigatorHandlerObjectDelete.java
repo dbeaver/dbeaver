@@ -295,7 +295,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             } else {
                 DBNNode node = NavigatorUtils.getSelectedNode(selection);
                 if (node != null) {
-                    element.setText(UINavigatorMessages.actions_navigator_delete_ + " " + node.getNodeType()  + " '" + node.getNodeName() + "'");
+                    element.setText(UINavigatorMessages.actions_navigator_delete_ + " " + node.getNodeTypeLabel()  + " '" + node.getNodeName() + "'");
                 }
             }
         }

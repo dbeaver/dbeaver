@@ -77,7 +77,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         if (CommonUtils.isEmpty(metaChildren)) {
             return "?";
         } else {
-            return metaChildren.get(0).getChildrenType(getDataSource(), null);
+            return metaChildren.get(0).getChildrenTypeLabel(getDataSource(), null);
         }
     }
 
@@ -85,12 +85,12 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     @Override
     @Property(viewable = true)
     public String getName() {
-        return meta.getChildrenType(getDataSource(), null);
+        return meta.getChildrenTypeLabel(getDataSource(), null);
     }
 
     @Override
     public String getLocalizedName(String locale) {
-        return meta.getChildrenType(getDataSource(), locale);
+        return meta.getChildrenTypeLabel(getDataSource(), locale);
     }
 
     @Nullable
@@ -134,7 +134,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
 
     @Override
     public String toString() {
-        return meta.getChildrenType(getDataSource(), null);
+        return meta.getChildrenTypeLabel(getDataSource(), null);
     }
 
 }

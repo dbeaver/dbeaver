@@ -204,7 +204,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder) node).getMeta().getChildren(node);
             if (!CommonUtils.isEmpty(metaChildren)) {
                 Class<?> nodeClass = ((DBNContainer) node).getChildrenClass();
-                String nodeType = metaChildren.get(0).getChildrenType(node.getDataSource(), null);
+                String nodeType = metaChildren.get(0).getChildrenTypeLabel(node.getDataSource(), null);
                 DBPImage nodeIcon = node.getNodeIconDefault();//metaChildren.get(0).getIcon(node);
                 if (nodeClass != null && nodeType != null) {
                     if (isCreateSupported(node, nodeClass)) {
@@ -269,7 +269,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 return false;
             }
 
-            String typeName = childMeta.getNodeType(node.getDataSource(), null);
+            String typeName = childMeta.getNodeTypeLabel(node.getDataSource(), null);
             if (typeName != null) {
                 IContributionItem item = makeCreateContributionItem(
                     site, objectClass.getName(), typeName, childMeta.getIcon(null), true);

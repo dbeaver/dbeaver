@@ -20,10 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -99,12 +99,12 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
-        return meta.getNodeType(getDataSource(), null);
+        return meta.getNodeTypeLabel(getDataSource(), null);
     }
 
     @Override
     public String getLocalizedName(String locale) {
-        return meta.getNodeType(getDataSource(), locale);
+        return meta.getNodeTypeLabel(getDataSource(), locale);
     }
 
     @Nullable

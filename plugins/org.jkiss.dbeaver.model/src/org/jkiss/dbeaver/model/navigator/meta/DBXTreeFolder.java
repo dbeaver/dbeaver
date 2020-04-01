@@ -65,7 +65,7 @@ public class DBXTreeFolder extends DBXTreeNode {
     }
 
     @Override
-    public String getNodeType(@Nullable DBPDataSource dataSource, @Nullable String locale) {
+    public String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale) {
         if (locale == null) {
             return label;
         } else {
@@ -74,8 +74,8 @@ public class DBXTreeFolder extends DBXTreeNode {
     }
 
     @Override
-    public String getChildrenType(@Nullable DBPDataSource dataSource, String locale) {
-        return getNodeType(dataSource, locale);
+    public String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, String locale) {
+        return getNodeTypeLabel(dataSource, locale);
     }
 
     @Override

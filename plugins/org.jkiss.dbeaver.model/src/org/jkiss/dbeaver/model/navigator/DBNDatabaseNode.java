@@ -32,9 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -81,7 +79,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     @Override
     public String getNodeType() {
-        return getObject() == null ? "" : getMeta().getNodeType(getObject().getDataSource(), null); //$NON-NLS-1$
+        return getObject() == null ? "" : getMeta().getNodeTypeLabel(getObject().getDataSource(), null); //$NON-NLS-1$
     }
 
     @Override
@@ -404,15 +402,21 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return;
         }
         monitor.beginTask(ModelMessages.model_navigator_load_items_, childMetas.size());
+        DBNBrowseSettings navSettings = getDataSourceContainer().getNavigatorSettings();
+        final boolean showSystem = navSettings.isShowSystemObjects();
+        final boolean showOnlyEntities = navSettings.isShowOnlyEntities();
 
         for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
                 break;
             }
-            monitor.subTask(ModelMessages.model_navigator_load_ + " " + child.getChildrenType(object.getDataSource(), null));
+            monitor.subTask(ModelMessages.model_navigator_load_ + " " + child.getChildrenTypeLabel(object.getDataSource(), null));
+            if (showOnlyEntities && !isEntityMeta(child)) {
+                continue;
+            }
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
-                boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, reflect);
+                boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, showSystem, reflect);
                 if (!isLoaded && item.isOptional() && item.getRecursiveLink() == null) {
                     // This may occur only if no child nodes was read
                     // Then we try to go on next DBX level
@@ -458,6 +462,20 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
     }
 
+    private boolean isEntityMeta(DBXTreeNode node) {
+        Class<?> nodeChildClass = null;
+        if (node instanceof DBXTreeItem) {
+            nodeChildClass = getChildrenClass((DBXTreeItem) node);
+        } else if (node instanceof DBXTreeFolder) {
+            nodeChildClass = getFolderChildrenClass((DBXTreeFolder) node);
+        }
+        if (nodeChildClass == null) {
+            return false;
+        }
+        return DBSObjectContainer.class.isAssignableFrom(nodeChildClass) ||
+            DBSEntity.class.isAssignableFrom(nodeChildClass) ||
+            DBSEntityElement.class.isAssignableFrom(nodeChildClass);
+    }
 
     /**
      * Extract items using reflect api
@@ -466,6 +484,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
      * @param meta    items meta info
      * @param oldList previous child items
      * @param toList  list ot add new items   @return true on success
+     * @param showSystem include system objects
      * @param reflect @return true on success
      * @throws DBException on any DB error
      */
@@ -474,7 +493,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         DBXTreeItem meta,
         final DBNDatabaseNode[] oldList,
         final List<DBNDatabaseNode> toList,
-        Object source, boolean reflect)
+        Object source,
+        boolean showSystem, boolean reflect)
         throws DBException {
         if (this.isDisposed()) {
             // Property reading can take really long time so this node can be disposed at this moment -
@@ -510,8 +530,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return false;
         }
 
-        final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        final boolean showSystem = dataSourceContainer.getNavigatorSettings().isShowSystemObjects();
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
