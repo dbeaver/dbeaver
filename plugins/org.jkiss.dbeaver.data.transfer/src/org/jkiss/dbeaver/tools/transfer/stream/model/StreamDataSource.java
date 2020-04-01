@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.io.File;
 import java.util.Collection;
 
 /**
@@ -45,10 +44,6 @@ public class StreamDataSource extends AbstractSimpleDataSource<StreamExecutionCo
     public StreamDataSource(StreamDataSourceContainer container) {
         super(container);
         this.executionContext = new StreamExecutionContext(this, "Main");
-    }
-
-    public StreamDataSource(File inputFile) {
-        this(new StreamDataSourceContainer(inputFile));
     }
 
     public StreamDataSource(String inputName) {
