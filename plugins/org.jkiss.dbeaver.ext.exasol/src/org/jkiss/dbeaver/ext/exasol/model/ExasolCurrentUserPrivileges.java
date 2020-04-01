@@ -120,9 +120,9 @@ public class ExasolCurrentUserPrivileges {
     	return getatLeastV6() && getMinorVersion() >= 1  && getMajorVersion() < 7;
     }
     
-    public Boolean hasPasswortPolicy()
+    public Boolean hasPasswordPolicy()
     {
-    	return getatLeastV6() && getMinorVersion() >= 1  && getMajorVersion() >= 7;
+    	return (getatLeastV6() && getMinorVersion() >= 1) || getMajorVersion() >= 7;
     }
     
     public Boolean hasConsumerGroups()
