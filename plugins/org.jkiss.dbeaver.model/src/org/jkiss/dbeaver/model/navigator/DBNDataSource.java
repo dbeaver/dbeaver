@@ -90,7 +90,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
         if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
             return "?";
         } else {
-            return metaChildren.get(0).getChildrenType(getDataSource(), null);
+            return metaChildren.get(0).getChildrenTypeLabel(getDataSource(), null);
         }
     }
 

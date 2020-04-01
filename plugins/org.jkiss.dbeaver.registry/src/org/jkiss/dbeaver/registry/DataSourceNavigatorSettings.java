@@ -35,6 +35,8 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         PRESET_SIMPLE.setHideFolders(true);
         PRESET_SIMPLE.setShowOnlyEntities(true);
 
+        PRESET_FULL.setShowSystemObjects(true);
+
         PRESETS.put("Simple", PRESET_SIMPLE);
         PRESETS.put("Full", PRESET_FULL);
         PRESETS.put("Custom", null);
@@ -46,6 +48,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private boolean mergeEntities;
     private boolean hideFolders;
     private boolean hideSchemas;
+    private boolean showVirtualModel;
 
     public DataSourceNavigatorSettings() {
     }
@@ -57,6 +60,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         this.mergeEntities = copyFrom.isMergeEntities();
         this.hideFolders = copyFrom.isHideFolders();
         this.hideSchemas = copyFrom.isHideSchemas();
+        this.showVirtualModel = copyFrom.isShowVirtualModel();
     }
 
     @Override
@@ -109,6 +113,15 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         return hideSchemas;
     }
 
+    @Override
+    public boolean isShowVirtualModel() {
+        return showVirtualModel;
+    }
+
+    public void setShowVirtualModel(boolean showVirtualModel) {
+        this.showVirtualModel = showVirtualModel;
+    }
+
     public void setHideSchemas(boolean hideSchemas) {
         this.hideSchemas = hideSchemas;
     }
@@ -124,7 +137,8 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
             this.showOnlyEntities == source.showOnlyEntities &&
             this.mergeEntities == source.mergeEntities &&
             this.hideFolders == source.hideFolders &&
-            this.hideSchemas == source.hideSchemas;
+            this.hideSchemas == source.hideSchemas &&
+            this.showVirtualModel == source.showVirtualModel;
     }
 
 }

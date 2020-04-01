@@ -640,7 +640,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
                                     monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
-                                    String nodeName = child.getChildrenType(databaseNode.getObject().getDataSource(), null);
+                                    String nodeName = child.getChildrenTypeLabel(databaseNode.getObject().getDataSource(), null);
                                     tabList.add(
                                         new TabbedFolderInfo(
                                             nodeName,
