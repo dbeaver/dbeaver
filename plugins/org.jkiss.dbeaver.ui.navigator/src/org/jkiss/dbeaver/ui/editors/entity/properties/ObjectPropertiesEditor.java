@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -610,6 +611,31 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         } else if (node != null) {
             try {
                 DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, node, false);
+                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
+                    // Folders are hidden in navigator. But we must show them here for all present child items
+                    Map<DBXTreeFolder, List<DBNNode>> childMap = new LinkedHashMap<>();
+                    for (DBNNode child : children) {
+                        if (child instanceof DBNDatabaseNode) {
+                            DBXTreeNode meta = ((DBNDatabaseNode) child).getMeta();
+                            if (meta.getParent() instanceof DBXTreeFolder) {
+                                List<DBNNode> itemList = childMap.computeIfAbsent((DBXTreeFolder) meta.getParent(), dbxTreeFolder -> new ArrayList<>());
+                                itemList.add(child);
+                            }
+                        }
+                    }
+                    for (Map.Entry<DBXTreeFolder, List<DBNNode>> fe : childMap.entrySet()) {
+                        DBXTreeFolder folder = fe.getKey();
+                        String nodeName = folder.getChildrenTypeLabel(((DBNDatabaseNode) node).getObject().getDataSource(), null);
+                        tabList.add(
+                            new TabbedFolderInfo(
+                                nodeName,
+                                nodeName,
+                                folder.getDefaultIcon(),
+                                folder.getDescription(),
+                                false,
+                                new TabbedFolderPageNode(part, node, folder)));
+                    }
+                }
                 if (children != null) {
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {

@@ -405,6 +405,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         DBNBrowseSettings navSettings = getDataSourceContainer().getNavigatorSettings();
         final boolean showSystem = navSettings.isShowSystemObjects();
         final boolean showOnlyEntities = navSettings.isShowOnlyEntities();
+        final boolean hideFolders = navSettings.isHideFolders();
 
         for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
@@ -423,20 +424,31 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                     loadChildren(monitor, item, oldList, toList, source, reflect);
                 }
             } else if (child instanceof DBXTreeFolder) {
-                if (oldList == null) {
-                    // Load new folders only if there are no old ones
-                    toList.add(
-                        new DBNDatabaseFolder(this, (DBXTreeFolder) child));
+                if (hideFolders) {
+                    if (child.isVirtual()) {
+                        continue;
+                    }
+                    // Fall down
+                    loadChildren(monitor, child, oldList, toList, source, reflect);
                 } else {
-                    for (DBNDatabaseNode oldFolder : oldList) {
-                        if (oldFolder.getMeta() == child) {
-                            oldFolder.reloadChildren(monitor, source, reflect);
-                            toList.add(oldFolder);
-                            break;
+                    if (oldList == null) {
+                        // Load new folders only if there are no old ones
+                        toList.add(
+                            new DBNDatabaseFolder(this, (DBXTreeFolder) child));
+                    } else {
+                        for (DBNDatabaseNode oldFolder : oldList) {
+                            if (oldFolder.getMeta() == child) {
+                                oldFolder.reloadChildren(monitor, source, reflect);
+                                toList.add(oldFolder);
+                                break;
+                            }
                         }
                     }
                 }
             } else if (child instanceof DBXTreeObject) {
+                if (hideFolders) {
+                    continue;
+                }
                 if (oldList == null) {
                     // Load new objects only if there are no old ones
                     toList.add(

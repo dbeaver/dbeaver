@@ -32,8 +32,9 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     public static final DataSourceNavigatorSettings PRESET_FULL = new DataSourceNavigatorSettings();
 
     static {
-        PRESET_SIMPLE.setHideFolders(true);
         PRESET_SIMPLE.setShowOnlyEntities(true);
+        PRESET_SIMPLE.setHideFolders(true);
+        PRESET_SIMPLE.setHideVirtualModel(true);
 
         PRESET_FULL.setShowSystemObjects(true);
 
@@ -48,7 +49,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private boolean mergeEntities;
     private boolean hideFolders;
     private boolean hideSchemas;
-    private boolean showVirtualModel;
+    private boolean hideVirtualModel;
 
     public DataSourceNavigatorSettings() {
     }
@@ -60,7 +61,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         this.mergeEntities = copyFrom.isMergeEntities();
         this.hideFolders = copyFrom.isHideFolders();
         this.hideSchemas = copyFrom.isHideSchemas();
-        this.showVirtualModel = copyFrom.isShowVirtualModel();
+        this.hideVirtualModel = copyFrom.isHideVirtualModel();
     }
 
     @Override
@@ -113,17 +114,17 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         return hideSchemas;
     }
 
-    @Override
-    public boolean isShowVirtualModel() {
-        return showVirtualModel;
-    }
-
-    public void setShowVirtualModel(boolean showVirtualModel) {
-        this.showVirtualModel = showVirtualModel;
-    }
-
     public void setHideSchemas(boolean hideSchemas) {
         this.hideSchemas = hideSchemas;
+    }
+
+    @Override
+    public boolean isHideVirtualModel() {
+        return hideVirtualModel;
+    }
+
+    public void setHideVirtualModel(boolean hideVirtualModel) {
+        this.hideVirtualModel = hideVirtualModel;
     }
 
     @Override
@@ -138,7 +139,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
             this.mergeEntities == source.mergeEntities &&
             this.hideFolders == source.hideFolders &&
             this.hideSchemas == source.hideSchemas &&
-            this.showVirtualModel == source.showVirtualModel;
+            this.hideVirtualModel == source.hideVirtualModel;
     }
 
 }

@@ -179,7 +179,7 @@
             type="folder"
             embeddable="false"
             icon="#association">
-            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" if="context.isRelationalObject(object)"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" if="context.isRelationalObject(object) &amp;&amp;!object.dataSource.container.navigatorSettings.isHideVirtualModel()"/>
         </editor>
     </extension>
 

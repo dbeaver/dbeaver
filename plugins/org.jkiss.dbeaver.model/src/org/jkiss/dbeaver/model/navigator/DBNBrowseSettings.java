@@ -33,6 +33,6 @@ public interface DBNBrowseSettings {
 
     boolean isHideSchemas();
 
-    boolean isShowVirtualModel();
+    boolean isHideVirtualModel();
 
 }

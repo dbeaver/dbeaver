@@ -569,7 +569,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
 
         String name = connectionNameChanged ? connectionNameText.getText() : generateConnectionName(getWizard().getPageSettings());
         dataSource.setName(name);
-        dataSource.setFolder(dataSourceFolder);
+        //dataSource.setFolder(dataSourceFolder);
 
         if (connectionTypeCombo.getSelectionIndex() >= 0) {
             confConfig.setConnectionType(connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()));
