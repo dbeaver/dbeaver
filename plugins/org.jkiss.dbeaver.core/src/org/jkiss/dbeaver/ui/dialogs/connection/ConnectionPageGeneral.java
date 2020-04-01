@@ -53,7 +53,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -110,7 +109,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
         filters.add(new FilterInfo(DBSEntityAttribute.class, CoreMessages.dialog_connection_wizard_final_filter_attributes));
 
-        this.navigatorSettings = DataSourceNavigatorSettings.PRESET_FULL;
+        this.navigatorSettings = DataSourceNavigatorSettings.PRESET_FULL.getSettings();
     }
 
     ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
@@ -205,9 +204,9 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     private void updateNavigatorSettingsPreset() {
         // Find first preset that matches current connection settings
         boolean isPreset = false;
-        for (Map.Entry<String, DataSourceNavigatorSettings> nsEntry : DataSourceNavigatorSettings.PRESETS.entrySet()) {
-            if (navigatorSettings.equals(nsEntry.getValue())) {
-                navigatorSettingsCombo.setText(nsEntry.getKey());
+        for (DataSourceNavigatorSettings.Preset nsEntry : DataSourceNavigatorSettings.PRESETS.values()) {
+            if (navigatorSettings.equals(nsEntry.getSettings())) {
+                navigatorSettingsCombo.setText(nsEntry.getName());
                 isPreset = true;
                 break;
             }
@@ -354,11 +353,11 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                         if (navigatorSettingsCombo.getSelectionIndex() == navigatorSettingsCombo.getItemCount() - 1) {
                             // Custom - no changes
                         } else {
-                            DataSourceNavigatorSettings newSettings = DataSourceNavigatorSettings.PRESETS.get(navigatorSettingsCombo.getText());
+                            DataSourceNavigatorSettings.Preset newSettings = DataSourceNavigatorSettings.PRESETS.get(navigatorSettingsCombo.getText());
                             if (newSettings == null) {
                                 throw new IllegalStateException("Invalid preset name: " + navigatorSettingsCombo.getText());
                             }
-                            ConnectionPageGeneral.this.navigatorSettings = newSettings;
+                            ConnectionPageGeneral.this.navigatorSettings = newSettings.getSettings();
                         }
                     }
                 });
