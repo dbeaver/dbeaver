@@ -160,7 +160,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     void loadClasses(DBRProgressMonitor monitor)
         throws DBException
     {
-        boolean showSystemObjects = getDataSource().getContainer().isShowSystemObjects();
+        boolean showSystemObjects = getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
 
         try {
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor, getService());

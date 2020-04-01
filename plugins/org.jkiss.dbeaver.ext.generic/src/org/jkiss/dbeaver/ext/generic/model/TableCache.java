@@ -124,7 +124,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
             dbResult);
 
         boolean isSystemTable = table.isSystem();
-        if (isSystemTable && !owner.getDataSource().getContainer().isShowSystemObjects()) {
+        if (isSystemTable && !owner.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects()) {
             return null;
         }
         return table;

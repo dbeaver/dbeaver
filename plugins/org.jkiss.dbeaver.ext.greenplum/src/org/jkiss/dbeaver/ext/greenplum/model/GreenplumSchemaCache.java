@@ -21,7 +21,6 @@
 package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -39,7 +38,7 @@ public class GreenplumSchemaCache extends PostgreDatabase.SchemaCache {
         if (name == null) {
             return null;
         }
-        if (GreenplumSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().isShowUtilityObjects()) {
+        if (GreenplumSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects()) {
             return null;
         }
         return new GreenplumSchema(owner, name, resultSet);

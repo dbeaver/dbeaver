@@ -1026,7 +1026,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             if (name == null) {
                 return null;
             }
-            if (PostgreSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().isShowUtilityObjects()) {
+            if (PostgreSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects()) {
                 return null;
             }
             return new PostgreSchema(owner, name, resultSet);
