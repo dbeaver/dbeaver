@@ -76,5 +76,8 @@
                 name="DBeaver Perspective"
                 description="DBeaver Perspective Context"/>
     </extension>
+    <extension
+          point="org.eclipse.mylyn.commons.notifications.ui.notifications">
+    </extension>
 
 </plugin>

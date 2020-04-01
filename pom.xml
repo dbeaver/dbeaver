@@ -223,6 +223,20 @@
                 </executions>
             </plugin>
 -->
+        	<plugin>
+        		<groupId>
+        			org.eclipse.mylyn.commons.notifications
+        		</groupId>
+        		<artifactId>ui</artifactId>
+        		<version>1.1.1</version>
+        	</plugin>
+        	<plugin>
+        		<groupId>
+        			org.eclipse.mylyn.commons.notifications
+        		</groupId>
+        		<artifactId>ui.notifications</artifactId>
+        		<version>1.0.2-v20120916-1200</version>
+        	</plugin>
         </plugins>
 
     </build>
