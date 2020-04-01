@@ -26,21 +26,51 @@ import java.util.Map;
  */
 public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
-    public static final Map<String, DataSourceNavigatorSettings> PRESETS = new LinkedHashMap<>();
+    public static final Map<String, Preset> PRESETS = new LinkedHashMap<>();
 
-    public static final DataSourceNavigatorSettings PRESET_SIMPLE = new DataSourceNavigatorSettings();
-    public static final DataSourceNavigatorSettings PRESET_FULL = new DataSourceNavigatorSettings();
+    public static final Preset PRESET_SIMPLE = new Preset("simple", "Simple", "Shows only tables");
+    public static final Preset PRESET_FULL = new Preset("advanced", "Advanced", "Shows all database objects");
+    public static final Preset PRESET_CUSTOM = new Preset("custom", "Custom", "User configuration");
+
+    public static class Preset {
+        private final String id;
+        private final String name;
+        private final String description;
+        private final DataSourceNavigatorSettings settings = new DataSourceNavigatorSettings();
+
+        public Preset(String id, String name, String description) {
+            this.id = id;
+            this.name = name;
+            this.description = description;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public DBNBrowseSettings getSettings() {
+            return settings;
+        }
+    }
 
     static {
-        PRESET_SIMPLE.setShowOnlyEntities(true);
-        PRESET_SIMPLE.setHideFolders(true);
-        PRESET_SIMPLE.setHideVirtualModel(true);
+        PRESET_SIMPLE.settings.setShowOnlyEntities(true);
+        PRESET_SIMPLE.settings.setHideFolders(true);
+        PRESET_SIMPLE.settings.setHideVirtualModel(true);
 
-        PRESET_FULL.setShowSystemObjects(true);
+        PRESET_FULL.settings.setShowSystemObjects(true);
 
-        PRESETS.put("Simple", PRESET_SIMPLE);
-        PRESETS.put("Full", PRESET_FULL);
-        PRESETS.put("Custom", null);
+        PRESETS.put(PRESET_SIMPLE.name, PRESET_SIMPLE);
+        PRESETS.put(PRESET_FULL.name, PRESET_FULL);
+        PRESETS.put(PRESET_CUSTOM.name, PRESET_CUSTOM);
     }
 
     private boolean showSystemObjects;

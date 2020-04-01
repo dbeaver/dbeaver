@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-class EditConnectionNavigatorSettingsDialog extends BaseDialog {
+public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
     private DataSourceNavigatorSettings navigatorSettings;
 
     private Button showSystemObjects;
@@ -35,7 +35,7 @@ class EditConnectionNavigatorSettingsDialog extends BaseDialog {
     private Button showOnlyEntities;
     private Button hideFolders;
 
-    EditConnectionNavigatorSettingsDialog(Shell shell, DBNBrowseSettings navigatorSettings) {
+    public EditConnectionNavigatorSettingsDialog(Shell shell, DBNBrowseSettings navigatorSettings) {
         super(shell, CoreMessages.dialog_connection_wizard_final_group_navigator, null);
         this.navigatorSettings = new DataSourceNavigatorSettings(navigatorSettings);
     }
