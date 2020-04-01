@@ -113,18 +113,8 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setTemporary(boolean temporary) {
-
-    }
-
-    @Override
     public boolean isShowSystemObjects() {
         return false;
-    }
-
-    @Override
-    public void setShowSystemObjects(boolean showSystemObjects) {
-
     }
 
     @Override
@@ -133,18 +123,8 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setShowUtilityObjects(boolean showUtilityObjects) {
-
-    }
-
-    @Override
     public boolean isConnectionReadOnly() {
         return true;
-    }
-
-    @Override
-    public void setConnectionReadOnly(boolean connectionReadOnly) {
-
     }
 
     @Override

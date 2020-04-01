@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.sample.database;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -80,7 +79,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
 
     private void createSampleDatabase(DBPProject project) {
         DBPDataSourceRegistry dsRegistry = project.getDataSourceRegistry();
-        DBPDataSourceContainer dataSource = dsRegistry.getDataSource(SAMPLE_DB1_ID);
+        DataSourceDescriptor dataSource = (DataSourceDescriptor)dsRegistry.getDataSource(SAMPLE_DB1_ID);
         if (dataSource != null) {
             return;
         }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.connection;
+package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -276,15 +278,15 @@ public class DataSourceUtils {
 
         DBPDataSourceContainer newDS = dsRegistry.createDataSource(driver, connConfig);
         newDS.setName(dsName);
-        newDS.setTemporary(true);
+        ((DataSourceDescriptor)newDS).setTemporary(true);
         if (savePassword) {
             newDS.setSavePassword(true);
         }
         if (folder != null) {
             newDS.setFolder(folder);
         }
-        newDS.setShowSystemObjects(showSystemObjects);
-        newDS.setShowUtilityObjects(showUtilityObjects);
+        ((DataSourceDescriptor)newDS).setShowSystemObjects(showSystemObjects);
+        ((DataSourceDescriptor)newDS).setShowUtilityObjects(showUtilityObjects);
 
         //ds.set
         dsRegistry.addDataSource(newDS);
