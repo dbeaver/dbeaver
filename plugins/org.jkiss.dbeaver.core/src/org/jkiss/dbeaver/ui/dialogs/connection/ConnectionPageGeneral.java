@@ -518,17 +518,18 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             confConfig.setConnectionType(connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()));
         }
 
+        DataSourceDescriptor dsDescriptor = (DataSourceDescriptor) dataSource;
         final String description = descriptionText.getText();
         if (description.isEmpty()) {
-            dataSource.setDescription(null);
+            dsDescriptor.setDescription(null);
         } else {
-            dataSource.setDescription(description);
+            dsDescriptor.setDescription(description);
         }
 
-        dataSource.setShowSystemObjects(showSystemObjects.getSelection());
-        dataSource.setShowUtilityObjects(showUtilityObjects.getSelection());
-        dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
-        dataSource.setModifyPermissions(accessRestrictions);
+        dsDescriptor.setShowSystemObjects(showSystemObjects.getSelection());
+        dsDescriptor.setShowUtilityObjects(showUtilityObjects.getSelection());
+        dsDescriptor.setConnectionReadOnly(readOnlyConnection.getSelection());
+        dsDescriptor.setModifyPermissions(accessRestrictions);
 
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {
