@@ -1034,7 +1034,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         if (databaseNode == curNode) {
             item.setToolTipText(databaseNode.getNodeType());
-            item.setEnabled(false);
+            //item.setEnabled(false);
         } else {
             item.addSelectionListener(new SelectionAdapter() {
                 @Override
