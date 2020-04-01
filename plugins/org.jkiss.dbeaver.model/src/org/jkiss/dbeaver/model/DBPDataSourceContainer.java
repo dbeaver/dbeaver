@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -79,13 +80,12 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     @NotNull
     DBPConnectionConfiguration getActualConnectionConfiguration();
 
+    @NotNull
+    DBNBrowseSettings getNavigatorSettings();
+
     boolean isProvided();
 
     boolean isTemporary();
-
-    boolean isShowSystemObjects();
-
-    boolean isShowUtilityObjects();
 
     boolean isConnectionReadOnly();
 

@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -157,8 +158,10 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                     descriptionText.setText(dataSourceDescriptor.getDescription());
                 }
 
-                showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
-                showUtilityObjects.setSelection(dataSourceDescriptor.isShowUtilityObjects());
+                DataSourceNavigatorSettings navSettings = dataSourceDescriptor.getNavigatorSettings();
+                showSystemObjects.setSelection(navSettings.isShowSystemObjects());
+                showUtilityObjects.setSelection(navSettings.isShowUtilityObjects());
+
                 readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
 
                 activated = true;
@@ -345,13 +348,13 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             showSystemObjects = UIUtils.createCheckbox(
                 miscGroup,
                 CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
-                dataSourceDescriptor != null && dataSourceDescriptor.isShowSystemObjects());
+                dataSourceDescriptor != null && dataSourceDescriptor.getNavigatorSettings().isShowSystemObjects());
             showSystemObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             showUtilityObjects = UIUtils.createCheckbox(
                 miscGroup,
                 CoreMessages.dialog_connection_wizard_final_checkbox_show_util_objects,
-                dataSourceDescriptor != null && dataSourceDescriptor.isShowUtilityObjects());
+                dataSourceDescriptor != null && dataSourceDescriptor.getNavigatorSettings().isShowUtilityObjects());
             showUtilityObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
 
@@ -526,8 +529,8 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             dsDescriptor.setDescription(description);
         }
 
-        dsDescriptor.setShowSystemObjects(showSystemObjects.getSelection());
-        dsDescriptor.setShowUtilityObjects(showUtilityObjects.getSelection());
+        dsDescriptor.getNavigatorSettings().setShowSystemObjects(showSystemObjects.getSelection());
+        dsDescriptor.getNavigatorSettings().setShowUtilityObjects(showUtilityObjects.getSelection());
         dsDescriptor.setConnectionReadOnly(readOnlyConnection.getSelection());
         dsDescriptor.setModifyPermissions(accessRestrictions);
 

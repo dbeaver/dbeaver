@@ -30,9 +30,11 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -75,7 +77,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public DBPDriver getDriver() {
-        return null;
+        throw new IllegalStateException("Not supported");
     }
 
     @NotNull
@@ -102,6 +104,12 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return new DBPConnectionConfiguration();
     }
 
+    @NotNull
+    @Override
+    public DBNBrowseSettings getNavigatorSettings() {
+        throw new IllegalStateException("Not supported");
+    }
+
     @Override
     public boolean isProvided() {
         return true;
@@ -110,16 +118,6 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public boolean isTemporary() {
         return true;
-    }
-
-    @Override
-    public boolean isShowSystemObjects() {
-        return false;
-    }
-
-    @Override
-    public boolean isShowUtilityObjects() {
-        return false;
     }
 
     @Override
@@ -202,17 +200,17 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
-        return false;
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
     public boolean disconnect(DBRProgressMonitor monitor) throws DBException {
-        return false;
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
     public boolean reconnect(DBRProgressMonitor monitor) throws DBException {
-        return false;
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Nullable

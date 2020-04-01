@@ -169,12 +169,11 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         xml.addAttribute(RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
         xml.addAttribute(RegistryConstants.ATTR_NAME, dataSource.getName());
         xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
-        if (dataSource.isShowSystemObjects()) {
-            xml.addAttribute(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
-        }
-        if (dataSource.isShowUtilityObjects()) {
-            xml.addAttribute(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS, dataSource.isShowUtilityObjects());
-        }
+
+        DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
+        if (navSettings.isShowSystemObjects()) xml.addAttribute(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.isShowSystemObjects());
+        if (navSettings.isShowUtilityObjects()) xml.addAttribute(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.isShowUtilityObjects());
+
         xml.addAttribute(RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
         if (dataSource.getFolder() != null) {
             xml.addAttribute(RegistryConstants.ATTR_FOLDER, dataSource.getFolder().getFolderPath());
@@ -497,8 +496,15 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     }
                     curDataSource.setName(name);
                     curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
-                    curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
-                    curDataSource.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS)));
+
+                    DataSourceNavigatorSettings navSettings = curDataSource.getNavigatorSettings();
+                    navSettings.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS)));
+                    navSettings.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS)));
+                    navSettings.setShowOnlyEntities(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES)));
+                    navSettings.setHideFolders(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS)));
+                    navSettings.setHideSchemas(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS)));
+                    navSettings.setMergeEntities(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES)));
+
                     curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
                     final String folderPath = atts.getValue(RegistryConstants.ATTR_FOLDER);
                     if (folderPath != null) {

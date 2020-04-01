@@ -116,8 +116,6 @@ public class DataSourceDescriptor
     private String name;
     private String description;
     private boolean savePassword;
-    private boolean showSystemObjects;
-    private boolean showUtilityObjects;
     private boolean connectionReadOnly;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
@@ -147,6 +145,7 @@ public class DataSourceDescriptor
     @NotNull
     private DBVModel virtualModel;
     private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
+    private final DataSourceNavigatorSettings navigatorSettings;
 
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
@@ -171,6 +170,7 @@ public class DataSourceDescriptor
         this.connectionInfo = connectionInfo;
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
+        this.navigatorSettings = new DataSourceNavigatorSettings();
     }
 
     // Copy constructor
@@ -190,8 +190,7 @@ public class DataSourceDescriptor
         this.name = source.name;
         this.description = source.description;
         this.savePassword = source.savePassword;
-        this.showSystemObjects = source.showSystemObjects;
-        this.showUtilityObjects = source.showUtilityObjects;
+        this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
         this.connectionReadOnly = source.connectionReadOnly;
         this.driver = source.driver;
         this.connectionInfo = source.connectionInfo;
@@ -286,6 +285,12 @@ public class DataSourceDescriptor
 
     @NotNull
     @Override
+    public DataSourceNavigatorSettings getNavigatorSettings() {
+        return navigatorSettings;
+    }
+
+    @NotNull
+    @Override
     @Property(viewable = true, order = 1)
     public String getName()
     {
@@ -314,26 +319,6 @@ public class DataSourceDescriptor
     public void setSavePassword(boolean savePassword)
     {
         this.savePassword = savePassword;
-    }
-
-    @Override
-    public boolean isShowSystemObjects()
-    {
-        return showSystemObjects;
-    }
-
-    public void setShowSystemObjects(boolean showSystemObjects)
-    {
-        this.showSystemObjects = showSystemObjects;
-    }
-
-    @Override
-    public boolean isShowUtilityObjects() {
-        return showUtilityObjects;
-    }
-
-    public void setShowUtilityObjects(boolean showUtilityObjects) {
-        this.showUtilityObjects = showUtilityObjects;
     }
 
     @Override
@@ -1289,17 +1274,17 @@ public class DataSourceDescriptor
     }
 
     public void copyFrom(DataSourceDescriptor descriptor) {
-        filterMap.clear();
+        this.filterMap.clear();
         for (FilterMapping mapping : descriptor.getObjectFilters()) {
-            filterMap.put(mapping.typeName, new FilterMapping(mapping));
+            this.filterMap.put(mapping.typeName, new FilterMapping(mapping));
         }
-        virtualModel.copyFrom(descriptor.getVirtualModel());
+        this.virtualModel.copyFrom(descriptor.getVirtualModel());
 
-        setDescription(descriptor.getDescription());
-        setSavePassword(descriptor.isSavePassword());
-        setShowSystemObjects(descriptor.isShowSystemObjects());
-        setShowUtilityObjects(descriptor.isShowUtilityObjects());
-        setConnectionReadOnly(descriptor.isConnectionReadOnly());
+        this.description = descriptor.description;
+        this.savePassword = descriptor.savePassword;
+        this.connectionReadOnly = descriptor.connectionReadOnly;
+
+        this.navigatorSettings.copyFrom(descriptor.getNavigatorSettings());
     }
 
     @Override
@@ -1322,9 +1307,8 @@ public class DataSourceDescriptor
             CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
             CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
             CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
-            CommonUtils.equalObjects(this.showSystemObjects, source.showSystemObjects) &&
-            CommonUtils.equalObjects(this.showUtilityObjects, source.showUtilityObjects) &&
             CommonUtils.equalObjects(this.connectionReadOnly, source.connectionReadOnly) &&
+            CommonUtils.equalObjects(this.navigatorSettings, source.navigatorSettings) &&
             CommonUtils.equalObjects(this.driver, source.driver) &&
             CommonUtils.equalObjects(this.connectionInfo, source.connectionInfo) &&
             CommonUtils.equalObjects(this.filterMap, source.filterMap) &&

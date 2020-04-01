@@ -47,15 +47,20 @@ public class DataSourceUtils {
     public static final String PARAM_SERVER = "server";
     public static final String PARAM_DATABASE = "database";
     public static final String PARAM_USER = "user";
-    public static final String PARAM_PASSWORD = "password";
-    public static final String PARAM_SAVE_PASSWORD = "savePassword";
-    public static final String PARAM_SHOW_SYSTEM_OBJECTS = "showSystemObjects";
-    public static final String PARAM_SHOW_UTILITY_OBJECTS = "showUtilityObjects";
-    public static final String PARAM_FOLDER = "folder";
-    public static final String PARAM_AUTO_COMMIT = "autoCommit";
 
-    public static final String PREFIX_HANDLER = "handler.";
-    public static final String PREFIX_PROP = "prop.";
+    private static final String PARAM_PASSWORD = "password";
+    private static final String PARAM_SAVE_PASSWORD = "savePassword";
+    private static final String PARAM_SHOW_SYSTEM_OBJECTS = "showSystemObjects";
+    private static final String PARAM_SHOW_UTILITY_OBJECTS = "showUtilityObjects";
+    private static final String PARAM_SHOW_ONLY_ENTITIES = "showOnlyEntities";
+    private static final String PARAM_HIDE_FOLDERS = "hideFolders";
+    private static final String PARAM_HIDE_SCHEMAS = "hideSchemas";
+    private static final String PARAM_MERGE_ENTITIES = "mergeEntities";
+    private static final String PARAM_FOLDER = "folder";
+    private static final String PARAM_AUTO_COMMIT = "autoCommit";
+
+    private static final String PREFIX_HANDLER = "handler.";
+    private static final String PREFIX_PROP = "prop.";
 
     private static final Log log = Log.getLog(DataSourceUtils.class);
 
@@ -67,7 +72,14 @@ public class DataSourceUtils {
         boolean createNewDataSource)
     {
         String driverName = null, url = null, host = null, port = null, server = null, database = null, user = null, password = null;
-        boolean showSystemObjects = false, showUtilityObjects = false, savePassword = true;
+        boolean
+            showSystemObjects = false,
+            showUtilityObjects = false,
+            showOnlyEntities = false,
+            hideFolders = false,
+            hideSchemas = false,
+            mergeEntities = false,
+            savePassword = true;
         Boolean autoCommit = null;
         Map<String, String> conProperties = new HashMap<>();
         Map<String, Map<String, String>> handlerProps = new HashMap<>();
@@ -127,6 +139,18 @@ public class DataSourceUtils {
                     break;
                 case PARAM_SHOW_UTILITY_OBJECTS:
                     showUtilityObjects = CommonUtils.toBoolean(paramValue);
+                    break;
+                case PARAM_SHOW_ONLY_ENTITIES:
+                    showOnlyEntities = CommonUtils.toBoolean(paramValue);
+                    break;
+                case PARAM_HIDE_FOLDERS:
+                    hideFolders = CommonUtils.toBoolean(paramValue);
+                    break;
+                case PARAM_HIDE_SCHEMAS:
+                    hideSchemas = CommonUtils.toBoolean(paramValue);
+                    break;
+                case PARAM_MERGE_ENTITIES:
+                    mergeEntities = CommonUtils.toBoolean(paramValue);
                     break;
                 case PARAM_FOLDER:
                     folder = dsRegistry.getFolder(paramValue);
@@ -285,8 +309,13 @@ public class DataSourceUtils {
         if (folder != null) {
             newDS.setFolder(folder);
         }
-        ((DataSourceDescriptor)newDS).setShowSystemObjects(showSystemObjects);
-        ((DataSourceDescriptor)newDS).setShowUtilityObjects(showUtilityObjects);
+        DataSourceNavigatorSettings navSettings = ((DataSourceDescriptor)newDS).getNavigatorSettings();
+        navSettings.setShowSystemObjects(showSystemObjects);
+        navSettings.setShowUtilityObjects(showUtilityObjects);
+        navSettings.setShowOnlyEntities(showOnlyEntities);
+        navSettings.setHideSchemas(hideSchemas);
+        navSettings.setHideFolders(hideFolders);
+        navSettings.setMergeEntities(mergeEntities);
 
         //ds.set
         dsRegistry.addDataSource(newDS);

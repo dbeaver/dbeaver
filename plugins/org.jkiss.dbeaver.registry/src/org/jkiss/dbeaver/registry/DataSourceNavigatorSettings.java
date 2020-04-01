@@ -30,6 +30,18 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private boolean hideFolders;
     private boolean hideSchemas;
 
+    DataSourceNavigatorSettings() {
+    }
+
+    DataSourceNavigatorSettings(DataSourceNavigatorSettings copyFrom) {
+        this.showSystemObjects = copyFrom.showSystemObjects;
+        this.showUtilityObjects = copyFrom.showUtilityObjects;
+        this.showOnlyEntities = copyFrom.showOnlyEntities;
+        this.mergeEntities = copyFrom.mergeEntities;
+        this.hideFolders = copyFrom.hideFolders;
+        this.hideSchemas = copyFrom.hideSchemas;
+    }
+
     @Override
     public boolean isShowSystemObjects() {
         return showSystemObjects;
@@ -83,4 +95,28 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     public void setHideSchemas(boolean hideSchemas) {
         this.hideSchemas = hideSchemas;
     }
+
+    public void copyFrom(DataSourceNavigatorSettings copyFrom) {
+        this.showSystemObjects = copyFrom.showSystemObjects;
+        this.showUtilityObjects = copyFrom.showUtilityObjects;
+        this.showOnlyEntities = copyFrom.showOnlyEntities;
+        this.mergeEntities = copyFrom.mergeEntities;
+        this.hideFolders = copyFrom.hideFolders;
+        this.hideSchemas = copyFrom.hideSchemas;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof DataSourceNavigatorSettings)) {
+            return false;
+        }
+        DataSourceNavigatorSettings source = (DataSourceNavigatorSettings) obj;
+        return this.showSystemObjects == source.showSystemObjects &&
+            this.showUtilityObjects == source.showUtilityObjects &&
+            this.showOnlyEntities == source.showOnlyEntities &&
+            this.mergeEntities == source.mergeEntities &&
+            this.hideFolders == source.hideFolders &&
+            this.hideSchemas == source.hideSchemas;
+    }
+
 }

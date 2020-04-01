@@ -511,7 +511,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
 
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        final boolean showSystem = dataSourceContainer.isShowSystemObjects();
+        final boolean showSystem = dataSourceContainer.getNavigatorSettings().isShowSystemObjects();
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;

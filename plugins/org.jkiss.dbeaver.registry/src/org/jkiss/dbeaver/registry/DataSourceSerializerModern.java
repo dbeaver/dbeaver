@@ -61,6 +61,14 @@ import java.util.*;
 
 class DataSourceSerializerModern implements DataSourceSerializer
 {
+    // Navigator settings
+    public static final String ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS = "show-system-objects"; //$NON-NLS-1$
+    public static final String ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS = "show-util-objects"; //$NON-NLS-1$
+    public static final String ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES = "navigator-show-only-entities"; //$NON-NLS-1$
+    public static final String ATTR_NAVIGATOR_HIDE_FOLDERS = "navigator-hide-folders"; //$NON-NLS-1$
+    public static final String ATTR_NAVIGATOR_HIDE_SCHEMAS = "navigator-hide-schemas"; //$NON-NLS-1$
+    public static final String ATTR_NAVIGATOR_MERGE_ENTITIES = "navigator-merge-entities"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
 
@@ -439,8 +447,15 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
                 dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
                 dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
-                dataSource.setShowSystemObjects(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS));
-                dataSource.setShowUtilityObjects(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHOW_UTIL_OBJECTS));
+
+                DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
+                navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
+                navSettings.setShowUtilityObjects(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
+                navSettings.setShowOnlyEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
+                navSettings.setHideFolders(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS));
+                navSettings.setHideSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
+                navSettings.setMergeEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES));
+
                 dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
                 final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
                 if (folderPath != null) {
@@ -683,12 +698,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
         JSONUtils.fieldNE(json, RegistryConstants.TAG_DESCRIPTION, dataSource.getDescription());
         JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
 
-        if (dataSource.isShowSystemObjects()) {
-            JSONUtils.field(json, RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
-        }
-        if (dataSource.isShowUtilityObjects()) {
-            JSONUtils.field(json, RegistryConstants.ATTR_SHOW_UTIL_OBJECTS, dataSource.isShowUtilityObjects());
-        }
+        DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
+        if (navSettings.isShowSystemObjects()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.isShowSystemObjects());
+        if (navSettings.isShowUtilityObjects()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.isShowUtilityObjects());
+        if (navSettings.isShowOnlyEntities()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, navSettings.isShowOnlyEntities());
+        if (navSettings.isHideFolders()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_FOLDERS, navSettings.isHideFolders());
+        if (navSettings.isHideSchemas()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_SCHEMAS, navSettings.isHideSchemas());
+        if (navSettings.isMergeEntities()) JSONUtils.field(json, ATTR_NAVIGATOR_MERGE_ENTITIES, navSettings.isMergeEntities());
+
         JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
 
         if (dataSource.getFolder() != null) {
