@@ -188,7 +188,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		this.connectionCache = new JDBCObjectSimpleCache<>(
 				ExasolConnection.class, "/*snapshot execution*/ SELECT * FROM SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_CONNECTIONS ORDER BY CONNECTION_NAME");
 
-		if (exasolCurrentUserPrivileges.hasPasswortPolicy())
+		if (exasolCurrentUserPrivileges.hasPasswordPolicy())
 		{
 			this.securityPolicyCache = new JDBCObjectSimpleCache<>(ExasolSecurityPolicy.class,
 					"/*snapshot execution*/ SELECT SYSTEM_VALUE FROM sys.EXA_PARAMETERS WHERE PARAMETER_NAME = 'PASSWORD_SECURITY_POLICY'"
@@ -792,6 +792,11 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 	public boolean ishasConsumerGroups()
 	{
 		return this.exasolCurrentUserPrivileges.hasConsumerGroups();
+	}
+	
+	public boolean ishasPasswordPolicy()
+	{
+		return this.exasolCurrentUserPrivileges.hasPasswordPolicy();
 	}
 	
 	public boolean ishasPriorityGroups()

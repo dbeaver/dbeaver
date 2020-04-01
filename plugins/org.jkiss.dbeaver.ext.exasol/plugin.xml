@@ -395,13 +395,12 @@
                       description="%tree.security.node.description"
                       icon="#folder_info"
                       label="%tree.security.node.name"
-                      visibleIf="object.dataSource.hasPriorityGroups">
+                      visibleIf="object.dataSource.hasPasswordPolicy">
                    <folder
                          description="%tree.security_policy.node.description"
                          icon="#folder_info"
                          label="%tree.security_policy.node.name"
-                         type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy"
-                         visibleIf="object.dataSource.hasPriorityGroups">
+                         type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy">
                       <items
                             icon="#database"
                             label="%tree.security_policy.node.name"
