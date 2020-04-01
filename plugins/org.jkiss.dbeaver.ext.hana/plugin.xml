@@ -18,7 +18,7 @@
 
             <tree path="hana" label="HANA data source">
                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSchema" label="%tree.schemas.node.name" icon="#folder_schema">
-                    <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
+                    <items label="#schema" path="schema" property="schemas" icon="#schema">
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.hana.model.HANATableColumn" label="%tree.columns.node.name" icon="#columns">

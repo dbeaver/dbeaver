@@ -255,7 +255,9 @@ public class ItemListControl extends NodeListControl
                         if (!(item instanceof DBNDatabaseNode)) {
                             continue;
                         }
-                        if (((DBNDatabaseNode)item).getMeta() != metaNode) {
+                        DBNDatabaseNode dbNode = (DBNDatabaseNode) item;
+                        if (dbNode.getMeta() != metaNode && !dbNode.getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
+                            // Wrong meta. It is ok if folders are hidden
                             continue;
                         }
                     }
