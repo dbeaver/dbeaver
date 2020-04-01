@@ -83,19 +83,11 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isTemporary();
 
-    void setTemporary(boolean temporary);
-
     boolean isShowSystemObjects();
-
-    void setShowSystemObjects(boolean showSystemObjects);
 
     boolean isShowUtilityObjects();
 
-    void setShowUtilityObjects(boolean showUtilityObjects);
-
     boolean isConnectionReadOnly();
-
-    void setConnectionReadOnly(boolean connectionReadOnly);
 
     boolean isSavePassword();
 

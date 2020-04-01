@@ -310,6 +310,7 @@ public class DataSourceDescriptor
         return savePassword;
     }
 
+    @Override
     public void setSavePassword(boolean savePassword)
     {
         this.savePassword = savePassword;
@@ -341,7 +342,6 @@ public class DataSourceDescriptor
         return connectionReadOnly;
     }
 
-    @Override
     public void setConnectionReadOnly(boolean connectionReadOnly)
     {
         this.connectionReadOnly = connectionReadOnly;
