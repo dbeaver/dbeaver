@@ -18,10 +18,27 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Browse settings
  */
 public class DataSourceNavigatorSettings implements DBNBrowseSettings {
+
+    public static final Map<String, DataSourceNavigatorSettings> PRESETS = new LinkedHashMap<>();
+
+    public static final DataSourceNavigatorSettings PRESET_SIMPLE = new DataSourceNavigatorSettings();
+    public static final DataSourceNavigatorSettings PRESET_FULL = new DataSourceNavigatorSettings();
+
+    static {
+        PRESET_SIMPLE.setHideFolders(true);
+        PRESET_SIMPLE.setShowOnlyEntities(true);
+
+        PRESETS.put("Simple", PRESET_SIMPLE);
+        PRESETS.put("Full", PRESET_FULL);
+        PRESETS.put("Custom", null);
+    }
 
     private boolean showSystemObjects;
     private boolean showUtilityObjects;
@@ -30,16 +47,16 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private boolean hideFolders;
     private boolean hideSchemas;
 
-    DataSourceNavigatorSettings() {
+    public DataSourceNavigatorSettings() {
     }
 
-    DataSourceNavigatorSettings(DataSourceNavigatorSettings copyFrom) {
-        this.showSystemObjects = copyFrom.showSystemObjects;
-        this.showUtilityObjects = copyFrom.showUtilityObjects;
-        this.showOnlyEntities = copyFrom.showOnlyEntities;
-        this.mergeEntities = copyFrom.mergeEntities;
-        this.hideFolders = copyFrom.hideFolders;
-        this.hideSchemas = copyFrom.hideSchemas;
+    public DataSourceNavigatorSettings(DBNBrowseSettings copyFrom) {
+        this.showSystemObjects = copyFrom.isShowSystemObjects();
+        this.showUtilityObjects = copyFrom.isShowUtilityObjects();
+        this.showOnlyEntities = copyFrom.isShowOnlyEntities();
+        this.mergeEntities = copyFrom.isMergeEntities();
+        this.hideFolders = copyFrom.isHideFolders();
+        this.hideSchemas = copyFrom.isHideSchemas();
     }
 
     @Override
@@ -94,15 +111,6 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     public void setHideSchemas(boolean hideSchemas) {
         this.hideSchemas = hideSchemas;
-    }
-
-    public void copyFrom(DataSourceNavigatorSettings copyFrom) {
-        this.showSystemObjects = copyFrom.showSystemObjects;
-        this.showUtilityObjects = copyFrom.showUtilityObjects;
-        this.showOnlyEntities = copyFrom.showOnlyEntities;
-        this.mergeEntities = copyFrom.mergeEntities;
-        this.hideFolders = copyFrom.hideFolders;
-        this.hideSchemas = copyFrom.hideSchemas;
     }
 
     @Override

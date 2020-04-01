@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -145,7 +146,7 @@ public class DataSourceDescriptor
     @NotNull
     private DBVModel virtualModel;
     private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
-    private final DataSourceNavigatorSettings navigatorSettings;
+    private DataSourceNavigatorSettings navigatorSettings;
 
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
@@ -170,7 +171,7 @@ public class DataSourceDescriptor
         this.connectionInfo = connectionInfo;
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
-        this.navigatorSettings = new DataSourceNavigatorSettings();
+        this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.PRESET_FULL);
     }
 
     // Copy constructor
@@ -287,6 +288,10 @@ public class DataSourceDescriptor
     @Override
     public DataSourceNavigatorSettings getNavigatorSettings() {
         return navigatorSettings;
+    }
+
+    public void setNavigatorSettings(DBNBrowseSettings copyFrom) {
+        this.navigatorSettings = new DataSourceNavigatorSettings(copyFrom);
     }
 
     @NotNull
@@ -1284,7 +1289,7 @@ public class DataSourceDescriptor
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
 
-        this.navigatorSettings.copyFrom(descriptor.getNavigatorSettings());
+        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getNavigatorSettings());
     }
 
     @Override
