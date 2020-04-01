@@ -51,8 +51,7 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     public void addExtraFunctions(String... functions) {
         super.addFunctions(Arrays.asList(functions));
     }
-
-
+    
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         
@@ -73,6 +72,14 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
         				String[] aggregateFunctions = keyWord.split(",");
         				this.addExtraFunctions(aggregateFunctions);
         				
+        			}
+        		}
+        		try (JDBCResultSet dbResult = stmt.executeQuery("/*snapshot execution*/ SELECT keyword FROM sys.EXA_SQL_KEYWORDS esk WHERE RESERVED")) 
+        		{
+        			while(dbResult.next())
+        			{
+        				String keyWord = dbResult.getString("KEYWORD");
+        				super.addSQLKeyword(keyWord);
         			}
         		}
         	}
