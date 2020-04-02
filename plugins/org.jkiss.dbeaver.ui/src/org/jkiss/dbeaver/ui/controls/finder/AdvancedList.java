@@ -173,11 +173,21 @@ public class AdvancedList extends ScrolledComposite {
     }
 
     public void updateSize(boolean layout) {
-        this.setMinHeight(10);
-        int width = this.getClientArea().width;
-        this.setMinHeight( getParent().computeSize( width, SWT.DEFAULT ).y );
-        if (layout) {
-            this.layout(true, true);
+        getParent().setRedraw(false);
+        try {
+            int width = this.getClientArea().width;
+            if (width > 0) {
+                if (getMinHeight() != 10) {
+                    this.setMinHeight(10);
+                }
+                Point fullSize = getParent().computeSize(width, SWT.DEFAULT);
+                this.setMinHeight(fullSize.y);
+                if (layout) {
+                    this.layout(true, true);
+                }
+            }
+        } finally {
+            getParent().setRedraw(true);
         }
     }
 

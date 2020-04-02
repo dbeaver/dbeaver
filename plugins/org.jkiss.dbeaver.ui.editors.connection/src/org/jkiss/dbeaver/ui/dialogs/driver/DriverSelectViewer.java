@@ -236,52 +236,57 @@ public class DriverSelectViewer extends Viewer {
 
     private void createSelectorControl() {
 
-        if (forceClassic || getCurrentSelectorViewType() == SelectorViewType.tree) {
-            if (!forceClassic) {
-                switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-                switchItem.setText(UIConnectionMessages.viewer_selector_control_text_gallery);
-                switchItem.setSelection(true);
-            }
-
-            selectorViewer = new DriverTreeViewer(selectorComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-            selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-            UIUtils.asyncExec(() -> {
-                if (selectorViewer instanceof DriverTreeViewer) {
-                    ((DriverTreeViewer) selectorViewer).initDrivers(providers, expandRecent);
+        selectorComposite.setRedraw(false);
+        try {
+            if (forceClassic || getCurrentSelectorViewType() == SelectorViewType.tree) {
+                if (!forceClassic) {
+                    switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+                    switchItem.setText(UIConnectionMessages.viewer_selector_control_text_gallery);
+                    switchItem.setSelection(true);
                 }
-            });
-        } else {
-            switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
-            switchItem.setText(UIConnectionMessages.viewer_selector_control_text_classic);
-            switchItem.setSelection(false);
 
-            selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE);
-            selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+                selectorViewer = new DriverTreeViewer(selectorComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+                selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+                UIUtils.asyncExec(() -> {
+                    if (selectorViewer instanceof DriverTreeViewer) {
+                        ((DriverTreeViewer) selectorViewer).initDrivers(providers, expandRecent);
+                    }
+                });
+            } else {
+                switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
+                switchItem.setText(UIConnectionMessages.viewer_selector_control_text_classic);
+                switchItem.setSelection(false);
 
-/*
-            selectorViewer.getControl().addTraverseListener(e -> {
-                if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                    if (site instanceof IWizardPage) {
-                        IWizardContainer container = ((IWizardPage) site).getWizard().getContainer();
-                        if (container instanceof Window) {
-                            ((Window) container).close();
+                selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE);
+                selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+
+    /*
+                selectorViewer.getControl().addTraverseListener(e -> {
+                    if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                        if (site instanceof IWizardPage) {
+                            IWizardContainer container = ((IWizardPage) site).getWizard().getContainer();
+                            if (container instanceof Window) {
+                                ((Window) container).close();
+                            }
                         }
                     }
+                });
+    */
+            }
+
+            selectorViewer.addSelectionChangedListener(event -> {
+                if (site instanceof ISelectionChangedListener) {
+                    ((ISelectionChangedListener)site).selectionChanged(event);
                 }
             });
-*/
+            selectorViewer.addDoubleClickListener(event -> {
+                if (site instanceof IDoubleClickListener) {
+                    ((IDoubleClickListener)site).doubleClick(event);
+                }
+            });
+        } finally {
+            selectorComposite.setRedraw(true);
         }
-
-        selectorViewer.addSelectionChangedListener(event -> {
-            if (site instanceof ISelectionChangedListener) {
-                ((ISelectionChangedListener)site).selectionChanged(event);
-            }
-        });
-        selectorViewer.addDoubleClickListener(event -> {
-            if (site instanceof IDoubleClickListener) {
-                ((IDoubleClickListener)site).doubleClick(event);
-            }
-        });
     }
 
     private Object[] collectDrivers(List<DataSourceProviderDescriptor> provs) {
