@@ -216,7 +216,7 @@ public class DataSourceHandler
                 if (QMUtils.isTransactionActive(context)) {
                     if (commitTxn == null) {
                         // Ask for confirmation
-                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName());
+                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName() + " (" + context.getContextName() + ")");
                         UIUtils.syncExec(closeConfirmer);
                         switch (closeConfirmer.result) {
                             case IDialogConstants.YES_ID:
