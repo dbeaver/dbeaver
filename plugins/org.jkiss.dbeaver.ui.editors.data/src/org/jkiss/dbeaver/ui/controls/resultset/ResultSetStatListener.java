@@ -53,7 +53,7 @@ class ResultSetStatListener extends ResultSetListenerAdapter {
     public void handleResultSetSelectionChange(SelectionChangedEvent event) {
         IResultSetSelection selection = viewer.getSelection();
         IWorkbenchPartSite site = viewer.getSite();
-        if (site instanceof IEditorSite && selection instanceof IResultSetSelectionExt) {
+        if (site instanceof IEditorSite) {
             // Use job with 100ms delay to avoid event spam
             if (this.updateJob == null) {
                 this.updateJob = new SLUpdateJob();
@@ -72,21 +72,24 @@ class ResultSetStatListener extends ResultSetListenerAdapter {
 
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
-            IResultSetSelectionExt selection = (IResultSetSelectionExt) viewer.getSelection();
-            DBPPreferenceStore preferenceStore = viewer.getPreferenceStore();
-            String slText = "";
-            if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS)) {
-                slText = "Rows: " + selection.getSelectedRowCount();// + "/" + selExt.getSelectedColumnCount() + "/" + selExt.getSelectedCellCount();
+            IResultSetSelection selection = viewer.getSelection();
+            if (selection instanceof IResultSetSelectionExt) {
+                IResultSetSelectionExt selectionExt = (IResultSetSelectionExt) selection;
+                DBPPreferenceStore preferenceStore = viewer.getPreferenceStore();
+                String slText = "";
+                if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS)) {
+                    slText = "Rows: " + selectionExt.getSelectedRowCount();// + "/" + selExt.getSelectedColumnCount() + "/" + selExt.getSelectedCellCount();
+                }
+                if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS)) {
+                    if (!slText.isEmpty()) slText += ", ";
+                    slText += "Cols: " + selectionExt.getSelectedColumnCount();
+                }
+                if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS)) {
+                    if (!slText.isEmpty()) slText += ", ";
+                    slText += "Cells: " + selectionExt.getSelectedCellCount();
+                }
+                viewer.setSelectionStatistics(slText);
             }
-            if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS)) {
-                if (!slText.isEmpty()) slText += ", ";
-                slText += "Cols: " + selection.getSelectedColumnCount();
-            }
-            if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS)) {
-                if (!slText.isEmpty()) slText += ", ";
-                slText += "Cells: " + selection.getSelectedCellCount();
-            }
-            viewer.setSelectionStatistics(slText);
             return Status.OK_STATUS;
         }
     }
