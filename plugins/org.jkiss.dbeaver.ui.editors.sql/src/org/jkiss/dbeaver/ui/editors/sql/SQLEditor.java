@@ -1693,7 +1693,7 @@ public class SQLEditor extends SQLEditorBase implements
         };
         if (RuntimeUtils.runTask(queryObtainTask, "Retrieve plan query", 5000) && !CommonUtils.isEmpty(planQueryString[0])) {
             SQLQuery planQuery = new SQLQuery(getDataSource(), planQueryString[0]);
-            processQueries(Collections.singletonList(planQuery), true, false, true, null);
+            processQueries(Collections.singletonList(planQuery), false, true, false, true, null);
         }
     }
 
@@ -1763,7 +1763,7 @@ public class SQLEditor extends SQLEditorBase implements
             return false;
         }
         if (!CommonUtils.isEmpty(elements)) {
-            return processQueries(elements, newTab, false, true, queryListener);
+            return processQueries(elements, script, newTab, false, true, queryListener);
         } else {
             return false;
         }
@@ -1781,7 +1781,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         if (!elements.isEmpty()) {
-            processQueries(elements, false, true, true, null);
+            processQueries(elements, false, false, true, true, null);
         } else {
             DBWorkbench.getPlatformUI().showError(
                     "Extract data",
@@ -1789,7 +1789,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean newTab, final boolean export, final boolean checkSession, @Nullable final SQLQueryListener queryListener)
+    private boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean forceScript, final boolean newTab, final boolean export, final boolean checkSession, @Nullable final SQLQueryListener queryListener)
     {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -1808,7 +1808,7 @@ public class SQLEditor extends SQLEditorBase implements
                         return;
                     }
                     updateExecutionContext(() -> UIUtils.syncExec(() ->
-                        processQueries(queries, newTab, export, false, queryListener)));
+                        processQueries(queries, forceScript, newTab, export, false, queryListener)));
                 };
                 if (!checkSession(connectListener)) {
                     return false;
@@ -1836,7 +1836,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         SQLScriptContext scriptContext = createScriptContext();
 
-        final boolean isSingleQuery = (queries.size() == 1);
+        final boolean isSingleQuery = !forceScript && (queries.size() == 1);
         if (isSingleQuery && queries.get(0) instanceof SQLQuery) {
             SQLQuery query = (SQLQuery) queries.get(0);
             if (query.isDeleteUpdateDangerous()) {
@@ -1906,9 +1906,10 @@ public class SQLEditor extends SQLEditorBase implements
                 queryProcessor.processQueries(
                     scriptContext,
                     Collections.singletonList(query),
-                        true,
-                        export,
-                        getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR), queryListener);
+                    forceScript,
+                    true,
+                    export,
+                    getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR), queryListener);
             }
         } else {
             if (!export) {
@@ -1943,7 +1944,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
-            curQueryProcessor.processQueries(scriptContext, queries, false, export, false, queryListener);
+            return curQueryProcessor.processQueries(scriptContext, queries, forceScript, false, export, false, queryListener);
         }
         return true;
     }
@@ -2550,26 +2551,26 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        void processQueries(SQLScriptContext scriptContext, final List<SQLScriptElement> queries, final boolean fetchResults, boolean export, boolean closeTabOnError, SQLQueryListener queryListener)
+        boolean processQueries(SQLScriptContext scriptContext, final List<SQLScriptElement> queries, boolean forceScript, final boolean fetchResults, boolean export, boolean closeTabOnError, SQLQueryListener queryListener)
         {
             if (queries.isEmpty()) {
                 // Nothing to process
-                return;
+                return false;
             }
             if (curJobRunning.get() > 0) {
                 DBWorkbench.getPlatformUI().showError(
                         SQLEditorMessages.editors_sql_error_cant_execute_query_title,
                     SQLEditorMessages.editors_sql_error_cant_execute_query_message);
-                return;
+                return false;
             }
             final DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext == null) {
                 DBWorkbench.getPlatformUI().showError(
                         SQLEditorMessages.editors_sql_error_cant_execute_query_title,
                     ModelMessages.error_not_connected_to_database);
-                return;
+                return false;
             }
-            final boolean isSingleQuery = (queries.size() == 1);
+            final boolean isSingleQuery = !forceScript && (queries.size() == 1);
 
             // Prepare execution job
             {
@@ -2636,6 +2637,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
+            return true;
         }
 
         public boolean isDirty() {
