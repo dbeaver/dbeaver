@@ -1485,17 +1485,23 @@ public class SQLEditor extends SQLEditorBase implements
         }
         syntaxLoaded = false;
 
-        UIExecutionQueue.queueExec(() -> {
-            DBPDataSourceContainer oldDataSource = getDataSourceContainer();
-            DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(getEditorInput());
+        Runnable inputinitializer = () -> {
+            DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
+            DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
 
             if (oldDataSource != newDataSource) {
-                this.dataSourceContainer = null;
-                updateDataSourceContainer();
+                SQLEditor.this.dataSourceContainer = null;
+                SQLEditor.this.updateDataSourceContainer();
             } else {
-                reloadSyntaxRules();
+                SQLEditor.this.reloadSyntaxRules();
             }
-        });
+        };
+        if (isNonPersistentEditor()) {
+            inputinitializer.run();
+        } else {
+            // Run in queue - for app startup
+            UIExecutionQueue.queueExec(inputinitializer);
+        }
 
         setPartName(getEditorName());
         if (isNonPersistentEditor()) {
@@ -1695,12 +1701,12 @@ public class SQLEditor extends SQLEditorBase implements
         processSQL(newTab, script, null, null);
     }
 
-    public void processSQL(boolean newTab, boolean script, SQLQueryTransformer transformer, @Nullable SQLQueryListener queryListener)
+    public boolean processSQL(boolean newTab, boolean script, SQLQueryTransformer transformer, @Nullable SQLQueryListener queryListener)
     {
         IDocument document = getDocument();
         if (document == null) {
             setStatus(SQLEditorMessages.editors_sql_status_cant_obtain_document, DBPMessageType.ERROR);
-            return;
+            return false;
         }
 
         // Notify listeners
@@ -1727,7 +1733,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (activeViewer != null) {
                     activeViewer.setStatus(SQLEditorMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
                 }
-                return;
+                return false;
             } else {
                 elements = Collections.singletonList(sqlQuery);
             }
@@ -1754,9 +1760,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
         catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Bad query", "Can't execute query", e);
-            return;
+            return false;
         }
-        processQueries(elements, newTab, false, true, queryListener);
+        if (!CommonUtils.isEmpty(elements)) {
+            return processQueries(elements, newTab, false, true, queryListener);
+        } else {
+            return false;
+        }
     }
 
     public void exportDataFromQuery()
@@ -1779,11 +1789,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void processQueries(@NotNull final List<SQLScriptElement> queries, final boolean newTab, final boolean export, final boolean checkSession, @Nullable final SQLQueryListener queryListener)
+    private boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean newTab, final boolean export, final boolean checkSession, @Nullable final SQLQueryListener queryListener)
     {
         if (queries.isEmpty()) {
             // Nothing to process
-            return;
+            return false;
         }
 
         final DBPDataSourceContainer container = getDataSourceContainer();
@@ -1801,7 +1811,7 @@ public class SQLEditor extends SQLEditorBase implements
                         processQueries(queries, newTab, export, false, queryListener)));
                 };
                 if (!checkSession(connectListener)) {
-                    return;
+                    return false;
                 }
             } catch (DBException ex) {
                 ResultSetViewer viewer = getActiveResultSetViewer();
@@ -1811,17 +1821,17 @@ public class SQLEditor extends SQLEditorBase implements
                 DBWorkbench.getPlatformUI().showError(
                     SQLEditorMessages.editors_sql_error_cant_obtain_session,
                     ex.getMessage());
-                return;
+                return false;
             }
         }
         if (dataSourceContainer == null) {
-            return;
+            return false;
         }
         if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EXECUTE_SCRIPTS)) {
             DBWorkbench.getPlatformUI().showError(
                 SQLEditorMessages.editors_sql_error_cant_execute_query_title,
                 "Query execution was restricted by connection configuration");
-            return;
+            return false;
         }
 
         SQLScriptContext scriptContext = createScriptContext();
@@ -1843,7 +1853,7 @@ public class SQLEditor extends SQLEditorBase implements
                     query.getType().name(),
                     targetName) != IDialogConstants.OK_ID)
                 {
-                    return;
+                    return false;
                 }
             }
         } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
@@ -1855,7 +1865,7 @@ public class SQLEditor extends SQLEditorBase implements
                 ConfirmationDialog.WARNING,
                 queries.size()) != IDialogConstants.OK_ID)
             {
-                return;
+                return false;
             }
         }
 
@@ -1877,7 +1887,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (!newTab || !isSingleQuery) {
                 // We don't need new tab or we are executing a script - so close all extra tabs
                 if (!closeExtraResultTabs(null, true)) {
-                    return;
+                    return false;
                 }
                 extraTabsClosed = true;
             }
@@ -1922,7 +1932,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 if (!extraTabsClosed) {
                     if (!closeExtraResultTabs(curQueryProcessor, true)) {
-                        return;
+                        return false;
                     }
                 }
                 if (tabItem != null) {
@@ -1935,6 +1945,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             curQueryProcessor.processQueries(scriptContext, queries, false, export, false, queryListener);
         }
+        return true;
     }
 
     @NotNull
