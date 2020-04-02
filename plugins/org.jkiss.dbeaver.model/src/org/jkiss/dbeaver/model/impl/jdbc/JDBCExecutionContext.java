@@ -86,8 +86,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             close();
         }
         boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
+        final JDBCRemoteInstance currentInstance = this.instance;
+
         DBExecUtils.startContextInitiation(dataSource.getContainer());
-        Object exclusiveLock = instance.getExclusiveLock().acquireExclusiveLock();
+
+        Object exclusiveLock = currentInstance.getExclusiveLock().acquireExclusiveLock();
         try {
             this.connection = dataSource.openConnection(monitor, this, purpose);
             if (this.connection == null) {
@@ -155,11 +158,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
             if (addContext) {
                 // Add self to context list
-                this.instance.addContext(this);
+                currentInstance.addContext(this);
             }
         } finally {
             DBExecUtils.finishContextInitiation(dataSource.getContainer());
-            instance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
+            currentInstance.getExclusiveLock().releaseExclusiveLock(exclusiveLock);
         }
     }
 
