@@ -135,9 +135,16 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
         super.initializeContextState(monitor, context, initFrom);
         if (initFrom != null) {
-            SQLServerDatabase defaultObject = ((SQLServerExecutionContext)initFrom).getDefaultCatalog();
-            if (defaultObject!= null && !isDataWarehouseServer(monitor)) {
-                ((SQLServerExecutionContext)context).setCurrentDatabase(monitor, defaultObject);
+            if (!isDataWarehouseServer(monitor)) {
+                SQLServerExecutionContext ssContext = (SQLServerExecutionContext) initFrom;
+                SQLServerDatabase defaultObject = ssContext.getDefaultCatalog();
+                if (defaultObject != null) {
+                    ((SQLServerExecutionContext)context).setCurrentDatabase(monitor, defaultObject);
+                }
+                SQLServerSchema defaultSchema = ssContext.getDefaultSchema();
+                if (defaultSchema != null && !isDataWarehouseServer(monitor)) {
+                    ((SQLServerExecutionContext)context).setDefaultSchema(monitor, defaultSchema);
+                }
             }
         } else {
             ((SQLServerExecutionContext)context).refreshDefaults(monitor, true);
