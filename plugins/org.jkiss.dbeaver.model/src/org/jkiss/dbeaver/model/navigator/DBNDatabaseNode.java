@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -484,8 +485,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         if (nodeChildClass == null) {
             return false;
         }
+        // Extra check for DBSDataType and DBSSequence - in some databases they are entities but we don't wont them (PG)
         return DBSObjectContainer.class.isAssignableFrom(nodeChildClass) ||
-            DBSEntity.class.isAssignableFrom(nodeChildClass) ||
+            (DBSEntity.class.isAssignableFrom(nodeChildClass) && !DBSDataType.class.isAssignableFrom(nodeChildClass) && !DBSSequence.class.isAssignableFrom(nodeChildClass)) ||
             DBSEntityElement.class.isAssignableFrom(nodeChildClass);
     }
 

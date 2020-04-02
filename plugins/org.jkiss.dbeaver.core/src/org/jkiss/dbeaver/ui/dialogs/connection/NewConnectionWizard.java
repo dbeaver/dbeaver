@@ -24,12 +24,12 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,8 +48,6 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageDriver pageDrivers;
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
-    private DBPProject selectedProject;
-    //private ConnectionPageNetwork pageNetwork;
 
 
     public NewConnectionWizard() {
@@ -59,8 +57,6 @@ public class NewConnectionWizard extends ConnectionWizard
     public NewConnectionWizard(DBPDriver initialDriver) {
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
-
-        selectedProject = NavigatorUtils.getSelectedProject();
     }
 
     @Override
@@ -92,7 +88,12 @@ public class NewConnectionWizard extends ConnectionWizard
 
     @Override
     DBPProject getSelectedProject() {
-        return selectedProject;
+        return pageDrivers.getConnectionProject();
+    }
+
+    @Override
+    DBNBrowseSettings getSelectedNavigatorSettings() {
+        return pageDrivers.getNavigatorSettings();
     }
 
     @Override
