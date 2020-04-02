@@ -89,7 +89,6 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
 
     private Button readOnlyConnection;
 
-    @NotNull
     private DBNBrowseSettings navigatorSettings;
     private List<DBPDataSourcePermission> accessRestrictions;
 
@@ -108,15 +107,12 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
         filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
         filters.add(new FilterInfo(DBSEntityAttribute.class, CoreMessages.dialog_connection_wizard_final_filter_attributes));
-
-        this.navigatorSettings = DataSourceNavigatorSettings.PRESET_FULL.getSettings();
     }
 
     ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
     {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
-        this.navigatorSettings = new DataSourceNavigatorSettings(dataSourceDescriptor.getNavigatorSettings());
         this.accessRestrictions = dataSourceDescriptor.getModifyPermission();
 
         for (FilterInfo filterInfo : filters) {
@@ -134,6 +130,10 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     @Override
     public void activatePage()
     {
+        if (this.navigatorSettings == null) {
+            this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
+        }
+
         if (connectionNameText != null) {
             if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
                 connectionNameText.setText(dataSourceDescriptor.getName());
@@ -582,7 +582,11 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             dsDescriptor.setDescription(description);
         }
 
+        if (this.navigatorSettings == null) {
+            this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
+        }
         dsDescriptor.setNavigatorSettings(this.navigatorSettings);
+
         dsDescriptor.setConnectionReadOnly(this.readOnlyConnection.getSelection());
         dsDescriptor.setModifyPermissions(this.accessRestrictions);
 
