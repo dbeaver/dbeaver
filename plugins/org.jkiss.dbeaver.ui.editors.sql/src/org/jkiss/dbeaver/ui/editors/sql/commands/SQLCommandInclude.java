@@ -20,6 +20,7 @@ import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.ide.IDEEncoding;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -41,6 +42,8 @@ import java.net.URI;
  * Control command handler
  */
 public class SQLCommandInclude implements SQLControlCommandHandler {
+
+    private static final Log log = Log.getLog(SQLCommandInclude.class);
 
     public static String getResourceEncoding() {
         String resourceEncoding = IDEEncoding.getResourceEncoding();
@@ -75,14 +78,22 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         final File finalIncFile = incFile;
         final boolean[] statusFlag = new boolean[1];
         UIUtils.syncExec(() -> {
-            final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-            final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
-            SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
-                    workbenchWindow,
-                    new SQLNavigatorContext(scriptContext.getExecutionContext()),
-                    input);
-            final IncludeScriptListener scriptListener = new IncludeScriptListener(workbenchWindow, sqlEditor, statusFlag);
-            sqlEditor.processSQL(false, true, null, scriptListener);
+            try {
+                final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
+                SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
+                        workbenchWindow,
+                        new SQLNavigatorContext(scriptContext.getExecutionContext()),
+                        input);
+                final IncludeScriptListener scriptListener = new IncludeScriptListener(workbenchWindow, sqlEditor, statusFlag);
+                boolean execResult = sqlEditor.processSQL(false, true, null, scriptListener);
+                if (!execResult) {
+                    statusFlag[0] = true;
+                }
+            } catch (Throwable e) {
+                log.error(e);
+                statusFlag[0] = true;
+            }
         });
 
         // Wait until script finished
