@@ -94,6 +94,7 @@ public class SaveChangesHandler extends AbstractHandler
             }
             if (!saveable.isDirty()) {
                 // Actual save could be performed in promptToSaveOnClose (e.g. transaction commit)
+                result = true;
                 return;
             }
             if (choice == -1 || choice == ISaveablePart2.DEFAULT) {
