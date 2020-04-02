@@ -465,23 +465,13 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (getKeywordType(firstKeyword) != DBPKeywordType.KEYWORD) {
             return false;
         }
-        if (containsKeyword(getDDLKeywords(), firstKeyword) ||
-            containsKeyword(getDMLKeywords(), firstKeyword) ||
-            containsKeyword(getExecuteKeywords(), firstKeyword) ||
-            containsKeyword(getBlockHeaderStrings(), firstKeyword))
+        if (SQLConstants.KEYWORD_SELECT.equals(firstKeyword) ||
+            "SHOW".equals(firstKeyword) ||
+            "USE".equals(firstKeyword))
         {
-            return true;
+            return false;
         }
-        String[][] blockBoundStrings = getBlockBoundStrings();
-        if (blockBoundStrings != null) {
-            for (String[] bb : blockBoundStrings) {
-                if (bb.length > 0 && firstKeyword.equals(bb[0])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return true;
     }
 
     private static boolean containsKeyword(String[] keywords, String keyword) {
