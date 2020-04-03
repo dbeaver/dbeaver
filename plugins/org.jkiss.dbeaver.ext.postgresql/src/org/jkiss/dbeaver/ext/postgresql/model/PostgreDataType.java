@@ -68,6 +68,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         "regtype",
         "regconfig",
         "regdictionary",
+        "regrole",
     };
 
     private final boolean alias;
