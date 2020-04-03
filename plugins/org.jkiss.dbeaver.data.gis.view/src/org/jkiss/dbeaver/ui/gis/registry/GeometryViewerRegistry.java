@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
@@ -75,6 +76,16 @@ public class GeometryViewerRegistry {
 
     public List<GeometryViewerDescriptor> getViewers() {
         return new ArrayList<>(viewers.values());
+    }
+
+    public List<GeometryViewerDescriptor> getSupportedViewers(DBPDataSource dataSource) {
+        List<GeometryViewerDescriptor> result = new ArrayList<>();
+        for (GeometryViewerDescriptor viewer : viewers.values()) {
+            if (viewer.supportedBy(dataSource)) {
+                result.add(viewer);
+            }
+        }
+        return result;
     }
 
     public GeometryViewerDescriptor getViewer(String id) {
