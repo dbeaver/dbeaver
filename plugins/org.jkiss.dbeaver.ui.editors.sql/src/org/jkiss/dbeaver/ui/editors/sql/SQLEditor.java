@@ -2534,8 +2534,12 @@ public class SQLEditor extends SQLEditorBase implements
                 if (job.getState() == Job.RUNNING) {
                     job.cancel();
                 }
-                curJob.closeJob();
                 curJob = null;
+                if (job.isJobOpen()) {
+                    RuntimeUtils.runTask(monitor -> {
+                        job.closeJob();
+                    }, "Close SQL job", 2000, true);
+                }
             }
         }
 

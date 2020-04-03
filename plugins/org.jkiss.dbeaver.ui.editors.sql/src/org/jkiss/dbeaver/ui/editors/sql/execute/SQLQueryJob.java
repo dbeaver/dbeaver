@@ -799,6 +799,10 @@ public class SQLQueryJob extends DataSourceJob
         this.fetchResultSetNumber = fetchResultSetNumber;
     }
 
+    public boolean isJobOpen() {
+        return curStatement != null;
+    }
+
     public void closeJob() {
         closeStatement();
     }
