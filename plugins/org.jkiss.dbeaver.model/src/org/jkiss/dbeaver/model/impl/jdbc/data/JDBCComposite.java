@@ -183,6 +183,11 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         return values[position];
     }
 
+    public Object getAttributeValue(@NotNull String attrName) throws DBCException {
+        DBSEntityAttribute attribute = DBUtils.findObject(attributes, attrName);
+        return attribute == null ? null : getAttributeValue(attribute);
+    }
+
     @Override
     public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) {
         if (!CommonUtils.equalObjects(values[attribute.getOrdinalPosition()], value)) {

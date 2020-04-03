@@ -58,6 +58,10 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         this.valueController = valueController;
     }
 
+    public IValueController getValueController() {
+        return valueController;
+    }
+
     public void createControl() {
         T control = createControl(valueController.getEditPlaceholder());
         setControl(control);

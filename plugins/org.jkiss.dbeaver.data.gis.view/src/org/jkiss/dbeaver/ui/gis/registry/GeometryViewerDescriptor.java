@@ -19,12 +19,16 @@ package org.jkiss.dbeaver.ui.gis.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GeometryViewerDescriptor extends AbstractDescriptor {
 
@@ -38,6 +42,7 @@ public class GeometryViewerDescriptor extends AbstractDescriptor {
     private final String description;
     private final DBPImage icon;
     private boolean supportsInline;
+    private final List<String> supportedDataSources = new ArrayList<>();
 
     GeometryViewerDescriptor(IConfigurationElement config) {
         super(config);
@@ -47,6 +52,13 @@ public class GeometryViewerDescriptor extends AbstractDescriptor {
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.supportsInline = CommonUtils.getBoolean(config.getAttribute("supportsInline"), false);
+
+        for (IConfigurationElement dsElement : config.getChildren("datasource")) {
+            String dsId = dsElement.getAttribute("id");
+            if (dsId != null) {
+                supportedDataSources.add(dsId);
+            }
+        }
     }
 
     public String getId() {
@@ -75,6 +87,18 @@ public class GeometryViewerDescriptor extends AbstractDescriptor {
 
     public boolean supportsInlineView() {
         return supportsInline;
+    }
+
+    public boolean supportedBy(DBPDataSource dataSource) {
+        if (!supportedDataSources.isEmpty()) {
+            if (dataSource == null) {
+                return false;
+            }
+            if (!supportedDataSources.contains(dataSource.getContainer().getDriver().getProviderId())) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
