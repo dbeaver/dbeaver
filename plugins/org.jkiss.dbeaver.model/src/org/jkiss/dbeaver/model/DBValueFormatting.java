@@ -188,7 +188,7 @@ public final class DBValueFormatting {
     }
 
     @Nullable
-    public static Number convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter, boolean validateValue) throws DBCException
+    public static Object convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter, boolean validateValue) throws DBCException
     {
         if (text == null || text.length() == 0) {
             return null;
@@ -223,7 +223,7 @@ public final class DBValueFormatting {
                     throw new DBCException("Can't parse numeric value [" + text + "] using formatter", e);
                 }
                 log.debug("Can't parse numeric value [" + text + "] using formatter: " + e.getMessage());
-                return null;
+                return text;
             }
         }
     }
