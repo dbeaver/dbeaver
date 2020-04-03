@@ -74,6 +74,7 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                 log.error("Unsupported SQL editor command: " + actionId);
                 break;
         }
+        editor.refreshActions();
 
         return null;
     }

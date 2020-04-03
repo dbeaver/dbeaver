@@ -536,6 +536,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    public void refreshActions() {
+        // Redraw toolbar to refresh action sets
+        sideToolBar.redraw();
+    }
+
     private class OutputLogWriter extends Writer {
         @Override
         public void write(@NotNull final char[] cbuf, final int off, final int len) {
@@ -1906,7 +1911,7 @@ public class SQLEditor extends SQLEditorBase implements
                 queryProcessor.processQueries(
                     scriptContext,
                     Collections.singletonList(query),
-                    forceScript,
+                    false,
                     true,
                     export,
                     getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR), queryListener);
@@ -2087,7 +2092,7 @@ public class SQLEditor extends SQLEditorBase implements
             resultsSash.setMaximizedControl(null);
         }
 
-        sideToolBar.redraw();
+        refreshActions();
 
         lastExecutionContext = executionContext;
         syntaxLoaded = true;
@@ -3219,6 +3224,7 @@ public class SQLEditor extends SQLEditorBase implements
                     processQueryResult(monitor, result, statistics);
                     // Update dirty flag
                     updateDirtyFlag();
+                    refreshActions();
                 });
             } finally {
                 if (extListener != null) extListener.onEndQuery(session, result, statistics);
