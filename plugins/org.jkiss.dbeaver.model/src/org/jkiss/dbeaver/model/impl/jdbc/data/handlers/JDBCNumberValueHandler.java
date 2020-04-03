@@ -99,23 +99,31 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         int index)
         throws DBCException, SQLException
     {
-        Number value;
+        Object value;
         switch (type.getTypeID()) {
             case Types.INTEGER:
                 try {
                     // Read value with maximum precision. Some drivers reports INTEGER but means long [JDBC:SQLite]
                     value = resultSet.getLong(index);
                 } catch (SQLException | ClassCastException | NumberFormatException e) {
-                    value = resultSet.getInt(index);
+                    value = resultSet.getObject(index);
                 }
                 break;
             case Types.SMALLINT:
-                // Read int in case of unsigned shorts
-                value = resultSet.getInt(index);
+                try {
+                    // Read int in case of unsigned shorts
+                    value = resultSet.getInt(index);
+                } catch (SQLException | ClassCastException | NumberFormatException e) {
+                    value = resultSet.getObject(index);
+                }
                 break;
             case Types.TINYINT:
-                // Read short in case of unsigned byte
-                value = resultSet.getShort(index);
+                try {
+                    // Read short in case of unsigned byte
+                    value = resultSet.getShort(index);
+                } catch (SQLException | ClassCastException | NumberFormatException e) {
+                    value = resultSet.getObject(index);
+                }
                 break;
             case Types.BIT:
                 if (CommonUtils.toInt(type.getPrecision()) <= 1) {
@@ -146,8 +154,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             case Types.REAL:
             case Types.FLOAT:
                 if (isReadDecimalsAsDouble()) {
-                    // Always read as double to avoid precision loose (#7214)
-                    value = resultSet.getDouble(index);
+                    try {
+                        // Always read as double to avoid precision loose (#7214)
+                        value = resultSet.getDouble(index);
+                    } catch (SQLException | ClassCastException | NumberFormatException e) {
+                        value = resultSet.getObject(index);
+                    }
                     break;
                 }
             default:
@@ -157,7 +169,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                 try {
                     Object objectValue = resultSet.getObject(index);
                     if (objectValue == null || objectValue instanceof Number) {
-                        value = (Number) objectValue;
+                        value = objectValue;
                         gotValue = true;
                     }
                 } catch (SQLException e) {
@@ -200,7 +212,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         if (value instanceof String) {
             String strValue = (String) value;
             // Some number. Actually we shouldn't be here
-            Number number = DBValueFormatting.convertStringToNumber(strValue, getNumberType(paramType), formatter, true);
+            Object number = DBValueFormatting.convertStringToNumber(strValue, getNumberType(paramType), formatter, true);
             if (number != null) {
                 value = number;
             } else if (!strValue.isEmpty()) {
