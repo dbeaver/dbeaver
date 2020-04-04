@@ -388,6 +388,7 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setRowOffset(rsOffset);
         }
 
+        monitor.beginTask("Process query", 1);
         try {
             // Prepare statement
             closeStatement();
@@ -448,6 +449,8 @@ public class SQLQueryJob extends DataSourceJob
             }
 
             scriptContext.clearStatementContext();
+
+            monitor.done();
         }
 
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
