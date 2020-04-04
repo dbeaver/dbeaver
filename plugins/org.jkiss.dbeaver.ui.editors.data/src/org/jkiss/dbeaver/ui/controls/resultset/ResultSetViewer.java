@@ -1406,11 +1406,17 @@ public class ResultSetViewer extends Viewer
      */
     private void updateToolbar()
     {
-        for (ToolBarManager tb : toolbarList) {
-            UIUtils.updateContributionItems(tb);
-        }
-        if (panelToolBar != null) {
-            UIUtils.updateContributionItems(panelToolBar);
+        statusBar.setRedraw(false);
+        try {
+            for (ToolBarManager tb : toolbarList) {
+                UIUtils.updateContributionItems(tb);
+            }
+            if (panelToolBar != null) {
+                UIUtils.updateContributionItems(panelToolBar);
+            }
+            statusBar.layout(true, true);
+        } finally {
+            statusBar.setRedraw(true);
         }
     }
 
