@@ -27,5 +27,6 @@ Export-Package: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui.dialogs.net,
  org.jkiss.dbeaver.ui.dialogs.connection,
  org.jkiss.dbeaver.ui.dialogs.driver,
- org.jkiss.dbeaver.ui.internal
+ org.jkiss.dbeaver.ui.internal,
+ org.jkiss.dbeaver.ui.preferences
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.connection
