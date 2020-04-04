@@ -26,10 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -49,6 +46,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.ScriptSelectorPanel;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
@@ -273,9 +271,12 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         IWorkbenchWindow workbenchWindow,
         IEditorInput sqlInput) {
         try {
+            boolean isConsole = sqlInput instanceof INonPersistentEditorInput;
             return (SQLEditor) workbenchWindow.getActivePage().openEditor(
                 sqlInput,
-                SQLEditor.class.getName());
+                SQLEditor.class.getName(),
+                true,
+                isConsole ? IWorkbenchPage.MATCH_NONE : IWorkbenchPage.MATCH_INPUT);
         } catch (PartInitException e) {
             DBWorkbench.getPlatformUI().showError("Can't open editor", null, e);
         }
