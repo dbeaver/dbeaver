@@ -786,10 +786,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public boolean addDriverLibrary(DBPDriverLibrary descriptor, boolean resetCache) {
+        if (resetCache) {
+            descriptor.resetVersion();
+            resetDriverInstance();
+        }
         if (!libraries.contains(descriptor)) {
-            if (resetCache) {
-                resetDriverInstance();
-            }
             this.libraries.add(descriptor);
             return true;
         }
