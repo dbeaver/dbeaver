@@ -184,7 +184,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     @Override
     public void setImageDescriptor(ImageDescriptor desc) {
-        if (getImage() == null) {
+        /*if (getImage() == null) */{
             super.setImageDescriptor(desc);
         }
     }
