@@ -447,6 +447,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     dataSource.clearFilters();
                 }
                 dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
+		dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
                 dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
 
                 DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
