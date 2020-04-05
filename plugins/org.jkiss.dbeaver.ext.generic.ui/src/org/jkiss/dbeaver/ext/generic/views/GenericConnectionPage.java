@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.internal.GenericMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -55,6 +56,8 @@ import java.util.*;
  */
 public class GenericConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage
 {
+    private static final Log log = Log.getLog(GenericConnectionPage.class);
+
     // Host/port
     private Text hostText;
     private Text portText;
@@ -310,11 +313,15 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
             DBPDriver driver = getSite().getDriver();
             DBPImage iconBig = driver.getIconBig();
             if (iconBig != null) {
-                ImageDescriptor imageDescriptor = DBeaverIcons.getImageDescriptor(iconBig);
-                if (imageDescriptor.getImageData().width >= 64) {
-                    setImageDescriptor(imageDescriptor);
-                } else {
-                    setImageDescriptor(null);
+                try {
+                    ImageDescriptor imageDescriptor = DBeaverIcons.getImageDescriptor(iconBig);
+                    if (imageDescriptor.getImageData().width >= 64) {
+                        setImageDescriptor(imageDescriptor);
+                    } else {
+                        setImageDescriptor(null);
+                    }
+                } catch (Exception e) {
+                    log.error(e);
                 }
             }
         }
