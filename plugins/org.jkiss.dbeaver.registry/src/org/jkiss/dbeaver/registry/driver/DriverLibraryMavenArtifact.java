@@ -47,16 +47,19 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     protected MavenArtifactVersion localVersion;
     private String preferredVersion;
     private boolean ignoreDependencies;
+    private final String originalPreferredVersion;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path, String preferredVersion) {
         super(driver, type, path);
         initArtifactReference(preferredVersion);
+        this.originalPreferredVersion = this.preferredVersion;
     }
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, IConfigurationElement config) {
         super(driver, config);
         ignoreDependencies = CommonUtils.toBoolean(config.getAttribute("ignore-dependencies"));
         initArtifactReference(null);
+        this.originalPreferredVersion = this.preferredVersion;
     }
 
     private DriverLibraryMavenArtifact(DriverDescriptor driver, DriverLibraryMavenArtifact copyFrom) {
@@ -65,6 +68,8 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         this.localVersion = copyFrom.localVersion;
         this.preferredVersion = copyFrom.preferredVersion;
         this.ignoreDependencies = copyFrom.ignoreDependencies;
+
+        this.originalPreferredVersion = copyFrom.originalPreferredVersion;
     }
 
     private void initArtifactReference(String preferredVersion) {
@@ -131,6 +136,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     @Override
     public void resetVersion() {
         this.localVersion = null;
+        this.preferredVersion = originalPreferredVersion;
         MavenRegistry.getInstance().resetArtifactInfo(reference);
     }
 
