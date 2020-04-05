@@ -194,10 +194,12 @@ public class VerticalButton extends Canvas {
         Point size = computeSize(e.gc, -1, -1, false);
 
         boolean enabled = true;
-        if (action != null && !action.isEnabled()) {
-            enabled = false;
-        } else if (commandId != null) {
-            enabled = ActionUtils.isCommandEnabled(commandId, serviceLocator);
+        if (getFolder().isCheckCommandEnablement()) {
+            if (action != null && !action.isEnabled()) {
+                enabled = false;
+            } else if (commandId != null) {
+                enabled = ActionUtils.isCommandEnabled(commandId, serviceLocator);
+            }
         }
         if (enabled && (selected || isHover)) {
             Color curBackground = e.gc.getBackground();
