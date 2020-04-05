@@ -36,6 +36,7 @@ public class VerticalFolder extends Canvas {
     private boolean isLeft;
     private List<VerticalButton> items = new ArrayList<>();
     private VerticalButton selectedItem;
+    private boolean checkCommandEnablement;
 
     public VerticalFolder(Composite parent, int style) {
         super(parent, style);
@@ -52,6 +53,14 @@ public class VerticalFolder extends Canvas {
 
     public boolean isLeft() {
         return isLeft;
+    }
+
+    public boolean isCheckCommandEnablement() {
+        return checkCommandEnablement;
+    }
+
+    public void setCheckCommandEnablement(boolean checkCommandEnablement) {
+        this.checkCommandEnablement = checkCommandEnablement;
     }
 
     @Override
