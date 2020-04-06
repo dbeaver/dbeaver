@@ -282,7 +282,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 spreadsheet.setFocusColumn(curPosition.col);
                 spreadsheet.setFocusItem(curPosition.row);
                 spreadsheet.setCellSelection(curPosition);
-                if (curPosition.row >= spreadsheet.getTopIndex() && curPosition.row < spreadsheet.getBottomIndex()) {
+                if (!owner.getController().isHasMoreData() || (curPosition.row >= spreadsheet.getTopIndex() && curPosition.row < spreadsheet.getBottomIndex())) {
                     // Do not scroll to invisible rows to avoid scrolling and slow update
                     spreadsheet.showSelection();
                 }
