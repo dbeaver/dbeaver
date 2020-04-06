@@ -29,16 +29,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jkiss.dbeaver.Log; 
-import java.util.Arrays;
-
 /**
  * SQL context
  */
 public class SQLContext extends DocumentTemplateContext implements DBPContextProvider {
-
-    private static final Log log = Log.getLog(SQLContext.class);
-
 
     private SQLEditorBase editor;
     private Map<String, SQLVariable> variables = new HashMap<>();
