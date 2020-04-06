@@ -45,13 +45,13 @@
 
     <repositories>
         <repository>
-            <id>eclipse-p2-repo</id>
-            <url>${eclipse-p2-repo.url}</url>
+            <id>local-contrib</id>
+            <url>${local-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
         <repository>
-            <id>local-contrib</id>
-            <url>${local-p2-repo.url}</url>
+            <id>eclipse-p2-repo</id>
+            <url>${eclipse-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
     </repositories>
@@ -71,23 +71,6 @@
                     </resources>
                 </configuration>
             </plugin>
-            <!-- Tycho target platform -->
-<!--
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>target-platform-configuration</artifactId>
-                <version>${tycho-version}</version>
-                <configuration>
-                    <target>
-                        <artifact>
-                            <groupId>org.example</groupId>
-                            <artifactId>target-definition</artifactId>
-                            <version>1.0.0-SNAPSHOT</version>
-                        </artifact>
-                    </target>
-                </configuration>
-            </plugin>
--->
 
             <!-- Tycho build -->
             <plugin>
@@ -96,25 +79,11 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <environments>
-<!--
-                        <environment>
-                            <os>win32</os>
-                            <ws>win32</ws>
-                            <arch>x86</arch>
-                        </environment>
--->
                         <environment>
                             <os>win32</os>
                             <ws>win32</ws>
                             <arch>x86_64</arch>
                         </environment>
-<!--
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>x86</arch>
-                        </environment>
--->
                         <environment>
                             <os>linux</os>
                             <ws>gtk</ws>
@@ -126,7 +95,9 @@
                             <arch>x86_64</arch>
                         </environment>
                     </environments>
+
                 </configuration>
+
             </plugin>
 
             <plugin>

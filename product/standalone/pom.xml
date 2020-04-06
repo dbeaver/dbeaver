@@ -56,7 +56,22 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <type>eclipse-plugin</type>
+                            <id>org.apache.ant</id>
+                            <restrictTo>
+                                <version>1.10.0</version>
+                            </restrictTo>
+                        </filter>
+                    </filters>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
