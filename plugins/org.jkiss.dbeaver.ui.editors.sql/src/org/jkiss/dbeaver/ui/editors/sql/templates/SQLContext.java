@@ -29,10 +29,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jkiss.dbeaver.Log; 
+import java.util.Arrays;
+
 /**
  * SQL context
  */
 public class SQLContext extends DocumentTemplateContext implements DBPContextProvider {
+
+    private static final Log log = Log.getLog(SQLContext.class);
+
 
     private SQLEditorBase editor;
     private Map<String, SQLVariable> variables = new HashMap<>();
@@ -96,11 +102,67 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
         String content = buffer.getString();
         if (!indentation.isEmpty() && content.indexOf('\n') != -1) {
             StringBuilder result = new StringBuilder();
+            
+            //skolko mesta nugno
+            int nCountPlace = 0;            
+            for (int i = 0; i < variables.length; i++) {
+              nCountPlace = nCountPlace + variables[i].getOffsets().length;
+            };
+            
+            //zapolnyem masssiv
+            int aVarOffset[][] = new int[nCountPlace][2];
+            nCountPlace = 0;
+            for (int i = 0; i < variables.length; i++) {
+              int[] aOffsets = variables[i].getOffsets();
+              for (int j = 0; j < aOffsets.length; j++) {
+                aVarOffset[nCountPlace][0] = aOffsets[j];
+                aVarOffset[nCountPlace][1] = i;
+                nCountPlace = nCountPlace + 1; 
+              };
+            };
+            
+            //sort
+            for (int i = 0; i < nCountPlace - 1; i++) {
+              for (int j = i+1; j < nCountPlace; j++) {
+                if (aVarOffset[i][0] > aVarOffset[j][0]) {
+                  int tmp = aVarOffset[i][0];
+                  aVarOffset[i][0] = aVarOffset[j][0];
+                  aVarOffset[j][0] = tmp;
+                  tmp = aVarOffset[i][1];
+                  aVarOffset[i][1] = aVarOffset[j][1];
+                  aVarOffset[j][1] = tmp;
+                };
+              };
+            };
+
+            int iPlace = 0;
+            int iSpaceLen = indentation.length();
+            
             for (int i = 0; i < content.length(); i++) {
                 char c = content.charAt(i);
                 result.append(c);
-                if (c == '\n') result.append(indentation);
+                if (c == '\n') {
+                  //Propuskaem 
+                  while (iPlace < nCountPlace && i > aVarOffset[iPlace][0]) iPlace++;
+                  //Dvigaem
+                  for (int j = iPlace; j < nCountPlace; j++)  aVarOffset[j][0] = aVarOffset[j][0] + iSpaceLen;
+                  result.append(indentation);
+                }
             }
+
+            //sobiraem novye offsety
+            for (int i = 0; i < variables.length; i++) {
+              int[] aOffsets = variables[i].getOffsets();
+              int iInd = 0;
+              for (int j = 0; j < nCountPlace; j++) {
+                if (aVarOffset[j][1] == i) {
+                  aOffsets[iInd] = aVarOffset[j][0];
+                  iInd++;
+                };
+              };
+            };
+            
+            
             buffer.setContent(result.toString(), variables);
         }
     }
@@ -122,7 +184,7 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
         return VAR_ORDER.length + 1;
     }
 */
-
+ 
     SQLVariable getTemplateVariable(String name)
     {
         SQLVariable variable = variables.get(name);
