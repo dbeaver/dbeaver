@@ -302,7 +302,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
 
             if (supportsVariables) {
-                UIUtils.createDialogButton(panel, "Variables ...", new SelectionAdapter() {
+                UIUtils.createDialogButton(panel, TaskUIMessages.task_config_wizard_button_variables + " ...", new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         configureVariables();
@@ -316,13 +316,13 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
                     saveTask();
                 }
             });
-            Link tasksLink = UIUtils.createLink(panel, TaskUIMessages.task_config_wizard_link_open_tasks_view, new SelectionAdapter() {
+            Link tasksLink = UIUtils.createLink(panel, "<a>" + TaskUIMessages.task_config_wizard_link_open_tasks_view + "</a>", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     try {
                         UIUtils.getActiveWorkbenchWindow().getActivePage().showView(DatabaseTasksView.VIEW_ID);
                     } catch (PartInitException e1) {
-                        DBWorkbench.getPlatformUI().showError(TaskUIMessages.task_config_wizard_error_show_view, "Error opening database tasks view", e1);
+                        DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
                     }
                 }
             });
