@@ -97,13 +97,13 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
         if (!indentation.isEmpty() && content.indexOf('\n') != -1) {
             StringBuilder result = new StringBuilder();
             
-            //skolko mesta nugno
+            //how many places
             int nCountPlace = 0;            
             for (int i = 0; i < variables.length; i++) {
               nCountPlace = nCountPlace + variables[i].getOffsets().length;
             };
             
-            //zapolnyem masssiv
+            //fill array
             int aVarOffset[][] = new int[nCountPlace][3];
             nCountPlace = 0;
             for (int i = 0; i < variables.length; i++) {
@@ -115,7 +115,7 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
                 nCountPlace = nCountPlace + 1; 
               };
             };
-            
+             
             //sort
             for (int i = 0; i < nCountPlace - 1; i++) {
               for (int j = i+1; j < nCountPlace; j++) {
@@ -134,15 +134,15 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
                 char c = content.charAt(i);
                 result.append(c);
                 if (c == '\n') {
-                  //Propuskaem 
+                  //skip 
                   while (iPlace < nCountPlace && i > aVarOffset[iPlace][0]) iPlace++;
-                  //Dvigaem
+                  //move
                   for (int j = iPlace; j < nCountPlace; j++)  aVarOffset[j][2] = aVarOffset[j][2] + iSpaceLen;
                   result.append(indentation);
                 }
             }
 
-            //sobiraem novye offsety
+            //collect back
             for (int i = 0; i < variables.length; i++) {
               int[] aOffsets = variables[i].getOffsets();
               int iInd = 0;
