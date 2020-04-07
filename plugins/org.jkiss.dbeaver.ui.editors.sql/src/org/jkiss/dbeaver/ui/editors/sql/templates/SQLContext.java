@@ -104,13 +104,14 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
             };
             
             //zapolnyem masssiv
-            int aVarOffset[][] = new int[nCountPlace][2];
+            int aVarOffset[][] = new int[nCountPlace][3];
             nCountPlace = 0;
             for (int i = 0; i < variables.length; i++) {
               int[] aOffsets = variables[i].getOffsets();
               for (int j = 0; j < aOffsets.length; j++) {
                 aVarOffset[nCountPlace][0] = aOffsets[j];
                 aVarOffset[nCountPlace][1] = i;
+                aVarOffset[nCountPlace][2] = aOffsets[j];
                 nCountPlace = nCountPlace + 1; 
               };
             };
@@ -119,12 +120,9 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
             for (int i = 0; i < nCountPlace - 1; i++) {
               for (int j = i+1; j < nCountPlace; j++) {
                 if (aVarOffset[i][0] > aVarOffset[j][0]) {
-                  int tmp = aVarOffset[i][0];
-                  aVarOffset[i][0] = aVarOffset[j][0];
-                  aVarOffset[j][0] = tmp;
-                  tmp = aVarOffset[i][1];
-                  aVarOffset[i][1] = aVarOffset[j][1];
-                  aVarOffset[j][1] = tmp;
+                  int tmp[] = aVarOffset[i];
+                  aVarOffset[i] = aVarOffset[j];
+                  aVarOffset[j] = tmp;
                 };
               };
             };
@@ -139,7 +137,7 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
                   //Propuskaem 
                   while (iPlace < nCountPlace && i > aVarOffset[iPlace][0]) iPlace++;
                   //Dvigaem
-                  for (int j = iPlace; j < nCountPlace; j++)  aVarOffset[j][0] = aVarOffset[j][0] + iSpaceLen;
+                  for (int j = iPlace; j < nCountPlace; j++)  aVarOffset[j][2] = aVarOffset[j][2] + iSpaceLen;
                   result.append(indentation);
                 }
             }
@@ -150,7 +148,7 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
               int iInd = 0;
               for (int j = 0; j < nCountPlace; j++) {
                 if (aVarOffset[j][1] == i) {
-                  aOffsets[iInd] = aVarOffset[j][0];
+                  aOffsets[iInd] = aVarOffset[j][2];
                   iInd++;
                 };
               };
