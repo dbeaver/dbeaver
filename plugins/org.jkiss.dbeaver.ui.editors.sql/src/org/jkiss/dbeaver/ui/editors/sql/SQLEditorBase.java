@@ -31,12 +31,13 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
@@ -822,8 +823,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         public void run() {
             Shell shell = getSourceViewer().getTextWidget().getShell();
             String[] preferencePages = collectContextMenuPreferencePages();
-            if (preferencePages.length > 0 && (shell == null || !shell.isDisposed()))
-                PreferencesUtil.createPreferenceDialogOn(shell, preferencePages[0], preferencePages, getEditorInput()).open();
+            if (preferencePages.length > 0 && (shell == null || !shell.isDisposed())) {
+                PropertyDialog.createDialogOn(shell, null, new StructuredSelection(getEditorInput())).open();
+                //PreferencesUtil.createPreferenceDialogOn(shell, preferencePages[0], preferencePages, getEditorInput()).open();
+            }
         }
     }
 
