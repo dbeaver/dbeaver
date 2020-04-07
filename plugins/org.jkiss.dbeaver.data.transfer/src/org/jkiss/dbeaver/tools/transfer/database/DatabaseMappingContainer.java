@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -186,16 +187,22 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             if (context == null) {
                 throw new DBCException("No execution context");
             }
-            try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Read query meta data")) {
-                MetadataReceiver receiver = new MetadataReceiver();
-                source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
-                for (DBDAttributeBinding attr : receiver.attributes) {
-                    if (DBUtils.isHiddenObject(attr)) {
-                        continue;
+            DBExecUtils.tryExecuteRecover(monitor, context.getDataSource(), monitor1 -> {
+                try (DBCSession session = context.openSession(monitor1, DBCExecutionPurpose.META, "Read query meta data")) {
+                    MetadataReceiver receiver = new MetadataReceiver();
+                    try {
+                        source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
+                        for (DBDAttributeBinding attr : receiver.attributes) {
+                            if (DBUtils.isHiddenObject(attr)) {
+                                continue;
+                            }
+                            addAttributeMapping(monitor1, attr);
+                        }
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
                     }
-                    addAttributeMapping(monitor, attr);
                 }
-            }
+            });
         }
     }
 
