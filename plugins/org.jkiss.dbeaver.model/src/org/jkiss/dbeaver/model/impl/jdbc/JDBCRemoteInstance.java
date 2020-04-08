@@ -24,11 +24,13 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,7 +122,13 @@ public class JDBCRemoteInstance implements DBSInstance {
     @Override
     public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException {
         JDBCExecutionContext context = dataSource.createExecutionContext(this, purpose);
-        context.connect(monitor, null, null, (JDBCExecutionContext) initFrom, true);
+        DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
+            try {
+                context.connect(monitor1, null, null, (JDBCExecutionContext) initFrom, true);
+            } catch (DBCException e) {
+                throw new InvocationTargetException(e);
+            }
+        });
         return context;
     }
 
