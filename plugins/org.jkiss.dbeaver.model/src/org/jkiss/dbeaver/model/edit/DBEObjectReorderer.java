@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;

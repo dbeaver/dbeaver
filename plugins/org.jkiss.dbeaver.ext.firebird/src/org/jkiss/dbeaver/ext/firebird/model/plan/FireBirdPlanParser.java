@@ -16,10 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
-import java.sql.SQLException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+
+import java.sql.SQLException;
 
 /**
  * Firebird plan parser. It interpretes tokens returned by FireBirdPlanTokenMatcher

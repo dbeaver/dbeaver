@@ -18,12 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**

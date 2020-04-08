@@ -23,7 +23,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanSaveProvider;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
 
 /**
  * SQLPlanViewProviderSimple

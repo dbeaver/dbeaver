@@ -17,23 +17,11 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
-import java.sql.SQLException;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2Package;
-import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
-import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
-import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -44,6 +32,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
 
 /**
  * Cache for DB2 Authorisations

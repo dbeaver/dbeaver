@@ -24,7 +24,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-import org.jkiss.dbeaver.ui.UIStyles;
 
 import java.util.ArrayList;
 import java.util.List;

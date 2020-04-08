@@ -20,12 +20,7 @@
 package org.jkiss.dbeaver.ext.hana.model.data;
 
 import org.jkiss.dbeaver.ext.hana.model.data.wkb.XyzmMode;
-import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.*;
 
 /**
  * Find the XYZM mode of a geometry instance.

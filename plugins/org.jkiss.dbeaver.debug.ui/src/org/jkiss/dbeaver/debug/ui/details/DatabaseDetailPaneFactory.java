@@ -18,10 +18,6 @@
 
 package org.jkiss.dbeaver.debug.ui.details;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.ui.IDetailPane;
@@ -29,6 +25,10 @@ import org.eclipse.debug.ui.IDetailPaneFactory;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
 

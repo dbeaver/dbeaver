@@ -18,10 +18,10 @@
 package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.ui.CopyMode;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {

@@ -18,8 +18,6 @@
 
 package org.jkiss.dbeaver.runtime.resource.links;
 
-import java.nio.file.Path;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -27,6 +25,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+
+import java.nio.file.Path;
 
 public class CreateLinkedFilesRunnable extends CreateLinkedResourcesRunnable {
 

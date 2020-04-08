@@ -18,12 +18,12 @@
 
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.sql.ResultSet;
 
 public class PostgreAvailableExtension implements PostgreObject{
     

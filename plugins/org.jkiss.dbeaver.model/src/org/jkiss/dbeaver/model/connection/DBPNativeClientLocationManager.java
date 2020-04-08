@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.dbeaver.DBException;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

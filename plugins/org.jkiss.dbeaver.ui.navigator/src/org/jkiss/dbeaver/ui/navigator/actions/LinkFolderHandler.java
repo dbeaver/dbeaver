@@ -18,9 +18,6 @@
 
 package org.jkiss.dbeaver.ui.navigator.actions;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -30,6 +27,9 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class LinkFolderHandler extends CreateLinkHandler {
 

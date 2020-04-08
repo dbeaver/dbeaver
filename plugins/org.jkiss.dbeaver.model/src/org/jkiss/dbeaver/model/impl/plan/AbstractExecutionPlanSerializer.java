@@ -19,19 +19,18 @@
 package org.jkiss.dbeaver.model.impl.plan;
 
 
-import java.io.IOException;
-import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDateTime;
-
 import com.google.gson.*;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerializable;
 import org.jkiss.utils.CommonUtils;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
 
 public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlannerSerializable{
 

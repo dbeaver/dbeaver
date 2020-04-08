@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 
 import java.util.ArrayList;

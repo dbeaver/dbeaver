@@ -18,14 +18,9 @@ package org.jkiss.dbeaver.ui.dashboard.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardMapQuery;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.utils.CommonUtils;
 
 /**

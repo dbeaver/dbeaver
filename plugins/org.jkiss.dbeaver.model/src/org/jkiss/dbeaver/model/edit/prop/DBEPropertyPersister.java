@@ -17,8 +17,8 @@
 
 package org.jkiss.dbeaver.model.edit.prop;
 
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 
 /**
  * Database object validator

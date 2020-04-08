@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;

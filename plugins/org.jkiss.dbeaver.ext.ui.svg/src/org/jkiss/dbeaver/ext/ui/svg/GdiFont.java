@@ -12,7 +12,7 @@
 
 package org.jkiss.dbeaver.ext.ui.svg;
 
-import java.awt.Font;
+import java.awt.*;
 
 /**
  * Represents a font on the system. There may be multiple fonts created in the system at any one time. The currently

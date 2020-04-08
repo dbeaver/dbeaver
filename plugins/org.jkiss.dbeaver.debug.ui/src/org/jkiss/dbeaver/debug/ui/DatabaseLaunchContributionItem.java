@@ -19,12 +19,6 @@
 
 package org.jkiss.dbeaver.debug.ui;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.ILaunchGroup;
@@ -46,6 +40,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIInternals;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.*;
 
 public class DatabaseLaunchContributionItem extends ContributionItem {
 

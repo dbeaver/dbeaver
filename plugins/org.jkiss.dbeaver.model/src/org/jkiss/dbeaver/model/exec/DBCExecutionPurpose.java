@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.utils.CommonUtils;
-
 /**
  * Execution purpose.
  *

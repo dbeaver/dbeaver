@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
-import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
+import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 

@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.editors;
 
-import java.util.HashMap;
-
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
@@ -30,6 +28,8 @@ import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+
+import java.util.HashMap;
 
 public class OracleLockEditor extends AbstractLockEditor {
 

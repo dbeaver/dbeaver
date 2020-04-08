@@ -18,13 +18,6 @@
 
 package org.jkiss.dbeaver.debug.ui.internal;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.runtime.CoreException;
@@ -42,6 +35,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.activities.WorkbenchActivityHelper;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
+
+import java.util.*;
 
 @SuppressWarnings("restriction")
 public class DebugUIInternals {

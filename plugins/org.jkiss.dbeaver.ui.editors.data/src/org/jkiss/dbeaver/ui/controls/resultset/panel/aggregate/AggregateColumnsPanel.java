@@ -42,8 +42,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * RSV value view panel

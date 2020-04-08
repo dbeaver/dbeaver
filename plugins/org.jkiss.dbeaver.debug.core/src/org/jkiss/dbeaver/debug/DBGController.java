@@ -18,12 +18,10 @@
  */
 package org.jkiss.dbeaver.debug;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Map;
 
 /**
  * This interface is expected to be used in synch manner

@@ -27,7 +27,6 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.ui.DebugUI;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceMenuContributor;
 
 import java.util.List;

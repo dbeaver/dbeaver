@@ -1,11 +1,11 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
-import net.schmizz.sshj.userauth.UserAuthException;
-import net.schmizz.sshj.userauth.method.AbstractAuthMethod;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.TransportException;
+import net.schmizz.sshj.userauth.UserAuthException;
+import net.schmizz.sshj.userauth.method.AbstractAuthMethod;
 
 public class DBeaverAuthAgent extends AbstractAuthMethod {
 

@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.ui.dashboard.control;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;

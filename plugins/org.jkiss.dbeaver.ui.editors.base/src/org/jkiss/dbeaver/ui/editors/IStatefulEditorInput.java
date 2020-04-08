@@ -18,14 +18,6 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IEditorInput;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.util.Collection;
 
 /**
  * IDatabaseEditorInput

@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.WorkspaceResourceResolver;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 

@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -30,6 +27,9 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
+import java.util.List;
 
 public class SQLServerToolRebuild implements IUserInterfaceTool {
     @Override

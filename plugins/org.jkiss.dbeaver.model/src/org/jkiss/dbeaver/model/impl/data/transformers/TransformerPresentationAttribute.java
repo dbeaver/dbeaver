@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.data.transformers;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 /**
  * TransformerPresentationAttribute

@@ -39,8 +39,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 
 class ProjectExportWizardPage extends WizardPage {

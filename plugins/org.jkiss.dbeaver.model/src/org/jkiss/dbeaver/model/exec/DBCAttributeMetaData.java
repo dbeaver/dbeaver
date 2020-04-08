@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 /**

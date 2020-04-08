@@ -31,8 +31,8 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.PropertyResourceBundle;

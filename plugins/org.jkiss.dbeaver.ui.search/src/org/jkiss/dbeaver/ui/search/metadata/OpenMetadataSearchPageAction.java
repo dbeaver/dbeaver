@@ -21,7 +21,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.jkiss.dbeaver.ui.search.data.SearchDataPage;
 
 /**
  * Opens the data search dialog.

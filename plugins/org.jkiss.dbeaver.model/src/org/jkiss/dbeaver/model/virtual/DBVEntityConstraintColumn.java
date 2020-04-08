@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 /**
  * Constraint column

@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 
 /**
  * SQL editor features

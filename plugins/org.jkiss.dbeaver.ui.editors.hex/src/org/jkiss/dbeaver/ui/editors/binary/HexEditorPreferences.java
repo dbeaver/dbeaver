@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ui.editors.binary;
 
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
-
 /**
  * Preferences constants
  */

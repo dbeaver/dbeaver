@@ -18,10 +18,7 @@
 package org.jkiss.dbeaver.ext.erd;
 
 import org.eclipse.draw2d.PrintFigureOperation;
-import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-
-import java.awt.*;
 
 /**
  * ERD constants
