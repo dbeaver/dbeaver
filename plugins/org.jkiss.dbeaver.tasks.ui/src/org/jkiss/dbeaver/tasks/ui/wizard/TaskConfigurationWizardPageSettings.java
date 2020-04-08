@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
