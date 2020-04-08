@@ -46,8 +46,8 @@
             id: 'osm.streets'}"/>
         <tiles id="otm" label="OpenTopoMap" layersDefinition="'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
             maxZoom: 17,
-            attribution: 'Map data: &copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap</a> contributors,' +
-                ' <a href=&quot;http://viewfinderpanoramas.org&quot;>SRTM</a> | Map style: &copy; <a href=&quot;https://opentopomap.org&quot;>OpenTopoMap</a> (<a href=&quot;https://creativecommons.org/licenses/by-sa/3.0/&quot;>CC-BY-SA</a>)',
+            attribution: 'Map data: &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap&lt;/a> contributors,' +
+                ' &lt;a href=&quot;http://viewfinderpanoramas.org&quot;>SRTM&lt;/a> | Map style: &amp;copy; &lt;a href=&quot;https://opentopomap.org&quot;>OpenTopoMap&lt;/a> (&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/3.0/&quot;>CC-BY-SA&lt;/a>)',
             id: 'opentopomap.main'}"/>
     </extension>
     <extension point="org.jkiss.dbeaver.resultset.presentation">
