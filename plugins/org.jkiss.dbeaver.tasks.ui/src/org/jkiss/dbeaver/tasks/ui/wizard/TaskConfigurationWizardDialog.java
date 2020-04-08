@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
@@ -155,7 +156,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     public void setSelectorMode(boolean selectorMode) {
         this.selectorMode = selectorMode;
         if (selectorMode) {
-            setFinishButtonLabel("Save");
+            setFinishButtonLabel(TaskUIMessages.task_config_wizard_dialog_button_save);
         }
     }
 
