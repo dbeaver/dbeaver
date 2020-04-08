@@ -26,6 +26,17 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_button_save_task;
 	public static String task_config_wizard_link_open_tasks_view;
 	public static String task_config_wizard_button_variables;
+	
+	public static String task_config_wizard_dialog_button_save;
+	
+	public static String task_config_wizard_page_settings_create_task;
+	public static String task_config_wizard_page_settings_edit_task;
+	public static String task_config_wizard_page_settings_title_task_prop;
+	public static String task_config_wizard_page_settings_descr_set_task;
+	public static String task_config_wizard_page_settings_config;
+	public static String task_config_wizard_page_settings_settings;
+	
+	
 
 	static {
 		// initialize resource bundle

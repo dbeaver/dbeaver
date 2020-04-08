@@ -155,7 +155,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     public void setSelectorMode(boolean selectorMode) {
         this.selectorMode = selectorMode;
         if (selectorMode) {
-            setFinishButtonLabel("Save");
+            setFinishButtonLabel(TaskUIMessages.task_config_wizard_dialog_button_save);
         }
     }
 
