@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tasks.ui.wizard;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -69,9 +71,9 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     private Map<DBTTaskType, TaskConfigurationWizard> taskWizards = new HashMap<>();
 
     TaskConfigurationWizardPageTask(DBTTask task) {
-        super(task == null ? "Create new task" : "Edit task");
-        setTitle(task == null ? "New task properties" : "Edit task properties");
-        setDescription("Set task name, type and input data");
+        super(task == null ? TaskUIMessages.task_config_wizard_page_settings_create_task : TaskUIMessages.task_config_wizard_page_settings_edit_task);
+        setTitle(task == null ? TaskUIMessages.task_config_wizard_page_task_title_new_task_prop : TaskUIMessages.task_config_wizard_page_settings_title_task_prop);
+        setDescription(TaskUIMessages.task_config_wizard_page_settings_descr_set_task);
 
         this.task = (TaskImpl) task;
         if (this.task != null) {
@@ -117,7 +119,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite formPanel = UIUtils.createControlGroup(composite, "Task type", task == null ? 1 : 2, GridData.FILL_BOTH, 0);
+            Composite formPanel = UIUtils.createControlGroup(composite, TaskUIMessages.task_config_wizard_page_task_label_task_type, task == null ? 1 : 2, GridData.FILL_BOTH, 0);
             formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             if (task == null) {
@@ -162,12 +164,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
 
             } else {
 
-                UIUtils.createControlLabel(formPanel, "Category");
+                UIUtils.createControlLabel(formPanel, TaskUIMessages.task_config_wizard_page_task_control_label_category);
                 Composite catPanel = UIUtils.createComposite(formPanel, 2);
                 UIUtils.createLabel(catPanel, task.getType().getCategory().getIcon());
                 UIUtils.createLabel(catPanel, task.getType().getCategory().getName());
 
-                UIUtils.createControlLabel(formPanel, "Type");
+                UIUtils.createControlLabel(formPanel, TaskUIMessages.task_config_wizard_page_task_control_label_type);
                 Composite typePanel = UIUtils.createComposite(formPanel, 2);
                 UIUtils.createLabel(typePanel, task.getType().getIcon());
                 UIUtils.createLabel(typePanel, task.getType().getName());
@@ -175,12 +177,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         }
 
         {
-            Composite formPanel = UIUtils.createControlGroup(composite, "Task info", 2, GridData.FILL_BOTH, 0);
+            Composite formPanel = UIUtils.createControlGroup(composite, TaskUIMessages.task_config_wizard_page_task_control_label_task_info, 2, GridData.FILL_BOTH, 0);
             formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             ModifyListener modifyListener = e -> updatePageCompletion();
 
-            taskLabelText = UIUtils.createLabelText(formPanel, "Name", task == null ? "" : CommonUtils.notEmpty(task.getName()), SWT.BORDER);
+            taskLabelText = UIUtils.createLabelText(formPanel, TaskUIMessages.task_config_wizard_page_task_text_label_name, task == null ? "" : CommonUtils.notEmpty(task.getName()), SWT.BORDER);
             if (taskSaved) {
                 taskLabelText.setEditable(false);
                 //taskLabelText.setEnabled(false);
@@ -190,7 +192,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 modifyListener.modifyText(e);
             });
 
-            UIUtils.createControlLabel(formPanel, "Description").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            UIUtils.createControlLabel(formPanel, TaskUIMessages.task_config_wizard_page_task_control_label_descr).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             taskDescriptionText = new Text(formPanel, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
             taskDescriptionText.setText(task == null ? "" : CommonUtils.notEmpty(task.getDescription()));
             taskDescriptionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -201,7 +203,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             });
 
             if (task != null && !CommonUtils.isEmpty(task.getId())) {
-                UIUtils.createLabelText(formPanel, "Task ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);
+                UIUtils.createLabelText(formPanel, TaskUIMessages.task_config_wizard_page_task_text_label_task_id, task.getId(), SWT.BORDER | SWT.READ_ONLY);
             }
 
             UIUtils.asyncExec(() -> (taskSaved ? taskDescriptionText : taskLabelText).setFocus());
