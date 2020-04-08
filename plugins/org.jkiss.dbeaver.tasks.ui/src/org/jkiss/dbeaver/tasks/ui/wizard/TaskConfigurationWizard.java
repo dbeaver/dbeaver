@@ -302,7 +302,7 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
             panel.setLayout(new GridLayout(horizontal ? (supportsVariables ? 3 : 2) : 1, false));
 
             if (supportsVariables) {
-                UIUtils.createDialogButton(panel, "Variables ...", new SelectionAdapter() {
+                UIUtils.createDialogButton(panel, TaskUIMessages.task_config_wizard_button_variables + " ...", new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         configureVariables();
@@ -310,13 +310,13 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
                 });
             }
 
-            saveAsTaskButton = UIUtils.createDialogButton(panel, "Save task", new SelectionAdapter() {
+            saveAsTaskButton = UIUtils.createDialogButton(panel, TaskUIMessages.task_config_wizard_button_save_task, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     saveTask();
                 }
             });
-            Link tasksLink = UIUtils.createLink(panel, "<a>Open Tasks view</a>", new SelectionAdapter() {
+            Link tasksLink = UIUtils.createLink(panel, "<a>" + TaskUIMessages.task_config_wizard_link_open_tasks_view + "</a>", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     try {
