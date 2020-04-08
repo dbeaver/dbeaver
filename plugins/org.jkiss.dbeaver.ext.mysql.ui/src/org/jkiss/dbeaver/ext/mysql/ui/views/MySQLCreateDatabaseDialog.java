@@ -90,7 +90,7 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
                 UIUtils.setComboSelection(collationCombo, collation.getName());
             }
         });
-        collationCombo.addModifyListener(e -> collation = charset.getCollation(collationCombo.getText()));
+        collationCombo.addModifyListener(e -> collation = charset == null ? null : charset.getCollation(collationCombo.getText()));
 
         return composite;
     }
