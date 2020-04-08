@@ -21,8 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.BitStringInlineEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
+import org.jkiss.dbeaver.ui.data.editors.BitStringInlineEditor;
 
 /**
  * Bit string value handler

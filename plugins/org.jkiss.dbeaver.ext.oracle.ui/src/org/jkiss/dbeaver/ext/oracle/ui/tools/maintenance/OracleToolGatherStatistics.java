@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 
 import java.util.Collection;
 import java.util.List;

@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -27,6 +25,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.sql.ResultSet;
 
 /**
  * DB2 Authorisations on Columns

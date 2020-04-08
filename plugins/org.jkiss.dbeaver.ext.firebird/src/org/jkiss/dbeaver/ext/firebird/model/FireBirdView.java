@@ -20,7 +20,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
 public class FireBirdView extends GenericView {
 

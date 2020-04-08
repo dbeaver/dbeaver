@@ -17,11 +17,7 @@
 package org.jkiss.dbeaver.bundle;
 
 import org.eclipse.core.runtime.Plugin;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.IOUtils;
 import org.osgi.framework.BundleContext;
-
-import java.io.*;
 
 /**
  * The activator class controls the plug-in life cycle

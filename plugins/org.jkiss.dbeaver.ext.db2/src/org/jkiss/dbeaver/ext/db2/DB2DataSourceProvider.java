@@ -17,9 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -30,6 +27,9 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DB2 DataSource provider ddd

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.registry.expressions;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 
 /**

@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.jkiss.code.NotNull;
 import org.jkiss.utils.CommonUtils;
 

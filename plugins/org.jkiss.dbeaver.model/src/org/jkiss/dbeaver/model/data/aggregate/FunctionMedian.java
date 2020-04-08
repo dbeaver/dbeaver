@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.model.data.aggregate;
 
 import org.jkiss.dbeaver.Log;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Median

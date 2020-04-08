@@ -1,9 +1,5 @@
 package org.jkiss.dbeaver.ext.exasol.model.security;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
@@ -15,6 +11,10 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ExasolSecurityPolicy implements DBPRefreshableObject, DBPSaveableObject {
 	

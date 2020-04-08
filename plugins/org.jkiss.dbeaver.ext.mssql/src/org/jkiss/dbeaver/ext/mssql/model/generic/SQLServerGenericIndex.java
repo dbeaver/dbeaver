@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;

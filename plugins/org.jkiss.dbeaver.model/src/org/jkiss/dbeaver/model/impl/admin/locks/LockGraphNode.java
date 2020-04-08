@@ -17,10 +17,10 @@
  */
 package org.jkiss.dbeaver.model.impl.admin.locks;
 
+import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 
 
 public class LockGraphNode  {

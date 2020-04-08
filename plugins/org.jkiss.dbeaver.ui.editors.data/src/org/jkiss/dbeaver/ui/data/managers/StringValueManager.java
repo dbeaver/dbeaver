@@ -23,10 +23,10 @@ import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.dialogs.TextViewDialog;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
-import org.jkiss.dbeaver.ui.data.dialogs.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 

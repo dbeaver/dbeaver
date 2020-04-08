@@ -21,12 +21,8 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

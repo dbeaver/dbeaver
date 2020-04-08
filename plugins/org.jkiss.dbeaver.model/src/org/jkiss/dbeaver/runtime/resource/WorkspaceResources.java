@@ -18,17 +18,20 @@
 
 package org.jkiss.dbeaver.runtime.resource;
 
-import java.nio.file.Path;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.resource.links.CreateLinkedFilesRunnable;
 import org.jkiss.dbeaver.runtime.resource.links.CreateLinkedFoldersRunnable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.nio.file.Path;
 
 public class WorkspaceResources {
 

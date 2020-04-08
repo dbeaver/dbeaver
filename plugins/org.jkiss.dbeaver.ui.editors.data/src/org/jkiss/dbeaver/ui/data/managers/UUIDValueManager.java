@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.TextViewDialog;
+import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 
 import java.util.UUID;
 

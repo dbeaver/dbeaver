@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.editors;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -28,22 +27,23 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
-import org.jkiss.dbeaver.ext.mysql.ui.controls.PrivilegeTableControl;
-import org.jkiss.dbeaver.ext.mysql.ui.config.MySQLCommandGrantPrivilege;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.*;
+import org.jkiss.dbeaver.ext.mysql.ui.config.MySQLCommandGrantPrivilege;
+import org.jkiss.dbeaver.ext.mysql.ui.controls.PrivilegeTableControl;
+import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * MySQLUserEditorPrivileges

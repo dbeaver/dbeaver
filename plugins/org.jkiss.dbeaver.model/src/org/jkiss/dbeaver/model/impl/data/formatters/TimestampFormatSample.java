@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.model.impl.data.formatters;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
 
 public class TimestampFormatSample implements DBDDataFormatterSample {
 

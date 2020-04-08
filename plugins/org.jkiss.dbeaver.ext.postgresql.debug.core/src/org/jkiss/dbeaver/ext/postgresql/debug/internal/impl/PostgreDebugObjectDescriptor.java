@@ -19,10 +19,10 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
+import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
 
 @SuppressWarnings("nls")
 public class PostgreDebugObjectDescriptor implements DBGObjectDescriptor {

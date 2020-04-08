@@ -19,10 +19,10 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
+import org.jkiss.dbeaver.debug.DBGSessionInfo;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.jkiss.dbeaver.debug.DBGSessionInfo;
 
 @SuppressWarnings("nls")
 public class PostgreDebugSessionInfo implements DBGSessionInfo {

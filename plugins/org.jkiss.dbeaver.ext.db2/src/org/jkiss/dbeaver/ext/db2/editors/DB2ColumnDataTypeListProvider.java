@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.ext.db2.editors;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.util.ArrayList;
 import java.util.List;

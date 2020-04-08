@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.model.runtime;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
 import java.util.List;

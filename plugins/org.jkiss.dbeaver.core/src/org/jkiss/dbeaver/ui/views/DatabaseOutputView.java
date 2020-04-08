@@ -20,7 +20,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 import java.io.PrintWriter;
 import java.util.HashMap;

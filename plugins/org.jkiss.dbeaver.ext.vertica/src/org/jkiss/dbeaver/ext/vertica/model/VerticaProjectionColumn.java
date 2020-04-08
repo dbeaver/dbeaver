@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.vertica.VerticaUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -25,7 +24,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * VerticaProjectionColumn

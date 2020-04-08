@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.sqlite;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteObjectType;
 import org.jkiss.dbeaver.model.DBUtils;

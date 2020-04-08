@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.lang;
 
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.code.NotNull;
 
 /**

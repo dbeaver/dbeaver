@@ -1,6 +1,5 @@
 package org.jkiss.dbeaver.ext.greenplum.model;
 
-import org.jkiss.dbeaver.ext.greenplum.model.GreenplumDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.junit.Test;

@@ -24,7 +24,6 @@ import org.eclipse.gef.editpolicies.AbstractEditPolicy;
 import org.eclipse.gef.editpolicies.ContainerEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.GroupRequest;
-import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
 import org.jkiss.dbeaver.ext.erd.command.NoteCreateCommand;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;

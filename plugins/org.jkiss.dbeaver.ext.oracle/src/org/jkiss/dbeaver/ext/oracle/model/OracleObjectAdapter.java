@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;

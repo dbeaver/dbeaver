@@ -20,7 +20,6 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 

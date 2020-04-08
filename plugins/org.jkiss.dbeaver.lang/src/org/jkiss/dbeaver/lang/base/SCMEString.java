@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.lang.base;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.lang.SCMCompositeNode;
-import org.jkiss.dbeaver.lang.SCMGroupNode;
 import org.jkiss.dbeaver.lang.SCMLeafNode;
 import org.jkiss.dbeaver.lang.SCMSourceScanner;
 

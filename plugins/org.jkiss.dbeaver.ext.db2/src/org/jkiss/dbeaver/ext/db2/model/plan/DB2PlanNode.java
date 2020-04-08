@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 
 import java.util.ArrayList;

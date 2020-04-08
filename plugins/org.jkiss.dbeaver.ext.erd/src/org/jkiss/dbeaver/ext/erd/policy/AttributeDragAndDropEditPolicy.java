@@ -20,7 +20,6 @@ import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.GraphicalEditPolicy;
-import org.jkiss.dbeaver.ext.erd.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.ext.erd.part.AttributePart;
 
 /**

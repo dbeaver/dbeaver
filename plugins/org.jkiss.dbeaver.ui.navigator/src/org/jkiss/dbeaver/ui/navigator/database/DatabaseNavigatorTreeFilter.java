@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 
-import java.util.Collections;
-
 /**
  * Default database navigator filter
  */

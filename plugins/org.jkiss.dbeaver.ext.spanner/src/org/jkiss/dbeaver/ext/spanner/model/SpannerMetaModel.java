@@ -16,17 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.spanner.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
-import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**

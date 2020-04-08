@@ -37,7 +37,6 @@ import org.jfree.chart.swt.ChartComposite;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.IOException;
 

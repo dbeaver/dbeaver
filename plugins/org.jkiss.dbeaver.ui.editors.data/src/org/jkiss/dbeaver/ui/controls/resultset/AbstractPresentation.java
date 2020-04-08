@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.util.IPropertyChangeListener;

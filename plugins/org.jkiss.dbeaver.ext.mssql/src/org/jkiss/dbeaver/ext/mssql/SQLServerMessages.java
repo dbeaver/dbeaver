@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class SQLServerMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.SQLServerMessages"; //$NON-NLS-1$

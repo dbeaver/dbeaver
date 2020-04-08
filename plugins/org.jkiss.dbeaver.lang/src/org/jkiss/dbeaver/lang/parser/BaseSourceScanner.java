@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.lang.parser;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.rules.*;
+import org.eclipse.jface.text.rules.IRule;
+import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.lang.SCMSourceScanner;
 import org.jkiss.dbeaver.lang.SCMSourceText;
-import org.jkiss.dbeaver.lang.SCMToken;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Collection;

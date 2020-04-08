@@ -16,18 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import java.util.List;
-
-import org.eclipse.draw2d.ConnectionLayer;
-import org.eclipse.draw2d.FreeformLayer;
-import org.eclipse.draw2d.GridLayout;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.ShortestPathConnectionRouter;
+import org.eclipse.draw2d.*;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphNode;
+
+import java.util.List;
 
 public class LockGraphEditPart extends AbstractGraphicalEditPart {
 

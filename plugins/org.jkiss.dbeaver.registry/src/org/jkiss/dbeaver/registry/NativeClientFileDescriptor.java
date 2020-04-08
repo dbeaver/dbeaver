@@ -18,9 +18,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-
-import java.io.File;
 
 /**
  * NativeClientDistributionDescriptor

@@ -1,8 +1,5 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
-import java.math.BigDecimal;
-import java.sql.Date;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -11,6 +8,9 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.math.BigDecimal;
+import java.sql.Date;
 
 public class ExasolPriority implements DBPRefreshableObject, DBPNamedObject2, DBPSaveableObject {
 

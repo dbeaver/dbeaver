@@ -27,9 +27,9 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
+import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
-import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 
 public class LockGraphicalView extends ViewPart {
 

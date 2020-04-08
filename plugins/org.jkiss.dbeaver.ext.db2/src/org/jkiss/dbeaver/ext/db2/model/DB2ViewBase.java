@@ -17,11 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -39,6 +34,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Base class for view-like objects (Views, MQT)

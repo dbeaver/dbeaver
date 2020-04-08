@@ -17,18 +17,10 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.security;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolCurrentUserPrivileges;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
+import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -37,6 +29,10 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public abstract class ExasolGrantee
 		implements DBPSaveableObject, DBPRefreshableObject {

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.navigator.actions;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;

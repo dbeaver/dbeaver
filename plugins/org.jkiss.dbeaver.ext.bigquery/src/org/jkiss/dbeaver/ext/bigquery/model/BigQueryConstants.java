@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.bigquery.model;
 
-import org.jkiss.dbeaver.model.DBConstants;
-
 /**
  * Snowflake constants
  */

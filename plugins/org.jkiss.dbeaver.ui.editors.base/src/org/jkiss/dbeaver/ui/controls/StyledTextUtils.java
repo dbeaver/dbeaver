@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;

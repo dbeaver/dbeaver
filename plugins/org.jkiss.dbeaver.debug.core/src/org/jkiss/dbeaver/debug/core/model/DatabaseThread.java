@@ -18,9 +18,6 @@
 
 package org.jkiss.dbeaver.debug.core.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
@@ -33,6 +30,9 @@ import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Delegates mostly everything to its debug target

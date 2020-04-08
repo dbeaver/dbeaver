@@ -18,8 +18,6 @@
 
 package org.jkiss.dbeaver.debug.core.breakpoints;
 
-import java.util.Map;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.Breakpoint;
@@ -29,6 +27,8 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.Map;
 
 public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoint {
 

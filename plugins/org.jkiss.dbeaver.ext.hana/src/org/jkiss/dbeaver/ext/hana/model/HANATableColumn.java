@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -30,6 +28,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.SQLException;
 
 public class HANATableColumn extends GenericTableColumn implements DBPNamedObject2, GisAttribute {
 

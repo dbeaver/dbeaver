@@ -28,9 +28,9 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLScriptStatusDialog;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.GenerateMultiSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLScriptProgressListener;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLScriptStatusDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;

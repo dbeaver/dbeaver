@@ -22,9 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
 import org.jkiss.dbeaver.ui.data.editors.BitInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.NumberInlineEditor;
-import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
 
 /**
  * Number value handler

@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.lang;
 
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 /**
  * Source code node

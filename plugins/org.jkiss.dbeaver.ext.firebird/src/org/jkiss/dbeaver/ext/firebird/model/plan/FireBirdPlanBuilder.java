@@ -16,10 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Build tree of plan nodes.

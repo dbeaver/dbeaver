@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.ui;
 
-import java.util.Locale;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -32,6 +30,8 @@ import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+
+import java.util.Locale;
 
 
 public class ExasolPriorityGroupDialog extends BaseDialog {

@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.TextViewDialog;
+import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 
 /**
  * Default value handler

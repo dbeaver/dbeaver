@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.rdb.*;
-import org.jkiss.dbeaver.model.DBIcon;
 
 /**
  * Relational database object type.

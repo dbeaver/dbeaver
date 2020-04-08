@@ -17,13 +17,13 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedValueObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DB2 EXPLAIN_ARGUMENT table

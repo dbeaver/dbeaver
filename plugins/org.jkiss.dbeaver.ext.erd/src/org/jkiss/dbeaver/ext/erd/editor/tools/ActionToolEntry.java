@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.erd.editor.tools;
 import org.eclipse.gef.Tool;
 import org.eclipse.gef.palette.PaletteEntry;
 import org.eclipse.gef.palette.ToolEntry;
-import org.eclipse.gef.tools.AbstractTool;
 import org.eclipse.gef.tools.SelectionTool;
 import org.eclipse.jface.action.IAction;
 

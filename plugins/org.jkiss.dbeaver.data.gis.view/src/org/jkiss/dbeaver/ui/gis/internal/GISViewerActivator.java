@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ui.gis.internal;
 
 import org.eclipse.core.runtime.Plugin;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 import java.io.InputStream;

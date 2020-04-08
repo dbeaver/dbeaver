@@ -17,35 +17,16 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataType;
-import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
-import org.jkiss.dbeaver.ext.db2.model.DB2Package;
-import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
-import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
-import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
-import org.jkiss.dbeaver.ext.db2.model.DB2View;
-import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.DBIcon;
 
 import java.util.HashMap;
 import java.util.Map;

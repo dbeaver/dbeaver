@@ -18,7 +18,9 @@
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;

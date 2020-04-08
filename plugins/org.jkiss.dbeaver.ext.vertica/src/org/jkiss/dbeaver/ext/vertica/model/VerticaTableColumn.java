@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;

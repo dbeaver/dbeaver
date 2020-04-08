@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.File;

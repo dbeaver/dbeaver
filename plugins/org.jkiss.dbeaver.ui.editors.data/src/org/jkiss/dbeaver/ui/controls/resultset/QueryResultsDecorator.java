@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 /**

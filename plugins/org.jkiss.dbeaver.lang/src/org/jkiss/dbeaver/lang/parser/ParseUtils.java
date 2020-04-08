@@ -17,8 +17,9 @@
 package org.jkiss.dbeaver.lang.parser;
 
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.rules.IToken;
-import org.jkiss.dbeaver.lang.*;
+import org.jkiss.dbeaver.lang.SCMRoot;
+import org.jkiss.dbeaver.lang.SCMSourceParser;
+import org.jkiss.dbeaver.lang.SCMSourceScanner;
 import org.jkiss.dbeaver.lang.sql.SQLNodeParser;
 
 /**

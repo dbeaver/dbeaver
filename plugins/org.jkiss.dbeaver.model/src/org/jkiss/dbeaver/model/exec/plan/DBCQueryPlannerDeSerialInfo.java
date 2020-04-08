@@ -19,9 +19,8 @@
 package org.jkiss.dbeaver.model.exec.plan;
 
 
-import org.jkiss.dbeaver.model.DBPDataSource;
-
 import com.google.gson.JsonObject;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 public interface DBCQueryPlannerDeSerialInfo<NODE extends DBCPlanNode> {
     

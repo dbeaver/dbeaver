@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 

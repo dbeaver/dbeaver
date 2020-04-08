@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.db2.model.app;
 
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 

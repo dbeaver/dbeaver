@@ -22,13 +22,8 @@ import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGControllerFactory;
 import org.jkiss.dbeaver.debug.DBGResolver;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugControllerFactory;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 
 public class PostgreDebugAdapterFactory implements IAdapterFactory {
 

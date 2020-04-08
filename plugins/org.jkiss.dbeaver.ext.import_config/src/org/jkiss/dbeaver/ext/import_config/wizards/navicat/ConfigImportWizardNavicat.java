@@ -17,14 +17,10 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards.navicat;
 
-import java.io.File;
-
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizard;
-import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
-import org.jkiss.dbeaver.ext.import_config.wizards.custom.ConfigImportWizardPageCustomConnections;
-import org.jkiss.dbeaver.ext.import_config.wizards.custom.ConfigImportWizardPageCustomDriver;
-import org.jkiss.dbeaver.ext.import_config.wizards.custom.ConfigImportWizardPageCustomSettings;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+
+import java.io.File;
 
 public class ConfigImportWizardNavicat extends ConfigImportWizard {
 	

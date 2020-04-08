@@ -1,16 +1,15 @@
 package org.jkiss.dbeaver.model.impl.plan;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerDeSerialInfo;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class ExecutionPlanDeserializer<NODE extends DBCPlanNode> {
 

@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.acl;
 
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeOwner;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeType;

@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.erd.command.AssociationCreateCommand;
 import org.jkiss.dbeaver.ext.erd.command.AssociationReconnectSourceCommand;
 import org.jkiss.dbeaver.ext.erd.command.AssociationReconnectTargetCommand;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
 
 /**

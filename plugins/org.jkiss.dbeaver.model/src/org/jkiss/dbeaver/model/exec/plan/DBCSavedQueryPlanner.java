@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.exec.plan;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**

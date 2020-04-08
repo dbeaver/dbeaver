@@ -19,10 +19,8 @@
 package org.jkiss.dbeaver.debug;
 
 import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.internal.DebugMessages;
 import org.jkiss.dbeaver.debug.jdbc.DBGJDBCSession;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.messages.ModelMessages;

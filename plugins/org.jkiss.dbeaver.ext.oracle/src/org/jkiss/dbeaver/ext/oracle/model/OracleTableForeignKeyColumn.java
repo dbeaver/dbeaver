@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
 import java.util.List;
 

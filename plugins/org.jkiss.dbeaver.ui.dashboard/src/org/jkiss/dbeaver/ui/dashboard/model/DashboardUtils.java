@@ -20,24 +20,9 @@ import org.jfree.chart.axis.NumberTickUnitSource;
 import org.jfree.chart.axis.StandardTickUnitSource;
 import org.jfree.chart.axis.TickUnitSource;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ByteNumberFormat;
-import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * DashboardUtils

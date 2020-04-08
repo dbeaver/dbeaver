@@ -13,7 +13,6 @@ package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.utils.CommonUtils;
 
 public class SQLContextTypeDriver extends SQLContextTypeAbstract {
 

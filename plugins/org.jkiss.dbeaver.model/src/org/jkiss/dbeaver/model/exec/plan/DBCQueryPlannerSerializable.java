@@ -18,12 +18,12 @@
 
 package org.jkiss.dbeaver.model.exec.plan;
 
+import org.jkiss.code.NotNull;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-
-import org.jkiss.code.NotNull;
 
 public interface DBCQueryPlannerSerializable {
 

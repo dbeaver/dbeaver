@@ -24,7 +24,6 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;

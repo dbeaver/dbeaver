@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.navigator;
 
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
-
 /**
  * NavigatorPreferences
  */

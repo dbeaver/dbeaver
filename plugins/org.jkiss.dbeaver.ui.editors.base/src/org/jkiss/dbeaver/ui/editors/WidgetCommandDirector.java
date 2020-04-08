@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 /**
  * Command director
