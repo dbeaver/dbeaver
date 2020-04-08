@@ -96,11 +96,65 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
         String content = buffer.getString();
         if (!indentation.isEmpty() && content.indexOf('\n') != -1) {
             StringBuilder result = new StringBuilder();
+            
+            //how many places
+            int nCountPlace = 0;            
+            for (int i = 0; i < variables.length; i++) {
+              nCountPlace = nCountPlace + variables[i].getOffsets().length;
+            };
+            
+            //fill array
+            int aVarOffset[][] = new int[nCountPlace][3];
+            nCountPlace = 0;
+            for (int i = 0; i < variables.length; i++) {
+              int[] aOffsets = variables[i].getOffsets();
+              for (int j = 0; j < aOffsets.length; j++) {
+                aVarOffset[nCountPlace][0] = aOffsets[j];
+                aVarOffset[nCountPlace][1] = i;
+                aVarOffset[nCountPlace][2] = aOffsets[j];
+                nCountPlace = nCountPlace + 1; 
+              };
+            };
+             
+            //sort
+            for (int i = 0; i < nCountPlace - 1; i++) {
+              for (int j = i+1; j < nCountPlace; j++) {
+                if (aVarOffset[i][0] > aVarOffset[j][0]) {
+                  int tmp[] = aVarOffset[i];
+                  aVarOffset[i] = aVarOffset[j];
+                  aVarOffset[j] = tmp;
+                };
+              };
+            };
+
+            int iPlace = 0;
+            int iSpaceLen = indentation.length();
+            
             for (int i = 0; i < content.length(); i++) {
                 char c = content.charAt(i);
                 result.append(c);
-                if (c == '\n') result.append(indentation);
+                if (c == '\n') {
+                  //skip 
+                  while (iPlace < nCountPlace && i > aVarOffset[iPlace][0]) iPlace++;
+                  //move
+                  for (int j = iPlace; j < nCountPlace; j++)  aVarOffset[j][2] = aVarOffset[j][2] + iSpaceLen;
+                  result.append(indentation);
+                }
             }
+
+            //collect back
+            for (int i = 0; i < variables.length; i++) {
+              int[] aOffsets = variables[i].getOffsets();
+              int iInd = 0;
+              for (int j = 0; j < nCountPlace; j++) {
+                if (aVarOffset[j][1] == i) {
+                  aOffsets[iInd] = aVarOffset[j][2];
+                  iInd++;
+                };
+              };
+            };
+            
+            
             buffer.setContent(result.toString(), variables);
         }
     }
@@ -122,7 +176,7 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
         return VAR_ORDER.length + 1;
     }
 */
-
+ 
     SQLVariable getTemplateVariable(String name)
     {
         SQLVariable variable = variables.get(name);
