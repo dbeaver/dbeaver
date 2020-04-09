@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.tasks.ui.wizard;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.Log;
@@ -91,7 +93,7 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
                 title += " (" + getWizard().getCurrentTask().getName() + ")";
             }
             setTitle(title);
-            setDescription(TaskUIMessages.task_config_wizard_page_settings_config + " " + curTaskType.getName() + " " + TaskUIMessages.task_config_wizard_page_settings_settings);
+            setDescription(NLS.bind(TaskUIMessages.task_config_wizard_page_settings_config,curTaskType.getName()));
         }
         setPageComplete(determinePageCompletion());
     }

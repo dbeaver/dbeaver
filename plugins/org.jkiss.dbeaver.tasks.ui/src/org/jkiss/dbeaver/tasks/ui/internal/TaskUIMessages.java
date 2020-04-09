@@ -34,7 +34,6 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_page_settings_title_task_prop;
 	public static String task_config_wizard_page_settings_descr_set_task;
 	public static String task_config_wizard_page_settings_config;
-	public static String task_config_wizard_page_settings_settings;
 	
 	public static String task_config_wizard_page_task_title_new_task_prop;
 	public static String task_config_wizard_page_task_label_task_type;
