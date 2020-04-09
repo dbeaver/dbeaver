@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.ext.test.tools;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 
 public class IconRenamer {
 
