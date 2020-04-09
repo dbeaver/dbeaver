@@ -1,12 +1,12 @@
 package org.jkiss.dbeaver.ext.test.swtbot;
 
 
+import static org.junit.Assert.assertTrue;
+
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertTrue;
 
 public class SWTbotTest {
     private static SWTWorkbenchBot bot;
