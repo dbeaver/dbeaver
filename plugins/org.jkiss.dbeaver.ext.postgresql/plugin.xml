@@ -289,9 +289,9 @@
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
                     <!-- Postgis -->
-                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/waffle/waffle-jna.jar" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/waffle/caffeine.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" optional="true" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/waffle/waffle-jna.jar" optional="true" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/waffle/caffeine.jar" optional="true" bundle="drivers.postgresql"/>
 
                     <parameter name="serverType" value="postgresql"/>
                     <property name="loginTimeout" value="20"/>
@@ -340,9 +340,9 @@
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/waffle/waffle-jna.jar" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/waffle/caffeine.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" optional="true" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/waffle/waffle-jna.jar" optional="true" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/waffle/caffeine.jar" optional="true" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="timescale"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
