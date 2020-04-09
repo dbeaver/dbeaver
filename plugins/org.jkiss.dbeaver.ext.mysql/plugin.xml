@@ -236,6 +236,10 @@
                     promoted="1"
                     categories="sql">
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[2.4.3]" bundle="!drivers.mariadb"/>
+
+                    <file type="license" path="drivers/mariadb/LICENSE.txt" bundle="drivers.mariadb"/>
+                    <file type="jar" path="drivers/mariadb/mariadb-java-client.jar" bundle="drivers.mariadb"/>
+
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
