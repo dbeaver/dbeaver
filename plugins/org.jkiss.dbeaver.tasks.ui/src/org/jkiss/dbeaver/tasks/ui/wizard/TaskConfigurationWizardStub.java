@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -39,7 +40,7 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard {
 
     @Override
     protected String getDefaultWindowTitle() {
-        return "Create a task";
+        return TaskUIMessages.task_config_wizard_stub_title_create_task;
     }
 
     @Override
@@ -99,7 +100,7 @@ class TaskConfigurationWizardStub extends TaskConfigurationWizard {
     {
 
         protected TaskConfigurationVoidPage() {
-            super("Void page");
+            super(TaskUIMessages.task_config_wizard_stub_page_name_void);
         }
 
         @Override
