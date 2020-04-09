@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.tasks.ui.view;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIBundle;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -77,8 +79,9 @@ public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdat
                     //element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.TREE_TASK));
                     break;
             }
-            element.setText("Group by " + groupBy.name());
-            element.setTooltip("Group tasks by " + groupBy.name());
+            String commandName = Platform.getResourceBundle(Platform.getBundle(TaskUIBundle.BUDLE_ID)).getString("command.org.jkiss.dbeaver.task.group." + groupBy.name() + ".name");
+            element.setText(commandName);
+            element.setTooltip(commandName);
         }
     }
 
