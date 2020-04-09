@@ -464,7 +464,7 @@
                     propertiesURL="https://www.sqlite.org/pragma.html"
                     embedded="true"
                     anonymous="true"
-                    description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)"
+                    description="SQLite JDBC driver"
                     promoted="1"
                     categories="sql,embedded">
                     <replace provider="generic" driver="sqlite_zentus"/>
