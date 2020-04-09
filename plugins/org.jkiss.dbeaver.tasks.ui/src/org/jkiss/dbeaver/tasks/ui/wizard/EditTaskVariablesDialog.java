@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -49,7 +50,7 @@ public class EditTaskVariablesDialog extends StatusDialog {
 
     public EditTaskVariablesDialog(Shell shell, Map<String, Object> variables) {
         super(shell);
-        setTitle("Task variables");
+        setTitle(TaskUIMessages.edit_task_variabl_dialog_title_task_variables);
 
         this.variables = new LinkedHashMap<>(variables);
     }
@@ -85,10 +86,10 @@ public class EditTaskVariablesDialog extends StatusDialog {
             variablesTable.setHeaderVisible(true);
             variablesTable.setLinesVisible(!UIStyles.isDarkTheme());
 
-            final TableColumn nameColumn = UIUtils.createTableColumn(variablesTable, SWT.LEFT, "Variable");
+            final TableColumn nameColumn = UIUtils.createTableColumn(variablesTable, SWT.LEFT, TaskUIMessages.edit_task_variabl_dialog_column_variable);
             nameColumn.addListener(SWT.Selection, new TableColumnSortListener(variablesTable, 1));
             nameColumn.setWidth(100);
-            final TableColumn valueColumn = UIUtils.createTableColumn(variablesTable, SWT.LEFT, "Value");
+            final TableColumn valueColumn = UIUtils.createTableColumn(variablesTable, SWT.LEFT, TaskUIMessages.edit_task_variabl_dialog_column_value);
             valueColumn.setWidth(300);
 
             final CustomTableEditor tableEditor = new CustomTableEditor(variablesTable) {
