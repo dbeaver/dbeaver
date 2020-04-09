@@ -36,8 +36,16 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_page_settings_config;
 	public static String task_config_wizard_page_settings_settings;
 	
+	public static String task_config_wizard_page_task_title_new_task_prop;
+	public static String task_config_wizard_page_task_label_task_type;
+	public static String task_config_wizard_page_task_control_label_category;
+	public static String task_config_wizard_page_task_control_label_type;
+	public static String task_config_wizard_page_task_control_label_task_info;
+	public static String task_config_wizard_page_task_text_label_name;
+	public static String task_config_wizard_page_task_control_label_descr;
+	public static String task_config_wizard_page_task_text_label_task_id;
 	
-
+	
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, TaskUIMessages.class);
