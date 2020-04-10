@@ -718,7 +718,8 @@
                     category="Hadoop"
                     categories="hadoop">
 
-                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar"/>
+                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar" bundle="!drivers.hive"/>
+                    <file type="jar" path="drivers/hive/hive-jdbc-uber.jar" bundle="drivers.hive"/>
 
                     <parameter name="supports-limits" value="false"/>
                     <parameter name="supports-references" value="false"/>
