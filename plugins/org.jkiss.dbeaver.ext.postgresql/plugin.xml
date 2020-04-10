@@ -296,6 +296,8 @@
                     <parameter name="serverType" value="postgresql"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
+
+                    <parameter name="iam.enabled" value="true"/>
                 </driver>
                 <!-- Bad driver: it must be declared in generic provider -->
                 <driver
