@@ -68,7 +68,10 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         DBPDataSourceContainer activeDataSource = getSite().getActiveDataSource();
 
         allAuthModels = DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource);
-        allAuthModels.sort(Comparator.comparing(DBPAuthModelDescriptor::getName));
+        allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
+            DBAAuthDatabaseNative.ID.equals(o1.getId()) ? -1 :
+                (DBAAuthDatabaseNative.ID.equals(o2.getId()) ? 1 :
+                    o1.getName().compareTo(o2.getName())));
         String dsModelId = activeDataSource.getConnectionConfiguration().getAuthModelId();
         if (dsModelId != null) {
             Optional<? extends DBPAuthModelDescriptor> dsModel = allAuthModels.stream().filter(o -> o.getId().equals(dsModelId)).findFirst();
@@ -107,9 +110,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
     protected void showAuthModelSettings() {
         TabFolder parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, TabFolder.class);
-        if (parentFolder != null) {
-            parentFolder.setRedraw(false);
-        }
+        modelConfigPlaceholder.setRedraw(false);
 
         UIUtils.disposeChildControls(modelConfigPlaceholder);
 
@@ -165,11 +166,9 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             }
         }
 
+        modelConfigPlaceholder.setRedraw(true);
         if (modelConfigPlaceholder.getSize().x > 0 && parentFolder != null) {
             parentFolder.layout(true, true);
-        }
-        if (parentFolder != null) {
-            parentFolder.setRedraw(true);
         }
     }
 
