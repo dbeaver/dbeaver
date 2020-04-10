@@ -2,8 +2,8 @@ package org.jkiss.dbeaver.ext.snowflake.views;
 
 import org.eclipse.osgi.util.NLS;
 
-public class SnowlfakeMessages extends NLS {
-	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.snowflake.views.SnowlfakeResources"; //$NON-NLS-1$
+public class SnowflakeMessages extends NLS {
+	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.snowflake.views.SnowflakeResources"; //$NON-NLS-1$
 	public static String label_authenticator;
 	public static String label_click_on_test_connection;
 	public static String label_connection;
@@ -18,9 +18,9 @@ public class SnowlfakeMessages extends NLS {
 	public static String label_warehouse;
 	static {
 		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, SnowlfakeMessages.class);
+		NLS.initializeMessages(BUNDLE_NAME, SnowflakeMessages.class);
 	}
 
-	private SnowlfakeMessages() {
+	private SnowflakeMessages() {
 	}
 }
