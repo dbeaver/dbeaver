@@ -51,6 +51,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected ToolBar userManagementToolbar;
     private VariablesHintLabel variablesHintLabel;
 
+    private ImageDescriptor curImageDescriptor;
+
     public IDataSourceConnectionEditorSite getSite() {
         return site;
     }
@@ -184,8 +186,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     @Override
     public void setImageDescriptor(ImageDescriptor desc) {
-        /*if (getImage() == null) */{
+        if (curImageDescriptor != desc) {
             super.setImageDescriptor(desc);
+            curImageDescriptor = desc;
         }
     }
 
