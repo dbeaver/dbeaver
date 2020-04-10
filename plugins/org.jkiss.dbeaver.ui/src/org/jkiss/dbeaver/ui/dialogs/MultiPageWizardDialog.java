@@ -353,13 +353,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     public void updateTitleBar() {
-        setTitleImage(getCurrentPage().getImage());
+        //setTitleImage(getCurrentPage().getImage());
     }
 
     @Override
     public void updateWindowTitle() {
         getShell().setText(getWizard().getWindowTitle());
-        getShell().setImage(getWizard().getDefaultPageImage());//DBeaverIcons.getImage(activeDataSource.getObjectImage()));
+        // Do not update dialog icon. It can be disposed in the page and this will break connection dialog
+        //getShell().setImage(getWizard().getDefaultPageImage());//DBeaverIcons.getImage(activeDataSource.getObjectImage()));
 
         updateMessage();
     }
