@@ -51,6 +51,32 @@ public class TaskUIMessages extends NLS {
 	public static String edit_task_variabl_dialog_column_variable;
 	public static String edit_task_variabl_dialog_column_value;
 	
+	public static String db_tasks_selector_dialog;
+	
+	public static String db_tasks_tree_text_tasks_type;
+	public static String db_tasks_tree_column_controller_tasks;
+	public static String db_tasks_tree_column_controller_add_name;
+	public static String db_tasks_tree_column_controller_add_descr_name;
+	public static String db_tasks_tree_column_controller_add_name_created;
+	public static String db_tasks_tree_column_controller_add_descr_create_time;
+	public static String db_tasks_tree_column_controller_add_name_last_run;
+	public static String db_tasks_tree_column_controller_add_descr_start_time;
+	public static String db_tasks_tree_column_controller_add_name_last_duration;
+	public static String db_tasks_tree_column_controller_add_descr_run_duration;
+	public static String db_tasks_tree_column_controller_add_name_last_result;
+	public static String db_tasks_tree_column_controller_add_descr_last_result;
+	public static String db_tasks_tree_column_controller_add_name_next_run;
+	public static String db_tasks_tree_column_controller_add_descr_next_run;
+	public static String db_tasks_tree_column_controller_add_name_description;
+	public static String db_tasks_tree_column_controller_add_descr_task_description;
+	public static String db_tasks_tree_column_controller_add_name_type;
+	public static String db_tasks_tree_column_controller_add_descr_task_type;
+	public static String db_tasks_tree_column_controller_add_name_category;
+	public static String db_tasks_tree_column_controller_add_descr_category;
+	public static String db_tasks_tree_column_controller_add_name_project;
+	public static String db_tasks_tree_column_controller_add_descr_project;
+	
+	
 	
 	static {
 		// initialize resource bundle
