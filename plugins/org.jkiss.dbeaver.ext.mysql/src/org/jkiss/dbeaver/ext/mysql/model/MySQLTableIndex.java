@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * MySQLTableIndex
  */
-public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> implements DBPNamedObject2
+public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> implements DBPNamedObject2//, DBPOverloadedObject
 {
     private boolean nonUnique;
     private String additionalInfo;
@@ -163,4 +163,14 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
     public boolean isPrimary() {
         return MySQLConstants.INDEX_PRIMARY.equals(getName());
     }
+
+/*
+    @NotNull
+    @Override
+    public String getOverloadedName() {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getTable(),
+            this);
+    }
+*/
 }
