@@ -609,8 +609,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             syntaxManager.init(dataSource);
         }
         SQLWordPartDetector wordDetector = new SQLWordPartDetector(new Document(contents), syntaxManager, position);
-        final String word = wordDetector.getFullWord().toLowerCase(Locale.ENGLISH);
+        String word = wordDetector.getFullWord();
         final List<IContentProposal> proposals = new ArrayList<>();
+
+        if (CommonUtils.isEmptyTrimmed(word)) word = contents;
+        word = word.toLowerCase(Locale.ENGLISH);
+        String attrName = word;
 
         final DBRRunnableWithProgress reader = monitor -> {
             DBDAttributeBinding[] attributes = viewer.getModel().getAttributes();
@@ -619,7 +623,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     continue;
                 }
                 final String name = DBUtils.getUnQuotedIdentifier(attribute.getDataSource(), attribute.getName());
-                if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
+                if (CommonUtils.isEmpty(attrName) || name.toLowerCase(Locale.ENGLISH).startsWith(attrName)) {
                     final String content = DBUtils.getQuotedIdentifier(attribute) + " ";
                     proposals.add(
                         new ContentProposalExt(
@@ -638,7 +642,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         String[] filterKeywords = { SQLConstants.KEYWORD_AND, SQLConstants.KEYWORD_OR, SQLConstants.KEYWORD_IS, SQLConstants.KEYWORD_NOT, SQLConstants.KEYWORD_NULL };
 
         for (String kw : filterKeywords) {
-            if (word.isEmpty() || kw.startsWith(word.toUpperCase())) {
+            if (attrName.isEmpty() || kw.startsWith(attrName.toUpperCase())) {
                 if (dataSource != null) {
                     kw = dataSource.getSQLDialect().storesUnquotedCase().transform(kw);
                 }
