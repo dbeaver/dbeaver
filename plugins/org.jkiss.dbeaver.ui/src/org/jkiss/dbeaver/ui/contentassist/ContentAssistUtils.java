@@ -31,7 +31,7 @@ public class ContentAssistUtils {
             contentAdapter,
             provider,
             keyStroke,
-            autoActivation ? ".abcdefghijklmnopqrstuvwxyz_$([{".toCharArray() : null);
+            autoActivation ? ".abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$([{".toCharArray() : null);
         boolean isSingleValueAdapter = contentAdapter instanceof CComboContentAdapter || contentAdapter instanceof ComboContentAdapter;
         proposalAdapter.setProposalAcceptanceStyle(isSingleValueAdapter ? ContentProposalAdapter.PROPOSAL_REPLACE : ContentProposalAdapter.PROPOSAL_INSERT);
         proposalAdapter.setPopupSize(new Point(300, 200));
