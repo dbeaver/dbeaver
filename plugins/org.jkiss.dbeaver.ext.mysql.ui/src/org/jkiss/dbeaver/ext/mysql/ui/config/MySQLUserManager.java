@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLScriptCommand;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -107,6 +109,17 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         protected CommandCreateUser(MySQLUser user)
         {
             super(user, MySQLUIMessages.edit_user_manager_command_create_user);
+        }
+
+        @Override
+        public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+            if (CommonUtils.isEmpty(getObject().getUserName())) {
+                throw new DBException("Can't create user with empty name");
+            }
+            if (CommonUtils.isEmpty(getObject().getHost())) {
+                throw new DBException("Can't create user with empty host name");
+            }
+            super.validateCommand(monitor, options);
         }
     }
 

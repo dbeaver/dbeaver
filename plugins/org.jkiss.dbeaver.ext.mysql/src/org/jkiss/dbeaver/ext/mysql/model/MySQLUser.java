@@ -86,7 +86,7 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
             this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
         } else {
             this.persisted = false;
-            this.userName = "user";
+            this.userName = "";
             this.host = "%";
         }
     }
