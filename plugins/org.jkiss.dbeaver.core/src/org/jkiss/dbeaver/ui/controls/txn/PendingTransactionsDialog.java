@@ -90,7 +90,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 } else {
                     selectedContext = null;
                 }
-                boolean hasTransaction = selectedContext != null && QMUtils.isTransactionActive(selectedContext);
+                boolean hasTransaction = selectedContext != null && QMUtils.isTransactionActive(selectedContext, false);
                 commitButton.setEnabled(hasTransaction);
                 rollbackButton.setEnabled(hasTransaction);
                 logViewer.setFilter(createContextFilter(selectedContext));
@@ -168,7 +168,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 }
                 List<DBCExecutionContext> txnContexts = new ArrayList<>();
                 for (DBCExecutionContext context : allContexts) {
-                    if (showAllContexts || QMUtils.isTransactionActive(context)) {
+                    if (showAllContexts || QMUtils.isTransactionActive(context, false)) {
                         txnContexts.add(context);
                     }
                 }
