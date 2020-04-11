@@ -467,7 +467,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         }
         if (SQLConstants.KEYWORD_SELECT.equals(firstKeyword) ||
             "SHOW".equals(firstKeyword) ||
-            "USE".equals(firstKeyword))
+            "USE".equals(firstKeyword) ||
+            "SET".equals(firstKeyword))
         {
             return false;
         }
