@@ -180,7 +180,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             activeInlineEditor != null &&
             activeInlineEditor.getControl() != null &&
             !activeInlineEditor.getControl().isDisposed() &&
-            !getController().getModel().isAttributeReadOnly(getCurrentAttribute());
+            !getController().getModel().isAttributeReadOnly(getCurrentAttribute()) &&
+            !(activeInlineEditor instanceof IValueEditorStandalone);
         return hasActiveEditor;
     }
 
