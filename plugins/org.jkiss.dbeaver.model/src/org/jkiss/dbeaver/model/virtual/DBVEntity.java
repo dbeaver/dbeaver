@@ -344,8 +344,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                     if (nextAttribute == null) {
                         if (create) {
                             nextAttribute = new DBVEntityAttribute(this, topAttribute, path[i].getName());
+                            topAttribute.addChild(nextAttribute);
                         } else {
-                            log.debug("Can't find hierarchical attribute '" + binding + "'");
+                            log.debug("Can't find nested attribute '" + binding + "' in '" + topAttribute.getName());
                             return null;
                         }
                     }

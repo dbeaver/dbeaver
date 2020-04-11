@@ -2403,7 +2403,9 @@ public class ResultSetViewer extends Viewer
             transformersMenu.addMenuListener(manager12 -> fillAttributeTransformersMenu(manager12, attr));
             viewMenu.add(transformersMenu);
         }
-        viewMenu.add(new TransformerSettingsAction());
+        if (model.isSingleSource()) {
+            viewMenu.add(new TransformerSettingsAction());
+        }
         viewMenu.add(new TransformComplexTypesToggleAction());
         viewMenu.add(new Separator());
         {

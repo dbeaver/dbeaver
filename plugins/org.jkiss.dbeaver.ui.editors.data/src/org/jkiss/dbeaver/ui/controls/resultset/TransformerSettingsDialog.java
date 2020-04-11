@@ -67,10 +67,6 @@ class TransformerSettingsDialog extends BaseDialog {
     private Combo transformerCombo;
     private Table attributeTable;
 
-    TransformerSettingsDialog(ResultSetViewer viewer) {
-        this(viewer, null, false);
-    }
-
     TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, boolean selector) {
         super(viewer.getControl().getShell(), DBUtils.getObjectFullName(viewer.getDataContainer(), DBPEvaluationContext.UI) + " transforms", null);
         this.viewer = viewer;
