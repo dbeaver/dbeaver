@@ -314,7 +314,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                             ((DBSObjectCache) dstValue).clearCache();
                         }
                     } else if (Collection.class.isAssignableFrom(field.getType())) {
-                        if (dstValue != null) {
+                        if (Modifier.isTransient(modifiers) && dstValue != null) {
                             ((Collection) dstValue).clear();
                         }
                     } else {
