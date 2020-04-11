@@ -781,7 +781,7 @@ public class PostgreDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
-        if (value.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+        if (value.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS) || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName())) {
             // TODO: we need to add value handlers for all PG data types.
             // For now we use workaround: re[eresent objects as strings
             return '\'' + escapeString(strValue) + '\'';

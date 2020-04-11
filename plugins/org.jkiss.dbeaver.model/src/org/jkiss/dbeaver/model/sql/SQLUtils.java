@@ -621,6 +621,9 @@ public final class SQLUtils {
         switch (attribute.getDataKind()) {
             case BOOLEAN:
             case NUMERIC:
+                if (sqlDialect != null) {
+                    return sqlDialect.escapeScriptValue(attribute, value, strValue);
+                }
                 return strValue;
             case CONTENT:
                 if (value instanceof DBDContent) {
