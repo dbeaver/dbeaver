@@ -105,7 +105,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         ukTable.removeAll();
         try {
             for (DBVEntityConstraint uk : vEntity.getConstraints()) {
-                if (!CommonUtils.isEmpty(uk.getAttributes())) {
+                if (uk.isUseAllColumns() || !CommonUtils.isEmpty(uk.getAttributes())) {
                     createUniqueKeyItem(ukTable, uk);
                 }
             }
@@ -232,7 +232,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 }
             });
 
-            Button btnEdit = UIUtils.createDialogButton(buttonsPanel, "Edit", new SelectionAdapter() {
+            SelectionAdapter ukEditListener = new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     TableItem ukItem = ukTable.getSelection()[0];
@@ -241,11 +241,12 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                     if (editPage.edit()) {
                         changeConstraint(virtualUK, editPage);
                         ukItem.setText(0, DBUtils.getObjectFullName(virtualUK, DBPEvaluationContext.UI));
-                        ukItem.setText(1, virtualUK.getAttributes().stream().map(DBVEntityConstraintColumn::getAttributeName).collect(Collectors.joining(",")));
+                        ukItem.setText(1, getConstraintAttrNames(virtualUK));
                         vEntity.persistConfiguration();
                     }
                 }
-            });
+            };
+            Button btnEdit = UIUtils.createDialogButton(buttonsPanel, "Edit", ukEditListener);
             btnEdit.setEnabled(false);
 
             Button btnRemove = UIUtils.createDialogButton(buttonsPanel, "Remove", new SelectionAdapter() {
@@ -270,6 +271,11 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                     btnRemove.setEnabled(ukTable.getSelectionIndex() >= 0);
                     btnEdit.setEnabled(ukTable.getSelectionIndex() >= 0);
                 }
+
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {
+                    ukEditListener.widgetSelected(e);
+                }
             });
         }
     }
@@ -277,7 +283,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     private void changeConstraint(DBVEntityConstraint constraint, EditConstraintPage editPage) {
         constraint.setName(editPage.getConstraintName());
         constraint.setAttributes(editPage.getSelectedAttributes());
-        constraint.setUseAllColumns(false);
+        constraint.setUseAllColumns(editPage.isUseAllColumns());
     }
 
     private void createUniqueKeyItem(Table ukTable, DBVEntityConstraint uk) {
@@ -285,11 +291,15 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
         item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_UNIQUE_KEY));
         item.setText(0, DBUtils.getObjectFullName(uk, DBPEvaluationContext.UI));
-        String ownAttrNames = uk.getAttributes().stream().map(DBVEntityConstraintColumn::getAttributeName)
-            .collect(Collectors.joining(","));
+        String ownAttrNames = getConstraintAttrNames(uk);
         item.setText(1, ownAttrNames);
 
         item.setData(uk);
+    }
+
+    private String getConstraintAttrNames(DBVEntityConstraint uk) {
+        return uk.isUseAllColumns() ? "*" : uk.getAttributes().stream().map(DBVEntityConstraintColumn::getAttributeName)
+            .collect(Collectors.joining(","));
     }
 
     private void createForeignKeysPage(Composite parent) {
