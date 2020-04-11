@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -116,9 +117,14 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
     private DataTransferWizard(@Nullable DBTTask task) {
         super(task);
         setDialogSettings(
-            UIUtils.getSettingsSection(
-                DTUIActivator.getDefault().getDialogSettings(),
-                RS_EXPORT_WIZARD_DIALOG_SETTINGS));
+            getWizardDialogSettings());
+    }
+
+    @NotNull
+    public static IDialogSettings getWizardDialogSettings() {
+        return UIUtils.getSettingsSection(
+            DTUIActivator.getDefault().getDialogSettings(),
+            RS_EXPORT_WIZARD_DIALOG_SETTINGS);
     }
 
     public DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
