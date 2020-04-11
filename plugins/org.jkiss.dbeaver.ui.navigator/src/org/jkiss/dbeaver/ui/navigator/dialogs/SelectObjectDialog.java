@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.*;
@@ -56,13 +57,12 @@ import java.util.List;
  */
 public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel {
 
-    private static final String DIALOG_ID = "DBeaver.SelectObjectDialog";//$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.SelectDatabaseObjectDialog";//$NON-NLS-1$
 
     private String listId;
     private boolean singleSelection;
-    private Font boldFont;
 
-    protected Collection<T> objects;
+    protected List<T> objects;
     protected List<T> selectedObjects = new ArrayList<>();
     protected DatabaseObjectListControl<T> objectList;
 
@@ -75,7 +75,6 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
         if (selected != null) {
             selectedObjects.addAll(selected);
         }
-        this.boldFont = UIUtils.makeBoldFont(parentShell.getFont());
     }
 
     @Override
@@ -93,12 +92,57 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
 
         createUpperControls(group);
 
-        objectList = new DatabaseObjectListControl<T>(
+        objectList = createObjectSelector(group, singleSelection, listId, selectedObjects, new DBRRunnableWithResult<List<T>>() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+                try {
+                    result = getObjects(monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        });
+        objectList.createProgressPanel();
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 300;
+        gd.minimumWidth = 300;
+        objectList.setLayoutData(gd);
+        objectList.getSelectionProvider().addSelectionChangedListener(event -> {
+            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            selectedObjects.clear();
+            selectedObjects.addAll(selection.toList());
+            if (!isModeless()) {
+                getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
+            }
+        });
+        objectList.setDoubleClickHandler(event -> {
+            if (isModeless() || getButton(IDialogConstants.OK_ID).isEnabled()) {
+                okPressed();
+            }
+        });
+
+        objectList.loadData();
+
+        closeOnFocusLost(objectList.getItemsViewer().getControl(), objectList.getSearchTextControl());
+
+        return group;
+    }
+
+    @NotNull
+    protected static <T extends DBPObject> DatabaseObjectListControl<T> createObjectSelector(
+        Composite group,
+        boolean singleSelection,
+        String listId,
+        List<T> selectedObjects,
+        DBRRunnableWithResult<List<T>> objectReader)
+    {
+        return new DatabaseObjectListControl<T>(
             group,
             (singleSelection ? SWT.SINGLE : SWT.MULTI),
             null,
             new ListContentProvider())
         {
+            private Font boldFont;
             private ISearchExecutor searcher = new SearcherFilter();
 
             @NotNull
@@ -114,16 +158,13 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
                     new AbstractLoadService<Collection<T>>() {
                         @Override
                         public Collection<T> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            try {
-                                return getObjects(monitor);
-                            } catch (DBException e) {
-                                throw new InvocationTargetException(e);
-                            }
+                            objectReader.run(monitor);
+                            return objectReader.getResult();
                         }
 
                         @Override
                         public Object getFamily() {
-                            return SelectObjectDialog.this;
+                            return SelectObjectDialog.class;
                         }
                     },
                     new ObjectsLoadVisualizer() {
@@ -193,39 +234,19 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
                 public Font getFont(Object element)
                 {
                     if (selectedObjects.contains(element)) {
+                        if (boldFont == null) {
+                            boldFont = UIUtils.makeBoldFont(group.getFont());
+                            group.addDisposeListener(e -> boldFont.dispose());
+                        }
                         return boldFont;
                     }
                     return null;
                 }
             }
         };
-        objectList.createProgressPanel();
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 300;
-        gd.minimumWidth = 300;
-        objectList.setLayoutData(gd);
-        objectList.getSelectionProvider().addSelectionChangedListener(event -> {
-            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-            selectedObjects.clear();
-            selectedObjects.addAll(selection.toList());
-            if (!isModeless()) {
-                getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
-            }
-        });
-        objectList.setDoubleClickHandler(event -> {
-            if (isModeless() || getButton(IDialogConstants.OK_ID).isEnabled()) {
-                okPressed();
-            }
-        });
-
-        objectList.loadData();
-
-        closeOnFocusLost(objectList.getItemsViewer().getControl(), objectList.getSearchTextControl());
-
-        return group;
     }
 
-    protected Collection<T> getObjects(DBRProgressMonitor monitor) throws DBException {
+    protected List<T> getObjects(DBRProgressMonitor monitor) throws DBException {
         return objects;
     }
 
@@ -235,11 +256,7 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
 
     @Override
     public int open() {
-        int result = super.open();
-
-        UIUtils.dispose(boldFont);
-
-        return result;
+        return super.open();
     }
 
     @Override
