@@ -1406,7 +1406,7 @@ public class ResultSetViewer extends Viewer
      */
     private void updateToolbar()
     {
-        statusBar.setRedraw(false);
+        if (statusBar != null) statusBar.setRedraw(false);
         try {
             for (ToolBarManager tb : toolbarList) {
                 UIUtils.updateContributionItems(tb);
@@ -1414,9 +1414,9 @@ public class ResultSetViewer extends Viewer
             if (panelToolBar != null) {
                 UIUtils.updateContributionItems(panelToolBar);
             }
-            statusBar.layout(true, true);
+            if (statusBar != null) statusBar.layout(true, true);
         } finally {
-            statusBar.setRedraw(true);
+            if (statusBar != null) statusBar.setRedraw(true);
         }
     }
 
@@ -3363,6 +3363,9 @@ public class ResultSetViewer extends Viewer
     }
 
     public void setSelectionStatistics(String stats) {
+        if (selectionStatLabel == null) {
+            return;
+        }
         if (stats.equals(selectionStatLabel.getText())) {
             return;
         }
