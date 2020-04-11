@@ -2419,15 +2419,21 @@ public abstract class LightGrid extends Canvas {
             if (!columnScrolling) {
                 // horizontal scrolling works pixel by pixel
 
-                int hiddenArea = preferredSize.x - clientArea.width + 1;
+                int hiddenArea = preferredSize.x - clientArea.width + 1 + (vScroll.getVisible() ? vScroll.getWidth() : 0);
 
-                // if possible, remember selection, if selection is too large,
+                // if possi
+                // ble, remember selection, if selection is too large,
                 // just
                 // make it the max you can
                 int selection = Math.min(hScroll.getSelection(), hiddenArea - 1);
 
-                hScroll.setValues(selection, 0, hiddenArea + clientArea.width - 1, clientArea.width,
-                                  HORZ_SCROLL_INCREMENT, clientArea.width);
+                hScroll.setValues(
+                    selection,
+                    0,
+                    hiddenArea + clientArea.width - 1,
+                    clientArea.width,
+                    HORZ_SCROLL_INCREMENT,
+                    clientArea.width);
             } else {
                 // horizontal scrolling is column by column
 
