@@ -105,7 +105,8 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                 sql.append("DISCONNECT SESSION ");
             }
             sql.append("'").append(sessionType.getSid()).append(',').append(sessionType.getSerial());
-            if (sessionType.getInstId() != 0) {
+            if (sessionType.getInstId() != 0 && sessionType.getInstId() != 1) {
+                // INSET_ID = 1 is hardcoded constant, means no RAC
                 sql.append(",@").append(sessionType.getInstId());
             }
             sql.append("'");
