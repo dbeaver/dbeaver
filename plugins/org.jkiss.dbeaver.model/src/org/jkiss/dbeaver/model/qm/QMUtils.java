@@ -79,6 +79,10 @@ public class QMUtils {
     }
 
     public static boolean isTransactionActive(DBCExecutionContext executionContext) {
+        return isTransactionActive(executionContext, true);
+    }
+
+    public static boolean isTransactionActive(DBCExecutionContext executionContext, boolean checkQueries) {
         if (executionContext == null || application == null) {
             return false;
         } else {
@@ -87,10 +91,17 @@ public class QMUtils {
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
                     QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
-                    QMMStatementExecuteInfo execInfo = sp.getLastExecute();
-                    if (execInfo != null) {
-                        // If transaction was enabled all statements are transactional
-                        return true;
+                    if (sp != null) {
+                        if (checkQueries) {
+                            // If transaction was enabled all statements are transactional
+                            for (QMMStatementExecuteInfo ei = sp.getLastExecute(); ei != null; ei = ei.getPrevious()) {
+                                if (ei.isTransactional()) {
+                                    return true;
+                                }
+                            }
+                        } else {
+                            return sp.getLastExecute() != null;
+                        }
                     }
 //                    for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
 //                        if (exec.isTransactional()) {
