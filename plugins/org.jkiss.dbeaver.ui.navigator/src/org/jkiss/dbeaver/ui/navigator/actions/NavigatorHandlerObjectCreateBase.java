@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.editors.DatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -69,6 +70,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             }
             if (container == null) {
                 throw new DBException("Can't detect container for '" + element.getNodeName() + "'");
+            }
+            if (container instanceof DBNDatabaseNode && ObjectPropertyTester.isMetadataChangeDisabled((DBNDatabaseNode) container)) {
+                throw new DBException("Object create not available in simple view mode");
             }
             if (newObjectType == null) {
                 Class<?> childType = container instanceof DBNContainer ? ((DBNContainer) container).getChildrenClass() : null;

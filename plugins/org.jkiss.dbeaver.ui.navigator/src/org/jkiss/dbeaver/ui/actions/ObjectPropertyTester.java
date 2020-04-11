@@ -217,9 +217,14 @@ public class ObjectPropertyTester extends PropertyTester
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {
-        if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode)node).isVirtual()) {
-            // Can't create virtual objects
-            return false;
+        if (node instanceof DBNDatabaseNode) {
+            if (((DBNDatabaseNode)node).isVirtual()) {
+                // Can't create virtual objects
+                return false;
+            }
+            if (isMetadataChangeDisabled(((DBNDatabaseNode)node))) {
+                return false;
+            }
         }
         if (onlySingle == null) {
             // Just try to find first create handler
@@ -270,6 +275,11 @@ public class ObjectPropertyTester extends PropertyTester
         } else {
             return createItems.size() > 1;
         }
+    }
+
+    public static boolean isMetadataChangeDisabled(DBNDatabaseNode node) {
+        DBNBrowseSettings navSettings = node.getDataSourceContainer().getNavigatorSettings();
+        return navSettings.isHideFolders() || navSettings.isShowOnlyEntities();
     }
 
     private static <T extends DBEObjectManager> T getObjectManager(Class<?> objectType, Class<T> managerType)
