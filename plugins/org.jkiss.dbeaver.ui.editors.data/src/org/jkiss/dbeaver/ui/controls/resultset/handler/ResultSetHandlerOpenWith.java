@@ -26,6 +26,7 @@ import org.eclipse.jface.action.ContributionManager;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -51,6 +52,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -179,8 +181,17 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     settings.setOutputFilePattern(tempFile.getName());
 
                     Map<Object, Object> properties = new HashMap<>();
+                    // Default values from wizard
+                    IDialogSettings dtSettings = DataTransferWizard.getWizardDialogSettings();
+                    IDialogSettings procListSection = dtSettings.getSection("processors");
+                    IDialogSettings procSettings = null;
+                    if (procListSection != null) {
+                        procSettings = procListSection.getSection("stream_consumer:" + processor.getId());
+                    }
+
                     for (DBPPropertyDescriptor prop : processor.getProperties()) {
-                        properties.put(prop.getId(), prop.getDefaultValue());
+                        Object defValue = procSettings == null ? null : procSettings.get(CommonUtils.toString(prop.getId()));
+                        properties.put(prop.getId(), defValue != null ? defValue : prop.getDefaultValue());
                     }
                     // Remove extension property (we specify file name directly)
                     properties.remove(StreamConsumerSettings.PROP_FILE_EXTENSION);
