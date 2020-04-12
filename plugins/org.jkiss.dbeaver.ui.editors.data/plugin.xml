@@ -807,6 +807,14 @@
 
     </extension>
 
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+            file-extensions="databasedata"
+            id="org.jkiss.dbeaver.data"
+            name="Database data flow"
+            priority="normal"/>
+    </extension>
+
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.core.resultset.toggleMode" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.focus.filter" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+T"/>
