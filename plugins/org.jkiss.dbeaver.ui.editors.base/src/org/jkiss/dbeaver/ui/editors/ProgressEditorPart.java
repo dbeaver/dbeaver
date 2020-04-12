@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -40,7 +39,7 @@ public class ProgressEditorPart extends EditorPart {
 
     private final IDatabaseEditor ownerEditor;
     private Composite parentControl;
-    private Canvas progressCanvas;
+    private Composite progressCanvas;
 
     public ProgressEditorPart(IDatabaseEditor ownerEditor) {
         this.ownerEditor = ownerEditor;
@@ -90,7 +89,7 @@ public class ProgressEditorPart extends EditorPart {
     }
 
     private void createProgressPane(final Composite parent) {
-        progressCanvas = new Canvas(parent, SWT.NONE);
+        progressCanvas = new Composite(parent, SWT.NONE);
         progressCanvas.addPaintListener(e ->
             e.gc.drawText("Opening editor '" + getEditorInput().getName() + "'...", 5, 5, true));
 
