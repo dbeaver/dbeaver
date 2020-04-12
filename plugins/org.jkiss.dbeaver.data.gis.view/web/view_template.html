@@ -62,7 +62,7 @@
         var lastClickCoordinates = "";
         function onEachFeature(feature, layer) {
             var tip = feature.tip;
-            if (tip != null && (tip.id != null || tip.objInfo != null)) {
+            if (tip != null) {
                 var tipText = "";
                 if (tip.id != null) {
                     var color = tip.color;
@@ -71,6 +71,7 @@
                 }
                 tipText += "<table>";
                 var objInfo = tip.info;
+                if (objInfo == null) objInfo = tip;
                 if (objInfo != null) {
                     for (var propName in objInfo) {
                         tipText += "<tr><td>" + propName + "</td><td>" + objInfo[propName] + "</td></tr>";
