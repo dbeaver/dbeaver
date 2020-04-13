@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -66,7 +67,7 @@ public class GeometryPresentation extends AbstractPresentation {
     }
 
     @Override
-    protected void applyThemeSettings() {
+    protected void applyThemeSettings(ITheme currentTheme) {
     }
 
     @Override

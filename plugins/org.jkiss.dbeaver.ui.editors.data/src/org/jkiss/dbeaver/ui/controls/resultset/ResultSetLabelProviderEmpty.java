@@ -17,40 +17,30 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.action.IContributionManager;
-import org.jkiss.code.NotNull;
+import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
-/**
- * ResultSet decorator.
- */
-public abstract class ResultSetDecoratorBase implements IResultSetDecorator {
-    @Override
-    public long getDecoratorFeatures() {
-        return FEATURE_NONE;
-    }
+public class ResultSetLabelProviderEmpty implements IResultSetLabelProvider {
 
+    public static final ResultSetLabelProviderEmpty INSTANCE = new ResultSetLabelProviderEmpty();
+
+    @Nullable
     @Override
-    public String getPreferredPresentation() {
+    public DBPImage getCellImage(DBDAttributeBinding attribute, ResultSetRow row) {
         return null;
     }
 
+    @Nullable
     @Override
-    public IResultSetLabelProvider getDataLabelProvider() {
+    public Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row) {
         return null;
     }
 
+    @Nullable
     @Override
-    public void fillContributions(@NotNull IContributionManager contributionManager) {
-
-    }
-
-    @Override
-    public void registerDragAndDrop(@NotNull IResultSetPresentation presentation) {
-
-    }
-
-    @Override
-    public Boolean getAutoRecordMode() {
+    public Color getCellBackground(DBDAttributeBinding attribute, ResultSetRow row) {
         return null;
     }
 }
