@@ -19,16 +19,16 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
  * Result set provider
  */
-public interface IResultSetContainer {
+public interface IResultSetContainer extends DBPContextProvider {
 
     /**
      * Owner project.
@@ -36,13 +36,6 @@ public interface IResultSetContainer {
      */
     @Nullable
     DBPProject getProject();
-
-    /**
-     * Execution context which will be used by Results viewer to read data
-     * @return execution context. Maybe null is container is not connected
-     */
-    @Nullable
-    DBCExecutionContext getExecutionContext();
 
     /**
      * Hosted results controller

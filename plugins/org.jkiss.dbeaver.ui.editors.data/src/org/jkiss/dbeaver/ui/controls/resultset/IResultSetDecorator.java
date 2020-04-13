@@ -29,13 +29,23 @@ public interface IResultSetDecorator {
     long FEATURE_STATUS_BAR         = 2;
     long FEATURE_PANELS             = 4;
     long FEATURE_EDIT               = 8;
+    long FEATURE_PRESENTATIONS      = 16;
 
     long getDecoratorFeatures();
+
+    /**
+     * Primary presentation ID.
+     * @return presentation ID or null.
+     */
+    String getPreferredPresentation();
 
     String getEmptyDataMessage();
 
     String getEmptyDataDescription();
 
+    /**
+     * Fill additional menu actions
+     */
     void fillContributions(IContributionManager contributionManager);
 
     void registerDragAndDrop(IResultSetPresentation presentation);

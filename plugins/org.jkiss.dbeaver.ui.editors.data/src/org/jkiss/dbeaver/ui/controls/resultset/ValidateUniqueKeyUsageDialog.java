@@ -49,7 +49,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
     {
         super(
             viewer.getControl().getShell(),
-            "Possible multiple rows modification",
+            "No unique key - multiple rows modification possible",
             null,
             "There is no physical unique key defined for  '" + DBUtils.getObjectFullName(viewer.getVirtualEntityIdentifier().getUniqueKey().getParentObject(), DBPEvaluationContext.UI) +
                 "'.\nDBeaver will use all columns as unique key. Possible multiple rows modification. \nAre you sure you want to proceed?",

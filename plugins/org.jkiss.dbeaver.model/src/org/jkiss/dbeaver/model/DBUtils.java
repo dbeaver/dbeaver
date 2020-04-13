@@ -969,7 +969,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static Collection<? extends DBSEntityAttribute> getBestTableIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
+    public static List<? extends DBSEntityAttribute> getBestTableIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
         throws DBException
     {
         if (entity instanceof DBSTable && ((DBSTable) entity).isView()) {
