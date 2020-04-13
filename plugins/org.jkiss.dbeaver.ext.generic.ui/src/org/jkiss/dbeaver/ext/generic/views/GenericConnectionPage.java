@@ -463,7 +463,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
         updateCreateButton(driver);
 
 
-        settingsGroup.layout();
+        settingsGroup.getParent().layout();
     }
 
     private void updateCreateButton(DBPDriver driver) {
