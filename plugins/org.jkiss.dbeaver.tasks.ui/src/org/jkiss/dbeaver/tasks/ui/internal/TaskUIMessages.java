@@ -82,6 +82,26 @@ public class TaskUIMessages extends NLS {
 	public static String db_tasks_tree_column_controller_add_name_project;
 	public static String db_tasks_tree_column_controller_add_descr_project;
 	
+	public static String db_tasks_view_filtered_tree_text_error_message;
+	public static String db_tasks_view_column_controller_add_name_time;
+	public static String db_tasks_view_column_controller_add_descr_start_time;
+	public static String db_tasks_view_column_controller_add_name_duration;
+	public static String db_tasks_view_column_controller_add_descr_task_duration;
+	public static String db_tasks_view_column_controller_add_name_result;
+	public static String db_tasks_view_column_controller_add_descr_task_result;
+	public static String db_tasks_view_cell_text_success;
+	public static String db_tasks_view_context_menu_command_delete_task;
+	public static String db_tasks_view_adapter_label_database_tasks;
+	public static String db_tasks_view_run_log_view;
+	public static String db_tasks_view_run_log_delete;
+	public static String db_tasks_view_run_log_confirm_remove;
+	public static String db_tasks_view_run_log_confirm_delete_task;
+	public static String db_tasks_view_clear_run_log_clear;
+	public static String db_tasks_view_clear_run_log_confirm_clear;
+	public static String db_tasks_view_clear_run_log_confirm_delete_log;
+	public static String db_tasks_view_open_run_log_folder_open;
+	
+	public static String task_handler_copy_name_dialog_enter_task;
 	
 	
 	static {
