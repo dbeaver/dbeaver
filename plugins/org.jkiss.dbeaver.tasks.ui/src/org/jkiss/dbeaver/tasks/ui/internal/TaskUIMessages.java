@@ -22,6 +22,16 @@ import org.eclipse.osgi.util.NLS;
 public class TaskUIMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages"; //$NON-NLS-1$
 
+	public static String edit_task_config_dialog_title_edit_task;
+	public static String edit_task_config_dialog_title_create_task;
+	public static String edit_task_config_dialog_label_type;
+	public static String edit_task_config_dialog_label_name;
+	public static String edit_task_config_dialog_label_descr;
+	
+	public static String edit_task_variabl_dialog_title_task_variables;
+	public static String edit_task_variabl_dialog_column_variable;
+	public static String edit_task_variabl_dialog_column_value;
+	
 	public static String task_config_wizard_group_task_label;
 	public static String task_config_wizard_button_save_task;
 	public static String task_config_wizard_link_open_tasks_view;
@@ -46,10 +56,6 @@ public class TaskUIMessages extends NLS {
 	
 	public static String task_config_wizard_stub_title_create_task;
 	public static String task_config_wizard_stub_page_name_void;
-	
-	public static String edit_task_variabl_dialog_title_task_variables;
-	public static String edit_task_variabl_dialog_column_variable;
-	public static String edit_task_variabl_dialog_column_value;
 	
 	public static String db_tasks_selector_dialog;
 	
