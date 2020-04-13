@@ -3,6 +3,11 @@
 
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="ocient" parent="generic" class="org.jkiss.dbeaver.ext.ocient.model.OcientSQLDialect" label="Ocient" description="Ocient dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/ocient_icon.png">
+        </dialect>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.ocient.OcientDataSourceProvider"
@@ -10,7 +15,8 @@
                 id="ocient"
                 parent="generic"
                 label="Ocient DB"
-                icon="icons/ocient_icon.png">
+                icon="icons/ocient_icon.png"
+                dialect="ocient">
             <drivers managable="true">
                 <driver
                         id="ocient_jdbc"
