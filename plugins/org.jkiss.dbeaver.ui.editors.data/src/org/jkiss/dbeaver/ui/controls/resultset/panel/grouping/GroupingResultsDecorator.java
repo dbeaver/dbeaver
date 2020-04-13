@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.dnd.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -81,14 +82,14 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
     }
 
     @Override
-    public void fillContributions(IContributionManager contributionManager) {
+    public void fillContributions(@NotNull IContributionManager contributionManager) {
         contributionManager.add(new GroupingPanel.EditColumnsAction(container));
         contributionManager.add(new GroupingPanel.DeleteColumnAction(container));
         contributionManager.add(new GroupingPanel.ClearGroupingAction(container));
     }
 
     @Override
-    public void registerDragAndDrop(IResultSetPresentation presentation) {
+    public void registerDragAndDrop(@NotNull IResultSetPresentation presentation) {
         // Register drop target to accept columns dropping
         Object oldDropTarget = presentation.getControl().getData(DND.DROP_TARGET_KEY);
         if (oldDropTarget instanceof DropTarget) {

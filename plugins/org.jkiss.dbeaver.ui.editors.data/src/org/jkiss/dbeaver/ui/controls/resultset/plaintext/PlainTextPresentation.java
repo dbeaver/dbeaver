@@ -39,7 +39,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.themes.ITheme;
-import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -124,7 +123,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         findReplaceTarget = new StyledTextFindReplaceTarget(text);
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), text);
 
-        applyThemeSettings();
+        applyCurrentThemeSettings();
 
         registerContextMenu();
         activateTextKeyBindings(controller, text);
@@ -141,11 +140,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     }
 
     @Override
-    protected void applyThemeSettings() {
-        IThemeManager themeManager = controller.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
-        curLineColor = themeManager.getCurrentTheme().getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
+    protected void applyThemeSettings(ITheme currentTheme) {
+        curLineColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
 
-        ITheme currentTheme = themeManager.getCurrentTheme();
         Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
         if (rsFont != null) {
             int fontHeight = rsFont.getFontData()[0].getHeight();

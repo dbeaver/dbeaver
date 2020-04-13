@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
@@ -29,9 +28,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
-import org.eclipse.ui.themes.IThemeManager;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,18 +45,17 @@ import java.util.List;
  */
 public abstract class AbstractPresentation implements IResultSetPresentation, ISelectionProvider {
 
-    private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
-    public static final String RESULTS_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.focused";
-    public static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
     public static final String RESULT_SET_PRESENTATION_CONTEXT_MENU = "org.jkiss.dbeaver.ui.controls.resultset.conext.menu";
     public static final String DATA_VALUE_CONTROLLER = "org.jkiss.dbeaver.resultset.value-controller";
+
+    private static final String RESULTS_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.focused";
+    private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
+
+    private static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
 
     @NotNull
     protected IResultSetController controller;
     private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<>();
-    protected IThemeManager themeManager;
-    private IPropertyChangeListener themeChangeListener;
-    private long lastThemeUpdateTime;
 
     @Override
     @NotNull
@@ -81,32 +80,17 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         this.controller = controller;
+    }
 
-        this.themeManager = controller.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
-        this.themeChangeListener = event -> {
-            if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
-                event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX))
-            {
-                if (lastThemeUpdateTime > 0 && System.currentTimeMillis() - lastThemeUpdateTime < 500) {
-                    // Do not update too often (theme change may trigger this hundreds of times)
-                    return;
-                }
-                lastThemeUpdateTime = System.currentTimeMillis();
-                UIUtils.asyncExec(this::applyThemeSettings);
-            }
-        };
-        this.themeManager.addPropertyChangeListener(themeChangeListener);
+    protected void applyCurrentThemeSettings() {
+        applyThemeSettings(PlatformUI.getWorkbench().getThemeManager().getCurrentTheme());
     }
 
     @Override
     public void dispose() {
-        if (themeChangeListener != null) {
-            themeManager.removePropertyChangeListener(themeChangeListener);
-            themeChangeListener = null;
-        }
     }
 
-    protected void applyThemeSettings() {
+    protected void applyThemeSettings(ITheme currentTheme) {
 
     }
 

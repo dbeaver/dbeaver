@@ -24,6 +24,7 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.IFindReplaceTarget;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -41,15 +42,14 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.ISaveablePart2;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -153,6 +153,7 @@ public class ResultSetViewer extends Viewer
     private final Composite mainPanel;
     private final Composite viewerPanel;
     private final IResultSetDecorator decorator;
+    private final ResultSetLabelProviderDefault labelProviderDefault;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
     private SashForm viewerSash;
@@ -217,6 +218,11 @@ public class ResultSetViewer extends Viewer
     private GC sizingGC;
     private VerticalButton recordModeButton;
 
+    // Theme listener
+    private IPropertyChangeListener themeChangeListener;
+    private long lastThemeUpdateTime;
+
+
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
         super();
@@ -224,6 +230,7 @@ public class ResultSetViewer extends Viewer
         this.site = site;
         this.recordMode = false;
         this.container = container;
+        this.labelProviderDefault = new ResultSetLabelProviderDefault(this);
         this.decorator = container.createResultSetDecorator();
         this.dataReceiver = new ResultSetDataReceiver(this);
         this.dataPropertyListener = event -> {
@@ -384,6 +391,26 @@ public class ResultSetViewer extends Viewer
         }
 
         // Listen property change
+        themeChangeListener = event -> {
+            if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
+                event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX))
+            {
+                if (lastThemeUpdateTime > 0 && System.currentTimeMillis() - lastThemeUpdateTime < 500) {
+                    // Do not update too often (theme change may trigger this hundreds of times)
+                    return;
+                }
+                lastThemeUpdateTime = System.currentTimeMillis();
+                UIUtils.asyncExec(() -> {
+                    ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+                    labelProviderDefault.applyThemeSettings(currentTheme);
+                    if (activePresentation instanceof AbstractPresentation) {
+                        ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
+                    }
+                });
+            }
+        };
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(dataPropertyListener);
     }
@@ -407,6 +434,18 @@ public class ResultSetViewer extends Viewer
     @Override
     public IResultSetDecorator getDecorator() {
         return decorator;
+    }
+
+    @NotNull
+    @Override
+    public IResultSetLabelProvider getLabelProvider() {
+        IResultSetLabelProvider labelProvider = decorator.getDataLabelProvider();
+        return labelProvider == null ? labelProviderDefault : labelProvider;
+    }
+
+    @NotNull
+    public IResultSetLabelProvider getDefaultLabelProvider() {
+        return labelProviderDefault;
     }
 
     AutoRefreshControl getAutoRefresh() {
@@ -1691,6 +1730,11 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        if (themeChangeListener != null) {
+            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
+            themeChangeListener = null;
+        }
+
         DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().removePropertyChangeListener(dataPropertyListener);
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(dataPropertyListener);
 

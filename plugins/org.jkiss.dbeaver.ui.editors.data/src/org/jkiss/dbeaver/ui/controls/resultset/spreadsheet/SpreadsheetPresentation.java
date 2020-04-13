@@ -129,13 +129,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundAdded;
     private Color backgroundDeleted;
     private Color backgroundModified;
-    private Color backgroundError;
     private Color backgroundNormal;
     private Color backgroundOdd;
     private Color backgroundReadOnly;
     private Color foregroundDefault;
-    private Color foregroundNull;
-    private final Map<DBPDataKind, Color> dataTypesForegrounds = new IdentityHashMap<>();
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
     private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
@@ -242,7 +239,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         activateTextKeyBindings(controller, spreadsheet);
 
-        applyThemeSettings();
+        applyCurrentThemeSettings();
 
         trackPresentationControl();
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
@@ -1125,9 +1122,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     // Themes
 
     @Override
-    protected void applyThemeSettings()
+    protected void applyThemeSettings(ITheme currentTheme)
     {
-        ITheme currentTheme = themeManager.getCurrentTheme();
         Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
         if (rsFont != null) {
             this.spreadsheet.setFont(rsFont);
@@ -1144,7 +1140,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.backgroundAdded = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
         this.backgroundDeleted = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
         this.backgroundModified = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
-        this.backgroundError = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ERROR_BACK);
         this.backgroundOdd = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
         this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
@@ -1165,14 +1160,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     50);
             this.cellHeaderSelectionBackground = new Color(getSpreadsheet().getDisplay(), cellSel);
         }
-        this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
-        this.dataTypesForegrounds.put(DBPDataKind.BINARY, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BINARY_FOREGROUND));
-        this.dataTypesForegrounds.put(DBPDataKind.BOOLEAN, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BOOLEAN_FOREGROUND));
-        this.dataTypesForegrounds.put(DBPDataKind.DATETIME, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_DATETIME_FOREGROUND));
-        this.dataTypesForegrounds.put(DBPDataKind.NUMERIC, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NUMERIC_FOREGROUND));
-        this.dataTypesForegrounds.put(DBPDataKind.STRING, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_STRING_FOREGROUND));
-
-
         this.spreadsheet.setLineColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_NORMAL));
         this.spreadsheet.setLineSelectedColor(colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED));
 
@@ -1776,36 +1763,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (selected) {
                 return foregroundSelected;
             }
-            ResultSetRow row = (ResultSetRow) (!controller.isRecordMode() ?  rowElement : colElement);
-            if (row.colorInfo != null) {
-                if (row.colorInfo.cellFgColors != null) {
-                    Color cellFG = row.colorInfo.cellFgColors[((DBDAttributeBinding) (rowElement instanceof DBDAttributeBinding ? rowElement : colElement)).getOrdinalPosition()];
-                    if (cellFG != null) {
-                        return cellFG;
-                    }
-                }
-                if (row.colorInfo.rowForeground != null) {
-                    return row.colorInfo.rowForeground;
-                }
-            }
+            boolean recordMode = controller.isRecordMode();
+            ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
+            DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
 
-            Object value = getCellValue(colElement, rowElement, false, false);
-            if (DBUtils.isNullValue(value)) {
-                return foregroundNull;
-            } else {
-                if (colorizeDataTypes) {
-                    DBDAttributeBinding attr =
-                            (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-                    Color color = dataTypesForegrounds.get(attr.getDataKind());
-                    if (color != null) {
-                        return color;
-                    }
-                }
-                if (foregroundDefault == null) {
-                    foregroundDefault = controller.getDefaultForeground();
-                }
-                return foregroundDefault;
+            Color fg = controller.getLabelProvider().getCellForeground(attribute, row);
+            if (fg != null) {
+                return fg;
             }
+            if (foregroundDefault == null) {
+                foregroundDefault = controller.getDefaultForeground();
+            }
+            return foregroundDefault;
         }
 
         @Nullable
@@ -1844,35 +1813,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
-            switch (row.getState()) {
-                case ResultSetRow.STATE_ADDED:
-                    return backgroundAdded;
-                case ResultSetRow.STATE_REMOVED:
-                    return backgroundDeleted;
-            }
-            if (row.changes != null && row.changes.containsKey(attribute)) {
-                return backgroundModified;
+            Color bg = controller.getLabelProvider().getCellBackground(attribute, row);
+            if (bg != null) {
+                return bg;
             }
 
-            if (row.colorInfo != null) {
-                if (row.colorInfo.cellBgColors != null) {
-                    Color cellBG = row.colorInfo.cellBgColors[((DBDAttributeBinding) (rowElement instanceof DBDAttributeBinding ? rowElement : colElement)).getOrdinalPosition()];
-                    if (cellBG != null) {
-                        return cellBG;
-                    }
-                }
-                if (row.colorInfo.rowBackground != null) {
-                    return row.colorInfo.rowBackground;
-                }
-            }
-
-            Object value = controller.getModel().getCellValue(attribute, row);
-            if (value != null && value.getClass() == DBDValueError.class) {
-                return backgroundError;
-            }
-//            if (attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
-//                return backgroundReadOnly;
-//            }
             if (!recordMode && showOddRows) {
                 // Determine odd/even row
                 if (rowBatchSize < 1) {
