@@ -29,9 +29,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -249,6 +251,33 @@ public class HANAMetaModel extends GenericMetaModel
         }
     }
 
+	@Override
+	public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session,
+			@NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
+		JDBCPreparedStatement dbStat;
+		if(forParent!=null) { 
+			dbStat = session.prepareStatement("SELECT"
+					+ " TABLE_NAME, COLUMN_NAME, POSITION AS KEY_SEQ, CONSTRAINT_NAME AS PK_NAME, IS_PRIMARY_KEY" 
+					+ " FROM SYS.CONSTRAINTS"
+					+ " WHERE SCHEMA_NAME=? AND TABLE_NAME=?"
+					+ " ORDER BY PK_NAME");
+			dbStat.setString(1, forParent.getSchema().getName());
+			dbStat.setString(2, forParent.getName());
+		} else {
+			dbStat = session.prepareStatement("SELECT"
+					+ " TABLE_NAME, COLUMN_NAME, POSITION AS KEY_SEQ, CONSTRAINT_NAME AS PK_NAME, IS_PRIMARY_KEY" 
+					+ " FROM SYS.CONSTRAINTS"
+					+ " ORDER BY PK_NAME");
+		}
+		return dbStat;
+	}
+
+	@Override
+	public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+		String isPrimaryKey = JDBCUtils.safeGetString(dbResult, "IS_PRIMARY_KEY");
+		return "TRUE".equals(isPrimaryKey) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
+	}
+	
     @Override
     public String getAutoIncrementClause(GenericTableColumn column) {
         return "GENERATED ALWAYS AS IDENTITY";
