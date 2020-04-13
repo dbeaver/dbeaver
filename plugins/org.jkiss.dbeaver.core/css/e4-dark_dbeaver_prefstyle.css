@@ -20,7 +20,8 @@
             'org.jkiss.dbeaver.sql.resultset.color.binary.foreground=100,100,100'
             'org.jkiss.dbeaver.sql.resultset.color.boolean.foreground=128,128,128'
             'org.jkiss.dbeaver.sql.resultset.color.datetime.foreground=92,162,89'
-            'org.jkiss.dbeaver.sql.resultset.color.numeric.foreground=192,192,192'
+            'org.jkiss.dbeaver.sql.resultset.color.numeric.foreground=192,192,255'
+            'org.jkiss.dbeaver.sql.resultset.color.string.foreground=192,192,192'
 
             'org.jkiss.dbeaver.sql.editor.color.text.foreground=158,158,158'
             'org.jkiss.dbeaver.sql.editor.color.text.background=0,0,0'
