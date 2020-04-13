@@ -1648,20 +1648,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             int state = STATE_NONE;
             boolean recordMode = controller.isRecordMode();
             DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
-            ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
-            Object value = controller.getModel().getCellValue(attr, row);
-            if (isShowAsCheckbox(attr)) {
-                state |= STATE_LINK;
-            } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
-                state |= STATE_LINK;
-            } else {
-                String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-                if (strValue.contains("://")) {
-                    try {
-                        new URL(strValue);
-                        state |= STATE_HYPER_LINK;
-                    } catch (MalformedURLException e) {
-                        // Not a hyperlink
+            if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_LINKS) != 0) {
+                ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
+                Object value = controller.getModel().getCellValue(attr, row);
+                if (isShowAsCheckbox(attr)) {
+                    state |= STATE_LINK;
+                } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
+                    state |= STATE_LINK;
+                } else {
+                    String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
+                    if (strValue.contains("://")) {
+                        try {
+                            new URL(strValue);
+                            state |= STATE_HYPER_LINK;
+                        } catch (MalformedURLException e) {
+                            // Not a hyperlink
+                        }
                     }
                 }
             }
