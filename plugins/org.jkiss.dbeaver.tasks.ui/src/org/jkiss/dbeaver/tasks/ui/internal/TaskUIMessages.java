@@ -57,6 +57,8 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_stub_title_create_task;
 	public static String task_config_wizard_stub_page_name_void;
 	
+	public static String task_processor_ui_message_task_completed;
+	
 	public static String db_tasks_selector_dialog;
 	
 	public static String db_tasks_tree_text_tasks_type;
@@ -71,6 +73,7 @@ public class TaskUIMessages extends NLS {
 	public static String db_tasks_tree_column_controller_add_descr_run_duration;
 	public static String db_tasks_tree_column_controller_add_name_last_result;
 	public static String db_tasks_tree_column_controller_add_descr_last_result;
+	public static String db_tasks_tree_column_cell_text_success;
 	public static String db_tasks_tree_column_controller_add_name_next_run;
 	public static String db_tasks_tree_column_controller_add_descr_next_run;
 	public static String db_tasks_tree_column_controller_add_name_description;
@@ -102,6 +105,11 @@ public class TaskUIMessages extends NLS {
 	public static String db_tasks_view_open_run_log_folder_open;
 	
 	public static String task_handler_copy_name_dialog_enter_task;
+	
+	public static String task_handler_delete_confirm_title_delete_task;
+	public static String task_handler_delete_confirm_question_delete_task;
+	public static String task_handler_delete_confirm_title_delete_tasks;
+	public static String task_handler_delete_confirm_question_delete_tasks;
 	
 	
 	static {
