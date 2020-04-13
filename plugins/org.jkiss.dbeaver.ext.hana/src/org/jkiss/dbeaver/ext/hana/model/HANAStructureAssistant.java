@@ -81,7 +81,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         String stmt =                       "SELECT SCHEMA_NAME, TABLE_NAME, COMMENTS FROM SYS.TABLES WHERE";
         stmt += caseSensitive ?             " TABLE_NAME LIKE ?" : " UPPER(TABLE_NAME) LIKE ?";
         if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY TABLE_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, TABLE_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
@@ -124,7 +124,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         String stmt =                       "SELECT SCHEMA_NAME, VIEW_NAME, COMMENTS FROM SYS.VIEWS WHERE";
         stmt += caseSensitive ?             " VIEW_NAME LIKE ?" : " UPPER(VIEW_NAME) LIKE ?";
         if (parentSchema != null)stmt +=    " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY VIEW_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, VIEW_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
@@ -167,7 +167,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         String stmt =                       "SELECT SCHEMA_NAME, PROCEDURE_NAME FROM SYS.PROCEDURES WHERE";
         stmt += caseSensitive ?             " PROCEDURE_NAME LIKE ?" : " UPPER(PROCEDURE_NAME) LIKE ?";
         if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY PROCEDURE_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, PROCEDURE_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
@@ -210,7 +210,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         String stmt =                       "SELECT SCHEMA_NAME, TABLE_NAME, COLUMN_NAME, COMMENTS FROM SYS.TABLE_COLUMNS WHERE";
         stmt += caseSensitive ?             " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
         if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY COLUMN_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, TABLE_NAME, COLUMN_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
@@ -259,7 +259,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         String stmt =                       "SELECT SCHEMA_NAME, VIEW_NAME, COLUMN_NAME, COMMENTS FROM SYS.VIEW_COLUMNS WHERE";
         stmt += caseSensitive ?             " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
         if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY COLUMN_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, VIEW_NAME, COLUMN_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
