@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -47,7 +48,7 @@ public class TaskHandlerCopy extends AbstractHandler {
             if (firstElement instanceof DBTTask) {
                 DBTTask oldTask = (DBTTask) firstElement;
                 for (;;) {
-                    EnterNameDialog taskNameDialog = new EnterNameDialog(HandlerUtil.getActiveShell(event), "Enter new task name", oldTask.getName());
+                    EnterNameDialog taskNameDialog = new EnterNameDialog(HandlerUtil.getActiveShell(event), TaskUIMessages.task_handler_copy_name_dialog_enter_task, oldTask.getName());
                     String newTaskName = taskNameDialog.chooseName();
                     if (newTaskName == null) {
                         return null;
