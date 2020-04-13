@@ -245,23 +245,29 @@ public class ResultSetViewer extends Viewer
         this.defaultBackground = UIStyles.getDefaultTextBackground();
         this.defaultForeground = UIStyles.getDefaultTextForeground();
 
-        boolean supportsPanels = (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0;
+        long decoratorFeatures = decorator.getDecoratorFeatures();
+
+        boolean supportsPanels = (decoratorFeatures & IResultSetDecorator.FEATURE_PANELS) != 0;
 
         this.mainPanel = UIUtils.createPlaceholder(parent, supportsPanels ? 3 : 2);
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
 
-        if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_FILTERS) != 0) {
+        if ((decoratorFeatures & IResultSetDecorator.FEATURE_FILTERS) != 0) {
             this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
             this.filtersPanel.setLayoutData(gd);
         }
 
-        this.presentationSwitchFolder = new VerticalFolder(mainPanel, SWT.LEFT);
-        this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        CSSUtils.setCSSClass(this.presentationSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        if ((decoratorFeatures & IResultSetDecorator.FEATURE_PRESENTATIONS) != 0) {
+            this.presentationSwitchFolder = new VerticalFolder(mainPanel, SWT.LEFT);
+            this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+            CSSUtils.setCSSClass(this.presentationSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        } else {
+            this. presentationSwitchFolder = null;
+        }
 
         this.viewerPanel = UIUtils.createPlaceholder(mainPanel, 1);
         this.viewerPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -620,7 +626,21 @@ public class ResultSetViewer extends Viewer
             } else {
                 // Regular results
                 IResultSetContext context = new ResultSetContextImpl(this, resultSet);
-                final List<ResultSetPresentationDescriptor> newPresentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet, context);
+                final List<ResultSetPresentationDescriptor> newPresentations;
+
+                // Check for preferred presentation
+                String preferredPresentationId = getDecorator().getPreferredPresentation();
+                if (CommonUtils.isEmpty(preferredPresentationId)) {
+                    newPresentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet, context);
+                } else {
+                    ResultSetPresentationDescriptor preferredPresentation = ResultSetPresentationRegistry.getInstance().getPresentation(preferredPresentationId);
+                    if (preferredPresentation != null) {
+                        newPresentations = Collections.singletonList(preferredPresentation);
+                    } else {
+                        log.error("Presentation '" + preferredPresentationId + "' not found");
+                        newPresentations = Collections.emptyList();
+                    }
+                }
                 changed = CommonUtils.isEmpty(this.availablePresentations) || !newPresentations.equals(this.availablePresentations);
                 this.availablePresentations = newPresentations;
                 if (!this.availablePresentations.isEmpty()) {
@@ -667,6 +687,9 @@ public class ResultSetViewer extends Viewer
     }
 
     private void updatePresentationInToolbar() {
+        if (presentationSwitchFolder == null) {
+            return;
+        }
         // Update combo
         mainPanel.setRedraw(false);
         try {
@@ -1392,10 +1415,12 @@ public class ResultSetViewer extends Viewer
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CHANGED);
         fireResultSetChange();
         updateToolbar();
-        // Enable presentations
-        for (VerticalButton pb : presentationSwitchFolder.getItems()) {
-            if (pb.getData() instanceof ResultSetPresentationDescriptor) {
-                pb.setVisible(!recordMode || ((ResultSetPresentationDescriptor) pb.getData()).supportsRecordMode());
+        if (presentationSwitchFolder != null) {
+            // Enable presentations
+            for (VerticalButton pb : presentationSwitchFolder.getItems()) {
+                if (pb.getData() instanceof ResultSetPresentationDescriptor) {
+                    pb.setVisible(!recordMode || ((ResultSetPresentationDescriptor) pb.getData()).supportsRecordMode());
+                }
             }
         }
     }

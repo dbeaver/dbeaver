@@ -194,7 +194,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         return new QueryResultsDecorator() {
             @Override
             public long getDecoratorFeatures() {
-                return FEATURE_PANELS | FEATURE_STATUS_BAR;
+                return FEATURE_PANELS | FEATURE_PRESENTATIONS | FEATURE_STATUS_BAR;
             }
         };
     }

@@ -32,7 +32,7 @@ public class ReferencesResultsDecorator extends QueryResultsDecorator {
 
     @Override
     public long getDecoratorFeatures() {
-        return FEATURE_NONE;
+        return FEATURE_PRESENTATIONS;
     }
 
     @Override

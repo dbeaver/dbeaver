@@ -25,7 +25,12 @@ import org.eclipse.jface.action.IContributionManager;
 public abstract class ResultSetDecoratorBase implements IResultSetDecorator {
     @Override
     public long getDecoratorFeatures() {
-        return 0;
+        return FEATURE_NONE;
+    }
+
+    @Override
+    public String getPreferredPresentation() {
+        return null;
     }
 
     @Override

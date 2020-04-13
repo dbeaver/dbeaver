@@ -50,7 +50,7 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
 
     @Override
     public long getDecoratorFeatures() {
-        return FEATURE_NONE;
+        return FEATURE_PRESENTATIONS;
     }
 
     @Override
