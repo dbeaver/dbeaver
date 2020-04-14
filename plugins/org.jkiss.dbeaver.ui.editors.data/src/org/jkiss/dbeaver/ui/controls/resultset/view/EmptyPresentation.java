@@ -68,8 +68,10 @@ public class EmptyPresentation extends AbstractPresentation {
             e.gc.setForeground(UIStyles.getDefaultTextForeground());
             //int fontSize = largeFont.getFontData()[0].getHeight();
             String emptyDataMessage = controller.getDecorator().getEmptyDataMessage();
-            Point emSize = e.gc.textExtent(emptyDataMessage);
-            UIUtils.drawMessageOverControl(placeholder, e, emptyDataMessage, -emSize.y);
+            if (!CommonUtils.isEmpty(emptyDataMessage)) {
+                Point emSize = e.gc.textExtent(emptyDataMessage);
+                UIUtils.drawMessageOverControl(placeholder, e, emptyDataMessage, -emSize.y);
+            }
             e.gc.setFont(normalFont);
             String emptyDataDescription = controller.getDecorator().getEmptyDataDescription();
             if (!CommonUtils.isEmpty(emptyDataDescription)) {
