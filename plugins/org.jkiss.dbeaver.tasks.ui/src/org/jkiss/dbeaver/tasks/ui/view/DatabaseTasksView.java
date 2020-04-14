@@ -20,6 +20,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
@@ -42,6 +43,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -114,30 +116,30 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private void createTaskRunTable(Composite parent) {
         FilteredTree filteredTree = new FilteredTree(parent, SWT.SINGLE | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true);
-        filteredTree.setInitialText("Task executions: type a part of error message");
+        filteredTree.setInitialText(TaskUIMessages.db_tasks_view_filtered_tree_text_error_message);
         taskRunViewer = filteredTree.getViewer();
         Tree taskrunTree = taskRunViewer.getTree();
         taskrunTree.setHeaderVisible(true);
         taskrunTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         taskRunColumnController = new ViewerColumnController("taskruns", taskRunViewer);
-        taskRunColumnController.addColumn("Time", "Task start time", SWT.LEFT, true, true, new TaskRunLabelProvider() {
+        taskRunColumnController.addColumn(TaskUIMessages.db_tasks_view_column_controller_add_name_time, TaskUIMessages.db_tasks_view_column_controller_add_descr_start_time, SWT.LEFT, true, true, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
                 cell.setText(tasksTree.getDateFormat().format(taskRun.getStartTime()));
             }
         });
-        taskRunColumnController.addColumn("Duration", "Task last run duration", SWT.LEFT, true, false, new TaskRunLabelProvider() {
+        taskRunColumnController.addColumn(TaskUIMessages.db_tasks_view_column_controller_add_name_duration, TaskUIMessages.db_tasks_view_column_controller_add_descr_task_duration, SWT.LEFT, true, false, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
                 cell.setText(RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()));
             }
         });
-        taskRunColumnController.addColumn("Result", "Task result", SWT.LEFT, true, false, new TaskRunLabelProvider() {
+        taskRunColumnController.addColumn(TaskUIMessages.db_tasks_view_column_controller_add_name_result, TaskUIMessages.db_tasks_view_column_controller_add_descr_task_result, SWT.LEFT, true, false, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
                 if (taskRun.isRunSuccess()) {
-                    cell.setText("Success");
+                    cell.setText(TaskUIMessages.db_tasks_view_cell_text_success);
                 } else {
                     cell.setText(CommonUtils.notEmpty(taskRun.getErrorMessage()));
                 }
@@ -163,7 +165,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             //manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
             manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
             manager.add(ActionUtils.makeCommandContribution(getSite(), COPY_TASK_CMD_ID));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, "Delete task", null));
+            manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, TaskUIMessages.db_tasks_view_context_menu_command_delete_task, null));
             manager.add(new Separator());
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             manager.add(new Separator());
@@ -230,7 +232,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             return adapter.cast(new WorkbenchAdapter() {
                 @Override
                 public String getLabel(Object o) {
-                    return "Database Tasks";
+                    return TaskUIMessages.db_tasks_view_adapter_label_database_tasks;
                 }
             });
         }
@@ -394,7 +396,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private class ViewRunLogAction extends Action {
 
         ViewRunLogAction() {
-            super("View log");
+            super(TaskUIMessages.db_tasks_view_run_log_view);
         }
 
         @Override
@@ -427,7 +429,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private class DeleteRunLogAction extends Action {
 
         DeleteRunLogAction() {
-            super("Delete run log", DBeaverIcons.getImageDescriptor(UIIcon.DELETE));
+            super(TaskUIMessages.db_tasks_view_run_log_delete, DBeaverIcons.getImageDescriptor(UIIcon.DELETE));
         }
 
         @Override
@@ -436,8 +438,8 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             DBTTaskRun taskRun = getSelectedTaskRun();
             if (task != null && taskRun != null &&
                 UIUtils.confirmAction(
-                    "Remove task run",
-                    "Are you sure you want to delete task '" + task.getName() + "' run at '" + tasksTree.getDateFormat().format(taskRun.getStartTime()) + "'?"))
+                	TaskUIMessages.db_tasks_view_run_log_confirm_remove,
+                    NLS.bind(TaskUIMessages.db_tasks_view_run_log_confirm_delete_task, task.getName(), tasksTree.getDateFormat().format(taskRun.getStartTime()))))
             {
                 task.removeRunLog(taskRun);
             }
@@ -447,13 +449,13 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private class ClearRunLogAction extends Action {
 
         ClearRunLogAction() {
-            super("Clear logs", DBeaverIcons.getImageDescriptor(UIIcon.ERASE));
+            super(TaskUIMessages.db_tasks_view_clear_run_log_clear, DBeaverIcons.getImageDescriptor(UIIcon.ERASE));
         }
 
         @Override
         public void run() {
             DBTTask task = tasksTree.getSelectedTask();
-            if (task == null || !UIUtils.confirmAction("Clear task runs", "Are you sure you want to delete all log of task '" + task.getName() + "'?")) {
+            if (task == null || !UIUtils.confirmAction(TaskUIMessages.db_tasks_view_clear_run_log_confirm_clear, NLS.bind(TaskUIMessages.db_tasks_view_clear_run_log_confirm_delete_log, task.getName()))) {
                 return;
             }
             task.cleanRunStatistics();
@@ -463,7 +465,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private class OpenRunLogFolderAction extends Action {
 
         OpenRunLogFolderAction() {
-            super("Open logs folder");
+            super(TaskUIMessages.db_tasks_view_open_run_log_folder_open);
         }
 
         @Override
