@@ -72,7 +72,7 @@ public class HANATableColumn extends GenericTableColumn implements DBPNamedObjec
         GeometryInfo gi = new GeometryInfo();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
             try (JDBCPreparedStatement dbStat = session
-                    .prepareStatement("SELECT SRS_ID, DATA_TYPE_NAME FROM PUBLIC.ST_GEOMETRY_COLUMNS "
+                    .prepareStatement("SELECT SRS_ID, DATA_TYPE_NAME FROM SYS.ST_GEOMETRY_COLUMNS "
                             + "WHERE SCHEMA_NAME=? AND TABLE_NAME=? AND COLUMN_NAME=?")) {
                 dbStat.setString(1, getTable().getSchema().getName());
                 dbStat.setString(2, getTable().getName());
