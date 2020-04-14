@@ -2322,6 +2322,7 @@ public class ResultSetViewer extends Viewer
             valueController = null;
         }
 
+        long decoratorFeatures = getDecorator().getDecoratorFeatures();
         {
             {
                 // Standard items
@@ -2358,7 +2359,7 @@ public class ResultSetViewer extends Viewer
                 manager.add(new Separator());
 
                 // Filters and View
-                {
+                if ((decoratorFeatures & IResultSetDecorator.FEATURE_FILTERS) != 0) {
                     MenuManager filtersMenu = new MenuManager(
                         ResultSetMessages.controls_resultset_viewer_action_filter,
                         DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
@@ -2419,7 +2420,7 @@ public class ResultSetViewer extends Viewer
             manager.add(viewMenu);
         }
 
-        {
+        if ((decoratorFeatures & IResultSetDecorator.FEATURE_PANELS) != 0 || (decoratorFeatures & IResultSetDecorator.FEATURE_PRESENTATIONS) != 0) {
             MenuManager layoutMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_layout,
                 null,
@@ -2561,10 +2562,14 @@ public class ResultSetViewer extends Viewer
         if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
             layoutMenu.add(new ToggleModeAction());
         }
-        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
-        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
-        layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_SWITCH_PRESENTATION));
-        {
+        if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
+            layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
+            layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
+        }
+        if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PRESENTATIONS) != 0) {
+            layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_SWITCH_PRESENTATION));
+        }
+        if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
             MenuManager panelsMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_panels,
                 DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE),
@@ -2574,27 +2579,29 @@ public class ResultSetViewer extends Viewer
                 panelsMenu.add(item);
             }
         }
-        layoutMenu.add(new Separator());
-        for (ResultSetPresentationDescriptor pd : getAvailablePresentations()) {
-            Action psAction = new Action(pd.getLabel(), Action.AS_CHECK_BOX) {
-                ResultSetPresentationDescriptor presentation;
+        if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PRESENTATIONS) != 0) {
+            layoutMenu.add(new Separator());
+            for (ResultSetPresentationDescriptor pd : getAvailablePresentations()) {
+                Action psAction = new Action(pd.getLabel(), Action.AS_CHECK_BOX) {
+                    ResultSetPresentationDescriptor presentation;
 
-                {
-                    presentation = pd;
-                    setImageDescriptor(DBeaverIcons.getImageDescriptor(presentation.getIcon()));
-                }
+                    {
+                        presentation = pd;
+                        setImageDescriptor(DBeaverIcons.getImageDescriptor(presentation.getIcon()));
+                    }
 
-                @Override
-                public boolean isChecked() {
-                    return activePresentationDescriptor == presentation;
-                }
+                    @Override
+                    public boolean isChecked() {
+                        return activePresentationDescriptor == presentation;
+                    }
 
-                @Override
-                public void run() {
-                    switchPresentation(presentation);
-                }
-            };
-            layoutMenu.add(psAction);
+                    @Override
+                    public void run() {
+                        switchPresentation(presentation);
+                    }
+                };
+                layoutMenu.add(psAction);
+            }
         }
     }
 
