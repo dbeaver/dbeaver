@@ -88,7 +88,7 @@ public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
             if (defaultContext != null) {
                 contextDefaults = defaultContext.getContextDefaults();
             }
-            if (instanceContainer != null && contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.supportsSchemaChange()) {
+            if (instanceContainer != null && contextDefaults != null && contextDefaults.supportsCatalogChange()) {
                 createInstanceSelector(dialogArea, instanceContainer);
             }
         }
