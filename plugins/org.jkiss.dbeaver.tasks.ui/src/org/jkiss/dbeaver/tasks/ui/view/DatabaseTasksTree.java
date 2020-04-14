@@ -164,7 +164,7 @@ public class DatabaseTasksTree {
                         return "N/A";
                     } else {
                         if (lastRun.isRunSuccess()) {
-                            return "Success";
+                            return TaskUIMessages.db_tasks_tree_column_cell_text_success;
                         } else {
                             return CommonUtils.notEmpty(lastRun.getErrorMessage());
                         }
