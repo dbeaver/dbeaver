@@ -188,7 +188,7 @@ class ResultSetPersister {
             // Nothing to refresh
             return false;
         }
-        final DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
+        final DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
         if (rowIdentifier == null || rowIdentifier.getAttributes().isEmpty()) {
             // No key - can't refresh
             return false;
@@ -256,7 +256,7 @@ class ResultSetPersister {
     private void prepareDeleteStatements(@NotNull DBRProgressMonitor monitor, boolean deleteCascade, boolean deepCascade)
         throws DBException {
         // Make delete statements
-        DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
+        DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
         if (rowIdentifier == null) {
             throw new DBCException("Internal error: can't find entity identifier, delete is not possible");
         }
@@ -497,17 +497,6 @@ class ResultSetPersister {
         }
     }
 
-    @Nullable
-    public DBDRowIdentifier getDefaultRowIdentifier() {
-        for (DBDAttributeBinding column : columns) {
-            DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
-            if (rowIdentifier != null) {
-                return rowIdentifier;
-            }
-        }
-        return null;
-    }
-
     @NotNull
     private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException {
         if (entity instanceof DBSDataManipulator) {
@@ -550,7 +539,7 @@ class ResultSetPersister {
 
         List<DBDAttributeBinding> updatedAttributes = this.getUpdatedAttributes();
         if (this.hasDeletes()) {
-            DBDRowIdentifier defIdentifier = this.getDefaultRowIdentifier();
+            DBDRowIdentifier defIdentifier = model.getDefaultRowIdentifier();
             if (defIdentifier == null) {
                 throw new DBCException("No unique row identifier is result set. Cannot proceed with row(s) delete.");
             } else if (!defIdentifier.isValidIdentifier()) {
@@ -584,7 +573,7 @@ class ResultSetPersister {
         private DBCSavepoint savepoint;
         private Throwable error;
 
-        protected DataUpdaterJob(boolean generateScript, @NotNull ResultSetSaveSettings settings, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext) {
+        DataUpdaterJob(boolean generateScript, @NotNull ResultSetSaveSettings settings, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext) {
             super(ResultSetMessages.controls_resultset_viewer_job_update, executionContext);
             this.generateScript = generateScript;
             this.settings = settings;

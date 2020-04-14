@@ -1815,6 +1815,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
+            switch (row.getState()) {
+                case ResultSetRow.STATE_ADDED:
+                    return backgroundAdded;
+                case ResultSetRow.STATE_REMOVED:
+                    return backgroundDeleted;
+            }
+            if (row.changes != null && row.changes.containsKey(attribute)) {
+                return backgroundModified;
+            }
+
             Color bg = controller.getLabelProvider().getCellBackground(attribute, row);
             if (bg != null) {
                 return bg;
