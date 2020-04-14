@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Row identifier.
@@ -104,5 +105,11 @@ public class DBDRowIdentifier implements DBPObject {
 
     public void clearAttributes() {
         attributes.clear();
+    }
+
+    @Override
+    public String toString() {
+        return entity.getName() + "." + entityIdentifier.getName() + "(" +
+            attributes.stream().map(DBDAttributeBinding::getName).collect(Collectors.joining(",")) + ")";
     }
 }

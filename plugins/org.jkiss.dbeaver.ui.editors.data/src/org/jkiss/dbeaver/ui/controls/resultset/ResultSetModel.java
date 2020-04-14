@@ -279,6 +279,17 @@ public class ResultSetModel {
         return null;
     }
 
+    @Nullable
+    public DBDRowIdentifier getDefaultRowIdentifier() {
+        for (DBDAttributeBinding column : attributes) {
+            DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
+            if (rowIdentifier != null) {
+                return rowIdentifier;
+            }
+        }
+        return null;
+    }
+
     void refreshValueHandlersConfiguration() {
         for (DBDAttributeBinding binding : attributes) {
             DBDValueHandler valueHandler = binding.getValueHandler();

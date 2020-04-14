@@ -108,14 +108,14 @@ public class ResultSetRow {
         return changes != null && changes.containsKey(attr);
     }
 
-    void addChange(DBDAttributeBinding attr, @Nullable Object oldValue) {
+    public void addChange(DBDAttributeBinding attr, @Nullable Object oldValue) {
         if (changes == null) {
             changes = new IdentityHashMap<>();
         }
         changes.put(attr, oldValue);
     }
 
-    void resetChange(DBDAttributeBinding attr) {
+    public void resetChange(DBDAttributeBinding attr) {
         assert changes != null;
         changes.remove(attr);
         if (changes.isEmpty()) {
