@@ -80,7 +80,7 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
     @Override
     protected IDialogSettings getDialogBoundsSettings()
     {
-        return UIUtils.getDialogSettings(DIALOG_ID + "." + listId);
+        return null;//UIUtils.getDialogSettings(DIALOG_ID + "." + listId);
     }
 
     @Override
