@@ -200,6 +200,8 @@ public class ResultSetViewer extends Viewer
     // Mode
     private boolean recordMode;
 
+    private Integer segmentFetchSize;
+
     private final List<IResultSetListener> listeners = new ArrayList<>();
 
     private final List<ResultSetJobDataRead> dataPumpJobQueue = new ArrayList<>();
@@ -580,6 +582,11 @@ public class ResultSetViewer extends Viewer
                 updateFiltersText();
             }
         }
+    }
+
+    @Override
+    public void setSegmentFetchSize(Integer segmentFetchSize) {
+        this.segmentFetchSize = segmentFetchSize;
     }
 
     ////////////////////////////////////////////////////////////
@@ -3484,6 +3491,9 @@ public class ResultSetViewer extends Viewer
     {
         if (getDataContainer() == null) {
             return 0;
+        }
+        if (segmentFetchSize != null && segmentFetchSize > 0) {
+            return segmentFetchSize;
         }
         return getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
     }

@@ -193,6 +193,8 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData);
 
+    void setSegmentFetchSize(Integer segmentFetchSize);
+
     /**
      * Enable/disable viewer actions. May be used by editors to "lock" RSV actions like navigation, edit, etc.
      * Actions will be locked until lockedBy will be disposed

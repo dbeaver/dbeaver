@@ -175,6 +175,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.showOddRows = showOddRows;
     }
 
+    public boolean isAutoFetchSegments() {
+        return autoFetchSegments;
+    }
+
+    public void setAutoFetchSegments(boolean autoFetchSegments) {
+        this.autoFetchSegments = autoFetchSegments;
+    }
+
     @Nullable
     DBPDataSource getDataSource() {
         DBSDataContainer dataContainer = controller.getDataContainer();
