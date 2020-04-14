@@ -167,6 +167,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return spreadsheet;
     }
 
+    public boolean isShowOddRows() {
+        return showOddRows;
+    }
+
+    public void setShowOddRows(boolean showOddRows) {
+        this.showOddRows = showOddRows;
+    }
+
     @Nullable
     DBPDataSource getDataSource() {
         DBSDataContainer dataContainer = controller.getDataContainer();
