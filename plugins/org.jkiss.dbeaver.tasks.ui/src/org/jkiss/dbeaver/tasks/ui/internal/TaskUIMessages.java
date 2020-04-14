@@ -22,6 +22,16 @@ import org.eclipse.osgi.util.NLS;
 public class TaskUIMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages"; //$NON-NLS-1$
 
+	public static String edit_task_config_dialog_title_edit_task;
+	public static String edit_task_config_dialog_title_create_task;
+	public static String edit_task_config_dialog_label_type;
+	public static String edit_task_config_dialog_label_name;
+	public static String edit_task_config_dialog_label_descr;
+	
+	public static String edit_task_variabl_dialog_title_task_variables;
+	public static String edit_task_variabl_dialog_column_variable;
+	public static String edit_task_variabl_dialog_column_value;
+	
 	public static String task_config_wizard_group_task_label;
 	public static String task_config_wizard_button_save_task;
 	public static String task_config_wizard_link_open_tasks_view;
@@ -47,9 +57,7 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_stub_title_create_task;
 	public static String task_config_wizard_stub_page_name_void;
 	
-	public static String edit_task_variabl_dialog_title_task_variables;
-	public static String edit_task_variabl_dialog_column_variable;
-	public static String edit_task_variabl_dialog_column_value;
+	public static String task_processor_ui_message_task_completed;
 	
 	public static String db_tasks_selector_dialog;
 	
@@ -65,6 +73,7 @@ public class TaskUIMessages extends NLS {
 	public static String db_tasks_tree_column_controller_add_descr_run_duration;
 	public static String db_tasks_tree_column_controller_add_name_last_result;
 	public static String db_tasks_tree_column_controller_add_descr_last_result;
+	public static String db_tasks_tree_column_cell_text_success;
 	public static String db_tasks_tree_column_controller_add_name_next_run;
 	public static String db_tasks_tree_column_controller_add_descr_next_run;
 	public static String db_tasks_tree_column_controller_add_name_description;
@@ -76,6 +85,31 @@ public class TaskUIMessages extends NLS {
 	public static String db_tasks_tree_column_controller_add_name_project;
 	public static String db_tasks_tree_column_controller_add_descr_project;
 	
+	public static String db_tasks_view_filtered_tree_text_error_message;
+	public static String db_tasks_view_column_controller_add_name_time;
+	public static String db_tasks_view_column_controller_add_descr_start_time;
+	public static String db_tasks_view_column_controller_add_name_duration;
+	public static String db_tasks_view_column_controller_add_descr_task_duration;
+	public static String db_tasks_view_column_controller_add_name_result;
+	public static String db_tasks_view_column_controller_add_descr_task_result;
+	public static String db_tasks_view_cell_text_success;
+	public static String db_tasks_view_context_menu_command_delete_task;
+	public static String db_tasks_view_adapter_label_database_tasks;
+	public static String db_tasks_view_run_log_view;
+	public static String db_tasks_view_run_log_delete;
+	public static String db_tasks_view_run_log_confirm_remove;
+	public static String db_tasks_view_run_log_confirm_delete_task;
+	public static String db_tasks_view_clear_run_log_clear;
+	public static String db_tasks_view_clear_run_log_confirm_clear;
+	public static String db_tasks_view_clear_run_log_confirm_delete_log;
+	public static String db_tasks_view_open_run_log_folder_open;
+	
+	public static String task_handler_copy_name_dialog_enter_task;
+	
+	public static String task_handler_delete_confirm_title_delete_task;
+	public static String task_handler_delete_confirm_question_delete_task;
+	public static String task_handler_delete_confirm_title_delete_tasks;
+	public static String task_handler_delete_confirm_question_delete_tasks;
 	
 	
 	static {
