@@ -4137,6 +4137,10 @@ public abstract class LightGrid extends Canvas {
         return selectedColumns.size();
     }
 
+    public boolean isRowSelected(int row) {
+        return selectedRows.containsKey(row);
+    }
+
     /**
      * Returns selected rows indexes
      * @return indexes of selected rows
