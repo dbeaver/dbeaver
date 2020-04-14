@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.ui.svg.feature"
       label="%featureName"
-      version="1.0.66.qualifier"
+      version="1.0.67.qualifier"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.ext.ui.svg">
 

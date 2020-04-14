@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.derby</artifactId>
-  <version>1.1.115-SNAPSHOT</version>
+  <version>1.1.116-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
