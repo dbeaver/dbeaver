@@ -107,6 +107,7 @@ public class Win32WindowDemo implements WindowProc {
             }
             case WM_POWERBROADCAST: {
                 // FIXME: it doesn't work!!
+                System.out.println("Power event");
                 if (wParam.intValue() == PBT_APMQUERYSUSPEND)
                 {
                     onSuspend(wParam, lParam);
