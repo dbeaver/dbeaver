@@ -1786,22 +1786,14 @@ public abstract class LightGrid extends Canvas {
      *
      * @param item the item to be shown
      */
-    public void showItem(int item) {
-        showItem(item, -1);
-    }
-
-    public void showItem(int item, int topOffset) {
+    public void showItem(int item)
+    {
         checkWidget();
 
         updateScrollbars();
 
         // if no items are visible on screen then abort
         if (getVisibleGridHeight() < 1) {
-            return;
-        }
-
-        if (topOffset >= 0) {
-            setTopIndex(Math.max(0, item - topOffset));
             return;
         }
 
@@ -2411,7 +2403,7 @@ public abstract class LightGrid extends Canvas {
 
         // if the scrollbar is visible set its values
         if (vScroll.getVisible()) {
-            int max = getItemCount() + 1;
+            int max = getItemCount();
             int thumb = (getVisibleGridHeight() + 1) / (getItemHeight() + 1);
 
             // if possible, remember selection, if selection is too large, just

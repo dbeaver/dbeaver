@@ -38,14 +38,12 @@ import java.util.*;
 public class KeepAliveListenerJob extends AbstractJob
 {
     private static final int MONITOR_INTERVAL = 3000; // once per 3 seconds
-    private static final long SYSTEM_SUSPEND_INTERVAL = 30000; // 30 seconds of inactivity - most likely a system suspend
 
     private static final Log log = Log.getLog(KeepAliveListenerJob.class);
 
     private final DBPPlatform platform;
     private Map<String, Long> checkCache = new HashMap<>();
     private final Set<String> pingCache = new HashSet<>();
-    private long lastPingTime = -1;
 
     public KeepAliveListenerJob(DBPPlatform platform)
     {
@@ -61,11 +59,6 @@ public class KeepAliveListenerJob extends AbstractJob
         if (platform.isShuttingDown()) {
             return Status.OK_STATUS;
         }
-        if (lastPingTime > 0 && System.currentTimeMillis() - lastPingTime > SYSTEM_SUSPEND_INTERVAL) {
-            log.debug("System suspend detected! Reinitialize all remote connections.");
-        }
-        lastPingTime = System.currentTimeMillis();
-
         final DBPWorkspace workspace = platform.getWorkspace();
         for (DBPProject project : workspace.getProjects()) {
             if (project.isOpen() && project.isRegistryLoaded()) {
