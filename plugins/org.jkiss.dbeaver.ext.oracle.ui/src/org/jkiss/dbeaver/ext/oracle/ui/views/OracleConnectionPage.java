@@ -393,6 +393,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
                 connectionInfo.setUrl(connectionUrlText.getText());
                 break;
         }
+        connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());
 
         super.saveSettings(dataSource);
     }
