@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -38,8 +39,9 @@ public class ResultSetLabelProviderDefault implements IResultSetLabelProvider {
     private boolean colorizeDataTypes = true;
     private Color backgroundError;
 
-    public ResultSetLabelProviderDefault(ResultSetViewer viewer) {
+    ResultSetLabelProviderDefault(ResultSetViewer viewer) {
         this.viewer = viewer;
+        applyThemeSettings(PlatformUI.getWorkbench().getThemeManager().getCurrentTheme());
     }
 
     @Nullable
