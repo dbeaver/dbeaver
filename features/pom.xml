@@ -13,29 +13,30 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>org.jkiss.dbeaver.rcp.feature</module>
         <module>org.jkiss.dbeaver.runtime.feature</module>
-        <module>org.jkiss.dbeaver.ui.feature</module>
         <module>org.jkiss.dbeaver.db.feature</module>
-        <module>org.jkiss.dbeaver.db.ui.feature</module>
-        <module>org.jkiss.dbeaver.ide.feature</module>
-        <module>org.jkiss.dbeaver.standalone.feature</module>
-        <module>org.jkiss.dbeaver.appstore.feature</module>
-        <module>org.jkiss.dbeaver.ce.feature</module>
 
-        <module>org.jkiss.dbeaver.debug.feature</module>
-        <module>org.jkiss.dbeaver.ext.office.feature</module>
-        <module>org.jkiss.dbeaver.ext.ui.svg.feature</module>
         <module>org.jkiss.dbeaver.net.sshj.feature</module>
     </modules>
 
-    <!-- Include Git only in modern Eclipse version -->
     <profiles>
         <profile>
-            <id>eclipse-modern</id>
-            <activation><property><name>!legacy</name></property></activation>
+            <id>desktop</id>
+            <activation><property><name>!headless-platform</name></property></activation>
+            <!-- Desktop (swt/jface) components -->
             <modules>
+                <module>org.jkiss.dbeaver.rcp.feature</module>
+                <module>org.jkiss.dbeaver.ui.feature</module>
+                <module>org.jkiss.dbeaver.debug.feature</module>
+
+                <module>org.jkiss.dbeaver.db.ui.feature</module>
+                <module>org.jkiss.dbeaver.ide.feature</module>
+                <module>org.jkiss.dbeaver.standalone.feature</module>
+                <module>org.jkiss.dbeaver.appstore.feature</module>
+                <module>org.jkiss.dbeaver.ce.feature</module>
                 <module>org.jkiss.dbeaver.git.feature</module>
+                <module>org.jkiss.dbeaver.ext.office.feature</module>
+                <module>org.jkiss.dbeaver.ext.ui.svg.feature</module>
             </modules>
         </profile>
     </profiles>

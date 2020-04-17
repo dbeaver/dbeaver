@@ -32,15 +32,6 @@
         <module>bundles</module>
         <module>plugins</module>
         <module>features</module>
-
-        <!-- Products -->
-        <module>product/appstore</module>
-        <module>product/standalone</module>
-        <module>product/repositories</module>
-
-        <!-- Tests -->
-        <module>test</module>
-
     </modules>
 
     <repositories>
@@ -176,24 +167,6 @@
                 </executions>
             </plugin>
 
-            <!-- Surefire -->
-
-<!--
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.5</version>
-                <executions>
-                    <execution>
-                        <id>generate-test-report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
--->
         </plugins>
 
     </build>
@@ -209,66 +182,19 @@
     </reporting>
 
     <profiles>
-        <!-- Profile used to switch to older (Oxygen) Eclipse platform -->
+        <!-- desktop build: includes UI components and products -->
         <profile>
-            <id>eclipse-oxygen</id>
-            <activation>
-                <property><name>legacy</name></property>
-            </activation>
-            <properties>
-                <!-- Use Oxygen repo -->
-                <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
-            </properties>
-        </profile>
-        <!-- eclipse-modern must be enabled by default -->
-        <profile>
-            <id>eclipse-modern</id>
-            <activation><property><name>!legacy</name></property></activation>
-        </profile>
+            <id>desktop</id>
+            <activation><property><name>!headless-platform</name></property></activation>
+            <modules>
+                <!-- Tests -->
+                <module>test</module>
 
-        <!--
-            Profile for 32bit builds.
-            Also requires profile eclipse-oxygen (as newer Eclipse versions don't support 32bit arch).
-            Also Java 1.8 must be used.
-        -->
-        <profile>
-            <id>32bit</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-
-            <repositories>
-                <!-- Use Orbit because old Eclipse doesn't have many bundles -->
-                <!--<repository>
-                    <id>eclipse-orbit-repo</id>
-                    <url>${orbit-p2-repo.url}</url>
-                    <layout>p2</layout>
-                </repository>-->
-            </repositories>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.eclipse.tycho</groupId>
-                        <artifactId>target-platform-configuration</artifactId>
-                        <version>${tycho-version}</version>
-                        <configuration>
-                            <environments>
-                                <environment>
-                                    <os>win32</os>
-                                    <ws>win32</ws>
-                                    <arch>x86</arch>
-                                </environment>
-                                <environment>
-                                    <os>linux</os>
-                                    <ws>gtk</ws>
-                                    <arch>x86</arch>
-                                </environment>
-                            </environments>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+                <!-- Products -->
+                <module>product/appstore</module>
+                <module>product/standalone</module>
+                <module>product/repositories</module>
+            </modules>
         </profile>
 
         <!-- Profile for jars sign -->

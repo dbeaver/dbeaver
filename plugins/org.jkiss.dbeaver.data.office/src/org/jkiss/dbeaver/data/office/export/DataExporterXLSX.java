@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -324,8 +323,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     public void exportHeader(DBCSession session) {
 
         columns = getSite().getAttributes();
+        // FIXME: we want to avoid UI component dependency. But still want to use its preferences
         showDescription = session.getDataSource().getContainer().getPreferenceStore()
-                .getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
+                .getBoolean("resultset.show.columnDescription");
     }
 
     private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
