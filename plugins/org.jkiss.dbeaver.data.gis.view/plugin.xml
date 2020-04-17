@@ -19,15 +19,15 @@
 
     <extension point="org.jkiss.dbeaver.data.gis.geometryViewer">
         <geometryViewer
-                label="Text"
-                description="View GIS object in text form"
+                label="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISTextViewer.label"
+                description="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISTextViewer.description"
                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
                 id="text"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
                 supportsInline="true"/>
         <geometryViewer
-                label="Map"
-                description="View GIS object on map"
+                label="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer.label"
+                description="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer.description"
                 icon="icons/map.png"
                 id="browser"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
