@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.gis.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class GISMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.internal.GISResources"; //$NON-NLS-1$
+	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.gis.internal.GISResources"; //$NON-NLS-1$
 
 	public static String panel_leaflet_viewer_tool_bar_action_text_open;
 	public static String panel_leaflet_viewer_tool_bar_action_text_copy_as;
