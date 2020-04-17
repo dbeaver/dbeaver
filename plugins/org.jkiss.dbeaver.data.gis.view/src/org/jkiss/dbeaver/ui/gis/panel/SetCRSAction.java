@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.ui.gis.panel;
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 
 class SetCRSAction extends Action {
     private final IGeometryValueEditor valueEditor;
     private final int srid;
 
     public SetCRSAction(IGeometryValueEditor valueEditor, int srid) {
-        super(srid == GisConstants.SRID_SIMPLE ? "Simple" : "EPSG:" + srid, AS_CHECK_BOX);
+        super(srid == GisConstants.SRID_SIMPLE ? GISMessages.panel_set_crs_action_text_simple : "EPSG:" + srid, AS_CHECK_BOX);
         this.valueEditor = valueEditor;
         this.srid = srid;
     }

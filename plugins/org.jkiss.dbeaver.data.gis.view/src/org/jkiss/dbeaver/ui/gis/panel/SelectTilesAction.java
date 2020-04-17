@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
 
@@ -31,7 +32,7 @@ class SelectTilesAction extends Action {
     private IGeometryValueEditor valueEditor;
 
     SelectTilesAction(IGeometryValueEditor valueEditor) {
-        super(valueEditor.getValueSRID() == 0 ? "Plain" : GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLabel(), Action.AS_DROP_DOWN_MENU);
+        super(valueEditor.getValueSRID() == 0 ? GISMessages.panel_select_tiles_action_text_plain : GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLabel(), Action.AS_DROP_DOWN_MENU);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PICTURE));
         this.valueEditor = valueEditor;
     }

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 
 import java.util.List;
 
@@ -68,13 +69,13 @@ class SelectCRSAction extends Action {
                     }
                     menuManager.add(new Separator());
                 }
-                menuManager.add(new Action("Other ...") {
+                menuManager.add(new Action(GISMessages.panel_select_crs_action_menu_manager_other) {
                     @Override
                     public void run() {
                         SelectCRSAction.this.run();
                     }
                 });
-                menuManager.add(new Action("Configuration ...") {
+                menuManager.add(new Action(GISMessages.panel_select_crs_action_menu_manager_config) {
                     @Override
                     public void run() {
                         new GISViewerConfigurationDialog(valueEditor.getEditorControl().getShell()).open();
