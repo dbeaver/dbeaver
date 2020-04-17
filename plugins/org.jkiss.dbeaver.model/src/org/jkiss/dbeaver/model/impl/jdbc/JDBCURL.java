@@ -38,6 +38,15 @@ public class JDBCURL {
     private static final char URL_OPTIONAL_END = ']'; //$NON-NLS-1$
 
     public static String generateUrlByTemplate(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        if (!CommonUtils.isEmpty(connectionInfo.getUrl()) &&
+            CommonUtils.isEmpty(connectionInfo.getHostPort()) &&
+            CommonUtils.isEmpty(connectionInfo.getHostName()) &&
+            CommonUtils.isEmpty(connectionInfo.getServerName()) &&
+            CommonUtils.isEmpty(connectionInfo.getDatabaseName()))
+        {
+            // No parameters, just URL - so URL it is
+            return connectionInfo.getUrl();
+        }
         try {
             String urlTemplate = driver.getSampleURL();
             if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
