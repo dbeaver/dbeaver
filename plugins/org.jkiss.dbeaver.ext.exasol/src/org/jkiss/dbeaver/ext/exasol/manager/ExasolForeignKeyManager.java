@@ -57,6 +57,9 @@ public class ExasolForeignKeyManager
                 if (!editPage.edit()) {
                     return null;
                 }
+                foreignKey.setName(editPage.getName());
+                foreignKey.setReferencedConstraint((ExasolTableUniqueKey)editPage.getUniqueConstraint());
+                foreignKey.setEnabled(editPage.isEnabled());
 
                 List<ExasolTableForeignKeyColumn> columns = new ArrayList<>();
                 int cnt = 0;
@@ -74,9 +77,6 @@ public class ExasolForeignKeyManager
                     }
                 }
 
-                foreignKey.setName(editPage.getName());
-                foreignKey.setReferencedConstraint((ExasolTableUniqueKey)editPage.getUniqueConstraint());
-                foreignKey.setEnabled(editPage.isEnabled());
                 foreignKey.setColumns(columns);
 
                 return foreignKey;
