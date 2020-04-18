@@ -147,7 +147,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean showAttributeDescription;
     private boolean calcColumnWidthByValue;
 
-    private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
     private boolean showBooleanAsCheckbox;
@@ -747,7 +746,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS);
         //showCelIcons = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS);
-        colorizeDataTypes = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         rightJustifyNumbers = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         rightJustifyDateTime = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
         rowBatchSize = preferenceStore.getInt(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);

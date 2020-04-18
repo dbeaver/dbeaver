@@ -423,7 +423,12 @@ public class ResultSetViewer extends Viewer
             return;
         }
         lastPropertyUpdateTime = System.currentTimeMillis();
-        UIUtils.asyncExec(() -> redrawData(false, false));
+        UIUtils.asyncExec(() -> {
+            if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
+                labelProviderDefault.applyThemeSettings();
+            }
+            redrawData(false, false);
+        });
     }
 
     @Override
