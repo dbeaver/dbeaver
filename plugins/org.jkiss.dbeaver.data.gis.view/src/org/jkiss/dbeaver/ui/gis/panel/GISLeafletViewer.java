@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -394,13 +395,13 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
     private void updateToolbar() {
         toolBarManager.removeAll();
-        toolBarManager.add(new Action("Open in browser", DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
             public void run() {
                 UIUtils.launchProgram(scriptFile.getAbsolutePath());
             }
         });
-        toolBarManager.add(new Action("Copy as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_copy_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
             @Override
             public void run() {
                 Image image = new Image(Display.getDefault(), browser.getBounds());
@@ -415,7 +416,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
             }
         });
-        toolBarManager.add(new Action("Save as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_save_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
             @Override
             public void run() {
                 final Shell shell = browser.getShell();
@@ -462,7 +463,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             }
         });
 
-        toolBarManager.add(new Action("Print", DBeaverIcons.getImageDescriptor(UIIcon.PRINT)) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_print, DBeaverIcons.getImageDescriptor(UIIcon.PRINT)) {
             @Override
             public void run() {
                 GC gc = new GC(browser.getDisplay());
@@ -482,9 +483,9 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         Action tilesSelectorAction = new SelectTilesAction(this);
         toolBarManager.add(ActionUtils.makeActionContribution(tilesSelectorAction, true));
 
-        toolBarManager.add(new Action("Flip coordinates", Action.AS_CHECK_BOX) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_flip, Action.AS_CHECK_BOX) {
             {
-                setToolTipText("Flip latitude/longitude coordinates in source data");
+                setToolTipText(GISMessages.panel_leaflet_viewer_tool_bar_action_tool_tip_text_flip);
                 setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.LINK_TO_EDITOR));
             }
 
@@ -508,7 +509,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
         toolBarManager.add(new Separator());
 
-        toolBarManager.add(new Action("Show/Hide controls", Action.AS_CHECK_BOX) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_show_hide, Action.AS_CHECK_BOX) {
             {
                 setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PALETTE));
             }

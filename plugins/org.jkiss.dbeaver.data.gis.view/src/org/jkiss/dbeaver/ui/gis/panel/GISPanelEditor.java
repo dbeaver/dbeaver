@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -107,7 +108,7 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
         ViewerSwitchAction() {
             super(null, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SCRIPTS));
-            setToolTipText("Geometry viewer settings");
+            setToolTipText(GISMessages.panel_gis_panel_editor_viewer_action_tool_tip_text_settings);
         }
 
         @Override

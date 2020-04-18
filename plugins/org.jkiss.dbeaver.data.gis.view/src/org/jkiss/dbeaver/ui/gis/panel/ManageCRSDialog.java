@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 
 import java.lang.reflect.InvocationTargetException;
@@ -65,7 +66,7 @@ public class ManageCRSDialog extends BaseDialog {
     }
 
     public ManageCRSDialog(Shell shell, int defCRS) {
-        super(shell, "Select Coordinate Reference System (CRS)", null);
+        super(shell, GISMessages.panel_manage_crs_dialog_title_select_system, null);
         selectedSRID = defCRS;
     }
 
@@ -106,10 +107,10 @@ public class ManageCRSDialog extends BaseDialog {
         crsTree.setLayoutData(new GridData(GridData.FILL_BOTH));
         crsTree.setHeaderVisible(true);
 
-        UIUtils.createTreeColumn(crsTree, SWT.LEFT, "Name");
-        UIUtils.createTreeColumn(crsTree, SWT.LEFT, "SRID");
-        UIUtils.createTreeColumn(crsTree, SWT.LEFT, "Coord. System");
-        UIUtils.createTreeColumn(crsTree, SWT.LEFT, "Projection");
+        UIUtils.createTreeColumn(crsTree, SWT.LEFT, GISMessages.panel_manage_crs_dialog_tree_column_text_name);
+        UIUtils.createTreeColumn(crsTree, SWT.LEFT, GISMessages.panel_manage_crs_dialog_tree_column_text_srid);
+        UIUtils.createTreeColumn(crsTree, SWT.LEFT, GISMessages.panel_manage_crs_dialog_tree_column_text_coordinate_system);
+        UIUtils.createTreeColumn(crsTree, SWT.LEFT, GISMessages.panel_manage_crs_dialog_tree_column_text_projection);
 
         treeViewer.setContentProvider(new ITreeContentProvider() {
             @Override
@@ -270,10 +271,10 @@ public class ManageCRSDialog extends BaseDialog {
             {
                 List<Integer> crsCodes = GisTransformUtils.getSortedEPSGCodes();
 
-                monitor.beginTask("Load CRS list", crsCodes.size());
+                monitor.beginTask(GISMessages.panel_manage_crs_dialog_monitor_begin_task_load_crs, crsCodes.size());
                 for (Integer code : crsCodes) {
                     String crsID = regName + ":" + code;
-                    monitor.subTask("Load CRS " + crsID);
+                    monitor.subTask(GISMessages.panel_manage_crs_dialog_monitor_sub_task_load_crs + " " + crsID);
                     try {
                         CoordinateReferenceSystem crs = crsFactory.getCRS(crsID);
 
