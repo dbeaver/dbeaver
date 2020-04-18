@@ -2014,7 +2014,7 @@ public class UIUtils {
             @Override
             public void paintControl(PaintEvent e) {
                 String tip = tipProvider.getValue(control);
-                if (tip != null && (control.isEnabled() && isEmptyTextControl(control) && !control.isFocusControl())) {
+                if (tip != null && (isEmptyTextControl(control) && !control.isFocusControl())) {
                     e.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
                     e.gc.setFont(hintFont);
                     e.gc.drawText(tip, 2, 0, true);
