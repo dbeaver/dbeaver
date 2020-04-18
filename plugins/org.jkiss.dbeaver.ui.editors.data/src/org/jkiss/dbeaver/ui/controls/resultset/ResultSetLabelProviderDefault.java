@@ -41,6 +41,10 @@ public class ResultSetLabelProviderDefault implements IResultSetLabelProvider {
 
     ResultSetLabelProviderDefault(ResultSetViewer viewer) {
         this.viewer = viewer;
+        applyThemeSettings();
+    }
+
+    void applyThemeSettings() {
         applyThemeSettings(PlatformUI.getWorkbench().getThemeManager().getCurrentTheme());
     }
 
