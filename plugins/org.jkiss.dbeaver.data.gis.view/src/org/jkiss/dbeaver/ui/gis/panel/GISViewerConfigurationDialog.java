@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,7 +43,7 @@ public class GISViewerConfigurationDialog extends BaseDialog {
     private Text maxObjectsText;
 
     public GISViewerConfigurationDialog(Shell shell) {
-        super(shell, "Configure GIS viewer defaults", null);
+        super(shell, GISMessages.panel_gis_viewer_config_dialog_title_configure, null);
     }
 
     @Override
@@ -51,11 +52,11 @@ public class GISViewerConfigurationDialog extends BaseDialog {
 
         DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
 
-        Group crsGroup = UIUtils.createControlGroup(dialogArea, "Settings", 2, SWT.NONE, 0);
+        Group crsGroup = UIUtils.createControlGroup(dialogArea, GISMessages.panel_gis_viewer_config_dialog_control_group_label, 2, SWT.NONE, 0);
         crsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        defaultSridText = UIUtils.createLabelText(crsGroup, "Default SRID", preferences.getString(GeometryViewerConstants.PREF_DEFAULT_SRID), SWT.BORDER);
+        defaultSridText = UIUtils.createLabelText(crsGroup, GISMessages.panel_gis_viewer_config_dialog_label_text_srid, preferences.getString(GeometryViewerConstants.PREF_DEFAULT_SRID), SWT.BORDER);
         defaultSridText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
-        maxObjectsText = UIUtils.createLabelText(crsGroup, "Maximum objects per viewer", preferences.getString(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER), SWT.BORDER);
+        maxObjectsText = UIUtils.createLabelText(crsGroup, GISMessages.panel_gis_viewer_config_dialog_label_tixi_max_objects, preferences.getString(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER), SWT.BORDER);
         maxObjectsText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
 
         return dialogArea;

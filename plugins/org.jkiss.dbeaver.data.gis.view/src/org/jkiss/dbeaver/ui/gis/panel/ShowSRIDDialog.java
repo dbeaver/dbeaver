@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 
 /**
  * SRID details dialog
@@ -44,7 +45,7 @@ public class ShowSRIDDialog extends BaseDialog {
     private int selectedSRID;
 
     public ShowSRIDDialog(Shell shell, int defCRS) {
-        super(shell, "Select Coordinate Reference System (CRS) Identifier", null);
+        super(shell, GISMessages.panel_show_srid_dialog_title_select, null);
         selectedSRID = defCRS;
     }
 
@@ -59,13 +60,13 @@ public class ShowSRIDDialog extends BaseDialog {
         try {
             CoordinateReferenceSystem crs = GisTransformUtils.getCRSFactory().getCRS("EPSG:" + selectedSRID);
 
-            Group crsGroup = UIUtils.createControlGroup(dialogArea, "CRS details", 2, SWT.NONE, 0);
+            Group crsGroup = UIUtils.createControlGroup(dialogArea, GISMessages.panel_show_srid_dialog_control_group_label_details, 2, SWT.NONE, 0);
             crsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.createLabelText(crsGroup, "SRID", String.valueOf(selectedSRID), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(crsGroup, "Name", crs.getName(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(crsGroup, "Coordinate System", crs.getCoordinateSystem().toString(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(crsGroup, "Projection", crs.getProjection() == null ? "N/A" : crs.getProjection().toString(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(crsGroup, "Type", crs.getType() == null ? "N/A" : crs.getType().toString(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(crsGroup, GISMessages.panel_show_srid_dialog_label_text_name, crs.getName(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(crsGroup, GISMessages.panel_show_srid_dialog_label_text_coordinate, crs.getCoordinateSystem().toString(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(crsGroup, GISMessages.panel_show_srid_dialog_label_text_projection, crs.getProjection() == null ? "N/A" : crs.getProjection().toString(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(crsGroup, GISMessages.panel_show_srid_dialog_label_text_type, crs.getType() == null ? "N/A" : crs.getType().toString(), SWT.BORDER | SWT.READ_ONLY);
 
             Text wktText = UIUtils.createLabelText(crsGroup, "WKT", crs.toWKT(), SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
             GridData gd = new GridData(GridData.FILL_BOTH);
