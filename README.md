@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/dbeaver/dbeaver.svg?branch=devel)](https://travis-ci.org/dbeaver/dbeaver)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/70fbe55885864aa38d246b8180f5916a)](https://www.codacy.com/manual/serge/dbeaver?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dbeaver/dbeaver&amp;utm_campaign=Badge_Grade)
 [![Apache 2.0](https://img.shields.io/github/license/cronn-de/jira-sync.svg)](http://www.apache.org/licenses/LICENSE-2.0)
-[![Java CI](https://github.com/dbeaver/dbeaver/workflows/Java%20CI/badge.svg)]
+![Java CI](https://github.com/dbeaver/dbeaver/workflows/Java%20CI/badge.svg)
 <!--[![paypal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KFGAGZ24YZE3C)-->
 
 
