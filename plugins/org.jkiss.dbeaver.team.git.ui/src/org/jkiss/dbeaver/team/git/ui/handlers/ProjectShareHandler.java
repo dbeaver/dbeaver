@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.commands.IElementUpdater;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.team.git.ui.internal.GITMessages;
 import org.jkiss.dbeaver.team.git.ui.utils.GitUIUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -71,8 +73,8 @@ public class ProjectShareHandler extends AbstractHandler implements IElementUpda
 
             DBeaverNotifications.showNotification(
                 "git",
-                "Project added to Git",
-                "Project '" + project.getName() + "' has been added to Git repository",
+                GITMessages.project_share_handler_notifications_title_project_added,
+                NLS.bind(GITMessages.project_share_handler_notifications_text_project_added, project.getName()),
                 DBPMessageType.INFORMATION,
                 () -> ActionUtils.runCommand(GITCommandIds.CMD_COMMIT, workbench));
         }
@@ -130,7 +132,7 @@ public class ProjectShareHandler extends AbstractHandler implements IElementUpda
     public void updateElement(UIElement element, Map parameters) {
         IProject project = GitUIUtils.extractActiveProject(element.getServiceLocator());
         if (project != null) {
-            element.setText("Add '" + project.getName() + "' to Git repository");
+            element.setText(NLS.bind(GITMessages.project_share_handler_menu_element_text_add, project.getName()));
         }
     }
 }
