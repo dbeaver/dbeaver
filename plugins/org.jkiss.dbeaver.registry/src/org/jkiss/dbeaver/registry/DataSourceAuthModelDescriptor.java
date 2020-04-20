@@ -63,7 +63,7 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
             if (!CommonUtils.isEmpty(id) && !id.equals(dataSourceContainer.getDriver().getProviderId())) {
                 return false;
             }
-            if (!CommonUtils.isEmpty(driver) && !id.equals(dataSourceContainer.getDriver().getId())) {
+            if (!CommonUtils.isEmpty(driver) && !driver.equals(dataSourceContainer.getDriver().getId())) {
                 return false;
             }
             if (expression != null) {
