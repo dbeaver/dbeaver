@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.virtual;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -48,7 +50,7 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpC
     private Table attrTable;
 
     public EditVirtualColumnsPage(ResultSetViewer viewer, DBVEntity vEntity) {
-        super("Add virtual columns", DBIcon.TREE_COLUMN);
+        super(ResultSetMessages.virtual_edit_columns_page_add, DBIcon.TREE_COLUMN);
         this.viewer = viewer;
         this.vEntity = vEntity;
     }
@@ -67,15 +69,15 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpC
         attrTable.setHeaderVisible(true);
         UIUtils.executeOnResize(attrTable, () -> UIUtils.packColumns(attrTable, true));
 
-        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Name");
-        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Data type");
-        UIUtils.createTableColumn(attrTable, SWT.LEFT, "Expression");
+        UIUtils.createTableColumn(attrTable, SWT.LEFT, ResultSetMessages.virtual_edit_columns_page_table_column_name);
+        UIUtils.createTableColumn(attrTable, SWT.LEFT, ResultSetMessages.virtual_edit_columns_page_table_column_data_type);
+        UIUtils.createTableColumn(attrTable, SWT.LEFT, ResultSetMessages.virtual_edit_columns_page_table_column_expression);
 
         {
             Composite buttonsPanel = UIUtils.createComposite(panel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            Button btnAdd = UIUtils.createDialogButton(buttonsPanel, "Add", new SelectionAdapter() {
+            Button btnAdd = UIUtils.createDialogButton(buttonsPanel, ResultSetMessages.virtual_edit_columns_page_dialog_button_add, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityAttribute vAttr = new DBVEntityAttribute(vEntity, null, "vcolumn");
@@ -88,7 +90,7 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpC
                     }
                 }
             });
-            Button btnEdit = UIUtils.createDialogButton(buttonsPanel, "Edit ...", new SelectionAdapter() {
+            Button btnEdit = UIUtils.createDialogButton(buttonsPanel, ResultSetMessages.virtual_edit_columns_page_dialog_button_edit, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     editSelectedAttribute(attrTable);
@@ -96,13 +98,13 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpC
             });
             btnEdit.setEnabled(false);
 
-            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, "Remove", new SelectionAdapter() {
+            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, ResultSetMessages.virtual_edit_columns_page_dialog_button_remove, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityAttribute virtualAttr = (DBVEntityAttribute) attrTable.getSelection()[0].getData();
                     if (!UIUtils.confirmAction(parent.getShell(),
-                        "Delete virtual column",
-                        "Are you sure you want to delete virtual column '" + virtualAttr.getName() + "'?")) {
+                    	ResultSetMessages.virtual_edit_columns_page_confirm_action_delete,
+                        NLS.bind(ResultSetMessages.virtual_edit_columns_page_confirm_action_question_delete_column, virtualAttr.getName()))) {
                         return;
                     }
                     vEntity.removeVirtualAttribute(virtualAttr);

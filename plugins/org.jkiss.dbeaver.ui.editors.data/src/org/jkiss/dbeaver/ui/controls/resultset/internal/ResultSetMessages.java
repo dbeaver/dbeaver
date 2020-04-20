@@ -294,6 +294,16 @@ public class ResultSetMessages extends NLS {
     public static String results_decorator_grouping_is_not_supported;
     public static String results_decorator_no_connected_to_db;
     public static String results_decorator_no_groupings;
+    
+    public static String virtual_edit_columns_page_add;
+    public static String virtual_edit_columns_page_table_column_name;
+    public static String virtual_edit_columns_page_table_column_data_type;
+    public static String virtual_edit_columns_page_table_column_expression;
+    public static String virtual_edit_columns_page_dialog_button_add;
+    public static String virtual_edit_columns_page_dialog_button_edit;
+    public static String virtual_edit_columns_page_dialog_button_remove;
+    public static String virtual_edit_columns_page_confirm_action_delete;
+    public static String virtual_edit_columns_page_confirm_action_question_delete_column;
 
     static {
         // initialize resource bundle

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.virtual.EditVirtualColumnsPage;
 import org.jkiss.dbeaver.ui.controls.resultset.virtual.EditVirtualEntityDialog;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
@@ -81,7 +83,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
     @Override
     public void refreshPart(Object source, boolean force) {
-        new AbstractJob("Load logical entity references") {
+        new AbstractJob(DataEditorsMessages.virtual_structure_editor_abstract_job_load_entity) {
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
@@ -170,9 +172,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 //        Composite attrsComposite = UIUtils.createComposite(composite, 1);
 //        attrsComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createInfoLabel(composite, "Entity logical structure exists only on the client-side, not in a real database." +
-            "\nYou can define virtual unique/foreign keys even if physical database " +
-            "doesn't have or doesn't support them.", GridData.FILL_HORIZONTAL, 1);
+        UIUtils.createInfoLabel(composite, DataEditorsMessages.virtual_structure_editor_info_label_entity_structure, GridData.FILL_HORIZONTAL, 1);
         parent.layout(true, true);
 
         DBSEntity dbObject = getDatabaseObject();
@@ -186,14 +186,14 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             editDictionaryPage = new EditDictionaryPage(entity);
             editDictionaryPage.createControl(tabFolder);
             TabItem dictItem = new TabItem(tabFolder, SWT.NONE);
-            dictItem.setText("Dictionary");
+            dictItem.setText(DataEditorsMessages.virtual_structure_editor_dictionary_page_text);
             dictItem.setControl(editDictionaryPage.getControl());
             dictItem.setData(EditVirtualEntityDialog.InitPage.DICTIONARY);
         }
     }
 
     private void createColumnsPage(Composite parent) {
-        Group group = UIUtils.createControlGroup(parent, "Virtual Columns", 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        Group group = UIUtils.createControlGroup(parent, DataEditorsMessages.virtual_structure_editor_columns_group_virtual, 1, GridData.FILL_BOTH, SWT.DEFAULT);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         columnsPage = new EditVirtualColumnsPage(null, vEntity);
@@ -205,24 +205,24 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         if (uniqueConstraint == null) {
             return;
         }
-        Group group = UIUtils.createControlGroup(parent, "Virtual Unique Keys", 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        Group group = UIUtils.createControlGroup(parent, DataEditorsMessages.virtual_structure_editor_columns_group_unique_keys, 1, GridData.FILL_BOTH, SWT.DEFAULT);
 
         ukTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
         ukTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         ukTable.setHeaderVisible(true);
 
-        UIUtils.createTableColumn(ukTable, SWT.LEFT, "Key name");
-        UIUtils.createTableColumn(ukTable, SWT.LEFT, "Columns");
+        UIUtils.createTableColumn(ukTable, SWT.LEFT, DataEditorsMessages.virtual_structure_editor_table_column_key_name);
+        UIUtils.createTableColumn(ukTable, SWT.LEFT, DataEditorsMessages.virtual_structure_editor_table_column_columns);
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            Button btnAdd = UIUtils.createDialogButton(buttonsPanel, "Add", new SelectionAdapter() {
+            Button btnAdd = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityConstraint newConstraint = new DBVEntityConstraint(vEntity, DBSEntityConstraintType.VIRTUAL_KEY, vEntity.getName() + "_uk");
-                    EditConstraintPage editPage = new EditConstraintPage("Edit unique key", newConstraint);
+                    EditConstraintPage editPage = new EditConstraintPage(DataEditorsMessages.virtual_structure_editor_constraint_page_edit_key, newConstraint);
                     if (editPage.edit()) {
                         changeConstraint(newConstraint, editPage);
                         vEntity.addConstraint(newConstraint);
@@ -237,7 +237,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 public void widgetSelected(SelectionEvent e) {
                     TableItem ukItem = ukTable.getSelection()[0];
                     DBVEntityConstraint virtualUK = (DBVEntityConstraint) ukItem.getData();
-                    EditConstraintPage editPage = new EditConstraintPage("Edit unique key", virtualUK);
+                    EditConstraintPage editPage = new EditConstraintPage(DataEditorsMessages.virtual_structure_editor_constraint_page_edit_key, virtualUK);
                     if (editPage.edit()) {
                         changeConstraint(virtualUK, editPage);
                         ukItem.setText(0, DBUtils.getObjectFullName(virtualUK, DBPEvaluationContext.UI));
@@ -246,16 +246,16 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                     }
                 }
             };
-            Button btnEdit = UIUtils.createDialogButton(buttonsPanel, "Edit", ukEditListener);
+            Button btnEdit = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_edit, ukEditListener);
             btnEdit.setEnabled(false);
 
-            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, "Remove", new SelectionAdapter() {
+            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_remove, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityConstraint virtualUK = (DBVEntityConstraint) ukTable.getSelection()[0].getData();
                     if (!UIUtils.confirmAction(parent.getShell(),
-                        "Delete virtual unique key",
-                        "Are you sure you want to delete virtual unique key '" + virtualUK.getName() + "'?")) {
+                    		DataEditorsMessages.virtual_structure_editor_confirm_action_delete_key,
+                        NLS.bind(DataEditorsMessages.virtual_structure_editor_confirm_action_question_delete, virtualUK.getName()))) {
                         return;
                     }
                     vEntity.removeConstraint(virtualUK);
@@ -303,21 +303,21 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createForeignKeysPage(Composite parent) {
-        Group group = UIUtils.createControlGroup(parent, "Virtual Foreign Keys", 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        Group group = UIUtils.createControlGroup(parent, DataEditorsMessages.virtual_structure_editor_control_group_label_foreign_key, 1, GridData.FILL_BOTH, SWT.DEFAULT);
 
         fkTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
         fkTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         fkTable.setHeaderVisible(true);
 
-        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Target Table");
-        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Columns");
-        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Target Datasource");
+        UIUtils.createTableColumn(fkTable, SWT.LEFT, DataEditorsMessages.virtual_structure_editor_table_column_target_table);
+        UIUtils.createTableColumn(fkTable, SWT.LEFT, DataEditorsMessages.virtual_structure_editor_table_column_columns);
+        UIUtils.createTableColumn(fkTable, SWT.LEFT, DataEditorsMessages.virtual_structure_editor_table_column_datasource);
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 2);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            UIUtils.createDialogButton(buttonsPanel, "Add", new SelectionAdapter() {
+            UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityForeignKey virtualFK = EditForeignKeyPage.createVirtualForeignKey(vEntity);
@@ -327,13 +327,13 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                 }
             });
 
-            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, "Remove", new SelectionAdapter() {
+            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_remove, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityForeignKey virtualFK = (DBVEntityForeignKey) fkTable.getSelection()[0].getData();
                     if (!UIUtils.confirmAction(parent.getShell(),
-                        "Delete virtual FK",
-                        "Are you sure you want to delete virtual foreign key '" + virtualFK.getName() + "'?")) {
+                    		DataEditorsMessages.virtual_structure_editor_confirm_action_delete_fk,
+                        NLS.bind(DataEditorsMessages.virtual_structure_editor_confirm_action_question_delete_foreign, virtualFK.getName()))) {
                         return;
                     }
                     vEntity.removeForeignKey(virtualFK);
@@ -353,21 +353,21 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createReferencesPage(Composite parent) {
-        Group group = UIUtils.createControlGroup(parent, "Virtual references", 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        Group group = UIUtils.createControlGroup(parent, DataEditorsMessages.virtual_structure_editor_control_group_references, 1, GridData.FILL_BOTH, SWT.DEFAULT);
 
         refTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
         refTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         refTable.setHeaderVisible(true);
 
-        UIUtils.createTableColumn(refTable, SWT.LEFT, "Source Table");
-        UIUtils.createTableColumn(refTable, SWT.LEFT, "Columns");
-        UIUtils.createTableColumn(refTable, SWT.LEFT, "Source Datasource");
+        UIUtils.createTableColumn(refTable, SWT.LEFT, DataEditorsMessages.virtual_structure_editor_table_column_source_table);
+        UIUtils.createTableColumn(refTable, SWT.LEFT, DataEditorsMessages.virtual_structure_editor_table_column_columns);
+        UIUtils.createTableColumn(refTable, SWT.LEFT, DataEditorsMessages.virtual_structure_editor_table_column_source_datasource);
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 2);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            UIUtils.createDialogButton(buttonsPanel, "Refresh", new SelectionAdapter() {
+            UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_refresh, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                 }
