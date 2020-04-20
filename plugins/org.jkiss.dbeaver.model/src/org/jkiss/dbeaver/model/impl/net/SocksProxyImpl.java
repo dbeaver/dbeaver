@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
+import org.eclipse.core.net.proxy.IProxyService;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -24,19 +26,27 @@ import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
+import java.net.ProxySelector;
 
 /**
  * SOCKS proxy
  */
 public class SocksProxyImpl implements DBWNetworkHandler, DBWForwarder {
+    private static final Log log = Log.getLog(SocksProxyImpl.class);
 
     private DBWHandlerConfiguration configuration;
 
     @Override
     public DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo) throws DBException, IOException {
         this.configuration = configuration;
+
+        setupProxyHandler();
+
         return null;
     }
 
@@ -52,6 +62,29 @@ public class SocksProxyImpl implements DBWNetworkHandler, DBWForwarder {
             return socksPort == port;
         }
         return false;
+    }
+
+    private static void activateProxyService() {
+        try {
+            log.debug("Proxy service '" + IProxyService.class.getName() + "' loaded");
+        } catch (Throwable e) {
+            log.debug("Proxy service not found");
+        }
+    }
+
+    private static void setupProxyHandler() {
+        if (ProxySelector.getDefault() instanceof GlobalProxySelector) {
+            return;
+        }
+
+        activateProxyService();
+
+        // Init default network settings
+        ProxySelector defProxySelector = GeneralUtils.adapt(DBWorkbench.getPlatform(), ProxySelector.class);
+        if (defProxySelector == null) {
+            defProxySelector = new GlobalProxySelector(ProxySelector.getDefault());
+        }
+        ProxySelector.setDefault(defProxySelector);
     }
 
 }

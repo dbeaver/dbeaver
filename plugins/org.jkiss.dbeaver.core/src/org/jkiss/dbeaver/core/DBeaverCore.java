@@ -163,8 +163,6 @@ public class DBeaverCore extends BasePlatformImpl {
         this.qmLogWriter = new QMLogFileWriter();
         this.queryManager.registerMetaListener(qmLogWriter);
 
-        installProxySelector();
-
         super.initialize();
 
         log.debug("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
