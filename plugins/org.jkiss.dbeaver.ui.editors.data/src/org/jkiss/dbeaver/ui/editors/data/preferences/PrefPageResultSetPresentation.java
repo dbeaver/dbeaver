@@ -51,6 +51,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
     private Button rightJustifyNumbers;
     private Button rightJustifyDateTime;
+    
+    private Button autoCompleteProposal;
 
     private Button gridShowOddRows;
     private Button colorizeDataTypes;
@@ -100,6 +102,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION) ||
             store.contains(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||
+            
+            store.contains(ResultSetPreferences.RESULT_SET_AUTO_COMPLETE_PROPOSIAL) ||
 
             store.contains(ResultSetPreferences.RESULT_TEXT_TAB_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE) ||
@@ -131,6 +135,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             transformComplexTypes = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_structurize_complex_types, ResultSetMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
             rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 1);
             rightJustifyDateTime = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_right_justify_datetime, null, false, 1);
+            autoCompleteProposal = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_auto_completion, true);
         }
 
         {
@@ -195,6 +200,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             showDescription.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION));
             columnWidthByValue.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES));
             showConnectionName.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME));
+            
+            autoCompleteProposal.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_COMPLETE_PROPOSIAL));
 
             textTabSize.setSelection(store.getInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE));
             textMaxColumnSize.setSelection(store.getInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE));
@@ -231,6 +238,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION, showDescription.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES, columnWidthByValue.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME, showConnectionName.getSelection());
+            
+            store.setValue(ResultSetPreferences.RESULT_SET_AUTO_COMPLETE_PROPOSIAL, autoCompleteProposal.getSelection());
 
             store.setValue(ResultSetPreferences.RESULT_TEXT_TAB_SIZE, textTabSize.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, textMaxColumnSize.getSelection());
@@ -267,6 +276,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
         store.setToDefault(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME);
+        
+        store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_COMPLETE_PROPOSIAL);
 
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_TAB_SIZE);
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
