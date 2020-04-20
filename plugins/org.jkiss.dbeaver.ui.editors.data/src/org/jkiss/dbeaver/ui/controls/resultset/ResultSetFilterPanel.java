@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -116,6 +117,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final List<String> filtersHistory = new ArrayList<>();
     private Menu historyMenu;
     private boolean filterExpanded = false;
+   
 
     ResultSetFilterPanel(ResultSetViewer rsv, Composite parent) {
         super(parent, SWT.NONE);
@@ -600,9 +602,14 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 viewer.getActiveQueryText());
         }
     }
+    
+    
 
     @Override
     public IContentProposal[] getProposals(String contents, int position) {
+    	if(!viewer.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_COMPLETE_PROPOSIAL)) {
+    		return null;
+    	}
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         DBPDataSource dataSource = viewer.getDataSource();
         if (dataSource != null) {
