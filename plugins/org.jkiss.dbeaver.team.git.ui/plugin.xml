@@ -5,10 +5,10 @@
 
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.git.commands.category" name="Git Category"/>
-        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.share" name="Share project in Git"/>
-        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.projectFromGit" name="Create project from Git"/>
-        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.commit" name="Commit changes to Git"/>
-        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.update" name="Update changes from Git"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.share" name="%command.org.jkiss.dbeaver.git.commands.share.name"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.projectFromGit" name="%command.org.jkiss.dbeaver.git.commands.projectFromGit.name"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.commit" name="%command.org.jkiss.dbeaver.git.commands.commit.name"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.update" name="%command.org.jkiss.dbeaver.git.commands.update.name"/>
     </extension>
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.git.commands.share" icon="icons/share.png"/>
