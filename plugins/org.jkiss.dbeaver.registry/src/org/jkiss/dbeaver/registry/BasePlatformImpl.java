@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -37,14 +36,11 @@ import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.KeepAliveListenerJob;
-import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ProxySelector;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -96,9 +92,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
         this.navigatorModel = new DBNModel(this, true);
         this.navigatorModel.initialize();
 
-        // Activate proxy service
-        activateProxyService();
-
         // Activate plugin services
         for (IPluginService pluginService : PluginServiceRegistry.getInstance().getServices()) {
             try {
@@ -130,15 +123,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
             this.navigatorModel.dispose();
             //this.navigatorModel = null;
         }
-    }
-
-    protected void installProxySelector() {
-        // Init default network settings
-        ProxySelector defProxySelector = GeneralUtils.adapt(this, ProxySelector.class);
-        if (defProxySelector == null) {
-            defProxySelector = new GlobalProxySelector(ProxySelector.getDefault());
-        }
-        ProxySelector.setDefault(defProxySelector);
     }
 
     @NotNull
@@ -235,14 +219,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
     @Override
     public File getCustomDriversHome() {
         return DriverDescriptor.getCustomDriversHome();
-    }
-
-    private void activateProxyService() {
-        try {
-            log.debug("Proxy service '" + IProxyService.class.getName() + "' loaded");
-        } catch (Throwable e) {
-            log.debug("Proxy service not found");
-        }
     }
 
     // Patch config and add/update -nl parameter
