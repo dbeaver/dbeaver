@@ -10,7 +10,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.net.ssh,
- com.jcraft.jsch,
- org.eclipse.jsch.ui
+ com.jcraft.jsch
+Export-Package: org.jkiss.dbeaver.model.net.ssh
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.net.ssh.jsch
