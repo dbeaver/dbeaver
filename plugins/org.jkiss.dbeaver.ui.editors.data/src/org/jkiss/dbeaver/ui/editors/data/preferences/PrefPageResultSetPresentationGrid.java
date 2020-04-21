@@ -34,9 +34,9 @@ import org.jkiss.utils.CommonUtils;
 /**
  * PrefPageResultSetGrid
  */
-public class PrefPageResultSetGrid extends TargetPrefPage
+public class PrefPageResultSetPresentationGrid extends TargetPrefPage
 {
-    private static final Log log = Log.getLog(PrefPageResultSetGrid.class);
+    private static final Log log = Log.getLog(PrefPageResultSetPresentationGrid.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.grid"; //$NON-NLS-1$
 
@@ -51,7 +51,7 @@ public class PrefPageResultSetGrid extends TargetPrefPage
     private Combo gridDoubleClickBehavior;
     private Text gridRowBatchSize;
 
-    public PrefPageResultSetGrid()
+    public PrefPageResultSetPresentationGrid()
     {
         super();
     }
