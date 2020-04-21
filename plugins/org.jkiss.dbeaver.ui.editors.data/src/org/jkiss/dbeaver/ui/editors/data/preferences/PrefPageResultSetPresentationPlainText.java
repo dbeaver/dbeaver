@@ -33,9 +33,9 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * PrefPageResultSetPlainText
  */
-public class PrefPageResultSetPlainText extends TargetPrefPage
+public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
 {
-    private static final Log log = Log.getLog(PrefPageResultSetPlainText.class);
+    private static final Log log = Log.getLog(PrefPageResultSetPresentationPlainText.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.plain.text"; //$NON-NLS-1$
 
@@ -47,7 +47,7 @@ public class PrefPageResultSetPlainText extends TargetPrefPage
     private Button textDelimiterTrailing;
     private Button textExtraSpaces;
 
-    public PrefPageResultSetPlainText()
+    public PrefPageResultSetPresentationPlainText()
     {
         super();
     }
