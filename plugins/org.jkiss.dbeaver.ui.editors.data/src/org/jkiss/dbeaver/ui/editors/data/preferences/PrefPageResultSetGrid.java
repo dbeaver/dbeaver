@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
@@ -85,22 +85,22 @@ public class PrefPageResultSetGrid extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, DataEditorsMessages.pref_page_database_resultsets_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            gridShowOddRows = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
-            colorizeDataTypes = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
-            //gridShowCellIcons = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
-            gridShowAttrIcons = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_icons, ResultSetMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
-            gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
-            gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
-            useSmoothScrolling = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_use_smooth_scrolling, ResultSetMessages.pref_page_database_resultsets_label_use_smooth_scrolling_tip, false, 2);
-            showBooleanAsCheckbox = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox, ResultSetMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox_tip, false, 2);
-            gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
-            gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_none, Spreadsheet.DoubleClickBehavior.NONE.ordinal());
-            gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
-            gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_inline_editor, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
-            gridRowBatchSize = UIUtils.createLabelText(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
-            gridRowBatchSize.setToolTipText(ResultSetMessages.pref_page_database_resultsets_label_row_batch_size_tip);
+            gridShowOddRows = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
+            colorizeDataTypes = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
+            //gridShowCellIcons = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
+            gridShowAttrIcons = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_icons, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
+            gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_filters, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
+            gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
+            useSmoothScrolling = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling, DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling_tip, false, 2);
+            showBooleanAsCheckbox = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox, DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox_tip, false, 2);
+            gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_none, Spreadsheet.DoubleClickBehavior.NONE.ordinal());
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_inline_editor, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
+            gridRowBatchSize = UIUtils.createLabelText(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
+            gridRowBatchSize.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size_tip);
         }
 
         return composite;
