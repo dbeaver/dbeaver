@@ -240,6 +240,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private void insertBatch(boolean force) throws DBCException {
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
         if (needCommit && executeBatch != null) {
+            targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
             boolean retryInsert;
             do {
                 retryInsert = false;
@@ -273,6 +274,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (settings.isUseTransactions() && needCommit) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
             if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
+                targetSession.getProgressMonitor().subTask("Commit changes");
                 txnManager.commit(targetSession);
             }
         }
