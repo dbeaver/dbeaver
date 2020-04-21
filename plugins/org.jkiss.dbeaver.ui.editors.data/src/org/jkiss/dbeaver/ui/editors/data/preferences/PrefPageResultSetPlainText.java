@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ValueFormatSelector;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -78,15 +78,15 @@ public class PrefPageResultSetPlainText extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
         
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_plain_text, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, DataEditorsMessages.pref_page_database_resultsets_group_plain_text, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            textTabSize = UIUtils.createLabelSpinner(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_tab_width, 0, 1, 100);
-            textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
+            textTabSize = UIUtils.createLabelSpinner(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_tab_width, 0, 1, 100);
+            textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
             textValueFormat = new ValueFormatSelector(uiGroup);
-            showNulls = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
-            textDelimiterLeading = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
-            textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
-            textExtraSpaces = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_extra_spaces, null, false, 2);
+            showNulls = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
+            textDelimiterLeading = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
+            textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
+            textExtraSpaces = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_extra_spaces, null, false, 2);
         }
 
         return composite;

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -80,16 +80,16 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_common, 1, SWT.NONE, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, DataEditorsMessages.pref_page_database_resultsets_group_common, 1, SWT.NONE, 0);
             ((GridData)uiGroup.getLayoutData()).horizontalSpan = 2;
-            autoSwitchMode = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
-            showDescription = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_column_description, false);
-            columnWidthByValue = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_calc_column_width_by_values, ResultSetMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 1);
-            showConnectionName = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_connection_name, false);
-            transformComplexTypes = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_structurize_complex_types, ResultSetMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
-            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 1);
-            rightJustifyDateTime = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_right_justify_datetime, null, false, 1);
-            autoCompleteProposal = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_auto_completion, ResultSetMessages.pref_page_database_resultsets_label_auto_completion_tip, true, 1);
+            autoSwitchMode = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
+            showDescription = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_column_description, false);
+            columnWidthByValue = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 1);
+            showConnectionName = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_connection_name, false);
+            transformComplexTypes = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types, DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
+            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 1);
+            rightJustifyDateTime = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_right_justify_datetime, null, false, 1);
+            autoCompleteProposal = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_auto_completion, DataEditorsMessages.pref_page_database_resultsets_label_auto_completion_tip, true, 1);
         }
 
         return composite;

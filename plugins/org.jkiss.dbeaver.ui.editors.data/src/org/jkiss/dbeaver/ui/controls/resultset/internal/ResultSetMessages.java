@@ -224,44 +224,6 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_read_metadata_tip;
     public static String pref_page_database_resultsets_label_read_references_tip;
     public static String pref_page_database_resultsets_label_fetch_size_tip;
-    // ResultSetPresentation
-    public static String pref_page_database_resultsets_group_common;
-    public static String pref_page_database_resultsets_label_switch_mode_on_rows;
-    public static String pref_page_database_resultsets_label_show_column_description;
-    public static String pref_page_database_resultsets_label_show_connection_name;
-    public static String pref_page_database_resultsets_label_calc_column_width_by_values;
-    public static String pref_page_database_resultsets_label_calc_column_width_by_values_tip;
-    public static String pref_page_database_resultsets_label_structurize_complex_types;
-    public static String pref_page_database_resultsets_label_structurize_complex_types_tip;
-    public static String pref_page_database_resultsets_group_grid;
-    public static String pref_page_database_resultsets_label_mark_odd_rows;
-    public static String pref_page_database_resultsets_label_colorize_data_types;
-    public static String pref_page_database_resultsets_label_right_justify_numbers_and_date;
-    public static String pref_page_database_resultsets_label_right_justify_datetime;
-    public static String pref_page_database_resultsets_label_auto_completion;
-    public static String pref_page_database_resultsets_label_auto_completion_tip;
-    public static String pref_page_database_resultsets_label_row_batch_size;
-    public static String pref_page_database_resultsets_label_row_batch_size_tip;
-    public static String pref_page_database_resultsets_label_show_cell_icons;
-    public static String pref_page_database_resultsets_label_show_attr_icons;
-    public static String pref_page_database_resultsets_label_show_attr_icons_tip;
-    public static String pref_page_database_resultsets_label_show_attr_filters;
-    public static String pref_page_database_resultsets_label_show_attr_filters_tip;
-    public static String pref_page_database_resultsets_label_show_attr_ordering;
-    public static String pref_page_database_resultsets_label_show_attr_ordering_tip;
-    public static String pref_page_database_resultsets_label_use_smooth_scrolling;
-    public static String pref_page_database_resultsets_label_use_smooth_scrolling_tip;
-    public static String pref_page_database_resultsets_label_show_boolean_as_checkbox;
-    public static String pref_page_database_resultsets_label_show_boolean_as_checkbox_tip;
-    public static String pref_page_database_resultsets_label_double_click_behavior;
-    public static String pref_page_database_resultsets_group_plain_text;
-    public static String pref_page_database_resultsets_label_value_format;
-    public static String pref_page_database_resultsets_label_tab_width;
-    public static String pref_page_database_resultsets_label_maximum_column_length;
-    public static String pref_page_database_resultsets_label_text_show_nulls;
-    public static String pref_page_database_resultsets_label_text_delimiter_leading;
-    public static String pref_page_database_resultsets_label_text_delimiter_trailing;
-    public static String pref_page_database_resultsets_label_text_extra_spaces;
 
     public static String pref_page_content_cache_clob;
     public static String pref_page_content_cache_blob;
@@ -273,10 +235,6 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_general_label_result_set_max_size;
     public static String pref_page_database_general_label_result_set_cancel_timeout;
     public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
-
-    public static String pref_page_result_selector_editor;
-	public static String pref_page_result_selector_inline_editor;
-	public static String pref_page_result_selector_none;
 
 	public static String pref_page_results_group_advanced;
     public static String pref_page_sql_editor_group_misc;
