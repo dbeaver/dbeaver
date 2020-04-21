@@ -17,6 +17,9 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.jface.text,
  org.eclipse.ui,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.net.ssh
+ org.jkiss.dbeaver.net.ssh,
+ org.jkiss.dbeaver.net.ssh.jsch,
+ com.jcraft.jsch,
+ org.eclipse.jsch.ui
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.net.ssh.ui

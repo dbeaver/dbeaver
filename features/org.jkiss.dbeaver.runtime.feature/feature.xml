@@ -30,6 +30,7 @@
     <plugin id="org.jkiss.dbeaver.model.sql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.registry" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.net.ssh" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.net.ssh.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.cmp.simple" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.data.transfer" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.tasks.native" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -43,6 +44,7 @@
     <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="net.sf.opencsv" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="com.google.gson" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0"/>
     <plugin id="com.sun.jna" download-size="0" install-size="0" version="0.0.0"/>
     <plugin id="com.sun.jna.platform" download-size="0" install-size="0" version="0.0.0"/>
 
