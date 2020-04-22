@@ -3338,13 +3338,18 @@ public class SQLEditor extends SQLEditorBase implements
         private boolean lastFocusInEditor = true;
         @Override
         public IFindReplaceTarget getTarget() {
-            CTabItem activeResultsTab = getActiveResultsTab();
-            if (activeResultsTab != null && outputViewer != null && activeResultsTab.getData() == outputViewer) {
-                return new StyledTextFindReplaceTarget(outputViewer.getText());
-            }
             ResultSetViewer rsv = getActiveResultSetViewer();
             TextViewer textViewer = getTextViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget().isFocusControl();
+
+            CTabItem activeResultsTab = getActiveResultsTab();
+            if (activeResultsTab != null && activeResultsTab.getData() instanceof StyledText) {
+                StyledText styledText = (StyledText) activeResultsTab.getData();
+                if (!focusInEditor) {
+                    return new StyledTextFindReplaceTarget(styledText);
+                }
+            }
+
             if (!focusInEditor) {
                 if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
                     focusInEditor = false;
