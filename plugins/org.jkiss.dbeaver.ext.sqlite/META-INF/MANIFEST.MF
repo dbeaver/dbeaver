@@ -4,11 +4,8 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.sqlite;singleton:=true
 Bundle-Version: 1.0.80.qualifier
 Bundle-Release-Date: 20200420
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ext.generic,
- org.jkiss.dbeaver.ext.generic.ui
+Require-Bundle: org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.ui.editors.data
 Export-Package: org.jkiss.dbeaver.ext.sqlite,
  org.jkiss.dbeaver.ext.sqlite.model
 Bundle-ActivationPolicy: lazy
