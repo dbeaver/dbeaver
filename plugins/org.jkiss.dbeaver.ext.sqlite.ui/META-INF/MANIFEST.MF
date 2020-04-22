@@ -6,10 +6,11 @@ Bundle-Version: 1.0.1.qualifier
 Bundle-Release-Date: 20200420
 Bundle-Activator: org.jkiss.dbeaver.ext.sqlite.ui.SQLiteUIActivator
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
  org.eclipse.jface.text,
- org.jkiss.dbeaver.ext.sqlite;bundle-version="1.0.80",
- org.jkiss.dbeaver.core;bundle-version="7.0.3"
+ org.jkiss.dbeaver.ext.sqlite,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.ui.editors.data
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
