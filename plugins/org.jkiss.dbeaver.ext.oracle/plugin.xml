@@ -289,10 +289,10 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="useFetchSizeWithLongColumn" value="true"/>
 
-                    <file type="jar" path="maven:/com.oracle.database.jdbc:ojdbc8::RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
-                    <file type="jar" path="maven:/com.oracle.database.nls:orai18n::RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
-                    <file type="jar" path="maven:/com.oracle.database.xml:xdb6::RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
-                    <file type="jar" path="maven:/com.oracle.database.xml:xmlparserv2::RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.jdbc:ojdbc8:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.nls:orai18n:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.xml:xdb6:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.xml:xmlparserv2:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
 
                     <file type="license" path="drivers/oracle/LICENSE.txt" bundle="drivers.oracle"/>
                     <file type="jar" path="drivers/oracle/ojdbc8.jar" bundle="drivers.oracle"/>
