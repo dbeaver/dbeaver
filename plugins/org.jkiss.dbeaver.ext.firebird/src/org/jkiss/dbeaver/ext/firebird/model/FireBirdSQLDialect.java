@@ -40,7 +40,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     };
 
     public FireBirdSQLDialect() {
-        super("FireBird");
+        super("Firebird");
     }
 
     @NotNull
