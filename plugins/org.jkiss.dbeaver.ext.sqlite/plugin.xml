@@ -24,12 +24,6 @@
         </provider>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataManager">
-        <manager class="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueManager" id="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueManager">
-            <supports dataSource="org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSource"/>
-        </manager>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="sqlite" parent="generic" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect" label="SQLite" description="SQLite dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png">
         </dialect>
