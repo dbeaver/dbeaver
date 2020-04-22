@@ -45,6 +45,7 @@
         <module>org.jkiss.dbeaver.ext.postgresql</module>
 
         <module>org.jkiss.dbeaver.ext.snowflake.core</module>
+        <module>org.jkiss.dbeaver.ext.sqlite</module>
         <module>org.jkiss.dbeaver.ext.vertica</module>
         <module>org.jkiss.dbeaver.ext.teradata</module>
         <module>org.jkiss.dbeaver.ext.kognitio</module>
@@ -83,7 +84,7 @@
                 <module>org.jkiss.dbeaver.ext.postgresql.ui</module>
                 <module>org.jkiss.dbeaver.ext.postgresql.debug.core</module>
                 <module>org.jkiss.dbeaver.ext.postgresql.debug.ui</module>
-                <module>org.jkiss.dbeaver.ext.sqlite</module>
+                <module>org.jkiss.dbeaver.ext.sqlite.ui</module>
                 <module>org.jkiss.dbeaver.ext.spanner</module>
                 <module>org.jkiss.dbeaver.ext.snowflake.ui</module>
                 <module>org.jkiss.dbeaver.ext.vertica.ui</module>
