@@ -1048,30 +1048,33 @@ public class ResultSetModel {
 
     public void resetOrdering() {
         final boolean hasOrdering = dataFilter.hasOrdering();
-        // Sort locally
-        final List<DBDAttributeConstraint> orderConstraints = dataFilter.getOrderConstraints();
-        curRows.sort((row1, row2) -> {
-            if (!hasOrdering) {
-                return row1.getRowNumber() - row2.getRowNumber();
-            }
-            int result = 0;
-            for (DBDAttributeConstraint co : orderConstraints) {
-                final DBDAttributeBinding binding = getAttributeBinding(co.getAttribute());
-                if (binding == null) {
-                    continue;
+
+        // First sort in original order to reset multi-column orderings
+        curRows.sort(Comparator.comparingInt(ResultSetRow::getRowNumber));
+
+        if (hasOrdering) {
+            // Sort locally
+            final List<DBDAttributeConstraint> orderConstraints = dataFilter.getOrderConstraints();
+            curRows.sort((row1, row2) -> {
+                int result = 0;
+                for (DBDAttributeConstraint co : orderConstraints) {
+                    final DBDAttributeBinding binding = getAttributeBinding(co.getAttribute());
+                    if (binding == null) {
+                        continue;
+                    }
+                    Object cell1 = getCellValue(binding, row1);
+                    Object cell2 = getCellValue(binding, row2);
+                    result = DBUtils.compareDataValues(cell1, cell2);
+                    if (co.isOrderDescending()) {
+                        result = -result;
+                    }
+                    if (result != 0) {
+                        break;
+                    }
                 }
-                Object cell1 = getCellValue(binding, row1);
-                Object cell2 = getCellValue(binding, row2);
-                result = DBUtils.compareDataValues(cell1, cell2);
-                if (co.isOrderDescending()) {
-                    result = -result;
-                }
-                if (result != 0) {
-                    break;
-                }
-            }
-            return result;
-        });
+                return result;
+            });
+        }
         for (int i = 0; i < curRows.size(); i++) {
             curRows.get(i).setVisualNumber(i);
         }
