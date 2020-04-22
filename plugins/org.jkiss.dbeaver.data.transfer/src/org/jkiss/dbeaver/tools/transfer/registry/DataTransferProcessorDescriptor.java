@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,6 +44,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     private final List<ObjectType> sourceTypes = new ArrayList<>();
     private final String name;
     private final String description;
+    private final String contentType;
     private final String appFileExtension;
     private final String appName;
     private final int order;
@@ -62,6 +64,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         this.icon = iconToImage(config.getAttribute("icon"), DBIcon.TYPE_UNKNOWN);
         this.isBinary = CommonUtils.getBoolean(config.getAttribute("binary"), false);
         this.isHTML = CommonUtils.getBoolean(config.getAttribute("html"), false);
+        this.contentType = CommonUtils.toString(config.getAttribute("contentType"), MimeTypes.OCTET_STREAM);
         this.appFileExtension = config.getAttribute("appFileExtension");
         this.appName = config.getAttribute("appName");
         this.order = CommonUtils.toInt(config.getAttribute("order"));
@@ -87,6 +90,10 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
 
     public String getDescription() {
         return description;
+    }
+
+    public String getContentType() {
+        return contentType;
     }
 
     public String getAppFileExtension() {

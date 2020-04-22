@@ -11,6 +11,7 @@
                 icon="icons/excel.png"
                 label="%dataTransfer.processor.xlsx.name"
                 binary="true"
+                contentType="application/vnd.ms-excel"
                 appFileExtension="xlsx"
                 appName="Excel"
                 order="10">
