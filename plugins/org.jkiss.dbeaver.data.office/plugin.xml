@@ -34,35 +34,4 @@
          </node>
     </extension>
 
-    <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.ext.data.office" name="%category.org.jkiss.dbeaver.ext.data.office.name" description="%category.org.jkiss.dbeaver.ext.data.office.description"/>
-        <command id="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" name="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.name" description="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.description" categoryId="org.jkiss.dbeaver.ext.data.office"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" icon="icons/excel.png"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" class="org.jkiss.dbeaver.data.office.handlers.OpenSpreadsheetHandler">
-            <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.resultset.hasData"/>
-                </with>
-            </enabledWhen>
-        </handler>
-    </extension>
-
-    <extension point="org.eclipse.ui.menus">
-
-        <!-- Results viewer status bar additions -->
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=presentations">
-            <command commandId="org.jkiss.dbeaver.core.resultset.openWith" style="push" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.toolbar.label">
-                <parameter name="processorId" value="stream_consumer:stream.xlsx">
-                </parameter>
-            </command>
-        </menuContribution>
-
-    </extension>
-
 </plugin>
