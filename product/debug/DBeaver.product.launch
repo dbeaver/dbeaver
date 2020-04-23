@@ -236,7 +236,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.db2@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.derby@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.erd@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.es.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.elasticsearch@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.exasol@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.firebird@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.format.sqlworkbenchj@default:default"/>

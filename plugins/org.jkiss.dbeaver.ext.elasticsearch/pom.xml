@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
      <relativePath>../</relativePath>
   </parent>
-  <artifactId>org.jkiss.dbeaver.ext.es.ui</artifactId>
+  <artifactId>org.jkiss.dbeaver.ext.elasticsearch</artifactId>
   <version>1.0.42-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
