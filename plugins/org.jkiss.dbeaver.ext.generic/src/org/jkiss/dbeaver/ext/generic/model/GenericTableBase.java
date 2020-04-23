@@ -123,6 +123,10 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return this.isSystem;
     }
 
+    public void setSystem(boolean system) {
+        isSystem = system;
+    }
+
     @Property(viewable = true, order = 2)
     public String getTableType()
     {

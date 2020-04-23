@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
@@ -34,8 +36,33 @@ import java.util.List;
 
 public class FireBirdTable extends GenericTable implements DBPNamedObject2 {
 
+    private int keyLength;
+    private String externalFile;
+    private String ownerName;
+
     public FireBirdTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
-        super(container, tableName, tableType, dbResult);
+        super(container, tableName, tableType, null);
+
+        if (dbResult != null) {
+            keyLength = JDBCUtils.safeGetInt(dbResult, "RDB$DBKEY_LENGTH");
+            externalFile = JDBCUtils.safeGetString(dbResult, "RDB$EXTERNAL_FILE");
+            ownerName = JDBCUtils.safeGetString(dbResult, "RDB$OWNER_NAME");
+        }
+    }
+
+    @Property(viewable = true, order = 20)
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    @Property(viewable = true, order = 21)
+    public int getKeyLength() {
+        return keyLength;
+    }
+
+    @Property(viewable = true, order = 22)
+    public String getExternalFile() {
+        return externalFile;
     }
 
     @Override
