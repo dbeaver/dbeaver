@@ -86,7 +86,7 @@ public class FireBirdDataSource extends GenericDataSource
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read generic metadata")) {
             // Read metadata
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM RDB$TYPES")) {
-                monitor.subTask("Load FireBird types");
+                monitor.subTask("Load Firebird types");
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {
