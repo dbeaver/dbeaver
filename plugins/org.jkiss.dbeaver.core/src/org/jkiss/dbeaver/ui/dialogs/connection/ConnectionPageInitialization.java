@@ -183,6 +183,9 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 if (!level.isEnabled()) {
                     continue;
                 }
+                isolationLevel.removeAll();
+                supportedLevels.clear();
+
                 isolationLevel.add(level.getTitle());
                 supportedLevels.add(level);
 
