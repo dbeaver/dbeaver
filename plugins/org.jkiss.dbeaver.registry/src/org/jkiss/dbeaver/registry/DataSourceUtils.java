@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -322,4 +324,49 @@ public class DataSourceUtils {
         return newDS;
     }
 
+    /**
+     * Save secure config in protected storage.
+     * @return true on success (if protected storage is available and configured)
+     */
+    static boolean saveCredentialsInSecuredStorage(
+        @NotNull DBPProject project,
+        @Nullable DataSourceDescriptor dataSource,
+        @Nullable String subNode,
+        @Nullable String userName,
+        @Nullable String password)
+    {
+        final DBASecureStorage secureStorage = project.getSecureStorage();
+        {
+            try {
+                ISecurePreferences prefNode = dataSource == null ?
+                    project.getSecureStorage().getSecurePreferences() :
+                    dataSource.getSecurePreferences();
+                if (!secureStorage.useSecurePreferences()) {
+                    prefNode.removeNode();
+                } else {
+                    if (subNode != null) {
+                        for (String nodeName : subNode.split("/")) {
+                            prefNode = prefNode.node(nodeName);
+                        }
+                    }
+                    prefNode.put("name", dataSource != null ? dataSource.getName() : project.getName(), false);
+
+                    if (!CommonUtils.isEmpty(userName)) {
+                        prefNode.put(RegistryConstants.ATTR_USER, userName, true);
+                    } else {
+                        prefNode.remove(RegistryConstants.ATTR_USER);
+                    }
+                    if (!CommonUtils.isEmpty(password)) {
+                        prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
+                    } else {
+                        prefNode.remove(RegistryConstants.ATTR_PASSWORD);
+                    }
+                    return true;
+                }
+            } catch (Throwable e) {
+                log.error("Can't save password in secure storage", e);
+            }
+        }
+        return false;
+    }
 }

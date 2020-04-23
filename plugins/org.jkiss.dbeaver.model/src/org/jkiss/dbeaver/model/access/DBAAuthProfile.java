@@ -21,8 +21,36 @@ import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
 
 /**
  * Auth profile.
- * May be anything cloud-specific.
+ * Authentication properties.
  */
 public class DBAAuthProfile extends DBPConfigurationProfile {
+
+    private String dataSourceProviderId;
+    private String driverId;
+    private String authModelId;
+
+    public String getDataSourceProviderId() {
+        return dataSourceProviderId;
+    }
+
+    public void setDataSourceProviderId(String dataSourceProviderId) {
+        this.dataSourceProviderId = dataSourceProviderId;
+    }
+
+    public String getDriverId() {
+        return driverId;
+    }
+
+    public void setDriverId(String driverId) {
+        this.driverId = driverId;
+    }
+
+    public String getAuthModelId() {
+        return authModelId;
+    }
+
+    public void setAuthModelId(String authModelId) {
+        this.authModelId = authModelId;
+    }
 
 }
