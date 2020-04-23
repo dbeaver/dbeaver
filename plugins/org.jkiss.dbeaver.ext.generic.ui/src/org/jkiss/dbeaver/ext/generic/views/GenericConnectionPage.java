@@ -488,7 +488,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
 
         saveSettings(testDataSource);
         DBPConnectionConfiguration cfg = testDataSource.getConnectionConfiguration();
-        cfg.setUrl(cfg.getUrl() + paramCreate);
+        cfg.setDatabaseName(cfg.getDatabaseName() + paramCreate);
         String databaseName = cfg.getDatabaseName();
         testDataSource.setName(databaseName);
 
