@@ -27,7 +27,7 @@
         <language code="it" label="%language.it.label"/>
         <language code="ja" label="%language.ja.label"/>
         <language code="es" label="%language.es.label"/>
-        <language code="pt" label="%language.pt.label"/>
+        <language code="pt_BR" label="%language.pt_BR.label"/>
         <language code="ko" label="%language.ko.label"/>
     </extension>
 
