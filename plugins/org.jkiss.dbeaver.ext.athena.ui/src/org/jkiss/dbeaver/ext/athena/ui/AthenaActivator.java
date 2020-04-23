@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.athena;
+package org.jkiss.dbeaver.ext.athena.ui;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -26,7 +26,7 @@ import org.osgi.framework.BundleContext;
 public class AthenaActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.athena";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.athena.ui";
 
     // The shared instance
     private static AthenaActivator plugin;
