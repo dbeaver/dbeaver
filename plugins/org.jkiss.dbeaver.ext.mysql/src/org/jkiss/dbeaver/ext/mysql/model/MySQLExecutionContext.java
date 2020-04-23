@@ -87,6 +87,10 @@ public class MySQLExecutionContext extends JDBCExecutionContext implements DBCEx
 
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSSchema schema) throws DBCException {
+        if (catalog.getDataSource().getContainer().isConnectionReadOnly()) {
+            log.debug("Cannot change active database for read-only connection");
+            return;
+        }
         if (activeDatabaseName != null && activeDatabaseName.equals(catalog.getName())) {
             return;
         }
