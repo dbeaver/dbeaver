@@ -233,7 +233,7 @@ public class OracleUtils {
             log.warn("Can't read source for custom source objects");
             return "-- ???? CUSTOM SOURCE";
         }
-        final String sourceType = sourceObject.getSourceType().name();
+        final String sourceType = sourceObject.getSourceType().name().replace("_", " ");
         final OracleSchema sourceOwner = sourceObject.getSchema();
         if (sourceOwner == null) {
             log.warn("No source owner for object '" + sourceObject.getName() + "'");
@@ -249,9 +249,15 @@ public class OracleUtils {
                 "SELECT TEXT FROM " + getSysSchemaPrefix(sourceObject.getDataSource()) + sysViewName + " " +
                     "WHERE TYPE=? AND OWNER=? AND NAME=? " +
                     "ORDER BY LINE")) {
+                String sourceName;
+                if (sourceObject instanceof OracleJavaClass) {
+                    sourceName = ((OracleJavaClass) sourceObject).getSourceName();
+                } else {
+                    sourceName = sourceObject.getName();
+                }
                 dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
                 dbStat.setString(2, sourceOwner.getName());
-                dbStat.setString(3, sourceObject.getName());
+                dbStat.setString(3, sourceName);
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder source = null;
@@ -260,11 +266,18 @@ public class OracleUtils {
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        final String line = dbResult.getString(1);
+                        String line = dbResult.getString(1);
                         if (source == null) {
                             source = new StringBuilder(200);
                         }
+                        if (line == null) {
+                            line = "";
+                        }
                         source.append(line);
+                        if (!line.endsWith("\n")) {
+                            // Java source
+                            source.append("\n");
+                        }
                         lineCount++;
                         monitor.subTask("Line " + lineCount);
                     }
