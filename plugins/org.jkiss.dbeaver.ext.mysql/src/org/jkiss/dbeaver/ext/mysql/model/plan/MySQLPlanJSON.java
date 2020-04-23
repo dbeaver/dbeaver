@@ -49,8 +49,7 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
     public MySQLPlanJSON(JDBCSession session, String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
 
-        String plainQuery = SQLUtils.stripComments(SQLUtils.getDialectFromObject(dataSource), query).toUpperCase();
-        if (!plainQuery.startsWith("SELECT")) {
+        if (!SQLUtils.getFirstKeyword(SQLUtils.getDialectFromObject(dataSource), query).toUpperCase().equals("SELECT")) {
             throw new DBCException("Only SELECT statements could produce execution plan");
         }
         try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
