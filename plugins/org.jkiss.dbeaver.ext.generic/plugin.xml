@@ -1319,7 +1319,7 @@
                         sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                         defaultPort="3050"
                         webURL=""
-                        description="Firebird 2.x JayBird driver">
+                        description="Firebird 2.x Jaybird driver">
                 </driver>
                 <driver
                         id="firebird_jaybird3"
@@ -1328,7 +1328,7 @@
                         sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                         defaultPort="3050"
                         webURL=""
-                        description="Firebird JayBird driver">
+                        description="Firebird Jaybird driver">
                     <replace provider="generic" driver="firebird_jaybird"/>
                 </driver>
 

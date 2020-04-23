@@ -45,7 +45,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * FireBird utils
+ * Firebird utils
  */
 public class FireBirdUtils {
 
