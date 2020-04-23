@@ -359,7 +359,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     private static void saveSecuredCredentials(@NotNull XMLBuilder xml, @NotNull DBPProject project, @Nullable DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
-        boolean saved = DataSourceRegistry.saveCredentialsInSecuredStorage(project, dataSource, subNode, userName, password);
+        boolean saved = DataSourceUtils.saveCredentialsInSecuredStorage(project, dataSource, subNode, userName, password);
         if (!saved) {
             try {
                 if (!CommonUtils.isEmpty(userName)) {

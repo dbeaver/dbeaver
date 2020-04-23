@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
@@ -46,6 +47,8 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
+
+    private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
 
     private String hostName;
     private String hostPort;
@@ -108,6 +111,7 @@ public class DBPConnectionConfiguration implements DBPObject {
             this.handlers.add(new DBWHandlerConfiguration(handler));
         }
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
+        this.connectionColor = info.connectionColor;
         this.keepAliveInterval = info.keepAliveInterval;
     }
 
@@ -344,7 +348,11 @@ public class DBPConnectionConfiguration implements DBPObject {
     public DBAAuthModel getAuthModel() {
         if (!CommonUtils.isEmpty(authModelId)) {
             DBPAuthModelDescriptor authModelDesc = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
-            return authModelDesc == null ? null : authModelDesc.getInstance();
+            if (authModelDesc != null) {
+                return authModelDesc.getInstance();
+            } else {
+                log.error("Authentication model '" + authModelId + "' not found. Use default.");
+            }
         }
         return DBAAuthDatabaseNative.INSTANCE;
     }
