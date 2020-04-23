@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.athena.views;
+package org.jkiss.dbeaver.ext.athena.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -25,9 +25,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.athena.AthenaActivator;
-import org.jkiss.dbeaver.ext.athena.internal.AthenaMessages;
+import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
+import org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
