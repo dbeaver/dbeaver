@@ -18,7 +18,24 @@
       %license
    </license>
 
-   <plugin id="org.jkiss.dbeaver.data.office" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-   <plugin id="org.jkiss.bundle.apache.poi" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin
+         id="org.jkiss.dbeaver.data.office"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.bundle.apache.poi"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.data.office.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>
