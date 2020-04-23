@@ -248,7 +248,10 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
         urlLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         connectionUrlText = new Text(targetContainer, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-        connectionUrlText.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = UIUtils.getFontHeight(connectionUrlText) * 30;
+        gd.heightHint = UIUtils.getFontHeight(connectionUrlText) * 3;
+        connectionUrlText.setLayoutData(gd);
         connectionUrlText.addModifyListener(controlModifyListener);
     }
 
