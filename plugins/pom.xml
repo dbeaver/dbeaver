@@ -51,6 +51,7 @@
 
         <module>org.jkiss.dbeaver.tasks.native</module>
 
+        <module>org.jkiss.dbeaver.data.office</module>
         <module>org.jkiss.dbeaver.data.transfer</module>
         <module>org.jkiss.dbeaver.data.gis</module>
         <module>org.jkiss.dbeaver.net.ssh</module>
@@ -111,7 +112,7 @@
                 <module>org.jkiss.dbeaver.tasks.native.ui</module>
                 <module>org.jkiss.dbeaver.tasks.ui</module>
 
-                <module>org.jkiss.dbeaver.data.office</module>
+                <module>org.jkiss.dbeaver.data.office.ui</module>
                 <module>org.jkiss.dbeaver.ext.sample.database</module>
                 <module>org.jkiss.dbeaver.ext.ui.locks</module>
                 <module>org.jkiss.dbeaver.ext.ui.svg</module>
