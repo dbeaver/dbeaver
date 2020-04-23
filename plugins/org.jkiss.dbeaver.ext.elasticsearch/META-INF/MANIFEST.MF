@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Elasticsearch UI
-Bundle-SymbolicName: org.jkiss.dbeaver.ext.es.ui;singleton:=true
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.elasticsearch;singleton:=true
 Bundle-Version: 1.0.42.qualifier
 Bundle-Release-Date: 20200420
 Require-Bundle: org.eclipse.core.runtime,
@@ -11,4 +11,4 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
-Automatic-Module-Name: org.jkiss.dbeaver.ext.es.ui
+Automatic-Module-Name: org.jkiss.dbeaver.ext.elasticsearch
