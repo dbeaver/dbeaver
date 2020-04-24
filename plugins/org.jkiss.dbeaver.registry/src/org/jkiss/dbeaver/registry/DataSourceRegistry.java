@@ -24,7 +24,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.access.DBAAuthProfile;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
@@ -45,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Deprecated
@@ -69,6 +74,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
+    private final List<DBAAuthProfile> authProfiles = new ArrayList<>();
     private volatile boolean saveInProgress = false;
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
@@ -407,12 +413,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Nullable
     @Override
     public DBWNetworkProfile getNetworkProfile(String name) {
-        for (DBWNetworkProfile profile : networkProfiles) {
-            if (CommonUtils.equalObjects(profile.getProfileName(), name)) {
-                return profile;
-            }
+        synchronized (networkProfiles) {
+            return networkProfiles.stream().filter(profile -> CommonUtils.equalObjects(profile.getProfileName(), name)).findFirst().orElse(null);
         }
-        return null;
     }
 
     @NotNull
@@ -437,8 +440,65 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         networkProfiles.remove(profile);
     }
 
+    ////////////////////////////////////////////////////
+    // Auth profiles
+
+    @Nullable
+    @Override
+    public DBAAuthProfile getAuthProfile(String name) {
+        synchronized (authProfiles) {
+            return authProfiles.stream().filter(profile -> profile.getProfileName().equals(name)).findFirst().orElse(null);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<DBAAuthProfile> getAllAuthProfiles() {
+        synchronized (authProfiles) {
+            return new ArrayList<>(authProfiles);
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<DBAAuthProfile> getApplicableAuthProfiles(@Nullable DBPDriver driver) {
+        synchronized (authProfiles) {
+            return authProfiles.stream().filter(p -> {
+                if (p.getDataSourceProviderId() == null && p.getDriverId() == null) {
+                    return true;
+                } else if (p.getDriverId() != null) {
+                    return driver != null && driver.getId().equals(p.getDriverId());
+                } else {
+                    return driver != null && driver.getProviderId().equals(p.getDataSourceProviderId());
+                }
+            }).collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public void updateAuthProfile(DBAAuthProfile profile) {
+        synchronized (authProfiles) {
+            for (int i = 0; i < authProfiles.size(); i++) {
+                if (CommonUtils.equalObjects(authProfiles.get(i).getProfileName(), profile.getProfileName())) {
+                    authProfiles.set(i, profile);
+                    return;
+                }
+            }
+            authProfiles.add(profile);
+        }
+    }
+
+    @Override
+    public void removeAuthProfile(DBAAuthProfile profile) {
+        synchronized (authProfiles) {
+            authProfiles.remove(profile);
+        }
+    }
+
     void addNetworkProfile(DBWNetworkProfile profile) {
-        networkProfiles.add(profile);
+        synchronized (authProfiles) {
+            networkProfiles.add(profile);
+        }
     }
 
     ////////////////////////////////////////////////////
@@ -805,52 +865,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         } catch (Exception e) {
             log.debug(e);
         }
-    }
-
-    /**
-     * Save secure config in protected storage.
-     * @return true on success (if protected storage is available and configured)
-     */
-    static boolean saveCredentialsInSecuredStorage(
-        @NotNull DBPProject project,
-        @Nullable DataSourceDescriptor dataSource,
-        @Nullable String subNode,
-        @Nullable String userName,
-        @Nullable String password)
-    {
-        final DBASecureStorage secureStorage = project.getSecureStorage();
-        {
-            try {
-                ISecurePreferences prefNode = dataSource == null ?
-                    project.getSecureStorage().getSecurePreferences() :
-                    dataSource.getSecurePreferences();
-                if (!secureStorage.useSecurePreferences()) {
-                    prefNode.removeNode();
-                } else {
-                    if (subNode != null) {
-                        for (String nodeName : subNode.split("/")) {
-                            prefNode = prefNode.node(nodeName);
-                        }
-                    }
-                    prefNode.put("name", dataSource != null ? dataSource.getName() : project.getName(), false);
-
-                    if (!CommonUtils.isEmpty(userName)) {
-                        prefNode.put(RegistryConstants.ATTR_USER, userName, true);
-                    } else {
-                        prefNode.remove(RegistryConstants.ATTR_USER);
-                    }
-                    if (!CommonUtils.isEmpty(password)) {
-                        prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
-                    } else {
-                        prefNode.remove(RegistryConstants.ATTR_PASSWORD);
-                    }
-                    return true;
-                }
-            } catch (Throwable e) {
-                log.error("Can't save password in secure storage", e);
-            }
-        }
-        return false;
     }
 
     private void clearSecuredPasswords(DataSourceDescriptor dataSource) {

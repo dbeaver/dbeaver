@@ -162,8 +162,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
      * @param sourceObjects object types
      * @return list of editors
      */
-    public Collection<DataTransferProcessorDescriptor> getAvailableProcessors(Collection<DBSObject> sourceObjects)
-    {
+    public List<DataTransferProcessorDescriptor> getAvailableProcessors(Collection<DBSObject> sourceObjects) {
         List<DataTransferProcessorDescriptor> editors = new ArrayList<>();
         for (DataTransferProcessorDescriptor descriptor : processors) {
             boolean supports = true;
@@ -186,6 +185,16 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
             }
         }
         return editors;
+    }
+
+    public List<DataTransferProcessorDescriptor> getAvailableProcessors(Class<?> objectType) {
+        List<DataTransferProcessorDescriptor> procList = new ArrayList<>();
+        for (DataTransferProcessorDescriptor descriptor : this.processors) {
+            if (descriptor.appliesToType(objectType)) {
+                procList.add(descriptor);
+            }
+        }
+        return procList;
     }
 
     public DataTransferProcessorDescriptor getProcessor(String id)

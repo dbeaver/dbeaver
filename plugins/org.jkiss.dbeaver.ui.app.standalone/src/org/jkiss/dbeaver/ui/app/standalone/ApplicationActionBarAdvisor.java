@@ -240,8 +240,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
         }
 
-        {
+        if (false) {
             // Edit
+            // Disabled because new Eclipse adds this to the File menu by default
             ActionSetRegistry asr = WorkbenchPlugin.getDefault().getActionSetRegistry();
             IActionSetDescriptor actionSet = asr.findActionSet("org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo");
             if (actionSet != null) {

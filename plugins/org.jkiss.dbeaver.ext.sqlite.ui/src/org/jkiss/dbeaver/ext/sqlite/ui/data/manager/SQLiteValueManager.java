@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.sqlite.model.data;
+package org.jkiss.dbeaver.ext.sqlite.ui.data.manager;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;

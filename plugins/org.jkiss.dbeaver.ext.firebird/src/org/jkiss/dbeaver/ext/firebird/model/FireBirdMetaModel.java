@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -188,12 +189,43 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public GenericTableBase createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
-        if (tableType != null && isView(tableType)) {
-            return new FireBirdView(container, tableName, tableType, dbResult);
+    public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase object, @Nullable String objectName) throws SQLException {
+        return session.prepareStatement("SELECT * FROM RDB$RELATIONS ORDER BY RDB$RELATION_NAME");
+    }
+
+    @Override
+    public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
+        String tableName = JDBCUtils.safeGetString(dbResult, "RDB$RELATION_NAME");
+        int relType = JDBCUtils.safeGetInt(dbResult, "RDB$RELATION_TYPE");
+        boolean isSystem = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG") != 0;
+        GenericTableBase table;
+        if (relType == 1) {
+            table = new FireBirdView(owner, tableName, isSystem ? "SYSTEM VIEW" : "VIEW", null);
         } else {
-            return new FireBirdTable(container, tableName, tableType, dbResult);
+            String tableType;
+            switch (relType) {
+                case 2:
+                    tableType = "EXTERNAL TABLE";
+                    break;
+                case 3:
+                    tableType = "MONITORING TABLE";
+                    break;
+                case 4:
+                    tableType = "CONNECTION-LEVEL GTT";
+                    break;
+                case 5:
+                    tableType = "TRANSACTION-LEVEL GTT";
+                    break;
+                default:
+                    tableType = isSystem ? "SYSTEM TABLE" : "TABLE";
+                    break;
+            }
+            table = new FireBirdTable(owner, tableName, tableType, dbResult);
         }
+        table.setPersisted(true);
+        table.setSystem(isSystem);
+        table.setDescription(JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION"));
+        return table;
     }
 
     @Override

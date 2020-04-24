@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
+import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -180,6 +181,24 @@ class DataSourceSerializerModern implements DataSourceSerializer
                                 }
                             }
                             jsonWriter.endObject();
+                            jsonWriter.endObject();
+                        }
+                        jsonWriter.endObject();
+                    }
+                    // Auth profiles
+                    List<DBAAuthProfile> authProfiles = registry.getAllAuthProfiles();
+                    if (!CommonUtils.isEmpty(authProfiles)) {
+                        jsonWriter.name("auth-profiles");
+                        jsonWriter.beginObject();
+                        for (DBAAuthProfile np : authProfiles) {
+                            jsonWriter.name(np.getProfileName());
+                            jsonWriter.beginObject();
+                            JSONUtils.fieldNE(jsonWriter, "providerId", np.getDataSourceProviderId());
+                            JSONUtils.fieldNE(jsonWriter, "driverId", np.getDriverId());
+                            JSONUtils.fieldNE(jsonWriter, "authModel", np.getAuthModelId());
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, np.getProfileDescription());
+                            // Save all auth properties in secure storage
+                            //JSONUtils.serializeProperties(jsonWriter, "properties", np.getProperties());
                             jsonWriter.endObject();
                         }
                         jsonWriter.endObject();
@@ -918,7 +937,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable String userName,
         @Nullable String password) {
         assert dataSource != null|| profile != null;
-        boolean saved = !passwordWriteCanceled && DataSourceRegistry.saveCredentialsInSecuredStorage(
+        boolean saved = !passwordWriteCanceled && DataSourceUtils.saveCredentialsInSecuredStorage(
             registry.getProject(), dataSource, subNode, userName, password);
         if (!saved) {
             passwordWriteCanceled = true;

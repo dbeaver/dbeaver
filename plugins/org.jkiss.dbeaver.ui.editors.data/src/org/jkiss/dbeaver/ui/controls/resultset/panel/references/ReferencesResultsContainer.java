@@ -386,7 +386,10 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 if (isReference) {
                     targetEntity = refAssociation.getParentObject();
                 } else {
-                    targetEntity = refAssociation.getReferencedConstraint().getParentObject();
+                    DBSEntityConstraint refConstraint = refAssociation.getReferencedConstraint();
+                    if (refConstraint != null) {
+                        targetEntity = refConstraint.getParentObject();
+                    }
                 }
             }
             if (targetEntity instanceof DBVEntity) {

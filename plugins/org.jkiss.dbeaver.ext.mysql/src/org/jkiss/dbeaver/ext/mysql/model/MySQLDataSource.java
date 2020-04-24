@@ -213,7 +213,7 @@ public class MySQLDataSource extends JDBCDataSource {
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
-        if (initFrom != null) {
+        if (initFrom != null && !context.getDataSource().getContainer().isConnectionReadOnly()) {
             MySQLCatalog object = ((MySQLExecutionContext)initFrom).getDefaultCatalog();
             if (object != null) {
                 ((MySQLExecutionContext)context).setCurrentDatabase(monitor, object);

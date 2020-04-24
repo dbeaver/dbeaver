@@ -468,7 +468,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             if (columnIndex == 2) {
                 DBDAttributeConstraint constraint = getBindingConstraint(binding);
                 if (constraint.getOrderPosition() > 0) {
-                    return DBeaverIcons.getImage(constraint.isOrderDescending() ? UIIcon.SORT_DECREASE : UIIcon.SORT_INCREASE);
+                    return DBeaverIcons.getImage(constraint.isOrderDescending() ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE);
                 }
             }
             return null;

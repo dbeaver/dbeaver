@@ -202,7 +202,7 @@ public class CompileHandler extends OracleTaskHandler
     {
         final DBEPersistAction[] compileActions = unit.getCompileActions(monitor);
         if (ArrayUtils.isEmpty(compileActions)) {
-            return true;
+            throw new DBCException("No compile actions associated with " + unit.getSourceType().name());
         }
 
         try (JDBCSession session = DBUtils.openUtilSession(monitor, unit, "Compile '" + unit.getName() + "'")) {

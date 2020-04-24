@@ -79,7 +79,9 @@ class DataFilterRegistry {
 
         SavedDataFilter(DBPDataSource dataSource, DBDDataFilter dataFilter) {
             for (DBDAttributeConstraint c : dataFilter.getConstraints()) {
-                constraints.put(DBUtils.getQuotedIdentifier(dataSource, c.getAttribute().getName()), new DBDAttributeConstraint(c));
+                if (c.getAttribute() != null) {
+                    constraints.put(DBUtils.getQuotedIdentifier(dataSource, c.getAttribute().getName()), new DBDAttributeConstraint(c));
+                }
             }
             this.anyConstraint = dataFilter.isAnyConstraint();
             this.order = dataFilter.getOrder();
@@ -92,6 +94,9 @@ class DataFilterRegistry {
             dataFilter.setWhere(this.where);
             for (Map.Entry<String, DBDAttributeConstraintBase> savedC : constraints.entrySet()) {
                 String attrName = savedC.getKey();
+                if (dataContainer.getDataSource() != null) {
+                    attrName = DBUtils.getUnQuotedIdentifier(dataContainer.getDataSource(), attrName);
+                }
                 DBDAttributeConstraint attrC = dataFilter.getConstraint(attrName);
                 if (attrC == null) {
                     if (dataContainer instanceof DBSEntity) {

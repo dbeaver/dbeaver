@@ -22,6 +22,7 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
@@ -107,12 +108,26 @@ public interface DBPDataSourceRegistry extends DBPObject {
     void updateSavedFilter(DBSObjectFilter filter);
     void removeSavedFilter(String filterName);
 
+    // Network profiles
+
     @Nullable
     DBWNetworkProfile getNetworkProfile(String name);
     @NotNull
     List<DBWNetworkProfile> getNetworkProfiles();
     void updateNetworkProfile(DBWNetworkProfile profile);
     void removeNetworkProfile(DBWNetworkProfile profile);
+
+    // Auth profiles
+
+    @Nullable
+    DBAAuthProfile getAuthProfile(String name);
+    @NotNull
+    List<DBAAuthProfile> getAllAuthProfiles();
+    @NotNull
+    List<DBAAuthProfile> getApplicableAuthProfiles(@Nullable DBPDriver driver);
+    void updateAuthProfile(DBAAuthProfile profile);
+    void removeAuthProfile(DBAAuthProfile profile);
+
 
     void flushConfig();
     void refreshConfig();

@@ -35,9 +35,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * Generic tables cache implementation
@@ -45,22 +43,6 @@ import java.util.Set;
 public class TableCache extends JDBCStructLookupCache<GenericStructContainer, GenericTableBase, GenericTableColumn> {
 
     private static final Log log = Log.getLog(TableCache.class);
-
-    // Tables types which are not actually a table
-    // This is needed for some strange JDBC drivers which returns not a table objects
-    // in DatabaseMetaData.getTables method (PostgreSQL especially)
-    private static final Set<String> INVALID_TABLE_TYPES = new HashSet<>();
-
-    static {
-        // [JDBC: PostgreSQL]
-        INVALID_TABLE_TYPES.add("INDEX");
-        INVALID_TABLE_TYPES.add("SEQUENCE");
-        INVALID_TABLE_TYPES.add("TYPE");
-        INVALID_TABLE_TYPES.add("SYSTEM INDEX");
-        INVALID_TABLE_TYPES.add("SYSTEM SEQUENCE");
-        // [JDBC: SQLite]
-        INVALID_TABLE_TYPES.add("TRIGGER");
-    }
 
     final GenericDataSource dataSource;
     final GenericMetaObject tableObject;
@@ -91,43 +73,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     protected GenericTableBase fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
-        String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
-        String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
-
-        String tableSchema = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
-        if (!CommonUtils.isEmpty(tableSchema) && owner.getDataSource().isOmitSchema()) {
-            // Ignore tables with schema [Google Spanner]
-            log.debug("Ignore table " + tableSchema + "." + tableName + " (schemas are omitted)");
-            return null;
-        }
-
-        if (CommonUtils.isEmpty(tableName)) {
-            log.debug("Empty table name " + (owner == null ? "" : " in container " + owner.getName()));
-            return null;
-        }
-
-        if (CommonUtils.isEmpty(tableName)) {
-            return null;
-        }
-        if (tableType != null && INVALID_TABLE_TYPES.contains(tableType)) {
-            // Bad table type. Just skip it
-            return null;
-        }
-        if (DBUtils.isVirtualObject(owner) && !CommonUtils.isEmpty(tableSchema)) {
-            // Wrong schema - this may happen with virtual schemas
-            return null;
-        }
-        GenericTableBase table = getDataSource().getMetaModel().createTableImpl(
-            owner,
-            tableName,
-            tableType,
-            dbResult);
-
-        boolean isSystemTable = table.isSystem();
-        if (isSystemTable && !owner.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects()) {
-            return null;
-        }
-        return table;
+        return getDataSource().getMetaModel().createTableImpl(session, owner, tableObject, dbResult);
     }
 
     @Override
