@@ -44,23 +44,6 @@
         </dialect>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.spanner.dataSourceWizardView"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                dataSource="google_spanner"
-                label="%spanner.dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.spanner.views.SpannerConnectionPage"
-                icon="icons/spanner_icon.png">
-        </view>
-        <view
-                class="org.jkiss.dbeaver.ext.spanner.views.SpannerConnectionPage"
-                icon="icons/spanner_icon.png"
-                id="org.jkiss.dbeaver.ext.spanner.dataSourceEditorView"
-                dataSource="google_spanner"
-                label="%spanner.dialog.connection.header"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
-    </extension>
+
 
 </plugin>
