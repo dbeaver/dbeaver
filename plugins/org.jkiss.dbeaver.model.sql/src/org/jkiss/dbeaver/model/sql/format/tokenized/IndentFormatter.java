@@ -107,7 +107,7 @@ class IndentFormatter {
                 result += insertReturnAndIndent(argList, index + 1, indent);
             } else if (SQLUtils.isBlockEndKeyword(dialect, tokenString)) {
                 indent--;
-                result += insertReturnAndIndent(argList, index, indent - 1);
+                result += insertReturnAndIndent(argList, index, indent);
             } else switch (tokenString) {
                 case "CREATE":
                     if (!isCompact) {
@@ -147,12 +147,18 @@ class IndentFormatter {
                 case "CASE":  //$NON-NLS-1$
                     if (!isCompact) {
                         result += insertReturnAndIndent(argList, index - 1, indent);
-                        if (!"WHEN".equals(getNextKeyword(argList, index))) {
+                        if ("WHEN".equalsIgnoreCase(getNextKeyword(argList, index))) {
                             indent++;
                             result += insertReturnAndIndent(argList, index + 1, indent);
                         }
                     }
                     break;
+                case "END": // CASE ... END
+                    if (!isCompact) {
+	                    indent--;
+	                    result += insertReturnAndIndent(argList, index, indent);
+                    }
+                	break;
                 case "FROM":
                 case "WHERE":
                 case "START WITH":
@@ -189,7 +195,7 @@ class IndentFormatter {
                         break;
                     }
                 case "WHEN":
-                    if ("CASE".equals(getPrevKeyword(argList, index))) {
+                    if ("CASE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
                         break;
                     }
                 case "ELSE":  //$NON-NLS-1$
