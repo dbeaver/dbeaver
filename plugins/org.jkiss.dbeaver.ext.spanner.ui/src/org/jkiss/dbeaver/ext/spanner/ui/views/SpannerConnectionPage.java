@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.spanner.views;
+package org.jkiss.dbeaver.ext.spanner.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -25,7 +25,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.spanner.SpannerActivator;
+import org.jkiss.dbeaver.ext.spanner.ui.SpannerActivator;
+import org.jkiss.dbeaver.ext.spanner.ui.internal.SpannerMessages;
 import org.jkiss.dbeaver.ext.spanner.model.SpannerConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
