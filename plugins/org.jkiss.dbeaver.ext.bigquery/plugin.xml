@@ -39,25 +39,6 @@
         </datasource>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.bigquery.dataSourceWizardView"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                dataSource="bigquery"
-                label="%bigquery.dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.bigquery.views.BigQueryConnectionPage"
-                icon="icons/google_bigquery_icon.png">
-        </view>
-        <view
-                class="org.jkiss.dbeaver.ext.bigquery.views.BigQueryConnectionPage"
-                icon="icons/google_bigquery_icon.png"
-                id="org.jkiss.dbeaver.ext.bigquery.dataSourceEditorView"
-                dataSource="bigquery"
-                label="%bigquery.dialog.connection.header"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="google_bigquery" parent="generic" class="org.jkiss.dbeaver.ext.bigquery.model.BigQuerySQLDialect" label="BigQuery" description="Google BigQuery." icon="icons/bigquery_icon.png">
         </dialect>
