@@ -10,11 +10,11 @@
                 dataSource="bigquery"
                 label="%bigquery.dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.bigquery.ui.views.BigQueryConnectionPage"
-                icon="icons/bigquery_icon.png">
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.bigquery/icons/bigquery_icon.png">
         </view>
         <view
                 class="org.jkiss.dbeaver.ext.bigquery.ui.views.BigQueryConnectionPage"
-                icon="icons/bigquery_icon.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.bigquery/icons/bigquery_icon.png"
                 id="org.jkiss.dbeaver.ext.bigquery.dataSourceEditorView"
                 dataSource="bigquery"
                 label="%bigquery.dialog.connection.header"
