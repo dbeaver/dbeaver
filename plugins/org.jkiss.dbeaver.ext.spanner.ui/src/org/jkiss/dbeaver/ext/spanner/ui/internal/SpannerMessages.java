@@ -3,7 +3,7 @@ package org.jkiss.dbeaver.ext.spanner.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class SpannerMessages extends NLS {
-	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.spanner.ui.views.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.spanner.ui.internal.messages"; //$NON-NLS-1$
 
 	public static String label_connection;
 	public static String label_private_key_path;
