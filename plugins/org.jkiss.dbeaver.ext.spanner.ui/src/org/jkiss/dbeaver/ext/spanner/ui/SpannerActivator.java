@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.spanner;
+package org.jkiss.dbeaver.ext.spanner.ui;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -26,7 +26,7 @@ import org.osgi.framework.BundleContext;
 public class SpannerActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.spanner";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.spanner.ui";
 
     // The shared instance
     private static SpannerActivator plugin;
