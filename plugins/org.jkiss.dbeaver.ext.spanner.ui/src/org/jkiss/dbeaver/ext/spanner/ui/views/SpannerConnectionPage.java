@@ -79,11 +79,11 @@ public class SpannerConnectionPage extends ConnectionPageAbstract implements ICo
             projectText = UIUtils.createLabelText(addrGroup, SpannerMessages.label_project, ""); //$NON-NLS-2$
             projectText.addModifyListener(textListener);
 
-            instanceText = UIUtils.createLabelText(addrGroup, "Instance", ""); //$NON-NLS-2$
+            instanceText = UIUtils.createLabelText(addrGroup, SpannerMessages.label_instance, ""); //$NON-NLS-2$
             instanceText.setToolTipText("Spanner Instance ID"); //$NON-NLS-1$
             instanceText.addModifyListener(textListener);
 
-            databaseText = UIUtils.createLabelText(addrGroup, "Database", ""); //$NON-NLS-2$
+            databaseText = UIUtils.createLabelText(addrGroup, SpannerMessages.label_database, ""); //$NON-NLS-2$
             databaseText.setToolTipText("Spanner Database ID"); //$NON-NLS-1$
             databaseText.addModifyListener(textListener);
 
