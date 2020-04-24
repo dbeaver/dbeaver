@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -399,95 +400,109 @@ public class ReferenceValueEditor {
         }
 
         @Override
-        public EnumValuesData evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public EnumValuesData evaluate(DBRProgressMonitor monitor) {
             if (editorSelector.isDisposed()) {
                 return null;
             }
-/*
-            final Map<Object, String> keyValues = new TreeMap<>((o1, o2) -> {
-                if (o1 instanceof Comparable && o2 instanceof Comparable) {
-                    return ((Comparable) o1).compareTo(o2);
-                }
-                if (o1 == o2) {
-                    return 0;
-                } else if (o1 == null) {
-                    return -1;
-                } else if (o2 == null) {
-                    return 1;
-                } else {
-                    return o1.toString().compareTo(o2.toString());
-                }
-            });
-*/
+            EnumValuesData[] result = new EnumValuesData[1];
             try {
-                IAttributeController attributeController = (IAttributeController)valueController;
-                final DBSEntityAttribute tableColumn = attributeController.getBinding().getEntityAttribute();
-                if (tableColumn == null) {
-                    return null;
-                }
-                final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintAttribute(monitor, refConstraint, tableColumn);
-                if (fkColumn == null) {
-                    return null;
-                }
-                DBSEntityAssociation association;
-                if (refConstraint instanceof DBSEntityAssociation) {
-                    association = (DBSEntityAssociation)refConstraint;
-                } else {
-                    return null;
-                }
-                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn, false);
-                if (refColumn == null) {
-                    return null;
-                }
-                List<DBDAttributeValue> precedingKeys = null;
-                List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(monitor));
-                if (allColumns.size() > 1 && allColumns.get(0) != fkColumn) {
-                    // Our column is not a first on in foreign key.
-                    // So, fill uo preceeding keys
-                    List<DBDAttributeBinding> rowAttributes = attributeController.getRowController().getRowAttributes();
-                    precedingKeys = new ArrayList<>();
-                    for (DBSEntityAttributeRef precColumn : allColumns) {
-                        if (precColumn == fkColumn) {
-                            // Enough
-                            break;
-                        }
-                        DBSEntityAttribute precAttribute = precColumn.getAttribute();
-                        if (precAttribute != null) {
-                            DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, precAttribute);
-                            if (rowAttr != null) {
-                                Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
-                                precedingKeys.add(new DBDAttributeValue(precAttribute, precValue));
-                            }
-                        }
+                DBExecUtils.tryExecuteRecover(monitor, valueController.getExecutionContext().getDataSource(), param -> {
+                    try {
+                        result[0] = readEnum(monitor);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
-                }
-                final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
-                final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
-                final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
-                if (fkAttribute != null && enumConstraint != null) {
-                    Collection<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
-                        monitor,
-                        refColumn,
-                        pattern,
-                        precedingKeys,
-                        sortByValue,
-                        sortAsc,
-                        200);
-//                        for (DBDLabelValuePair pair : enumValues) {
-//                            keyValues.put(pair.getValue(), pair.getLabel());
-//                        }
-                    if (monitor.isCanceled()) {
-                        return null;
-                    }
-                    final DBDValueHandler colHandler = DBUtils.findValueHandler(fkAttribute.getDataSource(), fkAttribute);
-                    return new EnumValuesData(enumValues, fkColumn, colHandler);
-                }
-
+                });
             } catch (DBException e) {
                 // error
                 // just ignore
                 log.warn(e);
             }
+            return result[0];
+        }
+
+        @Nullable
+        private EnumValuesData readEnum(DBRProgressMonitor monitor) throws DBException {
+    /*
+                final Map<Object, String> keyValues = new TreeMap<>((o1, o2) -> {
+                    if (o1 instanceof Comparable && o2 instanceof Comparable) {
+                        return ((Comparable) o1).compareTo(o2);
+                    }
+                    if (o1 == o2) {
+                        return 0;
+                    } else if (o1 == null) {
+                        return -1;
+                    } else if (o2 == null) {
+                        return 1;
+                    } else {
+                        return o1.toString().compareTo(o2.toString());
+                    }
+                });
+    */
+
+            IAttributeController attributeController = (IAttributeController)valueController;
+            final DBSEntityAttribute tableColumn = attributeController.getBinding().getEntityAttribute();
+            if (tableColumn == null) {
+                return null;
+            }
+            final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintAttribute(monitor, refConstraint, tableColumn);
+            if (fkColumn == null) {
+                return null;
+            }
+            DBSEntityAssociation association;
+            if (refConstraint instanceof DBSEntityAssociation) {
+                association = (DBSEntityAssociation)refConstraint;
+            } else {
+                return null;
+            }
+            final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn, false);
+            if (refColumn == null) {
+                return null;
+            }
+            List<DBDAttributeValue> precedingKeys = null;
+            List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(monitor));
+            if (allColumns.size() > 1 && allColumns.get(0) != fkColumn) {
+                // Our column is not a first on in foreign key.
+                // So, fill uo preceeding keys
+                List<DBDAttributeBinding> rowAttributes = attributeController.getRowController().getRowAttributes();
+                precedingKeys = new ArrayList<>();
+                for (DBSEntityAttributeRef precColumn : allColumns) {
+                    if (precColumn == fkColumn) {
+                        // Enough
+                        break;
+                    }
+                    DBSEntityAttribute precAttribute = precColumn.getAttribute();
+                    if (precAttribute != null) {
+                        DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, precAttribute);
+                        if (rowAttr != null) {
+                            Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
+                            precedingKeys.add(new DBDAttributeValue(precAttribute, precValue));
+                        }
+                    }
+                }
+            }
+            final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
+            final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
+            final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
+            if (fkAttribute != null && enumConstraint != null) {
+                Collection<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
+                    monitor,
+                    refColumn,
+                    pattern,
+                    precedingKeys,
+                    sortByValue,
+                    sortAsc,
+                    200);
+//                        for (DBDLabelValuePair pair : enumValues) {
+//                            keyValues.put(pair.getValue(), pair.getLabel());
+//                        }
+                if (monitor.isCanceled()) {
+                    return null;
+                }
+                final DBDValueHandler colHandler = DBUtils.findValueHandler(fkAttribute.getDataSource(), fkAttribute);
+                return new EnumValuesData(enumValues, fkColumn, colHandler);
+            }
+
             return null;
         }
 
