@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.bigquery.views;
+package org.jkiss.dbeaver.ext.bigquery.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -26,7 +26,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.bigquery.BigQueryActivator;
+import org.jkiss.dbeaver.ext.bigquery.ui.BigQueryActivator;
+import org.jkiss.dbeaver.ext.bigquery.ui.internal.BigQueryMessages;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;

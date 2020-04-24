@@ -1,9 +1,9 @@
-package org.jkiss.dbeaver.ext.bigquery.views;
+package org.jkiss.dbeaver.ext.bigquery.ui.internal;
 
 import org.eclipse.osgi.util.NLS;
 
 public class BigQueryMessages extends NLS {
-	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.bigquery.views.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.bigquery.ui.internal.messages"; //$NON-NLS-1$
 	public static String label_additional_project;
 	public static String label_connection;
 	public static String label_host;
