@@ -118,8 +118,8 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Built-By>jkiss.org</Built-By>
-                            <Created-By>jkiss.org</Created-By>
+                            <Built-By>dbeaver.io</Built-By>
+                            <Created-By>dbeaver.io</Created-By>
                             <Build-Time>${maven.build.timestamp}</Build-Time>
                         </manifestEntries>
                         <addMavenDescriptor>false</addMavenDescriptor>
