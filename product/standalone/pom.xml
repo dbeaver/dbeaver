@@ -72,6 +72,15 @@
                     </filters>
                 </configuration>
             </plugin>
+            <!-- Disable P2 repository generation -->
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-repository-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <createArtifactRepository>false</createArtifactRepository>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
