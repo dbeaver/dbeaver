@@ -63,6 +63,7 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
             JSONUtils.field(json, RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
             JSONUtils.field(json, RegistryConstants.ATTR_ANONYMOUS, driver.isAnonymousAccess());
             JSONUtils.field(json, "allowsEmptyPassword", driver.isAnonymousAccess());
+            JSONUtils.field(json, RegistryConstants.ATTR_INSTANTIABLE, driver.isInstantiable());
             if (driver.isCustomDriverLoader()) {
                 JSONUtils.field(json, RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER, driver.isCustomDriverLoader());
             }

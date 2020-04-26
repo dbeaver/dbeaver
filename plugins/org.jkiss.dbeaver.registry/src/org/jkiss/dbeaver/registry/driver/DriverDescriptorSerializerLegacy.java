@@ -65,8 +65,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 xml.addAttribute(RegistryConstants.ATTR_CATEGORY, driver.getCategory());
             }
             xml.addAttribute(RegistryConstants.ATTR_CATEGORIES, String.join(",", driver.getCategories()));
-            xml.addAttribute(RegistryConstants.ATTR_CUSTOM, driver.isCustom());
-            xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
+
             xml.addAttribute(RegistryConstants.ATTR_NAME, driver.getName());
             xml.addAttribute(RegistryConstants.ATTR_CLASS, driver.getDriverClassName());
             if (!CommonUtils.isEmpty(driver.getSampleURL())) {
@@ -78,6 +77,19 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.notEmpty(driver.getDescription()));
             if (driver.isCustomDriverLoader()) {
                 xml.addAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER, driver.isCustomDriverLoader());
+            }
+            xml.addAttribute(RegistryConstants.ATTR_CUSTOM, driver.isCustom());
+            if (driver.isEmbedded()) {
+                xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
+            }
+            if (driver.isAnonymousAccess()) {
+                xml.addAttribute(RegistryConstants.ATTR_ANONYMOUS, driver.isAnonymousAccess());
+            }
+            if (driver.isAllowsEmptyPassword()) {
+                xml.addAttribute("allowsEmptyPassword", driver.isAllowsEmptyPassword());
+            }
+            if (!driver.isInstantiable()) {
+                xml.addAttribute(RegistryConstants.ATTR_INSTANTIABLE, driver.isInstantiable());
             }
 
             // Libraries
@@ -209,7 +221,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.setSampleURL(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_URL), curDriver.getSampleURL()));
                         curDriver.setDriverDefaultPort(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_PORT), curDriver.getDefaultPort()));
                         curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), curDriver.isEmbedded()));
+                        curDriver.setAnonymousAccess(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ANONYMOUS), curDriver.isAnonymousAccess()));
                         curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), curDriver.isAllowsEmptyPassword()));
+                        curDriver.setInstantiable(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_INSTANTIABLE), curDriver.isInstantiable()));
                     }
                     if (atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER) != null) {
                         curDriver.setCustomDriverLoader((
