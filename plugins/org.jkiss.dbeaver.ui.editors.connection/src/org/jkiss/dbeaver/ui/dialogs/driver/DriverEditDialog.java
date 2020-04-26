@@ -245,14 +245,16 @@ public class DriverEditDialog extends HelpEnabledDialog {
             driverURLText.addModifyListener(e -> onChangeProperty());
             driverURLText.setEnabled(driver == null || driver.isUseURL());
 
-            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
-            driverPortText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_port, driver.getDefaultPort() == null ? "" : driver.getDefaultPort(), SWT.BORDER | advStyle, gd);
-            driverPortText.setLayoutData(new GridData(SWT.NONE));
+            UIUtils.createControlLabel(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_port);
+            driverPortText = new Text(propsGroup, SWT.BORDER | advStyle);
+            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort());
+            driverPortText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverPortText.addModifyListener(e -> onChangeProperty());
+            UIUtils.createEmptyLabel(propsGroup, 2, 1);
 
             Composite optionsPanel = new Composite(propsGroup, SWT.NONE);
             gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
+            gd.horizontalSpan = 4;
             optionsPanel.setLayoutData(gd);
             optionsPanel.setLayout(new RowLayout());
             embeddedDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_embedded_label, UIConnectionMessages.dialog_edit_driver_embedded_tip, driver.isEmbedded(), 1);
