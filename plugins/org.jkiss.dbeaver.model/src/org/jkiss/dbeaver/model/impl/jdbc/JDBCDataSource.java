@@ -115,11 +115,21 @@ public abstract class JDBCDataSource
     {
         // It MUST be a JDBC driver
         Driver driverInstance = null;
-        if (getContainer().getDriver().isInstantiable()) {
+        DBPDriver driver = getContainer().getDriver();
+        if (driver.isInstantiable()) {
             try {
                 driverInstance = getDriverInstance(monitor);
             } catch (DBException e) {
                 throw new DBCConnectException("Can't create driver instance", e, this);
+            }
+        } else {
+            if (!CommonUtils.isEmpty(driver.getDriverClassName())) {
+                try {
+                    driver.loadDriver(monitor);
+                    Class.forName(driver.getDriverClassName(), true, driver.getClassLoader());
+                } catch (Exception e) {
+                    throw new DBCException("Driver class '" + driver.getDriverClassName() + "' not found", e);
+                }
             }
         }
 

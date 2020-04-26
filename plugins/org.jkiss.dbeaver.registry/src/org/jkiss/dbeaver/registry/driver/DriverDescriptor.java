@@ -127,6 +127,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean licenseRequired;
     private boolean customDriverLoader;
     private boolean useURLTemplate;
+    private boolean instantiable;
     private boolean custom;
     private boolean modified;
     private boolean disabled;
@@ -173,6 +174,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.id = id;
         this.custom = true;
         this.useURLTemplate = true;
+        this.instantiable = true;
         this.promoted = 0;
 
         this.origName = null;
@@ -208,6 +210,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.licenseRequired = copyFrom.licenseRequired;
             this.customDriverLoader = copyFrom.customDriverLoader;
             this.useURLTemplate = copyFrom.useURLTemplate;
+            this.instantiable = copyFrom.instantiable;
             this.promoted = copyFrom.promoted;
             this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
             for (DriverFileSource fs : copyFrom.fileSources) {
@@ -254,6 +257,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
         this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
         this.useURLTemplate = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE), true);
+        this.instantiable = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INSTANTIABLE), true);
         this.promoted = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_PROMOTED), 0);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
@@ -690,7 +694,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     public boolean isInstantiable() {
-        return !CommonUtils.isEmpty(driverClassName);
+        return instantiable && !CommonUtils.isEmpty(driverClassName);
+    }
+
+    public void setInstantiable(boolean instantiable) {
+        this.instantiable = instantiable;
     }
 
     @Override
