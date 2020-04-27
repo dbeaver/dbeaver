@@ -79,6 +79,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {
             return DBValueFormatting.convertNumberToNativeString((Number) value);
         }
+        return getFormatter(column).formatValue(value);
+    }
+
+    private DBDDataFormatter getFormatter(@NotNull DBSTypedObject column) {
         if (formatter == null) {
             try {
                 formatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, column);
@@ -87,7 +91,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                 formatter = DefaultDataFormatter.INSTANCE;
             }
         }
-        return formatter.formatValue(value);
+        return formatter;
     }
 
     @Nullable
@@ -212,7 +216,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         if (value instanceof String) {
             String strValue = (String) value;
             // Some number. Actually we shouldn't be here
-            Object number = DBValueFormatting.convertStringToNumber(strValue, getNumberType(paramType), formatter, true);
+            Object number = DBValueFormatting.convertStringToNumber(strValue, getNumberType(paramType), getFormatter(paramType), true);
             if (number != null) {
                 value = number;
             } else if (!strValue.isEmpty()) {
@@ -333,7 +337,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                 // Empty string means NULL value
                 return null;
             }
-            return DBValueFormatting.convertStringToNumber(strValue, getNumberType(type), formatter, validateValue);
+            return DBValueFormatting.convertStringToNumber(strValue, getNumberType(type), getFormatter(type), validateValue);
         } else if (object instanceof Boolean) {
             return (Boolean) object ? 1 : 0;
         } else {
