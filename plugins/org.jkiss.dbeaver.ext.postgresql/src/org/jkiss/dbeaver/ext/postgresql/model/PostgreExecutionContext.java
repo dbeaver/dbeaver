@@ -193,15 +193,17 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     private void setSearchPath(DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
         List<String> newSearchPath = new ArrayList<>(getDefaultSearchPath());
         int schemaIndex = newSearchPath.indexOf(defSchemaName);
-        if (schemaIndex == 0) {
+        if (schemaIndex == 0 || (schemaIndex == 1 && isUserFirstInPath(newSearchPath))) {
             // Already default schema
+            return;
         } else {
             if (schemaIndex > 0) {
                 // Remove from previous position
                 newSearchPath.remove(schemaIndex);
             }
-            // Add it first
-            newSearchPath.add(0, defSchemaName);
+            // Add it first (or after $user)
+            int newIndex = isUserFirstInPath(newSearchPath) ? 1 : 0;
+            newSearchPath.add(newIndex, defSchemaName);
         }
 
         StringBuilder spString = new StringBuilder();
@@ -214,6 +216,10 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         } catch (SQLException e) {
             throw new DBCException("Error setting search path", e, this);
         }
+    }
+
+    private static boolean isUserFirstInPath(List<String> newSearchPath) {
+        return !newSearchPath.isEmpty() && newSearchPath.get(0).equals("$user");
     }
 
     private void setSearchPath(String path) {
