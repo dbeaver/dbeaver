@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -42,21 +43,28 @@ public class SQLServerDialect extends JDBCSQLDialect {
         }*/
     };
 
-    public static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
+    private static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
         "TOP",
         "SYNONYM",
     };
 
-    public static final String[][] SQLSERVER_QUOTE_STRINGS = {
+    private static final String[][] SQLSERVER_QUOTE_STRINGS = {
             {"[", "]"},
             {"\"", "\""},
     };
-    public static final String[][] SYBASE_LEGACY_QUOTE_STRINGS = {
+    private static final String[][] SYBASE_LEGACY_QUOTE_STRINGS = {
         {"\"", "\""},
     };
 
 
     private static String[] EXEC_KEYWORDS =  { "CALL", "EXEC" };
+
+    private static String[] PLAIN_TYPE_NAMES = {
+        SQLServerConstants.TYPE_GEOGRAPHY,
+        SQLServerConstants.TYPE_GEOMETRY,
+        SQLServerConstants.TYPE_TIMESTAMP,
+        SQLServerConstants.TYPE_PICTURE,
+    };
 
     private JDBCDataSource dataSource;
     private boolean isSqlServer;
@@ -151,10 +159,10 @@ public class SQLServerDialect extends JDBCSQLDialect {
             }
         } else if (dataKind == DBPDataKind.STRING) {
             switch (typeName) {
-                case "char":
-                case "nchar":
-                case "varchar":
-                case "nvarchar": {
+                case SQLServerConstants.TYPE_CHAR:
+                case SQLServerConstants.TYPE_NCHAR:
+                case SQLServerConstants.TYPE_VARCHAR:
+                case SQLServerConstants.TYPE_NVARCHAR: {
                     long maxLength = column.getMaxLength();
                     if (maxLength == 0) {
                         return null;
@@ -164,13 +172,13 @@ public class SQLServerDialect extends JDBCSQLDialect {
                         return "(" + maxLength + ")";
                     }
                 }
-                case "text":
-                case "ntext":
+                case SQLServerConstants.TYPE_TEXT:
+                case SQLServerConstants.TYPE_NTEXT:
                     // text and ntext don't have max length
                 default:
                     return null;
             }
-        } else if (SQLServerConstants.TYPE_GEOGRAPHY.equals(typeName) || SQLServerConstants.TYPE_GEOMETRY.equals(typeName)) {
+        } else if (ArrayUtils.contains(PLAIN_TYPE_NAMES , typeName)) {
             return null;
         }
 

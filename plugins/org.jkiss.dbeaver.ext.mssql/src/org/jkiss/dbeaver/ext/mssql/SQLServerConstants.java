@@ -44,10 +44,16 @@ public class SQLServerConstants {
     public static final String TYPE_SMALLDATETIME = "smalldatetime";
     public static final String TYPE_DATETIMEOFFSET = "datetimeoffset";
     public static final String TYPE_UNIQUEIDENTIFIER = "uniqueidentifier";
-    public static final String TYPE_NVARCHAR = "nvarchar";
+    public static final String TYPE_CHAR = "char";
     public static final String TYPE_NCHAR = "nchar";
+    public static final String TYPE_VARCHAR = "varchar";
+    public static final String TYPE_NVARCHAR = "nvarchar";
+    public static final String TYPE_TEXT = "text";
+    public static final String TYPE_NTEXT = "ntext";
     public static final String TYPE_GEOMETRY = "geometry";
     public static final String TYPE_GEOGRAPHY = "geography";
+    public static final String TYPE_TIMESTAMP = "timestamp";
+    public static final String TYPE_PICTURE = "picture";
 
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
