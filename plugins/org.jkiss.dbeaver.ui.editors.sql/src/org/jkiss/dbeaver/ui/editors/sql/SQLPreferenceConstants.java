@@ -95,6 +95,7 @@ public class SQLPreferenceConstants
 
     // Matching brackets
     public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";
+    public final static String MATCHING_BRACKETS_HIGHLIGHT              = "SQLEditor.matchingBracketsHighlight";
     // Reuse "AbstractTextEditor.Color.Foreground" color
     public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";//"org.jkiss.dbeaver.sql.editor.color.matchingBrackets.foreground";
 

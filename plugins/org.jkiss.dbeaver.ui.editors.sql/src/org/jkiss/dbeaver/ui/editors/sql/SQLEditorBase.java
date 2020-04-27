@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.*;
@@ -91,6 +92,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         {
             IPreferenceStore editorStore = EditorsUI.getPreferenceStore();
             editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
+            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_HIGHLIGHT, true);
             //editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128"); //$NON-NLS-1$
         }
     }
@@ -372,6 +374,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         getSourceViewerDecorationSupport(sourceViewer);
 
+        SQLMatchingCharacterPainter matchPainter = new SQLMatchingCharacterPainter(sourceViewer, characterPairMatcher);
+        matchPainter.setColor(getSharedColors().getColor(
+            PreferenceConverter.getColor(getPreferenceStore(), "writeOccurrenceIndicationColor")));
+        matchPainter.setHighlightCharacterAtCaretLocation(true);
+        sourceViewer.addPainter(matchPainter);
+
         return sourceViewer;
     }
 
@@ -385,8 +393,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             // If we below Eclipse 4.2.1
             characterPairMatcher = new SQLCharacterPairMatcher(this, matchChars, SQLParserPartitions.SQL_PARTITIONING);
         }
+
+/*
         support.setCharacterPairMatcher(characterPairMatcher);
-        support.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
+        support.setMatchingCharacterPainterPreferenceKeys(
+            SQLPreferenceConstants.MATCHING_BRACKETS,
+            SQLPreferenceConstants.MATCHING_BRACKETS_COLOR,
+            SQLPreferenceConstants.MATCHING_BRACKETS_HIGHLIGHT,
+            null);//SQLPreferenceConstants.MATCHING_BRACKETS_HIGHLIGHT);
+*/
+
         super.configureSourceViewerDecorationSupport(support);
     }
 
