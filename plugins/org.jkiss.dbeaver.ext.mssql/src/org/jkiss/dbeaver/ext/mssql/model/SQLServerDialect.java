@@ -63,7 +63,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
         SQLServerConstants.TYPE_GEOGRAPHY,
         SQLServerConstants.TYPE_GEOMETRY,
         SQLServerConstants.TYPE_TIMESTAMP,
-        SQLServerConstants.TYPE_PICTURE,
+        SQLServerConstants.TYPE_IMAGE,
     };
 
     private JDBCDataSource dataSource;
