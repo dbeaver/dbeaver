@@ -22,6 +22,8 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -93,6 +95,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5); //$NON-NLS-1$
 
     private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
+    private final IPropertyChangeListener themePropertiesListener;
 
     private static abstract class LogColumn {
         private final String id;
@@ -334,10 +337,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private boolean useDefaultFilter = true;
     private boolean currentSessionOnly;
 
-    private final Color colorLightGreen;
-    private final Color colorLightRed;
-    private final Color colorLightYellow;
-    private final Color shadowColor;
+    private Color colorLightGreen;
+    private Color colorLightRed;
+    private Color colorLightYellow;
+    private Color shadowColor;
     private final Font boldFont;
     private final Font hintFont;
     private DragSource dndSource;
@@ -439,6 +442,23 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 }
             }
         });
+
+
+        this.themePropertiesListener = event -> {
+            switch (event.getProperty()) {
+                case COLOR_UNCOMMITTED:
+                    colorLightGreen = colorRegistry.get(COLOR_UNCOMMITTED);
+                    break;
+                case COLOR_REVERTED:
+                    colorLightRed = colorRegistry.get(COLOR_REVERTED);
+                    break;
+                case COLOR_TRANSACTION:
+                    colorLightYellow = colorRegistry.get(COLOR_TRANSACTION);
+                    break;
+            }
+        };
+        this.site.getWorkbenchWindow().getWorkbench().getThemeManager().addPropertyChangeListener(themePropertiesListener);
+
     }
 
     private synchronized void scheduleLogRefresh() {
@@ -501,6 +521,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private void dispose() {
+        this.site.getWorkbenchWindow().getWorkbench().getThemeManager().removePropertyChangeListener(themePropertiesListener);
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
         QMUtils.unregisterMetaListener(this);
         UIUtils.dispose(dndSource);
