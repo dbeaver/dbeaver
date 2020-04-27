@@ -54,7 +54,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     private static final String DEFAULT_NAVIGATOR_SETTINGS_RESET = "navigator.settings.preset.default";
 
     private NewConnectionWizard wizard;
-    private DriverDescriptor selectedDriver;
+    private DBPDriver selectedDriver;
     private DBPProject connectionProject;
     private DataSourceNavigatorSettings.Preset navigatorPreset;
 
@@ -183,9 +183,13 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);
     }
 
-    public DriverDescriptor getSelectedDriver()
+    public DBPDriver getSelectedDriver()
     {
         return selectedDriver;
+    }
+
+    public void setSelectedDriver(DBPDriver selectedDriver) {
+        this.selectedDriver = selectedDriver;
     }
 
     public DBPProject getConnectionProject() {
