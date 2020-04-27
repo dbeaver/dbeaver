@@ -91,6 +91,13 @@ public class DatabaseEditorUtils {
             UIIcon.RESET,
             null,
             true));
+        contributionManager.add(ActionUtils.makeCommandContribution(
+            workbenchSite,
+            IWorkbenchCommandConstants.FILE_REFRESH,
+            null,
+            UIIcon.REFRESH,
+            null,
+            true));
     }
 
 }

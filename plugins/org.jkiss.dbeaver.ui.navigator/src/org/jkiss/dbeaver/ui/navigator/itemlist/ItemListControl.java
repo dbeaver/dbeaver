@@ -99,9 +99,9 @@ public class ItemListControl extends NodeListControl
         }
         addColumnConfigAction(contributionManager);
         IWorkbenchSite workbenchSite = getWorkbenchSite();
-        if (workbenchSite != null) {
-            contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
-        }
+//        if (workbenchSite != null) {
+//            contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
+//        }
 
         // Object operations
 
