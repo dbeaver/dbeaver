@@ -69,7 +69,7 @@ public class SetPartColorAction extends SelectionAction {
                     }
 
                 } finally {
-                    shell.dispose();
+                    UIUtils.disposeCenteredShell(shell);
                 }
             }
 

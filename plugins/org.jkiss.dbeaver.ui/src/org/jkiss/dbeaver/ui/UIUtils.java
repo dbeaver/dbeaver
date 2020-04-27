@@ -1827,6 +1827,14 @@ public class UIUtils {
         return shell;
     }
 
+    public static void disposeCenteredShell(Shell shell) {
+        Composite parentShell = shell.getParent();
+        shell.dispose();
+        if (parentShell instanceof Shell) {
+            ((Shell) parentShell).setActive();
+        }
+    }
+
     public static void centerShell(Shell parent, Shell shell) {
         if (parent == null || shell == null) {
             return;
