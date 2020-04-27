@@ -53,7 +53,7 @@ public class SetRowColorAction extends ColorAction {
                 return;
             }
         } finally {
-            shell.dispose();
+            UIUtils.disposeCenteredShell(shell);
         }
         try {
             final DBVEntity vEntity = getColorsVirtualEntity();
