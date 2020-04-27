@@ -1793,17 +1793,7 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }
-        return getColorByRGB(rgbString);
-    }
-
-    public static Color getColorByRGB(String rgbString) {
-        Color connectionColor = sharedTextColors.getColor(rgbString);
-        if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
-            // For white color return just null to avoid explicit color set.
-            // It is important for dark themes
-            return null;
-        }
-        return connectionColor;
+        return getConnectionColorByRGB(rgbString);
     }
 
     public static Color getConnectionTypeColor(DBPConnectionType connectionType) {
@@ -1811,7 +1801,26 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }
-        return getColorByRGB(rgbString);
+        return getConnectionColorByRGB(rgbString);
+    }
+
+    public static Color getConnectionColorByRGB(String rgbStringOrId) {
+        if (rgbStringOrId.isEmpty()) {
+            return null;
+        }
+        if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
+            // Some color constant
+            RGB rgb = getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
+            return sharedTextColors.getColor(rgb);
+        } else {
+            Color connectionColor = sharedTextColors.getColor(rgbStringOrId);
+            if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
+                // For white color return just null to avoid explicit color set.
+                // It is important for dark themes
+                return null;
+            }
+            return connectionColor;
+        }
     }
 
     public static Shell createCenteredShell(Shell parent) {

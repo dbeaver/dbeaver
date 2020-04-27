@@ -17,8 +17,8 @@ import java.util.List;
 public class DBPConnectionType implements DBPDataSourcePermissionOwner {
 
     public static final DBPConnectionType DEV = new DBPConnectionType("dev", ModelMessages.dbp_connection_type_table_development, "255,255,255", ModelMessages.dbp_connection_type_table_regular_development_database, true, false, false, true, null); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBPConnectionType TEST = new DBPConnectionType("test", ModelMessages.dbp_connection_type_table_test, "196,255,181", ModelMessages.dbp_connection_type_table_test_database, true, false, true, true, null); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBPConnectionType PROD = new DBPConnectionType("prod", ModelMessages.dbp_connection_type_table_production, "247,159,129", ModelMessages.dbp_connection_type_table_production_database, false, true, true, true, null); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBPConnectionType TEST = new DBPConnectionType("test", ModelMessages.dbp_connection_type_table_test, "org.jkiss.dbeaver.color.connectionType.qa.background", ModelMessages.dbp_connection_type_table_test_database, true, false, true, true, null); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBPConnectionType PROD = new DBPConnectionType("prod", ModelMessages.dbp_connection_type_table_production, "org.jkiss.dbeaver.color.connectionType.prod.background", ModelMessages.dbp_connection_type_table_production_database, false, true, true, true, null); //$NON-NLS-1$ //$NON-NLS-3$
 
     public static final DBPConnectionType[] SYSTEM_TYPES = {DEV, TEST, PROD};
     public static final DBPConnectionType DEFAULT_TYPE = DEV;
