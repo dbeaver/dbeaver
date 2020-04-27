@@ -395,6 +395,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             UIUtils.packColumns(previewTable, false);
 
             if (finalError != null) {
+                log.error(finalError);
                 DBWorkbench.getPlatformUI().showError("Load entity meta", "Can't load entity attributes", finalError);
             }
         });
@@ -563,18 +564,22 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         final StreamProducerSettings settings = getProducerSettings();
         List<DataTransferPipe> dataPipes = getWizard().getSettings().getDataPipes();
         if (dataPipes.isEmpty()) {
+            setErrorMessage("No entities specified");
             return false;
         }
         for (DataTransferPipe pipe : dataPipes) {
             DBSObject databaseObject = pipe.getConsumer().getDatabaseObject();
             if (!(databaseObject instanceof DBSEntity)) {
+                setErrorMessage("Wrong input object");
                 return false;
             }
             StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping((DBSEntity) databaseObject);
             if (!entityMapping.isComplete()) {
+                setErrorMessage("Set mappings for all columns");
                 return false;
             }
         }
+        setErrorMessage(null);
         return true;
     }
 
