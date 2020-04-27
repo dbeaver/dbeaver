@@ -60,6 +60,7 @@ public class EditorUtils {
 
     public static final String PROP_SQL_DATA_SOURCE_ID = "sql-editor-data-source-id";
     private static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id";
+    private static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource";
     private static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog";
     private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema";
 
@@ -176,10 +177,12 @@ public class EditorUtils {
     /**
      * String[2] = { defaultCatalogName, defaultSchema }
      */
-    public static String[] getInputContextDefaults(IEditorInput editorInput) {
+    public static String[] getInputContextDefaults(DBPDataSourceContainer dataSource,  IEditorInput editorInput) {
+        String defaultDatasource = null;
         String defaultCatalogName = null;
         String defaultSchema = null;
         if (editorInput instanceof INonPersistentEditorInput) {
+            defaultDatasource = (String) ((INonPersistentEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_DATASOURCE);
             defaultCatalogName = (String) ((INonPersistentEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_CATALOG);
             defaultSchema= (String) ((INonPersistentEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_SCHEMA);
         } else {
@@ -187,6 +190,7 @@ public class EditorUtils {
             if (file != null) {
                 DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(file.getProject());
                 if (projectMeta != null) {
+                    defaultDatasource = (String) projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_CATALOG);
                     defaultSchema = (String) projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_SCHEMA);
                 }
@@ -194,10 +198,15 @@ public class EditorUtils {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
                     final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
+                    defaultDatasource = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_CATALOG);
                     defaultSchema= (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_SCHEMA);
                 }
             }
+        }
+        if (!CommonUtils.isEmpty(defaultDatasource) && !defaultDatasource.equals(dataSource.getId())) {
+            // Wrong datasource
+            return new String[] { null, null };
         }
         return new String[] { defaultCatalogName, defaultSchema };
     }
@@ -229,8 +238,13 @@ public class EditorUtils {
         @NotNull DatabaseEditorContext context) {
         if (editorInput instanceof INonPersistentEditorInput) {
             DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
-            ((INonPersistentEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
+            if (dataSourceContainer != null) {
+                ((INonPersistentEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer.getId());
+            }
             if (!isDefaultContextSettings(context)) {
+                if (dataSourceContainer != null) {
+                    ((INonPersistentEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceContainer.getId());
+                }
                 String catalogName = getDefaultCatalogName(context);
                 if (catalogName != null) ((INonPersistentEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
                 String schemaName = getDefaultSchemaName(context);
@@ -258,11 +272,13 @@ public class EditorUtils {
             localFile,
             PROP_SQL_PROJECT_ID,
             dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getName());
+        String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
         efManager.setFileProperty(
             localFile,
             PROP_SQL_DATA_SOURCE_ID,
-            dataSourceContainer == null ? null : dataSourceContainer.getId());
+            dataSourceId);
         if (!isDefaultContextSettings(context)) {
+            efManager.setFileProperty(localFile, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
             String catalogName = getDefaultCatalogName(context);
             if (catalogName != null) efManager.setFileProperty(localFile, PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
             String schemaName = getDefaultSchemaName(context);
@@ -276,8 +292,10 @@ public class EditorUtils {
             return;
         }
         DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
-        projectMeta.setResourceProperty(file, PROP_SQL_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
+        String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
+        projectMeta.setResourceProperty(file, PROP_SQL_DATA_SOURCE_ID, dataSourceId);
         if (!isDefaultContextSettings(context)) {
+            projectMeta.setResourceProperty(file, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
             String catalogName = getDefaultCatalogName(context);
             if (catalogName != null) projectMeta.setResourceProperty(file, PROP_CONTEXT_DEFAULT_CATALOG, catalogName);
             String schemaName = getDefaultSchemaName(context);

@@ -394,7 +394,7 @@ public class SQLEditor extends SQLEditorBase implements
     private void initSeparateConnection(@NotNull DBPDataSource dataSource, Runnable onSuccess) {
         DBSInstance dsInstance = dataSource.getDefaultInstance();
         String[] contextDefaults = isRestoreActiveSchemaFromScript() ?
-            EditorUtils.getInputContextDefaults(getEditorInput()) : null;
+            EditorUtils.getInputContextDefaults(dataSource.getContainer(), getEditorInput()) : null;
         if (!ArrayUtils.isEmpty(contextDefaults) && contextDefaults[0] != null) {
             DBSInstance selectedInstance = DBUtils.findObject(dataSource.getAvailableInstances(), contextDefaults[0]);
             if (selectedInstance != null) {
@@ -586,7 +586,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBCExecutionContext newContext = instance.openIsolatedContext(monitor, title, instance.getDefaultContext(monitor, false));
                 // Set context defaults
                 String[] contextDefaultNames = isRestoreActiveSchemaFromScript() ?
-                    EditorUtils.getInputContextDefaults(getEditorInput()) : null;
+                    EditorUtils.getInputContextDefaults(instance.getDataSource().getContainer(), getEditorInput()) : null;
                 if (contextDefaultNames != null && contextDefaultNames.length > 1 &&
                     (!CommonUtils.isEmpty(contextDefaultNames[0]) || !CommonUtils.isEmpty(contextDefaultNames[1])))
                 {
