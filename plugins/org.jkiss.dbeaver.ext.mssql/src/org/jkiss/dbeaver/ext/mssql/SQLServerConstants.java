@@ -53,7 +53,7 @@ public class SQLServerConstants {
     public static final String TYPE_GEOMETRY = "geometry";
     public static final String TYPE_GEOGRAPHY = "geography";
     public static final String TYPE_TIMESTAMP = "timestamp";
-    public static final String TYPE_PICTURE = "picture";
+    public static final String TYPE_IMAGE = "image";
 
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
