@@ -17,21 +17,18 @@
       %license
    </license>
 
-<!--   <includes id="org.eclipse.egit" version="0.0.0"/>-->
+   <requires>
+      <import feature="org.eclipse.egit" version="1.0.0"/>
+   </requires>
 
-   <plugin id="javaewah" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
 <!--
-   <plugin id="com.jcraft.jzlib" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.apache.sshd.osgi" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.apache.sshd.sftp" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="net.i2p.crypto.eddsa" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
--->
+   <plugin id="javaewah" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
 
    <plugin id="org.bouncycastle.bcpg" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.bouncycastle.bcpkix" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.bouncycastle.bcprov" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
 
-   <!-- EGIT and JGIT deps -->
+   &lt;!&ndash; EGIT and JGIT deps &ndash;&gt;
    <plugin id="org.eclipse.jgit" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.eclipse.jgit.http.apache" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.eclipse.jgit.ssh.apache" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
@@ -43,6 +40,7 @@
 
    <plugin id="org.eclipse.egit.gitflow" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
    <plugin id="org.eclipse.egit.gitflow.ui" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+-->
 
    <!-- DBeaver deps -->
    <plugin id="org.jkiss.dbeaver.team.git" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
