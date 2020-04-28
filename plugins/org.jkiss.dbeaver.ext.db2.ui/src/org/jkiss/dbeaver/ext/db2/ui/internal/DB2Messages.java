@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.db2.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class DB2Messages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.db2.DB2Resources"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.db2.ui.internal.DB2Resources"; //$NON-NLS-1$
 
     static {
         // initialize resource bundle
@@ -64,6 +64,8 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_options;
     public static String dialog_table_tools_result;
     public static String dialog_table_tools_progress;
+    
+    public static String edit_db2_index_manager_dialog_title;
 
     public static String dialog_table_tools_runstats_title;
     public static String dialog_table_tools_runstats_cols_title;
