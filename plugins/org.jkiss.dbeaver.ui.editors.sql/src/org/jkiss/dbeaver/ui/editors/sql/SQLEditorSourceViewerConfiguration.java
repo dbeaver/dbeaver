@@ -20,7 +20,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
-import org.eclipse.jface.text.formatter.ContentFormatter;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.IFormattingStrategy;
 import org.eclipse.jface.text.hyperlink.*;
@@ -236,7 +235,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
      */
     @Override
     public IContentFormatter getContentFormatter(ISourceViewer sourceViewer) {
-        ContentFormatter formatter = new ContentFormatter();
+        SQLContentFormatter formatter = new SQLContentFormatter(editor);
         formatter.setDocumentPartitioning(SQLParserPartitions.SQL_PARTITIONING);
 
         IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(sourceViewer, this, editor.getSyntaxManager());
