@@ -87,11 +87,11 @@ public class FireBirdMetaModel extends GenericMetaModel
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, "RDB$GENERATOR_NAME");
+                        String name = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$GENERATOR_NAME");
                         if (name == null) {
                             continue;
                         }
-                        String description = JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION");
+                        String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
                         FireBirdSequence sequence = new FireBirdSequence(
                             container,
                             name,
@@ -135,14 +135,13 @@ public class FireBirdMetaModel extends GenericMetaModel
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, "RDB$TRIGGER_NAME");
+                        String name = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$TRIGGER_NAME");
                         if (name == null) {
                             continue;
                         }
-                        name = name.trim();
                         int sequence = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_SEQUENCE");
                         int type = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_TYPE");
-                        String description = JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION");
+                        String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
                         FireBirdTrigger trigger = new FireBirdTrigger(
                             container,
                             table,
@@ -195,7 +194,7 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
-        String tableName = JDBCUtils.safeGetString(dbResult, "RDB$RELATION_NAME");
+        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$RELATION_NAME");
         int relType = JDBCUtils.safeGetInt(dbResult, "RDB$RELATION_TYPE");
         boolean isSystem = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG") != 0;
         GenericTableBase table;
@@ -224,7 +223,7 @@ public class FireBirdMetaModel extends GenericMetaModel
         }
         table.setPersisted(true);
         table.setSystem(isSystem);
-        table.setDescription(JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION"));
+        table.setDescription(JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION"));
         return table;
     }
 

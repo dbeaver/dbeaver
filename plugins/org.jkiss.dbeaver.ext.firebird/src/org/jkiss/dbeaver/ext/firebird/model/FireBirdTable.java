@@ -45,8 +45,8 @@ public class FireBirdTable extends GenericTable implements DBPNamedObject2 {
 
         if (dbResult != null) {
             keyLength = JDBCUtils.safeGetInt(dbResult, "RDB$DBKEY_LENGTH");
-            externalFile = JDBCUtils.safeGetString(dbResult, "RDB$EXTERNAL_FILE");
-            ownerName = JDBCUtils.safeGetString(dbResult, "RDB$OWNER_NAME");
+            externalFile = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$EXTERNAL_FILE");
+            ownerName = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$OWNER_NAME");
         }
     }
 
