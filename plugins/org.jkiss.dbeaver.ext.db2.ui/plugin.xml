@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2013-2014 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.db2.dataSourceWizardView"
+                dataSource="db2"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.db2.ui.views.DB2ConnectionPage"
+                icon="icons/db2_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.db2.dataSourceEditorView"
+                dataSource="db2"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.db2.ui.views.DB2ConnectionPage">
+        </view>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor id="source.routine.ddl"
+                class="org.jkiss.dbeaver.ext.db2.ui.editors.DB2RoutineDDLEditor"
+                label="%editor.source.ddl.name"
+                description="%editor.source.ddl.description"
+                icon="#sql_text"
+                position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+                type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <toolGroup id="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance" label="Statistics"/>
+            <tool
+                    class="org.jkiss.dbeaver.ext.db2.ui.tools.DB2ToolShowError"
+                    description="Display SQL Error Message"
+                    id="org.jkiss.dbeaver.ext.db2.ui.tools.DB2ToolShowError"
+                    label="%tool.org.jkiss.dbeaver.ext.db2.showerror.name"
+                    singleton="true">
+                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2DataSource"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2RunstatsTool"
+                    description="Runstats"
+                    id="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2RunstatsTool"
+                    group="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance"
+                    label="%tool.org.jkiss.dbeaver.ext.db2.table.runstats.name"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2ReorgTableTool"
+                    description="Reorg table"
+                    id="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2ReorgTableTool"
+                    group="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance"
+                    label="%tool.org.jkiss.dbeaver.ext.db2.table.reorg.name"
+                    singleton="true">
+                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2ReorgIndexTool"
+                    description="Reorg index"
+                    id="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2ReorgIndexTool"
+                    group="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance"
+                    label="%tool.org.jkiss.dbeaver.ext.db2.table.reorgix.name"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2ReorgCheckTableTool"
+                    description="Reorg check table"
+                    id="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2ReorgCheckTableTool"
+                    group="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance"
+                    label="%tool.org.jkiss.dbeaver.ext.db2.table.reorgcheck.name"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2TruncateTool"
+                    description="Truncate table"
+                    id="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2Truncate"
+                    group="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance"
+                    label="%tool.org.jkiss.dbeaver.ext.db2.table.truncate.name"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+            </tool>
+        </tools>
+
+    </extension>
+    
+</plugin>
