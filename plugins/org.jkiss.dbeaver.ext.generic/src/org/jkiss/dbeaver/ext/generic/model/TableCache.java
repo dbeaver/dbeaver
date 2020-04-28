@@ -80,14 +80,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable)
         throws SQLException
     {
-        return session.getMetaData().getColumns(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
-            forTable == null ?
-                owner.getDataSource().getAllObjectsPattern() :
-                JDBCUtils.escapeWildCards(session, forTable.getName()),
-            owner.getDataSource().getAllObjectsPattern())
-            .getSourceStatement();
+        return dataSource.getMetaModel().prepareTableColumnLoadStatement(session, owner, forTable);
     }
 
     @Override
@@ -146,6 +139,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
 
         return getDataSource().getMetaModel().createTableColumnImpl(
             session.getProgressMonitor(),
+            dbResult,
             table,
             columnName,
             typeName, valueType, sourceType, ordinalPos,
