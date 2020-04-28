@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -41,6 +42,7 @@ import java.util.Map;
  */
 public class OracleMaterializedView extends OracleTableBase implements OracleSourceObject, DBSObjectLazy<OracleDataSource>
 {
+    private static final Log log = Log.getLog(OracleMaterializedView.class);
 
     private Object container;
     private String query;
@@ -69,7 +71,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
             schema,
             JDBCUtils.safeGetString(dbResult, "MVIEW_NAME"),
             true);
-        this.query = JDBCUtils.safeGetString(dbResult, "QUERY");
+        //this.query = JDBCUtils.safeGetString(dbResult, "QUERY");
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "COMPILE_STATE"));
         this.container = JDBCUtils.safeGetString(dbResult, "CONTAINER_NAME");
         this.updatable = JDBCUtils.safeGetBoolean(dbResult, "UPDATABLE", "Y");
@@ -161,6 +163,13 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
     {
+        if (query == null) {
+            try {
+                query = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.COMPACT, options);
+            } catch (DBException e) {
+                log.warn("Error getting view definition from system package", e);
+            }
+        }
         return query;
     }
 
@@ -211,7 +220,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
 
     @Override
     protected String getTableTypeName() {
-        return "MVIEW";
+        return "MATERIALIZED_VIEW";
     }
 
     protected String queryTableComment(JDBCSession session) throws SQLException {
