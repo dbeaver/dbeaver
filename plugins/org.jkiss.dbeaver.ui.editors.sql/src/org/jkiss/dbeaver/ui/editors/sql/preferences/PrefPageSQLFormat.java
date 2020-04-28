@@ -80,6 +80,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
     // Formatter
     private Combo formatterSelector;
+    private Button formatCurrentQueryCheck;
 
     private SQLEditorBase sqlViewer;
     private Composite formatterConfigPlaceholder;
@@ -111,7 +112,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 3, 5);
 
         formatterSelector = UIUtils.createLabelCombo(composite, SQLEditorMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -129,9 +130,11 @@ public class PrefPageSQLFormat extends TargetPrefPage
         });
         formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
+        formatCurrentQueryCheck = UIUtils.createCheckbox(composite, "Format active query only", "Formats only active query or selected text. Otherwise formats entire SQL script", true, 1);
+
         Composite formatterGroup = UIUtils.createPlaceholder(composite, 1, 5);
         formatterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        ((GridData)formatterGroup.getLayoutData()).horizontalSpan = 2;
+        ((GridData)formatterGroup.getLayoutData()).horizontalSpan = 3;
 
 /*
         {
@@ -228,6 +231,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         styleBoldKeywords.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS));
+        formatCurrentQueryCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY));
 
         String formatterId = store.getString(SQLModelPreferences.SQL_FORMAT_FORMATTER);
         for (int i = 0; i < formatters.size(); i++) {
@@ -249,6 +253,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             curConfigurator.saveSettings(getTargetPreferenceStore());
         }
         store.setValue(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS, styleBoldKeywords.getSelection());
+        store.setValue(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY, formatCurrentQueryCheck.getSelection());
 
         store.setValue(SQLModelPreferences.SQL_FORMAT_FORMATTER,
             formatters.get(formatterSelector.getSelectionIndex()).getId().toUpperCase(Locale.ENGLISH));
