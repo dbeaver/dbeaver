@@ -167,6 +167,11 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
             try {
                 query = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.COMPACT, options);
             } catch (DBException e) {
+                String message = e.getMessage();
+                if (message != null) {
+                    message = message.replace("*/", "* /");
+                }
+                query = "/*\nError generating materialized view DDL:\n" + message + "\n*/";
                 log.warn("Error getting view definition from system package", e);
             }
         }
