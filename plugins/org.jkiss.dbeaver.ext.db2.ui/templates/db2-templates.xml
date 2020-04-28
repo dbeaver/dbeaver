@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+-->
+
+<templates>
+
+    <template id="org.jkiss.dbeaver.templates.curtime" 
+              name="curtimestamp" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="values (current timestamp)">
+VALUES (CURRENT TIMESTAMP);
+    </template>
+
+    <template id="org.jkiss.dbeaver.templates.cmdAdminDropSchema" 
+              name="cmdAdminDropSchema" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="Admin Drop Schema"
+              >
+call SYSPROC.ADMIN_DROP_SCHEMA('${schema}',null,?,?);
+    </template>
+    
+    <template id="org.jkiss.dbeaver.templates.cmdAdminCopySchema" 
+              name="cmdAdminCopySchema" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="Admin Copy Schema">
+call SYSPROC.ADMIN_COPY_SCHEMA('${schema}','&lt;target schema&gt;','COPY', NULL, '&lt;source ts1, source ts2&gt;','&lt;target ts1, target ts2&gt;',?,?);
+    </template>
+
+</templates>
