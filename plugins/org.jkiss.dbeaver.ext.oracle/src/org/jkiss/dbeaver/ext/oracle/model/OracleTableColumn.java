@@ -142,7 +142,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
 
     @Nullable
     @Override
-    @Property(viewable = false, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 21, listProvider = ColumnDataTypeListProvider.class)
+    //@Property(viewable = false, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 21, listProvider = ColumnDataTypeListProvider.class)
     public OracleDataType getDataType()
     {
         return type;
