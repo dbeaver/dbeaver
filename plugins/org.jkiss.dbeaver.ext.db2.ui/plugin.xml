@@ -76,20 +76,20 @@
            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
         </editor>
         
-        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2ForeignKeyConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2TableForeignKey"/>
+        <configurator class="org.jkiss.dbeaver.ext.db2.ui.config.DB2ForeignKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2IndexConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2Index"/>
+        <configurator class="org.jkiss.dbeaver.ext.db2.ui.config.DB2IndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2SchemaConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2Schema"/>
+        <configurator class="org.jkiss.dbeaver.ext.db2.ui.config.DB2SchemaConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2SequenceConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2Sequence"/>
+        <configurator class="org.jkiss.dbeaver.ext.db2.ui.config.DB2SequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2UniqueKeyConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2TableUniqueKey"/>
+        <configurator class="org.jkiss.dbeaver.ext.db2.ui.config.DB2UniqueKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
         </configurator>
 
     </extension>
