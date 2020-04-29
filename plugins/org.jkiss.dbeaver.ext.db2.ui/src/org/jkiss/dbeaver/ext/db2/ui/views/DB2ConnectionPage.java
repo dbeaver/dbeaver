@@ -26,7 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.db2.ui.Activator;
+import org.jkiss.dbeaver.ext.db2.ui.DB2Activator;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -47,7 +47,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     private Text dbText;
     private Text usernameText;
 
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/db2_logo.png"); //$NON-NLS-1$
+    private static ImageDescriptor logoImage = DB2Activator.getImageDescriptor("icons/db2_logo.png"); //$NON-NLS-1$
 
     @Override
     public void dispose()

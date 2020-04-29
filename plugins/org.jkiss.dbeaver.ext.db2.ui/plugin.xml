@@ -27,7 +27,7 @@
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                 label="%dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.db2.ui.views.DB2ConnectionPage"
-                icon="icons/db2_icon.png">
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon.png">
         </view>
         <view
                 id="org.jkiss.dbeaver.ext.db2.dataSourceEditorView"
