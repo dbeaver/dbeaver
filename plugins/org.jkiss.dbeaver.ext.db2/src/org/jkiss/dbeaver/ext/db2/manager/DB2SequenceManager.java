@@ -29,11 +29,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -80,17 +77,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
                                                Object copyFrom, Map<String, Object> options)
     {
         DB2Schema schema = (DB2Schema) container;
-        return new UITask<DB2Sequence>() {
-            @Override
-            protected DB2Sequence runTask() {
-                EntityEditPage page = new EntityEditPage(schema.getDataSource(), DBSEntityType.SEQUENCE);
-                if (!page.edit()) {
-                    return null;
-                }
-
-                return new DB2Sequence(schema, page.getEntityName());
-            }
-        }.execute();
+        return new DB2Sequence(schema, "NEW_SEQUENCE");
     }
 
     @Override
