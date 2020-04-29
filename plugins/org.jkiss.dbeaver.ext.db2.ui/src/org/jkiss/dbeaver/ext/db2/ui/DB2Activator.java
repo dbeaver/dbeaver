@@ -23,18 +23,18 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class DB2Activator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.db2";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.db2.ui";
 
     // The shared instance
-    private static Activator plugin;
+    private static DB2Activator plugin;
 
     /**
      * The constructor
      */
-    public Activator()
+    public DB2Activator()
     {
     }
 
@@ -67,7 +67,7 @@ public class Activator extends AbstractUIPlugin {
      *
      * @return the shared instance
      */
-    public static Activator getDefault()
+    public static DB2Activator getDefault()
     {
         return plugin;
     }
