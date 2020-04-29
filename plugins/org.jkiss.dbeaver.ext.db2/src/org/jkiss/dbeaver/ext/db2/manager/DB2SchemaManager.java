@@ -17,13 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -37,8 +30,6 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -70,20 +61,7 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     protected DB2Schema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container,
                                              Object copyFrom, Map<String, Object> options)
     {
-        return new UITask<DB2Schema>() {
-            @Override
-            protected DB2Schema runTask() {
-                NewSchemaDialog dialog = new NewSchemaDialog(UIUtils.getActiveWorkbenchShell());
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                String schemaName = dialog.getSchemaName();
-                if (schemaName.length() == 0) {
-                    return null;
-                }
-                return new DB2Schema((DB2DataSource) container, schemaName);
-            }
-        }.execute();
+        return new DB2Schema((DB2DataSource) container, "NEW_SCHEMA");
     }
 
     @Override
@@ -101,56 +79,6 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
         DBEPersistAction action = new SQLDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
             DBUtils.getQuotedIdentifier(command.getObject())));
         actions.add(action);
-    }
-
-    // --------
-    // Dialog
-    // --------
-
-    private static class NewSchemaDialog extends Dialog {
-
-        private String schemaName;
-
-        public String getSchemaName()
-        {
-            return schemaName;
-        }
-
-        // Dialog managment
-        private Text nameText;
-
-        public NewSchemaDialog(Shell parentShell)
-        {
-            super(parentShell);
-        }
-
-        @Override
-        protected boolean isResizable()
-        {
-            return true;
-        }
-
-        @Override
-        protected Control createDialogArea(Composite parent)
-        {
-            getShell().setText("New Schema Name");
-            Control container = super.createDialogArea(parent);
-            Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
-            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            nameText = UIUtils.createLabelText(composite, "Schema Name", null);
-            nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            return parent;
-        }
-
-        @Override
-        protected void okPressed()
-        {
-            this.schemaName = nameText.getText().trim().toUpperCase();
-            super.okPressed();
-        }
-
     }
 
 }

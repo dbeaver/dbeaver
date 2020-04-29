@@ -115,5 +115,9 @@ public class DB2Messages extends NLS {
     public static String dialog_tools_mes_error_code_title;
     public static String dialog_tools_mes_error_code;
     public static String dialog_tools_mes_message;
+    
+    public static String edit_db2_constraint_manager_dialog_title;
+    public static String edit_db2_foreign_key_manager_dialog_title;
+    public static String edit_db2_index_manager_dialog_title;
 
 }
