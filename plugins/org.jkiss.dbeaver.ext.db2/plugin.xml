@@ -418,36 +418,6 @@
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2WrapperManager"      objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2XMLSchemaManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema"/>
     </extension>
-
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-    
-        <editor id="source.declaration" 
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                label="%editor.source.declaration.name"
-                description="%editor.source.declaration.description"
-                icon="#sql_text" 
-                position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
-                type="folder"
-                embeddable="false">
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint"/>
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
-        </editor>
-
-        <editor id="source.ddl"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                label="%editor.source.ddl.name"
-                description="%editor.source.ddl.description"
-                icon="#sql_text"
-                position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-                type="folder">
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-        </editor>
-
-    </extension>
     
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
        <provider
@@ -471,16 +441,6 @@
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="db2_luw" parent="basic" class="org.jkiss.dbeaver.ext.db2.DB2SQLDialect" label="DB2 LUW" description="IBM DB2 LUW SQL dialect." icon="icons/db2_icon.png">
         </dialect>
-    </extension>
-
-    <extension point="org.eclipse.ui.editors">
-        <editor
-            name="%editor.org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor.name"
-            icon="icons/compile.png"
-            class="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
-            id="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
-            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
-        </editor>
     </extension>
     
 </plugin>
