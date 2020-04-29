@@ -38,17 +38,60 @@
         </view>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor id="source.routine.ddl"
-                class="org.jkiss.dbeaver.ext.db2.ui.editors.DB2RoutineDDLEditor"
+        <extension point="org.jkiss.dbeaver.databaseEditor">
+    
+        <editor id="source.declaration" 
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                label="%editor.source.declaration.name"
+                description="%editor.source.declaration.description"
+                icon="#sql_text" 
+                position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
+                type="folder"
+                embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
+        </editor>
+
+        <editor id="source.ddl"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 label="%editor.source.ddl.name"
                 description="%editor.source.ddl.description"
                 icon="#sql_text"
                 position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
                 type="folder">
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
         </editor>
+        <editor id="source.routine.ddl" 
+                class="org.jkiss.dbeaver.ext.db2.ui.editors.DB2RoutineDDLEditor"
+                label="%editor.source.ddl.name" 
+                description="%editor.source.ddl.description" 
+                icon="#sql_text" 
+                position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
+                type="folder">
+           <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
+        </editor>
+        
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2ForeignKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2TableForeignKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2IndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2Index"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2SchemaConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2Schema"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2SequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2Sequence"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.DB2UniqueKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.DB2TableUniqueKey"/>
+        </configurator>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.tools">
@@ -109,6 +152,16 @@
             </tool>
         </tools>
 
+    </extension>
+      
+    <extension point="org.eclipse.ui.editors">
+        <editor
+            name="%editor.org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor.name"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/compile.png"
+            class="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
+            id="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
     </extension>
     
 </plugin>
