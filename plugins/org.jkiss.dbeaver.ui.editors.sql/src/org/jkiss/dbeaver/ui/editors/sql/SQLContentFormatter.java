@@ -32,7 +32,10 @@ class SQLContentFormatter extends ContentFormatter implements IContentFormatterE
     @Override
     public void format(IDocument document, IFormattingContext context) {
         if (!editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY)) {
-            final IRegion region= (IRegion)context.getProperty(FormattingContextProperties.CONTEXT_REGION);
+            IRegion region= (IRegion)context.getProperty(FormattingContextProperties.CONTEXT_REGION);
+            if (region == null) {
+                region = new Region(0, editor.getDocument().getLength());
+            }
             if (region != null) {
                 super.format(document, region);
                 return;
