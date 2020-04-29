@@ -299,6 +299,9 @@
                     <file type="jar" path="drivers/oracle/orai18n.jar" bundle="drivers.oracle"/>
                     <file type="jar" path="drivers/oracle/xdb6.jar" bundle="drivers.oracle"/>
                     <file type="jar" path="drivers/oracle/xmlparserv2.jar" bundle="drivers.oracle"/>
+                    <file type="jar" path="drivers/oracle/oraclepki.jar" bundle="drivers.oracle"/>
+                    <file type="jar" path="drivers/oracle/osdt_cert.jar" bundle="drivers.oracle"/>
+                    <file type="jar" path="drivers/oracle/osdt_core.jar" bundle="drivers.oracle"/>
 
                 </driver>
             </drivers>
