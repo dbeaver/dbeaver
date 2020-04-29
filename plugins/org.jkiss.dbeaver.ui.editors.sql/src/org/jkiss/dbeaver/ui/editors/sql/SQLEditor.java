@@ -2808,6 +2808,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         void updateResultsName(String resultSetName, String toolTip) {
+            if (resultTabs == null || resultTabs.isDisposed()) {
+                return;
+            }
             CTabItem tabItem = getTabItem();
             if (tabItem != null && !tabItem.isDisposed()) {
                 if (!CommonUtils.isEmpty(resultSetName)) {
