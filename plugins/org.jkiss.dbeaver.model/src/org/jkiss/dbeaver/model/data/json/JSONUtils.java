@@ -301,8 +301,20 @@ public class JSONUtils {
         return CommonUtils.toBoolean(map.get(name));
     }
 
+    public static boolean getBoolean(Map<String, Object> map, String name, boolean defaultValue) {
+        return CommonUtils.getBoolean(map.get(name), defaultValue);
+    }
+
     public static int getInteger(Map<String, Object> map, String name) {
         return CommonUtils.toInt(map.get(name));
+    }
+
+    public static int getInteger(Map<String, Object> map, String name, int defaultValue) {
+        return CommonUtils.toInt(map.get(name), defaultValue);
+    }
+
+    public static long getLong(Map<String, Object> map, String name, long defaultValue) {
+        return CommonUtils.toLong(map.get(name), defaultValue);
     }
 
     @NotNull
