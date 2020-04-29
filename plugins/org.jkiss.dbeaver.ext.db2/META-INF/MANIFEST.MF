@@ -19,5 +19,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ui.editors.session
+Export-Package: org.jkiss.dbeaver.ext.db2,
+ org.jkiss.dbeaver.ext.db2.model
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.db2
