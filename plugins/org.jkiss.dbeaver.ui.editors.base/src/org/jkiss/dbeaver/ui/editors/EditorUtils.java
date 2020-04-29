@@ -239,7 +239,7 @@ public class EditorUtils {
         if (editorInput instanceof INonPersistentEditorInput) {
             DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
             if (dataSourceContainer != null) {
-                ((INonPersistentEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer.getId());
+                ((INonPersistentEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
             }
             if (!isDefaultContextSettings(context)) {
                 if (dataSourceContainer != null) {
