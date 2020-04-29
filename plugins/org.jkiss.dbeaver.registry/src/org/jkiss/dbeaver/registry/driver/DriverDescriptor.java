@@ -119,15 +119,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage iconNormal;
     private DBPImage iconError;
     private DBPImage iconBig;
-    private boolean embedded;
+    private boolean embedded, origEmbedded;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
-    private boolean anonymousAccess;
-    private boolean allowsEmptyPassword;
+    private boolean anonymousAccess, origAnonymousAccess;
+    private boolean allowsEmptyPassword, origAllowsEmptyPassword;
     private boolean licenseRequired;
     private boolean customDriverLoader;
     private boolean useURLTemplate;
-    private boolean instantiable;
+    private boolean instantiable, origInstantiable;
     private boolean custom;
     private boolean modified;
     private boolean disabled;
@@ -257,12 +257,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
         this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
         this.useURLTemplate = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE), true);
-        this.instantiable = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INSTANTIABLE), true);
         this.promoted = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_PROMOTED), 0);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
-        this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
-        this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
-        this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
+        this.origInstantiable = this.instantiable = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INSTANTIABLE), true);
+        this.origEmbedded = this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
+        this.origAnonymousAccess = this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
+        this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
         this.custom = false;
         this.isLoaded = false;
@@ -1186,6 +1186,22 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public String getOrigSampleURL() {
         return origSampleURL;
+    }
+
+    public boolean isOrigEmbedded() {
+        return origEmbedded;
+    }
+
+    public boolean isOrigAnonymousAccess() {
+        return origAnonymousAccess;
+    }
+
+    public boolean isOrigAllowsEmptyPassword() {
+        return origAllowsEmptyPassword;
+    }
+
+    public boolean isOrigInstantiable() {
+        return origInstantiable;
     }
 
     public List<DBPDriverLibrary> getOrigFiles() {

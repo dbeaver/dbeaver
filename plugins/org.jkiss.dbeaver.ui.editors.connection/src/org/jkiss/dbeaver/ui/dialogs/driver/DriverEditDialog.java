@@ -725,10 +725,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
             (driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort()) : //$NON-NLS-1$
             (driver.getDefaultPort() == null ? "" : driver.getDefaultPort())); //$NON-NLS-1$
 
-        embeddedDriverCheck.setSelection(driver.isEmbedded());
-        anonymousDriverCheck.setSelection(driver.isAnonymousAccess());
-        allowsEmptyPasswordCheck.setSelection(driver.isAllowsEmptyPassword());
-        nonInstantiableCheck.setSelection(!driver.isInstantiable());
+        embeddedDriverCheck.setSelection(original ? driver.isOrigEmbedded() : driver.isEmbedded());
+        anonymousDriverCheck.setSelection(original ? driver.isOrigAnonymousAccess() : driver.isAnonymousAccess());
+        allowsEmptyPasswordCheck.setSelection(original ? driver.isOrigAllowsEmptyPassword() : driver.isAllowsEmptyPassword());
+        nonInstantiableCheck.setSelection(original ? !driver.isOrigInstantiable() : !driver.isInstantiable());
 
         if (original) {
             resetLibraries(true);
