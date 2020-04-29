@@ -71,7 +71,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     {
         this.id = id;
         this.name = name;
-        this.color = color;
+        this.color = getColorValueFixed(color);
         this.description = description;
         this.autocommit = autocommit;
         this.confirmExecute = confirmExecute;
@@ -103,7 +103,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     }
 
     public void setColor(String color) {
-        this.color = color;
+        this.color = getColorValueFixed(color);
     }
 
     public String getDescription() {
@@ -159,6 +159,17 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         } else {
             this.connectionModifyRestrictions = new ArrayList<>(permissions);
         }
+    }
+
+    private String getColorValueFixed(String color) {
+        // Backward compatibility.
+        // In old times we had hardcoded colors now we need to change them to color constants
+        if (PROD != null && this.id.equals(PROD.id) && color.equals("247,159,129")) {
+            return PROD.color;
+        } else if (TEST != null && this.id.equals(TEST.id) && color.equals("196,255,181")) {
+            return TEST.color;
+        }
+        return color;
     }
 
     @Override
