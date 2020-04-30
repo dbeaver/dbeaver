@@ -299,25 +299,43 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     @Nullable
     public DriverDescriptor findDriver(@NotNull String driverIdOrName) {
-        // Try to find by ID
-        for (DataSourceProviderDescriptor pd : dataSourceProviders) {
-            DriverDescriptor driver = pd.getDriver(driverIdOrName);
-            if (driver != null) {
-                return driver;
-            }
-        }
-        // Try to find by name
-        for (DataSourceProviderDescriptor pd : dataSourceProviders) {
-            for (DriverDescriptor driver : pd.getDrivers()) {
-                if (driver.getName().equalsIgnoreCase(driverIdOrName)) {
-                    while (driver.getReplacedBy() != null) {
-                        driver = driver.getReplacedBy();
-                    }
-                    return driver;
+        DriverDescriptor driver = null;
+        if (driverIdOrName.contains(":")) {
+            String[] driverPath = driverIdOrName.split(":");
+            if (driverPath.length == 2) {
+                DataSourceProviderDescriptor dsProvider = getDataSourceProvider(driverPath[0]);
+                if (dsProvider != null) {
+                    driver = dsProvider.getDriver(driverPath[1]);
                 }
             }
         }
-        return null;
+        if (driver == null) {
+            // Try to find by ID
+            for (DataSourceProviderDescriptor pd : dataSourceProviders) {
+                driver = pd.getDriver(driverIdOrName);
+                if (driver != null) {
+                    break;
+                }
+            }
+        }
+        if (driver == null) {
+            // Try to find by name
+            for (DataSourceProviderDescriptor pd : dataSourceProviders) {
+                for (DriverDescriptor d : pd.getDrivers()) {
+                    if (d.getName().equalsIgnoreCase(driverIdOrName)) {
+                        driver = d;
+                    }
+                }
+            }
+        }
+        // Find replacement
+        if (driver != null) {
+            while (driver.getReplacedBy() != null) {
+                driver = driver.getReplacedBy();
+            }
+        }
+
+        return driver;
     }
 
     //////////////////////////////////////////////

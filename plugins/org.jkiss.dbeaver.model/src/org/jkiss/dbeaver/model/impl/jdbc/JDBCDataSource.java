@@ -667,8 +667,7 @@ public abstract class JDBCDataSource
     protected Driver getDriverInstance(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return Driver.class.cast(
-            container.getDriver().getDriverInstance(monitor));
+        return container.getDriver().getDriverInstance(monitor);
     }
 
     /**

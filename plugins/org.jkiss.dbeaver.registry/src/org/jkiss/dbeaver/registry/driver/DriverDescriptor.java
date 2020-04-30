@@ -555,15 +555,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
-    public Object getDriverInstance(@NotNull DBRProgressMonitor monitor)
+    public <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor)
             throws DBException {
         if (driverInstance == null) {
             loadDriver(monitor);
         }
         if (isInternalDriver() && driverInstance == null) {
-            return createDriverInstance();
+            return (T)createDriverInstance();
         }
-        return driverInstance;
+        return (T)driverInstance;
     }
 
     private void resetDriverInstance() {
