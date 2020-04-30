@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.db2.ui.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.db2.DB2Messages;
+import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2PlanConfig;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;

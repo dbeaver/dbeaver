@@ -91,6 +91,9 @@
         <configurator class="org.jkiss.dbeaver.ext.db2.ui.config.DB2UniqueKeyConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
         </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.db2.ui.config.DB2PlanSchemaConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2PlanConfig"/>
+        </configurator>
 
     </extension>
 
