@@ -95,18 +95,22 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, PostgreDatabase catalog, PostgreSchema schema) throws DBCException {
         PostgreDataSource dataSource = getDefaultCatalog().getDataSource();
-        PostgreDatabase defaultInstance = dataSource.getDefaultInstance();
         try {
             JDBCRemoteInstance oldInstance = getOwnerInstance();
+            boolean changed = false;
             if (oldInstance != catalog) {
                 disconnect();
                 setOwnerInstance(catalog);
                 connect(monitor, null, null, null, false);
+                changed = true;
             }
             if (schema != null && !CommonUtils.equalObjects(schema, activeSchema)) {
                 changeDefaultSchema(monitor, schema, true);
+                changed = true;
             }
-            DBUtils.fireObjectSelectionChange(oldInstance, catalog);
+            if (changed) {
+                DBUtils.fireObjectSelectionChange(oldInstance, catalog);
+            }
         } catch (DBException e) {
             throw new DBCException("Error changing default database", e);
         }
@@ -160,6 +164,15 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 for (String str : searchPathStr.split(",")) {
                     str = str.trim();
                     this.searchPath.add(DBUtils.getUnQuotedIdentifier(getDataSource(), str));
+                }
+                if (activeSchema == null) {
+                    // This may happen
+                    for (String schemaName : searchPath) {
+                        activeSchema = getDefaultCatalog().getSchema(monitor, schemaName);
+                        if (activeSchema != null) {
+                            break;
+                        }
+                    }
                 }
             } else {
                 this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
