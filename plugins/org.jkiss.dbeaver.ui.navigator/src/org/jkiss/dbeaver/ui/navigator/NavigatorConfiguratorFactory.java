@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.entity.EntityConfiguratorDescriptor;
@@ -34,8 +35,8 @@ public class NavigatorConfiguratorFactory implements IAdapterFactory
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
     {
-        if (adapterType == DBEObjectConfigurator.class && adaptableObject instanceof DBSObject) {
-            EntityConfiguratorDescriptor configurator = EntityEditorsRegistry.getInstance().getEntityConfigurator((DBSObject) adaptableObject);
+        if (adapterType == DBEObjectConfigurator.class && adaptableObject instanceof DBPObject) {
+            EntityConfiguratorDescriptor configurator = EntityEditorsRegistry.getInstance().getEntityConfigurator((DBPObject) adaptableObject);
             return configurator == null ? null : adapterType.cast(configurator.createConfigurator());
         }
         return null;
