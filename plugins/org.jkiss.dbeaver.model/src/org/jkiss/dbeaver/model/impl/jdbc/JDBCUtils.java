@@ -616,13 +616,22 @@ public class JDBCUtils {
         }
     }
 
-    public static void executeStatement(Connection session, String sql) throws SQLException
-    {
+    public static void executeStatement(Connection session, String sql, Object ... params) throws SQLException {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    dbStat.setObject(i + 1, params[i]);
+                }
+            }
+            dbStat.execute();
+        }
+    }
+
+    public static void executeStatement(Connection session, String sql) throws SQLException {
         try (Statement dbStat = session.createStatement()) {
             dbStat.execute(sql);
         }
     }
-
 
     @Nullable
     public static String queryString(JDBCSession session, String sql, Object... args) throws SQLException
