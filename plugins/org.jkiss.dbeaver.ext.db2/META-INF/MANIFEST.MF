@@ -10,15 +10,8 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface,
  org.eclipse.jface.text,
- org.eclipse.ui.views,
- org.eclipse.ui.editors,
- org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.editors.sql,
- org.jkiss.dbeaver.ui.editors.session
+ org.jkiss.dbeaver.registry
 Export-Package: org.jkiss.dbeaver.ext.db2,
  org.jkiss.dbeaver.ext.db2.model
 Bundle-ClassPath: .
