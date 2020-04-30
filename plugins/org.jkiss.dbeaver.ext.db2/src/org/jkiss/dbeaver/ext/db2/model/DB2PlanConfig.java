@@ -1,9 +1,8 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.DBPObject;
 
-public class DB2PlanConfig implements DBSObject {
+public class DB2PlanConfig implements DBPObject {
 
     private String tablespace;
 
@@ -23,30 +22,5 @@ public class DB2PlanConfig implements DBSObject {
 
     public void setSessionUserSchema(String sessionUserSchema) {
         this.sessionUserSchema = sessionUserSchema;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return null;
-    }
-
-    @Override
-    public DBPDataSource getDataSource() {
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        return null;
-    }
-
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return false;
     }
 }

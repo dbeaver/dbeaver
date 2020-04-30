@@ -124,4 +124,10 @@ public class DB2Messages extends NLS {
     public static String editors_db2_application_editor_action_force;
     public static String editors_db2_application_editor_confirm_action;
 
+    public static String dialog_explain_choose_tablespace;
+    public static String dialog_explain_choose_tablespace_tablespace;
+    public static String dialog_explain_no_tables;
+    public static String dialog_explain_no_tablespace_found_title;
+    public static String dialog_explain_ask_to_create;
+
 }

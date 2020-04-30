@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.ext.db2.DB2Messages;
+import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
