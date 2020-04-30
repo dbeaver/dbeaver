@@ -258,17 +258,9 @@
                         <items label="%tree.storagegroup.node.name" path="storageGroup" property="storageGroups" icon="icons/storage_group.gif"/>
                     </folder>
                 </folder>
-                <folder type="" 
-                       label="%tree.administer.node.name" 
-                       icon="#folder_admin" 
-                       description="Maintenance/Settings"
-                       visibleIf="object.dataSource.authorisedForAdminister">
-                    <object type="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication" 
-                            label="%tree.applications.node.name" 
-                            icon="#admin" 
-                            description="Server application manager" 
-                            editor="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
-                            visibleIf="object.dataSource.authorisedForApplications"/>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
+                </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" 
                             label="%tree.dbparameters.node.name" 
                             icon="icons/parameter_db.gif" 
@@ -282,8 +274,7 @@
                             description="Database Manager Configuration"
                             visibleIf="object.dataSource.authorisedForDBCFG">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbmParameters" icon="icons/parameter_db.gif" navigable="false" virtual="true"/>
-                    </folder>
-                </folder>
+                    </folder>               
                 
                 <!-- 
                    DF: Exclusion of the whole Security folder because:
