@@ -62,6 +62,8 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id></artifact>
 								<!-- GraphQL -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id></artifact>
+								<!-- DBCP -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
