@@ -132,7 +132,7 @@ public class SecurityUtils {
                 MessageDigest.getInstance(ECRYPTION_ALGORYTHM);
             md5.update(userAlias.getBytes());
 
-            return Base64.encode(md5.digest(userPassword.getBytes()));
+            return CommonUtils.toHexString(md5.digest(userPassword.getBytes()));
         } catch (NoSuchAlgorithmException toCatch) {
             return "*";
         }
@@ -144,7 +144,7 @@ public class SecurityUtils {
             MessageDigest md5 =
                 MessageDigest.getInstance(ECRYPTION_ALGORYTHM);
 
-            return Base64.encode(md5.digest(userPassword.getBytes()));
+            return CommonUtils.toHexString(md5.digest(userPassword.getBytes()));
         } catch (NoSuchAlgorithmException toCatch) {
             return "*";
         }
