@@ -8,7 +8,7 @@
         <node type="producer"
               id="database_producer"
               class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
-              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/table.png"
+              icon="icons/formats/table.png"
               label="%dataTransfer.producer.database.name"
               description="%dataTransfer.producer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
@@ -18,7 +18,7 @@
         <node type="consumer"
             id="database_consumer"
             class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/table.png"
+            icon="icons/formats/table.png"
             label="%dataTransfer.consumer.database.name"
             description="%dataTransfer.consumer.database.description"
             settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
@@ -28,7 +28,7 @@
         <node type="producer"
             id="stream_producer"
             class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/file.png"
+            icon="icons/formats/file.png"
             label="%dataTransfer.producer.stream.name"
             description="%dataTransfer.producer.stream.description"
             settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
@@ -37,7 +37,7 @@
                 id="stream.csv"
                 class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
                 description="%dataTransfer.producer.stream.processor.csv.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/csv.png"
+                icon="icons/formats/csv.png"
                 label="%dataTransfer.producer.stream.processor.csv.name"
                 contentType="text/plain">
                 <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.general.label">
@@ -57,7 +57,7 @@
         <node type="consumer"
               id="stream_consumer"
               class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
-              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/file.png"
+              icon="icons/formats/file.png"
               label="%dataTransfer.consumer.stream.name"
               description="%dataTransfer.consumer.stream.description"
               settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
@@ -66,7 +66,7 @@
                     id="stream.xml"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterXML"
                     description="%dataTransfer.processor.xml.description"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/xml.png"
+                    icon="icons/formats/xml.png"
                     label="%dataTransfer.processor.xml.name"
                     contentType="text/xml">
                 <propertyGroup label="%dataTransfer.processor.xml.propertyGroup.general.label">
@@ -77,7 +77,7 @@
                     id="stream.dbunit"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterDbUnit"
                     description="%dataTransfer.processor.dbunit.description"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/xml.png"
+                    icon="icons/formats/xml.png"
                     label="%dataTransfer.processor.dbunit.name"
                     contentType="text/xml">
                 <propertyGroup label="%dataTransfer.processor.dbunit.propertyGroup.general.label">
@@ -92,7 +92,7 @@
                     id="stream.json"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterJSON"
                     description="%dataTransfer.processor.json.description"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/json.png"
+                    icon="icons/formats/json.png"
                     label="%dataTransfer.processor.json.name"
                     contentType="text/json">
                 <propertyGroup label="%dataTransfer.processor.json.propertyGroup.general.label">
@@ -105,7 +105,7 @@
                     id="stream.html"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
                     description="%dataTransfer.processor.html.description"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/html.png"
+                    icon="icons/formats/html.png"
                     label="%dataTransfer.processor.html.name"
                     appFileExtension="html"
                     appName="%dataTransfer.processor.web.name"
@@ -122,7 +122,7 @@
                     id="stream.csv"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV"
                     description="%dataTransfer.processor.csv.description"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/csv.png"
+                    icon="icons/formats/csv.png"
                     label="%dataTransfer.processor.csv.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.csv.propertyGroup.general.label">
@@ -142,7 +142,7 @@
                     id="stream.markdown.table"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterMarkdownTable"
                     description="%dataTransfer.processor.markdownTable.description"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/markdown.png"
+                    icon="icons/formats/markdown.png"
                     label="%dataTransfer.processor.markdownTable.name"
                 contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.markdownTable.propertyGroup.general.label">
@@ -157,7 +157,7 @@
                     id="stream.sql"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSQL"
                     description="%dataTransfer.processor.sql.description"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.png"
+                    icon="icons/formats/sql.png"
                     label="%dataTransfer.processor.sql.name"
                 contentType="text/sql">
                 <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.general.label">
@@ -172,7 +172,7 @@
                     id="stream.txt"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterTXT"
                     description="%dataTransfer.processor.txt.description"
-                    icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
+                    icon="icons/formats/text.png"
                     label="%dataTransfer.processor.txt.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.txt.propertyGroup.general.label">
@@ -198,7 +198,7 @@
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
 
-        <task id="scriptExecute" name="SQL Script" description="Execute SQL script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="common" handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler" supportsVariables="true">
+        <task id="scriptExecute" name="SQL Script" description="Execute SQL script" icon="icons/task_script.png" type="common" handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler" supportsVariables="true">
             <objectType name="org.eclipse.core.resources.IFile"/>
         </task>
     </extension>
