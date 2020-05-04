@@ -8,8 +8,6 @@ Bundle-Release-Date: 20200504
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.jface,
- org.eclipse.jface.text,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.registry
 Export-Package: org.jkiss.dbeaver.ext.db2,
