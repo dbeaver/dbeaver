@@ -17,6 +17,7 @@
         %license
     </license>
 
+    <plugin id="org.jkiss.dbeaver.ext.db2" download-size="0" install-size="0" version="0.0.0" unpack="true"/>
     <plugin id="org.jkiss.dbeaver.ext.mysql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.mssql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.oracle" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
