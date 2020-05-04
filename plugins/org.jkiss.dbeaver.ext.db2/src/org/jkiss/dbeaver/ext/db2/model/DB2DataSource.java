@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,7 +25,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.db2.*;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
-import org.jkiss.dbeaver.ext.db2.editors.DB2TablespaceChooser;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2XMLString;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationManager;
@@ -45,6 +43,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -60,9 +59,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
@@ -431,51 +428,24 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
             schemaForExplainTables = DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT;
             return schemaForExplainTables;
         }
-
-        // No valid explain tables found, propose to create them in current authId
-        String msg = String.format(DB2Messages.dialog_explain_ask_to_create, sessionUserSchema);
-        if (!UIUtils.confirmAction(DB2Messages.dialog_explain_no_tables, msg)) {
+        
+        DB2PlanConfig cfg = new DB2PlanConfig();
+        DBEObjectConfigurator configurator = GeneralUtils.adapt(cfg, DBEObjectConfigurator.class);
+        if (configurator == null || configurator.configureObject(monitor, this, cfg) == null) {
             return null;
         }
 
-        // Ask the user in what tablespace to create the Explain tables
-        try {
-            final List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, (JDBCSession) session);
+       String tablespaceName = cfg.getTablespace();
 
-            // NO Usable Tablespace found: End of the game..
-            if (listTablespaces.isEmpty()) {
-                DBWorkbench.getPlatformUI().showError(DB2Messages.dialog_explain_no_tablespace_found_title,
-                    DB2Messages.dialog_explain_no_tablespace_found_title);
+        if (tablespaceName == null) {
                 return null;
-            }
+         }
 
-            // Build a dialog with the list of usable tablespaces for the user to choose
-            String tablespaceName = new UITask<String>() {
-                @Override
-                protected String runTask() {
-                    final DB2TablespaceChooser tsChooserDialog = new DB2TablespaceChooser(
-                        UIUtils.getActiveWorkbenchShell(),
-                        listTablespaces);
-                    if (tsChooserDialog.open() == IDialogConstants.OK_ID) {
-                        return tsChooserDialog.getSelectedTablespace();
-                    } else {
-                        return null;
-                    }
-                }
-            }.execute();
+        // Try to create explain tables within current authorizartionID in given tablespace
+        DB2Utils.createExplainTables(session.getProgressMonitor(), this, sessionUserSchema, tablespaceName);
 
-            if (tablespaceName == null) {
-                return null;
-            }
-
-            // Try to create explain tables within current authorizartionID in given tablespace
-            DB2Utils.createExplainTables(session.getProgressMonitor(), this, sessionUserSchema, tablespaceName);
-
-            // Hourra!
-            schemaForExplainTables = sessionUserSchema;
-        } catch (SQLException e) {
-            throw new DBCException(e, session.getExecutionContext());
-        }
+        // Hourra!
+        schemaForExplainTables = sessionUserSchema;
 
         return sessionUserSchema;
     }
