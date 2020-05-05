@@ -320,9 +320,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
         DBSObject object = getObject();
         if (object instanceof DBPRefreshableObject) {
-            if (object.isPersisted()) {
+            DBPDataSource dataSource = object.getDataSource();
+            if (object.isPersisted() && dataSource != null) {
                 DBSObject[] newObject = new DBSObject[1];
-                DBExecUtils.tryExecuteRecover(monitor, object.getDataSource(), param -> {
+                DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
                     try {
                         newObject[0] = ((DBPRefreshableObject) object).refreshObject(monitor);
                     } catch (DBException e) {
