@@ -110,9 +110,9 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
 
     private static String getBaseTypeNameClause(@NotNull PostgreDataSource dataSource) {
         if (dataSource.isServerVersionAtLeast(7, 3)) {
-            return "format_type(nullif(t.typbasetype, 0), t.typtypmod) base_type_name";
+            return "format_type(nullif(t.typbasetype, 0), t.typtypmod) as base_type_name";
         } else {
-            return "NULL base_type_name";
+            return "NULL as base_type_name";
         }
     }
 
