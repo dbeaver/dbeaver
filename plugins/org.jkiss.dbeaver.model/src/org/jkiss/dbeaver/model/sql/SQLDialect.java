@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -291,7 +292,7 @@ public interface SQLDialect {
     @NotNull
     MultiValueInsertMode getMultiValueInsertMode();
 
-    String addFiltersToQuery(DBPDataSource dataSource, String query, DBDDataFilter filter);
+    String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter);
 
     /**
      * Two-item array containing begin and end of multi-line comments.

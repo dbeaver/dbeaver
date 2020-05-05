@@ -30,6 +30,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -37,10 +38,14 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -93,12 +98,12 @@ public class SQLSemanticProcessor {
     // Applying filters changes query formatting (thus it changes column names in expressions)
     // Solution - always wrap query in subselect + add patched WHERE and ORDER
     // It is configurable
-    public static String addFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
+    public static String addFiltersToQuery(DBRProgressMonitor monitor, final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         boolean supportSubqueries = dataSource.getSQLDialect().supportsSubqueries();
         if (supportSubqueries && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT)) {
             return wrapQuery(dataSource, sqlQuery, dataFilter);
         }
-        String newQuery = injectFiltersToQuery(dataSource, sqlQuery, dataFilter);
+        String newQuery = injectFiltersToQuery(monitor, dataSource, sqlQuery, dataFilter);
         if (newQuery == null) {
             // Let's try subquery though.
             return wrapQuery(dataSource, sqlQuery, dataFilter);
@@ -106,12 +111,12 @@ public class SQLSemanticProcessor {
         return newQuery;
     }
 
-    public static String injectFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
+    public static String injectFiltersToQuery(DBRProgressMonitor monitor, final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         try {
             Statement statement = parseQuery(dataSource.getSQLDialect(), sqlQuery);
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
                 PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                if (patchSelectQuery(dataSource, select, dataFilter)) {
+                if (patchSelectQuery(monitor, dataSource, select, dataFilter)) {
                     return statement.toString();
                 }
             }
@@ -138,12 +143,15 @@ public class SQLSemanticProcessor {
         return modifiedQuery.toString();
     }
 
-    private static boolean patchSelectQuery(DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException {
+    private static boolean patchSelectQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException, DBException {
         // WHERE
         if (filter.hasConditions()) {
             for (DBDAttributeConstraint co : filter.getConstraints()) {
                 if (co.hasCondition()) {
                     Table table = getConstraintTable(select, co);
+                    if (!isValidTableColumn(monitor, dataSource, table, co)) {
+                        table = null;
+                    }
                     if (table != null) {
                         if (table.getAlias() != null) {
                             co.setEntityAlias(table.getAlias().getName());
@@ -170,7 +178,7 @@ public class SQLSemanticProcessor {
             for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
                 String columnName = co.getAttributeName();
                 boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
-                Expression orderExpr = getOrderConstraintExpression(dataSource, select, co, forceNumeric);
+                Expression orderExpr = getOrderConstraintExpression(monitor, dataSource, select, co, forceNumeric);
                 OrderByElement element = new OrderByElement();
                 element.setExpression(orderExpr);
                 if (co.isOrderDescending()) {
@@ -184,7 +192,27 @@ public class SQLSemanticProcessor {
         return true;
     }
 
-    private static Expression getOrderConstraintExpression(DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint co, boolean forceNumeric) throws JSQLParserException {
+    private static boolean isValidTableColumn(DBRProgressMonitor monitor, DBPDataSource dataSource, Table table, DBDAttributeConstraint co) throws DBException {
+        DBSAttributeBase attribute = co.getAttribute();
+        if (attribute instanceof DBDAttributeBinding) {
+            attribute = ((DBDAttributeBinding) attribute).getMetaAttribute();
+        }
+        if (table != null && attribute instanceof DBCAttributeMetaData) {
+            DBSEntityAttribute entityAttribute = null;
+            DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) attribute).getEntityMetaData();
+            if (entityMetaData != null) {
+                DBSEntity entity = DBUtils.getEntityFromMetaData(monitor, DBUtils.getDefaultContext(dataSource, true), entityMetaData);
+                if (entity != null) {
+                    entityAttribute = entity.getAttribute(monitor, co.getAttributeName());
+                }
+            }
+            // No such attribute in entity. Do not use table prefix (#6927)
+            return entityAttribute != null;
+        }
+        return true;
+    }
+
+    private static Expression getOrderConstraintExpression(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint co, boolean forceNumeric) throws JSQLParserException, DBException {
         Expression orderExpr;
         String attrName = DBUtils.getQuotedIdentifier(dataSource, co.getAttributeName());
         if (forceNumeric || attrName.isEmpty()) {
@@ -192,6 +220,11 @@ public class SQLSemanticProcessor {
         } else if (CommonUtils.isJavaIdentifier(attrName)) {
             // Use column table only if there are multiple source tables (joins)
             Table orderTable = CommonUtils.isEmpty(select.getJoins()) ? null : getConstraintTable(select, co);
+
+            if (!isValidTableColumn(monitor, dataSource, orderTable, co)) {
+                orderTable = null;
+            }
+
             orderExpr = new Column(orderTable, attrName);
         } else {
             // TODO: set tableAlias for all column references in expression
