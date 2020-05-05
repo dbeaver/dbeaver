@@ -60,7 +60,7 @@ public class ToolsPropertyTester extends PropertyTester
 
     private boolean hasAvailableTools(IStructuredSelection selection) {
         boolean singleObject = selection.size() == 1;
-        for (Object item : selection) {
+        for (Object item : selection.toArray()) {
             DBSObject dbObject = DBUtils.getFromObject(item);
             if (dbObject != null) {
                 item = dbObject;
