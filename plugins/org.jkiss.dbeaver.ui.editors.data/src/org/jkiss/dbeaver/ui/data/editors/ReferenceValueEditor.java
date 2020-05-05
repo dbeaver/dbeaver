@@ -416,7 +416,7 @@ public class ReferenceValueEditor {
             } catch (DBException e) {
                 // error
                 // just ignore
-                log.warn(e);
+                log.warn(e.getMessage());
             }
             return result[0];
         }
