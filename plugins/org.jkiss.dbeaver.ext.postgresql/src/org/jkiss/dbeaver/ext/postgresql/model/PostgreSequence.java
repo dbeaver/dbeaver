@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
@@ -54,6 +55,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
+        private Number startValue;
         private Number lastValue;
         private Number minValue;
         private Number maxValue;
@@ -65,23 +67,27 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         public Number getLastValue() {
             return lastValue;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 11)
+        @Property(viewable = true, editable = true, updatable = false, order = 20)
+        public Number getStartValue() {
+            return startValue;
+        }
+        @Property(viewable = true, editable = true, updatable = false, order = 21)
         public Number getMinValue() {
             return minValue;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 12)
+        @Property(viewable = true, editable = true, updatable = false, order = 22)
         public Number getMaxValue() {
             return maxValue;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 13)
+        @Property(viewable = true, editable = true, updatable = false, order = 23)
         public Number getIncrementBy() {
             return incrementBy;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 14)
+        @Property(viewable = true, editable = true, updatable = false, order = 24)
         public Number getCacheValue() {
             return cacheValue;
         }
-        @Property(viewable = true, editable = true, updatable = false, order = 15)
+        @Property(viewable = true, editable = true, updatable = false, order = 25)
         public boolean isCycled() {
             return isCycled;
         }
@@ -125,6 +131,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
                     dbSeqStat.setString(2, getName());
                     try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                         if (seqResults.next()) {
+                            additionalInfo.startValue = JDBCUtils.safeGetLong(seqResults, "start_value");
                             additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
                             additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
                             additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
@@ -218,8 +225,9 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         } else {
             sql.append("\n\tNO MAXVALUE");
         }
-        if (info.getLastValue() != null && info.getLastValue().longValue() > 0) {
-            sql.append("\n\tSTART ").append(info.getLastValue());
+        Number startValue = info.getStartValue();
+        if (startValue != null && startValue.longValue() > 0) {
+            sql.append("\n\tSTART ").append(startValue);
         }
         if (info.getCacheValue() != null && info.getCacheValue().longValue() > 0) {
             sql.append("\n\tCACHE ").append(info.getCacheValue())
@@ -244,5 +252,11 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     public String generateChangeOwnerQuery(String owner) {
         return "ALTER SEQUENCE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        additionalInfo.loaded = false;
+        return super.refreshObject(monitor);
     }
 }
