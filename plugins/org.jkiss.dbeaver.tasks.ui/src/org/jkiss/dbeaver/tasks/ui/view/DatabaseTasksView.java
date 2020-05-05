@@ -44,10 +44,7 @@ import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -129,12 +126,18 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 cell.setText(tasksTree.getDateFormat().format(taskRun.getStartTime()));
             }
         });
-        taskRunColumnController.addColumn(TaskUIMessages.db_tasks_view_column_controller_add_name_duration, TaskUIMessages.db_tasks_view_column_controller_add_descr_task_duration, SWT.LEFT, true, false, new TaskRunLabelProvider() {
+        taskRunColumnController.addColumn(TaskUIMessages.db_tasks_view_column_controller_add_name_duration, TaskUIMessages.db_tasks_view_column_controller_add_descr_task_duration, SWT.LEFT, true, false, true, null, new TaskRunLabelProviderEx() {
+            @Override
+            public String getText(Object element, boolean forUI) {
+                DBTTaskRun taskRun = (DBTTaskRun) element;
+                return forUI ? RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()) : String.valueOf(taskRun.getRunDuration());
+            }
+
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
                 cell.setText(RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()));
             }
-        });
+        }, null);
         taskRunColumnController.addColumn(TaskUIMessages.db_tasks_view_column_controller_add_name_result, TaskUIMessages.db_tasks_view_column_controller_add_descr_task_result, SWT.LEFT, true, false, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
@@ -391,6 +394,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         }
 
         protected abstract void update(ViewerCell cell, DBTTaskRun task);
+    }
+
+    private abstract class TaskRunLabelProviderEx extends TaskRunLabelProvider implements ILabelProviderEx {
+
     }
 
     private class ViewRunLogAction extends Action {
