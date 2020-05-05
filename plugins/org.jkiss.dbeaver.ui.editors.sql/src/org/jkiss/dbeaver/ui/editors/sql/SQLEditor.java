@@ -129,7 +129,6 @@ public class SQLEditor extends SQLEditorBase implements
     ISaveablePart2,
     DBPDataSourceTask,
     DBPDataSourceHandler,
-    DBPPreferenceListener,
     ISmartTransactionManager
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
@@ -2096,6 +2095,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         lastExecutionContext = executionContext;
         syntaxLoaded = true;
+
+        loadActivePreferenceSettings();
     }
 
     @Override
@@ -2399,10 +2400,10 @@ public class SQLEditor extends SQLEditorBase implements
             case ModelPreferences.SQL_VARIABLES_ENABLED:
             case ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX:
                 reloadSyntaxRules();
-                break;
+                return;
             case SQLPreferenceConstants.RESULT_SET_ORIENTATION:
                 updateResultSetOrientation();
-                break;
+                return;
             case SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION: {
                 // Save current datasource (we want to keep it here)
                 DBPDataSource dataSource = curDataSource;
@@ -2412,9 +2413,10 @@ public class SQLEditor extends SQLEditorBase implements
                 if (dataSource != null && SQLEditorUtils.isOpenSeparateConnection(dataSource.getContainer())) {
                     initSeparateConnection(dataSource, null);
                 }
-                break;
+                return;
             }
         }
+        super.preferenceChange(event);
     }
 
     public enum ResultSetOrientation {
