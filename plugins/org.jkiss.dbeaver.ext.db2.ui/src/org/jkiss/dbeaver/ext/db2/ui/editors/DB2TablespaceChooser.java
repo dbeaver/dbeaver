@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -70,7 +71,9 @@ public class DB2TablespaceChooser extends Dialog {
         for (String tablespaceName : listTablespaceNames) {
             tsCombo.add(tablespaceName);
         }
-        selectedTablespace = listTablespaceNames.get(0);
+        if(!CommonUtils.isEmpty(listTablespaceNames)){
+            selectedTablespace = listTablespaceNames.get(0);
+        }
         tsCombo.select(0);
         tsCombo.setEnabled(true);
         tsCombo.addSelectionListener(new SelectionAdapter() {
