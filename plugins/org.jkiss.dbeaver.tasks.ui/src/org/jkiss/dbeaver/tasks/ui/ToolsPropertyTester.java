@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools;
+package org.jkiss.dbeaver.tasks.ui;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tools.registry.ToolDescriptor;
 import org.jkiss.dbeaver.tools.registry.ToolsRegistry;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -48,7 +52,28 @@ public class ToolsPropertyTester extends PropertyTester
 
         switch (property) {
             case PROP_HAS_TOOLS: {
-                return ToolsRegistry.getInstance().hasTools(structuredSelection);
+                return hasAvailableTools(structuredSelection);
+            }
+        }
+        return false;
+    }
+
+    private boolean hasAvailableTools(IStructuredSelection selection) {
+        boolean singleObject = selection.size() == 1;
+        for (Object item : selection) {
+            DBSObject dbObject = DBUtils.getFromObject(item);
+            if (dbObject != null) {
+                item = dbObject;
+            }
+            if (item instanceof DBPObject) {
+                for (ToolDescriptor descriptor : ToolsRegistry.getInstance().getTools()) {
+                    if (descriptor.isSingleton() && !singleObject) {
+                        continue;
+                    }
+                    if (descriptor.appliesTo((DBPObject) item)) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
