@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -112,6 +114,8 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
             return "Table";
         } else if (objectType.startsWith("A")) {
             return "Attribute";
+        } else if (objectType.startsWith("T")) {
+            return "Trigger";
         }
         return objectType;
     }
@@ -126,12 +130,59 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
         return schemaName;
     }
 
-    public PostgreObject getTargetObject() {
+    @Property(viewable = true, order = 5)
+    public PostgreObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
+        if (targetObject == null) {
+            targetObject = findTargetObject(monitor);
+        }
         return targetObject;
     }
 
-    private void setTargetObject(PostgreObject targetObject) {
-        this.targetObject = targetObject;
+    private PostgreObject findTargetObject(DBRProgressMonitor monitor) throws DBException {
+        if (CommonUtils.isEmpty(schemaName)) {
+            return null;
+        }
+        PostgreSchema schema = database.getSchema(monitor, schemaName);
+        if (schema == null) {
+            return null;
+        }
+        PostgreTableBase tableBase = null;
+        if (!CommonUtils.isEmpty(tableName)) {
+            tableBase = schema.getTableCache().getObject(monitor, schema, tableName);
+        }
+        if (objectType.startsWith("i")) {
+            if (tableBase instanceof PostgreTable) {
+                return DBUtils.findObject(((PostgreTable)tableBase).getIndexes(monitor), name);
+            }
+            return null;
+        } else if (objectType.startsWith("R")) {
+            return schema.getProcedure(monitor, name);
+        } else if (objectType.startsWith("C")) {
+            if (objectType.endsWith("f")) {
+                if (tableBase instanceof PostgreTable) {
+                    return DBUtils.findObject(((PostgreTable)tableBase).getForeignKeys(monitor), name);
+                }
+            } else {
+                if (tableBase != null) {
+                    Collection<PostgreTableConstraint> constraints = tableBase.getConstraints(monitor);
+                    return constraints == null ? null : DBUtils.findObject(constraints, name);
+                }
+            }
+            return null;
+        } else if (objectType.startsWith("r")) {
+            return tableBase;
+        } else if (objectType.startsWith("A")) {
+            if (tableBase != null) {
+                return tableBase.getAttribute(monitor, name);
+            }
+            return null;
+        } else if (objectType.startsWith("T")) {
+            if (tableBase instanceof PostgreTable) {
+                return ((PostgreTable)tableBase).getTrigger(monitor, name);
+            }
+            return null;
+        }
+        return null;
     }
 
     @Override
@@ -157,6 +208,8 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
             return DBIcon.TREE_TABLE;
         } else if (objectType.startsWith("A")) {
             return DBIcon.TREE_COLUMN;
+        } else if (objectType.startsWith("T")) {
+            return DBIcon.TREE_TRIGGER;
         }
         return DBIcon.TREE_REFERENCE;
     }
@@ -189,11 +242,11 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
                     "        WHEN ad.oid IS NOT NULL THEN 'A'::text\n" +
                     "        ELSE ''\n" +
                     "    END AS type,\n" +
-                    "    COALESCE(coc.relname, clrw.relname) AS ownertable,\n" +
+                    "    COALESCE(coc.relname, clrw.relname, tgr.relname) AS ownertable,\n" +
                     "    CASE WHEN cl.relname IS NOT NULL AND att.attname IS NOT NULL THEN cl.relname || '.' || att.attname\n" +
                     "    ELSE COALESCE(cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname)\n" +
                     "    END AS refname,\n" +
-                    "    COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n" +
+                    "    COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname, tgrn.nspname) AS nspname\n" +
                     "FROM pg_depend dep\n" +
                     "LEFT JOIN pg_class cl ON dep." + queryObjId + "=cl.oid\n" +
                     "LEFT JOIN pg_attribute att ON dep." + queryObjId + "=att.attrelid AND dep.objsubid=att.attnum\n" +
@@ -201,6 +254,8 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
                     "LEFT JOIN pg_proc pr ON dep." + queryObjId + "=pr.oid\n" +
                     "LEFT JOIN pg_namespace nsp ON pr.pronamespace=nsp.oid\n" +
                     "LEFT JOIN pg_trigger tg ON dep." + queryObjId + "=tg.oid\n" +
+                    "LEFT JOIN pg_class tgr ON tg.tgrelid=tgr.oid\n" +
+                    "LEFT JOIN pg_namespace tgrn ON tgr.relnamespace=tgrn.oid\n" +
                     "LEFT JOIN pg_type ty ON dep." + queryObjId + "=ty.oid\n" +
                     "LEFT JOIN pg_namespace nst ON ty.typnamespace=nst.oid\n" +
                     "LEFT JOIN pg_constraint co ON dep." + queryObjId + "=co.oid\n" +
@@ -224,8 +279,6 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
                         String objName = JDBCUtils.safeGetString(dbResult, "refname");
                         if (CommonUtils.isEmpty(objName)) {
                             objName = JDBCUtils.safeGetString(dbResult, "attname");
-                        } else if (!CommonUtils.isEmpty(tableName)) {
-                            objName += " ON " + tableName;
                         }
                         String objDesc = JDBCUtils.safeGetString(dbResult, "adefval");
                         PostgreDependency dependency = new PostgreDependency(
