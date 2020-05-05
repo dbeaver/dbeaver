@@ -1906,7 +1906,7 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute each query in a new tab
             for (int i = 0; i < queries.size(); i++) {
                 SQLScriptElement query = queries.get(i);
-                QueryProcessor queryProcessor = (i == 0 && !isSingleQuery ? curQueryProcessor : createQueryProcessor(queries.size() == 1, false));
+                QueryProcessor queryProcessor = createQueryProcessor(queries.size() == 1, false);
                 queryProcessor.processQueries(
                     scriptContext,
                     Collections.singletonList(query),
