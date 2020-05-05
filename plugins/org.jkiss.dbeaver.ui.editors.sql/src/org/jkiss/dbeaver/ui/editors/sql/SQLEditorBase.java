@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
@@ -79,7 +80,7 @@ import java.util.ResourceBundle;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer {
+public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer, DBPPreferenceListener {
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
@@ -117,6 +118,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private ICharacterPairMatcher characterPairMatcher;
     private SQLEditorCompletionContext completionContext;
     private SQLOccurrencesHighlighter occurrencesHighlighter;
+    private SQLSymbolInserter sqlSymbolInserter;
 
     public SQLEditorBase() {
         super();
@@ -280,20 +282,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         // Symbol inserter
         {
-            SQLSymbolInserter symbolInserter = new SQLSymbolInserter(this);
+            sqlSymbolInserter = new SQLSymbolInserter(this);
 
-            DBPPreferenceStore preferenceStore = getActivePreferenceStore();
-            boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
-            boolean closeDoubleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
-            boolean closeBrackets = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
-
-            symbolInserter.setCloseSingleQuotesEnabled(closeSingleQuotes);
-            symbolInserter.setCloseDoubleQuotesEnabled(closeDoubleQuotes);
-            symbolInserter.setCloseBracketsEnabled(closeBrackets);
+            loadActivePreferenceSettings();
 
             ISourceViewer sourceViewer = getSourceViewer();
             if (sourceViewer instanceof ITextViewerExtension) {
-                ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
+                ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(sqlSymbolInserter);
             }
         }
 
@@ -301,6 +296,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             // Context listener
             EditorUtils.trackControlContext(getSite(), getViewer().getTextWidget(), SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
         }
+    }
+
+    protected void loadActivePreferenceSettings() {
+        DBPPreferenceStore preferenceStore = getActivePreferenceStore();
+        boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
+        boolean closeDoubleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
+        boolean closeBrackets = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
+
+        sqlSymbolInserter.setCloseSingleQuotesEnabled(closeSingleQuotes);
+        sqlSymbolInserter.setCloseDoubleQuotesEnabled(closeDoubleQuotes);
+        sqlSymbolInserter.setCloseBracketsEnabled(closeBrackets);
     }
 
     public SQLEditorControl getEditorControlWrapper() {
@@ -825,6 +831,21 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             }
         } else {
             super.updateStatusField(category);
+        }
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent event) {
+        switch (event.getProperty()) {
+            case SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES:
+                sqlSymbolInserter.setCloseSingleQuotesEnabled(CommonUtils.toBoolean(event.getNewValue()));
+                return;
+            case SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES:
+                sqlSymbolInserter.setCloseDoubleQuotesEnabled(CommonUtils.toBoolean(event.getNewValue()));
+                return;
+            case SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS:
+                sqlSymbolInserter.setCloseBracketsEnabled(CommonUtils.toBoolean(event.getNewValue()));
+                return;
         }
     }
 
