@@ -316,7 +316,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
             QMUtils.getDefaultHandler().handleStatementExecuteBegin(this);
         }
         if (JDBCTrace.isApiTraceEnabled()) {
-            JDBCTrace.traceMessage("Execute SQL: [" + getQueryString() + "]");
+            JDBCTrace.traceQueryBegin(getQueryString());
         }
         this.startBlock();
     }
