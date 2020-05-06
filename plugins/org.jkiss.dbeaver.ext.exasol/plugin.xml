@@ -436,24 +436,6 @@
         </datasource>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.exasol.dataSourceWizardView"
-                dataSource="exasol"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.exasol.views.ExasolConnectionPage"
-                icon="icons/Exasol_icon.png">
-        </view>
-        <view
-                id="org.jkiss.dbeaver.ext.exasol.dataSourceEditorView"
-                dataSource="exasol"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.exasol.views.ExasolConnectionPage">
-        </view>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableColumnManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn"/>
@@ -537,37 +519,6 @@
             id="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor">
         </editor>
 
-    </extension>
-    <extension point="org.jkiss.dbeaver.tools">
-      <tools>
-         <tool
-               class="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolExportTableTool"
-               description="%tool.org.jkiss.dbeaver.ext.exasol.table.export.description"
-               id="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolExportTableTool"
-               label="%tool.org.jkiss.dbeaver.ext.exasol.table.export.name">
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
-            </objectType>
-         </tool>
-         <tool
-               class="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolImportTableTool"
-               description="%tool.org.jkiss.dbeaver.ext.exasol.table.import.description"
-               id="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolImportTableTool"
-               label="%tool.org.jkiss.dbeaver.ext.exasol.table.import.name">
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
-            </objectType>
-         </tool>
-      </tools>
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
