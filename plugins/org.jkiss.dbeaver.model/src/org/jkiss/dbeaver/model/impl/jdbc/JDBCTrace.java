@@ -35,6 +35,9 @@ public class JDBCTrace {
     private static final boolean apiTraceEnabled;
     private static final PrintWriter traceWriter;
 
+    private static final String QUERY_DIVIDER = "=======================================================";
+    private static final String RS_DIVIDER =    "-------------------------------------------------------";
+
     static {
         boolean traceEnabled = CommonUtils.toBoolean(System.getProperty("dbeaver.jdbc.trace"));
 
@@ -65,8 +68,9 @@ public class JDBCTrace {
         return apiTraceEnabled;
     }
 
-    public static void traceMessage(String string) {
+    public static void traceQueryBegin(String string) {
         if (!apiTraceEnabled) return;
+        traceWriter.println(QUERY_DIVIDER);
         traceWriter.println(string);
         traceWriter.flush();
     }
@@ -79,7 +83,7 @@ public class JDBCTrace {
             int count = md.getColumnCount();
             for (int i = 1; i <= count; i++) {
                 Object colValue = dbResult.getObject(i);
-                traceWriter.print(colValue + "\t");
+                traceWriter.print(colValue + "\t|\t");
             }
             traceWriter.println();
             traceWriter.flush();
@@ -88,13 +92,14 @@ public class JDBCTrace {
         }
     }
 
-    public static void dumpResultSetMetaData(ResultSet dbResult) {
+    public static void dumpResultSetOpen(ResultSet dbResult) {
         if (!apiTraceEnabled) return;
+        traceWriter.println(RS_DIVIDER);
         try {
             ResultSetMetaData md = dbResult.getMetaData();
             int count = md.getColumnCount();
             for (int i = 1; i <= count; i++) {
-                traceWriter.print(md.getColumnName(i) + " [" + md.getColumnTypeName(i) + "]\t");
+                traceWriter.print(md.getColumnName(i) + " [" + md.getColumnTypeName(i) + "]\t|\t");
             }
             traceWriter.println();
             traceWriter.flush();
@@ -103,4 +108,7 @@ public class JDBCTrace {
         }
     }
 
+    public static void dumpResultSetClose() {
+        traceWriter.println(RS_DIVIDER);
+    }
 }

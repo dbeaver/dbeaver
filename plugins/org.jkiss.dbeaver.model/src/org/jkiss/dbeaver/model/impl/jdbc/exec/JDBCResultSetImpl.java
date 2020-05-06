@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTrace;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;
@@ -71,7 +70,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             QMUtils.getDefaultHandler().handleResultSetOpen(this);
         }
         if (JDBCTrace.isApiTraceEnabled()) {
-            JDBCTrace.dumpResultSetMetaData(this.original);
+            JDBCTrace.dumpResultSetOpen(this.original);
         }
     }
 /*
@@ -313,6 +312,9 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         }
         if (fake && statement != null) {
             statement.close();
+        }
+        if (JDBCTrace.isApiTraceEnabled()) {
+            JDBCTrace.dumpResultSetClose();
         }
     }
 
