@@ -402,7 +402,22 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 targetObject = containerMapping.getTarget();
 
                 try (DBCSession session = DBUtils.openMetaSession(monitor, dbObject, "Create target metadata")) {
-                    {
+                    // We may need to change active catalog to create target object in the proper location
+                    DBSCatalog oldCatalog = null;
+                    DBSSchema oldSchema = null;
+                    DBSCatalog catalog = dbObject instanceof DBSSchema ? DBUtils.getParentOfType(DBSCatalog.class, dbObject) : null;
+                    if (catalog != null) {
+                        DBCExecutionContextDefaults contextDefaults = session.getExecutionContext().getContextDefaults();
+                        if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != catalog) {
+                            oldCatalog = contextDefaults.getDefaultCatalog();
+                            try {
+                                contextDefaults.setDefaultCatalog(monitor, catalog, (DBSSchema) dbObject);
+                            } catch (DBCException e) {
+                                log.debug(e);
+                            }
+                        }
+                    }
+                    try {
                         switch (containerMapping.getMappingType()) {
                             case create:
                                 createTargetTable(session, containerMapping);
@@ -416,6 +431,16 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                                     }
                                 }
                                 break;
+                        }
+                    }
+                    finally {
+                        if (oldCatalog != null) {
+                            // Revert to old catalog
+                            try {
+                                session.getExecutionContext().getContextDefaults().setDefaultCatalog(monitor, oldCatalog, oldSchema);
+                            } catch (DBCException e) {
+                                log.debug(e);
+                            }
                         }
                     }
                 }
