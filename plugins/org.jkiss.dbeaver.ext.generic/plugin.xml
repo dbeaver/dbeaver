@@ -1096,6 +1096,22 @@
                     categories="sql">
                 </driver>
 
+                <!-- SQream DB -->
+
+                <driver
+                        id="sqream_db"
+                        label="SQream DB"
+                        icon="icons/sqream_icon.png"
+                        iconBig="icons/sqream_icon_big.png"
+                        class="com.sqream.jdbc.SQDriver"
+                        sampleURL="jdbc:Sqream://{host}:{port}/{database};cluster=true"
+                        defaultPort="3108"
+                        description="SQream DB - SQL Data Warehouse"
+                        webURL="https://docs.sqream.com/en/latest/guides/client_drivers/jdbc/index.html"
+                        categories="sql,analytic,columns">
+                    <file type="jar" path="http://downloads.sqream.com/drivers/latest/sqream-jdbc.jar"/>
+                 </driver>
+
                 <!-- KDB - removed as it doesn't work anyway -->
                 <!--<driver
                         id="kdb_jdbc"
