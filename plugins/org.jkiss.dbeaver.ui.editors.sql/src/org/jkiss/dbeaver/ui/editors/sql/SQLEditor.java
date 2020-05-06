@@ -1890,10 +1890,11 @@ public class SQLEditor extends SQLEditorBase implements
 
             if (!newTab || !isSingleQuery) {
                 // We don't need new tab or we are executing a script - so close all extra tabs
-                if (!closeExtraResultTabs(null, true)) {
+                int tabsClosed = closeExtraResultTabs(null, true);
+                if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
                 }
-                extraTabsClosed = true;
+                extraTabsClosed = tabsClosed == IDialogConstants.YES_ID;
             }
         }
 
@@ -1906,7 +1907,12 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute each query in a new tab
             for (int i = 0; i < queries.size(); i++) {
                 SQLScriptElement query = queries.get(i);
-                QueryProcessor queryProcessor = createQueryProcessor(queries.size() == 1, false);
+                QueryProcessor queryProcessor;
+                if (i == 0 && (extraTabsClosed || !curQueryProcessor.getFirstResults().hasData())) {
+                    queryProcessor = curQueryProcessor;
+                } else {
+                    queryProcessor = createQueryProcessor(queries.size() == 1, false);
+                }
                 queryProcessor.processQueries(
                     scriptContext,
                     Collections.singletonList(query),
@@ -1936,7 +1942,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 if (!extraTabsClosed) {
-                    if (!closeExtraResultTabs(curQueryProcessor, true)) {
+                    if (closeExtraResultTabs(curQueryProcessor, true) == IDialogConstants.CANCEL_ID) {
                         return false;
                     }
                 }
@@ -1967,7 +1973,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private boolean closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose)
+    private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose)
     {
         // Close all tabs except first one
         List<CTabItem> tabsToClose = new ArrayList<>();
@@ -1998,7 +2004,7 @@ public class SQLEditor extends SQLEditorBase implements
                     ConfirmationDialog.QUESTION_WITH_CANCEL,
                     tabsToClose.size() + 1);
                 if (confirmResult == IDialogConstants.CANCEL_ID) {
-                    return false;
+                    return IDialogConstants.CANCEL_ID;
                 }
             }
             if (confirmResult == IDialogConstants.YES_ID) {
@@ -2006,8 +2012,9 @@ public class SQLEditor extends SQLEditorBase implements
                     item.dispose();
                 }
             }
+            return confirmResult;
         }
-        return true;
+        return IDialogConstants.NO_ID;
     }
 
     public boolean transformQueryWithParameters(SQLQuery query) {
@@ -2855,6 +2862,10 @@ public class SQLEditor extends SQLEditorBase implements
         public ResultSetViewer getResultSetController()
         {
             return viewer;
+        }
+
+        boolean hasData() {
+            return viewer != null && viewer.hasData();
         }
 
         @Nullable
