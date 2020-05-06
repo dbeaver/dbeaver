@@ -25,9 +25,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -59,19 +61,18 @@ public class DB2TablespaceChooser extends Dialog {
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(DB2Messages.dialog_explain_choose_tablespace);
-        Control container = super.createDialogArea(parent);
-        Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        // Add Label
+        Composite composite = (Composite) super.createDialogArea(parent);
+        Group infoGroup = UIUtils.createControlGroup(composite, DB2Messages.dialog_explain_choose_tablespace_tablespace, 1, GridData.FILL_BOTH, 0);
 
         // Add combo box with the tablespaces
-        UIUtils.createControlLabel(parent, DB2Messages.dialog_explain_choose_tablespace_tablespace);
-        final Combo tsCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Combo tsCombo = new Combo(infoGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
         tsCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         for (String tablespaceName : listTablespaceNames) {
             tsCombo.add(tablespaceName);
+        }
+        if(!CommonUtils.isEmpty(listTablespaceNames)){
+            selectedTablespace = listTablespaceNames.get(0);
         }
         tsCombo.select(0);
         tsCombo.setEnabled(true);
