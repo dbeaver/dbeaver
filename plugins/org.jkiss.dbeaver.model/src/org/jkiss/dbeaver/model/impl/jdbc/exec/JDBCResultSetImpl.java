@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTrace;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;
@@ -67,6 +69,9 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         if (!disableLogging) {
             // Notify handler
             QMUtils.getDefaultHandler().handleResultSetOpen(this);
+        }
+        if (JDBCTrace.isApiTraceEnabled()) {
+            JDBCTrace.dumpResultSetMetaData(this.original);
         }
     }
 /*
@@ -269,6 +274,10 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             if (fetched) {
                 rowsFetched++;
             }
+            if (fetched && JDBCTrace.isApiTraceEnabled()) {
+                JDBCTrace.dumpResultSetRow(this.original);
+            }
+
             return fetched;
         }
         finally {
@@ -321,6 +330,10 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
     {
         checkNotEmpty();
         return original.getString(columnIndex);
+    }
+
+    private static void traceGetValue(int columnIndex, String value) {
+
     }
 
     @Override
