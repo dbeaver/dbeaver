@@ -2316,7 +2316,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE)) {
             return ISaveablePart2.YES;
         }
-        return ISaveablePart2.NO;
+
+        if (super.isDirty()) {
+            return ISaveablePart2.DEFAULT;
+        }
+        return ISaveablePart2.YES;
     }
 
     protected void afterSaveToFile(File saveFile) {
