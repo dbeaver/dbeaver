@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.views;
+package org.jkiss.dbeaver.ext.exasol.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -29,9 +29,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.exasol.Activator;
-import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
-import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ui.ExasolActivator;
+import org.jkiss.dbeaver.ext.exasol.ui.ExasolUIConstants;
+import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
@@ -55,7 +55,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
     private boolean showBackupHosts = false;
     private Button encryptCommunication;
 
-    private static ImageDescriptor EXASOL_LOGO_IMG = Activator.getImageDescriptor("icons/exasol.png"); //$NON-NLS-1$
+    private static ImageDescriptor EXASOL_LOGO_IMG = ExasolActivator.getImageDescriptor("icons/exasol.png"); //$NON-NLS-1$
 
 
     @Override
@@ -185,7 +185,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
 
-        String backupHostText = connectionInfo.getProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST);
+        String backupHostText = connectionInfo.getProviderProperty(ExasolUIConstants.DRV_BACKUP_HOST_LIST);
 
         if (!CommonUtils.isEmpty(backupHostText)) {
             this.backupHostLabel.setEnabled(true);
@@ -198,7 +198,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             this.useBackupHostList.setSelection(false);
         }
 
-        String encryptComm = connectionInfo.getProviderProperty(ExasolConstants.DRV_ENCRYPT);
+        String encryptComm = connectionInfo.getProviderProperty(ExasolUIConstants.DRV_ENCRYPT);
 
         if (encryptComm != null &&  "1".equals(encryptComm)) 
                 this.encryptCommunication.setEnabled(true);
@@ -223,9 +223,9 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
 
-        connectionInfo.setProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST, backupHostText.getText());
+        connectionInfo.setProviderProperty(ExasolUIConstants.DRV_BACKUP_HOST_LIST, backupHostText.getText());
         if (this.encryptCommunication.getSelection())
-            connectionInfo.setProviderProperty(ExasolConstants.DRV_ENCRYPT, "1"); //$NON-NLS-1$
+            connectionInfo.setProviderProperty(ExasolUIConstants.DRV_ENCRYPT, "1"); //$NON-NLS-1$
 
         super.saveSettings(dataSource);
     }

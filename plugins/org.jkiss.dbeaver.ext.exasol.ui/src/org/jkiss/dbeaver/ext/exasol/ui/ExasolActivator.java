@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol;
+package org.jkiss.dbeaver.ext.exasol.ui;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -24,18 +24,18 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class ExasolActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.exasol";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.exasol.ui";
 
     // The shared instance
-    private static Activator plugin;
+    private static ExasolActivator plugin;
 
     /**
      * The constructor
      */
-    public Activator() {
+    public ExasolActivator() {
     }
 
     /*
@@ -61,7 +61,7 @@ public class Activator extends AbstractUIPlugin {
      *
      * @return the shared instance
      */
-    public static Activator getDefault() {
+    public static ExasolActivator getDefault() {
         return plugin;
     }
 
