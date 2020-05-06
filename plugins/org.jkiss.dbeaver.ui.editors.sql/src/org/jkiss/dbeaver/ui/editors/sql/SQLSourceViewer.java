@@ -26,7 +26,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -57,14 +59,23 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                 }
             }
             final DBPDataSource dataSource = getDataSource();
+            String consoleName = getSourceViewerType();
+            T sourceObject = getSourceObject();
+            if (sourceObject != null) {
+                consoleName += " of <" + DBUtils.getObjectFullName(sourceObject, DBPEvaluationContext.UI) + ">";
+            }
             SQLEditorHandlerOpenEditor.openSQLConsole(
                 UIUtils.getActiveWorkbenchWindow(),
                 new SQLNavigatorContext(dataSource),
-                "Source", 
+                consoleName,
                 sqlText
             );
         }
     };
+
+    protected String getSourceViewerType() {
+        return "DDL";
+    }
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
