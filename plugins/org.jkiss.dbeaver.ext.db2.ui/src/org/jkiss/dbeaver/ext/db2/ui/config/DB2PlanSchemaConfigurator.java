@@ -58,9 +58,10 @@ public class DB2PlanSchemaConfigurator implements DBEObjectConfigurator<DB2PlanC
                 DB2TablespaceChooser tsChooserDialog = null;
                 try {
                     final List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, session);
+                    // NO Usable Tablespace found: End of the game..
                     if (listTablespaces.isEmpty()) {
                         DBWorkbench.getPlatformUI().showError(DB2Messages.dialog_explain_no_tablespace_found_title,
-                                DB2Messages.dialog_explain_no_tablespace_found_title);
+                                DB2Messages.dialog_explain_no_tablespace_found);
                         return null;
                     }
                     tsChooserDialog = new DB2TablespaceChooser(
