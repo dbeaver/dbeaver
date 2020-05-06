@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.tools.maintenance;
+package org.jkiss.dbeaver.ext.exasol.ui.tools;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -26,8 +26,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
-import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ui.ExasolUIConstants;
+import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,7 +36,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
-public class ExasolImportTableToolDialog extends ExasolBaseTableToolDialog {
+public class ExasolExportTableToolDialog extends ExasolBaseTableToolDialog {
 
 	// Dialog artifacts
 	private Combo cbRowSep;
@@ -47,16 +47,18 @@ public class ExasolImportTableToolDialog extends ExasolBaseTableToolDialog {
 	private Text txColSep;
 	private Text txStringSep;
 	private Text txFileName;
+	private Combo cbStringSepMode;
 	private Combo cbEncoding;
 	private Label selectedDirectory;
 	private String encoding;
+	private String sepMode;
 	private String rowSep;
 	private String filename;
 
-	public ExasolImportTableToolDialog(IWorkbenchPartSite partSite,
+	public ExasolExportTableToolDialog(IWorkbenchPartSite partSite,
 			final Collection<ExasolTableBase> selectedTables)
 	{
-		super(partSite, ExasolMessages.dialog_table_tools_import_title,
+		super(partSite, ExasolMessages.dialog_table_tools_export_title,
 				selectedTables);
 	}
 
@@ -66,9 +68,9 @@ public class ExasolImportTableToolDialog extends ExasolBaseTableToolDialog {
 		StringBuilder sb = new StringBuilder(256);
 
 		// Export String
-		sb.append("IMPORT INTO ");
+		sb.append("EXPORT ");
 		sb.append(object.getFullyQualifiedName(DBPEvaluationContext.DML));
-		sb.append(" FROM LOCAL CSV FILE '");
+		sb.append(" INTO LOCAL CSV FILE '");
 
 		// directory was selected
 		if (selectedDirectory.getText() != null)
@@ -92,9 +94,11 @@ public class ExasolImportTableToolDialog extends ExasolBaseTableToolDialog {
 		
 		
 		
+		// string del mode
+		sb.append(" DELIMIT = " + sepMode);
 		// include column headings
 		if (btInclColNames.getSelection())
-			sb.append(" SKIP = 1");
+			sb.append(" WITH COLUMN NAMES");
 		sql.add(sb.toString());
 
 	}
@@ -147,8 +151,6 @@ public class ExasolImportTableToolDialog extends ExasolBaseTableToolDialog {
 			}
 		});
 		
-		
-		
 		// compress output
 		btSelectCompress = UIUtils.createCheckbox(composite,
 				ExasolMessages.dialog_table_tools_export_compress, false);
@@ -179,38 +181,55 @@ public class ExasolImportTableToolDialog extends ExasolBaseTableToolDialog {
 		// encoding combo
 		cbEncoding = UIUtils.createLabelCombo(composite, ExasolMessages.dialog_table_tools_encoding, SWT.DROP_DOWN | SWT.READ_ONLY);
 		
-		for(String enc: ExasolConstants.encodings)
+		for(String enc: ExasolUIConstants.encodings)
 		{
 			cbEncoding.add(enc);
 		}
 		cbEncoding.select(0);
-		encoding = ExasolConstants.encodings.get(0);
+		encoding = ExasolUIConstants.encodings.get(0);
 		cbEncoding.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
-				encoding = ExasolConstants.encodings.get(cbEncoding.getSelectionIndex());
+				encoding = ExasolUIConstants.encodings.get(cbEncoding.getSelectionIndex());
 				updateSQL();
 			}
 		});
 		
 		//  row seperator
-		cbRowSep = UIUtils.createLabelCombo(composite, ExasolMessages.dialog_table_tools_string_sep_mode, SWT.DROP_DOWN | SWT.READ_ONLY);
-		for (String mode: ExasolConstants.rowSeperators)
+		cbRowSep = UIUtils.createLabelCombo(composite, ExasolMessages.dialog_table_tools_row_sep_mode, SWT.DROP_DOWN | SWT.READ_ONLY);
+		for (String mode: ExasolUIConstants.rowSeparators)
 		{
 			cbRowSep.add(mode);
 		}
 		cbRowSep.select(0);
-		rowSep = ExasolConstants.rowSeperators.get(0);
+		rowSep = ExasolUIConstants.rowSeparators.get(0);
 		cbRowSep.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
-				rowSep = ExasolConstants.rowSeperators.get(cbRowSep.getSelectionIndex());
+				rowSep = ExasolUIConstants.rowSeparators.get(cbRowSep.getSelectionIndex());
 				updateSQL();
 			}
 		});
 		
+		
+		//  string sep mode
+		cbStringSepMode = UIUtils.createLabelCombo(composite, ExasolMessages.dialog_table_tools_string_sep_mode, SWT.DROP_DOWN | SWT.READ_ONLY);
+		for (String mode: ExasolUIConstants.stringSepModes)
+		{
+			cbStringSepMode.add(mode);
+		}
+		cbStringSepMode.select(0);
+		sepMode = ExasolUIConstants.stringSepModes.get(0);
+		cbStringSepMode.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e)
+			{
+				sepMode = ExasolUIConstants.stringSepModes.get(cbStringSepMode.getSelectionIndex());
+				updateSQL();
+			}
+		});
 		
 		// column sep
 		txColSep = UIUtils.createLabelText(composite, ExasolMessages.dialog_table_tools_column_sep, ";");

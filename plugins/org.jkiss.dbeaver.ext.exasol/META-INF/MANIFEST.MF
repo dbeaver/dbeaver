@@ -6,7 +6,6 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ext.exasol;singleton:=true
 Bundle-Version: 1.0.90.qualifier
 Bundle-Release-Date: 20200504
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Activator: org.jkiss.dbeaver.ext.exasol.Activator
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
@@ -25,3 +24,5 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.tasks.ui
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.exasol
+Export-Package: org.jkiss.dbeaver.ext.exasol,
+ org.jkiss.dbeaver.ext.exasol.model
