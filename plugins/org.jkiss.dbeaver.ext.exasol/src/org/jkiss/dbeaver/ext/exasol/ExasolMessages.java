@@ -36,9 +36,6 @@ public class ExasolMessages extends NLS {
 	public static String dialog_connection_alter_message;
 	public static String dialog_connection_alter_title;
 
-	public static String dialog_table_tools_options;
-	public static String dialog_table_tools_result;
-
 	public static String dialog_general_continue;
 
 	public static String editors_exasol_session_editor_title_kill_session;
@@ -46,24 +43,6 @@ public class ExasolMessages extends NLS {
 	public static String editors_exasol_session_editor_confirm_action;
 	public static String editors_exasol_session_editor_title_kill_session_statement;
 
-	public static String dialog_connection_password;
-	public static String dialog_connection_port;
-	public static String dialog_connection_user_name;
-
-	public static String dialog_table_tools_progress;
-	public static String dialog_table_tools_success_title;
-	public static String dialog_table_open_output_directory;
-	public static String dialog_table_tools_export_title;
-	public static String dialog_table_tools_export_compress;
-	public static String dialog_table_tools_column_heading;
-	public static String dialog_table_tools_file_template;
-	public static String dialog_table_tools_string_sep_mode;
-	public static String dialog_table_tools_string_sep;
-	public static String dialog_table_tools_column_sep;
-	public static String dialog_table_tools_row_sep;
-	public static String dialog_table_tools_encoding;
-	public static String dialog_table_tools_import_title;
-	public static String dialog_struct_edit_fk_label_fk_name;
 	public static String edit_exasol_constraint_manager_dialog_title;
 
 	public static String read_table_details;
@@ -91,14 +70,6 @@ public class ExasolMessages extends NLS {
 	public static String manager_assign_priority_group;
 	public static String exasol_security_policy_name;
 	public static String exasol_security_policy_description;
-	public static String exasol_partition_name;
-	public static String exasol_partition_description;
-	public static String label_backup_host_list;
-	public static String label_database;
-	public static String label_encrypt;
-	public static String label_host_list;
-	public static String label_security;
-	public static String label_use_backup_host_list;
 	public static String manager_consumer_alter;
 
 	static {

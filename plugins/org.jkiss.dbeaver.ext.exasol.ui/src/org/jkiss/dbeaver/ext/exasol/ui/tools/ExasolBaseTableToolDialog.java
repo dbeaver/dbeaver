@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.tools.maintenance;
+package org.jkiss.dbeaver.ext.exasol.ui.tools;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;

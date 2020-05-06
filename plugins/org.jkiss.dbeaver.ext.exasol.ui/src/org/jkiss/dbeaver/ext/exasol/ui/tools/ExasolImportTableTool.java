@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.tools.maintenance;
+package org.jkiss.dbeaver.ext.exasol.ui.tools;
 
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
@@ -33,19 +32,17 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-public class ExasolExportTableTool implements IUserInterfaceTool {
+public class ExasolImportTableTool implements IUserInterfaceTool {
 
-
-	public ExasolExportTableTool()
+	public ExasolImportTableTool()
 	{
 	}
-
+	
 	@Override
 	public void execute(IWorkbenchWindow window, IWorkbenchPart activePart,
 			Collection<DBSObject> objects) throws DBException
 	{
 		List<ExasolTable> tables = CommonUtils.filterCollection(objects, ExasolTable.class);
-		List<ExasolView> views = CommonUtils.filterCollection(objects, ExasolView.class);
 		List<ExasolSchema> schemas = CommonUtils.filterCollection(objects, ExasolSchema.class);
 		
 		//add tables for all Schemas but ignore views in schema
@@ -64,17 +61,11 @@ public class ExasolExportTableTool implements IUserInterfaceTool {
 			tableBaseObjects.add((ExasolTableBase) table);
 		}
 		
-		//add views
-		for(ExasolView view : views)
-		{
-			tableBaseObjects.add((ExasolTableBase) view);
-		}
 		
 		if (!tableBaseObjects.isEmpty()) {
-			ExasolExportTableToolDialog dialog = new ExasolExportTableToolDialog(activePart.getSite(), tableBaseObjects);
+			ExasolImportTableToolDialog dialog = new ExasolImportTableToolDialog(activePart.getSite(), tableBaseObjects) ;
 			dialog.open();
 		}
-		
-	}
 
+	}
 }
