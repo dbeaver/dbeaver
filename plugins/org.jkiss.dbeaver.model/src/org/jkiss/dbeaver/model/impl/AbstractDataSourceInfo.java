@@ -74,6 +74,11 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean supportsNullableUniqueConstraints() {
+        return false;
+    }
+
+    @Override
     public boolean isDynamicMetadata() {
         return false;
     }
