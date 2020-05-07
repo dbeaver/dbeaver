@@ -54,7 +54,7 @@ public class OcientQueryPlaner extends AbstractExecutionPlanSerializer implement
 
     @NotNull
     @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBCException {
 	OcientExecutionPlan plan = new OcientExecutionPlan(query);
 	plan.explain(session);
 	return plan;
