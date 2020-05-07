@@ -43,6 +43,11 @@ public class ExasolMessages extends NLS {
 	public static String dialog_table_tools_encoding;
 	public static String dialog_table_tools_import_title;
 
+	public static String editors_exasol_session_editor_title_kill_session;
+	public static String editors_exasol_session_editor_action_kill;
+	public static String editors_exasol_session_editor_confirm_action;
+	public static String editors_exasol_session_editor_title_kill_session_statement;
+
 	public static String exasol_partition_name;
 	public static String exasol_partition_description;
 	public static String label_backup_host_list;

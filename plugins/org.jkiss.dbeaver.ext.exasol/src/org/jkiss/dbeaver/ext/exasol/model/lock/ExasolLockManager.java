@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.exasol.model.lock;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
@@ -35,6 +34,9 @@ import java.util.*;
 
 public class ExasolLockManager extends LockGraphManager
 		implements DBAServerLockManager<ExasolLock, ExasolLockItem> {
+
+	public static final String sidHold = "hsid";
+	public static final String sidWait = "wsid";
 	
 	public static final String LOCK_QUERY = 
 			"/*snapshot execution*/ WITH LOCKED AS (\r\n" + 
@@ -287,10 +289,10 @@ public class ExasolLockManager extends LockGraphManager
 				
 				switch(otype) {
 					case LockGraphManager.typeWait:
-						dbStat.setBigDecimal(1, new BigDecimal((BigInteger) options.get(ExasolLockEditor.sidWait)));
+						dbStat.setBigDecimal(1, new BigDecimal((BigInteger) options.get(sidWait)));
 						break;
 					case LockGraphManager.typeHold:
-						dbStat.setBigDecimal(1,  new BigDecimal((BigInteger) options.get(ExasolLockEditor.sidHold)));
+						dbStat.setBigDecimal(1,  new BigDecimal((BigInteger) options.get(sidHold)));
 						break;
 						
 					default:
