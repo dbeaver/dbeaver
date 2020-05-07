@@ -20,6 +20,8 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -44,6 +46,14 @@ public abstract class AbstractPopupPanel extends Dialog {
     {
         super(parentShell);
         this.title = title;
+    }
+
+    @Override
+    protected Point getInitialSize() {
+        Point initialSize = super.getInitialSize();
+        Rectangle maxBounds = getParentShell().getDisplay().getBounds();
+        initialSize.x = Math.min(initialSize.x, maxBounds.width - maxBounds.width / 50);
+        return initialSize;
     }
 
     @Override

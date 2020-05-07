@@ -105,14 +105,6 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
     }
 
     @Override
-    protected Point getInitialSize() {
-        Point initialSize = super.getInitialSize();
-        Rectangle maxBounds = workbenchWindow.getShell().getDisplay().getBounds();
-        initialSize.x = Math.min(initialSize.x, maxBounds.width - maxBounds.width / 25);
-        return initialSize;
-    }
-
-    @Override
     protected IDialogSettings getDialogBoundsSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
