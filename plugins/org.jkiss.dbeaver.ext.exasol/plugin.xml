@@ -450,32 +450,6 @@
         </manager>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-                description="%editor.source.ddl.description"
-                icon="#sql_text"
-                id="source.ddl"
-                label="%editor.source.ddl.name"
-                position="additions_middle"
-                type="folder">
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
-        </editor>
-        <editor
-              class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-              contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-              description="%editor.source.declaration.description"
-              embeddable="true"
-              icon="#sql_text"
-              id="source.declaration"
-              label="%meta.org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema.adapterNotes.name"
-              position="additions_middle"
-              type="folder">
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema"/>
-        </editor>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.mavenRepository">
         <repository id="exasol-maven-repo" name="Exasol Repository" url="https://maven.exasol.com/artifactory/exasol-releases" order="10">
             <scope group="com.exasol"/>
