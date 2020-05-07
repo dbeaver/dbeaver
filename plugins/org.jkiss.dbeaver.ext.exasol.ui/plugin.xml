@@ -21,7 +21,48 @@
         </view>
     </extension>
     
-        <extension point="org.jkiss.dbeaver.tools">
+    <extension point="org.eclipse.ui.editors">
+        <editor
+                name="%editor.org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.exasol/icons/compile.png"
+                class="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolServerSessionEditor"
+                id="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolServerSessionEditor"
+                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
+        <editor
+            name="%editor.org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor.name"
+            class="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor"
+            id="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor">
+        </editor>
+
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolServerSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+            <supports dataSource="exasol"/>
+        </editorContribution>
+        <editorContribution editorId="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png">
+            <supports dataSource="exasol"/>
+        </editorContribution>
+    </extension>
+    
+	<extension point="org.jkiss.dbeaver.databaseEditor">    
+	    <editor
+	              class="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolSourceViewEditor"
+	              contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+	              description="%editor.exasol.source.view.description"
+	              icon="#sql_text"
+	              id="exasol.source.view"
+	              label="%editor.exasol.source.view.label"
+	              position="additions_middle"
+	              type="folder">
+	           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolView"/>
+	           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript"/>
+	           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction"/>
+	    </editor>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.tools">
       <tools>
          <tool
                class="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolExportTableTool"
