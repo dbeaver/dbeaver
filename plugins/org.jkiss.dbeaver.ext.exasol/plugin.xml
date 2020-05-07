@@ -201,24 +201,8 @@
                       </items>
                    </items>
                 </folder>
-                <folder
-                      description="%tree.administer.node.description"
-                      icon="#folder_admin"
-                      label="%tree.administer.node.name"
-                      visibleIf="object.dataSource.UserAuthorizedForSessions">
-                    <object type="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession"
-                            label="%tree.sessions.node.name"
-                            icon="#admin"
-                            description="%tree.sessions.node.description"
-                            editor="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolServerSessionEditor"
-                            />
-                    <object
-                          description="%tree.locks.node.description"
-                          editor="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor"
-                          icon="#locks"
-                          label="%tree.locks.node.name"
-                          type="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor">
-                    </object>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
                 </folder>
                 <folder
                       description="%tree.connections.node.description"
