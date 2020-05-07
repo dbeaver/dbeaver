@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 
 /**
  * PostgreGenericQueryPlaner
@@ -43,11 +44,12 @@ public class PostgreGenericQueryPlaner implements DBCQueryPlanner
 
     @NotNull
     @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBCException {
         PostgreExecutionPlan plan = new PostgreExecutionPlan(
                 getPlanStyle() == DBCPlanStyle.QUERY,
                 true,
-                query);
+                query,
+            configuration);
         plan.explain(session);
         return plan;
     }
