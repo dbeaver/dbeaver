@@ -32,6 +32,8 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -100,6 +102,14 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
     @Override
     protected boolean isShowTitle() {
         return true;
+    }
+
+    @Override
+    protected Point getInitialSize() {
+        Point initialSize = super.getInitialSize();
+        Rectangle maxBounds = workbenchWindow.getShell().getDisplay().getBounds();
+        initialSize.x = Math.min(initialSize.x, maxBounds.width - maxBounds.width / 25);
+        return initialSize;
     }
 
     @Override
