@@ -1063,8 +1063,10 @@ public final class DBUtils {
                 }
                 for (DBSEntityAttributeRef col : attrs) {
                     if (col.getAttribute() == null || !col.getAttribute().isRequired()) {
-                        // Do not use constraints with NULL columns (because they are not actually unique: #424)
-                        return false;
+                        if (!constraint.getDataSource().getInfo().supportsNullableUniqueConstraints()) {
+                            // Do not use constraints with NULL columns (because they are not actually unique: #424)
+                            return false;
+                        }
                     }
                 }
                 return true;
