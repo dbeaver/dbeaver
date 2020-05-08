@@ -201,24 +201,8 @@
                       </items>
                    </items>
                 </folder>
-                <folder
-                      description="%tree.administer.node.description"
-                      icon="#folder_admin"
-                      label="%tree.administer.node.name"
-                      visibleIf="object.dataSource.UserAuthorizedForSessions">
-                    <object type="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession"
-                            label="%tree.sessions.node.name"
-                            icon="#admin"
-                            description="%tree.sessions.node.description"
-                            editor="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
-                            />
-                    <object
-                          description="%tree.locks.node.description"
-                          editor="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor"
-                          icon="#locks"
-                          label="%tree.locks.node.name"
-                          type="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor">
-                    </object>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
                 </folder>
                 <folder
                       description="%tree.connections.node.description"
@@ -464,61 +448,6 @@
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTablePartitionColumnManager"
               objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn">
         </manager>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-                description="%editor.source.ddl.description"
-                icon="#sql_text"
-                id="source.ddl"
-                label="%editor.source.ddl.name"
-                position="additions_middle"
-                type="folder">
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
-        </editor>
-        <editor
-              class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-              contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-              description="%editor.source.declaration.description"
-              embeddable="true"
-              icon="#sql_text"
-              id="source.declaration"
-              label="%meta.org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema.adapterNotes.name"
-              position="additions_middle"
-              type="folder">
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema"/>
-        </editor>
-        <editor
-              class="org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceViewEditor"
-              contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-              description="%editor.exasol.source.view.description"
-              icon="#sql_text"
-              id="exasol.source.view"
-              label="%editor.exasol.source.view.label"
-              position="additions_middle"
-              type="folder">
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolView"/>
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript"/>
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction"/>
-        </editor>
-    </extension>
-
-    <extension point="org.eclipse.ui.editors">
-        <editor
-                name="%editor.org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor.name"
-                icon="icons/compile.png"
-                class="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
-                id="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
-                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
-        </editor>
-        <editor
-            name="%editor.org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor.name"
-            class="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor"
-            id="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor">
-        </editor>
-
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
