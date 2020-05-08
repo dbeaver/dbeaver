@@ -32,6 +32,16 @@ public class DBPConfigurationProfile {
     // Properties. Basically JSON
     private Map<String, String> properties = new LinkedHashMap<>();
 
+    public DBPConfigurationProfile() {
+    }
+
+    public DBPConfigurationProfile(DBPConfigurationProfile source) {
+        this.profileId = source.profileId;
+        this.profileName = source.profileName;
+        this.profileDescription = source.profileDescription;
+        this.properties = new LinkedHashMap<>(source.properties);
+    }
+
     public String getProfileId() {
         return profileId;
     }
