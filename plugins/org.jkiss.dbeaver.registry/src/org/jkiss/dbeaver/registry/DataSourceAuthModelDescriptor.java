@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -59,17 +60,17 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
             this.driver = cfg.getAttribute("driver");
         }
 
-        public boolean appliesTo(DBPDataSourceContainer dataSourceContainer, Object context) {
-            if (!CommonUtils.isEmpty(id) && !id.equals(dataSourceContainer.getDriver().getProviderId())) {
+        public boolean appliesTo(DBPDriver driver, Object context) {
+            if (!CommonUtils.isEmpty(id) && !id.equals(driver.getProviderId())) {
                 return false;
             }
-            if (!CommonUtils.isEmpty(driver) && !driver.equals(dataSourceContainer.getDriver().getId())) {
+            if (!CommonUtils.isEmpty(this.driver) && !this.driver.equals(driver.getId())) {
                 return false;
             }
             if (expression != null) {
                 try {
                     return CommonUtils.toBoolean(
-                        expression.evaluate(makeContext(dataSourceContainer, context)));
+                        expression.evaluate(makeContext(driver, context)));
                 } catch (Exception e) {
                     log.debug("Error evaluating expression '" + expression + "'", e);
                     return false;
@@ -145,12 +146,12 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
         return instance;
     }
 
-    boolean appliesTo(DBPDataSourceContainer dataSourceContainer, Object context) {
+    boolean appliesTo(DBPDriver driver, Object context) {
         if (dataSources.isEmpty()) {
             return true;
         }
         for (DataSourceInfo dsi : dataSources) {
-            if (dsi.appliesTo(dataSourceContainer, context)) {
+            if (dsi.appliesTo(driver, context)) {
                 return true;
             }
         }
