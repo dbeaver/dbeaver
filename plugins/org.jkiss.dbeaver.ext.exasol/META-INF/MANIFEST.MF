@@ -28,4 +28,5 @@ Export-Package: org.jkiss.dbeaver.ext.exasol,
  org.jkiss.dbeaver.ext.exasol.editors,
  org.jkiss.dbeaver.ext.exasol.model,
  org.jkiss.dbeaver.ext.exasol.model.app,
- org.jkiss.dbeaver.ext.exasol.model.lock
+ org.jkiss.dbeaver.ext.exasol.model.lock,
+ org.jkiss.dbeaver.ext.exasol.model.security
