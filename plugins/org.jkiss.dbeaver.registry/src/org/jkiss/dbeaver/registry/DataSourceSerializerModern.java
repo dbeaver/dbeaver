@@ -191,8 +191,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         jsonWriter.name("auth-profiles");
                         jsonWriter.beginObject();
                         for (DBAAuthProfile np : authProfiles) {
-                            jsonWriter.name(np.getProfileName());
+                            jsonWriter.name(np.getProfileId());
                             jsonWriter.beginObject();
+                            JSONUtils.fieldNE(jsonWriter, "name", np.getProfileName());
                             JSONUtils.fieldNE(jsonWriter, "providerId", np.getDataSourceProviderId());
                             JSONUtils.fieldNE(jsonWriter, "driverId", np.getDriverId());
                             JSONUtils.fieldNE(jsonWriter, "authModel", np.getAuthModelId());
