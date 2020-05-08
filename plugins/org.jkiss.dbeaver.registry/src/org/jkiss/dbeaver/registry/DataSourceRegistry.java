@@ -445,9 +445,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Nullable
     @Override
-    public DBAAuthProfile getAuthProfile(String name) {
+    public DBAAuthProfile getAuthProfile(String id) {
         synchronized (authProfiles) {
-            return authProfiles.stream().filter(profile -> profile.getProfileName().equals(name)).findFirst().orElse(null);
+            return authProfiles.stream().filter(profile -> profile.getProfileId().equals(id)).findFirst().orElse(null);
         }
     }
 
