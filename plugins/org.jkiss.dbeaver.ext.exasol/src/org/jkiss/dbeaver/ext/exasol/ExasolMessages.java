@@ -38,11 +38,6 @@ public class ExasolMessages extends NLS {
 
 	public static String dialog_general_continue;
 
-	public static String editors_exasol_session_editor_title_kill_session;
-	public static String editors_exasol_session_editor_action_kill;
-	public static String editors_exasol_session_editor_confirm_action;
-	public static String editors_exasol_session_editor_title_kill_session_statement;
-
 	public static String edit_exasol_constraint_manager_dialog_title;
 
 	public static String read_table_details;

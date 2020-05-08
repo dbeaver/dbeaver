@@ -25,4 +25,7 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.exasol
 Export-Package: org.jkiss.dbeaver.ext.exasol,
- org.jkiss.dbeaver.ext.exasol.model
+ org.jkiss.dbeaver.ext.exasol.editors,
+ org.jkiss.dbeaver.ext.exasol.model,
+ org.jkiss.dbeaver.ext.exasol.model.app,
+ org.jkiss.dbeaver.ext.exasol.model.lock
