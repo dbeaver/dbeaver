@@ -32,6 +32,19 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
     private String userPassword;
     private boolean savePassword;
 
+    public DBAAuthProfile() {
+    }
+
+    public DBAAuthProfile(DBAAuthProfile source) {
+        super(source);
+        this.dataSourceProviderId = source.dataSourceProviderId;
+        this.driverId = source.driverId;
+        this.authModelId = source.authModelId;
+        this.userName = source.userName;
+        this.userPassword = source.userPassword;
+        this.savePassword = source.savePassword;
+    }
+
     public String getDataSourceProviderId() {
         return dataSourceProviderId;
     }

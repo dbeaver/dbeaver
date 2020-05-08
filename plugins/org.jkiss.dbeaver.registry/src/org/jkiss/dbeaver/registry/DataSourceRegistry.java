@@ -74,7 +74,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
-    private final List<DBAAuthProfile> authProfiles = new ArrayList<>();
+    private final Map<String, DBAAuthProfile> authProfiles = new IdentityHashMap<>();
     private volatile boolean saveInProgress = false;
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
@@ -447,7 +447,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     public DBAAuthProfile getAuthProfile(String id) {
         synchronized (authProfiles) {
-            return authProfiles.stream().filter(profile -> profile.getProfileId().equals(id)).findFirst().orElse(null);
+            return authProfiles.get(id);
         }
     }
 
@@ -455,7 +455,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     public List<DBAAuthProfile> getAllAuthProfiles() {
         synchronized (authProfiles) {
-            return new ArrayList<>(authProfiles);
+            return new ArrayList<>(authProfiles.values());
         }
     }
 
@@ -463,7 +463,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     public List<DBAAuthProfile> getApplicableAuthProfiles(@Nullable DBPDriver driver) {
         synchronized (authProfiles) {
-            return authProfiles.stream().filter(p -> {
+            return authProfiles.values().stream().filter(p -> {
                 if (p.getDataSourceProviderId() == null && p.getDriverId() == null) {
                     return true;
                 } else if (p.getDriverId() != null) {
@@ -478,26 +478,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     public void updateAuthProfile(DBAAuthProfile profile) {
         synchronized (authProfiles) {
-            for (int i = 0; i < authProfiles.size(); i++) {
-                if (CommonUtils.equalObjects(authProfiles.get(i).getProfileName(), profile.getProfileName())) {
-                    authProfiles.set(i, profile);
-                    return;
-                }
-            }
-            authProfiles.add(profile);
+            authProfiles.put(profile.getProfileId(), profile);
         }
     }
 
     @Override
     public void removeAuthProfile(DBAAuthProfile profile) {
         synchronized (authProfiles) {
-            authProfiles.remove(profile);
-        }
-    }
-
-    void addNetworkProfile(DBWNetworkProfile profile) {
-        synchronized (authProfiles) {
-            networkProfiles.add(profile);
+            authProfiles.remove(profile.getProfileId());
         }
     }
 
