@@ -17,7 +17,9 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
  * Auth profile.
@@ -91,5 +93,9 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
 
     public void setSavePassword(boolean savePassword) {
         this.savePassword = savePassword;
+    }
+
+    public DBPAuthModelDescriptor getAuthModel() {
+        return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
     }
 }

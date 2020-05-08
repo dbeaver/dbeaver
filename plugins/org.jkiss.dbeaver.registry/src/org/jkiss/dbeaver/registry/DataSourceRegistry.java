@@ -74,7 +74,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
-    private final Map<String, DBAAuthProfile> authProfiles = new IdentityHashMap<>();
+    private final Map<String, DBAAuthProfile> authProfiles = new LinkedHashMap<>();
     private volatile boolean saveInProgress = false;
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();

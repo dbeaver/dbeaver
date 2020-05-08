@@ -124,6 +124,7 @@ public class AuthModelSelector extends Composite {
                     showAuthModelSettings();
                 }
                 modelConfigPlaceholder.setFocus();
+                changeListener.run();
             }
         });
         for (DBPAuthModelDescriptor model : allAuthModels) {
