@@ -28,6 +28,9 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
     private String dataSourceProviderId;
     private String driverId;
     private String authModelId;
+    private String userName;
+    private String userPassword;
+    private boolean savePassword;
 
     public String getDataSourceProviderId() {
         return dataSourceProviderId;
@@ -53,4 +56,27 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         this.authModelId = authModelId;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserPassword() {
+        return userPassword;
+    }
+
+    public void setUserPassword(String userPassword) {
+        this.userPassword = userPassword;
+    }
+
+    public boolean isSavePassword() {
+        return savePassword;
+    }
+
+    public void setSavePassword(boolean savePassword) {
+        this.savePassword = savePassword;
+    }
 }
