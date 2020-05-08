@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.exasol.ui;
+package org.jkiss.dbeaver.ext.exasol.ui.config;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

@@ -17,13 +17,11 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolConsumerGroupDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -34,8 +32,6 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,23 +53,7 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     @Override
     protected ExasolConsumerGroup createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
                                                        Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-    	ExasolConsumerGroup group = new ExasolConsumerGroup((ExasolDataSource) container, "PG", null, null, null, null, null, null);
-        return new UITask<ExasolConsumerGroup>() {
-            @Override
-            protected ExasolConsumerGroup runTask() {
-            	ExasolConsumerGroupDialog dialog = new ExasolConsumerGroupDialog(UIUtils.getActiveWorkbenchShell(), group);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                group.setName(dialog.getName());
-                group.setDescription(dialog.getComment());
-                group.setCpuWeight(dialog.getCpuWeight());
-                group.setSessionRamLimit(dialog.getSessionRamLimit());
-                group.setUserRamLimit(dialog.getUserRamLimit());
-                group.setGroupRamLimit(dialog.getGroupRamLimit());
-                return group;
-            }
-        }.execute();
+    	return new ExasolConsumerGroup((ExasolDataSource) container, "PG", null, null, null, null, null, null);
     }
 
     @Override
