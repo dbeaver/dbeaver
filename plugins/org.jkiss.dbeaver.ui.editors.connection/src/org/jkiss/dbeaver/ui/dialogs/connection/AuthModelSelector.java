@@ -128,7 +128,8 @@ public class AuthModelSelector extends Composite {
         UIUtils.disposeChildControls(modelConfigPlaceholder);
 
         Label authModelLabel = UIUtils.createControlLabel(modelConfigPlaceholder, UIConnectionMessages.dialog_connection_auth_group);
-        Combo authModelCombo = new Combo(modelConfigPlaceholder, SWT.DROP_DOWN | SWT.READ_ONLY);
+        Composite authModelComp = UIUtils.createComposite(modelConfigPlaceholder, 2);
+        Combo authModelCombo = new Combo(authModelComp, SWT.DROP_DOWN | SWT.READ_ONLY);
         authModelCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         authModelCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -146,6 +147,11 @@ public class AuthModelSelector extends Composite {
                 changeListener.run();
             }
         });
+        Label authModelDescLabel = new Label(authModelComp, SWT.NONE);
+        authModelDescLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (selectedAuthModel != null) {
+            authModelDescLabel.setText(CommonUtils.notEmpty(selectedAuthModel.getDescription()));
+        }
         for (DBPAuthModelDescriptor model : allAuthModels) {
             authModelCombo.add(model.getName());
         }
