@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,7 +41,7 @@ import java.util.Locale;
 /**
  * DB2ConnectionPage
  */
-public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage {
+public class DB2ConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage {
     private Text hostText;
     private Text portText;
     private Text dbText;
@@ -109,27 +109,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
             dbText.addModifyListener(textListener);
         }
 
-        {
-            Composite addrGroup = UIUtils.createControlGroup(control, DB2Messages.db2_connection_page_tab_security, 4, 0, 0);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            addrGroup.setLayoutData(gd);
-
-            usernameText = UIUtils.createLabelText(addrGroup, DB2Messages.dialog_connection_user_name, "");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.widthHint = 200;
-            usernameText.setLayoutData(gd);
-            usernameText.addModifyListener(textListener);
-
-            UIUtils.createEmptyLabel(addrGroup, 2, 1);
-
-            Text passwordText = createPasswordText(addrGroup, DB2Messages.dialog_connection_password);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.widthHint = 200;
-            passwordText.setLayoutData(gd);
-            passwordText.addModifyListener(textListener);
-
-            createPasswordControls(addrGroup, 2);
-        }
+        createAuthPanel(control, 1);
 
         createDriverPanel(control);
         setControl(control);
@@ -138,7 +118,8 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     @Override
     public boolean isComplete()
     {
-        return hostText != null && portText != null &&
+        return super.isComplete() &&
+            hostText != null && portText != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
             !CommonUtils.isEmpty(portText.getText());
     }
@@ -165,12 +146,6 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
         if (dbText != null) {
             dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
         }
-        if (usernameText != null) {
-            usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
-        }
-        if (passwordText != null) {
-            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
-        }
     }
 
     @Override
@@ -185,12 +160,6 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
         }
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
-        }
-        if (usernameText != null) {
-            connectionInfo.setUserName(usernameText.getText().trim());
-        }
-        if (passwordText != null) {
-            connectionInfo.setUserPassword(passwordText.getText());
         }
         super.saveSettings(dataSource);
     }
