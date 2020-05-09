@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 public class ExasolTableIndexColumn extends AbstractTableIndexColumn {
 	
-	ExasolTableIndex index;
-	int ordinalPosition;
-	ExasolTableColumn tableColumn;
+	private ExasolTableIndex index;
+	private int ordinalPosition;
+	private ExasolTableColumn tableColumn;
 
 	public ExasolTableIndexColumn(
 			ExasolTableIndex index,
