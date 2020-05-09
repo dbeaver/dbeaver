@@ -118,6 +118,7 @@ public class RegistryConstants {
     public static final String ATTR_SOURCE_TYPE = "sourceType"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDABLE = "embeddable"; //$NON-NLS-1$
     public static final String ATTR_DATA_SOURCE = "dataSource"; //$NON-NLS-1$
+    public static final String ATTR_AUTH_MODEL = "auth-model"; //$NON-NLS-1$
 
     public static final String TAG_FOLDER = "folder"; //$NON-NLS-1$
     public static final String TAG_ITEMS = "items"; //$NON-NLS-1$

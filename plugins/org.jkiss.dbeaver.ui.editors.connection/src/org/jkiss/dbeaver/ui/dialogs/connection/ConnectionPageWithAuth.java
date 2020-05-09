@@ -73,7 +73,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
         dataSource.getConnectionConfiguration().setAuthModelId(
             selectedAuthModel == null ? null : selectedAuthModel.getId());
-        authModelSelector.saveSettings();
+        authModelSelector.saveSettings(dataSource);
     }
 
     @Override

@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
@@ -132,6 +131,11 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
         return implType.getImplName();
     }
 
+    @Override
+    public boolean isApplicableTo(DBPDriver driver) {
+        return appliesTo(driver);
+    }
+
     @NotNull
     public DBAAuthModel getInstance() {
         if (instance == null) {
@@ -146,12 +150,12 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
         return instance;
     }
 
-    boolean appliesTo(DBPDriver driver, Object context) {
+    boolean appliesTo(DBPDriver driver) {
         if (dataSources.isEmpty()) {
             return true;
         }
         for (DataSourceInfo dsi : dataSources) {
-            if (dsi.appliesTo(driver, context)) {
+            if (dsi.appliesTo(driver, null)) {
                 return true;
             }
         }

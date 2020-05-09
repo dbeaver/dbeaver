@@ -166,8 +166,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         jsonWriter.name("network-profiles");
                         jsonWriter.beginObject();
                         for (DBWNetworkProfile np : profiles) {
-                            jsonWriter.name(np.getProfileName());
+                            jsonWriter.name(np.getProfileId());
                             jsonWriter.beginObject();
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, np.getProfileName());
                             JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, np.getProfileDescription());
                             jsonWriter.name("handlers");
                             jsonWriter.beginObject();
@@ -190,16 +191,17 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     if (!CommonUtils.isEmpty(authProfiles)) {
                         jsonWriter.name("auth-profiles");
                         jsonWriter.beginObject();
-                        for (DBAAuthProfile np : authProfiles) {
-                            jsonWriter.name(np.getProfileId());
+                        for (DBAAuthProfile authProfile : authProfiles) {
+                            jsonWriter.name(authProfile.getProfileId());
                             jsonWriter.beginObject();
-                            JSONUtils.fieldNE(jsonWriter, "name", np.getProfileName());
-                            JSONUtils.fieldNE(jsonWriter, "providerId", np.getDataSourceProviderId());
-                            JSONUtils.fieldNE(jsonWriter, "driverId", np.getDriverId());
-                            JSONUtils.fieldNE(jsonWriter, "authModel", np.getAuthModelId());
-                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, np.getProfileDescription());
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, authProfile.getProfileName());
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, authProfile.getProfileDescription());
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_AUTH_MODEL, authProfile.getAuthModelId());
+                            if (authProfile.isSavePassword()) {
+                                JSONUtils.field(jsonWriter, RegistryConstants.ATTR_SAVE_PASSWORD, authProfile.isSavePassword());
+                            }
                             // Save all auth properties in secure storage
-                            //JSONUtils.serializeProperties(jsonWriter, "properties", np.getProperties());
+                            saveSecuredCredentials(null, authProfile, null, authProfile.getUserName(), authProfile.getUserPassword());
                             jsonWriter.endObject();
                         }
                         jsonWriter.endObject();
@@ -406,10 +408,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
             // Network profiles
             for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "network-profiles")) {
-                String profileName = vmMap.getKey();
+                String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
                 DBWNetworkProfile profile = new DBWNetworkProfile();
-                profile.setProfileName(profileName);
+                profile.setProfileName(profileId);
+                profile.setProfileName(profileId);
                 profile.setProperties(JSONUtils.deserializeStringMap(profileMap, "properties"));
 
                 for (Map.Entry<String, Map<String, Object>> handlerMap : JSONUtils.getNestedObjects(profileMap, "handlers")) {
@@ -420,6 +423,24 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
 
                 registry.updateNetworkProfile(profile);
+            }
+
+            // Auth profiles
+            for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "auth-profiles")) {
+                String profileId = vmMap.getKey();
+                Map<String, Object> profileMap = vmMap.getValue();
+                DBAAuthProfile profile = new DBAAuthProfile();
+                profile.setProfileId(profileId);
+                profile.setProfileName(JSONUtils.getString(profileMap, RegistryConstants.ATTR_NAME));
+                profile.setAuthModelId(JSONUtils.getString(profileMap, RegistryConstants.ATTR_AUTH_MODEL));
+                profile.setSavePassword(JSONUtils.getBoolean(profileMap, RegistryConstants.ATTR_SAVE_PASSWORD));
+                String[] authCreds = readSecuredCredentials(profileMap, null, profile, null);
+                if (!ArrayUtils.isEmpty(authCreds) && authCreds.length == 2) {
+                    profile.setUserName(authCreds[0]);
+                    profile.setUserPassword(authCreds[1]);
+                }
+
+                registry.updateAuthProfile(profile);
             }
 
             // Connections
@@ -525,7 +546,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                     config.setProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROPERTIES));
                     config.setProviderProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
-                    config.setAuthModelId(JSONUtils.getString(cfgObject, "auth-model"));
+                    config.setAuthModelId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_AUTH_MODEL));
                     config.setAuthProperties(JSONUtils.deserializeStringMapOrNull(cfgObject, "auth-properties"));
 
                     // Events
@@ -773,7 +794,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
-            JSONUtils.fieldNE(json, "auth-model", connectionInfo.getAuthModelId());
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_AUTH_MODEL, connectionInfo.getAuthModelId());
             JSONUtils.serializeProperties(json, "auth-properties", connectionInfo.getAuthProperties());
 
             // Save events
@@ -933,7 +954,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     private void saveSecuredCredentials(
         @Nullable DataSourceDescriptor dataSource,
-        @Nullable DBWNetworkProfile profile,
+        @Nullable DBPConfigurationProfile profile,
         @Nullable String subNode,
         @Nullable String userName,
         @Nullable String password) {
@@ -943,7 +964,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!saved) {
             passwordWriteCanceled = true;
 
-            String topNodeId = profile != null ? "profile:" + profile.getProfileName() : dataSource.getId();
+            String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
             if (subNode == null) subNode = NODE_CONNECTION;
 
             Map<String, Map<String, String>> nodeMap = secureProperties.computeIfAbsent(topNodeId, s -> new LinkedHashMap<>());
@@ -960,9 +981,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private String[] readSecuredCredentials(
         @NotNull Map<String, Object> map,
         @Nullable DataSourceDescriptor dataSource,
-        @Nullable DBWNetworkProfile profile,
+        @Nullable DBPConfigurationProfile profile,
         @Nullable String subNode)
     {
+        assert dataSource != null || profile != null;
         String[] creds = new String[2];
         final DBASecureStorage secureStorage = dataSource == null ? registry.getProject().getSecureStorage() : dataSource.getProject().getSecureStorage();
         {
@@ -984,7 +1006,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 passwordReadCanceled = true;
             }
         }
-        String topNodeId = profile != null ? "profile:" + profile.getProfileName() : dataSource.getId();
+        String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
         if (subNode == null) subNode = NODE_CONNECTION;
 
         Map<String, Map<String, String>> subMap = secureProperties.get(topNodeId);

@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -462,15 +464,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @NotNull
     @Override
     public List<DBAAuthProfile> getApplicableAuthProfiles(@Nullable DBPDriver driver) {
+        DBPDataSourceProviderRegistry dspRegistry = DBWorkbench.getPlatform().getDataSourceProviderRegistry();
         synchronized (authProfiles) {
             return authProfiles.values().stream().filter(p -> {
-                if (p.getDataSourceProviderId() == null && p.getDriverId() == null) {
-                    return true;
-                } else if (p.getDriverId() != null) {
-                    return driver != null && driver.getId().equals(p.getDriverId());
-                } else {
-                    return driver != null && driver.getProviderId().equals(p.getDataSourceProviderId());
-                }
+                DBPAuthModelDescriptor authModel = dspRegistry.getAuthModel(p.getAuthModelId());
+                return authModel != null && authModel.isApplicableTo(driver);
             }).collect(Collectors.toList());
         }
     }

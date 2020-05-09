@@ -14,27 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.connection;
-
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+package org.jkiss.dbeaver.ui;
 
 /**
- * Data source provider descriptor
+ * IElementFilter
  */
-public interface DBPAuthModelDescriptor extends DBPNamedObject {
+@FunctionalInterface
+public interface IElementFilter<T> {
 
-    String getId();
-
-    String getDescription();
-
-    DBPImage getIcon();
-
-    String getImplClassName();
-
-    boolean isApplicableTo(DBPDriver driver);
-
-    DBAAuthModel getInstance();
+    boolean isValidElement(T element);
 
 }

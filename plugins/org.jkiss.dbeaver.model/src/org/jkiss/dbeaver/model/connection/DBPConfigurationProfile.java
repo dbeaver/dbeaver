@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.utils.CommonUtils;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -43,6 +45,9 @@ public class DBPConfigurationProfile {
     }
 
     public String getProfileId() {
+        if (CommonUtils.isEmpty(profileId)) {
+            return profileName;
+        }
         return profileId;
     }
 
