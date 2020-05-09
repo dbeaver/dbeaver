@@ -377,6 +377,7 @@ public class SQLQueryJob extends DataSourceJob
         String queryText = originalQuery.getText();//.trim();
         if (dataFilter != null && dataFilter.hasFilters()) {
             String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
+                session.getProgressMonitor(),
                 dataSource, queryText, dataFilter);
             sqlQuery = new SQLQuery(executionContext.getDataSource(), filteredQueryText, sqlQuery);
         } else {

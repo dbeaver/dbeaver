@@ -225,18 +225,22 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 editorWidth = parent.getSize().x;
                 parent = parent.getParent();
             }
-            int minGroupWidth = UIUtils.getFontHeight(propertiesGroup) * 30;
-            int maxGroupWidth = (editorWidth * 33) / 100; // Edit panel width max = 35%
-            int buttonPanelWidth = (editorWidth / 10); // Edit panel width max = 10%
-            if (maxGroupWidth < minGroupWidth) {
-                // Narrow screen. Use auto-layout
-                maxGroupWidth = minGroupWidth;
-                buttonPanelWidth = 0;
-            }
 
             Composite primaryGroup = new Composite(propertiesGroup, SWT.NONE);
             //CSSUtils.setCSSClass(primaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            primaryGroup.setLayout(new GridLayout(2, false));
+            GridLayout primaryLayout = new GridLayout(2, false);
+            primaryGroup.setLayout(primaryLayout);
+
+            editorWidth -= (2 * primaryLayout.marginWidth) + ((colCount - 1) * primaryLayout.horizontalSpacing); // Minus margins and borders
+            int minGroupWidth = UIUtils.getFontHeight(propertiesGroup) * 30;
+            int maxGroupWidth = (editorWidth * (100 / colCount)) / 100; // Edit panel width max = 35%
+            int buttonPanelWidth = (editorWidth / 10); // Edit panel width max = 10%
+            if (maxGroupWidth < minGroupWidth) {
+                // Narrow screen. Use auto-layout
+                minGroupWidth = maxGroupWidth;
+                buttonPanelWidth = 0;
+            }
+
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = maxGroupWidth;
             //gd.horizontalIndent = editorWidth / 10;

@@ -404,7 +404,7 @@ public class DBExecUtils {
         throws DBException
     {
         List<DBSEntityConstraint> identifiers = new ArrayList<>(2);
-        List<DBSEntityConstraint> nonIdentifyingConstraints = null;
+        //List<DBSEntityConstraint> nonIdentifyingConstraints = null;
 
         if (readMetaData) {
             if (table instanceof DBSTable && ((DBSTable) table).isView()) {
@@ -444,10 +444,10 @@ public class DBExecUtils {
                         for (DBSEntityConstraint constraint : constraints) {
                             if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
                                 identifiers.add(constraint);
-                            } else {
+                            }/* else {
                                 if (nonIdentifyingConstraints == null) nonIdentifyingConstraints = new ArrayList<>();
                                 nonIdentifyingConstraints.add(constraint);
-                            }
+                            }*/
                         }
                     }
                 }
@@ -466,11 +466,11 @@ public class DBExecUtils {
             }
         }
 
-        if (CommonUtils.isEmpty(identifiers)) {
-            if (nonIdentifyingConstraints != null) {
-                identifiers.addAll(nonIdentifyingConstraints);
-            }
-        }
+//        if (CommonUtils.isEmpty(identifiers)) {
+//            if (nonIdentifyingConstraints != null) {
+//                identifiers.addAll(nonIdentifyingConstraints);
+//            }
+//        }
 
         if (CommonUtils.isEmpty(identifiers)) {
             // No physical identifiers or row ids

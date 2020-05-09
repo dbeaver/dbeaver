@@ -122,8 +122,12 @@
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreTablespaceConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>
         </configurator>
-        
-        
+
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreExplainPlanConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner"/>
+        </configurator>
+
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
@@ -284,5 +288,7 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
     </extension>
+
+    org.jkiss.dbeaver.ext.postgresql.model.plan
 
 </plugin>

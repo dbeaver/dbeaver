@@ -61,11 +61,11 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -129,7 +129,6 @@ public class SQLEditor extends SQLEditorBase implements
     ISaveablePart2,
     DBPDataSourceTask,
     DBPDataSourceHandler,
-    DBPPreferenceListener,
     ISmartTransactionManager
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
@@ -1689,8 +1688,12 @@ public class SQLEditor extends SQLEditorBase implements
     private void explainPlanFromQuery(final DBCQueryPlanner planner, final SQLQuery sqlQuery) {
         final String[] planQueryString = new String[1];
         DBRRunnableWithProgress queryObtainTask = monitor -> {
+            DBCQueryPlannerConfiguration configuration = ExplainPlanViewer.makeExplainPlanConfiguration(monitor, planner);
+            if (configuration == null) {
+                return;
+            }
             try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, "Prepare plan query")) {
-                DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getText());
+                DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getText(), configuration);
                 planQueryString[0] = plan.getPlanQueryString();
             } catch (Exception e) {
                 log.error(e);
@@ -1891,10 +1894,11 @@ public class SQLEditor extends SQLEditorBase implements
 
             if (!newTab || !isSingleQuery) {
                 // We don't need new tab or we are executing a script - so close all extra tabs
-                if (!closeExtraResultTabs(null, true)) {
+                int tabsClosed = closeExtraResultTabs(null, true);
+                if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
                 }
-                extraTabsClosed = true;
+                extraTabsClosed = tabsClosed == IDialogConstants.YES_ID;
             }
         }
 
@@ -1907,7 +1911,12 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute each query in a new tab
             for (int i = 0; i < queries.size(); i++) {
                 SQLScriptElement query = queries.get(i);
-                QueryProcessor queryProcessor = (i == 0 && !isSingleQuery ? curQueryProcessor : createQueryProcessor(queries.size() == 1, false));
+                QueryProcessor queryProcessor;
+                if (i == 0 && (extraTabsClosed || !curQueryProcessor.getFirstResults().hasData())) {
+                    queryProcessor = curQueryProcessor;
+                } else {
+                    queryProcessor = createQueryProcessor(queries.size() == 1, false);
+                }
                 queryProcessor.processQueries(
                     scriptContext,
                     Collections.singletonList(query),
@@ -1937,7 +1946,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 if (!extraTabsClosed) {
-                    if (!closeExtraResultTabs(curQueryProcessor, true)) {
+                    if (closeExtraResultTabs(curQueryProcessor, true) == IDialogConstants.CANCEL_ID) {
                         return false;
                     }
                 }
@@ -1968,7 +1977,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private boolean closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose)
+    private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose)
     {
         // Close all tabs except first one
         List<CTabItem> tabsToClose = new ArrayList<>();
@@ -1999,7 +2008,7 @@ public class SQLEditor extends SQLEditorBase implements
                     ConfirmationDialog.QUESTION_WITH_CANCEL,
                     tabsToClose.size() + 1);
                 if (confirmResult == IDialogConstants.CANCEL_ID) {
-                    return false;
+                    return IDialogConstants.CANCEL_ID;
                 }
             }
             if (confirmResult == IDialogConstants.YES_ID) {
@@ -2007,8 +2016,9 @@ public class SQLEditor extends SQLEditorBase implements
                     item.dispose();
                 }
             }
+            return confirmResult;
         }
-        return true;
+        return IDialogConstants.NO_ID;
     }
 
     public boolean transformQueryWithParameters(SQLQuery query) {
@@ -2096,6 +2106,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         lastExecutionContext = executionContext;
         syntaxLoaded = true;
+
+        loadActivePreferenceSettings();
     }
 
     @Override
@@ -2315,7 +2327,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE)) {
             return ISaveablePart2.YES;
         }
-        return ISaveablePart2.NO;
+
+        if (super.isDirty()) {
+            return ISaveablePart2.DEFAULT;
+        }
+        return ISaveablePart2.YES;
     }
 
     protected void afterSaveToFile(File saveFile) {
@@ -2399,10 +2415,10 @@ public class SQLEditor extends SQLEditorBase implements
             case ModelPreferences.SQL_VARIABLES_ENABLED:
             case ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX:
                 reloadSyntaxRules();
-                break;
+                return;
             case SQLPreferenceConstants.RESULT_SET_ORIENTATION:
                 updateResultSetOrientation();
-                break;
+                return;
             case SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION: {
                 // Save current datasource (we want to keep it here)
                 DBPDataSource dataSource = curDataSource;
@@ -2412,9 +2428,10 @@ public class SQLEditor extends SQLEditorBase implements
                 if (dataSource != null && SQLEditorUtils.isOpenSeparateConnection(dataSource.getContainer())) {
                     initSeparateConnection(dataSource, null);
                 }
-                break;
+                return;
             }
         }
+        super.preferenceChange(event);
     }
 
     public enum ResultSetOrientation {
@@ -2849,6 +2866,10 @@ public class SQLEditor extends SQLEditorBase implements
         public ResultSetViewer getResultSetController()
         {
             return viewer;
+        }
+
+        boolean hasData() {
+            return viewer != null && viewer.hasData();
         }
 
         @Nullable

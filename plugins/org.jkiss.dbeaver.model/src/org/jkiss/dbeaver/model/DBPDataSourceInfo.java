@@ -153,6 +153,8 @@ public interface DBPDataSourceInfo
 
     boolean supportsResultSetOrdering();
 
+    boolean supportsNullableUniqueConstraints();
+
     /**
      * Dynamic metadata means that each execution of the same query may produce different results.
      */
@@ -169,4 +171,5 @@ public interface DBPDataSourceInfo
     boolean isMultipleResultsFetchBroken();
 
     DBSObjectType[] getSupportedObjectTypes();
+
 }

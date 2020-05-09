@@ -508,11 +508,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     @Override
-    public List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDataSourceContainer dataSourceContainer) {
+    public List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDriver driver) {
         List<DataSourceAuthModelDescriptor> models = new ArrayList<>();
         List<String> replaced = new ArrayList<>();
         for (DataSourceAuthModelDescriptor amd : authModels.values()) {
-            if (amd.appliesTo(dataSourceContainer, null)) {
+            if (amd.appliesTo(driver)) {
                 models.add(amd);
                 replaced.addAll(amd.getReplaces());
             }

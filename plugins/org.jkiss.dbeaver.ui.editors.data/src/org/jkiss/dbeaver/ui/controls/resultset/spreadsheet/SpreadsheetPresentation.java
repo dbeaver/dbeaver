@@ -655,6 +655,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             controller.redrawData(false, true);
             controller.updateEditControls();
+            controller.updatePanelsContent(false);
         }
         catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);

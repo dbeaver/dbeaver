@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -195,7 +196,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT DISTINCT x.oid,x.proname,x.pronamespace FROM pg_catalog.pg_proc x " +
+            "SELECT DISTINCT x.oid,x.* FROM pg_catalog.pg_proc x " +
                 "WHERE x.proname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
                 "AND x.proname NOT LIKE '\\_%'" + // Exclude procedures starting with underscore
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
@@ -218,7 +219,10 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
                         log.debug("Procedure's schema '" + schemaId + "' not found");
                         continue;
                     }
-                    objects.add(new AbstractObjectReference(procName, procSchema, null, PostgreProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
+                    PostgreProcedure proc = new PostgreProcedure(monitor, procSchema, dbResult);
+
+                    objects.add(new AbstractObjectReference(procName, procSchema, null, PostgreProcedure.class, RelationalObjectType.TYPE_PROCEDURE,
+                        DBUtils.getQuotedIdentifier(procSchema) + "." + proc.getOverloadedName()) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             PostgreProcedure procedure = procSchema.getProcedure(monitor, procId);

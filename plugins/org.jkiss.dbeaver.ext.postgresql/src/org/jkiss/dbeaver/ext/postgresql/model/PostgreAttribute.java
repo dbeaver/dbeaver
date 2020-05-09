@@ -109,6 +109,22 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return getOrdinalPosition();
     }
 
+    @Override
+    public void setMaxLength(long maxLength) {
+        super.setMaxLength(maxLength);
+        if (getDataKind() == DBPDataKind.STRING && this.precision != null) {
+            this.precision = (int)maxLength;
+        }
+    }
+
+    @Override
+    public void setPrecision(Integer precision) {
+        super.setPrecision(precision);
+        if (getDataKind() == DBPDataKind.STRING) {
+            this.maxLength = precision;
+        }
+    }
+
     private void loadInfo(DBRProgressMonitor monitor, JDBCResultSet dbResult)
         throws DBException
     {

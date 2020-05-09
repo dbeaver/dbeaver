@@ -62,7 +62,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     private String owner;
     private Timestamp createTime;
     private String remarks;
-    private Integer objectId;
+    private long objectId;
     private String tablePrefix;
     private BigDecimal rawObjectSize;
     private BigDecimal memObjectSize;
@@ -125,7 +125,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "OBJECT_COMMENT");
         this.name = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
-        this.objectId = JDBCUtils.safeGetInt(dbResult, "SCHEMA_OBJECT_ID");
+        this.objectId = JDBCUtils.safeGetLong(dbResult, "SCHEMA_OBJECT_ID");
 
 
     }
@@ -294,18 +294,19 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     
     private void refresh(DBRProgressMonitor monitor) throws DBCException
     {
-    	if (!refreshed && this.objectId != null) {
+    	if (!refreshed && this.objectId != 0) {
 	    	JDBCSession session = DBUtils.openMetaSession(monitor, this, ExasolMessages.read_schema_details );
 	    	try (JDBCPreparedStatement stmt = session.prepareStatement("/*snapshot execution*/ SELECT * FROM SYS."+getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL)+"_OBJECT_SIZES WHERE OBJECT_ID = ?"))
 	    	{
-	    		stmt.setInt(1, this.objectId);
+	    		stmt.setLong(1, this.objectId);
 	    		try (JDBCResultSet dbResult = stmt.executeQuery()) 
 	    		{
-	    			dbResult.next();
-	    	        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
-	    	        this.rawObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE");
-	    	        this.memObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "MEM_OBJECT_SIZE");
-	    	        this.rawObjectSizeLimit = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE_LIMIT");
+	    			if (dbResult.next()) {
+                        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
+                        this.rawObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE");
+                        this.memObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "MEM_OBJECT_SIZE");
+                        this.rawObjectSizeLimit = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE_LIMIT");
+                    }
 	    		}
 	    		
 	    	} catch (SQLException e) {

@@ -30,18 +30,17 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerializable;
-import org.jkiss.dbeaver.model.exec.plan.DBCSavedQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -373,13 +372,18 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         public DBCPlan evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException {
             try {
+                DBCQueryPlannerConfiguration configuration = makeExplainPlanConfiguration(monitor, planner);
+                if (configuration == null) {
+                    return null;
+                }
+
                 DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
                     try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
                         try {
                             if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {
                                 plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
                             } else {
-                                plan = planner.planQueryExecution(session, query);
+                                plan = planner.planQueryExecution(session, query, configuration);
                             }
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
@@ -391,6 +395,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             }
             return plan;
         }
+
     }
 
     private class RefreshPlanAction extends Action {
@@ -404,6 +409,15 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         {
             ExplainPlanViewer.this.refresh();
         }
+    }
+
+    public static DBCQueryPlannerConfiguration makeExplainPlanConfiguration(DBRProgressMonitor monitor, DBCQueryPlanner planner) {
+        DBCQueryPlannerConfiguration configuration = new DBCQueryPlannerConfiguration();
+        DBEObjectConfigurator<DBCQueryPlannerConfiguration> plannerConfigurator = GeneralUtils.adapt(planner, DBEObjectConfigurator.class);
+        if (plannerConfigurator != null) {
+            return plannerConfigurator.configureObject(monitor, planner, configuration);
+        }
+        return configuration;
     }
 
 }

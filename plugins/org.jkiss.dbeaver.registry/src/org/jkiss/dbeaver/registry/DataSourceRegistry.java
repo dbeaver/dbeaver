@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -74,7 +76,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
-    private final List<DBAAuthProfile> authProfiles = new ArrayList<>();
+    private final Map<String, DBAAuthProfile> authProfiles = new LinkedHashMap<>();
     private volatile boolean saveInProgress = false;
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
@@ -445,9 +447,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Nullable
     @Override
-    public DBAAuthProfile getAuthProfile(String name) {
+    public DBAAuthProfile getAuthProfile(String id) {
         synchronized (authProfiles) {
-            return authProfiles.stream().filter(profile -> profile.getProfileName().equals(name)).findFirst().orElse(null);
+            return authProfiles.get(id);
         }
     }
 
@@ -455,22 +457,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     public List<DBAAuthProfile> getAllAuthProfiles() {
         synchronized (authProfiles) {
-            return new ArrayList<>(authProfiles);
+            return new ArrayList<>(authProfiles.values());
         }
     }
 
     @NotNull
     @Override
     public List<DBAAuthProfile> getApplicableAuthProfiles(@Nullable DBPDriver driver) {
+        DBPDataSourceProviderRegistry dspRegistry = DBWorkbench.getPlatform().getDataSourceProviderRegistry();
         synchronized (authProfiles) {
-            return authProfiles.stream().filter(p -> {
-                if (p.getDataSourceProviderId() == null && p.getDriverId() == null) {
-                    return true;
-                } else if (p.getDriverId() != null) {
-                    return driver != null && driver.getId().equals(p.getDriverId());
-                } else {
-                    return driver != null && driver.getProviderId().equals(p.getDataSourceProviderId());
-                }
+            return authProfiles.values().stream().filter(p -> {
+                DBPAuthModelDescriptor authModel = dspRegistry.getAuthModel(p.getAuthModelId());
+                return authModel != null && authModel.isApplicableTo(driver);
             }).collect(Collectors.toList());
         }
     }
@@ -478,26 +476,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     public void updateAuthProfile(DBAAuthProfile profile) {
         synchronized (authProfiles) {
-            for (int i = 0; i < authProfiles.size(); i++) {
-                if (CommonUtils.equalObjects(authProfiles.get(i).getProfileName(), profile.getProfileName())) {
-                    authProfiles.set(i, profile);
-                    return;
-                }
-            }
-            authProfiles.add(profile);
+            authProfiles.put(profile.getProfileId(), profile);
         }
     }
 
     @Override
     public void removeAuthProfile(DBAAuthProfile profile) {
         synchronized (authProfiles) {
-            authProfiles.remove(profile);
-        }
-    }
-
-    void addNetworkProfile(DBWNetworkProfile profile) {
-        synchronized (authProfiles) {
-            networkProfiles.add(profile);
+            authProfiles.remove(profile.getProfileId());
         }
     }
 

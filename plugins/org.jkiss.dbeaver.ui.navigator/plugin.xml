@@ -26,7 +26,7 @@
             <adapter type="org.eclipse.ui.model.IWorkbenchAdapter"/>
         </factory>
 
-        <factory adaptableType="org.jkiss.dbeaver.model.struct.DBSObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorConfiguratorFactory">
+        <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorConfiguratorFactory">
             <adapter type="org.jkiss.dbeaver.model.edit.DBEObjectConfigurator"/>
         </factory>
     </extension>

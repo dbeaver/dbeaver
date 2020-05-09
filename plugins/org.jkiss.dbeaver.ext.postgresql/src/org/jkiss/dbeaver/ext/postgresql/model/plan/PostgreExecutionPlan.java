@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -51,19 +52,22 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     private boolean oldQuery;
     private boolean verbose;
     private String query;
+    private DBCQueryPlannerConfiguration configuration;
     private List<DBCPlanNode> rootNodes;
 
-    public PostgreExecutionPlan(boolean oldQuery, boolean verbose, String query)
+    public PostgreExecutionPlan(boolean oldQuery, boolean verbose, String query, DBCQueryPlannerConfiguration configuration)
     {
         this.oldQuery = oldQuery;
         this.verbose = verbose;
         this.query = query;
+        this.configuration = configuration;
     }
 
     public PostgreExecutionPlan(String query, List<PostgrePlanNodeExternal> nodes) {
         this.query = query;
         this.rootNodes = new ArrayList<>();
         this.rootNodes.addAll(nodes);
+        this.configuration = new DBCQueryPlannerConfiguration();
     }
 
     @Override
@@ -88,7 +92,8 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         if (oldQuery) {
             return "EXPLAIN " + (verbose ? "VERBOSE " : "") + query;
         } else {
-            return "EXPLAIN (FORMAT XML, ANALYSE) " + query;
+            boolean doAnalyze = CommonUtils.toBoolean(this.configuration.getParameters().get(PostgreQueryPlaner.PARAM_ANALYSE));
+            return "EXPLAIN (FORMAT XML" + (doAnalyze ? ", ANALYSE" : "") + ") " + query;
         }
     }
 
