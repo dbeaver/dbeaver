@@ -539,12 +539,14 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
         List<Control> controlList = propGroupMap.get(group);
         if (controlList != null) {
             for (Control control : controlList) {
-                GridData gd = (GridData)control.getLayoutData();
+                Object gd = control.getLayoutData();
                 if (gd == null) {
                     gd = new GridData(GridData.BEGINNING);
                     control.setLayoutData(gd);
                 }
-                gd.exclude = !show;
+                if (gd instanceof GridData) {
+                    ((GridData)gd).exclude = !show;
+                }
                 control.setVisible(show);
             }
         }
