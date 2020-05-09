@@ -63,13 +63,13 @@ import java.util.*;
 class DataSourceSerializerModern implements DataSourceSerializer
 {
     // Navigator settings
-    public static final String ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS = "show-system-objects"; //$NON-NLS-1$
-    public static final String ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS = "show-util-objects"; //$NON-NLS-1$
-    public static final String ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES = "navigator-show-only-entities"; //$NON-NLS-1$
-    public static final String ATTR_NAVIGATOR_HIDE_FOLDERS = "navigator-hide-folders"; //$NON-NLS-1$
-    public static final String ATTR_NAVIGATOR_HIDE_SCHEMAS = "navigator-hide-schemas"; //$NON-NLS-1$
-    public static final String ATTR_NAVIGATOR_HIDE_VIRTUAL = "navigator-hide-virtual"; //$NON-NLS-1$
-    public static final String ATTR_NAVIGATOR_MERGE_ENTITIES = "navigator-merge-entities"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS = "show-system-objects"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS = "show-util-objects"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES = "navigator-show-only-entities"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_HIDE_FOLDERS = "navigator-hide-folders"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_HIDE_SCHEMAS = "navigator-hide-schemas"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_HIDE_VIRTUAL = "navigator-hide-virtual"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_MERGE_ENTITIES = "navigator-merge-entities"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
@@ -94,7 +94,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     //  2 level: map of secured properties
     private Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
 
-    public DataSourceSerializerModern(DataSourceRegistry registry) {
+    DataSourceSerializerModern(DataSourceRegistry registry) {
         this.registry = registry;
     }
 
@@ -103,7 +103,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         DBRProgressMonitor monitor,
         DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources,
-        IFile configFile) throws DBException, IOException
+        IFile configFile) throws DBException
     {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
@@ -201,7 +201,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                                 JSONUtils.field(jsonWriter, RegistryConstants.ATTR_SAVE_PASSWORD, authProfile.isSavePassword());
                             }
                             // Save all auth properties in secure storage
-                            saveSecuredCredentials(null, authProfile, null, authProfile.getUserName(), authProfile.getUserPassword());
+                            saveSecuredCredentials(null, authProfile, null, new SecureCredentials(authProfile));
                             jsonWriter.endObject();
                         }
                         jsonWriter.endObject();
@@ -434,11 +434,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 profile.setProfileName(JSONUtils.getString(profileMap, RegistryConstants.ATTR_NAME));
                 profile.setAuthModelId(JSONUtils.getString(profileMap, RegistryConstants.ATTR_AUTH_MODEL));
                 profile.setSavePassword(JSONUtils.getBoolean(profileMap, RegistryConstants.ATTR_SAVE_PASSWORD));
-                String[] authCreds = readSecuredCredentials(profileMap, null, profile, null);
-                if (!ArrayUtils.isEmpty(authCreds) && authCreds.length == 2) {
-                    profile.setUserName(authCreds[0]);
-                    profile.setUserPassword(authCreds[1]);
-                }
+
+                SecureCredentials authCreds = readSecuredCredentials(null, profile, null);
+                profile.setUserName(authCreds.getUserName());
+                profile.setUserPassword(authCreds.getUserPassword());
+                profile.setProperties(authCreds.getProperties());
 
                 registry.updateAuthProfile(profile);
             }
@@ -517,10 +517,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
                     config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
                     if (!passwordReadCanceled) {
-                        final String[] creds = readSecuredCredentials(cfgObject, dataSource, null, null);
-                        config.setUserName(creds[0]);
+                        final SecureCredentials creds = readSecuredCredentials(dataSource, null, null);
+                        config.setUserName(creds.getUserName());
                         if (dataSource.isSavePassword()) {
-                            config.setUserPassword(creds[1]);
+                            config.setUserPassword(creds.getUserPassword());
                         }
                     }
                     {
@@ -684,11 +684,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
             curNetworkHandler.setEnabled(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_ENABLED));
             curNetworkHandler.setSavePassword(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_SAVE_PASSWORD));
             if (!passwordReadCanceled) {
-                final String[] creds = readSecuredCredentials(handlerCfg, dataSource, profile,
+                final SecureCredentials creds = readSecuredCredentials(dataSource, profile,
                     "network/" + handlerId + (profile == null ? "" : "/profile/" + profile.getProfileName()));
-                curNetworkHandler.setUserName(creds[0]);
+                curNetworkHandler.setUserName(creds.getUserName());
                 if (curNetworkHandler.isSavePassword()) {
-                    curNetworkHandler.setPassword(creds[1]);
+                    curNetworkHandler.setPassword(creds.getUserPassword());
                 }
             }
             {
@@ -779,8 +779,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 dataSource,
                 null,
                 null,
-                connectionInfo.getUserName(),
-                dataSource.isSavePassword() ? connectionInfo.getUserPassword() : null);
+                new SecureCredentials(dataSource));
 
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
             if (connectionInfo.getConnectionType() != null) {
@@ -932,8 +931,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 dataSource,
                 profile,
                 "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
-                configuration.getUserName(),
-                configuration.isSavePassword() ? configuration.getPassword() : null);
+                new SecureCredentials(configuration));
         }
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties());
         json.endObject();
@@ -956,11 +954,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable DataSourceDescriptor dataSource,
         @Nullable DBPConfigurationProfile profile,
         @Nullable String subNode,
-        @Nullable String userName,
-        @Nullable String password) {
+        @NotNull SecureCredentials credentials) {
         assert dataSource != null|| profile != null;
         boolean saved = !passwordWriteCanceled && DataSourceUtils.saveCredentialsInSecuredStorage(
-            registry.getProject(), dataSource, subNode, userName, password);
+            registry.getProject(), dataSource, subNode, credentials);
         if (!saved) {
             passwordWriteCanceled = true;
 
@@ -969,23 +966,25 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
             Map<String, Map<String, String>> nodeMap = secureProperties.computeIfAbsent(topNodeId, s -> new LinkedHashMap<>());
             Map<String, String> propMap = nodeMap.computeIfAbsent(subNode, s -> new LinkedHashMap<>());
-            if (!CommonUtils.isEmpty(userName)) {
-                propMap.put(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(userName));
+            if (!CommonUtils.isEmpty(credentials.getUserName())) {
+                propMap.put(RegistryConstants.ATTR_USER, credentials.getUserName());
             }
-            if (!CommonUtils.isEmpty(password)) {
-                propMap.put(RegistryConstants.ATTR_PASSWORD, password);
+            if (!CommonUtils.isEmpty(credentials.getUserPassword())) {
+                propMap.put(RegistryConstants.ATTR_PASSWORD, credentials.getUserPassword());
+            }
+            if (!CommonUtils.isEmpty(credentials.getProperties())) {
+                propMap.putAll(credentials.getProperties());
             }
         }
     }
 
-    private String[] readSecuredCredentials(
-        @NotNull Map<String, Object> map,
+    private SecureCredentials readSecuredCredentials(
         @Nullable DataSourceDescriptor dataSource,
         @Nullable DBPConfigurationProfile profile,
         @Nullable String subNode)
     {
         assert dataSource != null || profile != null;
-        String[] creds = new String[2];
+        SecureCredentials creds = new SecureCredentials();
         final DBASecureStorage secureStorage = dataSource == null ? registry.getProject().getSecureStorage() : dataSource.getProject().getSecureStorage();
         {
             try {
@@ -996,8 +995,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             prefNode = prefNode.node(nodeName);
                         }
                     }
-                    creds[0] = prefNode.get(RegistryConstants.ATTR_USER, null);
-                    creds[1] = prefNode.get(RegistryConstants.ATTR_PASSWORD, null);
+                    for (String key : prefNode.keys()) {
+                        switch (key) {
+                            case RegistryConstants.ATTR_USER:
+                                creds.setUserName(prefNode.get(key, null));
+                                break;
+                            case RegistryConstants.ATTR_PASSWORD:
+                                creds.setUserPassword(prefNode.get(key, null));
+                                break;
+                            default:
+                                creds.setSecureProp(key, prefNode.get(key, null));
+                                break;
+                        }
+                    }
                 }
             } catch (Throwable e) {
                 // Most likely user canceled master password enter of failed by some other reason.
@@ -1013,11 +1023,18 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (subMap != null) {
             Map<String, String> propMap = subMap.get(subNode);
             if (propMap != null) {
-                if (CommonUtils.isEmpty(creds[0])) {
-                    creds[0] = propMap.get(RegistryConstants.ATTR_USER);
-                }
-                if (CommonUtils.isEmpty(creds[1])) {
-                    creds[1] = propMap.get(RegistryConstants.ATTR_PASSWORD);
+                for (Map.Entry<String, String> prop : propMap.entrySet()) {
+                    switch (prop.getKey()) {
+                        case RegistryConstants.ATTR_USER:
+                            creds.setUserName(prop.getValue());
+                            break;
+                        case RegistryConstants.ATTR_PASSWORD:
+                            creds.setUserPassword(prop.getValue());
+                            break;
+                        default:
+                            creds.setSecureProp(prop.getKey(), prop.getValue());
+                            break;
+                    }
                 }
             }
         }

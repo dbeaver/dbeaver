@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import graphql.execution.nextgen.Common;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
@@ -41,7 +42,9 @@ public class DBPConfigurationProfile {
         this.profileId = source.profileId;
         this.profileName = source.profileName;
         this.profileDescription = source.profileDescription;
-        this.properties = new LinkedHashMap<>(source.properties);
+        if (!CommonUtils.isEmpty(source.properties)) {
+            this.properties = new LinkedHashMap<>(source.properties);
+        }
     }
 
     public String getProfileId() {

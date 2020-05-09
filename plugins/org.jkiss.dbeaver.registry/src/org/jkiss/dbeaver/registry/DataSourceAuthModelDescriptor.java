@@ -98,7 +98,7 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
-            this.icon = DBIcon.DATABASE_DEFAULT;
+            this.icon = DBIcon.TREE_PACKAGE;
         }
 
         for (IConfigurationElement dsConfig : config.getChildren("datasource")) {

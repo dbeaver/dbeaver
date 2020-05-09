@@ -201,8 +201,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 dataSource.getRegistry().getProject(),
                 dataSource,
                 null,
-                connectionInfo.getUserName(),
-                dataSource.isSavePassword() ? connectionInfo.getUserPassword() : null);
+                new SecureCredentials(dataSource));
 
             if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
                 xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
@@ -263,8 +262,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                         dataSource.getRegistry().getProject(),
                         dataSource,
                         "network/" + configuration.getId(),
-                        configuration.getUserName(),
-                        configuration.isSavePassword() ? configuration.getPassword() : null);
+                        new SecureCredentials(configuration));
                 }
                 for (Map.Entry<String, Object> entry : configuration.getProperties().entrySet()) {
                     if (entry.getValue() == null) {
@@ -358,15 +356,15 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         xml.endElement();
     }
 
-    private static void saveSecuredCredentials(@NotNull XMLBuilder xml, @NotNull DBPProject project, @Nullable DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
-        boolean saved = DataSourceUtils.saveCredentialsInSecuredStorage(project, dataSource, subNode, userName, password);
+    private static void saveSecuredCredentials(@NotNull XMLBuilder xml, @NotNull DBPProject project, @Nullable DataSourceDescriptor dataSource, String subNode, SecureCredentials creds) throws IOException {
+        boolean saved = DataSourceUtils.saveCredentialsInSecuredStorage(project, dataSource, subNode, creds);
         if (!saved) {
             try {
-                if (!CommonUtils.isEmpty(userName)) {
-                    xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(userName));
+                if (!CommonUtils.isEmpty(creds.getUserName())) {
+                    xml.addAttribute(RegistryConstants.ATTR_USER, creds.getUserName());
                 }
-                if (!CommonUtils.isEmpty(password)) {
-                    xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(password));
+                if (!CommonUtils.isEmpty(creds.getUserPassword())) {
+                    xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(creds.getUserPassword()));
                 }
             } catch (EncryptionException e) {
                 log.error("Error encrypting password", e);
