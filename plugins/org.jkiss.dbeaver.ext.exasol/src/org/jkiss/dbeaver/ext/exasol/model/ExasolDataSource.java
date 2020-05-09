@@ -773,6 +773,11 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		return this.exasolCurrentUserPrivileges.getatLeastV5();
 	}
 	
+	public boolean ishasPartitionColumns()
+	{
+		return this.exasolCurrentUserPrivileges.hasPartitionColumns();
+	}
+	
 	public boolean ishasConsumerGroups()
 	{
 		return this.exasolCurrentUserPrivileges.hasConsumerGroups();

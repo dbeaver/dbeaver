@@ -115,6 +115,11 @@ public class ExasolCurrentUserPrivileges {
         return hasPriv;
     }
     
+    public Boolean hasPartitionColumns()
+    {
+    	return hasPasswordPolicy();
+    }
+    
     public Boolean hasPriorityGroups()
     {
     	return getatLeastV6() && getMinorVersion() >= 1  && getMajorVersion() < 7;

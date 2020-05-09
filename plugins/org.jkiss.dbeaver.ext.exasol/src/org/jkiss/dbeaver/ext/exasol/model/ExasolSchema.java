@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableForeignKeyCache;
+import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableIndexCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableUniqueKeyCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolViewCache;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolGrantee;
@@ -75,10 +76,11 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     public final DBSObjectCache<ExasolSchema, ExasolFunction> functionCache;
     private ExasolViewCache viewCache = new ExasolViewCache();
     private ExasolTableCache tableCache = new ExasolTableCache();
-
+    
     // ExasolTable's children
     private final ExasolTableUniqueKeyCache constraintCache = new ExasolTableUniqueKeyCache(tableCache);
     private final ExasolTableForeignKeyCache associationCache = new ExasolTableForeignKeyCache(tableCache);
+    private final ExasolTableIndexCache indexCache = new ExasolTableIndexCache(tableCache);
 
     public ExasolSchema(ExasolDataSource exasolDataSource, String name, String owner) {
         super(exasolDataSource, true);
@@ -411,9 +413,21 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
 		
 	}
 	
-	
 	public Boolean isPhysicalSchema()
 	{
 	    return true;
 	}
+
+	public ExasolTableIndexCache getIndexCache() {
+		return indexCache;
+	}
+	
+	@Association
+	public Collection<ExasolTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+		return indexCache.getObjects(monitor, this, null);
+	}
+	
+	
+	
+	
 }

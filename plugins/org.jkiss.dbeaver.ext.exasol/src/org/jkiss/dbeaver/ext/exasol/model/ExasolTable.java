@@ -48,6 +48,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject, DBPNamedObject2, DBPScriptObject {
@@ -63,6 +64,8 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private String tablePrefix;
     private Boolean hasPartitionKey;
     private ExasolTablePartitionColumnCache tablePartitionColumnCache = new ExasolTablePartitionColumnCache();
+    
+    private List<ExasolTableIndex> indexes;
     
     private static String readAdditionalTableInfo = "/*snapshot execution*/ SELECT" + 
             "    * " + 
@@ -140,16 +143,18 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
             "    object_name";
     
     
-    public ExasolTable(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
+    public ExasolTable(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) throws DBException {
         super(monitor, schema, dbResult);
         hasRead=false;
         tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
+        indexes = schema.getIndexCache().getObjects(monitor, schema, this);
     }
 
     public ExasolTable(ExasolSchema schema, String name) {
         super(schema, name, false);
         hasRead=false;
         tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
+        indexes = new ArrayList<ExasolTableIndex>();
     }
 
     private void read(DBRProgressMonitor monitor) throws DBCException
@@ -213,6 +218,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     {
     	this.read(monitor);
     	this.tablePartitionColumnCache.clearCache();
+    	this.getSchema().getIndexCache().clearObjectCache(this);
     	super.refreshObjectState(monitor);
     }
     
@@ -388,6 +394,14 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     {
     	return tablePartitionColumnCache.getAvailableTableColumns(this);
     }
+
+	public List<ExasolTableIndex> getIndexes() {
+		return indexes;
+	}
+	
+	public ExasolTableIndex getIndex(String name) {
+		return DBUtils.findObject(indexes, name, true);
+	}
     
     
 }
