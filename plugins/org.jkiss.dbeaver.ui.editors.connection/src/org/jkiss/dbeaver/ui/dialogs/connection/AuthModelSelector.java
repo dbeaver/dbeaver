@@ -48,6 +48,7 @@ public class AuthModelSelector extends Composite {
     private static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
     private IElementFilter<DBPAuthModelDescriptor> modelFilter;
+    private IElementFilter<DBPAuthModelDescriptor> modelChangeFilter;
     private List<? extends DBPAuthModelDescriptor> allAuthModels;
     private DBPDataSourceContainer activeDataSource;
     private DBPAuthModelDescriptor selectedAuthModel;
@@ -74,6 +75,10 @@ public class AuthModelSelector extends Composite {
 
     public void setModelFiler(IElementFilter<DBPAuthModelDescriptor> filter) {
         modelFilter = filter;
+    }
+
+    public void setModelChangeFilter(IElementFilter<DBPAuthModelDescriptor> modelChangeFilter) {
+        this.modelChangeFilter = modelChangeFilter;
     }
 
     public void clearSettings() {
@@ -127,6 +132,10 @@ public class AuthModelSelector extends Composite {
             public void widgetSelected(SelectionEvent e) {
                 DBPAuthModelDescriptor newAuthModel = allAuthModels.get(authModelCombo.getSelectionIndex());
                 if (selectedAuthModel != newAuthModel) {
+                    if (modelChangeFilter != null && !modelChangeFilter.isValidElement(newAuthModel)) {
+                        authModelCombo.select(allAuthModels.indexOf(selectedAuthModel));
+                        return;
+                    }
                     selectedAuthModel = newAuthModel;
                     showAuthModelSettings();
                 }
