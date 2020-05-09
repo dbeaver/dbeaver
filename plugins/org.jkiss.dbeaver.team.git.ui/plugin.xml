@@ -55,7 +55,8 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
-        <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+        <menuContribution locationURI="menu:file?before=properties">
+            <separator name="git" visible="true"/>
             <menu id="org.jkiss.dbeaver.team.git.menu" label="Git" mnemonic="M">
                 <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L">
                     <visibleWhen checkEnabled="true">
