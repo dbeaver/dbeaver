@@ -36,21 +36,18 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
-public class ExasolConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage {
+public class ExasolConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage {
 
     private Label backupHostLabel;
     private Text hostText;
     private Text backupHostText;
     private Text portText;
-    private Text usernameText;
-    private ClientHomesSelector homesSelector;
     private Button useBackupHostList;
     private boolean showBackupHosts = false;
     private Button encryptCommunication;
@@ -76,29 +73,26 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             addrGroup.setLayoutData(gd);
 
-            Label hostLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.label_host_list);
-            hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-            hostText = new Text(addrGroup, SWT.BORDER);
+            hostText = UIUtils.createLabelText(addrGroup, ExasolMessages.label_host_list, null, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
             hostText.addModifyListener(textListener);
 
             backupHostLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.label_backup_host_list);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             backupHostLabel.setLayoutData(gd);
             backupHostLabel.setEnabled(showBackupHosts);
 
-            backupHostText = new Text(addrGroup, SWT.BORDER);
+            Composite bhPlaceholder = UIUtils.createComposite(addrGroup, 2);
+            bhPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            backupHostText = new Text(bhPlaceholder, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             backupHostText.setLayoutData(gd);
             backupHostText.addModifyListener(textListener);
 
-
-            useBackupHostList = UIUtils.createLabelCheckbox(addrGroup, ExasolMessages.label_use_backup_host_list, showBackupHosts);
-
+            useBackupHostList = UIUtils.createCheckbox(bhPlaceholder, ExasolMessages.label_use_backup_host_list, null, showBackupHosts, 1);
             useBackupHostList.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -111,47 +105,27 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
                 }
             });
 
-            Label portLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.dialog_connection_port);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            portLabel.setLayoutData(gd);
-
-
-            portText = new Text(addrGroup, SWT.BORDER);
+            portText = UIUtils.createLabelText(addrGroup, ExasolMessages.dialog_connection_port, null, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             gd.widthHint = 40;
             portText.setLayoutData(gd);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
 
-            encryptCommunication = UIUtils.createLabelCheckbox(addrGroup, ExasolMessages.label_encrypt, false);
+            encryptCommunication = UIUtils.createCheckbox(addrGroup, ExasolMessages.label_encrypt, null, false, 2);
 
 
         }
 
-        {
-            Composite addrGroup = UIUtils.createControlGroup(control, ExasolMessages.label_security, 4, 0, 0);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            addrGroup.setLayoutData(gd);
-
-            usernameText = UIUtils.createLabelText(addrGroup, ExasolMessages.dialog_connection_user_name, "");
-            gd = (GridData) usernameText.getLayoutData();
-            gd.widthHint = 200;
-            usernameText.addModifyListener(textListener);
-
-            UIUtils.createEmptyLabel(addrGroup, 2, 1);
-
-            Text passwordText = createPasswordText(addrGroup, ExasolMessages.dialog_connection_password);
-            passwordText.addModifyListener(textListener);
-            createPasswordControls(addrGroup, 2);
-        }
-
+        createAuthPanel(control, 1);
         createDriverPanel(control);
         setControl(control);
     }
 
     @Override
     public boolean isComplete() {
-        return hostText != null && portText != null &&
+        return super.isComplete() &&
+            hostText != null && portText != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
             !CommonUtils.isEmpty(portText.getText());
     }
@@ -177,12 +151,6 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             } else {
                 portText.setText("8563"); //$NON-NLS-1$
             }
-        }
-        if (usernameText != null) {
-            usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
-        }
-        if (passwordText != null) {
-            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
 
         String backupHostText = connectionInfo.getProviderProperty(ExasolUIConstants.DRV_BACKUP_HOST_LIST);
@@ -212,15 +180,6 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
         }
         if (portText != null) {
             connectionInfo.setHostPort(portText.getText().trim());
-        }
-        if (usernameText != null) {
-            connectionInfo.setUserName(usernameText.getText().trim());
-        }
-        if (passwordText != null) {
-            connectionInfo.setUserPassword(passwordText.getText());
-        }
-        if (homesSelector != null) {
-            connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
 
         connectionInfo.setProviderProperty(ExasolUIConstants.DRV_BACKUP_HOST_LIST, backupHostText.getText());
