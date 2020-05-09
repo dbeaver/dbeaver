@@ -63,6 +63,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private static final String LICENSE_ACCEPT_KEY = "driver.license.accept.";
 
+    public static final DriverDescriptor NULL_DRIVER = new DriverDescriptor("NULL");
+
     public static class DriverFileInfo {
         private final String id;
         private final String version;
@@ -161,6 +163,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     static {
         File driversHome = DriverDescriptor.getCustomDriversHome();
         System.setProperty(PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
+    }
+
+    private DriverDescriptor(String id) {
+        this(DataSourceProviderDescriptor.NULL_PROVIDER, id);
     }
 
     // New driver constructor

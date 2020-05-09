@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IElementFilter;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -69,7 +70,7 @@ public class AuthModelSelector extends Composite {
         return selectedAuthModel;
     }
 
-    protected Composite getAuthPanelComposite() {
+    Composite getAuthPanelComposite() {
         return modelConfigPlaceholder;
     }
 
@@ -88,7 +89,9 @@ public class AuthModelSelector extends Composite {
     public void loadSettings(DBPDataSourceContainer dataSourceContainer, DBPAuthModelDescriptor activeAuthModel, String defaultAuthModelId) {
         this.activeDataSource = dataSourceContainer;
         this.selectedAuthModel = activeAuthModel;
-        this.allAuthModels = DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
+        this.allAuthModels = activeDataSource.getDriver() == DriverDescriptor.NULL_DRIVER ?
+            DataSourceProviderRegistry.getInstance().getAllAuthModels() :
+            DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
         this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
             DBAAuthDatabaseNative.ID.equals(o1.getId()) ? -1 :
