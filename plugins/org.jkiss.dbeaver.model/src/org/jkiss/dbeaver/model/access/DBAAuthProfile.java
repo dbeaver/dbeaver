@@ -27,8 +27,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
  */
 public class DBAAuthProfile extends DBPConfigurationProfile {
 
-    private String dataSourceProviderId;
-    private String driverId;
     private String authModelId;
     private String userName;
     private String userPassword;
@@ -39,28 +37,10 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
 
     public DBAAuthProfile(DBAAuthProfile source) {
         super(source);
-        this.dataSourceProviderId = source.dataSourceProviderId;
-        this.driverId = source.driverId;
         this.authModelId = source.authModelId;
         this.userName = source.userName;
         this.userPassword = source.userPassword;
         this.savePassword = source.savePassword;
-    }
-
-    public String getDataSourceProviderId() {
-        return dataSourceProviderId;
-    }
-
-    public void setDataSourceProviderId(String dataSourceProviderId) {
-        this.dataSourceProviderId = dataSourceProviderId;
-    }
-
-    public String getDriverId() {
-        return driverId;
-    }
-
-    public void setDriverId(String driverId) {
-        this.driverId = driverId;
     }
 
     public String getAuthModelId() {

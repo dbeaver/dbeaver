@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
+import org.jkiss.dbeaver.ui.IElementFilter;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -46,6 +47,7 @@ public class AuthModelSelector extends Composite {
 
     private static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
+    private IElementFilter<DBPAuthModelDescriptor> modelFilter;
     private List<? extends DBPAuthModelDescriptor> allAuthModels;
     private DBPDataSourceContainer activeDataSource;
     private DBPAuthModelDescriptor selectedAuthModel;
@@ -70,6 +72,10 @@ public class AuthModelSelector extends Composite {
         return modelConfigPlaceholder;
     }
 
+    public void setModelFiler(IElementFilter<DBPAuthModelDescriptor> filter) {
+        modelFilter = filter;
+    }
+
     public void clearSettings() {
         UIUtils.disposeChildControls(modelConfigPlaceholder);
     }
@@ -78,6 +84,7 @@ public class AuthModelSelector extends Composite {
         this.activeDataSource = dataSourceContainer;
         this.selectedAuthModel = activeAuthModel;
         this.allAuthModels = DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
+        this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
             DBAAuthDatabaseNative.ID.equals(o1.getId()) ? -1 :
                 (DBAAuthDatabaseNative.ID.equals(o2.getId()) ? 1 :
@@ -175,9 +182,9 @@ public class AuthModelSelector extends Composite {
         return authModelConfigurator == null || authModelConfigurator.isComplete();
     }
 
-    public void saveSettings() {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         if (authModelConfigurator != null) {
-            authModelConfigurator.saveSettings(activeDataSource);
+            authModelConfigurator.saveSettings(dataSource);
         }
     }
 

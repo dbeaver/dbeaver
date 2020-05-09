@@ -512,7 +512,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         List<DataSourceAuthModelDescriptor> models = new ArrayList<>();
         List<String> replaced = new ArrayList<>();
         for (DataSourceAuthModelDescriptor amd : authModels.values()) {
-            if (amd.appliesTo(driver, null)) {
+            if (amd.appliesTo(driver)) {
                 models.add(amd);
                 replaced.addAll(amd.getReplaces());
             }
