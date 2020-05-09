@@ -86,17 +86,18 @@
         </menuContribution>
 
         <menuContribution locationURI="menu:org.jkiss.dbeaver.menu.git">
-            <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G">
-                <visibleWhen checkEnabled="true">
-                    <reference definitionId="DBeaverPerspectiveActive"/>
-                </visibleWhen>
-            </command>
             <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L">
                 <visibleWhen checkEnabled="true">
                     <reference definitionId="DBeaverPerspectiveActive"/>
                 </visibleWhen>
             </command>
             <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C">
+                <visibleWhen checkEnabled="true">
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                </visibleWhen>
+            </command>
+            <separator name="share" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G">
                 <visibleWhen checkEnabled="true">
                     <reference definitionId="DBeaverPerspectiveActive"/>
                 </visibleWhen>
