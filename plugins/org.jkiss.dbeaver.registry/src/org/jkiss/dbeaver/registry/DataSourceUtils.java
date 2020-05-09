@@ -332,8 +332,7 @@ public class DataSourceUtils {
         @NotNull DBPProject project,
         @Nullable DataSourceDescriptor dataSource,
         @Nullable String subNode,
-        @Nullable String userName,
-        @Nullable String password)
+        @NotNull SecureCredentials credentials)
     {
         final DBASecureStorage secureStorage = project.getSecureStorage();
         {
@@ -351,20 +350,25 @@ public class DataSourceUtils {
                     }
                     prefNode.put("name", dataSource != null ? dataSource.getName() : project.getName(), false);
 
-                    if (!CommonUtils.isEmpty(userName)) {
-                        prefNode.put(RegistryConstants.ATTR_USER, userName, true);
+                    if (!CommonUtils.isEmpty(credentials.getUserName())) {
+                        prefNode.put(RegistryConstants.ATTR_USER, credentials.getUserName(), true);
                     } else {
                         prefNode.remove(RegistryConstants.ATTR_USER);
                     }
-                    if (!CommonUtils.isEmpty(password)) {
-                        prefNode.put(RegistryConstants.ATTR_PASSWORD, password, true);
+                    if (!CommonUtils.isEmpty(credentials.getUserPassword())) {
+                        prefNode.put(RegistryConstants.ATTR_PASSWORD, credentials.getUserPassword(), true);
                     } else {
                         prefNode.remove(RegistryConstants.ATTR_PASSWORD);
+                    }
+                    if (!CommonUtils.isEmpty(credentials.getProperties())) {
+                        for (Map.Entry<String, String> prop : credentials.getProperties().entrySet()) {
+                            prefNode.put(prop.getKey(), prop.getValue(), true);
+                        }
                     }
                     return true;
                 }
             } catch (Throwable e) {
-                log.error("Can't save password in secure storage", e);
+                log.error("Can't save credentials in secure storage", e);
             }
         }
         return false;
