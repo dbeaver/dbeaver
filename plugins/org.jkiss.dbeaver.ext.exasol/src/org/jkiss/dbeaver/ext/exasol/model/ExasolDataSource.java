@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -914,7 +915,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 
 	@NotNull
 	@Override
-	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query)
+	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
 			throws DBCException
 	{
 		ExasolPlanAnalyser plan = new ExasolPlanAnalyser(this, query);

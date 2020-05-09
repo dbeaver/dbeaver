@@ -190,6 +190,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     executePanel.setEnabled(true);
                     executePanel.redraw();
                     filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
+                    filtersProposalAdapter.refresh();
                 }
             });
             this.filtersText.addTraverseListener(e -> {

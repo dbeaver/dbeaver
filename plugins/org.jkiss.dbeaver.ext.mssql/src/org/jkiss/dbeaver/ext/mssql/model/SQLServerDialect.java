@@ -123,7 +123,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
     }
 
     public String[][] getIdentifierQuoteStrings() {
-        if (!isSqlServer && !dataSource.isServerVersionAtLeast(12, 6)) {
+        if (dataSource == null || (!isSqlServer && !dataSource.isServerVersionAtLeast(12, 6))) {
             // Old Sybase doesn't support square brackets - #7755
             return SYBASE_LEGACY_QUOTE_STRINGS;
         }

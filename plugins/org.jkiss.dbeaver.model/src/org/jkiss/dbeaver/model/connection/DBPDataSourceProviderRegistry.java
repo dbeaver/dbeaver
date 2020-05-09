@@ -35,7 +35,7 @@ public interface DBPDataSourceProviderRegistry {
 
     DBPAuthModelDescriptor getAuthModel(String id);
     List<? extends DBPAuthModelDescriptor> getAllAuthModels();
-    List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDataSourceContainer dataSourceContainer);
+    List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDriver driver);
 
     DBPConnectionType getConnectionType(String id, DBPConnectionType defaultType);
     void addConnectionType(DBPConnectionType connectionType);

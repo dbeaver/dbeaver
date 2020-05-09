@@ -383,6 +383,14 @@
         <task id="mysqlScriptExecute" name="MySQL script" description="MySQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
+
+        <!-- SQL tools -->
+<!--
+        <task id="mysqlToolCheckTable" name="Check" description="Check table(s)" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+        </task>
+-->
+
     </extension>
 
 </plugin>

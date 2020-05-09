@@ -609,7 +609,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     typeContainer.isPublicSchema() ||
                     typeContainer.isCatalogSchema())
                 {
-                    paramsSignature.append(DBUtils.getQuotedIdentifier(dataType));
+                    paramsSignature.append(dataType.getName());
                 } else {
                     paramsSignature.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
                 }

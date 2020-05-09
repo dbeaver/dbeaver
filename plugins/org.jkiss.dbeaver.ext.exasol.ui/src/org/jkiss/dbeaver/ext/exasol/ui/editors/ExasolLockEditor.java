@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.editors;
+package org.jkiss.dbeaver.ext.exasol.ui.editors;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;

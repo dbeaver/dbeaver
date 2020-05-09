@@ -226,14 +226,14 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (column.getDataType() != null) {
             typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
         }
-        if (command.getProperty(DBConstants.PROP_ID_DATA_TYPE) != null || command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null) {
+        if (command.hasProperty(DBConstants.PROP_ID_DATA_TYPE) || command.hasProperty("maxLength") || command.hasProperty("precision") || command.hasProperty("scale")) {
             actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + typeClause));
         }
-        if (command.getProperty(DBConstants.PROP_ID_REQUIRED) != null) {
+        if (command.hasProperty(DBConstants.PROP_ID_REQUIRED)) {
             actionList.add(new SQLDatabasePersistAction("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL"));
         }
 
-        if (command.getProperty(DBConstants.PROP_ID_DEFAULT_VALUE) != null) {
+        if (command.hasProperty(DBConstants.PROP_ID_DEFAULT_VALUE)) {
             if (CommonUtils.isEmpty(column.getDefaultValue())) {
                 actionList.add(new SQLDatabasePersistAction("Drop column default", prefix + "DROP DEFAULT"));
             } else {

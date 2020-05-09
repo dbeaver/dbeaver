@@ -18,8 +18,8 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-                class="org.jkiss.dbeaver.tools.ToolsPropertyTester"
-                id="org.jkiss.dbeaver.tools.ToolsPropertyTester"
+                class="org.jkiss.dbeaver.tasks.ui.ToolsPropertyTester"
+                id="org.jkiss.dbeaver.tasks.ui.ToolsPropertyTester"
                 namespace="org.jkiss.dbeaver.core.tools"
                 properties="hasTools"
                 type="org.eclipse.ui.IWorkbenchPart"/>

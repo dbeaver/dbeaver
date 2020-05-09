@@ -3685,8 +3685,11 @@ public class ResultSetViewer extends Viewer
                                 log.debug("Error handling resulset load", e);
                             }
                         }
-                        updateFiltersText(true);
-                        updateToolbar();
+                        UIUtils.asyncExec(() -> {
+                            updateFiltersText(true);
+                            updateToolbar();
+                        });
+
                         // auto-refresh
                         autoRefreshControl.scheduleAutoRefresh(error != null);
                     } finally {

@@ -33,6 +33,8 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
 
     String getImplClassName();
 
+    boolean isApplicableTo(DBPDriver driver);
+
     DBAAuthModel getInstance();
 
 }

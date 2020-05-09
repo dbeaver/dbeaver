@@ -409,6 +409,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
             ColumnViewerToolTipSupport.enableFor(libTable);
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             libTable.getControl().addListener(SWT.Selection, event -> changeLibSelection());
+            libTable.addDoubleClickListener(event -> {
+                if (getSelectedLibrary() instanceof DriverLibraryMavenArtifact) {
+                    editMavenArtifact();
+                }
+            });
 
             // Find driver class
             boolean isReadOnly = !provider.isDriversManagable();
@@ -530,14 +535,20 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     private void addMavenArtifact() {
-        EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), null);
+        EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), driver, null);
         if (fd.open() == IDialogConstants.OK_ID) {
-            driver.addDriverLibrary(DriverLibraryAbstract.createFromPath(
-                driver,
-                DBPDriverLibrary.FileType.jar,
-                DriverLibraryMavenArtifact.PATH_PREFIX + fd.getArtifact().getPath(),
-                null), true);
+            driver.addDriverLibrary(fd.getLibrary(), true);
             changeLibContent();
+        }
+    }
+
+    private void editMavenArtifact() {
+        DriverLibraryAbstract selectedLibrary = getSelectedLibrary();
+        if (selectedLibrary instanceof DriverLibraryMavenArtifact) {
+            EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), driver, (DriverLibraryMavenArtifact) selectedLibrary);
+            if (fd.open() == IDialogConstants.OK_ID) {
+                libTable.refresh();
+            }
         }
     }
 

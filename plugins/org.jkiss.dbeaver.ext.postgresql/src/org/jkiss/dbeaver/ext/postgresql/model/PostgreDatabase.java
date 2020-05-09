@@ -770,7 +770,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             throws SQLException {
             return session.prepareStatement(
                 "SELECT a.oid,a.* FROM pg_catalog.pg_roles a " +
-                    "\nORDER BY a.oid"
+                    "\nORDER BY a.rolname"
             );
         }
 
