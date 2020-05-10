@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.connection;
 
-import graphql.execution.nextgen.Common;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
