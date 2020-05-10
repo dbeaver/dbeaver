@@ -51,27 +51,28 @@ public class PrefUtils {
     public static Object getPreferenceValue(DBPPreferenceStore store, String propName, Class<?> valueType)
     {
         try {
+            final String str = store.getString(propName);
+            if (str == null) {
+                return null;
+            }
             if (valueType == null || CharSequence.class.isAssignableFrom(valueType)) {
-                final String str = store.getString(propName);
                 return CommonUtils.isEmpty(str) ? null : str;
             } else if (valueType == Boolean.class || valueType == Boolean.TYPE) {
-                return store.getBoolean(propName);
+                return CommonUtils.toBoolean(str);
             } else if (valueType == Long.class || valueType == Long.TYPE) {
-                return store.getLong(propName);
+                return CommonUtils.toLong(str);
             } else if (valueType == Integer.class || valueType == Integer.TYPE ||
                 valueType == Short.class || valueType == Short.TYPE ||
                 valueType == Byte.class || valueType == Byte.TYPE) {
-                return store.getInt(propName);
+                return CommonUtils.toInt(str);
             } else if (valueType == Double.class || valueType == Double.TYPE) {
-                return store.getDouble(propName);
+                return CommonUtils.toDouble(str);
             } else if (valueType == Float.class || valueType == Float.TYPE) {
-                return store.getFloat(propName);
+                return CommonUtils.toFloat(store);
             } else if (valueType == BigInteger.class) {
-                final String str = store.getString(propName);
-                return str == null ? null : new BigInteger(str);
+                return new BigInteger(str);
             } else if (valueType == BigDecimal.class) {
-                final String str = store.getString(propName);
-                return str == null ? null : new BigDecimal(str);
+                return new BigDecimal(str);
             }
         } catch (RuntimeException e) {
             log.error(e);
