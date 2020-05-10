@@ -416,6 +416,34 @@ public class CommonUtils {
         }
     }
 
+    public static float toFloat(@Nullable Object object) {
+        if (object == null) {
+            return 0.0f;
+        } else if (object instanceof Number) {
+            return ((Number) object).floatValue();
+        } else {
+            try {
+                return Float.parseFloat(toString(object));
+            } catch (NumberFormatException e) {
+                return Float.NaN;
+            }
+        }
+    }
+
+    public static float toFloat(@Nullable Object object, float def) {
+        if (object == null) {
+            return def;
+        } else if (object instanceof Number) {
+            return ((Number) object).floatValue();
+        } else {
+            try {
+                return Float.parseFloat(toString(object));
+            } catch (NumberFormatException e) {
+                return def;
+            }
+        }
+    }
+
     @NotNull
     public static String toHexString(@Nullable byte[] bytes) {
         return bytes == null ? "" : toHexString(bytes, 0, bytes.length);
