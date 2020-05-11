@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -29,10 +30,13 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
+//    public static final String FEATURE_HIDDEN = "hidden";
+
     @Nullable
     private DBSAttributeBase attribute;
     private String attributeName;
     private int originalVisualPosition;
+    private String[] features;
 
     public DBDAttributeConstraint(@NotNull DBDAttributeBinding attribute) {
         setAttribute(attribute);
@@ -55,6 +59,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         this.attribute = source.attribute;
         this.attributeName = source.attributeName;
         this.originalVisualPosition = source.originalVisualPosition;
+        this.features = source.features;
     }
 
     public static boolean isVisibleByDefault(DBDAttributeBinding binding) {
@@ -84,6 +89,31 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     public int getOriginalVisualPosition() {
         return originalVisualPosition;
+    }
+
+    public String[] getFeatures() {
+        return features;
+    }
+
+    public boolean hasFeature(String feature) {
+        return features != null && ArrayUtils.contains(features, feature);
+    }
+
+    public void enableFeature(String feature) {
+        if (features == null) {
+            features = new String[] { feature };
+        } else {
+            features = ArrayUtils.add(String.class, features, feature);
+        }
+    }
+
+    public void disableFeature(String feature) {
+        if (features != null) {
+            features = ArrayUtils.remove(String.class, features, feature);
+            if (features.length == 0) {
+                features = null;
+            }
+        }
     }
 
     @Override

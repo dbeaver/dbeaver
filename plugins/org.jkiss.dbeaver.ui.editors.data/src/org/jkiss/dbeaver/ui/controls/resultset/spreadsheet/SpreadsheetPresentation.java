@@ -113,6 +113,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     public static final String PRESENTATION_ID = "spreadsheet";
 
+    public static final String ATTR_FEATURE_PINNED = "pinned";
+
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
     private Spreadsheet spreadsheet;
@@ -843,9 +845,27 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 selectedColumns.add(attr);
             }
             if (!controller.isRecordMode() && !selectedColumns.isEmpty()) {
+                manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Separator());
                 {
-                    manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Separator());
-
+                    // Pin/unpin
+                    DBDAttributeConstraint ac = controller.getModel().getDataFilter().getConstraint(attr.getTopParent());
+                    if (ac != null) {
+                        boolean isPinned = ac.hasFeature(ATTR_FEATURE_PINNED);
+                        manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Action(isPinned ? "Unpin column" : "Pin column") {
+                            @Override
+                            public void run() {
+                                if (isPinned) {
+                                    ac.disableFeature(ATTR_FEATURE_PINNED);
+                                } else {
+                                    ac.enableFeature(ATTR_FEATURE_PINNED);
+                                }
+                                spreadsheet.refreshData(true, true, false);
+                            }
+                        });
+                    }
+                }
+                {
+                    // Hide/show
                     List<DBDAttributeBinding> hiddenAttributes = new ArrayList<>();
                     List<DBDAttributeConstraint> constraints = getController().getModel().getDataFilter().getConstraints();
                     for (DBDAttributeConstraint ac : constraints) {
@@ -1627,6 +1647,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
             return ALIGN_LEFT;
+        }
+
+        @Override
+        public boolean isColumnPinned(@NotNull Object element) {
+            if (!controller.isRecordMode()) {
+                DBDAttributeBinding attr = (DBDAttributeBinding)element;
+                DBDAttributeConstraint ac = controller.getModel().getDataFilter().getConstraint(attr);
+                return ac != null && ac.hasFeature(ATTR_FEATURE_PINNED);
+            }
+            return false;
         }
 
         @Override
