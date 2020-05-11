@@ -27,7 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.ExasolUserType;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,7 +46,7 @@ public class ExasolUserDialog extends BaseDialog {
     
     public ExasolUserDialog(Shell parentShell, ExasolDataSource datasource)
     {
-        super(parentShell,"Create Connection",null);
+        super(parentShell,"Create User",null);
     }
     
     

@@ -9,7 +9,6 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-//import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserDialog;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserQueryPassword;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -49,24 +48,6 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
                                               DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
         throws DBException {
     	return new ExasolUser((ExasolDataSource) container, "user", "", "", "password", "", ExasolUserType.LOCAL);
-        /*return new UITask<ExasolUser>() {
-            @Override
-            protected ExasolUser runTask() {
-                ExasolUserDialog dialog = new ExasolUserDialog(UIUtils.getActiveWorkbenchShell(), (ExasolDataSource) container);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                ExasolUser user = new ExasolUser(
-                    (ExasolDataSource) container,
-                    dialog.getName(),
-                    dialog.getComment(),
-                    dialog.getLDAPDN(),
-                    dialog.getPassword(),
-                    dialog.getKerberosPrincipal(),
-                    dialog.getUserType());
-                return user;
-            }
-        }.execute();*/
     }
 
     @Override
@@ -162,7 +143,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
         }
 
         if (command.getProperties().containsKey("kerberosPrincipal")) {
-            String script = String.format("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " BY KERBEROS PRINCIPAL '%s'", obj.getKerberosPrincipal());
+            String script = String.format("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " IDENTIFIED BY KERBEROS PRINCIPAL '%s'", obj.getKerberosPrincipal());
             actionList.add(new SQLDatabasePersistAction("alter user", script));
             return;
         }
