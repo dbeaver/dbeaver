@@ -76,7 +76,7 @@ public class ExasolSchemaManager
         if (virtSchema) {
             throw new DBCFeatureNotSupportedException();
         }
-        return new ExasolSchema((ExasolDataSource) container, null, null);
+        return new ExasolSchema((ExasolDataSource) container, "NEW_SCHEMA", "");
     }
 
     private void changeLimit(List<DBEPersistAction> actions, ExasolSchema schema, BigDecimal limit) {
