@@ -6,7 +6,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -126,7 +125,8 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
         } else {
             // On Unixes it is more tricky (https://unix.stackexchange.com/questions/30903/how-to-escape-quotes-in-shell)
             //return "\"" + name.replace("\"", "\"\\\"\"") + "\"";
-            return "\"" + name.replace("\"", "\\\"") + "\"";
+            return name;
+            //return "\"" + name.replace("\"", "\\\"") + "\"";
         }
     }
 
