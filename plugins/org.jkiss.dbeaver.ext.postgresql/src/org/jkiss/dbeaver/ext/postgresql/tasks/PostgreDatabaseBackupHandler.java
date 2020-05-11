@@ -125,7 +125,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             return "\"" + name.replace("\"", "\\\"") + "\"";
         } else {
             // On Unixes it is more tricky (https://unix.stackexchange.com/questions/30903/how-to-escape-quotes-in-shell)
-            return "\"" + name.replace("\"", "\"\\\"\"") + "\"";
+            return name.replace("\"", "\\\"");
         }
     }
 
