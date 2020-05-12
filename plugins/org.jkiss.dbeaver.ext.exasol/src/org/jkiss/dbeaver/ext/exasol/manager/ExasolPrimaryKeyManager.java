@@ -18,9 +18,7 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableKeyColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -32,14 +30,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,46 +53,12 @@ public class ExasolPrimaryKeyManager
 		DBRProgressMonitor monitor, DBECommandContext context,
 		Object container, Object copyFrom, Map<String, Object> options) throws DBException
 	{
-		final ExasolTableUniqueKey constraint = new ExasolTableUniqueKey(
+		return new ExasolTableUniqueKey(
 			(ExasolTable) container,
 			DBSEntityConstraintType.PRIMARY_KEY,
 			true,
 			"CONSTRAINT"
-		);
-
-		return new UITask<ExasolTableUniqueKey>() {
-			@Override
-			protected ExasolTableUniqueKey runTask()
-			{
-				EditConstraintPage editPage = new EditConstraintPage(
-					ExasolMessages.edit_exasol_constraint_manager_dialog_title,
-					constraint,
-					new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY });
-				if (!editPage.edit()) {
-					return null;
-				}
-
-				constraint.setConstraintType(editPage.getConstraintType());
-				constraint.setEnabled(editPage.isEnableConstraint());
-				constraint.setName(editPage.getConstraintName());
-
-				List<ExasolTableKeyColumn> constColumns = new ArrayList<ExasolTableKeyColumn>();
-				int ordinalPosition = 0;
-				for(DBSEntityAttribute tableColumn  : editPage.getSelectedAttributes())
-				{
-					ExasolTableKeyColumn col;
-					try {
-						col = new ExasolTableKeyColumn(constraint, constraint.getTable().getAttribute(monitor, tableColumn.getName()), ++ordinalPosition);
-					} catch (DBException e) {
-						log.error("Could not find column " + tableColumn.getName() + " in table " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL));
-						return null;
-					}
-					constColumns.add(col);
-				}
-				constraint.setColumns(constColumns);
-				return constraint;
-			}
-		}.execute();
+		);		
 	}
 	
 	@Override
