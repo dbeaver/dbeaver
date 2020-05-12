@@ -21,7 +21,6 @@
 
     <plugin id="org.jkiss.dbeaver.ext.mysql.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.db2.ui" download-size="0" install-size="0" version="0.0.0" unpack="true"/>
-    <plugin id="org.jkiss.dbeaver.ext.exasol" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.exasol.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.mssql.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.oracle.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
