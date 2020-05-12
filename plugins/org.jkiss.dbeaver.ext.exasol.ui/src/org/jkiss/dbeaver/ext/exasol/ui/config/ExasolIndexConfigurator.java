@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext.exasol.ui;
+package org.jkiss.dbeaver.ext.exasol.ui.config;
 
 import java.util.Arrays;
 
