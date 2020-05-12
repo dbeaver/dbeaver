@@ -97,7 +97,7 @@
             <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolUserConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolUser"/>
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolPriorityGroupConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup"/>
@@ -106,7 +106,7 @@
             <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolRoleConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolRole"/>
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"/>
         </configurator>        
     </extension>
     
