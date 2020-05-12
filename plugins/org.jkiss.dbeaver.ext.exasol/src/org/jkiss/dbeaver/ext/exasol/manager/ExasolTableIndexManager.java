@@ -8,7 +8,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableIndex;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolIndexConfigurator;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -42,9 +41,7 @@ public class ExasolTableIndexManager extends SQLIndexManager<ExasolTableIndex, E
 	@Override
 	protected ExasolTableIndex createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
 			Object container, Object from, Map<String, Object> options) throws DBException {
-		ExasolTableIndex index = new ExasolTableIndex((ExasolTable) container, null,  DBSIndexType.OTHER, false );
-		ExasolIndexConfigurator editDialog = new ExasolIndexConfigurator();
-		return editDialog.configureObject(monitor, container, index);
+		return new ExasolTableIndex((ExasolTable) container, null,  DBSIndexType.OTHER, false );
 	}
 	
 	
