@@ -17,15 +17,12 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateSchemaDialog;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,9 +39,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
@@ -82,17 +76,7 @@ public class ExasolSchemaManager
         if (virtSchema) {
             throw new DBCFeatureNotSupportedException();
         }
-
-        return new UITask<ExasolSchema>() {
-            @Override
-            protected ExasolSchema runTask() {
-                ExasolCreateSchemaDialog dialog = new ExasolCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), (ExasolDataSource) container);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                return new ExasolSchema((ExasolDataSource) container, dialog.getName(), dialog.getOwner() == null ? null : dialog.getOwner().getName());
-            }
-        }.execute();
+        return new ExasolSchema((ExasolDataSource) container, "NEW_SCHEMA", "");
     }
 
     private void changeLimit(List<DBEPersistAction> actions, ExasolSchema schema, BigDecimal limit) {
@@ -132,25 +116,6 @@ public class ExasolSchemaManager
 
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        int result = new UITask<Integer>() {
-            protected Integer runTask() {
-                ConfirmationDialog dialog = new ConfirmationDialog(
-                    UIUtils.getActiveWorkbenchShell(),
-                    ExasolMessages.dialog_schema_drop_title,
-                    null,
-                    ExasolMessages.dialog_schema_drop_message,
-                    MessageDialog.CONFIRM,
-                    new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL},
-                    0,
-                    ExasolMessages.dialog_general_continue,
-                    false);
-                return dialog.open();
-            }
-        }.execute();
-        if (result != IDialogConstants.YES_ID) {
-            throw new IllegalStateException("User abort");
-        }
-
         actions.add(
             new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
         );

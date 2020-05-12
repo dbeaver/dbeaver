@@ -1,6 +1,5 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
@@ -8,7 +7,6 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolRoleDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -20,8 +18,6 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -46,20 +42,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
     protected ExasolRole createDatabaseObject(DBRProgressMonitor monitor,
           DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        ExasolRole role = new ExasolRole((ExasolDataSource) container, "ROLE", "");
-        return new UITask<ExasolRole>() {
-            @Override
-            protected ExasolRole runTask() {
-                ExasolRoleDialog dialog = new ExasolRoleDialog(UIUtils.getActiveWorkbenchShell());
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-
-                role.setName(dialog.getName());
-                role.setDescription(dialog.getDescription());
-                return role;
-            }
-        }.execute();
+        return new ExasolRole((ExasolDataSource) container, "ROLE", "");
     }
 
     @Override

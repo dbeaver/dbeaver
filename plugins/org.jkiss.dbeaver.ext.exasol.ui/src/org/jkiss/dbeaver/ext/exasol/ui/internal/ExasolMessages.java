@@ -29,6 +29,29 @@ public class ExasolMessages extends NLS {
 	public static String dialog_connection_port;
 	public static String dialog_connection_user_name;
 
+	public static String dialog_consumer_precedence;
+	public static String dialog_create_consumer_group;
+	public static String dialog_consumer_group_name;
+	public static String dialog_consumer_group_user_limit;
+	public static String dialog_consumer_group_cpu_weight;
+	public static String dialog_consumer_group_group_limit;
+	public static String dialog_consumer_group_session_limit;
+	public static String dialog_priority_group_description;
+	public static String dialog_create_priority_group;
+	public static String dialog_priority_group_name;
+	public static String dialog_priority_group_weight;
+
+	public static String dialog_create_user_userid;
+	public static String dialog_create_user_comment;
+	public static String dialog_create_user_kerberos;
+	public static String dialog_create_user_ldap;
+	public static String dialog_create_user_local;
+	public static String dialog_create_user_local_password;
+	public static String dialog_create_user_kerberos_principal;
+	public static String dialog_create_user_ldap_dn;
+
+	public static String edit_exasol_constraint_manager_dialog_title;
+
 	public static String dialog_table_tools_progress;
 	public static String dialog_table_tools_success_title;
 	public static String dialog_table_open_output_directory;
