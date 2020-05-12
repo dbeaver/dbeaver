@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.ui;
+package org.jkiss.dbeaver.ext.exasol.ui.config;
 
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;

@@ -45,6 +45,13 @@ public class ExasolConnection
 	private String comment="";
 	private Boolean persisted;
 
+	public ExasolConnection(
+	        ExasolDataSource dataSource
+	        )
+	{
+	    this.dataSource = dataSource;
+	    this.persisted = false;
+	}
 	
 	public ExasolConnection(
 	        ExasolDataSource dataSource,
