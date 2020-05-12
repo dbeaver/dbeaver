@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
-import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -354,7 +354,7 @@ public class DBPConnectionConfiguration implements DBPObject {
                 log.error("Authentication model '" + authModelId + "' not found. Use default.");
             }
         }
-        return DBAAuthDatabaseNative.INSTANCE;
+        return AuthModelDatabaseNative.INSTANCE;
     }
 
     public void setAuthModelId(String authModelId) {

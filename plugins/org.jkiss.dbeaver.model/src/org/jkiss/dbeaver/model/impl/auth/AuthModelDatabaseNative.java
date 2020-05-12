@@ -35,11 +35,11 @@ import java.util.Properties;
  *
  * No-op model. Leaves all configuration as is.
  */
-public class DBAAuthDatabaseNative implements DBAAuthModel {
+public class AuthModelDatabaseNative implements DBAAuthModel {
 
     public static final String ID = "native";
 
-    public static final DBAAuthDatabaseNative INSTANCE = new DBAAuthDatabaseNative();
+    public static final AuthModelDatabaseNative INSTANCE = new AuthModelDatabaseNative();
 
     @Override
     public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
