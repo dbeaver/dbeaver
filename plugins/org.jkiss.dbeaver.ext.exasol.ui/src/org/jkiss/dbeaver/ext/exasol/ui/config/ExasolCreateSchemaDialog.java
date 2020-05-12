@@ -63,11 +63,7 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
         final Composite composite = super.createDialogArea(parent);
         
         final Composite group = new Composite(composite, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 250;
-        gd.heightHint = 70;
-        gd.verticalIndent = 0;
-        gd.horizontalIndent = 0;
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         group.setLayoutData(gd);
         group.setLayout(new GridLayout(2, false));
         final Text nameText = UIUtils.createLabelText(group, "Schema Name", "");
