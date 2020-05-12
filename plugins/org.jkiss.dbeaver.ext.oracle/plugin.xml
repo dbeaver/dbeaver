@@ -356,7 +356,7 @@
                 id="oracle_native"
                 label="Database Native"
                 description="Oracle native authentication (name/password)"
-                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthDatabaseNative">
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative">
             <replace model="native"/>
             <datasource id="oracle"/>
         </authModel>

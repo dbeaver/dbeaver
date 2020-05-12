@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -283,7 +283,7 @@ public class OracleDataSource extends JDBCDataSource implements DBAUserCredentia
     public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
         String userName = connectionInfo.getUserName();
         String authModelId = connectionInfo.getAuthModelId();
-        if (!CommonUtils.isEmpty(authModelId) && !DBAAuthDatabaseNative.ID.equals(authModelId)) {
+        if (!CommonUtils.isEmpty(authModelId) && !AuthModelDatabaseNative.ID.equals(authModelId)) {
             return userName;
         }
         // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
