@@ -858,8 +858,6 @@ public abstract class LightGrid extends Canvas {
             return null;
         }
 
-        GridColumn overThis = null;
-
         int x2 = 0;
 
         if (rowHeaderVisible) {
@@ -870,9 +868,24 @@ public abstract class LightGrid extends Canvas {
             x2 += rowHeaderWidth;
         }
 
+        int pinnedColumnsWidth = getPinnedColumnsWidth();
+        if (pinnedColumnsWidth > 0 && point.x <= pinnedColumnsWidth) {
+            return getColumnWithOffset(point, x2, true);
+        }
+
+        x2 += pinnedColumnsWidth;
         x2 -= getHScrollSelectionInPixels();
 
+        return getColumnWithOffset(point, x2, false);
+    }
+
+    @Nullable
+    private GridColumn getColumnWithOffset(Point point, int x2, boolean pinned) {
+        GridColumn overThis = null;
         for (GridColumn column : columns) {
+            if (column.isPinned() != pinned) {
+                continue;
+            }
             if (point.x >= x2 && point.x < x2 + column.getWidth()) {
                 for (GridColumn parent = column.getParent(); parent != null; parent = parent.getParent()) {
                     Point parentLoc = getOrigin(parent, -1);
@@ -886,10 +899,6 @@ public abstract class LightGrid extends Canvas {
             }
 
             x2 += column.getWidth();
-        }
-
-        if (overThis == null) {
-            return null;
         }
 
         return overThis;
