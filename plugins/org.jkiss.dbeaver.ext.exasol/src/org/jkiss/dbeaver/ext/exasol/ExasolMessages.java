@@ -23,14 +23,7 @@ public class ExasolMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.exasol.ExasolResources"; //$NON-NLS-1$
 	public static String manager_consumer_drop;
 	public static String manager_consumer_rename;
-	public static String dialog_consumer_precedence;
 	public static String manager_consumer_create;
-	public static String dialog_create_consumer_group;
-	public static String dialog_consumer_group_name;
-	public static String dialog_consumer_group_user_limit;
-	public static String dialog_consumer_group_cpu_weight;
-	public static String dialog_consumer_group_group_limit;
-	public static String dialog_consumer_group_session_limit;
 	public static String dialog_schema_drop_title;
 	public static String dialog_schema_drop_message;
 	public static String dialog_connection_alter_message;
@@ -38,14 +31,8 @@ public class ExasolMessages extends NLS {
 
 	public static String dialog_general_continue;
 
-	public static String edit_exasol_constraint_manager_dialog_title;
-
 	public static String read_table_details;
 	public static String read_schema_details;
-	public static String dialog_create_priority_group;
-	public static String dialog_priority_group_description;
-	public static String dialog_priority_group_name;
-	public static String dialog_priority_group_weight;
 	public static String manager_priority_group_comment;
 	public static String manager_priority_create;
 	public static String manager_priority_drop;
@@ -54,14 +41,6 @@ public class ExasolMessages extends NLS {
 	public static String manager_schema_owner;
 	public static String manager_schema_raw_limit;
 	public static String manager_schema_create;
-	public static String dialog_create_user_userid;
-	public static String dialog_create_user_comment;
-	public static String dialog_create_user_kerberos;
-	public static String dialog_create_user_ldap;
-	public static String dialog_create_user_local;
-	public static String dialog_create_user_local_password;
-	public static String dialog_create_user_kerberos_principal;
-	public static String dialog_create_user_ldap_dn;
 	public static String manager_assign_priority_group;
 	public static String exasol_security_policy_name;
 	public static String exasol_security_policy_description;

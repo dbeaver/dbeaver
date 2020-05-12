@@ -83,6 +83,31 @@
                 type="folder">
             <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema"/>
         </editor>
+        
+        <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolConsumerGroupConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolForeignKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolSchemaConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolConnectionConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolUserConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolUser"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolPriorityGroupConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolPrimaryKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolRoleConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolRole"/>
+        </configurator>        
     </extension>
     
     <extension point="org.jkiss.dbeaver.tools">
