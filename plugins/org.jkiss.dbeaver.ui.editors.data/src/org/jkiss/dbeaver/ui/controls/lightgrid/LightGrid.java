@@ -1729,6 +1729,12 @@ public abstract class LightGrid extends Canvas {
         if (rowHeaderVisible) {
             firstVisibleX = rowHeaderWidth;
         }
+        int pinnedColumnsWidth = getPinnedColumnsWidth();
+        if (pinnedColumnsWidth > 0) {
+            if (!col.isPinned()) {
+                firstVisibleX += pinnedColumnsWidth;
+            }
+        }
 
         // if its visible just return
         final Rectangle clientArea = getClientArea();
