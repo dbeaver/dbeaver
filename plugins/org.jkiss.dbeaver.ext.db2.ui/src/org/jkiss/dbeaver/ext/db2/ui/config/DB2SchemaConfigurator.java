@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -48,7 +47,8 @@ public class DB2SchemaConfigurator implements DBEObjectConfigurator<DB2Schema> {
                 if (schemaName.length() == 0) {
                     return null;
                 }
-                return new DB2Schema((DB2DataSource) container, schemaName);
+                newSchema.setName(schemaName);
+                return newSchema;
             }
         }.execute();
     }
