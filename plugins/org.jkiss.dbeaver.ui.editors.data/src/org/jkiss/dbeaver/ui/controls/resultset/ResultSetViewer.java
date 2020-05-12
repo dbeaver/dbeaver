@@ -3303,7 +3303,7 @@ public class ResultSetViewer extends Viewer
                     throw new InvocationTargetException(e);
                 }
             };
-            RuntimeUtils.runTask(restoreTask, "Restore data filter", 60000);
+            RuntimeUtils.runTask(restoreTask, "Restore data filter", 10000);
             if (dataFilter.hasFilters()) {
                 return dataFilter;
             }

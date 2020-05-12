@@ -1006,6 +1006,7 @@ public class ResultSetModel {
             if (constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION) {
                 filterConstraint.setVisualPosition(constraint.getVisualPosition());
             }
+            filterConstraint.setOptions(constraint.getOptions());
             DBSAttributeBase cAttr = filterConstraint.getAttribute();
             if (cAttr instanceof DBDAttributeBinding) {
                 if (!constraint.isVisible()) {
