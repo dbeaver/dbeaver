@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -49,7 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, IAdaptable {
+public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBAUserCredentialsProvider, IAdaptable {
 
     private static final Log log = Log.getLog(SQLServerDataSource.class);
 
@@ -247,20 +248,20 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     // Windows authentication
 
     @Override
-    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
-            return super.getConnectionUserName(connectionInfo);
+            return connectionInfo.getUserName();
         }
     }
 
     @Override
-    protected String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
-            return super.getConnectionUserPassword(connectionInfo);
+            return connectionInfo.getUserPassword();
         }
     }
 

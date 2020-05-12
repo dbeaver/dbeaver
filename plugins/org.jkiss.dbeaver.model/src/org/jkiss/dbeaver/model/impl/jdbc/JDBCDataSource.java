@@ -163,7 +163,7 @@ public abstract class JDBCDataSource
             final Driver driverInstanceFinal = driverInstance;
 
             try {
-                authModel.initAuthentication(monitor, container, connectionInfo, connectProps);
+                authModel.initAuthentication(monitor, this, connectionInfo, connectProps);
             } catch (DBException e) {
                 throw new DBCException("Authentication error", e);
             }
@@ -256,17 +256,6 @@ public abstract class JDBCDataSource
 
         fillConnectionProperties(connectionInfo, connectProps);
 
-        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
-        }
-        boolean allowsEmptyPassword = getContainer().getDriver().isAllowsEmptyPassword();
-        String password = getConnectionUserPassword(connectionInfo);
-        if (password == null && allowsEmptyPassword) {
-            password = "";
-        }
-        if (!CommonUtils.isEmpty(password) || (allowsEmptyPassword && !CommonUtils.isEmpty(getConnectionUserName(connectionInfo)))) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, password);
-        }
         return connectProps;
     }
 
@@ -651,16 +640,6 @@ public abstract class JDBCDataSource
 
     protected boolean isConnectionReadOnlyBroken() {
         return false;
-    }
-
-    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo)
-    {
-        return connectionInfo.getUserName();
-    }
-
-    protected String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo)
-    {
-        return connectionInfo.getUserPassword();
     }
 
     @Nullable
