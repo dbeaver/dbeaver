@@ -36,7 +36,6 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
     private DBSAttributeBase attribute;
     private String attributeName;
     private int originalVisualPosition;
-    private Object[] options;
 
     public DBDAttributeConstraint(@NotNull DBDAttributeBinding attribute) {
         setAttribute(attribute);
@@ -59,7 +58,6 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         this.attribute = source.attribute;
         this.attributeName = source.attributeName;
         this.originalVisualPosition = source.originalVisualPosition;
-        this.options = source.options;
     }
 
     public static boolean isVisibleByDefault(DBDAttributeBinding binding) {
@@ -89,54 +87,6 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     public int getOriginalVisualPosition() {
         return originalVisualPosition;
-    }
-
-    public boolean hasOption(String option) {
-        if (options == null) {
-            return false;
-        }
-        for (int i = 0; i < options.length; i += 2) {
-            if (options[i].equals(option)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public <T> T getOption(String option) {
-        if (options == null) {
-            return null;
-        }
-        for (int i = 0; i < options.length; i += 2) {
-            if (options[i].equals(option)) {
-                return (T) options[i + 1];
-            }
-        }
-        return null;
-    }
-
-    public void setOption(String option, Object value) {
-        Object[] newOptions = { option, value };
-        if (options == null) {
-            options = newOptions;
-        } else {
-            options = ArrayUtils.concatArrays(options, newOptions);
-        }
-    }
-
-    public boolean removeOption(String option) {
-        if (options == null) {
-            return false;
-        }
-        for (int i = 0; i < options.length; i += 2) {
-            if (options[i].equals(option)) {
-                options =
-                    ArrayUtils.remove(Object.class,
-                        ArrayUtils.remove(Object.class, options, i), i);
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
