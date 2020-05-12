@@ -11,7 +11,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.registry
 Export-Package: org.jkiss.dbeaver.ext.db2,
+ org.jkiss.dbeaver.ext.db2.editors,
  org.jkiss.dbeaver.ext.db2.model,
- org.jkiss.dbeaver.ext.db2.model.app
+ org.jkiss.dbeaver.ext.db2.model.app,
+ org.jkiss.dbeaver.ext.db2.model.dict
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.db2
