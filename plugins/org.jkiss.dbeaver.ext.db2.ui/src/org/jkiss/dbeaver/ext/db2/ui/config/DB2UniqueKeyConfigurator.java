@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
@@ -40,8 +39,7 @@ public class DB2UniqueKeyConfigurator implements DBEObjectConfigurator<DB2TableU
             DBSEntityConstraintType.UNIQUE_KEY };
 
     @Override
-    public DB2TableUniqueKey configureObject(DBRProgressMonitor monitor, Object table, DB2TableUniqueKey primaryKey) {
-    	DB2TableUniqueKey constraint = new DB2TableUniqueKey((DB2Table) table, DBSEntityConstraintType.UNIQUE_KEY);
+    public DB2TableUniqueKey configureObject(DBRProgressMonitor monitor, Object table, DB2TableUniqueKey constraint) {
     	return new UITask<DB2TableUniqueKey>() {
             @Override
             protected DB2TableUniqueKey runTask()
