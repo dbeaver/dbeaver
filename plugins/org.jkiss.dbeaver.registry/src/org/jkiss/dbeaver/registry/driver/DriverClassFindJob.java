@@ -2,7 +2,6 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.utils.ArrayUtils;
@@ -17,7 +16,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -51,35 +49,26 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
     }
 
     private void findDriverClasses(DBRProgressMonitor monitor) {
-        java.util.List<File> libFiles = new ArrayList<>();
+        java.util.List<File> libFiles = driver.getAllLibraryFiles();
         java.util.List<URL> libURLs = new ArrayList<>();
-        for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
-            File libFile = lib.getLocalFile();
-            if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverLibrary.FileType.jar) {
-                libFiles.add(libFile);
+        for (File libFile : libFiles) {
+            if (libFile != null && libFile.exists() && !libFile.isDirectory()) {
                 try {
                     libURLs.add(libFile.toURI().toURL());
                 } catch (MalformedURLException e) {
                     log.debug(e);
                 }
-            } else {
-                final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles(lib);
-                if (files != null) {
-                    for (DriverDescriptor.DriverFileInfo file : files) {
-                        if (file.getFile() != null && file.getFile().exists()) {
-                            libFiles.add(file.getFile());
-                        }
-                    }
-                }
             }
         }
-        ClassLoader findCL = new URLClassLoader(libURLs.toArray(new URL[libURLs.size()]));
+        ClassLoader findCL = new URLClassLoader(libURLs.toArray(new URL[0]));
 
         for (File libFile : libFiles) {
             if (monitor.isCanceled()) {
                 break;
             }
-            findDriverClasses(monitor, findCL, libFile);
+            if (!libFile.isDirectory()) {
+                findDriverClasses(monitor, findCL, libFile);
+            }
         }
     }
 
