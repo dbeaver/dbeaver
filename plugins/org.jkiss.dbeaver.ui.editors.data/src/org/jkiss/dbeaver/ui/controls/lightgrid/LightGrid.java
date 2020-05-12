@@ -533,8 +533,8 @@ public abstract class LightGrid extends Canvas {
                 GridColumn column = iter.next();
                 if (column.getParent() == null) {
                     topColumns.add(column);
-                    if (contentProvider.isColumnPinned(column.getElement())) {
-                        column.setPinned(true);
+                    column.setPinIndex(contentProvider.getColumnPinIndex(column.getElement()));
+                    if (column.isPinned()) {
                         hasPinnedColumns = true;
                     }
                 } else {
@@ -547,7 +547,8 @@ public abstract class LightGrid extends Canvas {
 
             if (hasPinnedColumns) {
                 // Order respecting pinned state
-                Comparator<GridColumn> pinnedComparator = (o1, o2) -> o1.isPinned() == o2.isPinned() ? 0 : (o1.isPinned() ? -1 : 1);
+                Comparator<GridColumn> pinnedComparator = (o1, o2) -> o1.isPinned() == o2.isPinned() ?
+                    (o1.getPinIndex() - o2.getPinIndex()) : (o1.isPinned() ? -1 : 1);
                 columns.sort(pinnedComparator);
                 topColumns.sort(pinnedComparator);
             }

@@ -56,7 +56,7 @@ class GridColumn {
     private int level;
     private int width = DEFAULT_WIDTH;
     private int height = -1;
-    private boolean pinned;
+    private int pinIndex;
 
     public GridColumn(LightGrid grid, Object element) {
         this.grid = grid;
@@ -116,11 +116,15 @@ class GridColumn {
 	}
 
     public boolean isPinned() {
-        return pinned || parent != null && parent.isPinned();
+        return pinIndex >= 0 || parent != null && parent.isPinned();
     }
 
-    public void setPinned(boolean pinned) {
-        this.pinned = pinned;
+    public int getPinIndex() {
+        return parent == null ? pinIndex : parent.getPinIndex();
+    }
+
+    public void setPinIndex(int pinIndex) {
+        this.pinIndex = pinIndex;
     }
 
     public boolean isOverFilterButton(int x, int y) {

@@ -113,7 +113,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     public static final String PRESENTATION_ID = "spreadsheet";
 
-    public static final String ATTR_FEATURE_PINNED = "pinned";
+    public static final String ATTR_OPTION_PINNED = "pinned";
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
@@ -848,16 +848,17 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Separator());
                 {
                     // Pin/unpin
-                    DBDAttributeConstraint ac = controller.getModel().getDataFilter().getConstraint(attr.getTopParent());
+                    DBDDataFilter dataFilter = controller.getModel().getDataFilter();
+                    DBDAttributeConstraint ac = dataFilter.getConstraint(attr.getTopParent());
                     if (ac != null) {
-                        boolean isPinned = ac.hasFeature(ATTR_FEATURE_PINNED);
-                        manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Action(isPinned ? "Unpin column" : "Pin column") {
+                        Integer pinnedIndex = ac.getOption(ATTR_OPTION_PINNED);
+                        manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Action(pinnedIndex != null ? "Unpin column" : "Pin column") {
                             @Override
                             public void run() {
-                                if (isPinned) {
-                                    ac.disableFeature(ATTR_FEATURE_PINNED);
+                                if (pinnedIndex != null) {
+                                    ac.removeOption(ATTR_OPTION_PINNED);
                                 } else {
-                                    ac.enableFeature(ATTR_FEATURE_PINNED);
+                                    ac.setOption(ATTR_OPTION_PINNED, getMaxPinIndex(dataFilter) + 1);
                                 }
                                 spreadsheet.refreshData(true, true, false);
                             }
@@ -929,6 +930,17 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         SpreadsheetCommandHandler.CMD_COLUMNS_FIT_SCREEN));
             }
         }
+    }
+
+    private static int getMaxPinIndex(DBDDataFilter dataFilter) {
+        int maxIndex = 0;
+        for (DBDAttributeConstraint ac : dataFilter.getConstraints()) {
+            Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
+            if (pinIndex != null) {
+                maxIndex = Math.max(maxIndex, pinIndex);
+            }
+        }
+        return maxIndex;
     }
 
     /////////////////////////////////////////////////
@@ -1067,8 +1079,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return null;
     }
 
-    public void resetCellValue(@NotNull Object colElement, @NotNull Object rowElement, boolean delete)
-    {
+    public void resetCellValue(@NotNull Object colElement, @NotNull Object rowElement, boolean delete) {
         boolean recordMode = controller.isRecordMode();
         final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
         final ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
@@ -1650,13 +1661,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public boolean isColumnPinned(@NotNull Object element) {
+        public int getColumnPinIndex(@NotNull Object element) {
             if (!controller.isRecordMode()) {
                 DBDAttributeBinding attr = (DBDAttributeBinding)element;
                 DBDAttributeConstraint ac = controller.getModel().getDataFilter().getConstraint(attr);
-                return ac != null && ac.hasFeature(ATTR_FEATURE_PINNED);
+                if (ac != null) {
+                    Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
+                    return pinIndex == null ? -1 : pinIndex;
+                }
             }
-            return false;
+            return -1;
         }
 
         @Override
