@@ -4780,7 +4780,7 @@ public abstract class LightGrid extends Canvas {
                     return false;
                 }
                 GridColumn overColumn = getOverColumn(event);
-                return overColumn != null && draggingColumn != overColumn;
+                return overColumn != null && draggingColumn != overColumn && draggingColumn.isPinned() == overColumn.isPinned();
             }
 
             private GridColumn getOverColumn(DropTargetEvent event) {
