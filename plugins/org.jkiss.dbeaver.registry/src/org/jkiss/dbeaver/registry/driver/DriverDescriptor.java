@@ -968,8 +968,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    private void loadLibraries()
-            throws DBException {
+    private void loadLibraries() throws DBException {
         this.classLoader = null;
 
         List<File> allLibraryFiles = validateFilesPresence(false);
@@ -991,6 +990,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 this,
                 libraryURLs.toArray(new URL[0]),
                 getDataSourceProvider().getClass().getClassLoader());
+    }
+
+    public List<File> getAllLibraryFiles() {
+        return validateFilesPresence(false);
     }
 
     public void updateFiles() {
@@ -1087,8 +1090,19 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     }
                 }
             } else {
-                if (library.getLocalFile() != null) {
-                    result.add(library.getLocalFile());
+                if (library.getType() == DBPDriverLibrary.FileType.license) {
+                    continue;
+                }
+                File localFile = library.getLocalFile();
+                if (localFile != null) {
+                    if (localFile.isDirectory()) {
+                        File[] folderFiles = localFile.listFiles((dir, name1) ->
+                            name1.endsWith(".jar") || name1.endsWith(".zip"));
+                        if (folderFiles != null) {
+                            Collections.addAll(result, folderFiles);
+                        }
+                    }
+                    result.add(localFile);
                 }
             }
         }
