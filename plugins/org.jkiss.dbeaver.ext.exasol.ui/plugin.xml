@@ -107,7 +107,10 @@
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolRoleConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"/>
-        </configurator>        
+        </configurator>   
+        <configurator class="org.jkiss.dbeaver.ext.exasol.ui.config.ExasolIndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTableIndex"/>
+        </configurator>              
     </extension>
     
     <extension point="org.jkiss.dbeaver.tools">
