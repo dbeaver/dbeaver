@@ -202,6 +202,12 @@ public class DBDAttributeConstraintBase {
         if (options == null) {
             options = newOptions;
         } else {
+            for (int i = 0; i < options.length; i += 2) {
+                if (options[i].equals(option)) {
+                    options[i + 1] = value;
+                    return;
+                }
+            }
             options = ArrayUtils.concatArrays(options, newOptions);
         }
     }
