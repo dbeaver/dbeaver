@@ -24,6 +24,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -62,6 +63,12 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
         final Composite composite = super.createDialogArea(parent);
         
         final Composite group = new Composite(composite, SWT.NONE);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 250;
+        gd.heightHint = 70;
+        gd.verticalIndent = 0;
+        gd.horizontalIndent = 0;
+        group.setLayoutData(gd);
         group.setLayout(new GridLayout(2, false));
         final Text nameText = UIUtils.createLabelText(group, "Schema Name", "");
         nameText.addModifyListener(e -> {
