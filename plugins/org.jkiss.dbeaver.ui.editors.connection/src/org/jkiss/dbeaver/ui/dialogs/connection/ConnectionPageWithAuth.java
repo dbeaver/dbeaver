@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
-import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
@@ -63,7 +63,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
     @NotNull
     protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
-        return DBAAuthDatabaseNative.ID;
+        return AuthModelDatabaseNative.ID;
     }
 
 

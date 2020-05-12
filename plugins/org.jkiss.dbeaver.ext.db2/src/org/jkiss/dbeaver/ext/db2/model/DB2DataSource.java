@@ -220,12 +220,6 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     // Connection related Info
     // -----------------------
 
-    @Override
-    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo)
-    {
-        return connectionInfo.getUserName();
-    }
-
     @NotNull
     @Override
     public DB2DataSource getDataSource()

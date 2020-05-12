@@ -414,13 +414,6 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 	// Connection related Info
 	// -----------------------
 
-	@Override
-	protected String getConnectionUserName(
-			@NotNull DBPConnectionConfiguration connectionInfo)
-	{
-		return connectionInfo.getUserName();
-	}
-
 	@NotNull
 	@Override
 	public ExasolDataSource getDataSource()
