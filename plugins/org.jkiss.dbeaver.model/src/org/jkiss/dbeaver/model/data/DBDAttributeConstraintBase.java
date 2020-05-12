@@ -20,7 +20,10 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Arrays;
 
 /**
  * Attribute constraint
@@ -47,6 +50,9 @@ public class DBDAttributeConstraintBase {
     @Nullable
     private String entityAlias;
 
+    @Nullable
+    private Object[] options;
+
     public DBDAttributeConstraintBase() {
     }
 
@@ -63,6 +69,7 @@ public class DBDAttributeConstraintBase {
         this.value = source.value;
         this.visible = source.visible;
         this.visualPosition = source.visualPosition;
+        this.options = source.options;
     }
 
     public int getOrderPosition() {
@@ -122,7 +129,7 @@ public class DBDAttributeConstraintBase {
     }
 
     public boolean hasFilter() {
-        return hasCondition() || orderPosition > 0;
+        return hasCondition() || orderPosition > 0 || !ArrayUtils.isEmpty(options);
     }
 
     public boolean hasCondition() {
@@ -157,6 +164,63 @@ public class DBDAttributeConstraintBase {
         this.entityAlias = entityAlias;
     }
 
+    @Nullable
+    public Object[] getOptions() {
+        return options;
+    }
+
+    public void setOptions(@Nullable Object[] options) {
+        this.options = options;
+    }
+
+    public boolean hasOption(String option) {
+        if (options == null) {
+            return false;
+        }
+        for (int i = 0; i < options.length; i += 2) {
+            if (options[i].equals(option)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public <T> T getOption(String option) {
+        if (options == null) {
+            return null;
+        }
+        for (int i = 0; i < options.length; i += 2) {
+            if (options[i].equals(option)) {
+                return (T) options[i + 1];
+            }
+        }
+        return null;
+    }
+
+    public void setOption(String option, Object value) {
+        Object[] newOptions = { option, value };
+        if (options == null) {
+            options = newOptions;
+        } else {
+            options = ArrayUtils.concatArrays(options, newOptions);
+        }
+    }
+
+    public boolean removeOption(String option) {
+        if (options == null) {
+            return false;
+        }
+        for (int i = 0; i < options.length; i += 2) {
+            if (options[i].equals(option)) {
+                options =
+                    ArrayUtils.remove(Object.class,
+                        ArrayUtils.remove(Object.class, options, i), i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void reset() {
         this.orderPosition = 0;
         this.orderDescending = false;
@@ -165,6 +229,7 @@ public class DBDAttributeConstraintBase {
         this.reverseOperator = false;
         this.value = null;
         this.visible = true;
+        this.options = null;
     }
 
     public boolean equalFilters(DBDAttributeConstraintBase obj, boolean compareOrders) {
@@ -207,7 +272,8 @@ public class DBDAttributeConstraintBase {
                     this.reverseOperator == source.reverseOperator &&
                     CommonUtils.equalObjects(this.value, source.value) &&
                     this.visible == source.visible &&
-                    this.visualPosition == source.visualPosition;
+                    this.visualPosition == source.visualPosition &&
+                    Arrays.equals(this.options, source.options);
         } else {
             return false;
         }

@@ -22,12 +22,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * Attribute constraint
  */
 public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
+
+//    public static final String FEATURE_HIDDEN = "hidden";
 
     @Nullable
     private DBSAttributeBase attribute;
