@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.oracle.model.auth;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -37,8 +36,6 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative {
 
     @Override
     public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
-        super.initAuthentication(monitor, dataSource, configuration, connProperties);
-
         String userName = configuration.getUserName();
         if (!CommonUtils.isEmpty(userName) && !userName.contains(" AS ")) {
             final String role = configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS);
@@ -47,7 +44,8 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative {
             }
         }
 
-        connProperties.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName);
+        configuration.setUserName(userName);
+        super.initAuthentication(monitor, dataSource, configuration, connProperties);
     }
 
     @Override
