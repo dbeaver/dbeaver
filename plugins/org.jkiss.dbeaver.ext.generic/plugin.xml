@@ -823,7 +823,8 @@
                     description="Yandex ClickHouse"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
                     categories="sql,analytic,columns">
-                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE" bundle="!drivers.clickhouse"/>
+                    <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
