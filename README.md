@@ -79,7 +79,7 @@ Thank you!
 
 ---------
 
-<img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/>
+<a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
 
 DBeaver is a desktop client.  
 If you are loooking for a web-based database management tool - check our new product: <a href="https://github.com/dbeaver/cloudbeaver/">CloudBeaver</a>.  
