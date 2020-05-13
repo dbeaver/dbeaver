@@ -32,7 +32,7 @@
                     <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE" bundle="!drivers.jt400"/>
 
                     <file type="license" path="drivers/db2-jt400/LICENSE.txt" bundle="drivers.jt400"/>
-                    <file type="jar" path="drivers/db2-jt400/jt400.jar" bundle="drivers.jt400"/>
+                    <file type="jar" path="drivers/db2-jt400" bundle="drivers.jt400"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>

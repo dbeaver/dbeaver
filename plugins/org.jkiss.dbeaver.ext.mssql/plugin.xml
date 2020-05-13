@@ -328,8 +328,7 @@
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll" bundle="!drivers.jtds"/>
 
                     <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
-                    <file type="jar" path="drivers/jtds/jtds.jar" bundle="drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" bundle="drivers.jtds"/>
+                    <file type="jar" path="drivers/jtds" bundle="drivers.jtds"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" bundle="drivers.jtds"/>
                 </driver>
 
@@ -362,7 +361,7 @@
 
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
-                    <file type="jar" path="drivers/jtds/jtds.jar" bundle="drivers.jtds"/>
+                    <file type="jar" path="drivers/jtds" bundle="drivers.jtds"/>
                 </driver>
 
                 <driver

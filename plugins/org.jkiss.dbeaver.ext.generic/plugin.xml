@@ -186,7 +186,7 @@
                     <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE" bundle="!drivers.jt400"/>
 
                     <file type="license" path="drivers/db2-jt400/LICENSE.txt" bundle="drivers.jt400"/>
-                    <file type="jar" path="drivers/db2-jt400/jt400.jar" bundle="drivers.jt400"/>
+                    <file type="jar" path="drivers/db2-jt400" bundle="drivers.jt400"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -233,8 +233,7 @@
                     <file type="jar" path="repo:/drivers/informix/ifxlang.jar" bundle="!drivers.informix"/>
                     <file type="license" path="repo:/drivers/informix/LICENSE.txt" bundle="!drivers.informix"/>
 
-                    <file type="jar" path="drivers/informix/ifxjdbc.jar" bundle="drivers.informix"/>
-                    <file type="jar" path="drivers/informix/ifxlang.jar" bundle="drivers.informix"/>
+                    <file type="jar" path="drivers/informix" bundle="drivers.informix"/>
                     <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
 
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
@@ -258,7 +257,7 @@
 
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
 
-                    <file type="jar" path="drivers/h2/h2.jar" bundle="drivers.h2"/>
+                    <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
@@ -279,7 +278,7 @@
 
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
 
-                    <file type="jar" path="drivers/h2/h2.jar" bundle="drivers.h2"/>
+                    <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
@@ -387,7 +386,7 @@
                     <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
 
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" bundle="drivers.hsqldb"/>
-                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" bundle="drivers.hsqldb"/>
+                    <file type="jar" path="drivers/hsqldb" bundle="drivers.hsqldb"/>
 
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="supports-limits" value="true"/>
@@ -411,7 +410,7 @@
                     <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
 
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" bundle="drivers.hsqldb"/>
-                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" bundle="drivers.hsqldb"/>
+                    <file type="jar" path="drivers/hsqldb" bundle="drivers.hsqldb"/>
 
                     <property name="shutdown" value="true"/>
                     <parameter name="create-url-param" value=";create=true"/>
@@ -445,6 +444,7 @@
                     categories="sql">
                     <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <file type="jar" path="drivers/ingres" bundle="drivers.ingres"/>
                 </driver>
                 <!-- SQLite -->
                 <driver
@@ -687,7 +687,7 @@
                     categories="hadoop">
 
                     <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar" bundle="!drivers.hive"/>
-                    <file type="jar" path="drivers/hive/hive-jdbc-uber.jar" bundle="drivers.hive"/>
+                    <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
 
                     <parameter name="supports-limits" value="false"/>
                     <parameter name="supports-references" value="false"/>
