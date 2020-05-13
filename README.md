@@ -76,3 +76,11 @@ That's really cool, we are glad that you like DBeaver.
 Thank you!  
 
 - <a href="https://github.com/dbeaver/dbeaver/graphs/contributors">DBeaver Team</a> (contributors)
+
+---------
+
+<img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/>
+
+DBeaver is a desktop client.  
+If you are loooking for a web-based database management tool - check our new product: <a href="https://github.com/dbeaver/cloudbeaver/">CloudBeaver</a>.  
+It is based on DBeaver platform and thus supports any database and most of DBeaver features.
