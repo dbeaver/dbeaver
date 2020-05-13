@@ -1227,7 +1227,10 @@
     <extension point="org.jkiss.dbeaver.mavenRepository">
         <repository id="maven-central" name="%maven.respository.central" url="https://repo1.maven.org/maven2/" order="0"/>
 
+        <!-- Non-HTTPS Maven Central is no longer alive. Hooray. -->
+<!--
         <repository id="maven-central-unsecure" name="%maven.respository.central.unsecure" url="http://central.maven.org/maven2/" order="99999"/>
+-->
     </extension>
 
     <!-- Perspective -->
