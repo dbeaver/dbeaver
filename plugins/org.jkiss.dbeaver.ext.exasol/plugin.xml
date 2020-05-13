@@ -430,7 +430,7 @@
                         webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section"
                         categories="sql,analytic,columns">
                     <file path="maven:/com.exasol:exasol-jdbc:RELEASE" type="jar" bundle="!drivers.exasol"/>
-                    <file type="jar" path="drivers/exasol/exasol-jdbc.jar" bundle="drivers.exasol"/>
+                    <file type="jar" path="drivers/exasol" bundle="drivers.exasol"/>
 
                     <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="600"/>
