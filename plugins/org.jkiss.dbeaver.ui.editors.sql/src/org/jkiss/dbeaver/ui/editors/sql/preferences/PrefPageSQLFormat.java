@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -325,12 +326,15 @@ public class PrefPageSQLFormat extends TargetPrefPage
             try (final InputStream sqlStream = getClass().getResourceAsStream(FORMAT_FILE_NAME)) {
                 final String sqlText = ContentUtils.readToString(sqlStream, StandardCharsets.UTF_8);
                 sqlViewer.setInput(new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultFileEncoding()));
+
+                sqlViewer.getTextViewer().setSelection(new TextSelection(0, sqlText.length()));
+                sqlViewer.getTextViewer().doOperation(ISourceViewer.FORMAT);
+                sqlViewer.getTextViewer().setSelection(new TextSelection(0, 0));
+                sqlViewer.reloadSyntaxRules();
             }
         } catch (Exception e) {
             log.error(e);
         }
-        sqlViewer.getTextViewer().doOperation(ISourceViewer.FORMAT);
-        sqlViewer.reloadSyntaxRules();
     }
 
 }
