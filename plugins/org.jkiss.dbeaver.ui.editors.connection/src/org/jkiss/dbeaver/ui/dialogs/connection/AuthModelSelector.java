@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -97,6 +98,7 @@ public class AuthModelSelector extends Composite {
             AuthModelDatabaseNative.ID.equals(o1.getId()) ? -1 :
                 (AuthModelDatabaseNative.ID.equals(o2.getId()) ? 1 :
                     o1.getName().compareTo(o2.getName())));
+        this.allAuthModels = Collections.singletonList(this.allAuthModels.get(0));
         if (selectedAuthModel == null && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
@@ -129,6 +131,7 @@ public class AuthModelSelector extends Composite {
 
         Label authModelLabel = UIUtils.createControlLabel(modelConfigPlaceholder, UIConnectionMessages.dialog_connection_auth_group);
         Composite authModelComp = UIUtils.createComposite(modelConfigPlaceholder, 2);
+        authModelComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Combo authModelCombo = new Combo(authModelComp, SWT.DROP_DOWN | SWT.READ_ONLY);
         authModelCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         authModelCombo.addSelectionListener(new SelectionAdapter() {
@@ -161,8 +164,8 @@ public class AuthModelSelector extends Composite {
         boolean authSelectorVisible = allAuthModels.size() >= 2;
         authModelLabel.setVisible(authSelectorVisible);
         ((GridData)authModelLabel.getLayoutData()).exclude = !authSelectorVisible;
-        authModelCombo.setVisible(authSelectorVisible);
-        ((GridData)authModelCombo.getLayoutData()).exclude = !authSelectorVisible;
+        authModelComp.setVisible(authSelectorVisible);
+        ((GridData)authModelComp.getLayoutData()).exclude = !authSelectorVisible;
         ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
         {
