@@ -255,6 +255,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                 case Types.REAL:
                     if (number instanceof BigDecimal) {
                         statement.setBigDecimal(paramIndex, (BigDecimal) number);
+                    } else if (number instanceof Float) {
+                        statement.setFloat(paramIndex, number.floatValue());
                     } else {
                         statement.setDouble(paramIndex, number.doubleValue());
                     }
