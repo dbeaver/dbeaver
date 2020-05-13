@@ -452,6 +452,7 @@
                     <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
+                <!-- SQLite -->
                 <driver
                     id="sqlite_jdbc"
                     label="SQLite"
@@ -473,7 +474,7 @@
 
                     <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
-                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc.jar" bundle="drivers.sqlite.xerial"/>
+                    <file type="jar" path="drivers/sqlite/xerial" bundle="drivers.sqlite.xerial"/>
 
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
@@ -481,31 +482,7 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
-<!--            SQLiteCrypt commented because it doesn't make sense without proper configurator
-                <driver
-                    id="sqlite_jdbc_crypt"
-                    label="SQLite (Encrypted)"
-                    icon="icons/sqlite_icon.png"
-                    iconBig="icons/sqlite_icon_big.png"
-                    class="org.sqlite.JDBC"
-                    sampleURL="jdbc:sqlite:{file}"
-                    defaultPort=""
-                    webURL="https://github.com/Willena/sqlite-jdbc-crypt"
-                    propertiesURL="https://www.sqlite.org/pragma.html"
-                    embedded="true"
-                    description="SQLite JDBC Driver with encryption and authentication support"
-                    categories="sql,embedded">
-
-                    <file type="jar" path="maven:/io.github.willena:sqlite-jdbc:RELEASE"/>
-
-                    <parameter name="supports-references" value="true"/>
-                    <parameter name="supports-struct-cache" value="false"/>
-                    <parameter name="supports-indexes" value="true"/>
-                    <parameter name="supports-stored-code" value="false"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
--->
-
+                <!-- Teradata -->
                 <driver
                     id="teradata"
                     label="Teradata"
