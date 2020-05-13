@@ -211,7 +211,7 @@
                     description="SAP MaxDB - The SAP Database System"
                     categories="sql">
 
-                    <file type="jar" path="drivers/maxdb/sapdbc.jar" bundle="drivers.maxdb"/>
+                    <file type="jar" path="drivers/maxdb" bundle="drivers.maxdb"/>
                     <file type="license" path="drivers/maxdb/LICENSE.txt" bundle="drivers.maxdb"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
@@ -297,12 +297,10 @@
                     promoted="1"
                     categories="sql">
                     <os name="win32"/>
-                    <file type="jar" path="repo:/drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/odbc/x86/JdbcOdbc.dll" bundle="!drivers.odbc"/>
+                    <file type="jar" path="repo:/drivers/odbc" bundle="!drivers.odbc"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/odbc/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
 
-                    <file type="jar" path="drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/odbc/x86/JdbcOdbc.dll" bundle="drivers.odbc"/>
+                    <file type="jar" path="drivers/odbc" bundle="drivers.odbc"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64/JdbcOdbc.dll" bundle="drivers.odbc"/>
                 </driver>
                 <driver
@@ -572,15 +570,7 @@
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
 
                     <file type="license" path="drivers/ucanaccess/LICENSE.txt" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/ucanaccess.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/byte-buddy.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/byte-buddy-agent.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/commons-lang.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/commons-logging.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/hsqldb.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/jackcess.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/mockito-core.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/objenesis.jar" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess" bundle="drivers.ucanaccess"/>
                 </driver>
                 <driver
                     id="netezza"
