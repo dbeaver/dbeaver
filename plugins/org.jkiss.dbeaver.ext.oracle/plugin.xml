@@ -295,14 +295,7 @@
                     <file type="jar" path="maven:/com.oracle.database.xml:xmlparserv2:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
 
                     <file type="license" path="drivers/oracle/LICENSE.txt" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/ojdbc8.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/orai18n.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/xdb6.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/xmlparserv2.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/oraclepki.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/osdt_cert.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/osdt_core.jar" bundle="drivers.oracle"/>
-
+                    <file type="jar" path="drivers/oracle" bundle="drivers.oracle"/>
                 </driver>
             </drivers>
             <templates>

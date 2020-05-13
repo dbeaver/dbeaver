@@ -138,8 +138,6 @@
                     <replace provider="generic" driver="vertica"/>
                     <replace provider="vertica" driver="vertica-jdbc"/>
 
-                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
-
                     <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
                     <parameter name="active-entity-type" value="schema"/>
@@ -164,7 +162,7 @@
                     <replace provider="vertica" driver="vertica-jdbc-6"/>
 
                     <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
-                    <file type="jar" path="drivers/vertica/vertica8.jar" bundle="drivers.vertica"/>
+                    <file type="jar" path="drivers/vertica" bundle="drivers.vertica"/>
 
                     <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
