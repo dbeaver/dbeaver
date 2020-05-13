@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -98,7 +97,6 @@ public class AuthModelSelector extends Composite {
             AuthModelDatabaseNative.ID.equals(o1.getId()) ? -1 :
                 (AuthModelDatabaseNative.ID.equals(o2.getId()) ? 1 :
                     o1.getName().compareTo(o2.getName())));
-        this.allAuthModels = Collections.singletonList(this.allAuthModels.get(0));
         if (selectedAuthModel == null && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
