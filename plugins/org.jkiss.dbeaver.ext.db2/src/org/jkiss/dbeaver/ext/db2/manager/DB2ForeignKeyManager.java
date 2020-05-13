@@ -67,11 +67,13 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     @Override
     public DB2TableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object table, Object from, Map<String, Object> options)
     {
-        return new DB2TableForeignKey(
+    	DB2TableForeignKey foreignKey = new DB2TableForeignKey(
             (DB2Table) table,
             null,
             DBSForeignKeyModifyRule.NO_ACTION,
             DBSForeignKeyModifyRule.NO_ACTION);
+        foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+        return foreignKey;
     }
 
     // ------
