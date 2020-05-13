@@ -233,10 +233,17 @@ public final class DBValueFormatting {
         try {
             if (value instanceof BigDecimal) {
                 return ((BigDecimal) value).toPlainString();
-            } else if (value instanceof Float) {
-                return NATIVE_FLOAT_FORMATTER.format(value);
-            } else if (value instanceof Double) {
-                return NATIVE_DOUBLE_FORMATTER.format(value);
+            } else {
+                String strValue = value.toString();
+                if (strValue.indexOf('E') == -1) {
+                    return strValue;
+                }
+                // We don't want exponential view
+                if (value instanceof Float) {
+                    return NATIVE_FLOAT_FORMATTER.format(value);
+                } else if (value instanceof Double) {
+                    return NATIVE_DOUBLE_FORMATTER.format(value);
+                }
             }
         } catch (Exception e) {
             log.debug("Error converting number to string: " + e.getMessage());
