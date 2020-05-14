@@ -93,7 +93,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements ICompos
 
             portText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-            gd.widthHint = UIUtils.getFontHeight(portText) * 5;
+            gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.setLayoutData(gd);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
