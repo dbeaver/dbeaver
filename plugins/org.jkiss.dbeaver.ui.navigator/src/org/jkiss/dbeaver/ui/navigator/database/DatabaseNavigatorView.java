@@ -91,6 +91,28 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     @Override
+    protected void createTreeColumns(DatabaseNavigatorTree tree) {
+/*
+        Tree treeControl = tree.getViewer().getTree();
+
+        final TreeViewerColumn nameColumn = new TreeViewerColumn(tree.getViewer(), SWT.LEFT);
+        nameColumn.setLabelProvider((CellLabelProvider) tree.getViewer().getLabelProvider());
+        final TreeViewerColumn statColumn = new TreeViewerColumn(tree.getViewer(), SWT.RIGHT);
+        statColumn.setLabelProvider(new CellLabelProvider() {
+            @Override
+            public void update(ViewerCell cell) {
+
+            }
+        });
+        treeControl.addListener(SWT.Resize, event -> {
+            int treeWidth = treeControl.getSize().x - treeControl.getVerticalBar().getSize().x - treeControl.getBorderWidth() * 2;
+            nameColumn.getColumn().setWidth(treeWidth * 80 / 100);
+            statColumn.getColumn().setWidth(treeWidth * 20 / 100);
+        });
+*/
+    }
+
+    @Override
     public void handleProjectAdd(DBPProject project) {
         // Ignore
     }
