@@ -84,7 +84,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
 
         portText = UIUtils.createLabelText(addrGroup, PostgreMessages.dialog_setting_connection_port, null, SWT.BORDER);
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(portText) * 5;
+        gd.widthHint = UIUtils.getFontHeight(portText) * 7;
         portText.setLayoutData(gd);
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(textListener);
