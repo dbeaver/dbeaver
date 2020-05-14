@@ -97,7 +97,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
 
             portText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-            gd.widthHint = 40;
+            gd.widthHint = UIUtils.getFontHeight(portText) * 5;
             portText.setLayoutData(gd);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);

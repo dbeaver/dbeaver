@@ -136,7 +136,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
 
             portText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.CENTER);
-            gd.widthHint = 60;
+            gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.setLayoutData(gd);
             //portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
             portText.addModifyListener(textListener);
