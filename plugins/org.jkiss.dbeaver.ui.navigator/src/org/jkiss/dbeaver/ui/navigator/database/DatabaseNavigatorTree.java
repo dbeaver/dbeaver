@@ -109,10 +109,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         DatabaseNavigatorLabelProvider labelProvider = new DatabaseNavigatorLabelProvider(treeViewer);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.setContentProvider(new DatabaseNavigatorContentProvider(this, showRoot));
-        // FIXME: can't add MeasureItem handler. It breaks zoomed tree/table renderers.
-        // FIXME: Although it shouldn't - see ObjectListControl trees.
-        //treeViewer.getTree().addListener(SWT.MeasureItem, event -> measureItem(event));
-        tree.addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
+
+        if (false) {
+            // We don't need it
+            tree.addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
+        }
 
         if (rootNode != null) {
             setInput(rootNode);
@@ -122,10 +123,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         initEditor();
 
-//        tree.addListener(SWT.MeasureItem, event -> {
-//            event.width += event.height - 4;
-//        });
-        tree.addListener(SWT.PaintItem, event -> paintItem(tree, event));
+        {
+            tree.addListener(SWT.PaintItem, event -> paintItem(tree, event));
+        }
     }
 
     public void setItemRenderer(DatabaseNavigatorItemRenderer itemRenderer) {
