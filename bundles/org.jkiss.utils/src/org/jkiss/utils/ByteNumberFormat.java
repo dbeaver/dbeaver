@@ -16,6 +16,7 @@
  */
 package org.jkiss.utils;
 
+import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
@@ -27,15 +28,17 @@ public class ByteNumberFormat extends NumberFormat {
     private static final long serialVersionUID = 1;
 
     private static final String B = "B";
-    private static final String KB = "KB";
-    private static final String MB = "MB";
-    private static final String GB = "GB";
-    private static final String TB = "TB";
-    private static final String PB = "PB";
+    private static final String KB = "Kb";
+    private static final String MB = "Mb";
+    private static final String GB = "Gb";
+    private static final String TB = "Tb";
+    private static final String PB = "Pb";
 
     public static final String[] BYTES = {
         B, KB, MB, GB, TB, PB
     };
+
+    private static final DecimalFormat fpFormat = new DecimalFormat("#.#");
 
     /**
      * Creates a new formatter.
@@ -53,7 +56,7 @@ public class ByteNumberFormat extends NumberFormat {
                 break;
             } else {
                 bytes /= 1024;
-                if (bytes < 10) {
+                if (bytes < 1) {
                     break;
                 }
                 index++;
@@ -74,7 +77,7 @@ public class ByteNumberFormat extends NumberFormat {
 
         int index = computeIndex(bytes);
 
-        long intBytes = (long) bytes;
+        double intBytes = bytes;
         if (intBytes == 0) {
             return String.valueOf(0);
         }
@@ -83,7 +86,13 @@ public class ByteNumberFormat extends NumberFormat {
             intBytes /= 1024;
         }
 
-        String str = String.valueOf(intBytes);
+
+        String str;
+        if ((long)intBytes >= 10) {
+            str = String.valueOf((long)intBytes);
+        } else {
+            str = fpFormat.format(intBytes);
+        }
         if (index == 0) {
             return str;
         } else {
