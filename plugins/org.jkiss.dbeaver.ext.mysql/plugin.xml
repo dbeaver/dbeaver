@@ -183,7 +183,7 @@
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
                         defaultPort="3306"
-                        webURL="http://www.mysql.com/products/connector/"
+                        webURL="https://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 8 and later"
                         categories="sql">

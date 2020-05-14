@@ -276,7 +276,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
                     defaultPort="5432"
-                    webURL="http://jdbc.postgresql.org/"
+                    webURL="https://jdbc.postgresql.org/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                     description="%driver.postgresql.description"
                     promoted="1"
@@ -307,7 +307,7 @@
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
-                    webURL="http://jdbc.postgresql.org/"
+                    webURL="https://jdbc.postgresql.org/"
                     description="PostgreSQL generic driver. Can be used for old (7.x) or non-standard PostgreSQL servers."
                     categories="sql">
                 </driver>
@@ -357,7 +357,7 @@
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
                         defaultPort="5432"
-                        webURL="http://yellowbrick.io/"
+                        webURL="https://yellowbrick.io/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="Yellowbrick JDBC driver"
                         categories="sql">
@@ -404,7 +404,7 @@
                         useURL="true"
                         defaultPort="5439"
                         description="AWS Redshift JDBC driver"
-                        webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                        webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                         propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
                         categories="sql,analytic,bigdata">
                     <replace provider="generic" driver="aws_redshift"/>
@@ -426,7 +426,7 @@
                         sampleURL="jdbc:edb://{host}[:{port}]/[{database}]"
                         useURL="true"
                         defaultPort="5444"
-                        webURL="http://enterprisedb.com/"
+                        webURL="https://enterprisedb.com/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.edb.description"
                         categories="sql">

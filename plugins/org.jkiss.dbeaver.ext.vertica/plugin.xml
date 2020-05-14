@@ -132,7 +132,7 @@
                         class="com.vertica.jdbc.Driver"
                         sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                         defaultPort="5433"
-                        webURL="http://www.vertica.com/"
+                        webURL="https://www.vertica.com/"
                         description="Driver for Vertica Database"
                         categories="sql,analytic,columns">
                     <replace provider="generic" driver="vertica"/>
