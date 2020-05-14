@@ -59,7 +59,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
 
         portText = UIUtils.createLabelSpinner(composite, UIConnectionMessages.dialog_connection_network_socket_label_port, SocksConstants.DEFAULT_SOCKS_PORT, 0, 65535);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.widthHint = 50;
+        gd.widthHint = UIUtils.getFontHeight(portText) * 7;
         portText.setLayoutData(gd);
 
         userNameText = UIUtils.createLabelText(composite, UIConnectionMessages.dialog_connection_network_socket_label_username, null); //$NON-NLS-2$

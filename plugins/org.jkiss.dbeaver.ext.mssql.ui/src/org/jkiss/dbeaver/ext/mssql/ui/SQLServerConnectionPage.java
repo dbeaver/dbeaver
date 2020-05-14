@@ -97,7 +97,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
                 portText = new Text(settingsGroup, SWT.BORDER);
                 gd = new GridData(GridData.CENTER);
-                gd.widthHint = 60;
+                gd.widthHint = UIUtils.getFontHeight(portText) * 7;
                 portText.setLayoutData(gd);
             }
         }
