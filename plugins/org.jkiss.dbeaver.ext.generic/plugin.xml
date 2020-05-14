@@ -207,7 +207,7 @@
                     class="com.sap.dbtech.jdbc.DriverSapDB"
                     sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
                     defaultPort="7200"
-                    webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
+                    webURL="https://www.sdn.sap.com/irj/sdn/maxdb"
                     description="SAP MaxDB - The SAP Database System"
                     categories="sql">
 
@@ -225,7 +225,7 @@
                     class="com.informix.jdbc.IfxDriver"
                     sampleURL="jdbc:informix-sqli://{host}:{port}/{database}:INFORMIXSERVER={server}"
                     defaultPort="1533"
-                    webURL="http://www.developers.net/ibmshowcase/focus/Informix"
+                    webURL="https://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server"
                     categories="sql">
 
@@ -251,7 +251,7 @@
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
                     defaultPort="9092"
-                    webURL="http://www.h2database.com/"
+                    webURL="https://www.h2database.com/"
                     description="H2 Server"
                     categories="sql">
 
@@ -271,7 +271,7 @@
                     category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:{file}"
-                    webURL="http://www.h2database.com/"
+                    webURL="https://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded"
                     categories="sql,embedded">
@@ -292,7 +292,7 @@
                     iconBig="icons/odbc_icon_big.png"
                     class="sun.jdbc.odbc.JdbcOdbcDriver"
                     sampleURL="jdbc:odbc:{database}"
-                    webURL="http://sun.com"
+                    webURL="https://sun.com"
                     description="ODBC bridge driver"
                     promoted="1"
                     categories="sql">
@@ -311,7 +311,7 @@
                     category="Derby"
                     class="org.apache.derby.jdbc.EmbeddedDriver"
                     sampleURL="jdbc:derby:{folder}"
-                    webURL="http://db.apache.org/"
+                    webURL="https://db.apache.org/"
                     embedded="true"
                     description="Derby (Java DB) embedded driver"
                     categories="sql,embedded">
@@ -807,7 +807,7 @@
                     webURL="http://www.machbase.com"
                     iconBig="icons/machbase_icon_big.png"
                     categories="timeseries">
-                    <file type="jar" path="http://www.machbase.com/dist/machbase.jar"/>
+                    <file type="jar" path="https://www.machbase.com/dist/machbase.jar"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
@@ -913,10 +913,11 @@
                         description="CUBRID JDBC driver"
                         webURL="https://www.cubrid.org/"
                         categories="sql">
-                    <file type="jar" path="http://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
+                    <!-- At the moment HTTPS link doesn't work. But we can't keep HTTP anyway. -->
+                    <file type="jar" path="https://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
                 </driver>
 
-                <!-- Solr -->
+                <!-- Solr -->`
                 <driver
                         id="apache_solrj"
                         label="Solr"
@@ -1095,7 +1096,7 @@
                         class="com.mysql.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="3306"
-                        webURL="http://www.mysql.com/products/connector/"
+                        webURL="https://www.mysql.com/products/connector/"
                         description="Driver for MySQL (4.x and earlier)">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
                 </driver>
@@ -1108,7 +1109,7 @@
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
-                        webURL="http://jdbc.postgresql.org/"
+                        webURL="https://jdbc.postgresql.org/"
                         description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
@@ -1133,7 +1134,7 @@
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
-                        webURL="http://jdbc.postgresql.org/"
+                        webURL="https://jdbc.postgresql.org/"
                         description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
                 </driver>
 
@@ -1143,13 +1144,13 @@
                         class="oracle.jdbc.OracleDriver"
                         sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
                         defaultPort="1521"
-                        webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
+                        webURL="https://www.oracle.com/technetwork/database/features/jdbc/"
                         description="Oracle thin driver">
 
                     <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
                     <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
 
-                    <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
+                    <fileSource url="https://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
                         <file name="ojdbc6.jar" description="JDBC driver"/>
                         <file name="orai18n.jar" description="NLS classes"/>
                         <file name="xdb6.jar" description="SQLXML support"/>
@@ -1164,7 +1165,7 @@
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"
-                        webURL="http://www.ibm.com/software/data/db2/express/download.html"
+                        webURL="https://www.ibm.com/software/data/db2/express/download.html"
                         description="DB2 JCC driver">
 
                     <property name="loginTimeout" value="20"/>
@@ -1193,7 +1194,7 @@
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"
-                        webURL="http://www.ibm.com/software/data/db2/express/download.html"
+                        webURL="https://www.ibm.com/software/data/db2/express/download.html"
                         description="DB2 LUW driver for older DB2 versions (8.x)">
                     <replace provider="generic" driver="db2"/>
 
