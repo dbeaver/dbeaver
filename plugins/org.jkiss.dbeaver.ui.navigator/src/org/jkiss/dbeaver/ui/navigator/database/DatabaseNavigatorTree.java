@@ -69,6 +69,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private INavigatorFilter navigatorFilter;
     private Text filterControl;
     private boolean inlineRenameEnabled = false;
+    private DatabaseNavigatorItemRenderer itemRenderer;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
@@ -101,7 +102,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 //            }
 //        });
 
-        treeViewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+        Tree tree = treeViewer.getTree();
+        tree.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         treeViewer.setUseHashlookup(true);
 
         DatabaseNavigatorLabelProvider labelProvider = new DatabaseNavigatorLabelProvider(treeViewer);
@@ -110,7 +112,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         // FIXME: can't add MeasureItem handler. It breaks zoomed tree/table renderers.
         // FIXME: Although it shouldn't - see ObjectListControl trees.
         //treeViewer.getTree().addListener(SWT.MeasureItem, event -> measureItem(event));
-        treeViewer.getTree().addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
+        tree.addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
 
         if (rootNode != null) {
             setInput(rootNode);
@@ -119,6 +121,24 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         new DefaultViewerToolTipSupport(treeViewer);
 
         initEditor();
+
+//        tree.addListener(SWT.MeasureItem, event -> {
+//            event.width += event.height - 4;
+//        });
+        tree.addListener(SWT.PaintItem, event -> paintItem(tree, event));
+    }
+
+    public void setItemRenderer(DatabaseNavigatorItemRenderer itemRenderer) {
+        this.itemRenderer = itemRenderer;
+    }
+
+    private void paintItem(Tree tree, Event event) {
+        if (itemRenderer != null) {
+            Object element = event.item.getData();
+            if (element instanceof DBNNode) {
+                itemRenderer.paintNodeDetails((DBNNode) element, tree, event.gc, event);
+            }
+        }
     }
 
     public void setInput(DBNNode rootNode) {
