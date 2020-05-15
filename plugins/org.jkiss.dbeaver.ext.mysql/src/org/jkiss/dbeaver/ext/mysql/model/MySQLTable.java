@@ -301,7 +301,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
                 "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        loadAdditionalInfo(dbResult);
+                        fetchAdditionalInfo(dbResult);
                     }
                     additionalInfo.loaded = true;
                 }
@@ -311,7 +311,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         }
     }
 
-    void loadAdditionalInfo(JDBCResultSet dbResult) {
+    void fetchAdditionalInfo(JDBCResultSet dbResult) {
         MySQLDataSource dataSource = getDataSource();
         // filer table description (for INNODB it contains some system information)
         String desc = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_COMMENT);

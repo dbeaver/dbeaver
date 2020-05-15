@@ -30,15 +30,18 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -102,9 +105,13 @@ public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRender
                 } else {
                     sizeText = "...";
                     percentFull = 0;
-                    if (((DBNDatabaseNode) element).getParentNode() instanceof DBNDatabaseNode) {
+                    DBNNode parentNode = ((DBNDatabaseNode) element).getParentNode();
+                    while (parentNode instanceof DBNDatabaseFolder) {
+                        parentNode = parentNode.getParentNode();
+                    }
+                    if (parentNode instanceof DBNDatabaseNode) {
                         readObjectStatistics(
-                            (DBNDatabaseNode) ((DBNDatabaseNode) element).getParentNode(),
+                            (DBNDatabaseNode) parentNode,
                             ((TreeItem) event.item).getParentItem());
                     }
                 }
@@ -141,7 +148,7 @@ public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRender
             synchronized (statReaders) {
                 StatReadJob statReadJob = statReaders.get(parentObject);
                 if (statReadJob == null) {
-                    statReadJob = new StatReadJob(parentNode, parentObject, parentItem);
+                    statReadJob = new StatReadJob(parentObject, parentItem);
                     statReaders.put(parentObject, statReadJob);
                     statReadJob.schedule();
                 }
@@ -151,13 +158,11 @@ public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRender
 
     private static class StatReadJob extends AbstractJob {
 
-        private final DBNDatabaseNode node;
         private final DBSObject collector;
         private final TreeItem treeItem;
 
-        StatReadJob(DBNDatabaseNode node, DBSObject collector, TreeItem treeItem) {
+        StatReadJob(DBSObject collector, TreeItem treeItem) {
             super("Read statistics for " + DBUtils.getObjectFullName(collector, DBPEvaluationContext.UI));
-            this.node = node;
             this.collector = collector;
             this.treeItem = treeItem;
         }
@@ -167,13 +172,14 @@ public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRender
             try {
                 ((DBPObjectStatisticsCollector)collector).collectObjectStatistics(monitor, false, false);
                 long maxStatSize = 0;
-                if (node.getParentNode() != null) {
+
+                if (collector instanceof DBSObjectContainer) {
                     // Calculate max object size
-                    DBNDatabaseNode[] children = node.getChildren(monitor);
+                    Collection<? extends DBSObject> children = ((DBSObjectContainer) collector).getChildren(monitor);
                     if (children != null) {
-                        for (DBNDatabaseNode childNode : children) {
-                            if (childNode.getObject() instanceof DBPObjectStatistics) {
-                                long statObjectSize = ((DBPObjectStatistics) childNode.getObject()).getStatObjectSize();
+                        for (DBSObject child : children) {
+                            if (child instanceof DBPObjectStatistics) {
+                                long statObjectSize = ((DBPObjectStatistics) child).getStatObjectSize();
                                 maxStatSize = Math.max(maxStatSize, statObjectSize);
                             }
                         }

@@ -251,6 +251,9 @@ public class ItemListControl extends NodeListControl
                     return items;
                 }
                 // Cache statistics
+                while (parentNode instanceof DBNDatabaseFolder) {
+                    parentNode = parentNode.getParentNode();
+                }
                 if (parentNode instanceof DBNDatabaseNode) {
                     DBSObject parentObject = ((DBNDatabaseNode) parentNode).getObject();
                     if (parentObject instanceof DBPObjectStatisticsCollector) {

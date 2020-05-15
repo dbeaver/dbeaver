@@ -402,15 +402,16 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                         String tableName = dbResult.getString("Name");
                         MySQLTableBase table = tableCache.getObject(monitor, this, tableName);
                         if (table instanceof MySQLTable) {
-                            ((MySQLTable) table).loadAdditionalInfo(dbResult);
+                            ((MySQLTable) table).fetchAdditionalInfo(dbResult);
                         }
                     }
                 }
             } catch (SQLException e) {
                 throw new DBCException(e, session.getExecutionContext());
             }
+        } finally {
+            hasStatistics = true;
         }
-        hasStatistics = true;
     }
 
     @Override
