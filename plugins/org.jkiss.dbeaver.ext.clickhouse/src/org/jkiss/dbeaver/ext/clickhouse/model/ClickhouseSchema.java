@@ -57,7 +57,13 @@ public class ClickhouseSchema extends GenericSchema implements DBPObjectStatisti
         }
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
             try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
-                "select table,sum(bytes) as table_size " +
+                "select table," +
+                        "sum(bytes) as table_size, " +
+                        "sum(rows) as table_rows, " +
+                        "max(modification_time) as latest_modification," +
+                        "min(min_date) AS min_date," +
+                        "max(max_date) AS max_date," +
+                        "any(engine) as engine\n" +
                     "FROM system.parts\n" +
                     "WHERE database=? AND active\n" +
                     "GROUP BY table"))
@@ -73,7 +79,7 @@ public class ClickhouseSchema extends GenericSchema implements DBPObjectStatisti
                     }
                 }
             } catch (SQLException e) {
-                throw new DBCException("Error reading schema relation statistics", e);
+                throw new DBCException("Error reading schema statistics", e);
             }
         } finally {
             hasStatistics = true;
