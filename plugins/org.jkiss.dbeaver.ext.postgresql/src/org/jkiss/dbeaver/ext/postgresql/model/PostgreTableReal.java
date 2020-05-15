@@ -129,7 +129,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
 
     @Override
     public long getStatObjectSize() {
-        return diskSpace;
+        return diskSpace == null ? 0 : diskSpace;
     }
 
     @Nullable
@@ -139,7 +139,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     }
 
     private void readTableStats(DBRProgressMonitor monitor) {
-        if (diskSpace != null) {
+        if (diskSpace != null || !getDataSource().getServerType().supportsTableStatistics()) {
             return;
         }
         if (!isPersisted() || this instanceof PostgreView || !getDataSource().isServerVersionAtLeast(8, 1)) {
