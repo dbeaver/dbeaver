@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +70,9 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
 
     public boolean appliesTo(DBPObject object, Object context)
     {
-        object = DBUtils.getPublicObject(object);
+        if (object instanceof DBSObject) {
+            object = DBUtils.getPublicObject((DBSObject)object);
+        }
         if (object == null) {
             return false;
         }

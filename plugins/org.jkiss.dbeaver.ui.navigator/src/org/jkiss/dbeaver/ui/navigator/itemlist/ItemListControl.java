@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -255,7 +256,7 @@ public class ItemListControl extends NodeListControl
                     parentNode = parentNode.getParentNode();
                 }
                 if (parentNode instanceof DBNDatabaseNode) {
-                    DBSObject parentObject = ((DBNDatabaseNode) parentNode).getObject();
+                    DBSObject parentObject = DBUtils.getPublicObject(((DBNDatabaseNode) parentNode).getObject());
                     if (parentObject instanceof DBPObjectStatisticsCollector) {
                         if (!((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
                             ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);

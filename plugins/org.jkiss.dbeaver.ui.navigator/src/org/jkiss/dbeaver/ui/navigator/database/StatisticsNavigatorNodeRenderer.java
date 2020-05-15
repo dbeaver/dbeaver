@@ -125,7 +125,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     }
 
     private void readObjectStatistics(DBNDatabaseNode parentNode, TreeItem parentItem) {
-        DBSObject parentObject = parentNode.getObject();
+        DBSObject parentObject = DBUtils.getPublicObject(parentNode.getObject());
         if (parentObject instanceof DBPObjectStatisticsCollector && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
             synchronized (statReaders) {
                 StatReadJob statReadJob = statReaders.get(parentObject);
