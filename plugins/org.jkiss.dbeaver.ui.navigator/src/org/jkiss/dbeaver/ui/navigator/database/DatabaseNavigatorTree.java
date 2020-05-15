@@ -123,6 +123,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         initEditor();
 
+        this.setItemRenderer(new DefaultNavigatorNodeRenderer());
+
         {
             tree.addListener(SWT.PaintItem, event -> paintItem(tree, event));
         }
