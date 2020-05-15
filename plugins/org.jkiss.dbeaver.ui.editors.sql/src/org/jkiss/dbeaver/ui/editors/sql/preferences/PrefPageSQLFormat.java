@@ -305,7 +305,10 @@ public class PrefPageSQLFormat extends TargetPrefPage
                 curConfigurator = GeneralUtils.adapt(sqlFormatter, SQLFormatterConfigurator.class);
             }
             if (curConfigurator instanceof IDialogPage) {
-                curConfigurator.configure(selFormatter);
+                curConfigurator.configure(selFormatter, () -> {
+                    curConfigurator.saveSettings(getTargetPreferenceStore());
+                    formatSQL();
+                });
                 ((IDialogPage)curConfigurator).createControl(formatterConfigPlaceholder);
                 curConfigurator.loadSettings(getTargetPreferenceStore());
             }
