@@ -91,14 +91,22 @@ public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRender
                 int percentFull;
                 if (((DBPObjectStatistics) object).hasStatistics()) {
                     // Draw object size
-                    long maxObjectSize = getMaxObjectSize(object, (TreeItem)event.item, tree);
+                    long maxObjectSize = getMaxObjectSize((TreeItem)event.item);
                     long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
                     percentFull = maxObjectSize == 0 ? 0 : (int) (statObjectSize * 100 / maxObjectSize);
+                    if (percentFull > 100) {
+                        log.debug("Object stat > 100%!");
+                        percentFull = 100;
+                    }
                     sizeText = numberFormat.format(statObjectSize);
                 } else {
                     sizeText = "...";
                     percentFull = 0;
-                    readObjectStatistics(object, tree);
+                    if (((DBNDatabaseNode) element).getParentNode() instanceof DBNDatabaseNode) {
+                        readObjectStatistics(
+                            (DBNDatabaseNode) ((DBNDatabaseNode) element).getParentNode(),
+                            ((TreeItem) event.item).getParentItem());
+                    }
                 }
                 Point textSize = gc.stringExtent(sizeText);
                 textSize.x += 4;
@@ -118,34 +126,22 @@ public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRender
         }
     }
 
-    private long getMaxObjectSize(DBSObject object, TreeItem item, Tree tree) {
+    private long getMaxObjectSize(TreeItem item) {
         TreeItem parentItem = item.getParentItem();
         Object maxSize = parentItem.getData("nav.stat.maxSize");
         if (maxSize instanceof Number) {
             return ((Number) maxSize).longValue();
         }
-
-        long maxStatSize = 0;
-        for (TreeItem childItem : parentItem.getItems()) {
-            Object itemData = childItem.getData();
-            if (itemData instanceof DBNDatabaseNode) {
-                DBSObject itemObject = ((DBNDatabaseNode) itemData).getObject();
-                if (itemObject instanceof DBPObjectStatistics) {
-                    maxStatSize = Math.max(maxStatSize, ((DBPObjectStatistics) itemObject).getStatObjectSize());
-                }
-            }
-        }
-        parentItem.setData("nav.stat.maxSize", maxStatSize);
-        return maxStatSize;
+        return 0;
     }
 
-    private void readObjectStatistics(DBSObject object, Tree tree) {
-        DBSObject parentObject = object.getParentObject();
+    private void readObjectStatistics(DBNDatabaseNode parentNode, TreeItem parentItem) {
+        DBSObject parentObject = parentNode.getObject();
         if (parentObject instanceof DBPObjectStatisticsCollector && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
             synchronized (statReaders) {
                 StatReadJob statReadJob = statReaders.get(parentObject);
                 if (statReadJob == null) {
-                    statReadJob = new StatReadJob(parentObject, tree);
+                    statReadJob = new StatReadJob(parentNode, parentObject, parentItem);
                     statReaders.put(parentObject, statReadJob);
                     statReadJob.schedule();
                 }
@@ -155,21 +151,40 @@ public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRender
 
     private static class StatReadJob extends AbstractJob {
 
+        private final DBNDatabaseNode node;
         private final DBSObject collector;
-        private final Tree tree;
+        private final TreeItem treeItem;
 
-        protected StatReadJob(DBSObject collector, Tree tree) {
+        StatReadJob(DBNDatabaseNode node, DBSObject collector, TreeItem treeItem) {
             super("Read statistics for " + DBUtils.getObjectFullName(collector, DBPEvaluationContext.UI));
+            this.node = node;
             this.collector = collector;
-            this.tree = tree;
+            this.treeItem = treeItem;
         }
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
                 ((DBPObjectStatisticsCollector)collector).collectObjectStatistics(monitor, false, false);
+                long maxStatSize = 0;
+                if (node.getParentNode() != null) {
+                    // Calculate max object size
+                    DBNDatabaseNode[] children = node.getChildren(monitor);
+                    if (children != null) {
+                        for (DBNDatabaseNode childNode : children) {
+                            if (childNode.getObject() instanceof DBPObjectStatistics) {
+                                long statObjectSize = ((DBPObjectStatistics) childNode.getObject()).getStatObjectSize();
+                                maxStatSize = Math.max(maxStatSize, statObjectSize);
+                            }
+                        }
+                    }
+                }
 
-                UIUtils.asyncExec(tree::redraw);
+                long finalMaxStatSize = maxStatSize;
+                UIUtils.asyncExec(() -> {
+                    treeItem.setData("nav.stat.maxSize", finalMaxStatSize);
+                    treeItem.getParent().redraw();
+                });
             } catch (DBException e) {
                 log.error(e);
             } finally {
