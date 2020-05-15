@@ -64,7 +64,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class OracleDataSource extends JDBCDataSource implements DBAUserCredentialsProvider, IAdaptable {
+public class OracleDataSource extends JDBCDataSource implements DBAUserCredentialsProvider, DBPObjectStatisticsCollector, IAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
     final public SchemaCache schemaCache = new SchemaCache();
@@ -81,6 +81,7 @@ public class OracleDataSource extends JDBCDataSource implements DBAUserCredentia
     private String planTableName;
     private boolean useRuleHint;
     private boolean resolveGeometryAsStruct = true;
+    private boolean hasStatistics;
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
@@ -736,6 +737,42 @@ public class OracleDataSource extends JDBCDataSource implements DBAUserCredentia
             }
         }
         return null;
+    }
+
+    ///////////////////////////////////////////////
+    // Statistics
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace '" + getName() + "' statistics")) {
+            // Tablespace stats
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT TS.TABLESPACE_NAME,SUM(F.BYTES) AVAILABLE_SPACE,SUM(S.BYTES) USED_SPACE \n" +
+                    "FROM SYS.DBA_TABLESPACES TS,DBA_DATA_FILES F,DBA_SEGMENTS S\n" +
+                    "WHERE F.TABLESPACE_NAME(+)=TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+)=TS.TABLESPACE_NAME\n" +
+                    "GROUP BY TS.TABLESPACE_NAME")) {
+                    while (dbResult.next()) {
+                        String tsName = dbResult.getString(1);
+                        OracleTablespace tablespace = tablespaceCache.getObject(monitor, getDataSource(), tsName);
+                        if (tablespace != null) {
+                            tablespace.fetchSizes(dbResult);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Can't read tablespace statistics", e, getDataSource());
+        } finally {
+            hasStatistics = true;
+        }
     }
 
     private class OracleOutputReader implements DBCServerOutputReader {
