@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
@@ -243,10 +245,21 @@ public class ItemListControl extends NodeListControl
         {
             try {
                 List<DBNNode> items = new ArrayList<>();
-                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, getRootNode(), false);
+                DBNNode parentNode = getRootNode();
+                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, parentNode, false);
                 if (ArrayUtils.isEmpty(children)) {
                     return items;
                 }
+                // Cache statistics
+                if (parentNode instanceof DBNDatabaseNode) {
+                    DBSObject parentObject = ((DBNDatabaseNode) parentNode).getObject();
+                    if (parentObject instanceof DBPObjectStatisticsCollector) {
+                        if (!((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
+                            ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);
+                        }
+                    }
+                }
+                // Filter children
                 for (DBNNode item : children) {
                     if (monitor.isCanceled()) {
                         break;
