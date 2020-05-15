@@ -27,7 +27,7 @@ import java.text.ParsePosition;
 public class ByteNumberFormat extends NumberFormat {
     private static final long serialVersionUID = 1;
 
-    private static final String B = "B";
+    private static final String B = "b";
     private static final String KB = "Kb";
     private static final String MB = "Mb";
     private static final String GB = "Gb";
@@ -93,11 +93,7 @@ public class ByteNumberFormat extends NumberFormat {
         } else {
             str = fpFormat.format(intBytes);
         }
-        if (index == 0) {
-            return str;
-        } else {
-            return str + BYTES[index];
-        }
+        return str + BYTES[index];
     }
 
     /**
