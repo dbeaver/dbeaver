@@ -39,8 +39,10 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.util.Collection;
@@ -63,10 +65,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     public void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event) {
         super.paintNodeDetails(node, tree, gc, event);
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
+            return;
+        }
 
         Object element = event.item.getData();
-        int treeWidth = tree.getClientArea().width;
-        int occupiedWidth = event.x + event.width + 4;
 
         if (element instanceof DBNDatabaseNode) {
             DBSObject object = ((DBNDatabaseNode) element).getObject();
@@ -100,6 +103,10 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 }
                 Point textSize = gc.stringExtent(sizeText);
                 textSize.x += 4;
+
+                int treeWidth = tree.getClientArea().width;
+                int occupiedWidth = event.x + event.width + 4;
+
                 if (treeWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
                     int x = treeWidth - textSize.x - 2;
                     {
