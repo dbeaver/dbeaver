@@ -91,9 +91,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                         parentNode = parentNode.getParentNode();
                     }
                     if (parentNode instanceof DBNDatabaseNode) {
-                        readObjectStatistics(
+                        if (!readObjectStatistics(
                             (DBNDatabaseNode) parentNode,
-                            ((TreeItem) event.item).getParentItem());
+                            ((TreeItem) event.item).getParentItem())) {
+                            return;
+                        }
                     }
                 }
                 Point textSize = gc.stringExtent(sizeText);
@@ -124,7 +126,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         return 0;
     }
 
-    private void readObjectStatistics(DBNDatabaseNode parentNode, TreeItem parentItem) {
+    private boolean readObjectStatistics(DBNDatabaseNode parentNode, TreeItem parentItem) {
         DBSObject parentObject = DBUtils.getPublicObject(parentNode.getObject());
         if (parentObject instanceof DBPObjectStatisticsCollector && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
             synchronized (statReaders) {
@@ -135,7 +137,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     statReadJob.schedule();
                 }
             }
+            return true;
         }
+        return false;
     }
 
     private static class StatReadJob extends AbstractJob {

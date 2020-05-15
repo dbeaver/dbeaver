@@ -334,6 +334,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsTableStatistics() {
+        return true;
+    }
+
+    @Override
     public boolean supportsExplainPlan() {
         return true;
     }

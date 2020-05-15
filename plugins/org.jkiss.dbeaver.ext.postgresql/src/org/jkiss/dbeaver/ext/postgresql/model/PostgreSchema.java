@@ -478,7 +478,7 @@ public class PostgreSchema implements
 
     @Override
     public boolean isStatisticsCollected() {
-        return hasStatistics;
+        return hasStatistics || !getDataSource().getServerType().supportsTableStatistics();
     }
 
     @Override
