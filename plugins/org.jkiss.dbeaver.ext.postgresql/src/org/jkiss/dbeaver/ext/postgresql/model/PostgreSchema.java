@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -63,6 +65,7 @@ public class PostgreSchema implements
     DBPRefreshableObject,
     DBPSystemObject,
     DBSProcedureContainer,
+    DBPObjectStatisticsCollector,
     PostgreObject,
     PostgreScriptObject,
     PostgrePrivilegeOwner
@@ -85,6 +88,7 @@ public class PostgreSchema implements
     private final ProceduresCache proceduresCache = new ProceduresCache();
     public final IndexCache indexCache = new IndexCache();
     public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
+    private volatile boolean hasStatistics;
 
     public PostgreSchema(PostgreDatabase database, String name, ResultSet dbResult)
         throws SQLException {
@@ -128,6 +132,7 @@ public class PostgreSchema implements
         this.name = newName;
     }
 
+    @Property(viewable = false, order = 2)
     @Override
     public long getObjectId() {
         return this.oid;
@@ -469,6 +474,42 @@ public class PostgreSchema implements
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
         throw new DBException("Schema DDL is read-only");
+    }
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
+                "select c.oid," +
+                    "pg_catalog.pg_total_relation_size(c.oid) as total_rel_size," +
+                    "pg_catalog.pg_relation_size(c.oid) as rel_size\n" +
+                    "FROM pg_class c\n" +
+                    "WHERE c.relnamespace=?"))
+            {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        long tableId = dbResult.getLong(1);
+                        PostgreTableBase table = getTable(monitor, tableId);
+                        if (table instanceof PostgreTableReal) {
+                            ((PostgreTableReal) table).fetchStatistics(dbResult);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException("Error reading schema relation statistics", e);
+            }
+        } finally {
+            hasStatistics = true;
+        }
     }
 
     class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {

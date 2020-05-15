@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -30,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.utils.ByteNumberFormat;
@@ -41,7 +44,7 @@ import java.util.Collection;
 /**
  * PostgreTable base
  */
-public abstract class PostgreTableReal extends PostgreTableBase
+public abstract class PostgreTableReal extends PostgreTableBase implements DBPObjectStatistics
 {
     private static final Log log = Log.getLog(PostgreTableReal.class);
     public static final String CAT_STATISTICS = "Statistics";
@@ -119,6 +122,22 @@ public abstract class PostgreTableReal extends PostgreTableBase
         return tableRelSize;
     }
 
+    @Override
+    public boolean hasStatistics() {
+        return diskSpace != null;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return diskSpace;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
+
     private void readTableStats(DBRProgressMonitor monitor) {
         if (diskSpace != null) {
             return;
@@ -135,15 +154,14 @@ public abstract class PostgreTableReal extends PostgreTableBase
             try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
                 try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
                     "select " +
-                            "pg_catalog.pg_total_relation_size(?)," +
-                            "pg_catalog.pg_relation_size(?)"))
+                            "pg_catalog.pg_total_relation_size(?) as total_rel_size," +
+                            "pg_catalog.pg_relation_size(?) as rel_size"))
                 {
                     dbStat.setLong(1, getObjectId());
                     dbStat.setLong(2, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         if (dbResult.next()) {
-                            diskSpace = dbResult.getLong(1);
-                            tableRelSize = dbResult.getLong(2);
+                            fetchStatistics(dbResult);
                         }
                     }
                 }
@@ -155,6 +173,11 @@ public abstract class PostgreTableReal extends PostgreTableBase
                 diskSpace = -1L;
             }
         }
+    }
+
+    void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
+        diskSpace = dbResult.getLong("total_rel_size");
+        tableRelSize = dbResult.getLong("rel_size");
     }
 
     @Override
