@@ -20,9 +20,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -49,7 +51,7 @@ import java.util.*;
 /**
  * OracleSchema
  */
-public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer
+public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPObjectStatisticsCollector
 {
     private static final Log log = Log.getLog(OracleSchema.class);
 
@@ -70,6 +72,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     final public SchedulerJobCache schedulerJobCache = new SchedulerJobCache();
     final public SchedulerProgramCache schedulerProgramCache = new SchedulerProgramCache();
     final public RecycleBin recycleBin = new RecycleBin();
+    private volatile boolean hasStatistics;
 
     private long id;
     private String name;
@@ -417,6 +420,52 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
         }
         return tableColumn;
+    }
+
+    ///////////////////////////////////
+    // Statistics
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            boolean hasDBA = getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, "DBA_SEGMENTS");
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT SEGMENT_NAME,SUM(bytes) TABLE_SIZE\n" +
+                    "FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + (hasDBA ? "DBA_SEGMENTS" : "USER_SEGMENTS") + " s\n" +
+                    "WHERE S.SEGMENT_TYPE='TABLE' AND s.OWNER = ?\n" +
+                    "GROUP BY SEGMENT_NAME"))
+            {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String tableName = dbResult.getString(1);
+                        long bytes = dbResult.getLong(2);
+                        OracleTable table = getTable(monitor, tableName);
+                        if (table != null) {
+                            table.fetchTableSize(dbResult);
+                        }
+                    }
+                }
+                for (OracleTableBase table : tableCache.getCachedObjects()) {
+                    if (table instanceof OracleTable && !((OracleTable) table).hasStatistics()) {
+                        ((OracleTable) table).setTableSize(0L);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading table statistics", e);
+        } finally {
+            hasStatistics = true;
+        }
+
     }
 
     public static class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
