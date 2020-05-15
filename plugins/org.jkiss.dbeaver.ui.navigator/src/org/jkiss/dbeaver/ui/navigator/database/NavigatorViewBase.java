@@ -309,6 +309,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             case NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER:
                 tree.getViewer().refresh();
                 break;
+            case NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO:
+                tree.getViewer().getTree().redraw();
+                break;
         }
     }
 
