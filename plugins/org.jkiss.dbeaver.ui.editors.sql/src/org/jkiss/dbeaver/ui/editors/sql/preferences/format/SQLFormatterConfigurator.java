@@ -27,7 +27,7 @@ public interface SQLFormatterConfigurator {
     /**
      * Sets configuration parameters
      */
-    void configure(SQLFormatterDescriptor formatterDescriptor);
+    void configure(SQLFormatterDescriptor formatterDescriptor, Runnable changeListener);
 
     void loadSettings(DBPPreferenceStore preferenceStore);
 

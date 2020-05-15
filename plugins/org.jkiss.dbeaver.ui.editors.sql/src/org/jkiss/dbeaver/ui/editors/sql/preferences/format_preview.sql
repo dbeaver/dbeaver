@@ -6,7 +6,7 @@ WHERE t.xxx NOT NULL;
 
 DELETE FROM TABLE1 WHERE a=1;
 
-UPDATE TABLE1 SET a=2 WHERE a=1;
+UPDATE TABLE1 SET a=2 WHERE a=1
 
 SELECT table1.id, table2.number, SUM(table1.amount) FROM table1 INNER JOIN table2 ON table.id = table2.table1_id
 WHERE table1.id IN (SELECT table1_id FROM table3 WHERE table3.name = 'Foo Bar' and table3.type = 'unknown_type')
