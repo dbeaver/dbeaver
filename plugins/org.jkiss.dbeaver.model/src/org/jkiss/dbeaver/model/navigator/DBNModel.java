@@ -73,7 +73,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private final DBPPlatform platform;
-    private final boolean global;
+    private final Object modelContext;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
@@ -82,11 +82,11 @@ public class DBNModel implements IResourceChangeListener {
 
     /**
      * Creates navigator model.
-     * @param global Global navigator. If set to false then it won't register resource listeners and won't raise navigator events.
+     * @param modelContext Model context. If null then this is global navigator model. Otherwise it points to a session-like object.
      */
-    public DBNModel(DBPPlatform platform, boolean global) {
+    public DBNModel(DBPPlatform platform, @Nullable Object modelContext) {
         this.platform = platform;
-        this.global = global;
+        this.modelContext = modelContext;
     }
 
     public DBPPlatform getPlatform() {
@@ -94,7 +94,11 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     public boolean isGlobal() {
-        return global;
+        return modelContext == null;
+    }
+
+    public Object getModelContext() {
+        return modelContext;
     }
 
     public void initialize()
@@ -104,7 +108,7 @@ public class DBNModel implements IResourceChangeListener {
         }
         this.root = new DBNRoot(this);
 
-        if (global) {
+        if (isGlobal()) {
             platform.getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
             new EventProcessingJob().schedule();
         }
@@ -112,7 +116,7 @@ public class DBNModel implements IResourceChangeListener {
 
     public void dispose()
     {
-        if (global) {
+        if (isGlobal()) {
             platform.getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
         }
 
@@ -555,7 +559,7 @@ public class DBNModel implements IResourceChangeListener {
 
     void fireNodeEvent(final DBNEvent event)
     {
-        if (!global || platform.isShuttingDown()) {
+        if (!isGlobal() || platform.isShuttingDown()) {
             return;
         }
         synchronized (eventCache) {

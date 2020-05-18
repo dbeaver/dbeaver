@@ -74,7 +74,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     }
 
     @Override
-    void dispose(boolean reflect) {
+    protected void dispose(boolean reflect) {
         clearChildren(reflect);
         super.dispose(reflect);
     }

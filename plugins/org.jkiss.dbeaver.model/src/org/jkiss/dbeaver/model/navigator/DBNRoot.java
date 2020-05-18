@@ -54,7 +54,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     @Override
-    void dispose(boolean reflect) {
+    protected void dispose(boolean reflect) {
         for (DBNProject project : projects) {
             project.dispose(reflect);
         }

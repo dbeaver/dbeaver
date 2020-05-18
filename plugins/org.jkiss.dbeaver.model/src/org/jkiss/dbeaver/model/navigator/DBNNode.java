@@ -63,7 +63,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return false;
     }
 
-    void dispose(boolean reflect) {
+    protected void dispose(boolean reflect) {
     }
 
     public DBNModel getModel() {
